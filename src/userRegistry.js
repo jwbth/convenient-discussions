@@ -4,12 +4,12 @@
  * @module userRegistry
  */
 
-import StorageItem from './StorageItem';
-import User from './User';
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { subtractDaysFromNow, ucFirst, underlinesToSpaces } from './shared/utils-general';
-import { handleApiReject } from './utils-api';
+import StorageItem from './StorageItem'
+import User from './User'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { subtractDaysFromNow, ucFirst, underlinesToSpaces } from './shared/utils-general'
+import { handleApiReject } from './utils-api'
 
 export default {
 	/**
@@ -28,21 +28,21 @@ export default {
 	 */
 	get(name) {
 		if (name.includes('#')) {
-			name = name.slice(0, name.indexOf('#'));
+			name = name.slice(0, name.indexOf('#'))
 		}
 		name = (
 			mw.util.isIPv6Address(name)
 				? name.toUpperCase()
 				: underlinesToSpaces(ucFirst(name))
-		).trim();
+		).trim()
 		if (!(name in this.items)) {
 			this.items[name] = new User(
 				name,
 				name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {}
-			);
+			)
 		}
 
-		return this.items[name];
+		return this.items[name]
 	},
 
 	/**
@@ -51,7 +51,7 @@ export default {
 	 * @returns {User}
 	 */
 	getCurrent() {
-		return this.get(cd.g.userName);
+		return this.get(cd.g.userName)
 	},
 
 	/**
@@ -60,8 +60,8 @@ export default {
 	 * @fires mutedUsers
 	 */
 	loadMuted() {
-		const userIdList = /** @type {string} */ (mw.user.options.get('echo-notifications-blacklist'));
-		if (!userIdList || !cd.config.useGlobalPreferences) return;
+		const userIdList = /** @type {string} */ (mw.user.options.get('echo-notifications-blacklist'))
+		if (!userIdList || !cd.config.useGlobalPreferences) return
 
 		/**
 		 * @typedef {object} MutedUsers
@@ -69,9 +69,9 @@ export default {
 		 * @property {number} saveTime
 		 */
 
-		const userIds = userIdList.split('\n');
-		const mutedUsersStorage = /** @type {StorageItem<MutedUsers>} */ (new StorageItem('mutedUsers'));
-		const mutedUsers = mutedUsersStorage.getData();
+		const userIds = userIdList.split('\n')
+		const mutedUsersStorage = /** @type {StorageItem<MutedUsers>} */ (new StorageItem('mutedUsers'))
+		const mutedUsers = mutedUsersStorage.getData()
 		if (
 		// This comes from the local storage, the value may be corrupt
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -84,8 +84,8 @@ export default {
 			this.getUsersByGlobalId(userIds).then(
 				(users) => {
 					users.forEach((user) => {
-						user.setMuted(true);
-					});
+						user.setMuted(true)
+					})
 					mutedUsersStorage
 						.setData({
 							users: /** @type {StringsByKey} */ (Object.assign({}, ...users.map((user) => ({
@@ -93,7 +93,7 @@ export default {
 							}), {}))),
 							saveTime: Date.now(),
 						})
-						.save();
+						.save()
 
 					/**
 					 * The list of muted users has been obtained from the server or local storage.
@@ -102,18 +102,18 @@ export default {
 					 * @param {User[]} users
 					 * @global
 					 */
-					mw.hook('convenientDiscussions.mutedUsers').fire(users);
+					mw.hook('convenientDiscussions.mutedUsers').fire(users)
 				},
 				(/** @type {unknown} */ error) => {
-					console.error('Couldn\'t load the names of the muted users.', error);
+					console.error('Couldn\'t load the names of the muted users.', error)
 				}
-			);
+			)
 		} else {
-			const users = Object.entries(mutedUsers.users).map(([, name]) => this.get(name));
+			const users = Object.entries(mutedUsers.users).map(([, name]) => this.get(name))
 			users.forEach((user) => {
-				user.setMuted(true);
-			});
-			mw.hook('convenientDiscussions.mutedUsers').fire(users);
+				user.setMuted(true)
+			})
+			mw.hook('convenientDiscussions.mutedUsers').fire(users)
 		}
 	},
 
@@ -137,22 +137,22 @@ export default {
 						.catch(handleApiReject)
 				)
 			)
-		);
+		)
 
 		return responses.map((response) => {
-			const userInfo = response.query?.globaluserinfo;
+			const userInfo = response.query?.globaluserinfo
 			if (!userInfo) {
 				throw new CdError({
 					type: 'response',
 					code: 'noData',
 					apiResponse: response,
-				});
+				})
 			}
 
-			const user = this.get(userInfo.name);
-			user.setGlobalId(userInfo.id);
+			const user = this.get(userInfo.name)
+			user.setGlobalId(userInfo.id)
 
-			return user;
-		});
+			return user
+		})
 	},
-};
+}

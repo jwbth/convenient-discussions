@@ -9,7 +9,7 @@ export default {
 	 */
 	getValidFallbackLanguage(lang, fallbacks, isValid) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		return fallbacks[lang]?.find(isValid) || 'en';
+		return fallbacks[lang]?.find(isValid) || 'en'
 	},
 
 	/**
@@ -21,7 +21,7 @@ export default {
 	 * @returns {string}
 	 */
 	getValidLanguageOrFallback(lang, isValid, fallbacks) {
-		return isValid(lang) ? lang : this.getValidFallbackLanguage(lang, fallbacks, isValid);
+		return isValid(lang) ? lang : this.getValidFallbackLanguage(lang, fallbacks, isValid)
 	},
 
 	/**
@@ -34,6 +34,6 @@ export default {
 		// (when navigating forward, at least twice, from a revision older than the revision in
 		// wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
 		// wgCurRevisionId value.
-		return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
+		return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId')
 	},
-};
+}

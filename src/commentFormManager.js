@@ -1,13 +1,13 @@
-import CommentForm from './CommentForm';
-import EventEmitter from './EventEmitter';
-import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
-import commentManager from './commentManager';
-import controller from './controller';
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import settings from './settings';
-import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './shared/utils-general';
-import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
+import CommentForm from './CommentForm'
+import EventEmitter from './EventEmitter'
+import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime'
+import commentManager from './commentManager'
+import controller from './controller'
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import settings from './settings'
+import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './shared/utils-general'
+import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window'
 
 // TODO: make into a class extending a generic registry.
 
@@ -34,23 +34,23 @@ class CommentFormManager extends EventEmitter {
 	 * @type {CommentForm[]}
 	 * @private
 	 */
-	items = [];
+	items = []
 
 	/**
 	 * @type {((...args: any[]) => any)|undefined}
 	 */
-	throttledSaveSession;
+	throttledSaveSession
 
 	/**
 	 * _For internal use._ Initialize the registry.
 	 */
 	init() {
-		this.configureClosePageConfirmation();
+		this.configureClosePageConfirmation()
 
 		controller
 			.on('beforeReboot', () => {
 				// In case checkboxes were changed programmatically
-				this.saveSession();
+				this.saveSession()
 			})
 			.on('startReboot', this.detach)
 			.on('keyDown', (event) => {
@@ -61,30 +61,30 @@ class CommentFormManager extends EventEmitter {
 					// Q
 					(keyCombination(event, 81) && !isInputFocused())
 				) {
-					const lastActiveCommentForm = this.getLastActive();
-					const comment = commentManager.getSelectedComment();
+					const lastActiveCommentForm = this.getLastActive()
+					const comment = commentManager.getSelectedComment()
 					if (lastActiveCommentForm) {
-						event.preventDefault();
-						lastActiveCommentForm.quote(isCmdModifierPressed(event), comment);
+						event.preventDefault()
+						lastActiveCommentForm.quote(isCmdModifierPressed(event), comment)
 					} else if (comment?.isActionable) {
-						event.preventDefault();
-						comment.reply();
+						event.preventDefault()
+						comment.reply()
 					}
 				}
 			})
-			.on('resize', this.adjustLabels);
+			.on('resize', this.adjustLabels)
 		commentManager
 			.on('select', () => {
-				this.toggleQuoteButtonsHighlighting(true);
+				this.toggleQuoteButtonsHighlighting(true)
 			})
 			.on('unselect', () => {
-				this.toggleQuoteButtonsHighlighting(false);
-			});
+				this.toggleQuoteButtonsHighlighting(false)
+			})
 
 		mw.hook('ext.CodeMirror.toggle').add((enabled, codeMirror) => {
-			this.items.find((item) => item.codeMirror === codeMirror)?.setCodeMirrorActive(enabled);
-			settings.saveSettingOnTheFly('useCodeMirror', enabled);
-		});
+			this.items.find((item) => item.codeMirror === codeMirror)?.setCodeMirrorActive(enabled)
+			settings.saveSettingOnTheFly('useCodeMirror', enabled)
+		})
 	}
 
 	/**
@@ -110,30 +110,30 @@ class CommentFormManager extends EventEmitter {
 	 */
 	async setupCommentForm(target, config, initialState, commentForm) {
 		if (commentForm) {
-			commentForm.setTargets(target);
-			target.addCommentFormToPage(config.mode, commentForm);
+			commentForm.setTargets(target)
+			target.addCommentFormToPage(config.mode, commentForm)
 		} else {
-			const cf = new CommentForm({ target, initialState, ...config });
-			await cf.buildPromise;
-			target.addCommentFormToPage(config.mode, cf);
-			cf.setup(initialState);
-			this.items.push(cf);
+			const cf = new CommentForm({ target, initialState, ...config })
+			await cf.buildPromise
+			target.addCommentFormToPage(config.mode, cf)
+			cf.setup(initialState)
+			this.items.push(cf)
 			cf
 				.on('change', this.saveSession)
 				.on('unregister', () => {
-					this.remove(cf);
+					this.remove(cf)
 				})
 				.on('teardown', () => {
-					controller.updatePageTitle();
-					this.emit('teardown', cf);
-				});
-			this.emit('add', cf);
+					controller.updatePageTitle()
+					this.emit('teardown', cf)
+				})
+			this.emit('add', cf)
 
-			commentForm = cf;
+			commentForm = cf
 		}
 
-		controller.updatePageTitle();
-		this.saveSession();
+		controller.updatePageTitle()
+		this.saveSession()
 
 		/**
 		 * A comment form has been created and added to the page.
@@ -143,9 +143,9 @@ class CommentFormManager extends EventEmitter {
 		 * @param {object} cd {@link convenientDiscussions} object.
 		 * @global
 		 */
-		mw.hook('convenientDiscussions.commentFormCreated').fire(commentForm, cd);
+		mw.hook('convenientDiscussions.commentFormCreated').fire(commentForm, cd)
 
-		return commentForm;
+		return commentForm
 	}
 
 	/**
@@ -154,9 +154,9 @@ class CommentFormManager extends EventEmitter {
 	 * @param {CommentForm} item
 	 */
 	remove(item) {
-		removeFromArrayIfPresent(this.items, item);
-		this.saveSession(true);
-		this.emit('remove', item);
+		removeFromArrayIfPresent(this.items, item)
+		this.saveSession(true)
+		this.emit('remove', item)
 	}
 
 	/**
@@ -165,7 +165,7 @@ class CommentFormManager extends EventEmitter {
 	 * @returns {CommentForm[]}
 	 */
 	getAll() {
-		return this.items;
+		return this.items
 	}
 
 	/**
@@ -176,10 +176,10 @@ class CommentFormManager extends EventEmitter {
 	 */
 	getByIndex(index) {
 		if (index < 0) {
-			index = this.items.length + index;
+			index = this.items.length + index
 		}
 
-		return this.items[index] || null;
+		return this.items[index] || null
 	}
 
 	/**
@@ -188,7 +188,7 @@ class CommentFormManager extends EventEmitter {
 	 * @returns {number}
 	 */
 	getCount() {
-		return this.items.length;
+		return this.items.length
 	}
 
 	/**
@@ -198,7 +198,7 @@ class CommentFormManager extends EventEmitter {
 	 * @returns {CommentForm[]}
 	 */
 	query(condition) {
-		return this.items.filter(condition);
+		return this.items.filter(condition)
 	}
 
 	/**
@@ -207,7 +207,7 @@ class CommentFormManager extends EventEmitter {
 	 * @private
 	 */
 	reset() {
-		this.items.length = 0;
+		this.items.length = 0
 	}
 
 	/**
@@ -221,7 +221,7 @@ class CommentFormManager extends EventEmitter {
 				.slice()
 				.sort(this.lastFocused)[0] ||
 				null
-		);
+		)
 	}
 
 	/**
@@ -237,7 +237,7 @@ class CommentFormManager extends EventEmitter {
 				.sort(this.lastFocused)
 				.find((commentForm) => commentForm.isAltered()) ||
 				null
-		);
+		)
 	}
 
 	/**
@@ -251,7 +251,7 @@ class CommentFormManager extends EventEmitter {
 	 * @private
 	 */
 	lastFocused = (cf1, cf2) =>
-		(cf2.getLastFocused()?.getTime() || 0) - (cf1.getLastFocused()?.getTime() || 0);
+		(cf2.getLastFocused()?.getTime() || 0) - (cf1.getLastFocused()?.getTime() || 0)
 
 	/**
 	 * Adjust the button labels of all comment forms according to the form width: if the form is too
@@ -259,18 +259,18 @@ class CommentFormManager extends EventEmitter {
 	 */
 	adjustLabels = () => {
 		this.items.forEach((commentForm) => {
-			commentForm.adjustLabels();
-		});
-	};
+			commentForm.adjustLabels()
+		})
+	}
 
 	/**
 	 * Detach the comment forms keeping events. Also reset some of their properties.
 	 */
 	detach = () => {
 		this.items.forEach((commentForm) => {
-			commentForm.detach();
-		});
-	};
+			commentForm.detach()
+		})
+	}
 
 	/**
 	 * The method that does the actual work for {@link module:commentFormManager.saveSession}.
@@ -285,8 +285,8 @@ class CommentFormManager extends EventEmitter {
 					.filter((commentForm) => commentForm.isAltered())
 					.map((commentForm) => commentForm.getData())
 			)
-			.save();
-	};
+			.save()
+	}
 
 	/**
 	 * _For internal use._ Save comment form data to the local storage.
@@ -295,19 +295,19 @@ class CommentFormManager extends EventEmitter {
 	 */
 	saveSession = (force) => {
 		// A check in light of the existence of RevisionSlider, see the method
-		if (!cd.util.isCurrentRevision()) return;
+		if (!cd.util.isCurrentRevision()) return
 
 		if (force) {
-			this.actuallySaveSession();
+			this.actuallySaveSession()
 		} else {
 			// Don't save more often than once per 5 seconds.
 			this.throttledSaveSession ??= OO.ui.throttle(
 				/** @type {() => void} */ (this.actuallySaveSession),
 				500
-			);
-			this.throttledSaveSession();
+			)
+			this.throttledSaveSession()
 		}
-	};
+	}
 
 	/**
 	 * Restore comment forms using the data saved in the local storage.
@@ -317,7 +317,7 @@ class CommentFormManager extends EventEmitter {
 	 * @private
 	 */
 	restoreSessionFromStorage() {
-		let haveRestored = /** @type {boolean} */ (false);
+		let haveRestored = /** @type {boolean} */ (false)
 
 		this.maybeShowRescueDialog(
 			/**
@@ -333,13 +333,13 @@ class CommentFormManager extends EventEmitter {
 				.get(mw.config.get('wgPageName'))
 				?.commentForms
 				.filter((data) => {
-					const target = this.getTargetByData(data.targetData);
+					const target = this.getTargetByData(data.targetData)
 					if (data.targetWithOutdentedRepliesData) {
 						/** @type {import('./CommentForm').CommentFormInitialState} */ (
 							data
 						).targetWithOutdentedReplies = /** @type {import('./Comment').default|undefined} */ (
 							this.getTargetByData(data.targetWithOutdentedRepliesData)
-						);
+						)
 					}
 					if (
 						target?.isActionable &&
@@ -354,27 +354,27 @@ class CommentFormManager extends EventEmitter {
 								target[
 								/** @type {keyof typeof target} */ (target.getCommentFormMethodName(data.mode))
 								]
-							)(data, undefined, data.preloadConfig, data.newTopicOnTop);
-							haveRestored = true;
+							)(data, undefined, data.preloadConfig, data.newTopicOnTop)
+							haveRestored = true
 						} catch (error) {
-							console.warn(error);
+							console.warn(error)
 
-							return true;
+							return true
 						}
 					} else {
-						return true;
+						return true
 					}
 
-					return false;
+					return false
 				})
-		);
+		)
 
 		if (haveRestored) {
 			mw.notification.notify(cd.s('restore-restored-text'), {
 				title: cd.s('restore-restored-title'),
 			}).$notification.on('click', () => {
-				this.items[0].goTo();
-			});
+				this.items[0].goTo()
+			})
 		}
 	}
 
@@ -395,14 +395,14 @@ class CommentFormManager extends EventEmitter {
 				index: targetData.index,
 				id: targetData.id,
 				ancestors: targetData.ancestors,
-			})?.section;
+			})?.section
 		} else if (targetData?.id) {
 			// Comment
-			return commentManager.getById(targetData.id);
+			return commentManager.getById(targetData.id)
 		}   // `data.mode === 'addSection'` or `targetData === undefined`
 
 		// Page
-		return cd.page;
+		return cd.page
 	}
 
 	/**
@@ -415,7 +415,7 @@ class CommentFormManager extends EventEmitter {
 			this.items
 				.map((commentForm) => commentForm.restore())
 				.filter(defined)
-		);
+		)
 	}
 
 	/**
@@ -429,11 +429,11 @@ class CommentFormManager extends EventEmitter {
 	 * @private
 	 */
 	maybeShowRescueDialog(content) {
-		if (!content?.length) return;
+		if (!content?.length) return
 
-		const dialog = new OO.ui.MessageDialog();
-		const windowManager = cd.getWindowManager();
-		windowManager.addWindows([dialog]);
+		const dialog = new OO.ui.MessageDialog()
+		const windowManager = cd.getWindowManager()
+		windowManager.addWindows([dialog])
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const win = windowManager.openWindow(dialog, {
 			message: new OO.ui.FieldLayout(
@@ -458,10 +458,10 @@ class CommentFormManager extends EventEmitter {
 				},
 			],
 			size: 'large',
-		});
+		})
 		win.closed.then(() => {
-			this.saveSession();
-		});
+			this.saveSession()
+		})
 	}
 
 	/**
@@ -473,11 +473,11 @@ class CommentFormManager extends EventEmitter {
 	restoreSession(fromStorage) {
 		if (fromStorage) {
 			// This is needed when the page is reloaded externally.
-			this.reset();
+			this.reset()
 
-			this.restoreSessionFromStorage();
+			this.restoreSessionFromStorage()
 		} else {
-			this.restoreSessionDirectly();
+			this.restoreSessionDirectly()
 		}
 	}
 
@@ -493,7 +493,7 @@ class CommentFormManager extends EventEmitter {
 			// chance of the situation where a user had two same pages in different tabs and lost a form
 			// in other tab after saving nothing in this tab.
 			if (this.getLastActiveAltered()) {
-				this.saveSession(true);
+				this.saveSession(true)
 			}
 
 			return (
@@ -508,8 +508,8 @@ class CommentFormManager extends EventEmitter {
 						this.getCount()
 					)
 				)
-			);
-		});
+			)
+		})
 	}
 
 	/**
@@ -519,9 +519,9 @@ class CommentFormManager extends EventEmitter {
 	 */
 	toggleQuoteButtonsHighlighting = (highlight) => {
 		this.items.forEach((item) => {
-			item.highlightQuoteButton(highlight);
-		});
-	};
+			item.highlightQuoteButton(highlight)
+		})
+	}
 
 	/**
 	 * Go to the next comment form out of sight, or just the next comment form, if `inSight` is set to
@@ -533,16 +533,16 @@ class CommentFormManager extends EventEmitter {
 		this
 			.query((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
 			.map((commentForm) => {
-				let top = commentForm.$element[0].getBoundingClientRect().top;
+				let top = commentForm.$element[0].getBoundingClientRect().top
 				if (top < 0) {
-					top += /** @type {number} */ ($(document).height()) * 2;
+					top += /** @type {number} */ ($(document).height()) * 2
 				}
 
-				return { commentForm, top };
+				return { commentForm, top }
 			})
 			.sort((data1, data2) => data1.top - data2.top)
 			.map((data) => data.commentForm)[0]
-			?.goTo();
+			?.goTo()
 	}
 
 	/**
@@ -553,8 +553,8 @@ class CommentFormManager extends EventEmitter {
 	maybeGetFormDataWontBeLostString() {
 		return this.getAll().some((cf) => cf.isAltered())
 			? cd.s('word-separator') + cd.mws('parentheses', cd.s('notification-formdata'))
-			: '';
+			: ''
 	}
 }
 
-export default new CommentFormManager();
+export default new CommentFormManager()

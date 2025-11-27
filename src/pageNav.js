@@ -1,9 +1,9 @@
-import Button from './Button';
-import controller from './controller';
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import toc from './toc';
-import { getVisibilityByRects } from './utils-window';
+import Button from './Button'
+import controller from './controller'
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import toc from './toc'
+import { getVisibilityByRects } from './utils-window'
 
 /**
  * Singleton related to the block displaying the current section tree according to the scroll
@@ -15,78 +15,78 @@ class PageNav {
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$topElement;
+	$topElement
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$bottomElement;
+	$bottomElement
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$linksOnTop;
+	$linksOnTop
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$topLink;
+	$topLink
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$tocLink;
+	$tocLink
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$currentSection;
+	$currentSection
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$bottomLink;
+	$bottomLink
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$sectionWithBackLink;
+	$sectionWithBackLink
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$backLinkContainer;
+	$backLinkContainer
 
 	/**
 	 * @type {import('./Section').default | undefined}
 	 * @private
 	 */
-	currentSection;
+	currentSection
 
 	/**
 	 * @type {'top' | 'bottom' | 'section' | undefined}
 	 * @private
 	 */
-	backLinkLocation;
+	backLinkLocation
 
-	bodyScrollPaddingTop = controller.getBodyScrollPaddingTop();
+	bodyScrollPaddingTop = controller.getBodyScrollPaddingTop()
 
 	/**
 	 * _For internal use._ Setup the page navigation block (mount or update).
 	 */
 	setup() {
 		if (this.isMounted()) {
-			this.update();
+			this.update()
 		} else {
-			this.mount();
+			this.mount()
 		}
 	}
 
@@ -96,27 +96,27 @@ class PageNav {
 	 * @private
 	 */
 	mount() {
-		if (cd.g.skin === 'vector-2022') return;
+		if (cd.g.skin === 'vector-2022') return
 
 		this.$topElement = $('<div>')
 			.attr('id', 'cd-pageNav-top')
 			.addClass('cd-pageNav')
-			.appendTo(document.body);
+			.appendTo(document.body)
 		if (this.bodyScrollPaddingTop) {
-			this.$topElement.css('margin-top', `${this.bodyScrollPaddingTop}px`);
+			this.$topElement.css('margin-top', `${this.bodyScrollPaddingTop}px`)
 		}
 		this.$bottomElement = $('<ul>')
 			.attr('id', 'cd-pageNav-bottom')
 			.addClass('cd-pageNav cd-pageNav-list')
-			.appendTo(document.body);
+			.appendTo(document.body)
 
-		this.updateWidth();
-		this.update();
+		this.updateWidth()
+		this.update()
 
 		controller
 			.on('scroll', this.update)
 			.on('horizontalScroll', this.updateWidth)
-			.on('resize', this.updateWidth);
+			.on('resize', this.updateWidth)
 	}
 
 	/**
@@ -125,7 +125,7 @@ class PageNav {
 	 * @returns {boolean}
 	 */
 	isMounted() {
-		return Boolean(this.$topElement);
+		return Boolean(this.$topElement)
 	}
 
 	/**
@@ -134,40 +134,40 @@ class PageNav {
 	 * @private
 	 */
 	updateWidth = () => {
-		if (!this.isMounted() || !controller.$contentColumn.length) return;
+		if (!this.isMounted() || !controller.$contentColumn.length) return
 
 		const left =
 		/** @type {JQuery.Coordinates} */ (controller.$contentColumn.offset()).left -
-			/** @type {number} */ ($(window).scrollLeft());
+			/** @type {number} */ ($(window).scrollLeft())
 
 		// 18px padding + 1px comment markers / thread lines
-		const deductable = 18 + ((cd.g.commentMarkerWidth - 1) / 2);
+		const deductable = 18 + ((cd.g.commentMarkerWidth - 1) / 2)
 
 		let width = cd.g.userDirection === 'ltr'
 			? left - deductable
 			: /** @type {number} */ ($(window).width()) -
 				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 				(left + /** @type {number} */ (controller.$contentColumn.outerWidth())) -
-				deductable;
+				deductable
 		if (cd.g.skin === 'minerva') {
-			width -= controller.getContentColumnOffsets().startMargin;
+			width -= controller.getContentColumnOffsets().startMargin
 		}
 
-		const $topElement = /** @type {JQuery} */ (this.$topElement);
-		const $bottomElement = /** @type {JQuery} */ (this.$bottomElement);
+		const $topElement = /** @type {JQuery} */ (this.$topElement)
+		const $bottomElement = /** @type {JQuery} */ (this.$bottomElement)
 
 		// Some skins when the viewport is narrowed
 		if (width <= 100) {
-			$topElement.hide();
-			$bottomElement.hide();
+			$topElement.hide()
+			$bottomElement.hide()
 		} else {
-			$topElement.show();
-			$bottomElement.show();
+			$topElement.show()
+			$bottomElement.show()
 		}
 
-		$topElement.css('width', String(width) + 'px');
-		$bottomElement.css('width', String(width) + 'px');
-	};
+		$topElement.css('width', String(width) + 'px')
+		$bottomElement.css('width', String(width) + 'px')
+	}
 
 	/**
 	 * Get offsets of certain elements we need relative to the viewport.
@@ -180,21 +180,21 @@ class PageNav {
 	 * @private
 	 */
 	getRelativeOffsets(scrollY) {
-		let afterLeadOffset;
+		let afterLeadOffset
 		if (toc.isPresent()) {
-			const rect = toc.$element[0].getBoundingClientRect();
+			const rect = toc.$element[0].getBoundingClientRect()
 			if (getVisibilityByRects(rect)) {
-				afterLeadOffset = rect.top;
+				afterLeadOffset = rect.top
 			}
 		}
 
 		const firstSectionTop = sectionManager.getFirstSectionRelativeTopOffset(
 			scrollY,
 			afterLeadOffset
-		);
-		afterLeadOffset ??= firstSectionTop;
+		)
+		afterLeadOffset ??= firstSectionTop
 
-		return { afterLeadOffset, firstSectionTop };
+		return { afterLeadOffset, firstSectionTop }
 	}
 
 	/**
@@ -213,7 +213,7 @@ class PageNav {
 				this.$linksOnTop = $('<ul>')
 					.attr('id', 'cd-pageNav-linksOnTop')
 					.addClass('cd-pageNav-list')
-					.appendTo(/** @type {JQuery} */ (this.$topElement));
+					.appendTo(/** @type {JQuery} */ (this.$topElement))
 				this.$topLink = $('<li>')
 					.attr('id', 'cd-pageNav-topLink')
 					.addClass('cd-pageNav-item')
@@ -223,14 +223,14 @@ class PageNav {
 							classes: ['cd-pageNav-link'],
 							label: cd.s('pagenav-pagetop'),
 							action: () => {
-								this.jump(0, /** @type {JQuery} */ (this.$topLink));
+								this.jump(0, /** @type {JQuery} */ (this.$topLink))
 							},
 						})).element
 					)
-					.appendTo(this.$linksOnTop);
+					.appendTo(this.$linksOnTop)
 			}
 		} else if (this.$linksOnTop) {
-			this.reset('top');
+			this.reset('top')
 		}
 
 		if (this.$linksOnTop) {
@@ -247,16 +247,16 @@ class PageNav {
 								this.jump(
 									/** @type {JQuery} */ (toc.$element),
 									/** @type {JQuery} */ (this.$tocLink)
-								);
+								)
 							},
 						}).element
 					)
-					.appendTo(this.$linksOnTop);
+					.appendTo(this.$linksOnTop)
 			}
 			this.$currentSection ??= $('<ul>')
 				.attr('id', 'cd-pageNav-currentSection')
 				.addClass('cd-pageNav-list')
-				.appendTo(/** @type {JQuery} */ (this.$topElement));
+				.appendTo(/** @type {JQuery} */ (this.$topElement))
 		}
 
 		if (
@@ -279,14 +279,14 @@ class PageNav {
 								this.jump(
 									document.documentElement.scrollHeight - window.innerHeight,
 									/** @type {JQuery} */ (this.$bottomLink)
-								);
+								)
 							},
 						}).element
 					)
-					.appendTo(/** @type {JQuery} */ (this.$bottomElement));
+					.appendTo(/** @type {JQuery} */ (this.$bottomElement))
 			}
 		} else if (this.$bottomLink) {
-			this.reset('bottom');
+			this.reset('bottom')
 		}
 	}
 
@@ -302,16 +302,16 @@ class PageNav {
 		// navigation to see the difference).
 		if (firstSectionTop === undefined || firstSectionTop >= this.bodyScrollPaddingTop + 1) {
 			if (this.currentSection) {
-				this.resetSections();
+				this.resetSections()
 			}
 
-			return;
+			return
 		}
 
-		const updatedCurrentSection = sectionManager.getCurrentSection();
-		if (!updatedCurrentSection || updatedCurrentSection === this.currentSection) return;
+		const updatedCurrentSection = sectionManager.getCurrentSection()
+		if (!updatedCurrentSection || updatedCurrentSection === this.currentSection) return
 
-		this.currentSection = updatedCurrentSection;
+		this.currentSection = updatedCurrentSection
 
 		// Keep the data
 		this.$sectionWithBackLink?.detach();
@@ -332,12 +332,12 @@ class PageNav {
 										classes: ['cd-pageNav-link'],
 										label: sectionInTree.headline,
 										action: () => {
-											this.jump(sectionInTree.$heading, $item);
+											this.jump(sectionInTree.$heading, $item)
 										},
 									}).element
-								);
-				$item.appendTo(/** @type {JQuery} */ (this.$currentSection));
-			});
+								)
+				$item.appendTo(/** @type {JQuery} */ (this.$currentSection))
+			})
 	}
 
 	/**
@@ -346,23 +346,23 @@ class PageNav {
 	 * @private
 	 */
 	update = () => {
-		if (!this.isMounted()) return;
+		if (!this.isMounted()) return
 
 		// Vertical scrollbar disappeared
 		if (document.documentElement.scrollHeight === document.documentElement.clientHeight) {
-			this.reset();
+			this.reset()
 
-			return;
+			return
 		}
 
-		const scrollY = window.scrollY;
+		const scrollY = window.scrollY
 
 		// afterLeadOffset is the top position of the TOC or the first section.
-		const { afterLeadOffset, firstSectionTop } = this.getRelativeOffsets(scrollY);
+		const { afterLeadOffset, firstSectionTop } = this.getRelativeOffsets(scrollY)
 
-		this.createOrUpdateSkeleton(afterLeadOffset, scrollY);
-		this.updateCurrentSection(firstSectionTop);
-	};
+		this.createOrUpdateSkeleton(afterLeadOffset, scrollY)
+		this.updateCurrentSection(firstSectionTop)
+	}
 
 	/**
 	 * Reset the page navigation state partly or completely.
@@ -375,13 +375,13 @@ class PageNav {
 			// Keep the data
 			this.$sectionWithBackLink?.detach();
 
-			/** @type {JQuery} */ (this.$topElement).empty();
-			this.$linksOnTop = this.$topLink = this.$tocLink = this.$currentSection = undefined;
-			this.currentSection = undefined;
+			/** @type {JQuery} */ (this.$topElement).empty()
+			this.$linksOnTop = this.$topLink = this.$tocLink = this.$currentSection = undefined
+			this.currentSection = undefined
 		}
 		if (!part || part === 'bottom') {
-			/** @type {JQuery} */ (this.$bottomElement).empty();
-			this.$bottomLink = undefined;
+			/** @type {JQuery} */ (this.$bottomElement).empty()
+			this.$bottomLink = undefined
 		}
 	}
 
@@ -392,8 +392,8 @@ class PageNav {
 	 */
 	resetSections() {
 		this.$sectionWithBackLink?.detach();
-		/** @type {JQuery} */ (this.$currentSection).empty();
-		this.currentSection = undefined;
+		/** @type {JQuery} */ (this.$currentSection).empty()
+		this.currentSection = undefined
 	}
 
 	/**
@@ -407,17 +407,17 @@ class PageNav {
 	jump($elementOrOffset, $item, isBackLink = false) {
 		const offset = typeof $elementOrOffset === 'number'
 			? $elementOrOffset
-			: /** @type {JQuery.Coordinates} */ ($elementOrOffset.offset()).top - this.bodyScrollPaddingTop;
-		if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return;
+			: /** @type {JQuery.Coordinates} */ ($elementOrOffset.offset()).top - this.bodyScrollPaddingTop
+		if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return
 
 		if (this.backLinkLocation) {
 			this.backLinkLocation = undefined;
 			/** @type {JQuery} */ (this.$backLinkContainer).prev().removeClass('cd-pageNav-link-inline');
-			/** @type {JQuery} */ (this.$backLinkContainer).remove();
-			this.$backLinkContainer = this.$sectionWithBackLink = undefined;
+			/** @type {JQuery} */ (this.$backLinkContainer).remove()
+			this.$backLinkContainer = this.$sectionWithBackLink = undefined
 		}
 		if (!isBackLink) {
-			const scrollY = window.scrollY;
+			const scrollY = window.scrollY
 			this.$backLinkContainer = $('<span>')
 				.addClass('cd-pageNav-backLinkContainer')
 				.append(
@@ -427,29 +427,29 @@ class PageNav {
 						label: cd.s('pagenav-back'),
 						action: (event) => {
 							// When inside links without href
-							event.stopPropagation();
+							event.stopPropagation()
 
-							this.jump(scrollY, $item, true);
+							this.jump(scrollY, $item, true)
 						},
 					}).element
 				)
-				.appendTo($item);
-			this.$backLinkContainer.prev().addClass('cd-pageNav-link-inline');
+				.appendTo($item)
+			this.$backLinkContainer.prev().addClass('cd-pageNav-link-inline')
 			if ($item.parent().is('#cd-pageNav-currentSection')) {
-				this.$sectionWithBackLink = $item;
+				this.$sectionWithBackLink = $item
 			}
 			if ($item === this.$topLink || $item === this.$tocLink) {
-				this.backLinkLocation = 'top';
+				this.backLinkLocation = 'top'
 			} else if ($item === this.$bottomLink) {
-				this.backLinkLocation = 'bottom';
+				this.backLinkLocation = 'bottom'
 			} else {
-				this.backLinkLocation = 'section';
+				this.backLinkLocation = 'section'
 			}
 		}
 
-		controller.toggleAutoScrolling(true);
-		controller.scrollToY(offset);
+		controller.toggleAutoScrolling(true)
+		controller.scrollToY(offset)
 	}
 }
 
-export default new PageNav();
+export default new PageNav()

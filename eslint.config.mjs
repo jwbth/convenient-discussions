@@ -1,8 +1,8 @@
-import stylistic from '@stylistic/eslint-plugin';
+import stylistic from '@stylistic/eslint-plugin'
 
 export default [
 	{
-		ignores: ['dist/**', 'misc/**', '*.json5', '*.jsonc', 'config/**/*', 'src/tribute/**', 'sandbox/**'],
+		ignores: ['backups/**', 'dist/**', 'misc/**', '*.json5', '*.jsonc', 'config/**/*', 'src/tribute/**', 'sandbox/**'],
 	},
 	{
 		linterOptions: {
@@ -10,10 +10,9 @@ export default [
 		},
 		plugins: { '@stylistic': stylistic },
 		rules: {
-			'@stylistic/indent': ['error', 'tab', {
-				SwitchCase: 1,
-				offsetTernaryExpressions: true,
+			'@stylistic/semi': ['error', 'never', {
+				beforeStatementContinuationChars: 'always',
 			}],
 		},
 	},
-];
+]

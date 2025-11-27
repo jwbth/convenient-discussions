@@ -1,25 +1,25 @@
-import dateFormats from '../../data/dateFormats.json';
-import digitsData from '../../data/digits.json';
-import languageFallbacks from '../../data/languageFallbacks.json';
-import CommentLayersCss from '../Comment.layers.less';
-import CommentCss from '../Comment.less';
-import CommentFormCss from '../CommentForm.less';
-import SectionCss from '../Section.less';
-import addCommentLinksCss from '../addCommentLinks.less';
-import globalCss from '../global.less';
-import navPanelCss from '../navPanel.less';
-import pageNavCss from '../pageNav.less';
-import { defined, getQueryParamBooleanValue, isKeyOf, mergeRegexps, sleep, unique } from '../shared/utils-general';
-import { dateTokenToMessageNames } from '../shared/utils-timestamp';
-import skinsCss from '../skins.less';
-import talkPageCss from '../talkPage.less';
-import tocCss from '../toc.less';
-import { getUserInfo, splitIntoBatches } from '../utils-api';
-import { createSvg, transparentize } from '../utils-window';
+import dateFormats from '../../data/dateFormats.json'
+import digitsData from '../../data/digits.json'
+import languageFallbacks from '../../data/languageFallbacks.json'
+import CommentLayersCss from '../Comment.layers.less'
+import CommentCss from '../Comment.less'
+import CommentFormCss from '../CommentForm.less'
+import SectionCss from '../Section.less'
+import addCommentLinksCss from '../addCommentLinks.less'
+import globalCss from '../global.less'
+import navPanelCss from '../navPanel.less'
+import pageNavCss from '../pageNav.less'
+import { defined, getQueryParamBooleanValue, isKeyOf, mergeRegexps, sleep, unique } from '../shared/utils-general'
+import { dateTokenToMessageNames } from '../shared/utils-timestamp'
+import skinsCss from '../skins.less'
+import talkPageCss from '../talkPage.less'
+import tocCss from '../toc.less'
+import { getUserInfo, splitIntoBatches } from '../utils-api'
+import { createSvg, transparentize } from '../utils-window'
 
-import cd from './cd';
-import debug from './convenientDiscussions.debug';
-import convenientDiscussionsUtil from './convenientDiscussions.util';
+import cd from './cd'
+import debug from './convenientDiscussions.debug'
+import convenientDiscussionsUtil from './convenientDiscussions.util'
 
 /**
  * Singleton for loading and managing page state related to booting and overlays. This goes to
@@ -32,39 +32,39 @@ class Loader {
 	 * @type {JQuery.Promise<void> | undefined}
 	 * @private
 	 */
-	modulesRequest;
+	modulesRequest
 
 	/**
 	 * @type {boolean | undefined}
 	 * @private
 	 */
-	queryTalkPage;
+	queryTalkPage
 
 	/**
 	 * @type {boolean}
 	 * @private
 	 */
-	queryIsTalkPage;
+	queryIsTalkPage
 
 	/**
 	 * @type {boolean}
 	 * @private
 	 */
-	queryIsNotTalkPage;
+	queryIsNotTalkPage
 
 	/**
 	 * Regular expression for pages where the script should run.
 	 *
 	 * @type {RegExp | undefined}
 	 */
-	pageWhitelistRegexp;
+	pageWhitelistRegexp
 
 	/**
 	 * Regular expression for pages where the script shouldn't run.
 	 *
 	 * @type {RegExp | undefined}
 	 */
-	pageBlacklistRegexp;
+	pageBlacklistRegexp
 
 	/**
 	 * @typedef {object} PageTypes
@@ -80,25 +80,25 @@ class Loader {
 	 * @type {PageTypes}
 	 * @private
 	 */
-	pageTypes;
+	pageTypes
 
 	/**
 	 * See {@link Loader#isArticlePageOfTypeTalk}.
 	 *
 	 * @private
 	 */
-	articlePageOfTypeTalk = false;
+	articlePageOfTypeTalk = false
 
 	/**
 	 * @type {JQuery}
 	 */
-	$content = $('#mw-content-text');
+	$content = $('#mw-content-text')
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$bootingOverlay;
+	$bootingOverlay
 
 	/**
 	 * See {@link Loader#getSiteDataPromise}.
@@ -106,7 +106,7 @@ class Loader {
 	 * @type {Promise<any[]> | undefined}
 	 * @private
 	 */
-	siteDataPromise;
+	siteDataPromise
 
 	/**
 	 * Is the page booting (the booting overlay is on).
@@ -114,21 +114,21 @@ class Loader {
 	 * @type {boolean}
 	 * @private
 	 */
-	booting = false;
+	booting = false
 
 	/**
 	 * Main app function. Assigned from app.js.
 	 *
 	 * @type {((...args: any) => void) | undefined}
 	 */
-	app;
+	app
 
 	/**
 	 * Add comment links function. Assigned from app.js.
 	 *
 	 * @type {((...args: any) => void) | undefined}
 	 */
-	addCommentLinks;
+	addCommentLinks
 
 	/**
 	 * Load modules required for talk pages, or not load. When this is called before the configuration
@@ -141,7 +141,7 @@ class Loader {
 		if (!this.modulesRequest) {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (!this.pageTypes) {
-				this.setPageTypesTalk();
+				this.setPageTypesTalk()
 			}
 
 			const modules = [
@@ -175,17 +175,17 @@ class Loader {
 				mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
 					? 'ext.confirmEdit.CaptchaInputWidget'
 					: undefined,
-			].filter(defined);
+			].filter(defined)
 
 			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
 			// gadget with preloaded dependencies, for example), so we use this trick.
 			this.modulesRequest =
 				this.pageTypes.talk && modules.some((module) => mw.loader.getState(module) !== 'ready')
 					? mw.loader.using(modules)
-					: $.Deferred().resolve().promise();
+					: $.Deferred().resolve().promise()
 		}
 
-		return this.modulesRequest;
+		return this.modulesRequest
 	}
 
 	/**
@@ -199,17 +199,17 @@ class Loader {
 	setPageTypesTalk() {
 		// These values can change: start() in startup.js may run a second time from
 		// maybeAddFooterSwitcher().
-		this.queryTalkPage = getQueryParamBooleanValue('cdtalkpage');
-		this.queryIsTalkPage = this.queryTalkPage === true;
-		this.queryIsNotTalkPage = this.queryTalkPage === false;
+		this.queryTalkPage = getQueryParamBooleanValue('cdtalkpage')
+		this.queryIsTalkPage = this.queryTalkPage === true
+		this.queryIsNotTalkPage = this.queryTalkPage === false
 
 		if ('config' in cd) {
-			this.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
-			this.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
+			this.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist)
+			this.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist)
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		this.pageTypes ??= /** @type {PageTypes} */ ({});
+		this.pageTypes ??= /** @type {PageTypes} */ ({})
 		this.pageTypes.talkStrict = Boolean(
 			this.queryIsTalkPage ||
 
@@ -223,7 +223,7 @@ class Loader {
 				($('#ca-addsection').length || this.pageWhitelistRegexp?.test(cd.g.pageName)) &&
 				!this.pageBlacklistRegexp?.test(cd.g.pageName)
 			)
-		);
+		)
 
 		this.articlePageOfTypeTalk =
 			(!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
@@ -231,12 +231,12 @@ class Loader {
 			(this.pageTypes.talkStrict || this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
 
 			// Undocumented setting
-			!window.cdOnlyRunByFooterLink;
+			!window.cdOnlyRunByFooterLink
 
 		this.pageTypes.talk =
 			mw.config.get('wgIsArticle') &&
 			!this.queryIsNotTalkPage &&
-			(this.queryIsTalkPage || this.articlePageOfTypeTalk);
+			(this.queryIsTalkPage || this.articlePageOfTypeTalk)
 	}
 
 	/**
@@ -246,7 +246,7 @@ class Loader {
 	 * @returns {boolean}
 	 */
 	isPageOfType(type) {
-		return this.pageTypes[type];
+		return this.pageTypes[type]
 	}
 
 	/**
@@ -256,7 +256,7 @@ class Loader {
 	 * @param {boolean} value
 	 */
 	setPageType(type, value) {
-		this.pageTypes[type] = value;
+		this.pageTypes[type] = value
 	}
 
 	/**
@@ -266,7 +266,7 @@ class Loader {
 	 * @returns {boolean}
 	 */
 	isArticlePageOfTypeTalk() {
-		return this.articlePageOfTypeTalk;
+		return this.articlePageOfTypeTalk
 	}
 
 	/**
@@ -280,7 +280,7 @@ class Loader {
 		// (when navigating forward, at least twice, from a revision older than the revision in
 		// wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
 		// wgCurRevisionId value.
-		return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
+		return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId')
 	}
 
 	/**
@@ -303,23 +303,23 @@ class Loader {
 				(!this.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))
 			) &&
 			!this.pageBlacklistRegexp?.test(pageName)
-		);
+		)
 	}
 
 	/**
 	 * Set page types and initialize talk page or comment links page.
 	 */
 	init() {
-		this.setPageTypesTalk();
+		this.setPageTypesTalk()
 
 		if (this.pageTypes.talk) {
-			this.initTalkPage();
+			this.initTalkPage()
 		}
 
-		this.pageTypes.watchlist = this.isWatchlistPage();
-		this.pageTypes.contributions = this.isContributionsPage();
-		this.pageTypes.history = this.isHistoryPage();
-		this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search);
+		this.pageTypes.watchlist = this.isWatchlistPage()
+		this.pageTypes.contributions = this.isContributionsPage()
+		this.pageTypes.history = this.isHistoryPage()
+		this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search)
 
 		if (
 			this.pageTypes.watchlist ||
@@ -330,7 +330,7 @@ class Loader {
 			// Instant Diffs script can be called on talk pages as well
 			this.pageTypes.talk
 		) {
-			this.initCommentLinks();
+			this.initCommentLinks()
 		}
 	}
 
@@ -340,8 +340,8 @@ class Loader {
 	 * @private
 	 */
 	initTalkPage() {
-		debug.stopTimer('start');
-		debug.startTimer('load data');
+		debug.stopTimer('start')
+		debug.startTimer('load data')
 
 		// If there is no data to load and, therefore, no period of time within which a reflow (layout
 		// thrashing) could happen without impeding performance, we cache the value so that it could
@@ -363,23 +363,23 @@ class Loader {
 			// the rest.
 		]).then(
 			() => {
-				this.app?.();
+				this.app?.()
 			},
 			(/** @type {unknown} */ error) => {
-				mw.notify(cd.s('error-loaddata'), { type: 'error' });
-				console.error(error);
-				this.hideBootingOverlay();
+				mw.notify(cd.s('error-loaddata'), { type: 'error' })
+				console.error(error)
+				this.hideBootingOverlay()
 			}
-		);
+		)
 
-		this.showBootingOverlay();
+		this.showBootingOverlay()
 
 		sleep(15_000).then(() => {
 			if (this.booting) {
-				this.hideBootingOverlay();
-				console.warn('The booting overlay stays for more than 15 seconds; removing it.');
+				this.hideBootingOverlay()
+				console.warn('The booting overlay stays for more than 15 seconds; removing it.')
 			}
-		});
+		})
 
 		/*
 			Additions of CSS set a stage for a future reflow which delays operations dependent on
@@ -392,8 +392,8 @@ class Loader {
 			3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
 				 to the fact that the network requests, if any, are already pending, we don't waste time.
 		*/
-		this.initCssValues();
-		this.addTalkPageCss();
+		this.initCssValues()
+		this.addTalkPageCss()
 	}
 
 	/**
@@ -408,12 +408,12 @@ class Loader {
 			// Too much hassle to try and deduplicate requested site data here. onlyUserLanguageMessages
 			// is only needed for addCommentLinks(), and the only case when addCommentLinks() is used
 			// together with the main code is diffs.
-			return this.getSiteData();
+			return this.getSiteData()
 		}
 
-		this.siteDataPromise ??= this.getSiteData();
+		this.siteDataPromise ??= this.getSiteData()
 
-		return this.siteDataPromise;
+		return this.siteDataPromise
 	}
 
 	/**
@@ -425,7 +425,7 @@ class Loader {
 	 */
 	// eslint-disable-next-line max-lines-per-function
 	getSiteData(onlyUserLanguageMessages = false) {
-		this.initFormats();
+		this.initFormats()
 
 		const contentLanguageMessageNames = [
 			'word-separator',
@@ -437,7 +437,7 @@ class Loader {
 			...this.getUsedDateTokens(cd.g.timestampTools.content.dateFormat).map(
 				(pattern) => dateTokenToMessageNames[pattern]
 			)
-		);
+		)
 
 		const userLanguageMessageNames = [
 			'parentheses',
@@ -479,60 +479,60 @@ class Loader {
 				...this.getUsedDateTokens(cd.g.timestampTools.user.dateFormat).map(
 					(pattern) => dateTokenToMessageNames[pattern]
 				)
-			);
+			)
 
-		const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');
+		const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage')
 		if (areLanguagesEqual) {
-			const userLanguageConfigMessages = /** @type {StringsByKey} */ ({});
+			const userLanguageConfigMessages = /** @type {StringsByKey} */ ({})
 			Object.keys(cd.config.messages)
 				.filter((name) => userLanguageMessageNames.includes(name))
 				.forEach((name) => {
-					userLanguageConfigMessages[name] = cd.config.messages[name];
-				});
-			mw.messages.set(userLanguageConfigMessages);
+					userLanguageConfigMessages[name] = cd.config.messages[name]
+				})
+			mw.messages.set(userLanguageConfigMessages)
 		}
 
 		const requestUserLanguageMessages = () =>
 			splitIntoBatches(userLanguageMessageNames).map((nextNames) =>
 				cd.getApi().loadMessagesIfMissing(nextNames)
-			);
+			)
 
 		// We need this object to pass it to the web worker.
-		cd.g.contentLanguageMessages = {};
+		cd.g.contentLanguageMessages = {}
 
 		const setContentLanguageMessages = (/** @type {{ [key: string]: string | undefined }} */ messages) => {
 			Object.keys(messages).forEach((name) => {
 				if (messages[name] !== undefined) {
-					mw.messages.set('(content)' + name, messages[name]);
-					cd.g.contentLanguageMessages[name] = messages[name];
+					mw.messages.set('(content)' + name, messages[name])
+					cd.g.contentLanguageMessages[name] = messages[name]
 				}
-			});
-		};
+			})
+		}
 
 		const filterAndSetContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
-			const contentLanguageMessages = /** @type {StringsByKey} */ ({});
+			const contentLanguageMessages = /** @type {StringsByKey} */ ({})
 			Object.keys(messages)
 				.filter((name) => contentLanguageMessageNames.includes(name))
 				.forEach((name) => {
-					contentLanguageMessages[name] = messages[name];
-				});
-			setContentLanguageMessages(contentLanguageMessages);
-		};
-		filterAndSetContentLanguageMessages(cd.config.messages);
+					contentLanguageMessages[name] = messages[name]
+				})
+			setContentLanguageMessages(contentLanguageMessages)
+		}
+		filterAndSetContentLanguageMessages(cd.config.messages)
 
 		cd.g.specialPageAliases = Object.entries({ ...cd.config.specialPageAliases }).reduce(
 			(acc, [key, value]) => {
-				acc[key] = typeof value === 'string' ? [value] : value;
+				acc[key] = typeof value === 'string' ? [value] : value
 
-				return acc;
+				return acc
 			},
 			/** @type {import('../../config/default').default['specialPageAliases']} */ ({})
-		);
+		)
 
-		const content = cd.g.timestampTools.content;
-		content.timezone = cd.config.timezone ?? undefined;
+		const content = cd.g.timestampTools.content
+		content.timezone = cd.config.timezone ?? undefined
 
-		const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
+		const specialPages = ['Contributions', 'Diff', 'PermanentLink']
 
 		// I hope we won't be scolded too much for making two message requests in parallel (if the user
 		// and content language are different).
@@ -552,7 +552,7 @@ class Loader {
 										.getApi()
 										.loadMessagesIfMissing(nextNames)
 										.then(() => {
-											filterAndSetContentLanguageMessages(mw.messages.get());
+											filterAndSetContentLanguageMessages(mw.messages.get())
 										})
 								)
 							: [
@@ -599,13 +599,13 @@ class Loader {
 											cd.g.specialPageAliases[page.realname] = page.aliases.slice(
 												0,
 												page.aliases.indexOf(page.realname) + 1
-											);
-										});
+											)
+										})
 
-									content.timezone = response.query.general.timezone;
+									content.timezone = response.query.general.timezone
 								})
 				)
-		);
+		)
 	}
 
 	/**
@@ -619,21 +619,21 @@ class Loader {
 				lang,
 				(/** @type {string} */ l) => isKeyOf(l, dateFormats),
 				languageFallbacks
-			);
+			)
 
-		const contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'));
-		const userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'));
+		const contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'))
+		const userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'))
 
 		cd.g.timestampTools.content.dateFormat = /** @type {StringsByKey} */ (dateFormats)[
 			contentLanguage
-		];
+		]
 		cd.g.digits.content = mw.config.get('wgTranslateNumerals')
 			? /** @type {StringsByKey} */ (digitsData)[contentLanguage]
-			: undefined;
-		cd.g.timestampTools.user.dateFormat = /** @type {StringsByKey} */ (dateFormats)[userLanguage];
+			: undefined
+		cd.g.timestampTools.user.dateFormat = /** @type {StringsByKey} */ (dateFormats)[userLanguage]
 		cd.g.digits.user = mw.config.get('wgTranslateNumerals')
 			? /** @type {StringsByKey} */ (digitsData)[userLanguage]
-			: undefined;
+			: undefined
 	}
 
 	/**
@@ -646,22 +646,22 @@ class Loader {
 	 * @license MIT
 	 */
 	getUsedDateTokens(format) {
-		const tokens = /** @type {('xg' | 'D' | 'l' | 'F' | 'M')[]} */ ([]);
+		const tokens = /** @type {('xg' | 'D' | 'l' | 'F' | 'M')[]} */ ([])
 
 		for (let p = 0; p < format.length; p++) {
-			let code = format[p];
+			let code = format[p]
 			if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-				code += format[++p];
+				code += format[++p]
 			}
 
 			if (['xg', 'D', 'l', 'F', 'M'].includes(code)) {
-				tokens.push(/** @type {'xg' | 'D' | 'l' | 'F' | 'M'} */(code));
+				tokens.push(/** @type {'xg' | 'D' | 'l' | 'F' | 'M'} */(code))
 			} else if (code === '\\' && p < format.length - 1) {
-				++p;
+				++p
 			}
 		}
 
-		return tokens;
+		return tokens
 	}
 
 	/**
@@ -676,7 +676,7 @@ class Loader {
 			pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
 			ttlInDays: 365,
 			addCacheBuster: true,
-		});
+		})
 	}
 
 	/**
@@ -698,24 +698,24 @@ class Loader {
 	async loadPreferablyFromDiskCache({
 		domain, pageName, ttlInDays, ctype, addCacheBuster = false,
 	}) {
-		const ttlInMs = ttlInDays * cd.g.msInDay;
-		const pageEncoded = encodeURIComponent(pageName);
-		const cacheBusterOrNot = addCacheBuster ? '&' + CACHE_BUSTER : '';
+		const ttlInMs = ttlInDays * cd.g.msInDay
+		const pageEncoded = encodeURIComponent(pageName)
+		const cacheBusterOrNot = addCacheBuster ? '&' + CACHE_BUSTER : ''
 
 		const apiResponse = await $.get(
 			`https://${domain}/w/api.php?titles=${pageEncoded}&origin=*&format=json&formatversion=2&uselang=content&maxage=${ttlInMs}&smaxage=${ttlInMs}&action=query&prop=revisions|info&rvprop=content&rvlimit=1${cacheBusterOrNot}`
-		);
+		)
 
-		const apiPage = apiResponse.query.pages[0];
-		if (!apiPage.missing) return;
+		const apiPage = apiResponse.query.pages[0]
+		if (!apiPage.missing) return
 
-		const content = apiPage.revisions[0].content;
+		const content = apiPage.revisions[0].content
 		if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
-			const scriptTag = document.createElement('script');
-			scriptTag.innerHTML = content;
-			document.head.append(scriptTag);
+			const scriptTag = document.createElement('script')
+			scriptTag.innerHTML = content
+			document.head.append(scriptTag)
 		} else if (ctype === 'text/css' && apiPage.contentmodel === 'css') {
-			mw.loader.addStyleTag(content);
+			mw.loader.addStyleTag(content)
 		}
 	}
 
@@ -725,9 +725,9 @@ class Loader {
 	 * @private
 	 */
 	initCssValues() {
-		cd.g.contentLineHeight = Number.parseFloat(this.$content.css('line-height'));
-		cd.g.contentFontSize = Number.parseFloat(this.$content.css('font-size'));
-		cd.g.defaultFontSize = Number.parseFloat($(document.documentElement).css('font-size'));
+		cd.g.contentLineHeight = Number.parseFloat(this.$content.css('line-height'))
+		cd.g.contentFontSize = Number.parseFloat(this.$content.css('font-size'))
+		cd.g.defaultFontSize = Number.parseFloat($(document.documentElement).css('font-size'))
 	}
 
 	/**
@@ -736,28 +736,28 @@ class Loader {
 	 * @private
 	 */
 	addTalkPageCss() {
-		const contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)';
+		const contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)'
 		const skin$ = (/** @type {{ [key: string]: string }} */ obj) => {
-			const skin = mw.config.get('skin');
+			const skin = mw.config.get('skin')
 
-			return $(obj[skin] || obj.default);
-		};
+			return $(obj[skin] || obj.default)
+		}
 		const sidebarColor = skin$({
 			'timeless': '#mw-content-container',
 			'vector-2022': '.mw-page-container',
 			'default': 'body',
-		}).css('background-color');
+		}).css('background-color')
 		const metadataFontSize = Number.parseFloat(
 			(cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7)
-		);
-		const sidebarTransparentColor = transparentize(sidebarColor);
+		)
+		const sidebarTransparentColor = transparentize(sidebarColor)
 
 		// `float: inline-start` is too new: it appeared in Chrome in October 2023.
-		const floatContentStart = cd.g.contentDirection === 'ltr' ? 'left' : 'right';
-		const floatContentEnd = cd.g.contentDirection === 'ltr' ? 'right' : 'left';
-		const floatUserStart = cd.g.userDirection === 'ltr' ? 'left' : 'right';
-		const floatUserEnd = cd.g.userDirection === 'ltr' ? 'right' : 'left';
-		const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right';
+		const floatContentStart = cd.g.contentDirection === 'ltr' ? 'left' : 'right'
+		const floatContentEnd = cd.g.contentDirection === 'ltr' ? 'right' : 'left'
+		const floatUserStart = cd.g.userDirection === 'ltr' ? 'left' : 'right'
+		const floatUserEnd = cd.g.userDirection === 'ltr' ? 'right' : 'left'
+		const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right'
 
 		mw.loader.addStyleTag(`:root {
 	--cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
@@ -777,7 +777,7 @@ class Loader {
 	--cd-gradient-user-start: ${gradientUserStart};
 	--cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
 	--cd-pixel-deviation-ratio-for-1px: ${cd.g.pixelDeviationRatioFor1px};
-}`);
+}`)
 		if (cd.config.outdentClass) {
 			mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
 	margin-top: 0.5em;
@@ -787,19 +787,19 @@ class Loader {
 .cd-reformattedComments .${cd.config.outdentClass} {
 	margin-top: 0.75em;
 	margin-bottom: 0.75em;
-}`);
+}`)
 		}
 
-		mw.util.addCSS(globalCss);
-		mw.util.addCSS(CommentCss);
-		mw.util.addCSS(CommentFormCss);
-		mw.util.addCSS(SectionCss);
-		mw.util.addCSS(CommentLayersCss);
-		mw.util.addCSS(navPanelCss);
-		mw.util.addCSS(pageNavCss);
-		mw.util.addCSS(skinsCss);
-		mw.util.addCSS(talkPageCss);
-		mw.util.addCSS(tocCss);
+		mw.util.addCSS(globalCss)
+		mw.util.addCSS(CommentCss)
+		mw.util.addCSS(CommentFormCss)
+		mw.util.addCSS(SectionCss)
+		mw.util.addCSS(CommentLayersCss)
+		mw.util.addCSS(navPanelCss)
+		mw.util.addCSS(pageNavCss)
+		mw.util.addCSS(skinsCss)
+		mw.util.addCSS(talkPageCss)
+		mw.util.addCSS(tocCss)
 	}
 
 	/**
@@ -811,14 +811,14 @@ class Loader {
 		// Make some requests in advance if the API module is ready in order not to make 2 requests
 		// sequentially.
 		if (mw.loader.getState('mediawiki.api') === 'ready') {
-			this.getSiteDataPromise();
+			this.getSiteDataPromise()
 
 			// Loading user info on diff pages could lead to problems with saving visits when many pages
 			// are opened, but not yet focused, simultaneously.
 			if (!this.pageTypes.talk) {
 				getUserInfo(true).catch((/** @type {unknown} */ error) => {
-					console.warn(error);
-				});
+					console.warn(error)
+				})
 			}
 		}
 
@@ -842,18 +842,18 @@ class Loader {
 			]),
 		]).then(
 			() => {
-				this.addCommentLinks?.();
+				this.addCommentLinks?.()
 
 				// See the comment above: "Additions of CSS...".
-				mw.util.addCSS(globalCss);
+				mw.util.addCSS(globalCss)
 
-				mw.util.addCSS(addCommentLinksCss);
+				mw.util.addCSS(addCommentLinksCss)
 			},
 			(/** @type {unknown} */ error) => {
-				mw.notify(cd.s('error-loaddata'), { type: 'error' });
-				console.error(error);
+				mw.notify(cd.s('error-loaddata'), { type: 'error' })
+				console.error(error)
 			}
-		);
+		)
 	}
 
 	/**
@@ -865,7 +865,7 @@ class Loader {
 	isWatchlistPage() {
 		return ['Recentchanges', 'Watchlist'].includes(
 			mw.config.get('wgCanonicalSpecialPageName') || ''
-		);
+		)
 	}
 
 	/**
@@ -875,7 +875,7 @@ class Loader {
 	 * @private
 	 */
 	isContributionsPage() {
-		return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
+		return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions'
 	}
 
 	/**
@@ -888,7 +888,7 @@ class Loader {
 		return (
 			mw.config.get('wgAction') === 'history' &&
 			this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)
-		);
+		)
 	}
 
 	/**
@@ -907,18 +907,18 @@ class Loader {
 						)
 					)
 			)
-			.appendTo(document.body);
+			.appendTo(document.body)
 
-		this.$bootingOverlay.show();
+		this.$bootingOverlay.show()
 	}
 
 	/**
 	 * Hide the booting overlay.
 	 */
 	hideBootingOverlay() {
-		if (!this.$bootingOverlay || window.cdShowLoadingOverlay === false) return;
+		if (!this.$bootingOverlay || window.cdShowLoadingOverlay === false) return
 
-		this.$bootingOverlay.hide();
+		this.$bootingOverlay.hide()
 	}
 
 	/**
@@ -928,7 +928,7 @@ class Loader {
 	 * @returns {boolean}
 	 */
 	isPageOverlayOn() {
-		return this.$bootingOverlay?.[0].inert || this.booting;
+		return this.$bootingOverlay?.[0].inert || this.booting
 	}
 
 	/**
@@ -937,7 +937,7 @@ class Loader {
 	 * @param {boolean} value
 	 */
 	setBooting(value) {
-		this.booting = value;
+		this.booting = value
 	}
 
 	/**
@@ -950,11 +950,11 @@ class Loader {
 	 * @returns {boolean}
 	 */
 	isBooting() {
-		return this.booting;
+		return this.booting
 	}
 }
 
 // Export a singleton instance
-const loader = new Loader();
+const loader = new Loader()
 
-export default loader;
+export default loader

@@ -9,11 +9,11 @@
  * @module utilsTimestamp
  */
 
-import { getTimezoneOffset } from 'date-fns-tz';
+import { getTimezoneOffset } from 'date-fns-tz'
 
-import CdError from './CdError';
-import cd from './cd';
-import { getContentLanguageMessages, removeDirMarks } from './utils-general';
+import CdError from './CdError'
+import cd from './cd'
+import { getContentLanguageMessages, removeDirMarks } from './utils-general'
 
 export const dateTokenToMessageNames = {
 	xg: [
@@ -47,7 +47,7 @@ export const dateTokenToMessageNames = {
 		'december',
 	],
 	M: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
-};
+}
 
 /**
  * Parse a timestamp, accepting a regexp match and returning a date.
@@ -61,32 +61,32 @@ export const dateTokenToMessageNames = {
  * @license MIT
  */
 function getDateFromTimestampMatch(match, inUserLanguage = false) {
-	const timestampTools = cd.g.timestampTools;
-	const languageTarget = inUserLanguage ? 'user' : 'content';
+	const timestampTools = cd.g.timestampTools
+	const languageTarget = inUserLanguage ? 'user' : 'content'
 	const timezone = inUserLanguage
 		? /** @type {string | number} */ (timestampTools.user.timezone)
-		: timestampTools.content.timezone || 'UTC';
+		: timestampTools.content.timezone || 'UTC'
 
 	const untransformDigits = (/** @type {string} */ text) => {
-		const digits = cd.g.digits[languageTarget];
+		const digits = cd.g.digits[languageTarget]
 		if (!digits) {
-			return text;
+			return text
 		}
 
 		return text.replace(
 			new RegExp('[' + digits + ']', 'g'),
 			(m) => String(digits.indexOf(m))
-		);
-	};
+		)
+	}
 
-	let year = 0;
-	let monthIdx = 0;
-	let day = 0;
-	let hours = 0;
-	let minutes = 0;
+	let year = 0
+	let monthIdx = 0
+	let day = 0
+	let hours = 0
+	let minutes = 0
 
 	for (const [i, code] of timestampTools[languageTarget].matchingGroups.entries()) {
-		const text = match[i + 3];
+		const text = match[i + 3]
 
 		switch (code) {
 			case 'xg':
@@ -99,40 +99,40 @@ function getDateFromTimestampMatch(match, inUserLanguage = false) {
 						languageTarget === 'content'
 							? getContentLanguageMessages(dateTokenToMessageNames[code])
 							: dateTokenToMessageNames[code].map((token) => mw.msg(token))
-					).indexOf(text);
-				break;
+					).indexOf(text)
+				break
 			}
 			case 'd':
 			case 'j':
-				day = Number(untransformDigits(text));
-				break;
+				day = Number(untransformDigits(text))
+				break
 			case 'D':
 			case 'l':
 				// Day of the week - unused
-				break;
+				break
 			case 'n':
-				monthIdx = Number(untransformDigits(text)) - 1;
-				break;
+				monthIdx = Number(untransformDigits(text)) - 1
+				break
 			case 'Y':
-				year = Number(untransformDigits(text));
-				break;
+				year = Number(untransformDigits(text))
+				break
 			case 'xkY':
 				// Thai year
-				year = Number(untransformDigits(text)) - 543;
-				break;
+				year = Number(untransformDigits(text)) - 543
+				break
 			case 'G':
 			case 'H':
-				hours = Number(untransformDigits(text));
-				break;
+				hours = Number(untransformDigits(text))
+				break
 			case 'i':
-				minutes = Number(untransformDigits(text));
-				break;
+				minutes = Number(untransformDigits(text))
+				break
 			default:
-				throw new CdError('Not implemented');
+				throw new CdError('Not implemented')
 		}
 	}
 
-	const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
+	const unixTime = Date.UTC(year, monthIdx, day, hours, minutes)
 
 	return new Date(
 		unixTime -
@@ -147,7 +147,7 @@ function getDateFromTimestampMatch(match, inUserLanguage = false) {
 				// Using date-fns-tz's getTimezoneOffset() is way faster than day.js's methods.
 					: getTimezoneOffset(timezone, unixTime)
 		)
-	);
+	)
 }
 
 /**
@@ -170,13 +170,13 @@ export function parseTimestamp(timestamp, inUserLanguage) {
 	// space to keep offsets.
 	const match = removeDirMarks(timestamp, true).match(
 		cd.g.timestampTools[inUserLanguage ? 'user' : 'content'].parseRegexp
-	);
+	)
 	if (!match) {
-		return;
+		return
 	}
 
 	return {
 		date: getDateFromTimestampMatch(match, inUserLanguage),
 		match,
-	};
+	}
 }

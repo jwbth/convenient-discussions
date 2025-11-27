@@ -1,8 +1,8 @@
-import AutocompleteCache from './AutocompleteCache';
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { definedAndNotNull, removeDoubleSpaces, sleep, unique } from './shared/utils-general';
-import { handleApiReject } from './utils-api';
+import AutocompleteCache from './AutocompleteCache'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { definedAndNotNull, removeDoubleSpaces, sleep, unique } from './shared/utils-general'
+import { handleApiReject } from './utils-api'
 
 /**
  * @import {AutocompleteConfigShared} from './AutocompleteManager';
@@ -37,70 +37,70 @@ class BaseAutocomplete {
 	 *
 	 * @type {AutocompleteCache}
 	 */
-	cache;
+	cache
 
 	/**
 	 * Entries from the last API request.
 	 *
 	 * @type {string[]}
 	 */
-	lastApiResults = [];
+	lastApiResults = []
 
 	/**
 	 * The last query text that was processed.
 	 *
 	 * @type {string}
 	 */
-	lastQuery = '';
+	lastQuery = ''
 
 	/**
 	 * Default entries to search across (may be more narrow than all potential values).
 	 *
 	 * @type {any[] | undefined}
 	 */
-	defaultEntries;
+	defaultEntries
 
 	/**
 	 * Function for lazy loading of default entries.
 	 *
 	 * @type {(() => any[]) | undefined}
 	 */
-	defaultLazy;
+	defaultLazy
 
 	/**
 	 * Additional data used by autocomplete methods.
 	 *
 	 * @type {{ [x: string]: any }}
 	 */
-	data = {};
+	data = {}
 
 	/**
 	 * Reference to the AutocompleteManager instance.
 	 *
 	 * @type {import('./AutocompleteManager').default | undefined}
 	 */
-	manager;
+	manager
 
 	/**
 	 * API configuration for requests.
 	 *
 	 * @type {{ ajax: { timeout: number } }}
 	 */
-	static apiConfig = { ajax: { timeout: 1000 * 5 } };
+	static apiConfig = { ajax: { timeout: 1000 * 5 } }
 
 	/**
 	 * Delay before making API requests to avoid excessive requests.
 	 *
 	 * @type {number}
 	 */
-	static delay = 100;
+	static delay = 100
 
 	/**
 	 * Current promise for tracking superseded requests.
 	 *
 	 * @type {Promise<any> | undefined}
 	 */
-	static currentPromise;
+	static currentPromise
 
 	/**
 	 * Create a base autocomplete instance.
@@ -108,14 +108,14 @@ class BaseAutocomplete {
 	 * @param {AutocompleteConfigShared} [config] Configuration options
 	 */
 	constructor(config = {}) {
-		Object.assign(this, config);
+		Object.assign(this, config)
 
 		// Initialize advanced cache if not provided
 		this.cache = new AutocompleteCache({
 			maxSize: config.cacheMaxSize || 500,
 			ttl: config.cacheTtl || 5 * 60_000,
 			maxMemory: config.cacheMaxMemory || 5 * 1024 * 1024,  // 5MB
-		});
+		})
 	}
 
 	/**
@@ -128,7 +128,7 @@ class BaseAutocomplete {
 		throw new CdError({
 			type: 'internal',
 			message: 'getLabel() must be implemented by subclass',
-		});
+		})
 	}
 
 	/**
@@ -141,7 +141,7 @@ class BaseAutocomplete {
 		throw new CdError({
 			type: 'internal',
 			message: 'getTrigger() must be implemented by subclass',
-		});
+		})
 	}
 
 	/**
@@ -156,7 +156,7 @@ class BaseAutocomplete {
 		throw new CdError({
 			type: 'internal',
 			message: 'getInsertionFromEntry() must be implemented by subclass',
-		});
+		})
 	}
 
 	/**
@@ -170,7 +170,7 @@ class BaseAutocomplete {
 		throw new CdError({
 			type: 'internal',
 			message: 'getLabelFromEntry() must be implemented by subclass',
-		});
+		})
 	}
 
 	/**
@@ -184,7 +184,7 @@ class BaseAutocomplete {
 		throw new CdError({
 			type: 'internal',
 			message: 'validateInput() must be implemented by subclass',
-		});
+		})
 	}
 
 	/**
@@ -199,7 +199,7 @@ class BaseAutocomplete {
 		throw new CdError({
 			type: 'internal',
 			message: 'makeApiRequest() must be implemented by subclass',
-		});
+		})
 	}
 
 	/**
@@ -211,19 +211,19 @@ class BaseAutocomplete {
 	 * @returns {Promise<void>}
 	 */
 	async getValues(text, callback) {
-		text = this.preprocessText(text);
+		text = this.preprocessText(text)
 
 		// Check if this is a simple local-only autocomplete
-		const localMatches = this.getLocalMatches(text);
+		const localMatches = this.getLocalMatches(text)
 
 		if (this.isLocalOnly() || !this.validateInput(text)) {
-			callback(this.getOptionsFromEntries(localMatches));
+			callback(this.getOptionsFromEntries(localMatches))
 
-			return;
+			return
 		}
 
 		// Complex autocomplete with caching and API requests
-		await this.getValuesWithApiSupport(text, callback, localMatches);
+		await this.getValuesWithApiSupport(text, callback, localMatches)
 	}
 
 	/**
@@ -234,7 +234,7 @@ class BaseAutocomplete {
 	 * @protected
 	 */
 	preprocessText(text) {
-		return removeDoubleSpaces(text);
+		return removeDoubleSpaces(text)
 	}
 
 	/**
@@ -245,7 +245,7 @@ class BaseAutocomplete {
 	 * @protected
 	 */
 	isLocalOnly() {
-		return false;
+		return false
 	}
 
 	/**
@@ -256,7 +256,7 @@ class BaseAutocomplete {
 	 * @protected
 	 */
 	getLocalMatches(text) {
-		return this.searchLocal(text, this.getDefaultEntries());
+		return this.searchLocal(text, this.getDefaultEntries())
 	}
 
 	/**
@@ -271,51 +271,51 @@ class BaseAutocomplete {
 	async getValuesWithApiSupport(text, callback, localMatches) {
 		// Reset entries if query doesn't start with last query
 		if (this.lastQuery && !text.startsWith(this.lastQuery)) {
-			this.lastApiResults = [];
+			this.lastApiResults = []
 		}
-		this.lastQuery = text;
+		this.lastQuery = text
 
 		// Check cache first
-		const cachedEntries = this.handleCache(text);
+		const cachedEntries = this.handleCache(text)
 		if (cachedEntries) {
-			callback(this.getOptionsFromEntries(cachedEntries));
+			callback(this.getOptionsFromEntries(cachedEntries))
 
-			return;
+			return
 		}
 
-		let values = localMatches.slice();
+		let values = localMatches.slice()
 
 		// If no local matches, include previous entries
 		if (!localMatches.length) {
-			values.push(...this.lastApiResults);
+			values.push(...this.lastApiResults)
 		}
-		values = this.searchLocal(text, values);
+		values = this.searchLocal(text, values)
 
 		// Add user-typed text as last option
-		const trimmedText = text.trim();
+		const trimmedText = text.trim()
 		if (trimmedText) {
-			values.push(trimmedText);
+			values.push(trimmedText)
 		}
 
-		callback(this.getOptionsFromEntries(values));
+		callback(this.getOptionsFromEntries(values))
 
 		// Make API request if needed
 		if (!localMatches.length) {
 			try {
-				const apiResults = await this.makeApiRequest(text);
+				const apiResults = await this.makeApiRequest(text)
 
 				// Check if request is still current
-				if (this.lastQuery !== text) return;
+				if (this.lastQuery !== text) return
 
-				this.lastApiResults = apiResults.slice();
+				this.lastApiResults = apiResults.slice()
 
 				// Add user-typed text as last option
 				if (trimmedText) {
-					apiResults.push(trimmedText);
+					apiResults.push(trimmedText)
 				}
 
-				this.updateCache(text, apiResults);
-				callback(this.getOptionsFromEntries(apiResults));
+				this.updateCache(text, apiResults)
+				callback(this.getOptionsFromEntries(apiResults))
 			} catch {
 				// Silently handle API errors to avoid disrupting user experience. This currently runs even
 				// when just overriding request promises with new ones, so it's not really an error
@@ -338,7 +338,7 @@ class BaseAutocomplete {
 				label: this.getLabelFromEntry(entry),
 				entry,
 				autocomplete: this,
-			}));
+			}))
 	}
 
 	/**
@@ -352,23 +352,23 @@ class BaseAutocomplete {
 	searchLocal(text, list) {
 		// Handle empty lists
 		if (list.length === 0) {
-			return [];
+			return []
 		}
 
 		if (this.isStringList(list)) {
-			return this.searchStringList(text, list);
+			return this.searchStringList(text, list)
 		}
 
 		// For non-string lists, subclasses should override this method
 		// But we can provide a basic implementation for objects with 'label' property
 		if (typeof list[0] === 'object' && 'label' in list[0]) {
-			return this.searchLabeledEntries(text, list);
+			return this.searchLabeledEntries(text, list)
 		}
 
 		throw new CdError({
 			type: 'internal',
 			message: 'Entry types other than string or labeled objects are not supported. searchLocal() must be implemented by subclass',
-		});
+		})
 	}
 
 	/**
@@ -380,15 +380,15 @@ class BaseAutocomplete {
 	 * @protected
 	 */
 	searchStringList(text, list) {
-		const containsRegexp = new RegExp(mw.util.escapeRegExp(text), 'i');
-		const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
+		const containsRegexp = new RegExp(mw.util.escapeRegExp(text), 'i')
+		const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i')
 
 		return list
 			.filter((entry) => containsRegexp.test(entry))
 			.sort(
 				(entry1, entry2) =>
 					Number(startsWithRegexp.test(entry2)) - Number(startsWithRegexp.test(entry1))
-			);
+			)
 	}
 
 	/**
@@ -400,9 +400,9 @@ class BaseAutocomplete {
 	 * @protected
 	 */
 	searchLabeledEntries(text, list) {
-		const searchRegex = new RegExp(mw.util.escapeRegExp(text), 'i');
+		const searchRegex = new RegExp(mw.util.escapeRegExp(text), 'i')
 
-		return list.filter((entry) => searchRegex.test(entry.label));
+		return list.filter((entry) => searchRegex.test(entry.label))
 	}
 
 	/**
@@ -412,7 +412,7 @@ class BaseAutocomplete {
 	 * @returns {list is string[]}
 	 */
 	isStringList(list) {
-		return typeof list[0] === 'string';
+		return typeof list[0] === 'string'
 	}
 
 	/**
@@ -422,7 +422,7 @@ class BaseAutocomplete {
 	 * @returns {string[] | undefined} Cached entries or `undefined` if not found
 	 */
 	handleCache(text) {
-		return this.cache.get(text);
+		return this.cache.get(text)
 	}
 
 	/**
@@ -432,7 +432,7 @@ class BaseAutocomplete {
 	 * @param {string[]} entries Entries to cache
 	 */
 	updateCache(text, entries) {
-		this.cache.set(text, entries);
+		this.cache.set(text, entries)
 	}
 
 	/**
@@ -441,9 +441,9 @@ class BaseAutocomplete {
 	 * @returns {any[]} Default entries
 	 */
 	getDefaultEntries() {
-		this.defaultEntries ??= this.defaultLazy?.() || [];
+		this.defaultEntries ??= this.defaultLazy?.() || []
 
-		return this.defaultEntries;
+		return this.defaultEntries
 	}
 
 	/**
@@ -453,7 +453,7 @@ class BaseAutocomplete {
 	 * @returns {Partial<import('./tribute/Tribute').TributeCollection>} Collection properties
 	 */
 	getCollectionProperties() {
-		return {};
+		return {}
 	}
 
 	/**
@@ -464,7 +464,7 @@ class BaseAutocomplete {
 	 */
 	static promiseIsNotSuperseded(promise) {
 		if (promise !== this.currentPromise) {
-			throw new CdError();
+			throw new CdError()
 		}
 	}
 
@@ -478,16 +478,16 @@ class BaseAutocomplete {
 		// eslint-disable-next-line no-async-promise-executor
 		const promise = new Promise(async (resolve, reject) => {
 			try {
-				await sleep(this.delay);
-				this.promiseIsNotSuperseded(promise);
-				await executor(resolve, reject);
+				await sleep(this.delay)
+				this.promiseIsNotSuperseded(promise)
+				await executor(resolve, reject)
 			} catch (error) {
-				reject(error);
+				reject(error)
 			}
-		});
-		this.currentPromise = promise;
+		})
+		this.currentPromise = promise
 
-		return promise;
+		return promise
 	}
 
 	/**
@@ -505,13 +505,13 @@ class BaseAutocomplete {
 					limit: 10,
 					...params,
 				})
-				.catch(handleApiReject));
+				.catch(handleApiReject))
 
 			if (this.currentPromise) {
-				this.promiseIsNotSuperseded(this.currentPromise);
+				this.promiseIsNotSuperseded(this.currentPromise)
 			}
-			resolve(response);
-		});
+			resolve(response)
+		})
 	}
 
 	/**
@@ -520,7 +520,7 @@ class BaseAutocomplete {
 	 * @returns {PerformanceMetrics} Performance metrics
 	 */
 	getPerformanceMetrics() {
-		const cacheStats = this.cache.getStats();
+		const cacheStats = this.cache.getStats()
 
 		return {
 			type: this.constructor.name,
@@ -528,7 +528,7 @@ class BaseAutocomplete {
 			defaultEntriesCount: this.getDefaultEntries().length,
 			lastEntriesCount: this.lastApiResults.length,
 			lastQuery: this.lastQuery,
-		};
+		}
 	}
 
 	/**
@@ -537,7 +537,7 @@ class BaseAutocomplete {
 	optimizeCache() {
 		// The AutocompleteCache handles optimization automatically, but we can trigger manual cleanup
 		// if needed
-		this.cache.cleanup();
+		this.cache.cleanup()
 	}
 
 	/**
@@ -549,19 +549,19 @@ class BaseAutocomplete {
 	async prefetchCommonQueries(commonQueries) {
 		await this.cache.prefetch(commonQueries, async (query) => {
 			if (this.validateInput(query)) {
-				return await this.makeApiRequest(query);
+				return await this.makeApiRequest(query)
 			}
 
-			return [];
-		});
+			return []
+		})
 	}
 
 	/**
 	 * Destroy the autocomplete instance and clean up resources.
 	 */
 	destroy() {
-		this.cache.destroy();
+		this.cache.destroy()
 	}
 }
 
-export default BaseAutocomplete;
+export default BaseAutocomplete

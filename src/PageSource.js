@@ -1,8 +1,8 @@
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { parseTimestamp } from './shared/utils-timestamp';
-import { maskDistractingCode } from './shared/utils-wikitext';
-import { findFirstTimestamp } from './utils-window';
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { parseTimestamp } from './shared/utils-timestamp'
+import { maskDistractingCode } from './shared/utils-wikitext'
+import { findFirstTimestamp } from './utils-window'
 
 /**
  * Class that keeps the methods and data related to the page's source code.
@@ -13,7 +13,7 @@ export default class PageSource {
 	 *
 	 * @type {string | undefined}
 	 */
-	code;
+	code
 
 	/**
 	 * Whether new topics go on top on this page. Filled upon running
@@ -21,7 +21,7 @@ export default class PageSource {
 	 *
 	 * @type {boolean|undefined}
 	 */
-	areNewTopicsOnTop;
+	areNewTopicsOnTop
 
 	/**
 	 * The start index of the first section, if new topics are on top on this page. Filled upon
@@ -29,7 +29,7 @@ export default class PageSource {
 	 *
 	 * @type {number|undefined}
 	 */
-	firstSectionStartIndex;
+	firstSectionStartIndex
 
 	/**
 	 * Create a comment's source object.
@@ -37,7 +37,7 @@ export default class PageSource {
 	 * @param {import('./Page').default} page Page.
 	 */
 	constructor(page) {
-		this.page = page;
+		this.page = page
 	}
 
 	/**
@@ -46,7 +46,7 @@ export default class PageSource {
 	 * @param {string} code
 	 */
 	setCode(code) {
-		this.code = code;
+		this.code = code
 	}
 
 	/**
@@ -56,9 +56,9 @@ export default class PageSource {
 	 * @throws {CdError}
 	 */
 	getCode() {
-		this.assertCode();
+		this.assertCode()
 
-		return this.code;
+		return this.code
 	}
 
 	/**
@@ -73,7 +73,7 @@ export default class PageSource {
 			throw new CdError({
 				type: 'internal',
 				message: message || 'Page code is not set.',
-			});
+			})
 		}
 	}
 
@@ -93,12 +93,12 @@ export default class PageSource {
 	 * @throws {CdError}
 	 */
 	modifyContext({ commentCode, commentForm }) {
-		let contextCode;
+		let contextCode
 		if (commentForm.isNewTopicOnTop()) {
-			this.assertCode('Can\'t modify the context: context (page) code is not set.');
+			this.assertCode('Can\'t modify the context: context (page) code is not set.')
 
 			const firstSectionStartIndex = maskDistractingCode(this.code)
-				.search(/^(=+).*\1[ \t\u0001\u0002]*$/m);
+				.search(/^(=+).*\1[ \t\u0001\u0002]*$/m)
 			contextCode =
 				(
 					firstSectionStartIndex === -1
@@ -110,17 +110,17 @@ export default class PageSource {
 				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 				/** @type {string} */ (commentCode) +
 				'\n' +
-				this.code.slice(firstSectionStartIndex);
+				this.code.slice(firstSectionStartIndex)
 		} else if (commentForm.isNewSectionApi()) {
-			contextCode = /** @type {string} */ (commentCode);
+			contextCode = /** @type {string} */ (commentCode)
 		} else {
-			this.assertCode('Can\'t modify the context: context (page) code is not set.');
+			this.assertCode('Can\'t modify the context: context (page) code is not set.')
 
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-			contextCode = (this.code + '\n').trimStart() + /** @type {string} */ (commentCode);
+			contextCode = (this.code + '\n').trimStart() + /** @type {string} */ (commentCode)
 		}
 
-		return { contextCode, commentCode };
+		return { contextCode, commentCode }
 	}
 
 	/**
@@ -136,31 +136,31 @@ export default class PageSource {
 	 * @private
 	 */
 	guessNewTopicPlacement() {
-		this.assertCode('Can\'t analyze the placement of new topics: page code is not set.');
+		this.assertCode('Can\'t analyze the placement of new topics: page code is not set.')
 
-		let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.page.name, this.code);
+		let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.page.name, this.code)
 
-		const adjustedCode = maskDistractingCode(this.code);
-		const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
+		const adjustedCode = maskDistractingCode(this.code)
+		const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp()
 
 		if (areNewTopicsOnTop === undefined || areNewTopicsOnTop === null) {
 			// Detect the topic order: newest first or newest last.
-			let previousDate;
-			let difference = 0;
-			let sectionHeadingMatch;
+			let previousDate
+			let difference = 0
+			let sectionHeadingMatch
 			while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
-				const timestamp = findFirstTimestamp(this.code.slice(sectionHeadingMatch.index));
-				const { date } = (timestamp && parseTimestamp(timestamp)) || {};
+				const timestamp = findFirstTimestamp(this.code.slice(sectionHeadingMatch.index))
+				const { date } = (timestamp && parseTimestamp(timestamp)) || {}
 				if (date) {
 					if (previousDate) {
-						difference += date > previousDate ? -1 : 1;
+						difference += date > previousDate ? -1 : 1
 					}
-					previousDate = date;
+					previousDate = date
 				}
 			}
 			areNewTopicsOnTop = difference === 0 && mw.config.get('wgServerName') === 'ru.wikipedia.org'
 				? this.page.namespaceId % 2 === 0
-				: difference > 0;
+				: difference > 0
 		}
 
 		return {
@@ -170,7 +170,7 @@ export default class PageSource {
 			firstSectionStartIndex: areNewTopicsOnTop
 				? sectionHeadingRegexp.exec(adjustedCode)?.index
 				: undefined,
-		};
+		}
 	}
 
 	/**
@@ -182,27 +182,27 @@ export default class PageSource {
 	 * @throws {CdError}
 	 */
 	findProperPlaceForSection(referenceDate) {
-		this.assertCode('Can\'t find the proper place for a section: page code is not set.');
+		this.assertCode('Can\'t find the proper place for a section: page code is not set.')
 
-		const { areNewTopicsOnTop, firstSectionStartIndex } = this.guessNewTopicPlacement();
+		const { areNewTopicsOnTop, firstSectionStartIndex } = this.guessNewTopicPlacement()
 
 		if (!referenceDate) {
-			return areNewTopicsOnTop ? firstSectionStartIndex || 0 : this.code.length;
+			return areNewTopicsOnTop ? firstSectionStartIndex || 0 : this.code.length
 		}
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const adjustedCode = maskDistractingCode(this.code);
+		const adjustedCode = maskDistractingCode(this.code)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
-		let sectionHeadingMatch;
-		const sections = [];
+		const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp()
+		let sectionHeadingMatch
+		const sections = []
 		while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
-			const timestamp = findFirstTimestamp(this.code.slice(sectionHeadingMatch.index));
-			const { date } = (timestamp && parseTimestamp(timestamp)) || {};
+			const timestamp = findFirstTimestamp(this.code.slice(sectionHeadingMatch.index))
+			const { date } = (timestamp && parseTimestamp(timestamp)) || {}
 			sections.push({
 				date,
 				index: sectionHeadingMatch.index,
-			});
+			})
 		}
 
 		return (
@@ -212,7 +212,7 @@ export default class PageSource {
 			)?.index ||
 
 			this.code.length
-		);
+		)
 	}
 
 	/**
@@ -221,6 +221,6 @@ export default class PageSource {
 	 * @returns {RegExp}
 	 */
 	static getTopicHeadingRegexp() {
-		return /^==[^=].*?==[ \t\u0001\u0002]*\n/gm;
+		return /^==[^=].*?==[ \t\u0001\u0002]*\n/gm
 	}
 }

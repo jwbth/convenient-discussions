@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/valid-types */
-import { es6ClassToOoJsClass } from './utils-oojs';
+import { es6ClassToOoJsClass } from './utils-oojs'
 
 /**
  * @template {{ [key: string]: OO.ArgTuple }} [EventMap = { [key: string]: OO.ArgTuple }]
@@ -42,7 +42,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	on(event, method, args, context) {
-		return super.on(event, method, args, context);
+		return super.on(event, method, args, context)
 	}
 
 	/**
@@ -69,7 +69,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	once(event, listener) {
-		return super.once(event, listener);
+		return super.once(event, listener)
 	}
 
 	/**
@@ -103,7 +103,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	off(event, method, context) {
-		return super.off(event, method, context);
+		return super.off(event, method, context)
 	}
 
 	// @ts-expect-error: TypeScript-in-JSDoc bug
@@ -136,7 +136,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	emit(event, ...args) {
-		return super.emit(event, ...args);
+		return super.emit(event, ...args)
 	}
 
 	// @ts-expect-error: TypeScript-in-JSDoc bug
@@ -170,7 +170,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	emitThrow(event, ...args) {
-		return super.emitThrow(event, ...args);
+		return super.emitThrow(event, ...args)
 	}
 
 	/**
@@ -187,7 +187,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	connect(context, methods) {
-		return super.connect(context, methods);
+		return super.connect(context, methods)
 	}
 
 	/**
@@ -208,7 +208,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	disconnect(context, methods) {
-		return super.disconnect(context, methods);
+		return super.disconnect(context, methods)
 	}
 }
-es6ClassToOoJsClass(EventEmitter);
+es6ClassToOoJsClass(EventEmitter)

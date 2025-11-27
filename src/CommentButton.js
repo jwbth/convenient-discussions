@@ -1,5 +1,5 @@
-import Button from './Button';
-import CdError from './shared/CdError';
+import Button from './Button'
+import CdError from './shared/CdError'
 
 /**
  * @typedef {object} ButtonExtension
@@ -27,24 +27,24 @@ class CommentButton extends Button {
 	constructor(config) {
 		// OOUI button
 		if (config.element) {
-			config.buttonElement = /** @type {HTMLElement} */ (config.element.firstChild);
+			config.buttonElement = /** @type {HTMLElement} */ (config.element.firstChild)
 		}
 
-		super(config);
+		super(config)
 
 		// Don't hide the menu on right button click.
 		if (config.href) {
-			this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation);
+			this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation)
 		}
 
-		this.element.classList.add('cd-comment-button');
+		this.element.classList.add('cd-comment-button')
 
 		/**
 		 * Constructor for the button's OOUI widget (if that's an OOUI button).
 		 *
 		 * @type {(() => OO.ui.ButtonWidget) | undefined}
 		 */
-		this.widgetConstructor = config.widgetConstructor;
+		this.widgetConstructor = config.widgetConstructor
 	}
 
 	/**
@@ -55,10 +55,10 @@ class CommentButton extends Button {
 	 */
 	createWidget() {
 		if (!this.widgetConstructor) {
-			throw new CdError();
+			throw new CdError()
 		}
 
-		const originalHref = this.buttonElement.getAttribute('href');
+		const originalHref = this.buttonElement.getAttribute('href')
 
 		/**
 		 * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
@@ -67,24 +67,24 @@ class CommentButton extends Button {
 		 *
 		 * @type {OO.ui.ButtonWidget}
 		 */
-		this.buttonWidget = this.widgetConstructor();
+		this.buttonWidget = this.widgetConstructor()
 
-		const element = this.buttonWidget.$element[0];
-		this.element.replaceWith(element);
-		this.element = element;
-		this.buttonElement = /** @type {HTMLElement} */ (element.firstChild);
-		this.iconElement = this.buttonWidget.$icon[0];
+		const element = this.buttonWidget.$element[0]
+		this.element.replaceWith(element)
+		this.element = element
+		this.buttonElement = /** @type {HTMLElement} */ (element.firstChild)
+		this.iconElement = this.buttonWidget.$icon[0]
 		if (this.action) {
-			this.setAction(this.action);
+			this.setAction(this.action)
 		}
 		if (originalHref) {
-			this.buttonWidget.setHref(originalHref);
+			this.buttonWidget.setHref(originalHref)
 
 			// Don't hide the menu on right button click.
-			this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation);
+			this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation)
 		}
 
-		return this.buttonWidget;
+		return this.buttonWidget
 	}
 
 	/**
@@ -96,12 +96,12 @@ class CommentButton extends Button {
 	 */
 	setDisabled(disabled) {
 		if (this.widgetConstructor) {
-			this.getButtonWidget().setDisabled(disabled);
+			this.getButtonWidget().setDisabled(disabled)
 		} else {
-			super.setDisabled(disabled);
+			super.setDisabled(disabled)
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -110,7 +110,7 @@ class CommentButton extends Button {
 	 * @returns {OO.ui.ButtonWidget}
 	 */
 	getButtonWidget() {
-		return this.buttonWidget || this.createWidget();
+		return this.buttonWidget || this.createWidget()
 	}
 
 	/**
@@ -121,9 +121,9 @@ class CommentButton extends Button {
 	 * @override
 	 */
 	setPending(pending) {
-		super.setPending(pending);
+		super.setPending(pending)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -135,12 +135,12 @@ class CommentButton extends Button {
 	 */
 	setLabel(label) {
 		if (this.widgetConstructor) {
-			this.getButtonWidget().setLabel(label);
+			this.getButtonWidget().setLabel(label)
 		} else {
-			super.setLabel(label);
+			super.setLabel(label)
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -152,12 +152,12 @@ class CommentButton extends Button {
 	 */
 	setTooltip(tooltip) {
 		if (this.widgetConstructor) {
-			this.getButtonWidget().setTitle(tooltip);
+			this.getButtonWidget().setTitle(tooltip)
 		} else {
-			super.setTooltip(tooltip);
+			super.setTooltip(tooltip)
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -170,7 +170,7 @@ class CommentButton extends Button {
 	setAction(action) {
 		// OOUI widgets don't pass the event object to the handler, so we use the traditional method of
 		// handling events.
-		super.setAction(action);
+		super.setAction(action)
 
 		/**
 		 * Function executed by clicking or pressing Enter on the button.
@@ -178,9 +178,9 @@ class CommentButton extends Button {
 		 * @type {?import('./Button').Action}
 		 * @private
 		 */
-		this.action = action;
+		this.action = action
 
-		return this;
+		return this
 	}
 
 	/**
@@ -190,7 +190,7 @@ class CommentButton extends Button {
 	 * @override
 	 */
 	isDisabled() {
-		return this.widgetConstructor ? Boolean(this.buttonWidget?.isDisabled()) : super.isDisabled();
+		return this.widgetConstructor ? Boolean(this.buttonWidget?.isDisabled()) : super.isDisabled()
 	}
 
 	/**
@@ -200,8 +200,8 @@ class CommentButton extends Button {
 	 * @private
 	 */
 	static stopPropagation = (event) => {
-		event.stopPropagation();
-	};
+		event.stopPropagation()
+	}
 }
 
-export default CommentButton;
+export default CommentButton

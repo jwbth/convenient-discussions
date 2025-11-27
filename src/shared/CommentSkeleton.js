@@ -1,8 +1,8 @@
-import CdError from './CdError';
-import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
-import ElementsTreeWalker from './ElementsTreeWalker';
-import cd from './cd';
-import { generateFixedPosTimestamp, genericGetOldestOrNewestByDateProp, isElement, isHeadingNode, isInline, isMetadataNode, isText, spacesToUnderlines, unique } from './utils-general';
+import CdError from './CdError'
+import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker'
+import ElementsTreeWalker from './ElementsTreeWalker'
+import cd from './cd'
+import { generateFixedPosTimestamp, genericGetOldestOrNewestByDateProp, isElement, isHeadingNode, isInline, isMetadataNode, isText, spacesToUnderlines, unique } from './utils-general'
 
 /**
  * Class containing the main properties of a comment and building it from a signature (we should
@@ -18,7 +18,7 @@ class CommentSkeleton {
 	 *
 	 * @type {CommentPart[]}
 	 */
-	parts;
+	parts
 
 	/**
 	 * Comment elements that are highlightable.
@@ -28,7 +28,7 @@ class CommentSkeleton {
 	 *
 	 * @type {ElementFor<N>[]}
 	 */
-	highlightables;
+	highlightables
 
 	/**
 	 * Comment level. A level is a number representing the number of indentation characters
@@ -36,17 +36,17 @@ class CommentSkeleton {
 	 *
 	 * @type {number}
 	 */
-	level;
+	level
 
 	/**
 	 * {@link Comment#level Comment level} that takes into account `{{outdent}}` templates.
 	 *
 	 * @type {number}
 	 */
-	logicalLevel;
+	logicalLevel
 
 	/** @type {import('./SectionSkeleton').default<N> | undefined} */
-	section;
+	section
 
 	/**
 	 * @type {{
@@ -54,49 +54,49 @@ class CommentSkeleton {
 	 *   logicalLevel?: CommentSkeleton | undefined;
 	 * }}
 	 */
-	cachedParent = {};
+	cachedParent = {}
 
 	/**
 	 * Is the comment preceded by a heading.
 	 *
 	 * @type {boolean}
 	 */
-	followsHeading;
+	followsHeading
 
 	/**
 	 * _For internal use._ Comment signature element.
 	 *
 	 * @type {ElementLike}
 	 */
-	signatureElement;
+	signatureElement
 
 	/**
 	 * Comment signature text.
 	 *
 	 * @type {string}
 	 */
-	signatureText;
+	signatureText
 
 	/**
 	 * Comment date.
 	 *
 	 * @type {Date | undefined}
 	 */
-	date;
+	date
 
 	/**
 	 * _For internal use._ Comment author name.
 	 *
 	 * @type {string}
 	 */
-	authorName;
+	authorName
 
 	/**
 	 * Comment ID.
 	 *
 	 * @type {string | undefined}
 	 */
-	id;
+	id
 
 	/**
 	 * Comment index. Same as the index in the array returned by
@@ -104,49 +104,49 @@ class CommentSkeleton {
 	 *
 	 * @type {number}
 	 */
-	index;
+	index
 
 	/**
 	 * Comment timestamp as originally present on the page.
 	 *
 	 * @type {string|undefined}
 	 */
-	timestamp;
+	timestamp
 
 	/**
 	 * _For internal use._ Comment timestamp element.
 	 *
 	 * @type {ElementFor<N>}
 	 */
-	timestampElement;
+	timestampElement
 
 	/**
 	 * Additional signatures in this comment (that go after the "official" signature).
 	 *
 	 * @type {import('./Parser.js').SignatureTarget<N>[]}
 	 */
-	extraSignatures;
+	extraSignatures
 
 	/**
 	 * _For internal use._ User page (in the "User" namespace) link element.
 	 *
 	 * @type {ElementFor<N> | undefined}
 	 */
-	authorLink;
+	authorLink
 
 	/**
 	 * _For internal use._ User talk page (in the "User talk" namespace) link element.
 	 *
 	 * @type {ElementFor<N> | undefined}
 	 */
-	authorTalkLink;
+	authorTalkLink
 
 	/**
 	 * Does the comment belong to the current user.
 	 *
 	 * @type {boolean}
 	 */
-	isOwn;
+	isOwn
 
 	/**
 	 * Is the comment unsigned or not properly signed (an unsigned template class is present).
@@ -155,14 +155,14 @@ class CommentSkeleton {
 	 *
 	 * @type {boolean}
 	 */
-	isUnsigned;
+	isUnsigned
 
 	/**
 	 * _For internal use._ Elements containing all parts of the comment.
 	 *
 	 * @type {ElementFor<N>[]}
 	 */
-	elements;
+	elements
 
 	/**
 	 * Does the comment open a section (has a heading as the first element and is placed at the
@@ -171,14 +171,14 @@ class CommentSkeleton {
 	 * @type {boolean}
 	 * @protected
 	 */
-	openingSection;
+	openingSection
 
 	/**
 	 * Is the comment outdented with the `{{outdent}}` template.
 	 *
 	 * @type {boolean}
 	 */
-	isOutdented;
+	isOutdented
 
 	/**
 	 * Create a comment skeleton instance.
@@ -190,71 +190,71 @@ class CommentSkeleton {
 	 * @throws {CdError}
 	 */
 	constructor(parser, signature, targets) {
-		this.parser = parser;
+		this.parser = parser
 
-		const signatureIndex = targets.indexOf(signature);
+		const signatureIndex = targets.indexOf(signature)
 
-		this.followsHeading = targets[signatureIndex - 1]?.type === 'heading';
-		this.signatureElement = signature.element;
-		this.signatureText = signature.element.textContent;
-		this.date = signature.date;
-		this.authorName = signature.authorName;
-		this.id = CommentSkeleton.generateId(this.date, this.authorName, parser.existingCommentIds);
+		this.followsHeading = targets[signatureIndex - 1]?.type === 'heading'
+		this.signatureElement = signature.element
+		this.signatureText = signature.element.textContent
+		this.date = signature.date
+		this.authorName = signature.authorName
+		this.id = CommentSkeleton.generateId(this.date, this.authorName, parser.existingCommentIds)
 
 		// Identify all comment nodes and save a path to them. The parameter is the heading element
 		// preceding the comment.
-		this.collectParts(this.followsHeading ? targets[signatureIndex - 1].element : undefined);
+		this.collectParts(this.followsHeading ? targets[signatureIndex - 1].element : undefined)
 
 		// Remove parts contained by other parts.
-		this.removeNestedParts();
+		this.removeNestedParts()
 
 		// We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
 		// can't get a bounding client rectangle for text nodes, can't specify margins for them etc.).
-		this.wrapInlineParts();
+		this.wrapInlineParts()
 
 		// At this point, we can safely remove unnecessary nodes.
-		this.filterParts();
+		this.filterParts()
 
-		this.parts.reverse();
+		this.parts.reverse()
 
 		// <dd>, <li> instead of <dl>, <ul>, <ol> where appropriate.
-		this.replaceListsWithItems();
+		this.replaceListsWithItems()
 
 		// Wrap <ol> into <div> or <dl> & <dd> if the comment starts with numbered list items.
-		this.wrapNumberedList();
+		this.wrapNumberedList()
 
-		this.index = cd.comments.length;
+		this.index = cd.comments.length
 
 		// Double spaces are from removed dir marks.
-		this.timestamp = signature.timestampText?.replace(/ {2,}/g, ' ');
+		this.timestamp = signature.timestampText?.replace(/ {2,}/g, ' ')
 
 		// For debugging
-		this.timestampText = signature.timestampText;
+		this.timestampText = signature.timestampText
 
-		this.timestampElement = signature.timestampElement;
-		this.extraSignatures = signature.extraSignatures;
-		this.authorLink = signature.authorLink;
-		this.authorTalkLink = signature.authorTalkLink;
-		this.isOwn = this.authorName === cd.g.userName;
-		this.isUnsigned = signature.isUnsigned;
-		this.elements = this.parts.map((part) => /** @type {ElementFor<N>} */(part.node));
+		this.timestampElement = signature.timestampElement
+		this.extraSignatures = signature.extraSignatures
+		this.authorLink = signature.authorLink
+		this.authorTalkLink = signature.authorTalkLink
+		this.isOwn = this.authorName === cd.g.userName
+		this.isUnsigned = signature.isUnsigned
+		this.elements = this.parts.map((part) => /** @type {ElementFor<N>} */(part.node))
 
-		this.updateHighlightables();
-		this.updateLevels();
+		this.updateHighlightables()
+		this.updateLevels()
 
 		if (this.parts[0].isHeading && this.level !== 0) {
-			this.parts.shift();
-			this.elements.shift();
+			this.parts.shift()
+			this.elements.shift()
 		}
 
-		this.openingSection = this.parts[0].isHeading;
+		this.openingSection = this.parts[0].isHeading
 
-		this.addAttributes();
+		this.addAttributes()
 
-		this.section = undefined;
-		this.isOutdented = false;
+		this.section = undefined
+		this.isOutdented = false
 
-		signature.comment = this;
+		signature.comment = this
 	}
 
 	/** @typedef {'start'|'back'|'up'|'dive'|'replaced'} Step */
@@ -279,9 +279,9 @@ class CommentSkeleton {
 	 */
 	getStartNodes(treeWalker) {
 		while (isInline(/** @type {HTMLElement} */ (treeWalker.currentNode.parentElement))) {
-			treeWalker.parentNode();
+			treeWalker.parentNode()
 		}
-		const farthestInlineAncestor = treeWalker.currentNode;
+		const farthestInlineAncestor = treeWalker.currentNode
 
 		/*
 			The code:
@@ -301,7 +301,7 @@ class CommentSkeleton {
 			acknowledge there is a foreign not inline element here to be able to tell comment boundaries
 			accurately (inline elements in most cases are continuations of the same comment).
 		*/
-		let firstForeignComponentAfter;
+		let firstForeignComponentAfter
 		while (!firstForeignComponentAfter) {
 			while (
 				(
@@ -313,18 +313,18 @@ class CommentSkeleton {
 				) &&
 				treeWalker.parentNode()
 			);
-			if (!treeWalker.nextSibling()) break;
+			if (!treeWalker.nextSibling()) break
 
 			if (!isInline(treeWalker.currentNode, true) && !isMetadataNode(treeWalker.currentNode)) {
-				firstForeignComponentAfter = /** @type {ElementLike} */ (treeWalker.currentNode);
+				firstForeignComponentAfter = /** @type {ElementLike} */ (treeWalker.currentNode)
 			}
 		}
 
 		// As an optimization, avoid adding every text node of the comment to the array of its parts if
 		// possible. Add their common container instead.
 		/** @type {CommentPart[]} */
-		const parts = [];
-		const fiaParentElement = /** @type {ElementLike} */ (farthestInlineAncestor.parentElement);
+		const parts = []
+		const fiaParentElement = /** @type {ElementLike} */ (farthestInlineAncestor.parentElement)
 		if (
 			(
 				firstForeignComponentAfter &&
@@ -346,7 +346,7 @@ class CommentSkeleton {
 			))
 		) {
 			// Collect inline parts after the signature
-			treeWalker.currentNode = farthestInlineAncestor;
+			treeWalker.currentNode = farthestInlineAncestor
 			while (treeWalker.nextSibling()) {
 				if (isInline(treeWalker.currentNode, true) || isMetadataNode(treeWalker.currentNode)) {
 					parts.push({
@@ -356,16 +356,16 @@ class CommentSkeleton {
 						hasCurrentSignature: false,
 						hasForeignComponents: false,
 						step: 'start',
-					});
+					})
 				} else {
-					break;
+					break
 				}
 			}
-			parts.reverse();
+			parts.reverse()
 
-			treeWalker.currentNode = farthestInlineAncestor;
+			treeWalker.currentNode = farthestInlineAncestor
 		} else {
-			treeWalker.currentNode = /** @type {ElementLike} */ (farthestInlineAncestor.parentElement);
+			treeWalker.currentNode = /** @type {ElementLike} */ (farthestInlineAncestor.parentElement)
 		}
 		parts.push({
 			node: treeWalker.currentNode,
@@ -374,9 +374,9 @@ class CommentSkeleton {
 			hasCurrentSignature: true,
 			hasForeignComponents: false,
 			step: 'start',
-		});
+		})
 
-		return [parts, firstForeignComponentAfter];
+		return [parts, firstForeignComponentAfter]
 	}
 
 	/**
@@ -388,20 +388,20 @@ class CommentSkeleton {
 	 */
 	isCellOfMultiCommentTable(element) {
 		if (!['TD', 'TH'].includes(element.tagName)) {
-			return false;
+			return false
 		}
-		let table;
+		let table
 		for (
 			let /** @type {ElementLike | null} */ n = element;
 			!table && n && n !== this.parser.context.rootElement;
 			n = n.parentElement
 		) {
 			if (n.tagName === 'TABLE') {
-				table = n;
+				table = n
 			}
 		}
 
-		return !table || table.getElementsByClassName('cd-signature', 2).length > 1;
+		return !table || table.getElementsByClassName('cd-signature', 2).length > 1
 	}
 
 	/**
@@ -447,7 +447,7 @@ class CommentSkeleton {
 			) ||
 
 			cd.config.rejectNode?.(element, this.parser.context)
-		);
+		)
 	}
 
 	/**
@@ -464,7 +464,7 @@ class CommentSkeleton {
 
 			// Portal boxes of https://en.wikipedia.org/wiki/Template:Portal have role="navigation"
 			(element.classList.contains('gallery') || element.getAttribute('role') === 'navigation')
-		);
+		)
 	}
 
 	/**
@@ -478,13 +478,13 @@ class CommentSkeleton {
 	 * @private
 	 */
 	isIntroList(element, checkNextElement, lastPartNode) {
-		const tagName = element.tagName;
+		const tagName = element.tagName
 		if (!['DL', 'UL', 'OL'].includes(tagName)) {
-			return false;
+			return false
 		}
 
-		const previousElement = element.previousElementSibling;
-		const nextElement = element.nextElementSibling;
+		const previousElement = element.previousElementSibling
+		const nextElement = element.nextElementSibling
 		let result =
 			(
 				tagName === 'DL' &&
@@ -514,7 +514,7 @@ class CommentSkeleton {
 					'cd-signature'
 				)
 			) ||
-			this.isOtherKindOfList(element);
+			this.isOtherKindOfList(element)
 
 		// "tagName !== 'OL'" helps in cases like
 		// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005161120_Example.
@@ -523,8 +523,8 @@ class CommentSkeleton {
 			// to a `*` comment, Space4Time3Continuum2x could be interpreted as the author of the
 			// SPECIFICO's comment. (Currently, to test this, you will need to remove timestamps from the
 			// SPECIFICO's comment.)
-			const elementLevelsPassed = this.parser.getTopElementsWithText(element).levelsPassed;
-			const nextElementLevelsPassed = this.parser.getTopElementsWithText(nextElement).levelsPassed;
+			const elementLevelsPassed = this.parser.getTopElementsWithText(element).levelsPassed
+			const nextElementLevelsPassed = this.parser.getTopElementsWithText(nextElement).levelsPassed
 			result = (
 				nextElementLevelsPassed > elementLevelsPassed ||
 
@@ -535,10 +535,10 @@ class CommentSkeleton {
 					this.parser.getChildElements(element).length > 1 &&
 					tagName !== nextElement.tagName
 				)
-			);
+			)
 		}
 
-		return result;
+		return result
 	}
 
 	/**
@@ -559,9 +559,9 @@ class CommentSkeleton {
 				https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
 				(see the original HTML source)
 		 */
-		const tagNames = ['DD', 'DL'];
+		const tagNames = ['DD', 'DL']
 		if (!isDefinitionListOnly) {
-			tagNames.push('LI', 'UL');
+			tagNames.push('LI', 'UL')
 		}
 
 		return Boolean(
@@ -570,7 +570,7 @@ class CommentSkeleton {
 				tagNames.includes(node.tagName) ||
 				(node.parentElement && tagNames.includes(node.parentElement.tagName))
 			)
-		);
+		)
 	}
 
 	/**
@@ -670,7 +670,7 @@ class CommentSkeleton {
 				this.parser.getChildElements(nextNode).length > 1 &&
 				!this.parser.constructor.contains(this.parser.getChildElements(nextNode)[0], this.signatureElement)
 			)
-		);
+		)
 	}
 
 	/**
@@ -689,10 +689,10 @@ class CommentSkeleton {
 			// Here we, in fact, hardcode PHP's wgDiscussionToolsReplyIndentation = 'bullet' for ruwiki.
 			cd.g.serverName === 'ru.wikipedia.org'
 		) {
-			return false;
+			return false
 		}
 
-		const link = /** @type {ElementLike | undefined} */ (part.node.querySelectorAll('a')[0]);
+		const link = /** @type {ElementLike | undefined} */ (part.node.querySelectorAll('a')[0])
 		if (
 			!link ||
 
@@ -700,10 +700,10 @@ class CommentSkeleton {
 			// https://en.wikipedia.org/w/index.php?title=Project:Village_pump_(policy)&diff=prev&oldid=1226668615
 			part.node.querySelectorAll('ul, ol, dl').length
 		) {
-			return false;
+			return false
 		}
 
-		return Boolean(this.parser.constructor.processLink(link)?.userName);
+		return Boolean(this.parser.constructor.processLink(link)?.userName)
 	}
 
 	/**
@@ -729,8 +729,8 @@ class CommentSkeleton {
 					* "replaced" (obtained as a result of manipulations after node traversal)
 			*/
 			/** @type {Step | undefined} */
-			let step;
-			const previousPart = parts[parts.length - 1];
+			let step
+			const previousPart = parts[parts.length - 1]
 
 			if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
 				/*
@@ -763,24 +763,24 @@ class CommentSkeleton {
 							.getAttribute('style')
 							?.includes('background-')
 					) {
-						treeWalker.currentNode = parentNode;
-						break;
+						treeWalker.currentNode = parentNode
+						break
 					}
-					step = 'dive';
+					step = 'dive'
 				}
 				if (step !== 'dive') {
-					break;
+					break
 				}
 			} else if (treeWalker.previousSibling()) {
-				step = 'back';
+				step = 'back'
 			} else {
 				if (!treeWalker.parentNode()) {
-					break;
+					break
 				}
-				step = 'up';
+				step = 'up'
 			}
 
-			const node = treeWalker.currentNode;
+			const node = treeWalker.currentNode
 
 			if (
 				this.isIntro({
@@ -791,16 +791,16 @@ class CommentSkeleton {
 					previousPart,
 				})
 			) {
-				break;
+				break
 			}
 
-			const isTextNode = isText(node);
-			let isHeading;
-			let hasCurrentSignature;
-			let hasForeignComponents;
+			const isTextNode = isText(node)
+			let isHeading
+			let hasCurrentSignature
+			let hasForeignComponents
 			if (!isTextNode) {
 				if (!this.isElementEligible(node, treeWalker, step)) {
-					break;
+					break
 				}
 
 				// Weird cases with multiple signatures on different nesting levels, e.g.
@@ -808,11 +808,11 @@ class CommentSkeleton {
 				// creates a class="autosigned" element and a hidden element with a signature after. Halt
 				// the search completely.
 				if (step === 'up' && node.classList.contains('cd-comment-part')) {
-					throw new CdError();
+					throw new CdError()
 				}
 
-				isHeading = isHeadingNode(node);
-				hasCurrentSignature = this.parser.constructor.contains(node, this.signatureElement);
+				isHeading = isHeadingNode(node)
+				hasCurrentSignature = this.parser.constructor.contains(node, this.signatureElement)
 				hasForeignComponents = Boolean(
 					// Without checking for blockness, the beginning of the comment at
 					// https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=125481598#c-Oleg_Yunakov-20220830173400-Iniquity-20220830171400
@@ -848,7 +848,7 @@ class CommentSkeleton {
 							this.parser.constructor.contains(node, precedingHeadingElement)
 						)
 					)
-				);
+				)
 
 				// A trace from ~~~ at the end of a line most likely means an incorrectly signed comment.
 				// This is a pretty weak mechanism, effective in a very narrow range of cases, so we might
@@ -859,7 +859,7 @@ class CommentSkeleton {
 					cd.g.signatureEndingRegexp?.test(node.textContent) &&
 					!this.parser.noSignatureElements.some((el) => this.parser.constructor.contains(el, node))
 				) {
-					break;
+					break
 				}
 			}
 
@@ -871,14 +871,14 @@ class CommentSkeleton {
 				hasCurrentSignature: hasCurrentSignature ?? false,
 				hasForeignComponents: hasForeignComponents ?? false,
 				step,
-			});
+			})
 
 			if (isHeading) {
-				break;
+				break
 			}
 		}
 
-		return parts;
+		return parts
 	}
 
 	/**
@@ -891,16 +891,16 @@ class CommentSkeleton {
 		const treeWalker = new ElementsAndTextTreeWalker(
 			this.parser.context.rootElement,
 			this.signatureElement,
-		);
-		let [parts, firstForeignComponentAfter] = this.getStartNodes(treeWalker);
+		)
+		let [parts, firstForeignComponentAfter] = this.getStartNodes(treeWalker)
 		parts = this.traverseDom(
 			parts,
 			treeWalker,
 			firstForeignComponentAfter,
 			precedingHeadingElement
-		);
+		)
 
-		this.parts = parts;
+		this.parts = parts
 	}
 
 	/**
@@ -910,17 +910,17 @@ class CommentSkeleton {
 	 */
 	removeNestedParts() {
 		for (let i = this.parts.length - 1; i >= 0; i--) {
-			const part = this.parts[i];
+			const part = this.parts[i]
 			if (part.step === 'up' && !part.hasForeignComponents) {
-				let nextDiveElementIndex = 0;
+				let nextDiveElementIndex = 0
 				for (let j = i - 1; j > 0; j--) {
 					if (this.parts[j].step === 'dive') {
-						nextDiveElementIndex = j;
-						break;
+						nextDiveElementIndex = j
+						break
 					}
 				}
-				this.parts.splice(nextDiveElementIndex, i - nextDiveElementIndex);
-				i = nextDiveElementIndex;
+				this.parts.splice(nextDiveElementIndex, i - nextDiveElementIndex)
+				i = nextDiveElementIndex
 			}
 		}
 	}
@@ -932,11 +932,11 @@ class CommentSkeleton {
 	 * @private
 	 */
 	wrapInlineParts() {
-		const sequencesToBeEnclosed = [];
-		let start;
-		let encloseThis = false;
+		const sequencesToBeEnclosed = []
+		let start
+		let encloseThis = false
 		for (let i = 0; i <= this.parts.length - 1; i++) {
-			const part = this.parts[i];
+			const part = this.parts[i]
 			if (
 				(start === undefined || (['back', 'start'].includes(part.step))) &&
 				!part.hasForeignComponents &&
@@ -947,13 +947,13 @@ class CommentSkeleton {
 					if (isInline(/** @type {ElementFor<N>} */ (part.node.parentElement))) {
 						for (let j = i + 1; j < this.parts.length; j++) {
 							if (this.parts[j].step === 'up') {
-								i = j - 1;
-								continue;
+								i = j - 1
+								continue
 							}
 						}
-						break;
+						break
 					} else {
-						start = i;
+						start = i
 					}
 				}
 
@@ -966,28 +966,28 @@ class CommentSkeleton {
 					isInline(part.node, true) &&
 					/** @type {TextFor<N> | ElementFor<N>} */ (part.node).textContent.trim()
 				) {
-					encloseThis = true;
+					encloseThis = true
 				}
 			} else if (start !== undefined) {
 				if (encloseThis) {
-					sequencesToBeEnclosed.push({ start, end: i - 1 });
+					sequencesToBeEnclosed.push({ start, end: i - 1 })
 				}
-				start = undefined;
-				encloseThis = false;
+				start = undefined
+				encloseThis = false
 			}
 		}
 
 		for (let i = sequencesToBeEnclosed.length - 1; i >= 0; i--) {
-			const sequence = sequencesToBeEnclosed[i];
-			const wrapper = this.parser.constructor.createElement('div');
+			const sequence = sequencesToBeEnclosed[i]
+			const wrapper = this.parser.constructor.createElement('div')
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const nextSibling = this.parts[sequence.start].node.nextSibling;
+			const nextSibling = this.parts[sequence.start].node.nextSibling
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const parent = /** @type {ElementFor<N>} */ (this.parts[sequence.start].node.parentElement);
+			const parent = /** @type {ElementFor<N>} */ (this.parts[sequence.start].node.parentElement)
 			for (let j = sequence.end; j >= sequence.start; j--) {
-				this.parser.constructor.appendChild(wrapper, this.parts[j].node);
+				this.parser.constructor.appendChild(wrapper, this.parts[j].node)
 			}
-			this.parser.constructor.insertBefore(parent, wrapper, nextSibling);
+			this.parser.constructor.insertBefore(parent, wrapper, nextSibling)
 			this.parts.splice(sequence.start, sequence.end - sequence.start + 1, {
 				node: wrapper,
 				isTextNode: false,
@@ -995,10 +995,10 @@ class CommentSkeleton {
 				hasCurrentSignature: this.parser.constructor.contains(wrapper, this.signatureElement),
 				hasForeignComponents: false,
 				step: 'replaced',
-			});
+			})
 		}
 
-		return this.parts;
+		return this.parts
 	}
 
 	/**
@@ -1007,13 +1007,13 @@ class CommentSkeleton {
 	 * @private
 	 */
 	filterParts() {
-		this.parts = this.parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
+		this.parts = this.parts.filter((part) => !part.hasForeignComponents && !part.isTextNode)
 
 		// <style>, <link>, and <hr> tags at the beginning. Also <references> tags and {{reflist-talk}}
 		// templates (will need to generalize this, possibly via wiki configuration, if other wikis
 		// employ a differently named class).
 		for (let i = this.parts.length - 1; i >= 1; i--) {
-			const node = /** @type {ElementFor<N>} */ (this.parts[i].node);
+			const node = /** @type {ElementFor<N>} */ (this.parts[i].node)
 			if (
 				(
 					node.tagName === 'P' &&
@@ -1043,14 +1043,14 @@ class CommentSkeleton {
 					this.parser.context.getElementByClassName(node, cd.config.outdentClass)
 				)
 			) {
-				this.parts.splice(i, 1);
+				this.parts.splice(i, 1)
 			} else {
-				break;
+				break
 			}
 		}
 
 		// When the first comment part starts with <br>
-		const firstNode = /** @type {ElementFor<N>} */ (this.parts[this.parts.length - 1].node);
+		const firstNode = /** @type {ElementFor<N>} */ (this.parts[this.parts.length - 1].node)
 		if (
 			firstNode.tagName === 'P' &&
 			isElement(firstNode.firstChild) &&
@@ -1060,30 +1060,30 @@ class CommentSkeleton {
 				/** @type {ElementFor<N>} */ (firstNode.parentElement),
 				/** @type {AnyNode} */ (firstNode.firstChild),
 				firstNode
-			);
+			)
 		}
 
 		for (let i = this.parts.length - 1, startNode; i >= 1; i--) {
-			const part = /** @type {CommentPart<ElementFor<N>>} */ (this.parts[i]);
-			if (part.isHeading) continue;
+			const part = /** @type {CommentPart<ElementFor<N>>} */ (this.parts[i])
+			if (part.isHeading) continue
 
 			if (this.isUnsignedItem(part)) {
-				this.parts.splice(i);
-				continue;
+				this.parts.splice(i)
+				continue
 			}
 
 			if (!startNode) {
-				startNode = part.node;
+				startNode = part.node
 				if (
 					['DL', 'UL', 'OL', 'DD', 'LI'].includes(startNode.tagName) &&
 					!this.isIntroList(startNode, true, /** @type {ElementFor<N>} */ (this.parts[0].node))
 				) {
-					break;
+					break
 				}
 			}
 
-			const nextElement = part.node.nextElementSibling;
-			if (!nextElement) continue;
+			const nextElement = part.node.nextElementSibling
+			if (!nextElement) continue
 
 			if (
 				this.isIntro({
@@ -1094,7 +1094,7 @@ class CommentSkeleton {
 					lastPartNode: /** @type {ElementFor<N>} */ (this.parts[0].node),
 				})
 			) {
-				this.parts.splice(i);
+				this.parts.splice(i)
 			}
 		}
 	}
@@ -1109,7 +1109,7 @@ class CommentSkeleton {
 	 * @private
 	 */
 	isCommentLevel(i, lastPartNode) {
-		const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i]);
+		const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
 
 		return (
 		// 'DD', 'LI' are in this list too for this kind of structures:
@@ -1202,7 +1202,7 @@ class CommentSkeleton {
 					this.isPartOfList(lastPartNode, false)
 				)
 			)
-		);
+		)
 	}
 
 	/**
@@ -1212,11 +1212,11 @@ class CommentSkeleton {
 	 */
 	replaceListsWithItems() {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const lastPartNode = /** @type {CommentPart<ElementLike>} */ (this.parts[this.parts.length - 1]).node;
+		const lastPartNode = /** @type {CommentPart<ElementLike>} */ (this.parts[this.parts.length - 1]).node
 		for (let i = this.parts.length - 1; i >= 0; i--) {
-			const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i]);
+			const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
 			if (this.isCommentLevel(i, lastPartNode)) {
-				const commentElements = this.parser.getTopElementsWithText(part.node).nodes;
+				const commentElements = this.parser.getTopElementsWithText(part.node).nodes
 				if (commentElements.length > 1) {
 					this.parts.splice(i, 1, ...commentElements.map((el) => /** @type {CommentPart} */ ({
 						node: el,
@@ -1225,12 +1225,12 @@ class CommentSkeleton {
 						hasCurrentSignature: this.parser.constructor.contains(el, this.signatureElement),
 						hasForeignComponents: false,
 						step: 'replaced',
-					})));
+					})))
 				} else if (commentElements[0] !== part.node) {
 					Object.assign(part, {
 						node: commentElements[0],
 						step: 'replaced',
-					});
+					})
 				}
 			}
 		}
@@ -1244,7 +1244,7 @@ class CommentSkeleton {
 	 */
 	wrapNumberedList() {
 		if (this.parts.length > 1) {
-			const firstNodeParent = /** @type {ElementFor<N>} */ (this.parts[0].node.parentElement);
+			const firstNodeParent = /** @type {ElementFor<N>} */ (this.parts[0].node.parentElement)
 
 			if (
 				firstNodeParent.tagName === 'OL' &&
@@ -1259,14 +1259,14 @@ class CommentSkeleton {
 				) === 0
 			) {
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const listItems = this.parts.filter((part) => part.node.parentElement === firstNodeParent);
+				const listItems = this.parts.filter((part) => part.node.parentElement === firstNodeParent)
 
-				let outerWrapper;
-				let innerWrapper;
+				let outerWrapper
+				let innerWrapper
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const nextSibling = firstNodeParent.nextSibling;
+				const nextSibling = firstNodeParent.nextSibling
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const parentParent = /** @type {ElementFor<N>} */ (firstNodeParent.parentElement);
+				const parentParent = /** @type {ElementFor<N>} */ (firstNodeParent.parentElement)
 
 				// Is `#` used as an indentation character instead of `:` or `*`, or is the comments just
 				// starts with a list and ends on a correct level (without `#`)?
@@ -1280,15 +1280,15 @@ class CommentSkeleton {
 							)
 					)
 				) {
-					innerWrapper = this.parser.constructor.createElement('div');
-					outerWrapper = innerWrapper;
+					innerWrapper = this.parser.constructor.createElement('div')
+					outerWrapper = innerWrapper
 				} else {
-					innerWrapper = this.parser.constructor.createElement('dd');
-					outerWrapper = this.parser.constructor.createElement('dl');
-					this.parser.constructor.appendChild(outerWrapper, innerWrapper);
+					innerWrapper = this.parser.constructor.createElement('dd')
+					outerWrapper = this.parser.constructor.createElement('dl')
+					this.parser.constructor.appendChild(outerWrapper, innerWrapper)
 				}
-				this.parser.constructor.appendChild(innerWrapper, firstNodeParent);
-				this.parser.constructor.insertBefore(parentParent, outerWrapper, nextSibling);
+				this.parser.constructor.appendChild(innerWrapper, firstNodeParent)
+				this.parser.constructor.insertBefore(parentParent, outerWrapper, nextSibling)
 
 				this.parts.splice(0, listItems.length, {
 					node: innerWrapper,
@@ -1297,7 +1297,7 @@ class CommentSkeleton {
 					hasCurrentSignature: true,
 					hasForeignComponents: false,
 					step: /** @type {const} */ ('replaced'),
-				});
+				})
 			}
 		}
 	}
@@ -1320,16 +1320,16 @@ class CommentSkeleton {
 
 			// Can't access stylesheets from the worker context, so we do it only in
 			// Comment#reviewHighlightables, and here we look at the style attribute only.
-			!/float: *(?:left|right)|display: *none/.test(el.getAttribute('style') || '');
+			!/float: *(?:left|right)|display: *none/.test(el.getAttribute('style') || '')
 
-		this.highlightables = this.elements.filter(isHighlightable);
+		this.highlightables = this.elements.filter(isHighlightable)
 
 		// There shouldn't be comments without highlightables.
 		if (!this.highlightables.length) {
-			throw new CdError();
+			throw new CdError()
 		}
 
-		this.wrapHighlightables();
+		this.wrapHighlightables()
 	}
 
 	/**
@@ -1360,21 +1360,21 @@ class CommentSkeleton {
 				(el.getAttribute('style') && el.tagName !== 'LI')
 			))
 			.forEach((el) => {
-				const wrapper = this.parser.constructor.createElement('div');
-				wrapper.className = 'cd-comment-replacedPart';
+				const wrapper = this.parser.constructor.createElement('div')
+				wrapper.className = 'cd-comment-replacedPart'
 				this.parser.constructor.insertBefore(
 					/** @type {ElementLike} */ (el.parentElement),
 					wrapper,
 					el
-				);
-				this.elements.splice(this.elements.indexOf(el), 1, /** @type {ElementFor<N>} */ (wrapper));
+				)
+				this.elements.splice(this.elements.indexOf(el), 1, /** @type {ElementFor<N>} */ (wrapper))
 				this.highlightables.splice(
 					this.highlightables.indexOf(el),
 					1,
 					/** @type {ElementFor<N>} */ (wrapper)
-				);
-				this.parser.constructor.appendChild(wrapper, el);
-			});
+				)
+				this.parser.constructor.appendChild(wrapper, el)
+			})
 	}
 
 	/**
@@ -1384,11 +1384,11 @@ class CommentSkeleton {
 	 */
 	addAttributes() {
 		this.elements.forEach((el) => {
-			el.classList.add('cd-comment-part');
-			el.setAttribute('data-cd-comment-index', String(this.index));
-		});
-		this.highlightables[0].classList.add('cd-comment-part-first');
-		this.highlightables[this.highlightables.length - 1].classList.add('cd-comment-part-last');
+			el.classList.add('cd-comment-part')
+			el.setAttribute('data-cd-comment-index', String(this.index))
+		})
+		this.highlightables[0].classList.add('cd-comment-part-first')
+		this.highlightables[this.highlightables.length - 1].classList.add('cd-comment-part-last')
 	}
 
 	/**
@@ -1400,31 +1400,31 @@ class CommentSkeleton {
 	 * @private
 	 */
 	getListsUpTree = (initialElement, includeFirstMatch = false) => {
-		const listElements = [];
-		const treeWalker = new ElementsTreeWalker(this.parser.context.rootElement, initialElement);
+		const listElements = []
+		const treeWalker = new ElementsTreeWalker(this.parser.context.rootElement, initialElement)
 		while (treeWalker.parentNode()) {
-			const el = treeWalker.currentNode;
+			const el = treeWalker.currentNode
 			if (['DL', 'UL', 'OL'].includes(el.tagName)) {
 				if (el.classList.contains('cd-commentLevel')) {
 					const match = /** @type {string} */ (el.getAttribute('class')).match(
 						/cd-commentLevel-(\d+)/
-					);
+					)
 					if (match) {
-						const elementsToAdd = Array.from({ length: Number(match[1]) });
+						const elementsToAdd = Array.from({ length: Number(match[1]) })
 						if (includeFirstMatch) {
-							elementsToAdd[elementsToAdd.length - 1] = el;
+							elementsToAdd[elementsToAdd.length - 1] = el
 						}
-						listElements.unshift(...elementsToAdd);
+						listElements.unshift(...elementsToAdd)
 					}
 
-					return listElements;
+					return listElements
 				}
-				listElements.unshift(el);
+				listElements.unshift(el)
 			}
 		}
 
-		return /** @type {ElementFor<N>[]} */ (listElements);
-	};
+		return /** @type {ElementFor<N>[]} */ (listElements)
+	}
 
 	/**
 	 * Finally review comment parts to make sure all "dives" (cases when the tree walker goes as deep
@@ -1435,22 +1435,22 @@ class CommentSkeleton {
 	 * @private
 	 */
 	reviewDives() {
-		let areElementsChanged = false;
+		let areElementsChanged = false
 
 		// Parts can be dissynchronized with elements at this stage, so we just use this.parts for
 		// reference.
 		if (this.elements.length > 1 && this.parts.some((part) => part.step === 'dive')) {
 			// Get level elements based on this.elements, not this.highlightables.
-			const allLevelElements = this.elements.map((el) => this.getListsUpTree(el));
+			const allLevelElements = this.elements.map((el) => this.getListsUpTree(el))
 
-			const lastAncestors = allLevelElements[allLevelElements.length - 1];
+			const lastAncestors = allLevelElements[allLevelElements.length - 1]
 			if (allLevelElements[0].length > lastAncestors.length) {
 				const firstWrongElementIndex = allLevelElements
 					.slice(0, -1)
 
 				// Can't be -1 - will return at least 0 since `allLevelElements[0].length >
 				// lastAncestors.length`
-					.findLastIndex((ancestors) => ancestors.length > lastAncestors.length);
+					.findLastIndex((ancestors) => ancestors.length > lastAncestors.length)
 
 				/*
 					Situation like this:
@@ -1476,14 +1476,14 @@ class CommentSkeleton {
 					// Check the last lower level element
 					this.elements[firstWrongElementIndex].lastElementChild?.classList.contains('cd-timestamp')
 				) {
-					this.elements.splice(0, firstWrongElementIndex + 1);
-					this.updateHighlightables();
-					areElementsChanged = true;
+					this.elements.splice(0, firstWrongElementIndex + 1)
+					this.updateHighlightables()
+					areElementsChanged = true
 				}
 			}
 		}
 
-		return areElementsChanged;
+		return areElementsChanged
 	}
 
 	/**
@@ -1501,10 +1501,10 @@ class CommentSkeleton {
 	 * @private
 	 */
 	fixIndentationHoles() {
-		if (!this.level || this.elements.length <= 2) return;
+		if (!this.level || this.elements.length <= 2) return
 
 		// Get level elements based on this.elements, not this.highlightables.
-		const allLevelElements = this.elements.map((el) => this.getListsUpTree(el, true));
+		const allLevelElements = this.elements.map((el) => this.getListsUpTree(el, true))
 
 		allLevelElements
 			.slice(1, -1)
@@ -1512,14 +1512,14 @@ class CommentSkeleton {
 		// Group indexes
 			.reduce((acc, ancestors, i) => {
 				if (!ancestors.length) {
-					const lastGroup = acc.at(-1);
+					const lastGroup = acc.at(-1)
 					if (!lastGroup || lastGroup.at(-1) !== i) {
-						acc.push([]);
+						acc.push([])
 					}
-					acc[acc.length - 1].push(i + 1);
+					acc[acc.length - 1].push(i + 1)
 				}
 
-				return acc;
+				return acc
 			}, /** @type {number[][]} */ ([]))
 
 			.forEach((indexes) => {
@@ -1527,17 +1527,17 @@ class CommentSkeleton {
 					.slice(0, indexes[0])
 					.reverse()
 					.find((ancestors) => ancestors.length)
-					?.at(-1);
+					?.at(-1)
 				if (levelElement) {
 					const itemElement = this.parser.constructor.createElement(
 						levelElement.tagName === 'DL' ? 'dd' : 'li'
-					);
+					)
 					indexes.forEach((index) => {
-						this.parser.constructor.appendChild(itemElement, this.elements[index]);
-					});
-					this.parser.constructor.appendChild(levelElement, itemElement);
+						this.parser.constructor.appendChild(itemElement, this.elements[index])
+					})
+					this.parser.constructor.appendChild(levelElement, itemElement)
 				}
-			});
+			})
 	}
 
 	/**
@@ -1557,32 +1557,32 @@ class CommentSkeleton {
 	fixEndLevel(levelElements) {
 		// Safety measure in case the element would turn out not to be a highlightable in
 		// Comment#reviewHighlightables.
-		if (this.highlightables[0].className) return;
+		if (this.highlightables[0].className) return
 
-		const lastAncestors = levelElements[levelElements.length - 1];
+		const lastAncestors = levelElements[levelElements.length - 1]
 		if (levelElements[0].length === lastAncestors.length - 1) {
-			const closestLevelElement = lastAncestors[lastAncestors.length - 1];
+			const closestLevelElement = lastAncestors[lastAncestors.length - 1]
 
 			// Split parent elements until we reach the level element.
-			let parent = /** @type {ElementLike} */ (this.highlightables[this.highlightables.length - 1]);
+			let parent = /** @type {ElementLike} */ (this.highlightables[this.highlightables.length - 1])
 			while (parent !== closestLevelElement) {
-				parent = this.parser.splitParentAfterNode(parent).parent;
+				parent = this.parser.splitParentAfterNode(parent).parent
 			}
 
-			let firstItemIndex = this.elements.length - 1;
+			let firstItemIndex = this.elements.length - 1
 			for (let i = this.elements.length - 2; i > 0; i--) {
 				if (this.parser.constructor.contains(closestLevelElement, this.elements[i])) {
-					firstItemIndex = i;
+					firstItemIndex = i
 				} else {
-					break;
+					break
 				}
 			}
 			this.elements.splice(
 				firstItemIndex,
 				this.elements.length - firstItemIndex,
 				closestLevelElement
-			);
-			this.updateHighlightables();
+			)
+			this.updateHighlightables()
 		}
 	}
 
@@ -1596,28 +1596,28 @@ class CommentSkeleton {
 	updateLevels(fixMarkup = true) {
 		// Make sure the level on the top and on the bottom of the comment are the same and add
 		// appropriate classes.
-		let levelElements = this.highlightables.map((el) => this.getListsUpTree(el));
+		let levelElements = this.highlightables.map((el) => this.getListsUpTree(el))
 
 		// Use the first and last elements, not all elements, to determine the level to deal with cases
 		// like
 		// https://ru.wikipedia.org/wiki/Википедия:К_удалению/17_марта_2021#Анжуйские_короли_Англии.
 
-		this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
-		this.logicalLevel = this.level;
+		this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length)
+		this.logicalLevel = this.level
 
 		if (fixMarkup) {
 			// Are elements changed?
 			if (this.reviewDives()) {
-				levelElements = this.highlightables.map((el) => this.getListsUpTree(el));
+				levelElements = this.highlightables.map((el) => this.getListsUpTree(el))
 			}
-			this.fixIndentationHoles();
-			this.fixEndLevel(/** @type {AtLeastOne<ElementFor<N>[]>} */ (levelElements));
+			this.fixIndentationHoles()
+			this.fixEndLevel(/** @type {AtLeastOne<ElementFor<N>[]>} */ (levelElements))
 		}
 
 		for (let i = 0; i < this.level; i++) {
 			levelElements.forEach((ancestors) => {
-				ancestors[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
-			});
+				ancestors[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`)
+			})
 		}
 	}
 
@@ -1632,27 +1632,27 @@ class CommentSkeleton {
 	getParent(visual = false) {
 		// Note: this.cachedParent.logicalLevel can be overriden in .processOutdents().
 
-		const prop = visual ? 'level' : 'logicalLevel';
+		const prop = visual ? 'level' : 'logicalLevel'
 		if (!(prop in this.cachedParent)) {
 			// This can run many times during page load, so we better optimize.
-			this.cachedParent[prop] = undefined;
+			this.cachedParent[prop] = undefined
 			if (this[prop] !== 0) {
 				for (let i = this.index - 1; i >= 0; i--) {
-					const comment = cd.comments[i];
-					if (comment.section !== this.section) break;
+					const comment = cd.comments[i]
+					if (comment.section !== this.section) break
 					if (comment[prop] === this[prop] && comment.cachedParent[prop]) {
-						this.cachedParent[prop] = comment.cachedParent[prop];
-						break;
+						this.cachedParent[prop] = comment.cachedParent[prop]
+						break
 					}
 					if (comment[prop] < this[prop]) {
-						this.cachedParent[prop] = comment;
-						break;
+						this.cachedParent[prop] = comment
+						break
 					}
 				}
 			}
 		}
 
-		return /** @type {this | undefined} */ (this.cachedParent[prop]);
+		return /** @type {this | undefined} */ (this.cachedParent[prop])
 	}
 
 	/**
@@ -1667,9 +1667,9 @@ class CommentSkeleton {
 	 */
 	getChildren(indirect = false, visual = false, allowSiblings = true) {
 		/** @type {this[]} */
-		const children = [];
-		const prop = visual ? 'level' : 'logicalLevel';
-		const comments = /** @type {this[]} */ (/** @type {unknown} */ (cd.comments));
+		const children = []
+		const prop = visual ? 'level' : 'logicalLevel'
+		const comments = /** @type {this[]} */ (/** @type {unknown} */ (cd.comments))
 		comments
 			.slice(this.index + 1)
 			.some((comment) => {
@@ -1690,10 +1690,10 @@ class CommentSkeleton {
 					// `comment.getParent() === this` to allow comments mistakenly indented with more than one
 					// level.
 					if (comment[prop] === this[prop] + 1 || indirect || comment.getParent() === this) {
-						children.push(comment);
+						children.push(comment)
 					}
 
-					return false;
+					return false
 				}
 				if (prop === 'logicalLevel' && this.parser.context.areThereOutdents()) {
 					// Outdented comments that are separated from their parents by interjected comments of
@@ -1705,19 +1705,19 @@ class CommentSkeleton {
 							/** @type {CommentSkeleton<N> | null} */ (c.cachedParent.logicalLevel) ===
 							this
 							) {
-								children.push(c);
+								children.push(c)
 
-								return true;
+								return true
 							}
 
-							return c.section !== this.section;
-						});
+							return c.section !== this.section
+						})
 				}
 
-				return true;
-			});
+				return true
+			})
 
-		return children;
+		return children
 	}
 
 	/**
@@ -1727,7 +1727,7 @@ class CommentSkeleton {
 	 * @returns {boolean}
 	 */
 	static isId(value) {
-		return Boolean(value && /^\d{12}_.+$/.test(value));
+		return Boolean(value && /^\d{12}_.+$/.test(value))
 	}
 
 	/**
@@ -1737,7 +1737,7 @@ class CommentSkeleton {
 	 * @returns {boolean}
 	 */
 	static isDtId(value) {
-		return Boolean(value?.startsWith('c-'));
+		return Boolean(value?.startsWith('c-'))
 	}
 
 	/**
@@ -1747,7 +1747,7 @@ class CommentSkeleton {
 	 * @returns {boolean}
 	 */
 	static isAnyId(value) {
-		return this.isId(value) || this.isDtId(value);
+		return this.isId(value) || this.isDtId(value)
 	}
 
 	/**
@@ -1786,20 +1786,20 @@ class CommentSkeleton {
 	 * @returns {string | undefined}
 	 */
 	static generateId(date, author, existingIds) {
-		if (!date || !author) return;
+		if (!date || !author) return
 
-		let id = generateFixedPosTimestamp(date) + '_' + spacesToUnderlines(author);
+		let id = generateFixedPosTimestamp(date) + '_' + spacesToUnderlines(author)
 		if (existingIds?.includes(id)) {
-			let index = 2;
-			const base = id;
+			let index = 2
+			const base = id
 			do {
-				id = `${base}_${index}`;
-				index++;
-			} while (existingIds.includes(id));
+				id = `${base}_${index}`
+				index++
+			} while (existingIds.includes(id))
 		}
-		existingIds?.push(id);
+		existingIds?.push(id)
 
-		return id;
+		return id
 	}
 
 	/**
@@ -1813,25 +1813,25 @@ class CommentSkeleton {
 		if (cd.isWorker()) return;
 
 		[...element.childNodes].forEach((child) => {
-			if (!(child instanceof HTMLElement)) return;
+			if (!(child instanceof HTMLElement)) return
 
-			const width = child.style.width;
+			const width = child.style.width
 			if (width) {
-				const match = width.match(/^([\d.]+)(.+)$/);
+				const match = width.match(/^([\d.]+)(.+)$/)
 				if (match) {
-					const number = Number(match[1]);
-					const unit = match[2];
+					const number = Number(match[1])
+					const unit = match[2]
 
 					// 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
-					child.style.width = `calc(${number * 1.25}${unit} + ${number * 1.25 / 2}px)`;
+					child.style.width = `calc(${number * 1.25}${unit} + ${number * 1.25 / 2}px)`
 
-					child.style.borderColor = `var(--border-color-subtle, #c8ccd1)`;
+					child.style.borderColor = `var(--border-color-subtle, #c8ccd1)`
 				}
 			} else if (!parser.getChildElements(child).length && child.textContent.includes('─')) {
 				child.textContent = child.textContent
-					.replace(/─+/, (s) => '─'.repeat(Math.round(s.length * 1.25)));
+					.replace(/─+/, (s) => '─'.repeat(Math.round(s.length * 1.25)))
 			}
-		});
+		})
 	}
 
 	/**
@@ -1847,43 +1847,43 @@ class CommentSkeleton {
 			.reverse()
 			.forEach((element) => {
 				/** @type {CommentSkeleton | undefined} */
-				let childComment;
+				let childComment
 				/** @type {CommentSkeleton | undefined} */
-				let parentComment;
-				const treeWalker = new ElementsTreeWalker(parser.context.rootElement, element);
+				let parentComment
+				const treeWalker = new ElementsTreeWalker(parser.context.rootElement, element)
 				while (treeWalker.nextNode() && !childComment) {
-					const commentIndexAttr = treeWalker.currentNode.getAttribute('data-cd-comment-index');
-					if (commentIndexAttr === '0') break;
-					if (commentIndexAttr === null) continue;
+					const commentIndexAttr = treeWalker.currentNode.getAttribute('data-cd-comment-index')
+					if (commentIndexAttr === '0') break
+					if (commentIndexAttr === null) continue
 
-					const commentIndex = Number(commentIndexAttr);
-					childComment = cd.comments[commentIndex];
+					const commentIndex = Number(commentIndexAttr)
+					childComment = cd.comments[commentIndex]
 
 					// Find an _actual_ parent of the comment in case the previous one is newer than the
 					// child. Example:
 					// https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1044759311#202108282226_Cryptic.
 					for (let i = commentIndex - 1; i >= 0; i--) {
-						const comment = cd.comments[i];
-						if (comment.section !== childComment.section) break;
+						const comment = cd.comments[i]
+						if (comment.section !== childComment.section) break
 						if (childComment.date && comment.date && childComment.date >= comment.date) {
-							parentComment = comment;
-							break;
+							parentComment = comment
+							break
 						}
 					}
-					if (!parentComment) break;
+					if (!parentComment) break
 
 					if (parentComment.index !== commentIndex - 1) {
 						// Explicitly set the parent.
-						childComment.cachedParent.logicalLevel = parentComment;
+						childComment.cachedParent.logicalLevel = parentComment
 					}
 
-					this.updateOutdentStyle(element, parser);
+					this.updateOutdentStyle(element, parser)
 
-					childComment.isOutdented = true;
-					childComment.elements[0].classList.add('cd-comment-outdented');
+					childComment.isOutdented = true
+					childComment.elements[0].classList.add('cd-comment-outdented')
 
-					const narrowedParrentComment = parentComment;
-					const narrowedChildComment = childComment;
+					const narrowedParrentComment = parentComment
+					const narrowedChildComment = childComment
 
 					// Update levels for comments that follow.
 					cd.comments.slice(commentIndex).some((comment) => {
@@ -1896,18 +1896,18 @@ class CommentSkeleton {
 							(comment !== narrowedChildComment && comment.logicalLevel === narrowedChildComment.level) ||
 							(comment.date && comment.date < /** @type {Date} */ (narrowedChildComment.date))
 						) {
-							return true;
+							return true
 						}
 
 						comment.logicalLevel = (
 							(narrowedParrentComment.level + 1) +
 							(comment.logicalLevel - narrowedChildComment.level)
-						);
+						)
 
-						return false;
-					});
+						return false
+					})
 				}
-			});
+			})
 	}
 
 	/**
@@ -1920,7 +1920,7 @@ class CommentSkeleton {
 	 * @returns {(T & (AD extends false ? { date: Date } : {})) | undefined}
 	 */
 	static getOldest(comments, allowDateless) {
-		return genericGetOldestOrNewestByDateProp(comments, 'oldest', allowDateless);
+		return genericGetOldestOrNewestByDateProp(comments, 'oldest', allowDateless)
 	}
 
 	/**
@@ -1933,7 +1933,7 @@ class CommentSkeleton {
 	 * @returns {(T & (AD extends false ? { date: Date } : {})) | undefined}
 	 */
 	static getNewest(comments, allowDateless) {
-		return genericGetOldestOrNewestByDateProp(comments, 'newest', allowDateless);
+		return genericGetOldestOrNewestByDateProp(comments, 'newest', allowDateless)
 	}
 }
 
@@ -1945,4 +1945,4 @@ class CommentSkeleton {
  * >} CommentBase
  */
 
-export default CommentSkeleton;
+export default CommentSkeleton

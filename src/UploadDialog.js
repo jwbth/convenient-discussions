@@ -1,8 +1,8 @@
-import ForeignStructuredUploadBookletLayout from './ForeignStructuredUploadBookletLayout';
-import ProcessDialogMixin from './ProcessDialogMixin';
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
+import ForeignStructuredUploadBookletLayout from './ForeignStructuredUploadBookletLayout'
+import ProcessDialogMixin from './ProcessDialogMixin'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
 
 /**
  * @class Upload
@@ -41,7 +41,7 @@ class UploadDialog extends mixInClass(
 				classes: ['cd-uploadDialog'],
 				...config,
 			})
-		);
+		)
 	}
 
 	/**
@@ -67,9 +67,9 @@ class UploadDialog extends mixInClass(
 		// `fr.wiktionary.org` will translate into `wikt:fr:`.
 		mw.loader.load(
 			'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript'
-		);
+		)
 
-		const projectNameMsgName = 'project-localized-name-' + mw.config.get('wgDBname');
+		const projectNameMsgName = 'project-localized-name-' + mw.config.get('wgDBname')
 		const messagesPromise = cd.getApi().loadMessagesIfMissing([
 			projectNameMsgName,
 
@@ -79,39 +79,39 @@ class UploadDialog extends mixInClass(
 			// "Must contain a valid copyright tag"
 			'mwe-upwiz-license-custom-explain',
 			'mwe-upwiz-license-custom-url',
-		]);
+		])
 		const enProjectNamePromise =
 			cd.g.userLanguage === 'en'
 				? undefined
-				: cd.getApi().getMessages(projectNameMsgName, { amlang: 'en' });
+				: cd.getApi().getMessages(projectNameMsgName, { amlang: 'en' })
 
 		return super.getSetupProcess(data).next(async () => {
-			let enProjectName;
+			let enProjectName
 			try {
-				await messagesPromise;
+				await messagesPromise
 				enProjectName =
-					(await enProjectNamePromise)?.[projectNameMsgName] || cd.mws(projectNameMsgName);
+					(await enProjectNamePromise)?.[projectNameMsgName] || cd.mws(projectNameMsgName)
 			} catch {
 				// Empty
 			}
 
-			data.commentForm.popPending();
+			data.commentForm.popPending()
 
 			// For some reason there is no handling of network errors; the dialog just outputs "http".
 			if (
 				messagesPromise.state() === 'rejected' ||
 				this.uploadBooklet.upload.getApi().state() === 'rejected'
 			) {
-				this.handleError(new CdError(), 'cf-error-uploadimage', false);
+				this.handleError(new CdError(), 'cf-error-uploadimage', false)
 
-				return;
+				return
 			}
 
 			this.uploadBooklet
 				.on('changeSteps', this.updateActionLabels)
-				.on('submitUpload', () => this.executeAction('upload'));
-			this.uploadBooklet.setup(data.file, enProjectName);
-		});
+				.on('submitUpload', () => this.executeAction('upload'))
+			this.uploadBooklet.setup(data.file, enProjectName)
+		})
 	}
 
 	/**
@@ -128,8 +128,8 @@ class UploadDialog extends mixInClass(
 	 */
 	getReadyProcess() {
 		return super.getReadyProcess().next(() => {
-			this.uploadBooklet.controls.title.input.focus();
-		});
+			this.uploadBooklet.controls.title.input.focus()
+		})
 	}
 
 	/**
@@ -146,31 +146,31 @@ class UploadDialog extends mixInClass(
 	getActionProcess(action) {
 		if (action === 'upload') {
 			// @ts-expect-error: We need this protected method here
-			let process = new OO.ui.Process(this.uploadBooklet.uploadFile());
+			let process = new OO.ui.Process(this.uploadBooklet.uploadFile())
 			if (this.autosave) {
 				process = process.next(() => {
 					// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 					const promise = this.executeAction('save').fail(() => {
 						// Reset the ability
 						// @ts-expect-error: We need this protected method here
-						this.uploadBooklet.onInfoFormChange();
-					});
-					this.actions.setAbilities({ save: false });
+						this.uploadBooklet.onInfoFormChange()
+					})
+					this.actions.setAbilities({ save: false })
 
-					return promise;
-				});
+					return promise
+				})
 			}
 
-			return process;
+			return process
 		} else if (action === 'cancelupload') {
 			// The upstream dialog calls .initialize() here which clears all inputs including the file.
 			// We don't want that.
-			this.uploadBooklet.cancelUpload();
+			this.uploadBooklet.cancelUpload()
 
-			return new OO.ui.Process(() => {});
+			return new OO.ui.Process(() => {})
 		}
 
-		return super.getActionProcess(action);
+		return super.getActionProcess(action)
 	}
 
 	/**
@@ -182,7 +182,7 @@ class UploadDialog extends mixInClass(
 	 * @ignore
 	 */
 	getBodyHeight() {
-		return 620;
+		return 620
 	}
 
 	/**
@@ -192,17 +192,17 @@ class UploadDialog extends mixInClass(
 	 * @protected
 	 */
 	updateActionLabels = (autosave) => {
-		this.autosave = autosave;
+		this.autosave = autosave
 		if (this.autosave) {
 			this.actions.get({ actions: ['upload', 'save'] }).forEach((action) => {
-				action.setLabel(cd.s('ud-uploadandsave'));
-			});
+				action.setLabel(cd.s('ud-uploadandsave'))
+			})
 		} else {
 			this.actions.get({ actions: ['upload', 'save'] }).forEach((action) => {
-				action.setLabel(cd.mws(`upload-dialog-button-${action.getAction()}`));
-			});
+				action.setLabel(cd.mws(`upload-dialog-button-${action.getAction()}`))
+			})
 		}
-	};
+	}
 
 	/**
 	 * @class Error
@@ -220,12 +220,12 @@ class UploadDialog extends mixInClass(
 	 * @param {OO.ui.Error} errors
 	 */
 	showErrors(errors) {
-		this.hideErrors();
+		this.hideErrors()
 
-		super.showErrors(errors);
+		super.showErrors(errors)
 	}
 }
 
-es6ClassToOoJsClass(UploadDialog);
+es6ClassToOoJsClass(UploadDialog)
 
-export default UploadDialog;
+export default UploadDialog

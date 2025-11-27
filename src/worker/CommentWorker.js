@@ -1,9 +1,9 @@
-import { isText } from 'domhandler';
+import { isText } from 'domhandler'
 
-import CommentSkeleton from '../shared/CommentSkeleton';
-import { isElement, isHeadingNode, isMetadataNode } from '../shared/utils-general';
+import CommentSkeleton from '../shared/CommentSkeleton'
+import { isElement, isHeadingNode, isMetadataNode } from '../shared/utils-general'
 
-import { keepSafeKeys } from './worker';
+import { keepSafeKeys } from './worker'
 
 /**
  * Comment class used in the worker scope.
@@ -19,86 +19,86 @@ export default class CommentWorker extends CommentSkeleton {
 	 */
 
 	/** @type {HiddenElementData[]} */
-	hiddenElementsData;
+	hiddenElementsData
 
 	/** @type {string[]} */
-	elementHtmls;
+	elementHtmls
 
 	/** @type {string} */
-	htmlToCompare;
+	htmlToCompare
 
 	/** @type {string} */
-	textHtmlToCompare;
+	textHtmlToCompare
 
 	/** @type {string} */
-	headingHtmlToCompare;
+	headingHtmlToCompare
 
 	/** @type {string} */
-	text;
+	text
 
 	/** @type {string[]} */
-	elementNames;
+	elementNames
 
 	/** @type {string[]} */
-	elementClassNames;
+	elementClassNames
 
 	/** @type {CommentWorker[]} */
-	children;
+	children
 
 	/** @type {CommentWorker[]} */
-	previousComments;
+	previousComments
 
 	/** @type {CommentWorker|undefined} */
-	parent;
+	parent
 
 	/** @type {boolean|undefined} */
-	isToMe;
+	isToMe
 
 	/**
 	 * @override
 	 * @type {import('./SectionWorker').default | undefined}
 	 */
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
-	section = this.section;
+	section = this.section
 
 	/**
 	 * @override
 	 * @type {import('domhandler').Element}
 	 */
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
-	signatureElement = this.signatureElement;
+	signatureElement = this.signatureElement
 
 	/**
 	 * @override
 	 * @type {import('domhandler').Element[]}
 	 */
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
-	elements = this.elements;
+	elements = this.elements
 
 	/**
 	 * Remove unnecessary content, hide dynamic content in a comment.
 	 */
 	filterCommentContent() {
-		this.hiddenElementsData = [];
+		this.hiddenElementsData = []
 		this.elementHtmls = this.elements
 			.map((/** @type {import('domhandler').Element} */ element) => {
 				if (isHeadingNode(element)) {
 					// Keep only the headline, as other elements contain dynamic identifiers.
-					this.processHeadingElement(element);
+					this.processHeadingElement(element)
 				}
 
 				// Data attributes may include dynamic components, for example
 				// https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
-				this.processElementAttributes(element);
+				this.processElementAttributes(element)
 
 				if (element.classList.contains('references') || isMetadataNode(element)) {
 					return /** @type {import('domhandler').Element} */ (this.hideElement(element))
-						.textContent;
+						.textContent
 				}
-				this.processReferenceElements(element);
+				this.processReferenceElements(element)
 
-				return element.outerHTML;
-			});
+				return element.outerHTML
+			})
 	}
 
 	/**
@@ -121,15 +121,15 @@ export default class CommentWorker extends CommentSkeleton {
 			So the HTML is `<dd><div>...</div><dl>...</dl></dd>`. A newline also appears before `</div>`, so
 			we need to trim.
 		*/
-		this.initializeCompareProperties();
+		this.initializeCompareProperties()
 
 		this.elements.forEach((element) => {
-			this.processSvgElements(element);
-			this.processTimestampElements(element);
-			this.updateCompareProperties(element, this.getElementHtmlToCompare(element));
-		});
+			this.processSvgElements(element)
+			this.processTimestampElements(element)
+			this.updateCompareProperties(element, this.getElementHtmlToCompare(element))
+		})
 
-		this.finalizeCompareProperties();
+		this.finalizeCompareProperties()
 	}
 
 	/**
@@ -139,9 +139,9 @@ export default class CommentWorker extends CommentSkeleton {
 	 * @private
 	 */
 	processHeadingElement(element) {
-		let headlineElement = [...element.getElementsByClassName('mw-headline', 1)].at(0);
+		let headlineElement = [...element.getElementsByClassName('mw-headline', 1)].at(0)
 		if (!headlineElement) {
-			headlineElement = [...element.querySelectorAll('h1, h2, h3, h4, h5, h6')].at(0);
+			headlineElement = [...element.querySelectorAll('h1, h2, h3, h4, h5, h6')].at(0)
 		}
 		if (headlineElement) {
 			// Was removed in 2021, see T284921. Keep this for some time.
@@ -150,9 +150,9 @@ export default class CommentWorker extends CommentSkeleton {
 			// Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
 			// or moved, indexes will change.
 			[...element.childNodes].forEach((el) => {
-				el.remove();
+				el.remove()
 			});
-			[...headlineElement.childNodes].forEach(element.appendChild.bind(element));
+			[...headlineElement.childNodes].forEach(element.appendChild.bind(element))
 		}
 	}
 
@@ -164,24 +164,24 @@ export default class CommentWorker extends CommentSkeleton {
 	 * @private
 	 */
 	processElementAttributes(element) {
-		CommentWorker.removeDataAndParsoidAttributes(element);
+		CommentWorker.removeDataAndParsoidAttributes(element)
 		element
 			.getElementsByAttribute(/^data-|^id$/)
-			.forEach(CommentWorker.removeDataAndParsoidAttributes);
+			.forEach(CommentWorker.removeDataAndParsoidAttributes)
 
 		// Empty comment anchors, in most cases added by the script.
 		element.querySelectorAll('span')
 			.filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
 			.forEach((el) => {
-				el.remove();
-			});
+				el.remove()
+			})
 
 		// Remove comment nodes
 		element
 			.filterRecursively((node) => node.nodeType === Node.COMMENT_NODE)
 			.forEach((node) => {
-				node.remove();
-			});
+				node.remove()
+			})
 	}
 
 	/**
@@ -201,8 +201,8 @@ export default class CommentWorker extends CommentSkeleton {
 					isMetadataNode(node))
 			)
 		).forEach((el) => {
-			this.hideElement(el);
-		});
+			this.hideElement(el)
+		})
 	}
 
 	/**
@@ -211,9 +211,9 @@ export default class CommentWorker extends CommentSkeleton {
 	 * @private
 	 */
 	initializeCompareProperties() {
-		this.htmlToCompare = '';
-		this.textHtmlToCompare = '';
-		this.headingHtmlToCompare = '';
+		this.htmlToCompare = ''
+		this.textHtmlToCompare = ''
+		this.headingHtmlToCompare = ''
 	}
 
 	/**
@@ -224,8 +224,8 @@ export default class CommentWorker extends CommentSkeleton {
 	 */
 	processSvgElements(element) {
 		element.getElementsByTagName('svg').forEach((svg) => {
-			svg.remove();
-		});
+			svg.remove()
+		})
 	}
 
 	/**
@@ -237,11 +237,11 @@ export default class CommentWorker extends CommentSkeleton {
 	processTimestampElements(element) {
 		element.getElementsByClassName('ext-discussiontools-init-timestamplink').forEach((link) => {
 			// The link may change
-			link.removeAttribute('href');
+			link.removeAttribute('href')
 
 			// There is a relative date in the tooltip
-			link.removeAttribute('title');
-		});
+			link.removeAttribute('title')
+		})
 	}
 
 	/**
@@ -257,25 +257,25 @@ export default class CommentWorker extends CommentSkeleton {
 			// comment) is treated differently depending on whether there are replies to that comment.
 			// When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
 			// part; when there are, the <div> wrapper is.
-			element.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+			element.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last')
 			if (!element.getAttribute('class')) {
-				element.removeAttribute('class');
+				element.removeAttribute('class')
 			}
 			if (
 				Object.keys(element.attribs).length &&
 				element.className !== 'cd-comment-replacedPart'
 			) {
 				if (element.lastChild && isText(element.lastChild) && element.lastChild.data === '\n') {
-					element.lastChild.remove();
+					element.lastChild.remove()
 				}
 
-				return element.outerHTML;
+				return element.outerHTML
 			}
 
-			return element.innerHTML;
+			return element.innerHTML
 		}
 
-		return element.innerHTML || element.textContent;
+		return element.innerHTML || element.textContent
 	}
 
 	/**
@@ -286,11 +286,11 @@ export default class CommentWorker extends CommentSkeleton {
 	 * @private
 	 */
 	updateCompareProperties(element, htmlToCompare) {
-		this.htmlToCompare += htmlToCompare + '\n';
+		this.htmlToCompare += htmlToCompare + '\n'
 		if (isHeadingNode(element)) {
-			this.headingHtmlToCompare += htmlToCompare;
+			this.headingHtmlToCompare += htmlToCompare
 		} else {
-			this.textHtmlToCompare += htmlToCompare + '\n';
+			this.textHtmlToCompare += htmlToCompare + '\n'
 		}
 	}
 
@@ -300,16 +300,16 @@ export default class CommentWorker extends CommentSkeleton {
 	 * @private
 	 */
 	finalizeCompareProperties() {
-		this.htmlToCompare = this.htmlToCompare.trim();
-		this.textHtmlToCompare = this.textHtmlToCompare.trim();
-		this.headingHtmlToCompare = this.headingHtmlToCompare.trim();
+		this.htmlToCompare = this.htmlToCompare.trim()
+		this.textHtmlToCompare = this.textHtmlToCompare.trim()
+		this.headingHtmlToCompare = this.headingHtmlToCompare.trim()
 
-		this.signatureElement.remove();
+		this.signatureElement.remove()
 
-		this.text = this.elements.map((el) => el.textContent).join('\n').trim();
+		this.text = this.elements.map((el) => el.textContent).join('\n').trim()
 
-		this.elementNames = this.elements.map((el) => el.tagName);
-		this.elementClassNames = this.elements.map((el) => el.className);
+		this.elementNames = this.elements.map((el) => el.tagName)
+		this.elementClassNames = this.elements.map((el) => el.className)
 	}
 
 	/**
@@ -321,33 +321,33 @@ export default class CommentWorker extends CommentSkeleton {
 	 */
 	hideElement(element) {
 		if (!this.elements.includes(element)) {
-			return;
+			return
 		}
 
-		let type;
+		let type
 		if (element.classList.contains('reference')) {
-			type = 'reference';
+			type = 'reference'
 		} else if (element.classList.contains('references')) {
-			type = 'references';
+			type = 'references'
 		} else if (element.classList.contains('autonumber')) {
-			type = 'autonumber';
+			type = 'autonumber'
 		} else {
-			type = 'templateStyles';
+			type = 'templateStyles'
 		}
 
 		const num = /** @type {HiddenElementData[]} */ (this.hiddenElementsData).push({
 			type,
 			tagName: element.tagName,
 			html: element.outerHTML,
-		});
-		const span = document.createElement('span');
-		span.textContent = `\u0001${num}_${type}\u0002`;
+		})
+		const span = document.createElement('span')
+		span.textContent = `\u0001${num}_${type}\u0002`
 		// span.before(element);
-		element.remove();
+		element.remove()
 
-		this.elements[this.elements.indexOf(element)] = span;
+		this.elements[this.elements.indexOf(element)] = span
 
-		return span;
+		return span
 	}
 
 	/**
@@ -359,10 +359,10 @@ export default class CommentWorker extends CommentSkeleton {
 	static removeDataAndParsoidAttributes = (element) => {
 		Object.keys(element.attribs).forEach((name) => {
 			if (name.startsWith('data-') || (name === 'id' && /^mw.{2,3}$/.test(element.attribs[name]))) {
-				element.removeAttribute(name);
+				element.removeAttribute(name)
 			}
-		});
-	};
+		})
+	}
 
 	/**
 	 * Prepare comments for transferring to the main process.
@@ -371,20 +371,20 @@ export default class CommentWorker extends CommentSkeleton {
 	 */
 	static tweakComments(comments) {
 		comments.forEach((comment) => {
-			comment.filterCommentContent();
-			comment.addCompareHelperProperties();
-		});
+			comment.filterCommentContent()
+			comment.addCompareHelperProperties()
+		})
 
 		comments.forEach((comment, i) => {
-			comment.children = comment.getChildren();
+			comment.children = comment.getChildren()
 			comment.children.forEach((reply) => {
-				reply.parent = comment;
-				reply.isToMe = comment.isOwn;
-			});
+				reply.parent = comment
+				reply.isToMe = comment.isOwn
+			})
 
 			comment.previousComments = comments
 				.slice(Math.max(0, i - 2), i)
-				.reverse();
+				.reverse()
 
 			keepSafeKeys(comment, [
 				'authorLink',
@@ -398,7 +398,7 @@ export default class CommentWorker extends CommentSkeleton {
 				'signatureElement',
 				'timestampElement',
 				'getListsUpTree',
-			]);
-		});
+			])
+		})
 	}
 }

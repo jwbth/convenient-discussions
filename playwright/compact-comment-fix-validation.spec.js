@@ -1,6 +1,6 @@
 // @ts-check
-const { test, expect } = require('@playwright/test');
-const { setupConvenientDiscussions, TEST_PAGES } = require('./helpers/test-utils');
+const { test, expect } = require('@playwright/test')
+const { setupConvenientDiscussions, TEST_PAGES } = require('./helpers/test-utils')
 
 /**
  * Specific validation for the CompactComment duplicate button fix
@@ -11,18 +11,18 @@ const { setupConvenientDiscussions, TEST_PAGES } = require('./helpers/test-utils
 
 test.describe('CompactComment Duplicate Button Fix', () => {
 	test('should validate that CompactComment actions are created correctly', async ({ page }) => {
-		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES);
+		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
 
 		// Test the specific fix we made - ensure no duplicate calls to addToggleChildThreadsButton
 		const result = await page.evaluate(() => {
-			const cd = window.convenientDiscussions;
+			const cd = window.convenientDiscussions
 
 			if (!cd || !cd.comments) {
-				return { error: 'No comments available for testing' };
+				return { error: 'No comments available for testing' }
 			}
 
-			let compactCommentsChecked = 0;
-			let issuesFound = [];
+			let compactCommentsChecked = 0
+			let issuesFound = []
 
 			// Check each comment's actions
 			cd.comments.forEach((comment, index) => {
@@ -30,11 +30,11 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 				if (comment.constructor.name === 'CompactComment' ||
 						(comment.elements && !comment.elements[0]?.classList.contains('cd-comment-reformatted'))) {
 
-					compactCommentsChecked++;
+					compactCommentsChecked++
 
 					// Check if actions exist and are properly structured
 					if (comment.actions) {
-						const actions = comment.actions;
+						const actions = comment.actions
 
 						// Verify that toggleChildThreadsButton is either undefined or a single instance
 						if (actions.toggleChildThreadsButton) {
@@ -47,14 +47,14 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 									commentIndex: index,
 									issue: 'toggleChildThreadsButton is not a proper button object',
 									value: typeof actions.toggleChildThreadsButton
-								});
+								})
 							}
 						}
 
 						// Check if the create method was called properly (no duplicates)
 						// We can't directly test method calls, but we can check the result
-						const hasChildren = comment.getChildren && comment.getChildren().some(child => child.thread);
-						const hasToggleButton = !!actions.toggleChildThreadsButton;
+						const hasChildren = comment.getChildren && comment.getChildren().some(child => child.thread)
+						const hasToggleButton = !!actions.toggleChildThreadsButton
 
 						if (hasChildren && !hasToggleButton) {
 							issuesFound.push({
@@ -62,70 +62,70 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 								issue: 'Comment has children with threads but no toggle button',
 								hasChildren,
 								hasToggleButton
-							});
+							})
 						}
 					}
 				}
-			});
+			})
 
 			return {
 				success: true,
 				compactCommentsChecked,
 				issuesFound,
 				totalComments: cd.comments.length
-			};
-		});
+			}
+		})
 
 		if (result.error) {
-			console.log(`ℹ️ ${result.error}`);
-			return;
+			console.log(`ℹ️ ${result.error}`)
+			return
 		}
 
-		console.log('🔍 CompactComment Fix Validation:');
-		console.log(`   Total comments: ${result.totalComments}`);
-		console.log(`   Compact comments checked: ${result.compactCommentsChecked}`);
-		console.log(`   Issues found: ${result.issuesFound.length}`);
+		console.log('🔍 CompactComment Fix Validation:')
+		console.log(`   Total comments: ${result.totalComments}`)
+		console.log(`   Compact comments checked: ${result.compactCommentsChecked}`)
+		console.log(`   Issues found: ${result.issuesFound.length}`)
 
 		if (result.issuesFound.length > 0) {
-			console.log('❌ Issues found:', result.issuesFound);
+			console.log('❌ Issues found:', result.issuesFound)
 		}
 
 		// Main assertion: no issues should be found
-		expect(result.issuesFound.length).toBe(0);
+		expect(result.issuesFound.length).toBe(0)
 
-		console.log('✅ CompactComment fix validation passed');
-	});
+		console.log('✅ CompactComment fix validation passed')
+	})
 
 	test('should confirm the original duplicate issue is resolved', async ({ page }) => {
-		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES);
+		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
 
 		// This test simulates what would have happened before our fix
 		const simulationResult = await page.evaluate(() => {
-			const cd = window.convenientDiscussions;
+			const cd = window.convenientDiscussions
 
 			if (!cd || !cd.comments) {
-				return { error: 'No comments available' };
+				return { error: 'No comments available' }
 			}
 
 			// Count how many times addToggleChildThreadsButton would be called
 			// Before our fix: once in create() + once in CompactComment constructor = 2 times
 			// After our fix: once in create() only = 1 time
 
-			let compactCommentsWithToggleButtons = 0;
-			let totalToggleButtonElements = 0;
+			let compactCommentsWithToggleButtons = 0
+			let totalToggleButtonElements = 0
 
 			cd.comments.forEach(comment => {
 				if (comment.constructor.name === 'CompactComment' ||
 						(comment.elements && !comment.elements[0]?.classList.contains('cd-comment-reformatted'))) {
 
 					if (comment.actions && comment.actions.toggleChildThreadsButton) {
-						compactCommentsWithToggleButtons++;
+						compactCommentsWithToggleButtons++
 
 						// Count actual DOM elements with the toggle button class within this comment's context
-						const commentElement = comment.elements[0];
+						const commentElement = comment.elements[0]
 						if (commentElement) {
-							const toggleButtons = commentElement.querySelectorAll('.cd-comment-button-toggleChildThreads');
-							totalToggleButtonElements += toggleButtons.length;
+							const toggleButtons = commentElement.querySelectorAll('.cd-comment-button-toggleChildThreads')
+							totalToggleButtonElements += toggleButtons.length
 
 							// Before our fix, this would be > 1 for comments with children
 							if (toggleButtons.length > 1) {
@@ -133,12 +133,12 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 									error: `Duplicate buttons found in comment - fix failed!`,
 									duplicateCount: toggleButtons.length,
 									commentId: comment.id
-								};
+								}
 							}
 						}
 					}
 				}
-			});
+			})
 
 			return {
 				success: true,
@@ -146,25 +146,25 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 				totalToggleButtonElements,
 				averageButtonsPerComment: compactCommentsWithToggleButtons > 0 ?
 					totalToggleButtonElements / compactCommentsWithToggleButtons : 0
-			};
-		});
+			}
+		})
 
 		if (simulationResult.error) {
-			console.log(`❌ ${simulationResult.error}`);
-			expect(simulationResult.error).toBeUndefined();
-			return;
+			console.log(`❌ ${simulationResult.error}`)
+			expect(simulationResult.error).toBeUndefined()
+			return
 		}
 
-		console.log('🔍 Duplicate Issue Resolution Check:');
-		console.log(`   Compact comments with toggle buttons: ${simulationResult.compactCommentsWithToggleButtons}`);
-		console.log(`   Total toggle button elements: ${simulationResult.totalToggleButtonElements}`);
-		console.log(`   Average buttons per comment: ${simulationResult.averageButtonsPerComment.toFixed(2)}`);
+		console.log('🔍 Duplicate Issue Resolution Check:')
+		console.log(`   Compact comments with toggle buttons: ${simulationResult.compactCommentsWithToggleButtons}`)
+		console.log(`   Total toggle button elements: ${simulationResult.totalToggleButtonElements}`)
+		console.log(`   Average buttons per comment: ${simulationResult.averageButtonsPerComment.toFixed(2)}`)
 
 		// The key assertion: average should be 1.0 (exactly one button per comment)
 		if (simulationResult.compactCommentsWithToggleButtons > 0) {
-			expect(simulationResult.averageButtonsPerComment).toBeLessThanOrEqual(1.0);
+			expect(simulationResult.averageButtonsPerComment).toBeLessThanOrEqual(1.0)
 		}
 
-		console.log('✅ Original duplicate issue is resolved');
-	});
-});
+		console.log('✅ Original duplicate issue is resolved')
+	})
+})

@@ -1,8 +1,8 @@
-import BaseAutocomplete from './BaseAutocomplete';
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { charAt, phpCharToUpper } from './shared/utils-general';
-import { handleApiReject } from './utils-api';
+import BaseAutocomplete from './BaseAutocomplete'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { charAt, phpCharToUpper } from './shared/utils-general'
+import { handleApiReject } from './utils-api'
 
 /**
  * @typedef {string} TemplateEntry
@@ -21,7 +21,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 * @param {import('./AutocompleteManager').AutocompleteConfigShared} [config] Configuration options
 	 */
 	constructor(config = {}) {
-		super(config);
+		super(config)
 	}
 
 	/**
@@ -29,7 +29,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getLabel() {
-		return cd.s('cf-autocomplete-templates-label');
+		return cd.s('cf-autocomplete-templates-label')
 	}
 
 	/**
@@ -37,7 +37,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getTrigger() {
-		return '{{';
+		return '{{'
 	}
 
 	/**
@@ -56,7 +56,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 
 			// Don't allow nested templates
 			!text.includes('{{')
-		);
+		)
 	}
 
 	/**
@@ -68,7 +68,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 		const response = await BaseAutocomplete.makeOpenSearchRequest({
 			search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
 			redirects: 'return',
-		});
+		})
 
 		return response[1]
 			.filter((name) => !/(\/doc(?:umentation)?|\.css)$/.test(name))
@@ -77,7 +77,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				mw.config.get('wgCaseSensitiveNamespaces').includes(10)
 					? name
 					: this.useOriginalFirstCharCase(name, text)
-			);
+			)
 	}
 
 	/**
@@ -94,9 +94,9 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			end: '}}',
 			content: selectedText,
 			shiftModify() {
-				this.start += '|';
+				this.start += '|'
 			},
-		};
+		}
 	}
 
 	/**
@@ -107,7 +107,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 * @returns {string} The display label
 	 */
 	getLabelFromEntry(entry) {
-		return entry;
+		return entry
 	}
 
 	/**
@@ -121,27 +121,27 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			keepAsEnd: /^(?:\||\}\})/,
 			selectTemplate: (option, event) => {
 				if (!option) {
-					return '';
+					return ''
 				}
 
 				// Handle special template data insertion for templates
 				if (this.manager?.useTemplateData && event.shiftKey && !event.altKey) {
 					const input = /** @type {import('./TextInputWidget').default} */ (
 					/** @type {HTMLElement} */ (this.manager.tribute.current.element).cdInput
-					);
-					setTimeout(() => this.insertTemplateData(option, input));
+					)
+					setTimeout(() => this.insertTemplateData(option, input))
 				}
 
 				// Get selected text from the input widget if available
-				const element = this.manager?.tribute?.current.element;
-				let selectedText;
+				const element = this.manager?.tribute?.current.element
+				let selectedText
 				if (element?.cdInput && typeof element.cdInput.getSelectedTextForAutocomplete === 'function') {
-					selectedText = element.cdInput.getSelectedTextForAutocomplete();
+					selectedText = element.cdInput.getSelectedTextForAutocomplete()
 				}
 
-				return this.getInsertionFromEntry(option.original.entry, selectedText);
+				return this.getInsertionFromEntry(option.original.entry, selectedText)
 			},
-		};
+		}
 	}
 
 	/**
@@ -154,13 +154,13 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 */
 	useOriginalFirstCharCase(result, query) {
 		// But ignore cases with all caps in the first word like ABBA
-		const firstWord = result.split(' ')[0];
+		const firstWord = result.split(' ')[0]
 		if (firstWord.length > 1 && firstWord.toUpperCase() === firstWord) {
-			return result;
+			return result
 		}
 
-		const firstChar = charAt(query, 0);
-		const firstCharUpperCase = phpCharToUpper(firstChar);
+		const firstChar = charAt(query, 0)
+		const firstCharUpperCase = phpCharToUpper(firstChar)
 
 		return result.replace(
 			new RegExp(
@@ -170,7 +170,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 					: '[' + firstCharUpperCase + firstChar + ']'
 			),
 			firstChar
-		);
+		)
 	}
 
 	/**
@@ -184,33 +184,33 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	async insertTemplateData(option, input) {
 		input
 			.setDisabled(true)
-			.pushPending();
+			.pushPending()
 
 		/** @type {APIResponseTemplateData} */
-		let response;
+		let response
 		try {
 			response = await cd.getApi(BaseAutocomplete.apiConfig).get({
 				action: 'templatedata',
 				titles: `Template:${option.original.label}`,
 				redirects: true,
-			}).catch(handleApiReject);
+			}).catch(handleApiReject)
 			if (!Object.keys(response.pages).length) {
-				throw new CdError('Template missing.');
+				throw new CdError('Template missing.')
 			}
 		} catch {
 			input
 				.setDisabled(false)
 				.focus()
-				.popPending();
+				.popPending()
 
-			return;
+			return
 		}
 
-		const pages = response.pages;
-		let paramsString = '';
-		let firstValueIndex = 0;
+		const pages = response.pages
+		let paramsString = ''
+		let firstValueIndex = 0
 		Object.keys(pages).forEach((key) => {
-			const template = pages[key];
+			const template = pages[key]
 			const params = template.params || {};
 
 			// Parameter names
@@ -218,21 +218,21 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				.filter((param) => params[param].required || params[param].suggested)
 				.forEach((param) => {
 					if (template.format === 'block') {
-						paramsString += `\n| ${param} = `;
+						paramsString += `\n| ${param} = `
 					} else {
-						paramsString += Number.isNaN(Number(param)) ? `|${param}=` : `|`;
+						paramsString += Number.isNaN(Number(param)) ? `|${param}=` : `|`
 					}
 					if (!firstValueIndex) {
-						firstValueIndex = paramsString.length;
+						firstValueIndex = paramsString.length
 					}
-				});
+				})
 			if (template.format === 'block' && paramsString) {
-				paramsString += '\n';
+				paramsString += '\n'
 			}
-		});
+		})
 
 		// Remove leading "|".
-		paramsString = paramsString.slice(1);
+		paramsString = paramsString.slice(1)
 
 		input
 			.setDisabled(false)
@@ -241,8 +241,8 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 		// `input.getRange().to` is the current caret index
 			.selectRange(/** @type {number} */ (input.getRange().to || 0) + firstValueIndex - 1)
 
-			.popPending();
+			.popPending()
 	}
 }
 
-export default TemplatesAutocomplete;
+export default TemplatesAutocomplete

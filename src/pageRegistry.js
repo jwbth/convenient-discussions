@@ -4,9 +4,9 @@
  * @module pageRegistry
  */
 
-import CurrentPage from './CurrentPage';
-import Page from './Page';
-import cd from './loader/cd';
+import CurrentPage from './CurrentPage'
+import Page from './Page'
+import cd from './loader/cd'
 
 /**
  * @exports pageRegistry
@@ -43,22 +43,22 @@ const pageRegistry = {
 	get(nameOrMwTitle, isGendered = false) {
 		const title = nameOrMwTitle instanceof mw.Title
 			? nameOrMwTitle
-			: mw.Title.newFromText(nameOrMwTitle);
+			: mw.Title.newFromText(nameOrMwTitle)
 		if (!title) {
-			return;
+			return
 		}
 
-		const name = title.getPrefixedText();
+		const name = title.getPrefixedText()
 		if (!(name in this.items)) {
 			this.items[name] = new (
 				nameOrMwTitle === cd.g.pageName ? CurrentPage : Page
-			)(title, isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined);
+			)(title, isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined)
 		} else if (isGendered) {
 			// Set the gendered name which could be missing for the page.
-			this.items[name].name = /** @type {string} */ (nameOrMwTitle);
+			this.items[name].name = /** @type {string} */ (nameOrMwTitle)
 		}
 
-		return this.items[name];
+		return this.items[name]
 	},
 
 	/**
@@ -67,8 +67,8 @@ const pageRegistry = {
 	 * @returns {import('./CurrentPage').default}
 	 */
 	getCurrent() {
-		return /** @type {import('./CurrentPage').default} */ (this.get(cd.g.pageName));
+		return /** @type {import('./CurrentPage').default} */ (this.get(cd.g.pageName))
 	},
-};
+}
 
-export default pageRegistry;
+export default pageRegistry

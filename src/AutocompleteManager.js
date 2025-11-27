@@ -1,11 +1,11 @@
-import AutocompleteFactory from './AutocompleteFactory';
-import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor';
-import cd from './loader/cd';
-import settings from './settings';
-import CdError from './shared/CdError';
-import { typedEntries } from './shared/utils-general';
-import Tribute from './tribute/Tribute';
-import { handleApiReject } from './utils-api';
+import AutocompleteFactory from './AutocompleteFactory'
+import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor'
+import cd from './loader/cd'
+import settings from './settings'
+import CdError from './shared/CdError'
+import { typedEntries } from './shared/utils-general'
+import Tribute from './tribute/Tribute'
+import { handleApiReject } from './utils-api'
 
 /**
  * @import {AutocompleteType} from './AutocompleteFactory';
@@ -44,7 +44,7 @@ class AutocompleteManager {
 	/**
 	 * Maximum number of displayed autocomplete items.
 	 */
-	itemLimit = 10;
+	itemLimit = 10
 
 	/**
 	 * Create an autocomplete manager instance. An instance is a set of settings and inputs to which
@@ -64,12 +64,12 @@ class AutocompleteManager {
 	 */
 	constructor({ types, inputs, typeConfigs = {}, enablePerformanceMonitoring = false }) {
 		/** @type {AutocompleteType[]} @private */
-		this.types = settings.get('autocompleteTypes');
+		this.types = settings.get('autocompleteTypes')
 
 		/** @type {boolean} @private */
-		this.useTemplateData = settings.get('useTemplateData');
+		this.useTemplateData = settings.get('useTemplateData')
 
-		types = types.filter((type) => this.types.includes(type));
+		types = types.filter((type) => this.types.includes(type))
 
 		/**
 		 * Performance monitor for tracking autocomplete performance.
@@ -83,7 +83,7 @@ class AutocompleteManager {
 				maxMetrics: 500,
 				reportInterval: 0, // Disable automatic reporting
 			})
-			: undefined;
+			: undefined
 
 		/**
 		 * Map of autocomplete type to autocomplete instance.
@@ -91,10 +91,10 @@ class AutocompleteManager {
 		 * @type {Map<AutocompleteType, import('./BaseAutocomplete').default>}
 		 * @private
 		 */
-		this.autocompleteInstances = new Map();
+		this.autocompleteInstances = new Map()
 
 		// Create type-specific autocomplete instances
-		this.createAutocompleteInstances(types, typeConfigs);
+		this.createAutocompleteInstances(types, typeConfigs)
 
 		/**
 		 * {@link https://github.com/zurb/tribute Tribute} object.
@@ -109,7 +109,7 @@ class AutocompleteManager {
 			containerClass: 'tribute-container cd-autocompleteContainer',
 			replaceTextSuffix: '',
 			direction: cd.g.contentDirection,
-		});
+		})
 
 		/**
 		 * Inputs that have the autocomplete attached.
@@ -117,7 +117,7 @@ class AutocompleteManager {
 		 * @type {import('./TextInputWidget').default[]}
 		 * @private
 		 */
-		this.inputs = inputs;
+		this.inputs = inputs
 	}
 
 	/**
@@ -129,40 +129,40 @@ class AutocompleteManager {
 	 */
 	createAutocompleteInstances(types, typeConfigs) {
 		types.forEach(async (type) => {
-			const config = typeConfigs[type] || {};
-			const instance = await AutocompleteFactory.create(type, config);
-			instance.manager = this;
-			this.autocompleteInstances.set(type, instance);
-		});
+			const config = typeConfigs[type] || {}
+			const instance = await AutocompleteFactory.create(type, config)
+			instance.manager = this
+			this.autocompleteInstances.set(type, instance)
+		})
 	}
 
 	/**
 	 * Initialize autocomplete for the inputs.
 	 */
 	init() {
-		import('./tribute/tribute.less');
+		import('./tribute/tribute.less')
 
 		this.inputs.forEach((input) => {
-			const element = input.$input[0];
-			this.tribute.attach(element);
-			element.cdInput = input;
+			const element = input.$input[0]
+			this.tribute.attach(element)
+			element.cdInput = input
 			element.addEventListener('tribute-active-true', () => {
-				AutocompleteManager.activeMenu = this.tribute.menu;
+				AutocompleteManager.activeMenu = this.tribute.menu
 				// Set the autocomplete menu as active to make selected text immutable
-				input.setAutocompleteMenuActive(true);
-			});
+				input.setAutocompleteMenuActive(true)
+			})
 			element.addEventListener('tribute-active-false', () => {
-				delete AutocompleteManager.activeMenu;
+				delete AutocompleteManager.activeMenu
 				// Set the autocomplete menu as inactive to allow selection changes again
-				input.setAutocompleteMenuActive(false);
-			});
+				input.setAutocompleteMenuActive(false)
+			})
 			if (input instanceof OO.ui.MultilineTextInputWidget) {
 				input.on('resize', () => {
 					// @ts-expect-error: Ignore Tribute stuff
-					this.tribute.menuEvents.windowResizeEvent?.();
-				});
+					this.tribute.menuEvents.windowResizeEvent?.()
+				})
 			}
-		});
+		})
 	}
 
 	/**
@@ -170,22 +170,22 @@ class AutocompleteManager {
 	 */
 	terminate() {
 		this.inputs.forEach((input) => {
-			this.tribute.detach(input.$input[0]);
+			this.tribute.detach(input.$input[0])
 			// Clean up TextInputWidget if it has a destroy method
-			input.destroy();
-		});
+			input.destroy()
+		})
 
 		// Clean up autocomplete instances
 		for (const instance of this.autocompleteInstances.values()) {
 			if (typeof instance.destroy === 'function') {
-				instance.destroy();
+				instance.destroy()
 			}
 		}
 
 		// Clean up performance monitor
 		if (this.performanceMonitor) {
-			this.performanceMonitor.destroy();
-			this.performanceMonitor = undefined;
+			this.performanceMonitor.destroy()
+			this.performanceMonitor = undefined
 		}
 	}
 
@@ -196,7 +196,7 @@ class AutocompleteManager {
 	 * @private
 	 */
 	getCollections() {
-		const collections = [];
+		const collections = []
 
 		for (const [type, instance] of this.autocompleteInstances) {
 			collections.push(
@@ -211,35 +211,35 @@ class AutocompleteManager {
 						/** @type {ProcessOptions} */ callback
 					) => {
 						// Start performance monitoring if enabled
-						const perfContext = this.performanceMonitor?.startOperation('getValues', type, text);
+						const perfContext = this.performanceMonitor?.startOperation('getValues', type, text)
 
 						try {
 							// Check if result will come from cache
-							const cacheHit = instance.handleCache(text) !== undefined;
+							const cacheHit = instance.handleCache(text) !== undefined
 
 							await instance.getValues(text, (results) => {
 								// End performance monitoring
 								if (perfContext) {
-									perfContext.end(results.length, cacheHit);
+									perfContext.end(results.length, cacheHit)
 								}
-								callback(results);
-							});
+								callback(results)
+							})
 						} catch (error) {
 							// End performance monitoring on error
 							if (perfContext) {
-								perfContext.end(0, false);
+								perfContext.end(0, false)
 							}
-							throw error;
+							throw error
 						}
 					},
 
 					// Add type-specific properties from the instance
 					...instance.getCollectionProperties(),
 				})
-			);
+			)
 		}
 
-		return collections;
+		return collections
 	}
 
 	/**
@@ -250,18 +250,18 @@ class AutocompleteManager {
 	 */
 	onOptionChoose = (option) => {
 		if (!option?.original.autocomplete) {
-			return '';
+			return ''
 		}
 
 		// Get the selected text from the input widget if available
-		const element = this.tribute.current.element;
+		const element = this.tribute.current.element
 		const selectedText =
 			element?.cdInput && typeof element.cdInput.getSelectedTextForAutocomplete === 'function'
 				? element.cdInput.getSelectedTextForAutocomplete()
-				: undefined;
+				: undefined
 
-		return option.original.autocomplete.getInsertionFromEntry(option.original.entry, selectedText);
-	};
+		return option.original.autocomplete.getInsertionFromEntry(option.original.entry, selectedText)
+	}
 
 	/**
 	 * Get autocomplete data for a template.
@@ -273,32 +273,32 @@ class AutocompleteManager {
 	async insertTemplateData(option, input) {
 		input
 			.setDisabled(true)
-			.pushPending();
+			.pushPending()
 
 		/** @type {APIResponseTemplateData} */
-		let response;
+		let response
 		/** @type {TemplateData | undefined} */
-		let template;
+		let template
 		try {
 			response = await cd.getApi(AutocompleteManager.apiConfig).get({
 				action: 'templatedata',
 				titles: `Template:${option.original.label}`,
 				redirects: true,
-			}).catch(handleApiReject);
-			template = Object.values(response.pages).at(0);
+			}).catch(handleApiReject)
+			template = Object.values(response.pages).at(0)
 			if (!template) {
-				throw new CdError('Template missing.');
+				throw new CdError('Template missing.')
 			}
 		} catch {
 			input
 				.setDisabled(false)
 				.focus()
-				.popPending();
+				.popPending()
 
-			return;
+			return
 		}
 
-		const params = template.params || {};
+		const params = template.params || {}
 
 		// Parameter names
 		const result = (template.paramOrder || Object.keys(params))
@@ -309,13 +309,13 @@ class AutocompleteManager {
 						? `\n| ${param} = `
 						: Number.isNaN(Number(param))
 							? `|${param}=`
-							: `|`;
-				firstValueIndex ||= paramAcc.length + addition.length;
+							: `|`
+				firstValueIndex ||= paramAcc.length + addition.length
 
-				return paramAcc + addition;
-			}, '');
+				return paramAcc + addition
+			}, '')
 
-		let firstValueIndex = 0;
+		let firstValueIndex = 0
 		input
 			.setDisabled(false)
 
@@ -325,20 +325,20 @@ class AutocompleteManager {
 		// `input.getRange().to` is the current caret index
 			.selectRange(/** @type {number} */ (input.getRange().to || 0) + firstValueIndex - 1)
 
-			.popPending();
+			.popPending()
 	}
 
 	// Static properties and methods for backward compatibility
 
-	static delay = 100;
+	static delay = 100
 
-	static apiConfig = { ajax: { timeout: 1000 * 5 } };
+	static apiConfig = { ajax: { timeout: 1000 * 5 } }
 
 	/** @type {HTMLElement|undefined} */
-	static activeMenu;
+	static activeMenu
 
 	/** @type {Promise<any> | undefined} */
-	static currentPromise;
+	static currentPromise
 
 	/**
 	 * Get the active autocomplete menu element.
@@ -346,7 +346,7 @@ class AutocompleteManager {
 	 * @returns {Element|undefined}
 	 */
 	static getActiveMenu() {
-		return this.activeMenu;
+		return this.activeMenu
 	}
 
 	/**
@@ -358,15 +358,15 @@ class AutocompleteManager {
 	 */
 	static useOriginalFirstCharCase(result, query) {
 		// But ignore cases with all caps in the first word like ABBA
-		const firstWord = result.split(' ')[0];
+		const firstWord = result.split(' ')[0]
 		if (
 			firstWord.toUpperCase() !== firstWord &&
 			result.charAt(0).toLowerCase() === query.charAt(0).toLowerCase()
 		) {
-			result = query.charAt(0) + result.slice(1);
+			result = query.charAt(0) + result.slice(1)
 		}
 
-		return result;
+		return result
 	}
 
 	/**
@@ -393,21 +393,21 @@ class AutocompleteManager {
 			},
 			instances: (/** @type {TypeByStringKey<import('./BaseAutocomplete').PerformanceMetrics>} */ ({})),
 			monitor: undefined,
-		});
+		})
 
 		// Get metrics from each instance
 		for (const [type, instance] of this.autocompleteInstances) {
 			if (typeof instance.getPerformanceMetrics === 'function') {
-				metrics.instances[type] = instance.getPerformanceMetrics();
+				metrics.instances[type] = instance.getPerformanceMetrics()
 			}
 		}
 
 		// Get monitor metrics if available
 		if (this.performanceMonitor) {
-			metrics.monitor = this.performanceMonitor.generateSummary();
+			metrics.monitor = this.performanceMonitor.generateSummary()
 		}
 
-		return metrics;
+		return metrics
 	}
 
 	/**
@@ -417,10 +417,10 @@ class AutocompleteManager {
 	 */
 	generatePerformanceReport() {
 		if (!this.performanceMonitor) {
-			return 'Performance monitoring is not enabled.';
+			return 'Performance monitoring is not enabled.'
 		}
 
-		return this.performanceMonitor.generateReport();
+		return this.performanceMonitor.generateReport()
 	}
 
 	/**
@@ -429,7 +429,7 @@ class AutocompleteManager {
 	optimizePerformance() {
 		for (const instance of this.autocompleteInstances.values()) {
 			if (typeof instance.optimizeCache === 'function') {
-				instance.optimizeCache();
+				instance.optimizeCache()
 			}
 		}
 	}
@@ -442,16 +442,16 @@ class AutocompleteManager {
 	 * @returns {Promise<void>}
 	 */
 	async prefetchCommonQueries(commonQueriesByType) {
-		const promises = [];
+		const promises = []
 
 		for (const [type, queries] of typedEntries(commonQueriesByType)) {
-			const instance = this.autocompleteInstances.get(type);
+			const instance = this.autocompleteInstances.get(type)
 			if (instance?.prefetchCommonQueries) {
-				promises.push(instance.prefetchCommonQueries(queries));
+				promises.push(instance.prefetchCommonQueries(queries))
 			}
 		}
 
-		await Promise.all(promises);
+		await Promise.all(promises)
 	}
 
 	/**
@@ -459,13 +459,13 @@ class AutocompleteManager {
 	 */
 	enablePerformanceMonitoring() {
 		if (this.performanceMonitor) {
-			this.performanceMonitor.enable();
+			this.performanceMonitor.enable()
 		} else {
 			this.performanceMonitor = new AutocompletePerformanceMonitor({
 				enabled: true,
 				maxMetrics: 500,
 				reportInterval: 0,
-			});
+			})
 		}
 	}
 
@@ -474,7 +474,7 @@ class AutocompleteManager {
 	 */
 	disablePerformanceMonitoring() {
 		if (this.performanceMonitor) {
-			this.performanceMonitor.disable();
+			this.performanceMonitor.disable()
 		}
 	}
 
@@ -486,23 +486,23 @@ class AutocompleteManager {
 	 * @returns {string[]}
 	 */
 	static search(string, list) {
-		const containsRegexp = new RegExp(mw.util.escapeRegExp(string), 'i');
-		const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i');
+		const containsRegexp = new RegExp(mw.util.escapeRegExp(string), 'i')
+		const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i')
 
 		return list
 			.filter((item) => containsRegexp.test(item))
 			.sort((item1, item2) => {
-				const item1StartsWith = startsWithRegexp.test(item1);
-				const item2StartsWith = startsWithRegexp.test(item2);
+				const item1StartsWith = startsWithRegexp.test(item1)
+				const item2StartsWith = startsWithRegexp.test(item2)
 				if (item1StartsWith && !item2StartsWith) {
-					return -1;
+					return -1
 				} else if (!item1StartsWith && item2StartsWith) {
-					return 1;
+					return 1
 				}
 
-				return 0;
-			});
+				return 0
+			})
 	}
 }
 
-export default AutocompleteManager;
+export default AutocompleteManager

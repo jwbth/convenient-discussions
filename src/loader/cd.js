@@ -1,4 +1,4 @@
-import cd from '../shared/cd';
+import cd from '../shared/cd'
 
 /**
  * @typedef {{ [lang: string]: AnyByKey }} I18n
@@ -49,4 +49,4 @@ import cd from '../shared/cd';
 // We don't use export...from here because we change the type here, which is impossible with
 // export...from
 // eslint-disable-next-line unicorn/prefer-export-from
-export default /** @type {ConvenientDiscussions} */ (cd);
+export default /** @type {ConvenientDiscussions} */ (cd)

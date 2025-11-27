@@ -1,7 +1,7 @@
-import CommentActions from './CommentActions';
-import CommentButton from './CommentButton';
-import cd from './loader/cd';
-import commentManager from './commentManager';
+import CommentActions from './CommentActions'
+import CommentButton from './CommentButton'
+import cd from './loader/cd'
+import commentManager from './commentManager'
 
 /**
  * Actions management for compact comments with overlay-based styling.
@@ -15,7 +15,7 @@ class CompactCommentActions extends CommentActions {
 	 * @override
 	 */
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
-	comment = this.comment;
+	comment = this.comment
 
 	/**
 	 * Create and add all appropriate action buttons for compact comments.
@@ -24,12 +24,12 @@ class CompactCommentActions extends CommentActions {
 	 * @override
 	 */
 	create() {
-		this.addGoToParentButton();
-		this.addCopyLinkButton();
-		this.addThankButton();
-		this.addEditButton();
-		this.addReplyButton();
-		this.addToggleChildThreadsButton();
+		this.addGoToParentButton()
+		this.addCopyLinkButton()
+		this.addThankButton()
+		this.addEditButton()
+		this.addReplyButton()
+		this.addToggleChildThreadsButton()
 	}
 
 	/**
@@ -44,7 +44,7 @@ class CompactCommentActions extends CommentActions {
 			element: this.comment.createReplyButton().$element[0],
 			action,
 			widgetConstructor: this.comment.createReplyButton,
-		});
+		})
 	}
 
 	/**
@@ -59,7 +59,7 @@ class CompactCommentActions extends CommentActions {
 			element: this.comment.createEditButton().$element[0],
 			action,
 			widgetConstructor: this.comment.createEditButton,
-		});
+		})
 	}
 
 	/**
@@ -75,7 +75,7 @@ class CompactCommentActions extends CommentActions {
 			element: this.comment.createThankButton().$element[0],
 			action,
 			widgetConstructor: this.comment.createThankButton,
-		});
+		})
 	}
 
 	/**
@@ -86,7 +86,7 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createCopyLinkButton(action) {
-		const element = this.comment.createCopyLinkButton().$element[0];
+		const element = this.comment.createCopyLinkButton().$element[0]
 
 		return new CommentButton({
 			element,
@@ -94,7 +94,7 @@ class CompactCommentActions extends CommentActions {
 			action,
 			widgetConstructor: this.comment.createCopyLinkButton,
 			href: this.comment.dtId && '#' + this.comment.dtId,
-		});
+		})
 	}
 
 	/**
@@ -105,13 +105,13 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createGoToParentButton(action) {
-		const buttonElement = this.comment.createGoToParentButton().$element[0];
+		const buttonElement = this.comment.createGoToParentButton().$element[0]
 
 		return new CommentButton({
 			buttonElement,
 			action,
 			widgetConstructor: this.comment.createGoToParentButton,
-		});
+		})
 	}
 
 	/**
@@ -122,13 +122,13 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createGoToChildButton(action) {
-		const element = this.comment.createGoToChildButton().$element[0];
+		const element = this.comment.createGoToChildButton().$element[0]
 
 		return new CommentButton({
 			element,
 			action,
 			widgetConstructor: this.comment.createGoToChildButton,
-		});
+		})
 	}
 
 	/**
@@ -139,7 +139,7 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createToggleChildThreadsButton(action) {
-		const element = this.comment.createToggleChildThreadsButton().$element[0];
+		const element = this.comment.createToggleChildThreadsButton().$element[0]
 
 		return new CommentButton({
 			element,
@@ -147,7 +147,7 @@ class CompactCommentActions extends CommentActions {
 			action,
 			widgetConstructor: this.comment.createToggleChildThreadsButton,
 			classes: ['cd-comment-button-toggleChildThreads'],
-		});
+		})
 	}
 
 	/**
@@ -158,9 +158,9 @@ class CompactCommentActions extends CommentActions {
 	 * @protected
 	 */
 	getOverlayMenu() {
-		const layers = this.comment.layers;
+		const layers = this.comment.layers
 		if (layers && 'overlayMenu' in layers) {
-			return /** @type {import('./CompactCommentLayers').default} */ (layers).$overlayMenu;
+			return /** @type {import('./CompactCommentLayers').default} */ (layers).$overlayMenu
 		}
 	}
 
@@ -171,7 +171,7 @@ class CompactCommentActions extends CommentActions {
 	 * @param {CommentButton} button The button to append.
 	 */
 	appendButton(button) {
-		this.getOverlayMenu()?.append(button.element);
+		this.getOverlayMenu()?.append(button.element)
 	}
 
 	/**
@@ -181,7 +181,7 @@ class CompactCommentActions extends CommentActions {
 	 * @param {CommentButton} button The button to prepend.
 	 */
 	prependButton(button) {
-		this.getOverlayMenu()?.prepend(button.element);
+		this.getOverlayMenu()?.prepend(button.element)
 	}
 
 	/**
@@ -194,24 +194,24 @@ class CompactCommentActions extends CommentActions {
 			!this.comment.getChildren().some((child) => child.thread) ||
 			this.toggleChildThreadsButton?.isConnected()
 		) {
-			return;
+			return
 		}
 
-		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction);
+		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction)
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
-			this.comment.maybeOnboardOntoToggleChildThreads();
-		});
+			this.comment.maybeOnboardOntoToggleChildThreads()
+		})
 
 		// Insert after go to parent/child buttons if they exist
-		const targetButton = this.goToParentButton || this.goToChildButton;
-		const overlayMenu = this.getOverlayMenu();
+		const targetButton = this.goToParentButton || this.goToChildButton
+		const overlayMenu = this.getOverlayMenu()
 		if (targetButton && overlayMenu) {
 			overlayMenu[0].insertBefore(
 				this.toggleChildThreadsButton.element,
 				targetButton.element.nextSibling || null
-			);
+			)
 		} else {
-			this.prependButton(this.toggleChildThreadsButton);
+			this.prependButton(this.toggleChildThreadsButton)
 		}
 	}
 
@@ -221,13 +221,13 @@ class CompactCommentActions extends CommentActions {
 	 * @override
 	 */
 	maybeAddGoToChildButton() {
-		if (!this.comment.targetChild) return;
+		if (!this.comment.targetChild) return
 
-		this.comment.configureLayers();
-		if (this.goToChildButton?.isConnected()) return;
+		this.comment.configureLayers()
+		if (this.goToChildButton?.isConnected()) return
 
-		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction);
-		this.prependButton(this.goToChildButton);
+		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction)
+		this.prependButton(this.goToChildButton)
 	}
 
 	/**
@@ -236,10 +236,10 @@ class CompactCommentActions extends CommentActions {
 	 * @override
 	 */
 	addReplyButton() {
-		if (!this.comment.isActionable) return;
+		if (!this.comment.isActionable) return
 
-		this.replyButton = this.createReplyButton(this.onReplyAction);
-		this.appendButton(this.replyButton);
+		this.replyButton = this.createReplyButton(this.onReplyAction)
+		this.appendButton(this.replyButton)
 
 		// Check if reply should be disabled due to outdented comments
 		if (
@@ -250,8 +250,8 @@ class CompactCommentActions extends CommentActions {
 				this.comment.elements[0].matches('ol *')
 			)
 		) {
-			this.replyButton.setDisabled(true);
-			this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'));
+			this.replyButton.setDisabled(true)
+			this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'))
 		}
 	}
 
@@ -261,10 +261,10 @@ class CompactCommentActions extends CommentActions {
 	 * @override
 	 */
 	addEditButton() {
-		if (!this.comment.isEditable) return;
+		if (!this.comment.isEditable) return
 
-		this.editButton = this.createEditButton(this.onEditAction);
-		this.appendButton(this.editButton);
+		this.editButton = this.createEditButton(this.onEditAction)
+		this.appendButton(this.editButton)
 	}
 
 	/**
@@ -279,7 +279,7 @@ class CompactCommentActions extends CommentActions {
 			!this.comment.date ||
 			this.comment.isOwn
 		)
-			return;
+			return
 
 		const isThanked = Object.entries(commentManager.getThanksStorage().getData()).some(
 			// TODO: Remove `|| this.comment.dtId === thank.id || this.comment.id === thank.id` part
@@ -289,13 +289,13 @@ class CompactCommentActions extends CommentActions {
 				// This comes from the local storage, the value may be corrupt
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				this.comment.dtId === thank?.id || this.comment.id === thank?.id
-		);
+		)
 
-		this.thankButton = this.createThankButton(this.onThankAction, isThanked);
-		this.appendButton(this.thankButton);
+		this.thankButton = this.createThankButton(this.onThankAction, isThanked)
+		this.appendButton(this.thankButton)
 
 		if (isThanked) {
-			this.setThanked();
+			this.setThanked()
 		}
 	}
 
@@ -305,10 +305,10 @@ class CompactCommentActions extends CommentActions {
 	 * @override
 	 */
 	addGoToParentButton() {
-		if (!this.comment.getParent()) return;
+		if (!this.comment.getParent()) return
 
-		this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction);
-		this.appendButton(this.goToParentButton);
+		this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction)
+		this.appendButton(this.goToParentButton)
 	}
 
 	/**
@@ -317,11 +317,11 @@ class CompactCommentActions extends CommentActions {
 	 * @override
 	 */
 	addCopyLinkButton() {
-		if (!this.comment.id) return;
+		if (!this.comment.id) return
 
-		this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction);
-		this.appendButton(this.copyLinkButton);
+		this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction)
+		this.appendButton(this.copyLinkButton)
 	}
 }
 
-export default CompactCommentActions;
+export default CompactCommentActions

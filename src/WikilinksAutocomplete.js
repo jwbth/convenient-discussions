@@ -1,7 +1,7 @@
-import BaseAutocomplete from './BaseAutocomplete';
-import cd from './loader/cd';
-import { charAt, phpCharToUpper } from './shared/utils-general';
-import { handleApiReject } from './utils-api';
+import BaseAutocomplete from './BaseAutocomplete'
+import cd from './loader/cd'
+import { charAt, phpCharToUpper } from './shared/utils-general'
+import { handleApiReject } from './utils-api'
 
 /**
  * @typedef {string} WikilinkEntry
@@ -27,7 +27,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 *   options
 	 */
 	constructor(config = {}) {
-		super(config);
+		super(config)
 	}
 
 	/**
@@ -35,7 +35,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getLabel() {
-		return cd.s('cf-autocomplete-wikilinks-label');
+		return cd.s('cf-autocomplete-wikilinks-label')
 	}
 
 	/**
@@ -43,7 +43,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getTrigger() {
-		return '[[';
+		return '[['
 	}
 
 	/**
@@ -55,17 +55,17 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {import('./tribute/Tribute').InsertData & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
-		const pageName = entry.trim();
+		const pageName = entry.trim()
 
 		return {
 			start: '[[' + pageName,
 			end: ']]',
 			content: selectedText,
 			shiftModify() {
-				this.content ??= this.start.slice(2);
-				this.start += '|';
+				this.content ??= this.start.slice(2)
+				this.start += '|'
 			},
-		};
+		}
 	}
 
 	/**
@@ -74,15 +74,15 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {boolean} Whether the input is valid for wikilinks
 	 */
 	validateInput(text) {
-		const sectionData = this.detectSectionFragment(text);
+		const sectionData = this.detectSectionFragment(text)
 
 		if (sectionData) {
 			// Validate section fragment (less restrictive than page names)
-			return this.validateSectionFragment(sectionData.fragment);
+			return this.validateSectionFragment(sectionData.fragment)
 		}
 
 		// Validate page name
-		return this.validatePageName(text);
+		return this.validatePageName(text)
 	}
 
 	/**
@@ -93,7 +93,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	validatePageName(text) {
-		const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter(Boolean).join('|');
+		const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter(Boolean).join('|')
 
 		const valid =
 			text &&
@@ -110,9 +110,9 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			!(
 				(text.startsWith(':') || /^[a-z-]\w*:/.test(text)) &&
 				!new RegExp(`^:?(?:${allNssPattern}):`, 'i').test(text)
-			);
+			)
 
-		return Boolean(valid);
+		return Boolean(valid)
 	}
 
 	/**
@@ -129,7 +129,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			fragment.length <= 255 &&
 			// Forbidden characters in fragments
 			!/[<>[\]|{}]/.test(fragment)
-		);
+		)
 	}
 
 	/**
@@ -138,13 +138,13 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {Promise<string[]>} Promise resolving to array of page name or section suggestions
 	 */
 	async makeApiRequest(text) {
-		const sectionData = this.detectSectionFragment(text);
+		const sectionData = this.detectSectionFragment(text)
 
 		if (sectionData) {
-			return await this.getSectionSuggestions(sectionData.pageName, sectionData.fragment);
+			return await this.getSectionSuggestions(sectionData.pageName, sectionData.fragment)
 		}
 
-		return await this.getPageSuggestions(text);
+		return await this.getPageSuggestions(text)
 	}
 
 	/**
@@ -155,32 +155,32 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	async getPageSuggestions(text) {
-		let colonPrefix = false;
+		let colonPrefix = false
 		if (cd.g.colonNamespacesPrefixRegexp.test(text)) {
-			text = text.slice(1);
-			colonPrefix = true;
+			text = text.slice(1)
+			colonPrefix = true
 		}
 
 		const response = await BaseAutocomplete.makeOpenSearchRequest({
 			search: text,
 			redirects: 'return',
-		});
+		})
 
 		return response[1].map((/** @type {string} */ name) => {
 			if (mw.config.get('wgCaseSensitiveNamespaces').length) {
-				const title = mw.Title.newFromText(name);
+				const title = mw.Title.newFromText(name)
 				if (
 					!title ||
 					!mw.config.get('wgCaseSensitiveNamespaces').includes(title.getNamespaceId())
 				) {
-					name = this.useOriginalFirstCharCase(name, text);
+					name = this.useOriginalFirstCharCase(name, text)
 				}
 			} else {
-				name = this.useOriginalFirstCharCase(name, text);
+				name = this.useOriginalFirstCharCase(name, text)
 			}
 
-			return name.replace(/^/, colonPrefix ? ':' : '');
-		});
+			return name.replace(/^/, colonPrefix ? ':' : '')
+		})
 	}
 
 	/**
@@ -193,19 +193,19 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	async getSectionSuggestions(pageName, fragmentQuery) {
 		// Normalize page title
-		const title = mw.Title.newFromText(pageName);
+		const title = mw.Title.newFromText(pageName)
 		if (!title) {
 			// Invalid page name, return user's input as-is
-			return [pageName + '#' + fragmentQuery];
+			return [pageName + '#' + fragmentQuery]
 		}
 
-		const normalizedPageName = title.getPrefixedText();
+		const normalizedPageName = title.getPrefixedText()
 
 		// Check cache for sections of this page
-		const cacheKey = `sections:${normalizedPageName}`;
+		const cacheKey = `sections:${normalizedPageName}`
 		let sections = /** @type {Array<{ anchor: string, line: string }> | undefined} */ (
 			this.cache.get(cacheKey)
-		);
+		)
 
 		if (!sections) {
 			try {
@@ -215,57 +215,57 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 						action: 'parse',
 						page: normalizedPageName,
 						prop: 'sections',
-					}).catch(handleApiReject);
+					}).catch(handleApiReject)
 
 					if (BaseAutocomplete.currentPromise) {
-						BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise);
+						BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
 					}
-					resolve(apiResponse);
-				});
+					resolve(apiResponse)
+				})
 
 				const parsedSections = (response?.parse?.sections || []).map((/** @type {any} */ section) => ({
 					anchor: section.linkAnchor.replace(/_/g, ' '),
 					line: section.line,
-				}));
+				}))
 
-				sections = parsedSections;
+				sections = parsedSections
 
 				// Cache sections for this page (cast to any[] for cache compatibility)
-				this.cache.set(cacheKey, /** @type {any[]} */ (parsedSections));
+				this.cache.set(cacheKey, /** @type {any[]} */ (parsedSections))
 			} catch {
 				// API error or page doesn't exist, return user's input as-is
-				return [pageName + '#' + fragmentQuery];
+				return [pageName + '#' + fragmentQuery]
 			}
 		}
 
 		// At this point sections is guaranteed to be defined
 		if (!sections) {
-			return [pageName + '#' + fragmentQuery];
+			return [pageName + '#' + fragmentQuery]
 		}
 
 		// Filter and format results
-		const normalizedQuery = this.normalizeSectionName(fragmentQuery);
+		const normalizedQuery = this.normalizeSectionName(fragmentQuery)
 		let results = sections
 			.filter((section) =>
 				this.normalizeSectionName(section.line).includes(normalizedQuery)
 			)
 			.sort((a, b) => {
 				// Prioritize prefix matches
-				const aStarts = this.normalizeSectionName(a.line).startsWith(normalizedQuery);
-				const bStarts = this.normalizeSectionName(b.line).startsWith(normalizedQuery);
+				const aStarts = this.normalizeSectionName(a.line).startsWith(normalizedQuery)
+				const bStarts = this.normalizeSectionName(b.line).startsWith(normalizedQuery)
 
-				return Number(bStarts) - Number(aStarts);
+				return Number(bStarts) - Number(aStarts)
 			})
-			.map((section) => `${pageName}#${section.anchor}`);
+			.map((section) => `${pageName}#${section.anchor}`)
 
 		// If no matches or empty query, show all sections (up to limit)
 		if (results.length === 0 && fragmentQuery === '') {
 			results = sections
 				.slice(0, 10)
-				.map((section) => `${pageName}#${section.anchor}`);
+				.map((section) => `${pageName}#${section.anchor}`)
 		}
 
-		return results;
+		return results
 	}
 
 	/**
@@ -276,7 +276,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {string} The display label
 	 */
 	getLabelFromEntry(entry) {
-		return entry;
+		return entry
 	}
 
 	/**
@@ -288,7 +288,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	getCollectionProperties() {
 		return {
 			keepAsEnd: /^(?:\||\]\])/,
-		};
+		}
 	}
 
 	/**
@@ -299,18 +299,18 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	detectSectionFragment(text) {
-		const hashIndex = text.indexOf('#');
-		if (hashIndex === -1) return undefined;
+		const hashIndex = text.indexOf('#')
+		if (hashIndex === -1) return undefined
 
-		const pageName = text.slice(0, hashIndex);
-		const fragment = text.slice(hashIndex + 1);
+		const pageName = text.slice(0, hashIndex)
+		const fragment = text.slice(hashIndex + 1)
 
 		// Only treat as section if page name is valid
 		if (!pageName || !this.validatePageName(pageName)) {
-			return undefined;
+			return undefined
 		}
 
-		return { pageName, fragment };
+		return { pageName, fragment }
 	}
 
 	/**
@@ -321,7 +321,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	normalizeSectionName(name) {
-		return name.toLowerCase().replace(/_/g, ' ');
+		return name.toLowerCase().replace(/_/g, ' ')
 	}
 
 	/**
@@ -334,13 +334,13 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	useOriginalFirstCharCase(result, query) {
 		// But ignore cases with all caps in the first word like ABBA
-		const firstWord = result.split(' ')[0];
+		const firstWord = result.split(' ')[0]
 		if (firstWord.length > 1 && firstWord.toUpperCase() === firstWord) {
-			return result;
+			return result
 		}
 
-		const firstChar = charAt(query, 0);
-		const firstCharUpperCase = phpCharToUpper(firstChar);
+		const firstChar = charAt(query, 0)
+		const firstCharUpperCase = phpCharToUpper(firstChar)
 
 		return result.replace(
 			new RegExp(
@@ -350,8 +350,8 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 					: '[' + firstCharUpperCase + firstChar + ']')
 			),
 			firstChar
-		);
+		)
 	}
 }
 
-export default WikilinksAutocomplete;
+export default WikilinksAutocomplete

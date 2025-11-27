@@ -1,5 +1,5 @@
-import ProcessDialogMixin from './ProcessDialogMixin';
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
+import ProcessDialogMixin from './ProcessDialogMixin'
+import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
 
 /**
  * Our class that extends {@link OO.ui.ProcessDialog OO.ui.ProcessDialog}, adding a couple
@@ -10,9 +10,9 @@ class ProcessDialog extends mixInClass(OO.ui.ProcessDialog, ProcessDialogMixin) 
 	 * @type {string}
 	 * @abstract
 	 */
-	static cdKey;
+	static cdKey
 }
 
-es6ClassToOoJsClass(ProcessDialog);
+es6ClassToOoJsClass(ProcessDialog)
 
-export default ProcessDialog;
+export default ProcessDialog

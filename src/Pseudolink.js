@@ -1,5 +1,5 @@
-import Button from './Button';
-import cd from './loader/cd';
+import Button from './Button'
+import cd from './loader/cd'
 
 /**
  * @typedef {object} PseudoLinkConfig
@@ -26,11 +26,11 @@ class Pseudolink extends Button {
 			buttonClasses: ['cd-pseudolink'],
 			tooltip: cd.s('pseudolink-tooltip'),
 			label: config.label,
-		});
+		})
 
-		this.text = config.text;
+		this.text = config.text
 		if (config.input) {
-			this.setInput(config.input);
+			this.setInput(config.input)
 		}
 	}
 
@@ -41,9 +41,9 @@ class Pseudolink extends Button {
 	 */
 	setInput(input) {
 		this.setAction(() => {
-			input.setValue(this.text || this.labelElement.textContent).focus();
-		});
+			input.setValue(this.text || this.labelElement.textContent).focus()
+		})
 	}
 }
 
-export default Pseudolink;
+export default Pseudolink

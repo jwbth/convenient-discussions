@@ -1,28 +1,28 @@
-import AutocompleteManager from './AutocompleteManager';
-import BootProcess from './BootProcess';
-import Comment from './Comment';
-import commentLayersOptionalBackgroundHighlightingCss from './Comment.layers.optionalBackgroundHighlighting.less';
-import CommentForm from './CommentForm';
-import CopyLinkDialog from './CopyLinkDialog';
-import DtSubscriptions from './DtSubscriptions';
-import EventEmitter from './EventEmitter';
-import Thread from './Thread';
-import commentFormManager from './commentFormManager';
-import commentManager from './commentManager';
-import cd from './loader/cd';
-import navPanel from './navPanel';
-import notifications from './notifications';
-import pageRegistry from './pageRegistry';
-import sectionManager from './sectionManager';
-import settings from './settings';
-import ElementsTreeWalker from './shared/ElementsTreeWalker';
-import Parser from './shared/Parser';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './shared/utils-general';
-import toc from './toc';
-import updateChecker from './updateChecker';
-import { getUserInfo } from './utils-api';
-import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
-import workerCode from './worker/worker-gate?worker&inline-string';
+import AutocompleteManager from './AutocompleteManager'
+import BootProcess from './BootProcess'
+import Comment from './Comment'
+import commentLayersOptionalBackgroundHighlightingCss from './Comment.layers.optionalBackgroundHighlighting.less'
+import CommentForm from './CommentForm'
+import CopyLinkDialog from './CopyLinkDialog'
+import DtSubscriptions from './DtSubscriptions'
+import EventEmitter from './EventEmitter'
+import Thread from './Thread'
+import commentFormManager from './commentFormManager'
+import commentManager from './commentManager'
+import cd from './loader/cd'
+import navPanel from './navPanel'
+import notifications from './notifications'
+import pageRegistry from './pageRegistry'
+import sectionManager from './sectionManager'
+import settings from './settings'
+import ElementsTreeWalker from './shared/ElementsTreeWalker'
+import Parser from './shared/Parser'
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './shared/utils-general'
+import toc from './toc'
+import updateChecker from './updateChecker'
+import { getUserInfo } from './utils-api'
+import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window'
+import workerCode from './worker/worker-gate?worker&inline-string'
 
 /**
  * @typedef {object} EventMap
@@ -51,12 +51,12 @@ class Controller extends EventEmitter {
 	/**
 	 * @type {JQuery}
 	 */
-	$root;
+	$root
 
 	/**
 	 * @type {HTMLElement}
 	 */
-	rootElement;
+	rootElement
 
 	/**
 	 * The current (or last available) boot process.
@@ -64,14 +64,14 @@ class Controller extends EventEmitter {
 	 *
 	 * @type {import('./BootProcess').default}
 	 */
-	bootProcess;
+	bootProcess
 
 	/** @type {JQuery} */
 	$contentColumn = skin$({
 		timeless: '#mw-content',
 		minerva: '#bodyContent',
 		default: '#content',
-	});
+	})
 
 	/**
 	 * @typedef {object} ContentColumnOffsets
@@ -84,66 +84,66 @@ class Controller extends EventEmitter {
 	 * @type {ContentColumnOffsets | undefined}
 	 * @private
 	 */
-	contentColumnOffsets;
+	contentColumnOffsets
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$popupOverlay;
+	$popupOverlay
 
 	/**
 	 * @type {MutationObserver|undefined}
 	 * @private
 	 */
-	mutationObserver;
+	mutationObserver
 
 	/**
 	 * @type {JQuery|undefined}
 	 * @private
 	 */
-	$addTopicButtons;
+	$addTopicButtons
 
 	/**
 	 * @type {JQuery<HTMLLIElement>|undefined}
 	 * @private
 	 */
-	$emulatedAddTopicButton;
+	$emulatedAddTopicButton
 
 	/**
 	 * @type {import('./Subscriptions').default | undefined}
 	 */
-	subscriptionsInstance;
+	subscriptionsInstance
 
 	/**
 	 * @type {mw.DiscussionToolsHeading[]|undefined}
 	 * @private
 	 */
-	dtSubscribableThreads;
+	dtSubscribableThreads
 
 	/**
 	 * @type {HTMLElement | undefined}
 	 * @private
 	 */
-	notificationArea;
+	notificationArea
 
 	/**
 	 * @type {HTMLElement | undefined}
 	 * @private
 	 */
-	tocButton;
+	tocButton
 
 	/**
 	 * @type {HTMLElement | undefined}
 	 * @private
 	 */
-	stickyHeader;
+	stickyHeader
 
 	/**
 	 * @type {HTMLElement | undefined}
 	 * @private
 	 */
-	tocContent;
+	tocContent
 
 	/**
 	 * @type {{
@@ -157,19 +157,19 @@ class Controller extends EventEmitter {
 	 * }}
 	 * @private
 	 */
-	content = {};
+	content = {}
 
 	/**
 	 * @type {(() => void) | undefined}
 	 * @private
 	 */
-	throttledHandleScroll;
+	throttledHandleScroll
 
 	/**
 	 * @type {(() => void) | undefined}
 	 * @private
 	 */
-	throttledHandleSelectionChange;
+	throttledHandleSelectionChange
 
 	/**
 	 * @type {{
@@ -181,39 +181,39 @@ class Controller extends EventEmitter {
 	 *   tocHeight?: number | undefined;
 	 * }}
 	 */
-	scrollData = {};
+	scrollData = {}
 
-	autoScrolling = false;
-	isUpdateThreadLinesHandlerAttached = false;
-	lastScrollX = 0;
-	originalPageTitle = document.title;
+	autoScrolling = false
+	isUpdateThreadLinesHandlerAttached = false
+	lastScrollX = 0
+	originalPageTitle = document.title
 
 	/** @type {number | undefined} */
-	lastCheckedRevisionId;
+	lastCheckedRevisionId
 
-	addedCommentCount = 0;
+	addedCommentCount = 0
 
-	areRelevantCommentsAdded = false;
+	areRelevantCommentsAdded = false
 
 	/** @type {string[] | undefined} */
-	relevantAddedCommentIds;
+	relevantAddedCommentIds
 
 	/** @type {import('./updateChecker').CommentWorkerMatched[]} */
-	commentsNotifiedAbout = [];
+	commentsNotifiedAbout = []
 
 	/**
 	 * @type {boolean}
 	 */
-	isObstructingElementHoveredCached = false;
+	isObstructingElementHoveredCached = false
 
 	/**
 	 * @type {number | undefined}
 	 * @private
 	 */
-	bodyScrollPaddingTop;
+	bodyScrollPaddingTop
 
 	/** @type {Worker | undefined} */
-	worker;
+	worker
 
 	/**
 	 * @type {{
@@ -221,10 +221,10 @@ class Controller extends EventEmitter {
 	 * }}
 	 * @private
 	 */
-	beforeUnloadHandlers = {};
+	beforeUnloadHandlers = {}
 
 	/** @type {CSSStyleSheet | undefined} */
-	commentLayersOptionalBackgroundHighlightingCss;
+	commentLayersOptionalBackgroundHighlightingCss
 
 	/**
 	 * Set up the boot manager for use in the current boot process. (Executed at every page load.)
@@ -234,36 +234,36 @@ class Controller extends EventEmitter {
 	setup(pageHtml) {
 		// RevisionSlider replaces the #mw-content-text element.
 		if (!cd.loader.$content.get(0)?.parentNode) {
-			cd.loader.$content = $('#mw-content-text');
+			cd.loader.$content = $('#mw-content-text')
 		}
 
 		if (pageHtml) {
-			const div = document.createElement('div');
-			div.innerHTML = pageHtml;
-			this.rootElement = /** @type {HTMLElement} */ (div.firstChild);
-			this.$root = $(this.rootElement);
+			const div = document.createElement('div')
+			div.innerHTML = pageHtml
+			this.rootElement = /** @type {HTMLElement} */ (div.firstChild)
+			this.$root = $(this.rootElement)
 		} else {
 			// There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
-			this.$root = cd.loader.$content.children('.mw-parser-output').first();
+			this.$root = cd.loader.$content.children('.mw-parser-output').first()
 
 			// 404 pages
 			if (!this.$root.length) {
-				this.$root = cd.loader.$content;
+				this.$root = cd.loader.$content
 			}
 
-			this.rootElement = this.$root[0];
+			this.rootElement = this.$root[0]
 		}
 
 		// Add the class immediately, not at the end of the boot process, to prevent the issue when any
 		// unexpected error prevents this from being executed. Then, when
 		// this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
 		// reason, the page can go into an infinite rebooting loop.
-		this.$root.addClass('cd-parse-started');
+		this.$root.addClass('cd-parse-started')
 
 		this.commentLayersOptionalBackgroundHighlightingCss ??= mw.util.addCSS(
 			commentLayersOptionalBackgroundHighlightingCss
-		);
-		this.commentLayersOptionalBackgroundHighlightingCss.disabled = settings.get('useBackgroundHighlighting');
+		)
+		this.commentLayersOptionalBackgroundHighlightingCss.disabled = settings.get('useBackgroundHighlighting')
 	}
 
 	/**
@@ -274,7 +274,7 @@ class Controller extends EventEmitter {
 	 * @returns {Element}
 	 */
 	getRootElement() {
-		return this.rootElement;
+		return this.rootElement
 	}
 
 	/**
@@ -292,24 +292,24 @@ class Controller extends EventEmitter {
 					)
 				),
 				cd.g.contentFontSize
-			);
+			)
 
 			// The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
 			// surrounding area from the design point of view.
 			if (cd.g.skin === 'timeless') {
-				startMargin--;
+				startMargin--
 			}
 
-			const left = /** @type {JQuery.Coordinates} */ (this.$contentColumn.offset()).left;
-			const width = /** @type {number} */ (this.$contentColumn.outerWidth());
+			const left = /** @type {JQuery.Coordinates} */ (this.$contentColumn.offset()).left
+			const width = /** @type {number} */ (this.$contentColumn.outerWidth())
 			this.contentColumnOffsets = {
 				startMargin,
 				start: cd.g.contentDirection === 'ltr' ? left : left + width,
 				end: cd.g.contentDirection === 'ltr' ? left + width : left,
-			};
+			}
 		}
 
-		return this.contentColumnOffsets;
+		return this.contentColumnOffsets
 	}
 
 	/**
@@ -320,9 +320,9 @@ class Controller extends EventEmitter {
 	getPopupOverlay() {
 		this.$popupOverlay ??= $('<div>')
 			.addClass('cd-popupOverlay')
-			.appendTo(document.body);
+			.appendTo(document.body)
 
-		return this.$popupOverlay;
+		return this.$popupOverlay
 	}
 
 	/**
@@ -342,19 +342,19 @@ class Controller extends EventEmitter {
 			toc.isPresent() &&
 			scrollY < /** @type {number} */ (toc.getBottomOffset())
 		) {
-			this.saveScrollPosition(switchToAbsolute);
+			this.saveScrollPosition(switchToAbsolute)
 		} else {
-			this.scrollData.element = undefined;
-			this.scrollData.elementTop = undefined;
-			this.scrollData.touchesBottom = false;
+			this.scrollData.element = undefined
+			this.scrollData.elementTop = undefined
+			this.scrollData.touchesBottom = false
 			this.scrollData.offsetBottom = (
 				document.documentElement.scrollHeight - (scrollY + window.innerHeight)
-			);
+			)
 
 			// The number 100 accounts for various content moves by scripts running on the page (like
 			// HotCat that may add an empty category list).
 			if (this.scrollData.offsetBottom < 100) {
-				this.scrollData.touchesBottom = true;
+				this.scrollData.touchesBottom = true
 			} else if (
 				scrollY !== 0 &&
 				this.rootElement.getBoundingClientRect().top <= this.getBodyScrollPaddingTop()
@@ -362,12 +362,12 @@ class Controller extends EventEmitter {
 				const treeWalker = new ElementsTreeWalker(
 					this.rootElement,
 					this.rootElement.firstElementChild || undefined,
-				);
+				)
 				while (true) {
-					const el = treeWalker.currentNode;
+					const el = treeWalker.currentNode
 
 					if (!isInline(el) && !this.getFloatingElements().includes(el)) {
-						const rect = el.getBoundingClientRect();
+						const rect = el.getBoundingClientRect()
 
 						// By default, in a conversation between two people, replies are nested and there is no
 						// way to isolate the parent comment from the child, which would be desirable to find a
@@ -384,20 +384,20 @@ class Controller extends EventEmitter {
 							this.scrollData.element &&
 							!isHeadingNode(el)
 						) {
-							break;
+							break
 						}
 
 						if (rect.height !== 0 && rect.bottom >= this.getBodyScrollPaddingTop()) {
-							this.scrollData.element = el;
-							this.scrollData.elementTop = rect.top;
+							this.scrollData.element = el
+							this.scrollData.elementTop = rect.top
 							if (treeWalker.firstChild()) {
-								continue;
+								continue
 							} else {
-								break;
+								break
 							}
 						}
 					}
-					if (!treeWalker.nextSibling()) break;
+					if (!treeWalker.nextSibling()) break
 				}
 			}
 		}
@@ -412,26 +412,26 @@ class Controller extends EventEmitter {
 	 */
 	restoreRelativeScrollPosition(switchToAbsolute = false) {
 		if (switchToAbsolute && this.scrollData.offset !== undefined) {
-			this.restoreScrollPosition();
+			this.restoreScrollPosition()
 		} else if (this.scrollData.touchesBottom && window.scrollY !== 0) {
 			window.scrollTo(
 				0,
 				document.documentElement.scrollHeight -
 				window.innerHeight -
 				/** @type {number} */ (this.scrollData.offsetBottom)
-			);
+			)
 		} else if (this.scrollData.element) {
-			const rect = this.scrollData.element.getBoundingClientRect();
+			const rect = this.scrollData.element.getBoundingClientRect()
 			if (getVisibilityByRects(rect)) {
 				window.scrollTo(
 					0,
 					window.scrollY + rect.top - /** @type {number} */ (this.scrollData.elementTop)
-				);
+				)
 			} else {
 				// In a collapsed thread?
 				const closestHidden = /** @type {HTMLElement | undefined} */ (
 					this.scrollData.element.closest('[hidden]')
-				);
+				)
 				if (closestHidden) {
 					commentManager.getAll()
 						.map((comment) => comment.thread)
@@ -441,7 +441,7 @@ class Controller extends EventEmitter {
 						/** @type {HTMLElement[]} */ (thread.collapsedRange).includes(closestHidden)
 						)
 						?.$expandNote
-						?.cdScrollTo('top', false);
+						?.cdScrollTo('top', false)
 				}
 			}
 		}
@@ -456,7 +456,7 @@ class Controller extends EventEmitter {
 	 */
 	replaceScrollAnchorElement(element, newElement) {
 		if (this.scrollData.element && element === this.scrollData.element) {
-			this.scrollData.element = newElement;
+			this.scrollData.element = newElement
 		}
 	}
 
@@ -468,7 +468,7 @@ class Controller extends EventEmitter {
 	 *   when visits are loaded after a page reboot.
 	 */
 	saveScrollPosition(saveTocHeight = true) {
-		this.scrollData.offset = window.scrollY;
+		this.scrollData.offset = window.scrollY
 		this.scrollData.tocHeight =
 			(saveTocHeight || this.scrollData.tocHeight) &&
 			!toc.isInSidebar() &&
@@ -479,7 +479,7 @@ class Controller extends EventEmitter {
 			// There is some content below the TOC in the viewport.
 			/** @type {number} */ (toc.getBottomOffset()) < window.scrollY + window.innerHeight
 				? toc.$element.outerHeight()
-				: undefined;
+				: undefined
 	}
 
 	/**
@@ -489,17 +489,17 @@ class Controller extends EventEmitter {
 	 *   after page reboots.
 	 */
 	restoreScrollPosition(resetTocHeight = true) {
-		if (this.scrollData.offset === undefined) return;
+		if (this.scrollData.offset === undefined) return
 
 		if (this.scrollData.tocHeight) {
 			this.scrollData.offset +=
-				(/** @type {JQuery} */ (toc.$element).outerHeight() || 0) - this.scrollData.tocHeight;
+				(/** @type {JQuery} */ (toc.$element).outerHeight() || 0) - this.scrollData.tocHeight
 		}
-		window.scrollTo(0, this.scrollData.offset);
+		window.scrollTo(0, this.scrollData.offset)
 
-		this.scrollData.offset = undefined;
+		this.scrollData.offset = undefined
 		if (resetTocHeight) {
-			this.scrollData.tocHeight = undefined;
+			this.scrollData.tocHeight = undefined
 		}
 	}
 
@@ -516,9 +516,9 @@ class Controller extends EventEmitter {
 					.map((name) => `.${name}`)
 					.join(', ')
 			)
-			.get();
+			.get()
 
-		return this.content.closedDiscussions;
+		return this.content.closedDiscussions
 	}
 
 	/**
@@ -530,10 +530,10 @@ class Controller extends EventEmitter {
 	areThereOutdents = () => {
 		this.content.areThereOutdents ??= Boolean(
 			this.$root.find('.' + cd.config.outdentClass).length
-		);
+		)
 
-		return this.content.areThereOutdents;
-	};
+		return this.content.areThereOutdents
+	}
 
 	/**
 	 * Find floating elements on the page.
@@ -559,7 +559,7 @@ class Controller extends EventEmitter {
 				'figure[typeof~="mw:File/Thumb"]',
 				'figure[typeof~="mw:File/Frame"]',
 				...this.getTsFloatingElementSelectors(),
-			].join(', ');
+			].join(', ')
 
 			// Can't use jQuery here anyway, as .find() doesn't take into account ancestor elements, such
 			// as .mw-parser-output, in selectors. Remove all known elements that never intersect comments
@@ -568,10 +568,10 @@ class Controller extends EventEmitter {
 				[...this.rootElement.querySelectorAll(floatingElementSelector)].filter(
 					(el) => !el.classList.contains('cd-ignoreFloating')
 				)
-			);
+			)
 		}
 
-		return this.content.floatingElements;
+		return this.content.floatingElements
 	}
 
 	/**
@@ -581,13 +581,13 @@ class Controller extends EventEmitter {
 	 */
 	getHiddenElements() {
 		if (!this.hiddenElements) {
-			const hiddenElementSelector = this.getTsHiddenElementSelectors().join(', ');
+			const hiddenElementSelector = this.getTsHiddenElementSelectors().join(', ')
 			this.hiddenElements = hiddenElementSelector
 				? [...this.rootElement.querySelectorAll(hiddenElementSelector)]
-				: [];
+				: []
 		}
 
-		return this.hiddenElements;
+		return this.hiddenElements
 	}
 
 	/**
@@ -598,10 +598,10 @@ class Controller extends EventEmitter {
 	 */
 	getTsFloatingElementSelectors() {
 		if (!this.content.tsSelectorsFloating) {
-			this.extractTemplateStylesSelectors();
+			this.extractTemplateStylesSelectors()
 		}
 
-		return /** @type {string[]} */ (this.content.tsSelectorsFloating);
+		return /** @type {string[]} */ (this.content.tsSelectorsFloating)
 	}
 
 	/**
@@ -612,10 +612,10 @@ class Controller extends EventEmitter {
 	 */
 	getTsHiddenElementSelectors() {
 		if (!this.content.tsSelectorsHidden) {
-			this.extractTemplateStylesSelectors();
+			this.extractTemplateStylesSelectors()
 		}
 
-		return /** @type {string[]} */ (this.content.tsSelectorsHidden);
+		return /** @type {string[]} */ (this.content.tsSelectorsHidden)
 	}
 
 	/**
@@ -624,36 +624,36 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	extractTemplateStylesSelectors() {
-		const floating = /** @type {string[]} */ ([]);
-		const hidden = /** @type {string[]} */ ([]);
+		const floating = /** @type {string[]} */ ([])
+		const hidden = /** @type {string[]} */ ([])
 		const extractSelectors = (/** @type {CSSRule} */ rule) => {
 			if (rule instanceof CSSStyleRule) {
-				const style = rule.style;
+				const style = rule.style
 				if (style.float === 'left' || style.float === 'right') {
-					floating.push(rule.selectorText);
+					floating.push(rule.selectorText)
 				}
 				if (style.display === 'none') {
-					hidden.push(rule.selectorText);
+					hidden.push(rule.selectorText)
 				}
 			} else if (rule instanceof CSSMediaRule) {
-				[...rule.cssRules].forEach(extractSelectors);
+				[...rule.cssRules].forEach(extractSelectors)
 			}
 		};
 		[...document.styleSheets]
 			.filter((sheet) => sheet.href?.includes('site.styles'))
 			.forEach((el) => {
 				try {
-					[...el.cssRules].forEach(extractSelectors);
+					[...el.cssRules].forEach(extractSelectors)
 				} catch {
 					// CSS rules on other domains can be inaccessible
 				}
 			});
 		[...this.rootElement.querySelectorAll('style')].forEach((el) => {
-			[...(el.sheet?.cssRules || [])].forEach(extractSelectors);
-		});
+			[...(el.sheet?.cssRules || [])].forEach(extractSelectors)
+		})
 
-		this.content.tsSelectorsFloating = floating;
-		this.content.tsSelectorsHidden = hidden;
+		this.content.tsSelectorsFloating = floating
+		this.content.tsSelectorsHidden = hidden
 	}
 
 	/**
@@ -664,9 +664,9 @@ class Controller extends EventEmitter {
 	areThereLtrRtlMixes() {
 		this.content.areThereLtrRtlMixes ??= Boolean(
 			document.querySelector('.mw-content-ltr .mw-content-rtl, .mw-content-rtl .mw-content-ltr')
-		);
+		)
 
-		return this.content.areThereLtrRtlMixes;
+		return this.content.areThereLtrRtlMixes
 	}
 
 	/**
@@ -675,11 +675,11 @@ class Controller extends EventEmitter {
 	 * @param {MouseEvent | JQuery.MouseMoveEvent | JQuery.MouseOverEvent} event
 	 */
 	handleMouseMove(event) {
-		if (this.mouseMoveBlocked || this.isAutoScrolling() || cd.loader.isPageOverlayOn()) return;
+		if (this.mouseMoveBlocked || this.isAutoScrolling() || cd.loader.isPageOverlayOn()) return
 
 		// Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
 		// about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
-		this.emit('mouseMove', event);
+		this.emit('mouseMove', event)
 	}
 
 	/**
@@ -689,10 +689,10 @@ class Controller extends EventEmitter {
 	 */
 	isObstructingElementHovered() {
 		if (this.notificationArea === undefined) {
-			this.notificationArea = $('.mw-notification-area')[0];
-			this.tocButton = $('#vector-page-titlebar-toc')[0];
-			this.stickyHeader = $('#vector-sticky-header')[0];
-			this.tocContent = $('.vector-dropdown-content')[0];
+			this.notificationArea = $('.mw-notification-area')[0]
+			this.tocButton = $('#vector-page-titlebar-toc')[0]
+			this.stickyHeader = $('#vector-sticky-header')[0]
+			this.tocContent = $('.vector-dropdown-content')[0]
 		}
 
 		OO.ui.throttle(() => {
@@ -723,10 +723,10 @@ class Controller extends EventEmitter {
 
 				// WikiEditor dialog
 					$(document.body).children('.ui-dialog').not('[style*="display: none"]').length
-			);
-		}, 100)();
+			)
+		}, 100)()
 
-		return this.isObstructingElementHoveredCached;
+		return this.isObstructingElementHoveredCached
 	}
 
 	/**
@@ -736,11 +736,11 @@ class Controller extends EventEmitter {
 	 */
 	handleWindowResize = async () => {
 		// sleep(), because it seems like sometimes it doesn't have time to update.
-		await sleep(cd.g.skin === 'vector-2022' ? 100 : 0);
+		await sleep(cd.g.skin === 'vector-2022' ? 100 : 0)
 
-		this.emit('resize');
-		this.handleScroll();
-	};
+		this.emit('resize')
+		this.handleScroll()
+	}
 
 	/**
 	 * Handles `keydown` event on the document.
@@ -749,10 +749,10 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	handleGlobalKeyDown = (event) => {
-		if (cd.loader.isPageOverlayOn()) return;
+		if (cd.loader.isPageOverlayOn()) return
 
-		this.emit('keyDown', event);
-	};
+		this.emit('keyDown', event)
+	}
 
 	/**
 	 * _For internal use._ Handle a document's `scroll` event: Register seen comments, update the
@@ -761,28 +761,28 @@ class Controller extends EventEmitter {
 	 */
 	handleScroll = () => {
 		// Scroll will be handled when the autoscroll is finished.
-		if (this.isAutoScrolling()) return;
+		if (this.isAutoScrolling()) return
 
-		this.mouseMoveBlocked = true;
+		this.mouseMoveBlocked = true
 
 		// Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
 		// comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
 		// Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
 		// enough, so we try 300ms.
 		this.throttledHandleScroll ??= OO.ui.throttle(() => {
-			this.mouseMoveBlocked = false;
+			this.mouseMoveBlocked = false
 
-			if (this.isAutoScrolling()) return;
+			if (this.isAutoScrolling()) return
 
-			this.emit('scroll');
-		}, 300);
-		this.throttledHandleScroll();
+			this.emit('scroll')
+		}, 300)
+		this.throttledHandleScroll()
 
 		if (window.scrollX !== this.lastScrollX) {
-			$(document).trigger('horizontalscroll.cd');
+			$(document).trigger('horizontalscroll.cd')
 		}
-		this.lastScrollX = window.scrollX;
-	};
+		this.lastScrollX = window.scrollX
+	}
 
 	/**
 	 * Handle a `horizontalscroll` event, triggered from {@link Controller#handleScroll}.
@@ -790,8 +790,8 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	handleHorizontalScroll = () => {
-		this.emit('horizontalScroll');
-	};
+		this.emit('horizontalScroll')
+	}
 
 	/**
 	 * Handle a `popstate` event, including clicks on links pointing to comment anchors.
@@ -802,15 +802,15 @@ class Controller extends EventEmitter {
 		// Use `popstate`, not `hashchange`, because we need to handle cases when the user clicks a link
 		// with the same fragment as is in the URL.
 		try {
-			this.emit('popState', decodeURIComponent(location.hash.slice(1)));
+			this.emit('popState', decodeURIComponent(location.hash.slice(1)))
 		} catch (error) {
-			console.error(error);
+			console.error(error)
 		}
 
 		// Make sure the title has no incorrect new comment count when the user presses the "Back"
 		// button after an (internal) page reboot.
-		this.updatePageTitle();
-	};
+		this.updatePageTitle()
+	}
 
 	/**
 	 * Handle a `selectionchange` event.
@@ -819,10 +819,10 @@ class Controller extends EventEmitter {
 	 */
 	handleSelectionChange = () => {
 		this.throttledHandleSelectionChange ??= OO.ui.throttle(() => {
-			this.emit('selectionChange');
-		}, 200);
-		this.throttledHandleSelectionChange();
-	};
+			this.emit('selectionChange')
+		}, 200)
+		this.throttledHandleSelectionChange()
+	}
 
 	/**
 	 * Handle page (content area) mutations.
@@ -830,13 +830,13 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	handlePageMutate = () => {
-		if (cd.loader.isBooting()) return;
+		if (cd.loader.isBooting()) return
 
-		this.emit('mutate');
+		this.emit('mutate')
 
 		// Could also run this.handleScroll() here, but not sure, as it would double the execution
 		// time with rare effect.
-	};
+	}
 
 	/**
 	 * Handle a click on an "Add topic" button excluding those added by the script.
@@ -845,13 +845,13 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	handleAddTopicButtonClick = (event) => {
-		if (event.ctrlKey || event.shiftKey || event.metaKey) return;
+		if (event.ctrlKey || event.shiftKey || event.metaKey) return
 
-		const $button = $(/** @type {EventTarget} */ (event.currentTarget));
-		let preloadConfig;
-		let newTopicOnTop = false;
+		const $button = $(/** @type {EventTarget} */ (event.currentTarget))
+		let preloadConfig
+		let newTopicOnTop = false
 		if ($button.is('a')) {
-			const { searchParams } = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href);
+			const { searchParams } = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href)
 			preloadConfig = {
 				editIntro: getLastArrayElementOrSelf(searchParams.getAll('editintro')),
 				commentTemplate: getLastArrayElementOrSelf(searchParams.getAll('preload')),
@@ -860,11 +860,11 @@ class Controller extends EventEmitter {
 				summary: getLastArrayElementOrSelf(searchParams.getAll('summary'))?.replace(/^.+?\*\/ */, ''),
 				noHeadline: Boolean(getLastArrayElementOrSelf(searchParams.getAll('nosummary'))),
 				omitSignature: Boolean(searchParams.get('cdomitsignature')),
-			};
-			newTopicOnTop = getLastArrayElementOrSelf(searchParams.getAll('section')) === '0';
+			}
+			newTopicOnTop = getLastArrayElementOrSelf(searchParams.getAll('section')) === '0'
 		} else {
 			// <input>
-			const $form = $button.closest('form');
+			const $form = $button.closest('form')
 			preloadConfig = {
 				editIntro: $form.find('input[name="editintro"]').val(),
 				commentTemplate: $form.find('input[name="preload"]').val(),
@@ -876,12 +876,12 @@ class Controller extends EventEmitter {
 				summary: $form.find('input[name="summary"]').val(),
 				noHeadline: Boolean($form.find('input[name="nosummary"]').val()),
 				omitSignature: false,
-			};
+			}
 		}
 
-		event.preventDefault();
-		cd.page.addSection(undefined, undefined, preloadConfig, newTopicOnTop);
-	};
+		event.preventDefault()
+		cd.page.addSection(undefined, undefined, preloadConfig, newTopicOnTop)
+	}
 
 	/**
 	 * _For internal use._ Add event listeners to `window`, `document`, hooks.
@@ -894,8 +894,8 @@ class Controller extends EventEmitter {
 			// scrolls a comment and it suddenly stops being highlighted because the cursor is between
 			// neighboring <p>s.
 			$(document).on('mousemove mouseover', (event) => {
-				this.handleMouseMove(/** @type {JQuery.MouseMoveEvent | JQuery.MouseOverEvent} */ (event));
-			});
+				this.handleMouseMove(/** @type {JQuery.MouseMoveEvent | JQuery.MouseOverEvent} */ (event))
+			})
 		}
 
 		// We need the `visibilitychange` event because many things may move while the document is
@@ -903,38 +903,38 @@ class Controller extends EventEmitter {
 		$(document)
 			.on('scroll visibilitychange', this.handleScroll)
 			.on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll)
-			.on('selectionchange', this.handleSelectionChange);
+			.on('selectionchange', this.handleSelectionChange)
 
 		$(window)
 			.on('resize orientationchange', this.handleWindowResize)
-			.on('popstate', this.handlePopState);
+			.on('popstate', this.handlePopState)
 
 		// Should be above mw.hook('wikipage.content').fire so that it runs for the whole page content
 		// as opposed to $('.cd-comment-author-wrapper').
 		mw.hook('wikipage.content').add(
 			this.connectToCommentLinks,
 			this.highlightMentions
-		);
-		mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks);
+		)
+		mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks)
 
 		// Mutation observer doesn't follow all possible comment position changes (for example,
 		// initiated with adding new CSS) unfortunately.
-		setInterval(this.handlePageMutate, 1500);
+		setInterval(this.handlePageMutate, 1500)
 
 		if (cd.page.isCommentable()) {
-			$(document).on('keydown', this.handleGlobalKeyDown);
+			$(document).on('keydown', this.handleGlobalKeyDown)
 		}
 
-		mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this));
+		mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this))
 
 		updateChecker
 			.on('check', (revisionId) => {
-				this.lastCheckedRevisionId = revisionId;
+				this.lastCheckedRevisionId = revisionId
 			})
-			.on('commentsUpdate', this.updateAddedComments);
+			.on('commentsUpdate', this.updateAddedComments)
 
 		Thread
-			.on('toggle', this.handleScroll);
+			.on('toggle', this.handleScroll)
 	}
 
 	/**
@@ -949,13 +949,13 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	connectToCommentLinks = ($content) => {
-		if (!$content.is('#mw-content-text, .cd-commentForm-previewArea')) return;
+		if (!$content.is('#mw-content-text, .cd-commentForm-previewArea')) return
 
-		const goToCommentUrl = mw.util.getUrl('Special:GoToComment/');
+		const goToCommentUrl = mw.util.getUrl('Special:GoToComment/')
 		const extractCommentId = (/** @type {HTMLElement} */ el) =>
 		/** @type {string} */ ($(el).attr('href'))
 				.replace(mw.util.escapeRegExp(goToCommentUrl), '#')
-				.slice(1);
+				.slice(1)
 		$content
 			.find(`a[href^="#"], a[href^="${goToCommentUrl}"]`)
 			.filter((_, el) =>
@@ -965,15 +965,15 @@ class Controller extends EventEmitter {
 				)
 			)
 			.on('click', function onCommentLinkClick(event) {
-				event.preventDefault();
+				event.preventDefault()
 				commentManager
 					.getByAnyId(extractCommentId(this), true)
 					?.scrollTo({
 						expandThreads: true,
 						pushState: true,
-					});
-			});
-	};
+					})
+			})
+	}
 
 	/**
 	 * Highlight mentions of the current user.
@@ -982,9 +982,9 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	highlightMentions = ($content) => {
-		if (!$content.is('#mw-content-text, .cd-comment-part')) return;
+		if (!$content.is('#mw-content-text, .cd-comment-part')) return
 
-		const currentUserName = cd.user.getName();
+		const currentUserName = cd.user.getName()
 		const excludeSelector = [
 			settings.get('commentDisplay') === 'spacious'
 				? 'cd-comment-author'
@@ -992,7 +992,7 @@ class Controller extends EventEmitter {
 		]
 			.concat(cd.config.noSignatureClasses)
 			.map((name) => `.${name}`)
-			.join(', ');
+			.join(', ')
 		$content
 			.find(
 				$content.hasClass('cd-comment-part')
@@ -1004,12 +1004,12 @@ class Controller extends EventEmitter {
 					cd.g.userLinkRegexp.test(this.title) &&
 					!this.closest(excludeSelector) &&
 					Parser.processLink(this)?.userName === cd.user.getName()
-				);
+				)
 			})
 			.each((_, link) => {
-				link.classList.add('cd-currentUserLink');
-			});
-	};
+				link.classList.add('cd-currentUserLink')
+			})
+	}
 
 	/**
 	 * _For internal use._ Update the page's HTML and certain configuration values.
@@ -1017,42 +1017,42 @@ class Controller extends EventEmitter {
 	 * @param {import('./utils-api').ApiResponseParseContent} parseData
 	 */
 	updatePageContents(parseData) {
-		cd.loader.$content.children('.mw-parser-output').first().replaceWith(this.$root);
+		cd.loader.$content.children('.mw-parser-output').first().replaceWith(this.$root)
 
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		mw.util.clearSubtitle?.();
+		mw.util.clearSubtitle?.()
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		mw.util.addSubtitle?.(parseData.subtitle);
+		mw.util.addSubtitle?.(parseData.subtitle)
 
 		if ($('#catlinks').length) {
-			const $categories = $(parseData.categorieshtml);
-			mw.hook('wikipage.categories').fire($categories);
-			$('#catlinks').replaceWith($categories);
+			const $categories = $(parseData.categorieshtml)
+			mw.hook('wikipage.categories').fire($categories)
+			$('#catlinks').replaceWith($categories)
 		}
 
 		mw.config.set({
 			wgRevisionId: parseData.revid,
 			wgCurRevisionId: parseData.revid,
-		});
+		})
 	}
 
 	/**
 	 * Reset the controller data and state. (Executed between page loads.)
 	 */
 	reset() {
-		this.cleanUpUrlAndDom();
-		this.mutationObserver?.disconnect();
-		commentManager.reset();
-		sectionManager.reset();
-		CommentForm.forgetOnTarget(cd.page, 'addSection');
-		this.$emulatedAddTopicButton?.remove();
-		delete this.$addTopicButtons;
-		this.content = {};
-		this.addedCommentCount = 0;
-		this.areRelevantCommentsAdded = false;
-		this.relevantAddedCommentIds = undefined;
-		delete this.dtSubscribableThreads;
-		this.updatePageTitle();
+		this.cleanUpUrlAndDom()
+		this.mutationObserver?.disconnect()
+		commentManager.reset()
+		sectionManager.reset()
+		CommentForm.forgetOnTarget(cd.page, 'addSection')
+		this.$emulatedAddTopicButton?.remove()
+		delete this.$addTopicButtons
+		this.content = {}
+		this.addedCommentCount = 0
+		this.areRelevantCommentsAdded = false
+		this.relevantAddedCommentIds = undefined
+		delete this.dtSubscribableThreads
+		this.updatePageTitle()
 	}
 
 	/**
@@ -1062,7 +1062,7 @@ class Controller extends EventEmitter {
 	 * @param {string} title
 	 */
 	updateOriginalPageTitle(title) {
-		this.originalPageTitle = title;
+		this.originalPageTitle = title
 	}
 
 	/**
@@ -1074,28 +1074,28 @@ class Controller extends EventEmitter {
 	 *   clicked).
 	 */
 	updatePageTitle() {
-		let title = this.originalPageTitle;
-		const lastActiveCommentForm = commentFormManager.getLastActive();
+		let title = this.originalPageTitle
+		const lastActiveCommentForm = commentFormManager.getLastActive()
 		if (lastActiveCommentForm) {
 			const ending = lastActiveCommentForm
 				.getTarget()
 				.getCommentFormMethodName(lastActiveCommentForm.getMode())
-				.toLowerCase();
-			title = cd.s(`page-title-${ending}`, title);
+				.toLowerCase()
+			title = cd.s(`page-title-${ending}`, title)
 		}
 
 		if (this.addedCommentCount === 0) {
 			// A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
-			document.title = '';
+			document.title = ''
 		}
 
-		const relevantMark = this.areRelevantCommentsAdded ? '*' : '';
+		const relevantMark = this.areRelevantCommentsAdded ? '*' : ''
 		document.title = title.replace(
 			/^(?:\(\d+\*?\) )?/,
 			this.addedCommentCount
 				? `(${this.addedCommentCount}${relevantMark}) `
 				: ''
-		);
+		)
 	}
 
 	/**
@@ -1105,9 +1105,9 @@ class Controller extends EventEmitter {
 	 * @returns {boolean}
 	 */
 	isLongPage() {
-		this.content.longPage ??= /** @type {number} */ ($(document).height()) > 15_000;
+		this.content.longPage ??= /** @type {number} */ ($(document).height()) > 15_000
 
-		return this.content.longPage;
+		return this.content.longPage
 	}
 
 	/**
@@ -1117,11 +1117,11 @@ class Controller extends EventEmitter {
 	 * @param {JQuery.TriggeredEvent | MouseEvent | KeyboardEvent} event
 	 */
 	showCopyLinkDialog(object, event) {
-		if (cd.loader.isPageOverlayOn()) return;
+		if (cd.loader.isPageOverlayOn()) return
 
-		event.preventDefault();
+		event.preventDefault()
 
-		const fragment = /** @type {string} */ (object.getUrlFragment());
+		const fragment = /** @type {string} */ (object.getUrlFragment())
 		const permalinkSpecialPagePrefix =
 			mw.config.get('wgFormattedNamespaces')[-1] +
 			':' +
@@ -1132,7 +1132,7 @@ class Controller extends EventEmitter {
 						'/' +
 						String(mw.config.get('wgRevisionId')) +
 						'#'
-			);
+			)
 
 		/** @type {import('./CopyLinkDialog').CopyLinkDialogContent} */
 		const content = {
@@ -1161,29 +1161,29 @@ class Controller extends EventEmitter {
 			jsBreakpointTimestamp: object instanceof Comment
 				? `timestamp.element.textContent === '${object.timestampText || ''}'`
 				: undefined,
-		};
+		}
 
 		// Undocumented feature allowing to copy a link of a default type without opening a dialog.
 		const relevantSetting = object instanceof Comment
 			? settings.get('defaultCommentLinkType')
-			: settings.get('defaultSectionLinkType');
+			: settings.get('defaultSectionLinkType')
 		if (!event.shiftKey && relevantSetting) {
 			switch (relevantSetting) {
 				case 'wikilink':
-					copyText(content.wikilink, content.copyMessages);
-					break;
+					copyText(content.wikilink, content.copyMessages)
+					break
 				case 'link':
-					copyText(content.link, content.copyMessages);
-					break;
+					copyText(content.link, content.copyMessages)
+					break
 			}
 
-			return;
+			return
 		}
 
-		const dialog = new CopyLinkDialog(object, content);
-		const windowManager = cd.getWindowManager();
-		windowManager.addWindows([dialog]);
-		windowManager.openWindow(dialog);
+		const dialog = new CopyLinkDialog(object, content)
+		const windowManager = cd.getWindowManager()
+		windowManager.addWindows([dialog])
+		windowManager.openWindow(dialog)
 	}
 
 	/**
@@ -1195,21 +1195,21 @@ class Controller extends EventEmitter {
 	 */
 	scrollToY(y, smooth = true, callback = undefined) {
 		const onComplete = () => {
-			this.toggleAutoScrolling(false);
-			this.handleScroll();
-			callback?.();
-		};
+			this.toggleAutoScrolling(false)
+			this.handleScroll()
+			callback?.()
+		}
 
 		if (smooth) {
 			$('body, html').animate({ scrollTop: y }, {
 				complete() {
-					if (this !== document.documentElement) return;
-					onComplete();
+					if (this !== document.documentElement) return
+					onComplete()
 				},
-			});
+			})
 		} else {
-			window.scrollTo(window.scrollX, y);
-			onComplete();
+			window.scrollTo(window.scrollX, y)
+			onComplete()
 		}
 	}
 
@@ -1220,7 +1220,7 @@ class Controller extends EventEmitter {
 	 * @param {boolean} value
 	 */
 	toggleAutoScrolling(value) {
-		this.autoScrolling = value;
+		this.autoScrolling = value
 	}
 
 	/**
@@ -1230,7 +1230,7 @@ class Controller extends EventEmitter {
 	 * @returns {boolean}
 	 */
 	isAutoScrolling() {
-		return this.autoScrolling;
+		return this.autoScrolling
 	}
 
 	/**
@@ -1243,7 +1243,7 @@ class Controller extends EventEmitter {
 		// and scripts attached to the hooks to be made first to reduce the number of times it runs in
 		// vain. But if we set a long delay, users will see comment backgrounds mispositioned for some
 		// time.
-		await sleep();
+		await sleep()
 
 		this.mutationObserver = new MutationObserver((records) => {
 			if (
@@ -1262,15 +1262,15 @@ class Controller extends EventEmitter {
 						)
 				)
 			)
-				return;
+				return
 
-			this.handlePageMutate();
-		});
+			this.handlePageMutate()
+		})
 		this.mutationObserver.observe(cd.loader.$content[0], {
 			attributes: true,
 			childList: true,
 			subtree: true,
-		});
+		})
 	}
 
 	/**
@@ -1281,11 +1281,11 @@ class Controller extends EventEmitter {
 	 */
 	showRegularNotification(comments) {
 		/** @type {import('./updateChecker').CommentWorkerNew[]} */
-		let filteredComments = [];
+		let filteredComments = []
 		if (settings.get('notifications') === 'all') {
-			filteredComments = comments;
+			filteredComments = comments
 		} else if (settings.get('notifications') === 'toMe') {
-			filteredComments = comments.filter((comment) => comment.isToMe);
+			filteredComments = comments.filter((comment) => comment.isToMe)
 		}
 
 		if (settings.get('notifications') !== 'none' && filteredComments.length) {
@@ -1293,22 +1293,22 @@ class Controller extends EventEmitter {
 			// user most likely didn't see them because the tab is in the background). In the past there
 			// could be more than one notification, now there can be only one.
 			const openNotification = notifications.get()
-				.find((data) => data.comments && data.notification.isOpen);
+				.find((data) => data.comments && data.notification.isOpen)
 			if (openNotification) {
-				filteredComments.push(...openNotification.comments);
+				filteredComments.push(...openNotification.comments)
 			}
 		}
 
-		const wordSeparator = cd.mws('word-separator');
+		const wordSeparator = cd.mws('word-separator')
 
 		if (filteredComments.length) {
-			let html;
+			let html
 			const rebootHtml = cd.sParse(
 				'notification-reload',
 				commentFormManager.maybeGetFormDataWontBeLostString()
-			);
+			)
 			if (filteredComments.length === 1) {
-				const comment = filteredComments[0];
+				const comment = filteredComments[0]
 				html = comment.isToMe
 					? cd.sParse(
 						'notification-toyou',
@@ -1335,7 +1335,7 @@ class Controller extends EventEmitter {
 						/** @type {import('./Section').default} */ (comment.sectionSubscribedTo).headline
 					) +
 					wordSeparator +
-					rebootHtml;
+					rebootHtml
 			} else {
 				const section =
 				// Is there a common section?
@@ -1344,11 +1344,11 @@ class Controller extends EventEmitter {
 					)
 
 						? filteredComments[0].sectionSubscribedTo
-						: undefined;
+						: undefined
 
-				let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
+				let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant')
 				if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
-					mayBeRelevantString = wordSeparator + mayBeRelevantString;
+					mayBeRelevantString = wordSeparator + mayBeRelevantString
 				}
 
 				html =
@@ -1369,7 +1369,7 @@ class Controller extends EventEmitter {
 						section ? '' : mayBeRelevantString
 					) +
 					wordSeparator +
-					rebootHtml;
+					rebootHtml
 			}
 
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -1377,10 +1377,10 @@ class Controller extends EventEmitter {
 				wrapHtml(html),
 				{ tag: 'cd-newComments' },
 				{ comments: filteredComments }
-			);
+			)
 			notification.$notification.on('click', () => {
-				this.rebootPage({ commentIds: filteredComments.map((comment) => comment.id) });
-			});
+				this.rebootPage({ commentIds: filteredComments.map((comment) => comment.id) })
+			})
 		}
 	}
 
@@ -1392,11 +1392,11 @@ class Controller extends EventEmitter {
 	 */
 	showDesktopNotification(comments) {
 		/** @type {import('./updateChecker').CommentWorkerNew[]} */
-		let filteredComments = [];
+		let filteredComments = []
 		if (settings.get('desktopNotifications') === 'all') {
-			filteredComments = comments;
+			filteredComments = comments
 		} else if (settings.get('desktopNotifications') === 'toMe') {
-			filteredComments = comments.filter((comment) => comment.isToMe);
+			filteredComments = comments.filter((comment) => comment.isToMe)
 		}
 
 		if (
@@ -1405,14 +1405,14 @@ class Controller extends EventEmitter {
 			!filteredComments.length ||
 			document.hasFocus()
 		) {
-			return;
+			return
 		}
 
-		const wordSeparator = cd.mws('word-separator');
+		const wordSeparator = cd.mws('word-separator')
 
-		let body;
-		const comment = filteredComments[0];
-		const currentPageName = cd.page.name;
+		let body
+		const comment = filteredComments[0]
+		const currentPageName = cd.page.name
 		if (filteredComments.length === 1) {
 			body = comment.isToMe
 				? cd.s(
@@ -1433,7 +1433,7 @@ class Controller extends EventEmitter {
 						comment.author,
 						/** @type {import('./updateChecker').SectionWorkerMatched} */ (comment.section).headline,
 						currentPageName
-					);
+					)
 		} else {
 			const section =
 			// Is there a common section?
@@ -1442,11 +1442,11 @@ class Controller extends EventEmitter {
 				)
 
 					? filteredComments[0].sectionSubscribedTo
-					: undefined;
+					: undefined
 
-			let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
+			let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant')
 			if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
-				mayBeRelevantString = wordSeparator + mayBeRelevantString;
+				mayBeRelevantString = wordSeparator + mayBeRelevantString
 			}
 
 			body = cd.s(
@@ -1463,7 +1463,7 @@ class Controller extends EventEmitter {
 				// "that may be relevant to you" text is not needed when the section is watched and the user
 				// can clearly understand why they are notified.
 				section ? '' : mayBeRelevantString
-			);
+			)
 		}
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -1473,20 +1473,20 @@ class Controller extends EventEmitter {
 			// We use a tag so that there aren't duplicate notifications when the same page is opened in
 			// two tabs. (Seems it doesn't work? :-/)
 			tag: 'cd-' + (filteredComments[filteredComments.length - 1].id || ''),
-		});
+		})
 		notification.addEventListener('click', () => {
-			parent.focus();
+			parent.focus()
 
 			// Just in case, old browsers. TODO: delete?
-			window.focus();
+			window.focus()
 
-			this.emit('desktopNotificationClick');
+			this.emit('desktopNotificationClick')
 
 			this.rebootPage({
 				commentIds: [comment.id],
 				closeNotificationsSmoothly: false,
-			});
-		});
+			})
+		})
 	}
 
 	/**
@@ -1496,22 +1496,22 @@ class Controller extends EventEmitter {
 	 * @param {import('./updateChecker').AddedComments} addedComments
 	 */
 	updateAddedComments = ({ all, relevant }) => {
-		this.addedCommentCount = all.length;
-		this.areRelevantCommentsAdded = Boolean(relevant.length);
+		this.addedCommentCount = all.length
+		this.areRelevantCommentsAdded = Boolean(relevant.length)
 		if (relevant.length) {
-			this.relevantAddedCommentIds = relevant.map((comment) => comment.id).filter(definedAndNotNull);
+			this.relevantAddedCommentIds = relevant.map((comment) => comment.id).filter(definedAndNotNull)
 		} else if (all.length) {
-			this.relevantAddedCommentIds = all.map((comment) => comment.id).filter(definedAndNotNull);
+			this.relevantAddedCommentIds = all.map((comment) => comment.id).filter(definedAndNotNull)
 		}
 
-		this.updatePageTitle();
+		this.updatePageTitle()
 
 		const commentsToNotifyAbout = relevant
-			.filter((comment) => !this.commentsNotifiedAbout.some((cna) => cna.id === comment.id));
-		this.showRegularNotification(commentsToNotifyAbout);
-		this.showDesktopNotification(commentsToNotifyAbout);
-		this.commentsNotifiedAbout.push(...commentsToNotifyAbout);
-	};
+			.filter((comment) => !this.commentsNotifiedAbout.some((cna) => cna.id === comment.id))
+		this.showRegularNotification(commentsToNotifyAbout)
+		this.showDesktopNotification(commentsToNotifyAbout)
+		this.commentsNotifiedAbout.push(...commentsToNotifyAbout)
+	}
 
 	/**
 	 * Get the IDs of the comments that should be jumped to after rebooting the page.
@@ -1519,7 +1519,7 @@ class Controller extends EventEmitter {
 	 * @returns {string[] | undefined}
 	 */
 	getRelevantAddedCommentIds() {
-		return this.relevantAddedCommentIds;
+		return this.relevantAddedCommentIds
 	}
 
 	/**
@@ -1532,7 +1532,7 @@ class Controller extends EventEmitter {
 			commentManager.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
 			this.lastCheckedRevisionId
 		) {
-			cd.page.markAsRead(this.lastCheckedRevisionId);
+			cd.page.markAsRead(this.lastCheckedRevisionId)
 		}
 	}
 
@@ -1542,9 +1542,9 @@ class Controller extends EventEmitter {
 	 * @returns {import('./Subscriptions').default}
 	 */
 	getSubscriptionsInstance() {
-		this.subscriptionsInstance ??= new DtSubscriptions();
+		this.subscriptionsInstance ??= new DtSubscriptions()
 
-		return this.subscriptionsInstance;
+		return this.subscriptionsInstance
 	}
 
 	/**
@@ -1568,7 +1568,7 @@ class Controller extends EventEmitter {
 				.join(', ')
 		)
 			.filter((_, el) => {
-				const $button = $(el);
+				const $button = $(el)
 
 				// When DT's new topic tool is enabled
 				if (
@@ -1576,38 +1576,38 @@ class Controller extends EventEmitter {
 					$button.parent().attr('id') !== 'ca-addsection' &&
 					!$button.closest(this.$root).length
 				) {
-					return false;
+					return false
 				}
 
-				let pageName;
+				let pageName
 				/** @type {URL | undefined} */
-				let url;
+				let url
 				if ($button.is('a')) {
-					url = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href);
+					url = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href)
 					pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))
-						?.replace(/^Special:NewSection\//i, '');
+						?.replace(/^Special:NewSection\//i, '')
 				} else if ($button.is('input')) {
 					pageName = /** @type {string} */ ($button
 						.closest('form')
 						.find('input[name="title"][type="hidden"]')
-						.val());
+						.val())
 				}
 				if (!pageName) {
-					return false;
+					return false
 				}
 
-				const page = pageRegistry.get(pageName);
+				const page = pageRegistry.get(pageName)
 				if (!page || page !== cd.page) {
-					return false;
+					return false
 				}
 
 				if (url) {
-					url.searchParams.set('dtenable', '0');
-					$button.attr('href', url.toString());
+					url.searchParams.set('dtenable', '0')
+					$button.attr('href', url.toString())
 				}
 
-				return true;
-			});
+				return true
+			})
 
 		if (!$('#ca-addsection a').length && this.$addTopicButtons.length === 1) {
 			this.$emulatedAddTopicButton = $(/** @type {HTMLLIElement} */ (mw.util.addPortletLink(
@@ -1618,10 +1618,10 @@ class Controller extends EventEmitter {
 				cd.s('addtopicbutton-tooltip'),
 				'+',
 				'#ca-history'
-			)));
+			)))
 			this.$addTopicButtons = this.$addTopicButtons.add(
 				/** @type {JQuery} */ (this.$emulatedAddTopicButton).children()
-			);
+			)
 		}
 
 		this.$addTopicButtons
@@ -1634,17 +1634,17 @@ class Controller extends EventEmitter {
 				!cd.g.isDtNewTopicToolEnabled &&
 				!($(el).is('a') && Number(mw.util.getParamValue('cdaddtopic', $(el).attr('href'))))
 			))
-			.attr('title', cd.s('addtopicbutton-tooltip'));
+			.attr('title', cd.s('addtopicbutton-tooltip'))
 
-		$('#ca-addsection a').updateTooltipAccessKeys();
+		$('#ca-addsection a').updateTooltipAccessKeys()
 
 		// In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
 		const dtHandler = $._data(document.body, 'events').click?.find(
 			(/** @type {JQuery.HandleObject<EventTarget, any>} */ event) =>
 				event.selector?.includes('data-mw-comment')
-		)?.handler;
+		)?.handler
 		if (dtHandler) {
-			$(document.body).off('click', dtHandler);
+			$(document.body).off('click', dtHandler)
 		}
 	}
 
@@ -1657,16 +1657,16 @@ class Controller extends EventEmitter {
 	getDtSubscribableThreads() {
 		const threads = /** @type {mw.DiscussionToolsHeading[] | undefined} */ (
 			mw.config.get('wgDiscussionToolsPageThreads')
-		);
+		)
 		this.dtSubscribableThreads ??= threads
 			?.concat(
 				threads
 					.filter((thread) => thread.headingLevel === 1)
 					.flatMap((thread) => thread.replies)
 			)
-			.filter((thread) => 'headingLevel' in thread && thread.headingLevel === 2);
+			.filter((thread) => 'headingLevel' in thread && thread.headingLevel === 2)
 
-		return this.dtSubscribableThreads;
+		return this.dtSubscribableThreads
 	}
 
 	/**
@@ -1679,7 +1679,7 @@ class Controller extends EventEmitter {
 		return (
 			cd.page.isOwnTalkPage() &&
 			!['all', 'toMe'].includes(settings.get('desktopNotifications'))
-		);
+		)
 	}
 
 	/**
@@ -1689,21 +1689,21 @@ class Controller extends EventEmitter {
 	 */
 	getBodyScrollPaddingTop() {
 		if (this.bodyScrollPaddingTop === undefined) {
-			let bodyScrollPaddingTop = Number.parseFloat($('html, body').css('scroll-padding-top')) || 0;
+			let bodyScrollPaddingTop = Number.parseFloat($('html, body').css('scroll-padding-top')) || 0
 
 			if (cd.g.skin === 'timeless') {
-				bodyScrollPaddingTop -= 5;
+				bodyScrollPaddingTop -= 5
 			}
 			if (cd.g.skin === 'vector-2022') {
 				// When jumping to the parent comment that is opening a section, the active section shown in
 				// the TOC is wrong. Probably some mechanisms in the scripts or the browser are out of sync.
-				bodyScrollPaddingTop -= 1;
+				bodyScrollPaddingTop -= 1
 			}
 
-			this.bodyScrollPaddingTop = bodyScrollPaddingTop;
+			this.bodyScrollPaddingTop = bodyScrollPaddingTop
 		}
 
-		return this.bodyScrollPaddingTop || 0;
+		return this.bodyScrollPaddingTop || 0
 	}
 
 	/**
@@ -1715,12 +1715,12 @@ class Controller extends EventEmitter {
 		if (!this.worker) {
 			// Create worker from inlined code using Blob URL
 			// This avoids CSP issues with separate worker files on Wikimedia sites
-			const blob = new Blob([workerCode], { type: 'application/javascript' });
-			const blobUrl = URL.createObjectURL(blob);
-			this.worker = new Worker(blobUrl);
+			const blob = new Blob([workerCode], { type: 'application/javascript' })
+			const blobUrl = URL.createObjectURL(blob)
+			this.worker = new Worker(blobUrl)
 		}
 
-		return this.worker;
+		return this.worker
 	}
 
 	/**
@@ -1731,13 +1731,13 @@ class Controller extends EventEmitter {
 	 */
 	addPreventUnloadCondition(name, condition) {
 		this.beforeUnloadHandlers[name] = (/** @type {JQuery.Event} */ event) => {
-			if (!condition()) return;
+			if (!condition()) return
 
-			event.preventDefault();
+			event.preventDefault()
 			// @ts-expect-error: Compatibility
-			event.returnValue = '1';
-		};
-		$(window).on('beforeunload', this.beforeUnloadHandlers[name]);
+			event.returnValue = '1'
+		}
+		$(window).on('beforeunload', this.beforeUnloadHandlers[name])
 	}
 
 	/**
@@ -1746,10 +1746,10 @@ class Controller extends EventEmitter {
 	 * @param {string} name
 	 */
 	removePreventUnloadCondition(name) {
-		if (!(name in this.beforeUnloadHandlers)) return;
+		if (!(name in this.beforeUnloadHandlers)) return
 
-		$(window).off('beforeunload', this.beforeUnloadHandlers[name]);
-		delete this.beforeUnloadHandlers[name];
+		$(window).off('beforeunload', this.beforeUnloadHandlers[name])
+		delete this.beforeUnloadHandlers[name]
 	}
 
 	/**
@@ -1760,9 +1760,9 @@ class Controller extends EventEmitter {
 	 * @returns {import('./BootProcess').default}
 	 */
 	createBootProcess(passedData = {}) {
-		this.bootProcess = new BootProcess(passedData);
+		this.bootProcess = new BootProcess(passedData)
 
-		return this.bootProcess;
+		return this.bootProcess
 	}
 
 	/**
@@ -1771,7 +1771,7 @@ class Controller extends EventEmitter {
 	 * @returns {import('./BootProcess').default}
 	 */
 	getBootProcess() {
-		return this.bootProcess;
+		return this.bootProcess
 	}
 
 	/**
@@ -1780,18 +1780,18 @@ class Controller extends EventEmitter {
 	 * @param {boolean} isReload Is the page reloaded, not booted the first time.
 	 */
 	async bootTalkPage(isReload) {
-		cd.loader.setBooting(true);
+		cd.loader.setBooting(true)
 
 		try {
-			await this.bootProcess.execute(isReload);
+			await this.bootProcess.execute(isReload)
 		} catch (error) {
-			mw.notify(cd.s('error-processpage'), { type: 'error' });
-			console.error(error);
+			mw.notify(cd.s('error-processpage'), { type: 'error' })
+			console.error(error)
 		}
 
-		cd.loader.hideBootingOverlay();
-		this.debugLog();
-		cd.loader.setBooting(false);
+		cd.loader.hideBootingOverlay()
+		this.debugLog()
+		cd.loader.setBooting(false)
 	}
 
 	/**
@@ -1800,19 +1800,19 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	debugLog() {
-		cd.debug.stopTimer('total time');
+		cd.debug.stopTimer('total time')
 
 		const timePerComment = (
 		// @ts-ignore
 		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			(cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')) /
 			commentManager.getCount()
-		).toFixed(2);
+		).toFixed(2)
 
-		cd.debug.logAndResetTimer('total time');
-		console.debug(`number of comments: ${commentManager.getCount()}`);
-		console.debug(`per comment: ${timePerComment}`);
-		cd.debug.logAndResetEverything();
+		cd.debug.logAndResetTimer('total time')
+		console.debug(`number of comments: ${commentManager.getCount()}`)
+		console.debug(`per comment: ${timePerComment}`)
+		cd.debug.logAndResetEverything()
 	}
 
 	/**
@@ -1824,68 +1824,68 @@ class Controller extends EventEmitter {
 	 */
 	async rebootPage(passedData = {}) {
 		if (cd.loader.isBooting() || !cd.loader.isPageOfType('talk')) {
-			return false;
+			return false
 		}
 
-		passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
+		passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos)
 
-		this.emit('beforeReboot', passedData);
+		this.emit('beforeReboot', passedData)
 
 		if (!passedData.commentIds && !passedData.sectionId) {
-			this.saveScrollPosition();
+			this.saveScrollPosition()
 		}
 
-		cd.debug.init();
-		cd.debug.startTimer('total time');
-		cd.debug.startTimer('get HTML');
+		cd.debug.init()
+		cd.debug.startTimer('total time')
+		cd.debug.startTimer('get HTML')
 
 		getUserInfo().catch((/** @type {unknown} */ error) => {
-			console.warn(error);
-		});
+			console.warn(error)
+		})
 
-		cd.loader.showBootingOverlay();
-		const bootProcess = this.createBootProcess(passedData);
+		cd.loader.showBootingOverlay()
+		const bootProcess = this.createBootProcess(passedData)
 
 		try {
-			bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
+			bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true)
 		} catch (error) {
-			cd.loader.hideBootingOverlay();
+			cd.loader.hideBootingOverlay()
 			if (bootProcess.passedData.submittedCommentForm) {
-				throw error;
+				throw error
 			} else {
-				mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-				console.warn(error);
+				mw.notify(cd.s('error-reloadpage'), { type: 'error' })
+				console.warn(error)
 
-				return false;
+				return false
 			}
 		}
 
-		mw.loader.load(bootProcess.passedData.parseData.modules);
-		mw.loader.load(bootProcess.passedData.parseData.modulestyles);
-		mw.config.set(bootProcess.passedData.parseData.jsconfigvars);
+		mw.loader.load(bootProcess.passedData.parseData.modules)
+		mw.loader.load(bootProcess.passedData.parseData.modulestyles)
+		mw.config.set(bootProcess.passedData.parseData.jsconfigvars)
 
 		bootProcess.passedData.unseenComments = commentManager
-			.query((comment) => comment.isSeen === false);
+			.query((comment) => comment.isSeen === false)
 
-		this.bootProcess = bootProcess;
+		this.bootProcess = bootProcess
 
 		if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
-			bootProcess.passedData.submittedCommentForm.teardown();
+			bootProcess.passedData.submittedCommentForm.teardown()
 		}
 
-		cd.debug.stopTimer('get HTML');
+		cd.debug.stopTimer('get HTML')
 
-		this.emit('startReboot');
+		this.emit('startReboot')
 
-		await this.bootTalkPage(true);
+		await this.bootTalkPage(true)
 
-		this.emit('reboot');
+		this.emit('reboot')
 
 		if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
-			this.restoreScrollPosition(false);
+			this.restoreScrollPosition(false)
 		}
 
-		return true;
+		return true
 	}
 
 	/**
@@ -1894,11 +1894,11 @@ class Controller extends EventEmitter {
 	 * @param {JQuery} $content
 	 */
 	handleWikipageContentHookFirings($content) {
-		if (!$content.is('#mw-content-text')) return;
+		if (!$content.is('#mw-content-text')) return
 
-		const $root = $content.children('.mw-parser-output');
+		const $root = $content.children('.mw-parser-output')
 		if ($root.length && !$root.hasClass('cd-parse-started')) {
-			this.rebootPage({ isPageReloadedExternally: true });
+			this.rebootPage({ isPageReloadedExternally: true })
 		}
 	}
 
@@ -1906,11 +1906,11 @@ class Controller extends EventEmitter {
 	 * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
 	 */
 	cleanUpUrlAndDom() {
-		if (this.bootProcess.passedData.isRevisionSliderRunning) return;
+		if (this.bootProcess.passedData.isRevisionSliderRunning) return
 
-		const { searchParams } = new URL(location.href);
-		this.cleanUpDom(searchParams);
-		this.cleanUpUrl(searchParams);
+		const { searchParams } = new URL(location.href)
+		this.cleanUpDom(searchParams)
+		this.cleanUpUrl(searchParams)
 	}
 
 	/**
@@ -1920,18 +1920,18 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	cleanUpDom(searchParams) {
-		if (!searchParams.has('diff') && !searchParams.has('oldid')) return;
+		if (!searchParams.has('diff') && !searchParams.has('oldid')) return
 
 		cd.loader.$content
 			.children('.mw-revslider-container, .mw-diff-table-prefix, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
-			.remove();
+			.remove()
 
-		$('.mw-revision').remove();
+		$('.mw-revision').remove()
 
-		$('#firstHeading').text(cd.page.name);
-		document.title = cd.mws('pagetitle', cd.page.name);
+		$('#firstHeading').text(cd.page.name)
+		document.title = cd.mws('pagetitle', cd.page.name)
 
-		this.updateOriginalPageTitle(document.title);
+		this.updateOriginalPageTitle(document.title)
 	}
 
 	/**
@@ -1941,44 +1941,44 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	cleanUpUrl(searchParams) {
-		const newQuery = Object.fromEntries(searchParams.entries());
+		const newQuery = Object.fromEntries(searchParams.entries())
 
-		delete newQuery.title;
-		delete newQuery.curid;
-		delete newQuery.action;
-		delete newQuery.redlink;
-		delete newQuery.section;
-		delete newQuery.cdaddtopic;
-		delete newQuery.dtnewcommentssince;
-		delete newQuery.dtinthread;
+		delete newQuery.title
+		delete newQuery.curid
+		delete newQuery.action
+		delete newQuery.redlink
+		delete newQuery.section
+		delete newQuery.cdaddtopic
+		delete newQuery.dtnewcommentssince
+		delete newQuery.dtinthread
 
 		/** @type {'pushState' | 'replaceState' | undefined} */
-		let methodName;
+		let methodName
 		if (newQuery.diff || newQuery.oldid) {
-			methodName = 'pushState';
+			methodName = 'pushState'
 
-			delete newQuery.diff;
-			delete newQuery.oldid;
-			delete newQuery.diffmode;
-			delete newQuery.type;
+			delete newQuery.diff
+			delete newQuery.oldid
+			delete newQuery.diffmode
+			delete newQuery.type
 
 			$(window).on('popstate', () => {
-				const { searchParams: newSearchParams } = new URL(location.href);
+				const { searchParams: newSearchParams } = new URL(location.href)
 				if (newSearchParams.has('diff') || newSearchParams.has('oldid')) {
-					location.reload();
+					location.reload()
 				}
-			});
+			})
 
-			cd.loader.setPageType('diff', false);
+			cd.loader.setPageType('diff', false)
 		} else if (!this.bootProcess.passedData.pushState) {
-			methodName = 'replaceState';
+			methodName = 'replaceState'
 		}
 
 		if (methodName) {
-			history[methodName](history.state, '', cd.page.getUrl(newQuery));
+			history[methodName](history.state, '', cd.page.getUrl(newQuery))
 		}
 	}
 }
 
-export { Controller as Controller };
-export default new Controller();
+export { Controller as Controller }
+export default new Controller()

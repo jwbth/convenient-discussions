@@ -1,4 +1,4 @@
-import StorageItem from './StorageItem';
+import StorageItem from './StorageItem'
 
 /**
  * @template {any} EntryType
@@ -31,7 +31,7 @@ class StorageItemWithKeys extends StorageItem {
 	 * @returns {EntryType | undefined}
 	 */
 	get(key) {
-		return this.data[key];
+		return this.data[key]
 	}
 
 	/**
@@ -42,9 +42,9 @@ class StorageItemWithKeys extends StorageItem {
 	 * @returns {this}
 	 */
 	set(key, value) {
-		this.data[key] = value;
+		this.data[key] = value
 
-		return this;
+		return this
 	}
 
 	/**
@@ -54,9 +54,9 @@ class StorageItemWithKeys extends StorageItem {
 	 * @returns {this}
 	 */
 	remove(key) {
-		delete this.data[key];
+		delete this.data[key]
 
-		return this;
+		return this
 	}
 
 	/**
@@ -68,12 +68,12 @@ class StorageItemWithKeys extends StorageItem {
 	cleanUp(removeCondition) {
 		Object.keys(this.data).forEach((key) => {
 			if (removeCondition(this.data[key])) {
-				this.remove(key);
+				this.remove(key)
 			}
-		});
+		})
 
-		return this;
+		return this
 	}
 }
 
-export default StorageItemWithKeys;
+export default StorageItemWithKeys

@@ -1,5 +1,5 @@
-import cd from './loader/cd';
-import { es6ClassToOoJsClass } from './utils-oojs';
+import cd from './loader/cd'
+import { es6ClassToOoJsClass } from './utils-oojs'
 
 /**
  * @class ForeignStructuredUpload
@@ -21,7 +21,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 *   `mw.ForeignUpload#target` will be used (`'local'`).
 	 */
 	constructor(target) {
-		super(target, { ...cd.getApiConfig(), ...cd.g.apiErrorFormatHtml });
+		super(target, { ...cd.getApiConfig(), ...cd.g.apiErrorFormatHtml })
 	}
 
 	/**
@@ -30,7 +30,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 * @param {string} source
 	 */
 	setSource(source) {
-		this.source = source;
+		this.source = source
 	}
 
 	/**
@@ -39,7 +39,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 * @param {string} user
 	 */
 	setUser(user) {
-		this.user = user;
+		this.user = user
 	}
 
 	/**
@@ -48,7 +48,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 * @param {string} license
 	 */
 	setLicense(license) {
-		this.license = license;
+		this.license = license
 	}
 
 	/**
@@ -58,7 +58,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 * @override
 	 */
 	getSource() {
-		return this.source ?? super.getSource();
+		return this.source ?? super.getSource()
 	}
 
 	/**
@@ -68,7 +68,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 * @override
 	 */
 	getUser() {
-		return this.user ?? this.getDefaultUser();
+		return this.user ?? this.getDefaultUser()
 	}
 
 	/**
@@ -77,7 +77,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 * @returns {string}
 	 */
 	getDefaultUser() {
-		return super.getUser();
+		return super.getUser()
 	}
 
 	/**
@@ -87,10 +87,10 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
 	 * @override
 	 */
 	getLicense() {
-		return this.license ?? super.getLicense();
+		return this.license ?? super.getLicense()
 	}
 }
 
-es6ClassToOoJsClass(ForeignStructuredUpload);
+es6ClassToOoJsClass(ForeignStructuredUpload)
 
-export default ForeignStructuredUpload;
+export default ForeignStructuredUpload

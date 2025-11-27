@@ -1,17 +1,17 @@
-import Comment from './Comment';
-import EventEmitter from './EventEmitter';
-import StorageItemWithKeys from './StorageItemWithKeys';
-import commentFormManager from './commentFormManager';
-import commentManager from './commentManager';
-import controller from './controller';
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import settings from './settings';
-import CdError from './shared/CdError';
-import { calculateWordOverlap, keepClonableValues, subtractDaysFromNow } from './shared/utils-general';
-import userRegistry from './userRegistry';
-import { loadUserGenders } from './utils-api';
-import visits from './visits';
+import Comment from './Comment'
+import EventEmitter from './EventEmitter'
+import StorageItemWithKeys from './StorageItemWithKeys'
+import commentFormManager from './commentFormManager'
+import commentManager from './commentManager'
+import controller from './controller'
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import settings from './settings'
+import CdError from './shared/CdError'
+import { calculateWordOverlap, keepClonableValues, subtractDaysFromNow } from './shared/utils-general'
+import userRegistry from './userRegistry'
+import { loadUserGenders } from './utils-api'
+import visits from './visits'
 
 // TODO: Move worker-related stuff to controller.
 
@@ -133,32 +133,32 @@ class UpdateChecker extends EventEmitter {
 	/**
 	 * Number of seconds between checks for new comments when the tab is not hidden.
 	 */
-	updateCheckInterval = /** @type {const} */ (15);
+	updateCheckInterval = /** @type {const} */ (15)
 
 	/**
 	 * Number of seconds between new comments checks when the tab is hidden.
 	 */
-	backgroundUpdateCheckInterval = /** @type {const} */ (60);
+	backgroundUpdateCheckInterval = /** @type {const} */ (60)
 
 	/** @type {Map<number, MessageFromWorkerParse | RevisionData>} */
-	revisionData = new Map();
+	revisionData = new Map()
 
 	/** @type {{ [key: number]: (value: MessageFromWorker) => void }} */
-	resolvers = {};
+	resolvers = {}
 
-	backgroundCheckScheduled = false;
-
-	/** @type {number|undefined} */
-	previousVisitRevisionId = undefined;
+	backgroundCheckScheduled = false
 
 	/** @type {number|undefined} */
-	lastCheckedRevisionId = undefined;
+	previousVisitRevisionId = undefined
 
-	resolverCount = 0;
-	initted = false;
+	/** @type {number|undefined} */
+	lastCheckedRevisionId = undefined
+
+	resolverCount = 0
+	initted = false
 
 	/** @type {Worker} */
-	worker;
+	worker
 
 	/**
 	 * Tell the worker to wake the script up after a given interval.
@@ -173,7 +173,7 @@ class UpdateChecker extends EventEmitter {
 		this.worker.postMessage(/** @type {MessageFromWindowSetAlarm} */ ({
 			task: 'setAlarm',
 			interval,
-		}));
+		}))
 	}
 
 	/**
@@ -184,7 +184,7 @@ class UpdateChecker extends EventEmitter {
 	removeAlarmViaWorker() {
 		this.worker.postMessage(/** @type {MessageFromWindowRemoveAlarm} */ ({
 			task: 'removeAlarm',
-		}));
+		}))
 	}
 
 	/**
@@ -196,10 +196,10 @@ class UpdateChecker extends EventEmitter {
 	 */
 	runWorkerTask(payload) {
 		return new Promise((resolve) => {
-			const resolverId = this.resolverCount++;
-			this.worker.postMessage({ ...payload, resolverId });
-			this.resolvers[resolverId] = resolve;
-		});
+			const resolverId = this.resolverCount++
+			this.worker.postMessage({ ...payload, resolverId })
+			this.resolvers[resolverId] = resolve
+		})
 	}
 
 	/**
@@ -211,10 +211,10 @@ class UpdateChecker extends EventEmitter {
 	 */
 	async processPage(revisionToParseId) {
 		if (revisionToParseId !== undefined && this.revisionData.has(revisionToParseId)) {
-			return /** @type {RevisionData} */ (this.revisionData.get(revisionToParseId));
+			return /** @type {RevisionData} */ (this.revisionData.get(revisionToParseId))
 		}
 
-		const { text, revid: revisionId } = await cd.page.parse({ oldid: revisionToParseId }, true);
+		const { text, revid: revisionId } = await cd.page.parse({ oldid: revisionToParseId }, true)
 
 		const message = /** @type {MessageFromWorkerParse} */ (
 			await this.runWorkerTask(/** @type {MessageFromWindowParse} */ ({
@@ -224,10 +224,10 @@ class UpdateChecker extends EventEmitter {
 				g: keepClonableValues(cd.g, ['isIPv6Address']),
 				config: keepClonableValues(cd.config, ['rejectNode']),
 			}))
-		);
+		)
 
 		if (!this.revisionData.has(message.revisionId)) {
-			this.revisionData.set(message.revisionId, message);
+			this.revisionData.set(message.revisionId, message)
 		}
 
 		// Clean up revisionData from values that can't be reused as it may grow really big. (The newest
@@ -240,11 +240,11 @@ class UpdateChecker extends EventEmitter {
 				revId !== this.previousVisitRevisionId &&
 				revId !== mw.config.get('wgRevisionId')
 			) {
-				this.revisionData.delete(revId);
+				this.revisionData.delete(revId)
 			}
-		});
+		})
 
-		return message;
+		return message
 	}
 
 	/**
@@ -262,15 +262,15 @@ class UpdateChecker extends EventEmitter {
 			rvprop: ['ids'],
 			rvstart: new Date(previousVisitTime * 1000).toISOString(),
 			rvlimit: 1,
-		}, true);
-		this.previousVisitRevisionId = revisions[0]?.revid;
-		const currentRevisionId = mw.config.get('wgRevisionId');
+		}, true)
+		this.previousVisitRevisionId = revisions[0]?.revid
+		const currentRevisionId = mw.config.get('wgRevisionId')
 
-		if (!this.previousVisitRevisionId || this.previousVisitRevisionId >= currentRevisionId) return;
+		if (!this.previousVisitRevisionId || this.previousVisitRevisionId >= currentRevisionId) return
 
-		const { comments: oldComments } = await this.processPage(this.previousVisitRevisionId);
-		const { comments: currentComments } = await this.processPage(currentRevisionId);
-		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return;
+		const { comments: oldComments } = await this.processPage(this.previousVisitRevisionId)
+		const { comments: currentComments } = await this.processPage(currentRevisionId)
+		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		this.checkForChangesSincePreviousVisit(
 			this.mapWorkerCommentsToWorkerComments(
@@ -279,7 +279,7 @@ class UpdateChecker extends EventEmitter {
 			),
 			this.previousVisitRevisionId,
 			submittedCommentId
-		);
+		)
 	}
 
 	/**
@@ -293,35 +293,35 @@ class UpdateChecker extends EventEmitter {
 	 */
 	mapWorkerSectionsToSections(workerSections, lastCheckedRevisionId) {
 		if (this.areWorkerSectionsMatched(workerSections)) {
-			return workerSections;
+			return workerSections
 		}
 
 		// Reset values set in the previous run.
 		sectionManager.getAll().forEach((section) => {
-			delete section.match;
-			delete section.matchScore;
-		});
+			delete section.match
+			delete section.matchScore
+		})
 
 		workerSections.forEach((workerSection) => {
-			const match = sectionManager.search(workerSection);
+			const match = sectionManager.search(workerSection)
 			if (match) {
-				const { section, score } = match;
+				const { section, score } = match
 				if ((section.matchScore === undefined || match.score > section.matchScore)) {
 					if (section.match) {
-						delete section.match.match;
+						delete section.match.match
 					}
-					section.match = workerSection;
+					section.match = workerSection
 					section.matchScore = score;
-					/** @type {SectionWorkerMatched} */ (workerSection).match = section;
+					/** @type {SectionWorkerMatched} */ (workerSection).match = section
 				}
 			}
-		});
+		})
 
 		sectionManager.getAll().forEach((section) => {
-			section.updateLiveData(lastCheckedRevisionId);
-		});
+			section.updateLiveData(lastCheckedRevisionId)
+		})
 
-		return workerSections;
+		return workerSections
 	}
 
 	/**
@@ -333,7 +333,7 @@ class UpdateChecker extends EventEmitter {
 	 * @returns {sections is SectionWorkerMatched[]}
 	 */
 	areWorkerSectionsMatched(sections) {
-		return sections.some((section) => 'match' in section);
+		return sections.some((section) => 'match' in section)
 	}
 
 	/**
@@ -352,26 +352,26 @@ class UpdateChecker extends EventEmitter {
 		return candidates
 			.map((candidate) => {
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const doesParentIdMatch = candidate.parent?.id === target.parent?.id;
+				const doesParentIdMatch = candidate.parent?.id === target.parent?.id
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const doesHeadlineMatch = candidate.section?.headline === target.section?.headline;
+				const doesHeadlineMatch = candidate.section?.headline === target.section?.headline
 
 				// Taking matched ID into account makes sense only if the total number of comments coincides.
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const doesIndexMatch = candidate.index === target.index && isTotalCountEqual;
+				const doesIndexMatch = candidate.index === target.index && isTotalCountEqual
 
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 				const partsMatchedCount = candidate.elementHtmls
 					.filter((html, i) => html === target.elementHtmls[i])
-					.length;
+					.length
 				const partsMatchedProportion = (
 					partsMatchedCount /
 					Math.max(candidate.elementHtmls.length, target.elementHtmls.length)
-				);
+				)
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 				const overlap = partsMatchedProportion === 1
 					? 1
-					: calculateWordOverlap(candidate.text, target.text);
+					: calculateWordOverlap(candidate.text, target.text)
 
 				return {
 					comment: candidate,
@@ -381,10 +381,10 @@ class UpdateChecker extends EventEmitter {
 						partsMatchedProportion +
 						overlap +
 						Number(doesIndexMatch) * 0.25,
-				};
+				}
 			})
 			.filter((match) => match.score > 1.66)
-			.sort((match1, match2) => match2.score - match1.score);
+			.sort((match1, match2) => match2.score - match1.score)
 	}
 
 	/**
@@ -413,10 +413,10 @@ class UpdateChecker extends EventEmitter {
 		//
 		// but that doesn't seem to affect anything meaningfully.
 		/** @type {CommentWorkerMatched[]} */ (currentComments).forEach((comment) => {
-			delete comment.match;
-			delete comment.matchScore;
-			delete comment.hasPoorMatch;
-		});
+			delete comment.match
+			delete comment.matchScore
+			delete comment.hasPoorMatch
+		})
 
 		// We choose to traverse "other" (newer/older) comments in the top cycle, and current comments
 		// in the bottom cycle, not vice versa.
@@ -427,8 +427,8 @@ class UpdateChecker extends EventEmitter {
 					currentComment.date &&
 					otherComment.date &&
 					currentComment.date.getTime() === otherComment.date.getTime()
-			));
-			const isTotalCountEqual = currentComments.length === otherComments.length;
+			))
+			const isTotalCountEqual = currentComments.length === otherComments.length
 			if (ccFiltered.length === 1) {
 				ccFiltered[0].match = ccFiltered[0].match
 					? this.sortCommentsByMatchScore(
@@ -436,29 +436,29 @@ class UpdateChecker extends EventEmitter {
 						ccFiltered[0],
 						isTotalCountEqual
 					)[0].comment
-					: otherComment;
+					: otherComment
 			} else if (ccFiltered.length > 1) {
 				/** @type {boolean} */
-				let found;
+				let found
 				this.sortCommentsByMatchScore(ccFiltered, otherComment, isTotalCountEqual).forEach(
 					(match) => {
 						// If the current comment already has a match (from a previous iteration of the
 						// otherComments cycle), compare their scores.
 						if (!found && (!match.comment.matchScore || match.comment.matchScore < match.score)) {
-							match.comment.match = otherComment;
-							match.comment.matchScore = match.score;
-							delete match.comment.hasPoorMatch;
-							found = true;
+							match.comment.match = otherComment
+							match.comment.matchScore = match.score
+							delete match.comment.hasPoorMatch
+							found = true
 						} else if (!match.comment.match) {
 							// There is a poor match for a current comment.
-							match.comment.hasPoorMatch = true;
+							match.comment.hasPoorMatch = true
 						}
 					}
-				);
+				)
 			}
-		});
+		})
 
-		return currentComments;
+		return currentComments
 	}
 
 	/**
@@ -471,37 +471,37 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	async check() {
-		if (!cd.page.isActive() || cd.loader.isBooting()) return;
+		if (!cd.page.isActive() || cd.loader.isBooting()) return
 
 		// We need a value that wouldn't change during `await`s.
-		const documentHidden = document.hidden;
+		const documentHidden = document.hidden
 
 		if (documentHidden && !this.isBackgroundCheckScheduled()) {
 			$(document).one('visibilitychange', () => {
-				this.unscheduleCheck();
-				this.check();
-			});
+				this.unscheduleCheck()
+				this.check()
+			})
 
 			this.scheduleCheck(
 				Math.abs(this.backgroundUpdateCheckInterval - this.updateCheckInterval),
 				true
-			);
+			)
 
-			return;
+			return
 		}
 
 		try {
-			await this.performCheck();
+			await this.performCheck()
 		} catch (error) {
 			if (!(error instanceof CdError) || error.getCode() !== 'network') {
-				console.warn(error);
+				console.warn(error)
 			}
 		}
 
 		if (documentHidden) {
-			this.scheduleCheck(this.backgroundUpdateCheckInterval, true);
+			this.scheduleCheck(this.backgroundUpdateCheckInterval, true)
 		} else {
-			this.scheduleCheck(this.updateCheckInterval, false);
+			this.scheduleCheck(this.updateCheckInterval, false)
 		}
 	}
 
@@ -512,9 +512,9 @@ class UpdateChecker extends EventEmitter {
 	 * @param {boolean} background
 	 */
 	scheduleCheck(interval, background) {
-		this.setAlarmViaWorker(interval * 1000);
+		this.setAlarmViaWorker(interval * 1000)
 		if (background) {
-			this.backgroundCheckScheduled = true;
+			this.backgroundCheckScheduled = true
 		}
 	}
 
@@ -522,10 +522,10 @@ class UpdateChecker extends EventEmitter {
 	 * Remove a check for page updates from the schedule, if any.
 	 */
 	unscheduleCheck() {
-		if (!this.initted) return;
+		if (!this.initted) return
 
-		this.removeAlarmViaWorker();
-		this.backgroundCheckScheduled = false;
+		this.removeAlarmViaWorker()
+		this.backgroundCheckScheduled = false
 	}
 
 	/**
@@ -534,7 +534,7 @@ class UpdateChecker extends EventEmitter {
 	 * @returns {boolean}
 	 */
 	isBackgroundCheckScheduled() {
-		return this.backgroundCheckScheduled;
+		return this.backgroundCheckScheduled
 	}
 
 	/**
@@ -544,42 +544,42 @@ class UpdateChecker extends EventEmitter {
 		const revisions = await cd.page.getRevisions({
 			rvprop: ['ids'],
 			rvlimit: 1,
-		}, true);
+		}, true)
 
-		const currentRevisionId = mw.config.get('wgRevisionId');
+		const currentRevisionId = mw.config.get('wgRevisionId')
 		if (
 			!revisions.length ||
 			revisions[0].revid <= (this.lastCheckedRevisionId || currentRevisionId)
 		)
-			return;
+			return
 
-		const { revisionId, comments: newComments, sections } = await this.processPage();
-		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return;
+		const { revisionId, comments: newComments, sections } = await this.processPage()
+		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
-		const { comments: currentComments } = await this.processPage(currentRevisionId);
+		const { comments: currentComments } = await this.processPage(currentRevisionId)
 
 		// We set the value here, not after the first `await`, so that we are sure that
 		// lastCheckedRevisionId corresponds to the versions of comments that are currently
 		// rendered.
-		this.lastCheckedRevisionId = revisionId;
-		this.emit('check', revisionId);
+		this.lastCheckedRevisionId = revisionId
+		this.emit('check', revisionId)
 
-		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return;
+		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const matchedSections = this.mapWorkerSectionsToSections(sections, revisionId);
+		const matchedSections = this.mapWorkerSectionsToSections(sections, revisionId)
 		const matchedCurrentComments = this.mapWorkerCommentsToWorkerComments(
 			currentComments,
 			newComments
-		);
+		)
 
-		this.emit('sectionsUpdate', matchedSections);
+		this.emit('sectionsUpdate', matchedSections)
 
 		// We check for changes before notifying about new comments to notify about changes in
 		// renamed sections if any were watched.
-		this.checkForNewChanges(matchedCurrentComments, revisionId);
+		this.checkForNewChanges(matchedCurrentComments, revisionId)
 
-		await this.processComments(newComments, matchedCurrentComments, currentRevisionId);
+		await this.processComments(newComments, matchedCurrentComments, currentRevisionId)
 	}
 
 	/**
@@ -599,7 +599,7 @@ class UpdateChecker extends EventEmitter {
 				newerComment.headingHtmlToCompare &&
 				newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare
 			)
-		);
+		)
 	}
 
 	/**
@@ -615,15 +615,15 @@ class UpdateChecker extends EventEmitter {
 			.cleanUp((entry) =>
 				(Math.min(...Object.values(entry).map((data) => data.seenTime)) || 0) <
 					subtractDaysFromNow(60)
-			);
-		const seen = seenStorageItem.get(mw.config.get('wgArticleId'));
+			)
+		const seen = seenStorageItem.get(mw.config.get('wgArticleId'))
 
-		const changeList = /** @type {ChangesList} */ ([]);
-		const markAsChangedData = /** @type {MarkAsChangedData[]} */ ([]);
+		const changeList = /** @type {ChangesList} */ ([])
+		const markAsChangedData = /** @type {MarkAsChangedData[]} */ ([])
 		currentComments.forEach((currentComment) => {
-			if (currentComment.id === submittedCommentId) return;
+			if (currentComment.id === submittedCommentId) return
 
-			const oldComment = currentComment.match;
+			const oldComment = currentComment.match
 			if (
 				oldComment &&
 				this.hasCommentChanged(oldComment, currentComment) &&
@@ -634,8 +634,8 @@ class UpdateChecker extends EventEmitter {
 					seen?.[currentComment.id]?.htmlToCompare !== currentComment.htmlToCompare
 				)
 			) {
-				const comment = commentManager.getById(currentComment.id);
-				if (!comment) return;
+				const comment = commentManager.getById(currentComment.id)
+				if (!comment) return
 
 				/** @type {CommentsData} */
 				const commentsData = {
@@ -643,29 +643,29 @@ class UpdateChecker extends EventEmitter {
 					current: currentComment,
 					0: oldComment,
 					1: currentComment,
-				};
+				}
 
 				markAsChangedData.push({
 					comment,
 					isNewRevisionRendered: true,
 					comparedRevisionId: previousVisitRevisionId,
 					commentsData,
-				});
+				})
 
 				if (comment.isOpeningSection()) {
-					comment.section.resubscribeIfRenamed(currentComment, oldComment);
+					comment.section.resubscribeIfRenamed(currentComment, oldComment)
 				}
 
-				changeList.push({ comment, commentsData });
+				changeList.push({ comment, commentsData })
 			}
-		});
+		})
 
 		this.markCommentsAsChanged(
 			'changedSince',
 			markAsChangedData,
 			previousVisitRevisionId,
 			mw.config.get('wgRevisionId')
-		);
+		)
 
 		if (changeList.length) {
 			/**
@@ -675,12 +675,12 @@ class UpdateChecker extends EventEmitter {
 			 * @param {ChangesList} changeList
 			 * @global
 			 */
-			mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
+			mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList)
 		}
 
 		seenStorageItem
 			.remove(mw.config.get('wgArticleId'))
-			.save();
+			.save()
 	}
 
 	/**
@@ -691,12 +691,12 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	checkForNewChanges(currentComments, lastCheckedRevisionId) {
-		const changeList = /** @type {ChangesList} */ ([]);
-		const markAsChangedData = /** @type {MarkAsChangedData[]} */ ([]);
+		const changeList = /** @type {ChangesList} */ ([])
+		const markAsChangedData = /** @type {MarkAsChangedData[]} */ ([])
 		currentComments.forEach((currentComment) => {
-			const newComment = currentComment.match;
-			let comment;
-			const events = {};
+			const newComment = currentComment.match
+			let comment
+			const events = {}
 
 			/** @type {CommentsData} */
 			const commentsData = {
@@ -704,55 +704,55 @@ class UpdateChecker extends EventEmitter {
 				new: newComment,
 				0: currentComment,
 				1: newComment,
-			};
+			}
 
 			if (newComment) {
-				comment = commentManager.getById(currentComment.id);
-				if (!comment) return;
+				comment = commentManager.getById(currentComment.id)
+				if (!comment) return
 
 				if (comment.isDeleted) {
-					comment.unmarkAsChanged('deleted');
-					events.undeleted = true;
+					comment.unmarkAsChanged('deleted')
+					events.undeleted = true
 				}
 				if (this.hasCommentChanged(currentComment, newComment)) {
 					// The comment may have already been updated previously.
 					if (!comment.htmlToCompare || comment.htmlToCompare !== newComment.htmlToCompare) {
-						const updateSuccess = comment.update(currentComment, newComment);
+						const updateSuccess = comment.update(currentComment, newComment)
 						markAsChangedData.push({
 							comment,
 							isNewRevisionRendered: updateSuccess,
 							comparedRevisionId: lastCheckedRevisionId,
 							commentsData,
-						});
-						events.changed = { updateSuccess };
+						})
+						events.changed = { updateSuccess }
 					}
 				} else if (comment.isChanged) {
-					comment.update(currentComment, newComment);
-					comment.unmarkAsChanged('changed');
-					events.unchanged = true;
+					comment.update(currentComment, newComment)
+					comment.unmarkAsChanged('changed')
+					events.unchanged = true
 				}
 			} else if (!currentComment.hasPoorMatch) {
-				comment = commentManager.getById(currentComment.id);
-				if (!comment || comment.isDeleted) return;
+				comment = commentManager.getById(currentComment.id)
+				if (!comment || comment.isDeleted) return
 
-				comment.markAsChanged('deleted');
-				events.deleted = true;
+				comment.markAsChanged('deleted')
+				events.deleted = true
 			}
 
 			if (Object.keys(events).length) {
-				changeList.push({ comment, events, commentsData });
+				changeList.push({ comment, events, commentsData })
 			}
-		});
+		})
 
 		this.markCommentsAsChanged(
 			'changed',
 			markAsChangedData,
 			mw.config.get('wgRevisionId'),
 			lastCheckedRevisionId
-		);
+		)
 
 		if (changeList.length) {
-			this.emit('newChanges', changeList);
+			this.emit('newChanges', changeList)
 
 			/**
 			 * Existing comments have changed (probably edited).
@@ -769,7 +769,7 @@ class UpdateChecker extends EventEmitter {
 			 * @param {CommentsData} changeList.commentsData
 			 * @global
 			 */
-			mw.hook('convenientDiscussions.newChanges').fire(changeList);
+			mw.hook('convenientDiscussions.newChanges').fire(changeList)
 		}
 	}
 
@@ -793,31 +793,31 @@ class UpdateChecker extends EventEmitter {
 	 * @param {number} newerRevisionId
 	 */
 	async markCommentsAsChanged(type, data, olderRevisionId, newerRevisionId) {
-		if (!data.length) return;
+		if (!data.length) return
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const revisionIdAtStart = mw.config.get('wgRevisionId');
+		const revisionIdAtStart = mw.config.get('wgRevisionId')
 
 		// Don't process >20 diffs; that's too much and probably means something is broken
 		const verifyDiffs =
-			data.length <= 20 && data.some(({ comment }) => comment.getSourcePage().isCurrent());
+			data.length <= 20 && data.some(({ comment }) => comment.getSourcePage().isCurrent())
 
 		/** @type {Revision<['content']>[] | undefined} */
-		let revisions;
+		let revisions
 		/** @type {string|undefined} */
-		let compareBody;
+		let compareBody
 		if (verifyDiffs) {
 			try {
 				revisions = await cd.page.getRevisions({
 					revids: [olderRevisionId, newerRevisionId],
 					rvprop: ['content'],
-				});
-				compareBody = await cd.page.compareRevisions(olderRevisionId, newerRevisionId);
+				})
+				compareBody = await cd.page.compareRevisions(olderRevisionId, newerRevisionId)
 			} catch {
 				// Empty
 			}
 		}
-		if (!this.isPageStillAtRevisionAndNotBlocked(revisionIdAtStart)) return;
+		if (!this.isPageStillAtRevisionAndNotBlocked(revisionIdAtStart)) return
 
 		data.forEach(({ comment, isNewRevisionRendered, comparedRevisionId, commentsData }) => {
 			if (
@@ -828,9 +828,9 @@ class UpdateChecker extends EventEmitter {
 					.scrubDiff(compareBody, revisions, commentsData)
 					.find('.diff-deletedline, .diff-addedline').length
 			) {
-				comment.markAsChanged(type, isNewRevisionRendered, comparedRevisionId, commentsData);
+				comment.markAsChanged(type, isNewRevisionRendered, comparedRevisionId, commentsData)
 			}
-		});
+		})
 	}
 
 	/**
@@ -845,7 +845,7 @@ class UpdateChecker extends EventEmitter {
 			revisionId === mw.config.get('wgRevisionId') &&
 			!cd.loader.isPageOverlayOn() &&
 			!commentFormManager.getAll().some((commentForm) => commentForm.isBeingSubmitted())
-		);
+		)
 	}
 
 	/**
@@ -859,72 +859,72 @@ class UpdateChecker extends EventEmitter {
 	 */
 	async processComments(newComments, currentComments, currentRevisionId) {
 		/** @type {CommentWorkerNew[]} */ (newComments).forEach((comment) => {
-			comment.author = userRegistry.get(comment.authorName);
+			comment.author = userRegistry.get(comment.authorName)
 			if (comment.parent?.authorName) {
-				comment.parent.author = userRegistry.get(comment.parent.authorName);
+				comment.parent.author = userRegistry.get(comment.parent.authorName)
 			}
-		});
+		})
 
 		const all = /** @type {CommentWorkerNew[]} */ (newComments)
 			.filter((comment) => comment.id && !currentComments.some((mcc) => mcc.match === comment))
 		// Detach comments in the newComments object from those in the `comments` object.
 			.map((comment) => {
-				const newComment = { ...comment };
+				const newComment = { ...comment }
 				if (comment.parent) {
-					const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent);
+					const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent)
 					if (parentMatch?.id) {
-						newComment.parentMatch = commentManager.getById(parentMatch.id);
+						newComment.parentMatch = commentManager.getById(parentMatch.id)
 					}
 				}
 
-				return newComment;
-			});
+				return newComment
+			})
 
 		if (cd.g.genderAffectsUserString) {
-			await loadUserGenders(all.map((comment) => comment.author), true);
+			await loadUserGenders(all.map((comment) => comment.author), true)
 		}
-		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return;
+		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		this.emit('commentsUpdate', {
 			all,
 			relevant: /** @type {CommentWorkerNew[]} */ (all
 				.filter((comment) => {
 					if (!settings.get('notifyCollapsedThreads') && comment.logicalLevel !== 0) {
-						let parentMatch;
+						let parentMatch
 						for (
 							let /** @type {CommentWorkerNew | undefined} */ c = comment;
 							c && !parentMatch;
 							c = c.parent
 						) {
-							parentMatch = c.parentMatch;
+							parentMatch = c.parentMatch
 						}
 						if (parentMatch?.isCollapsed) {
-							return false;
+							return false
 						}
 					}
 					if (comment.isOwn || comment.author.isMuted()) {
-						return false;
+						return false
 					}
 					if (comment.isToMe) {
-						return true;
+						return true
 					}
 					if (comment.section) {
 						// Is this section subscribed to by means of an upper level section?
-						const section = comment.section.match;
+						const section = comment.section.match
 						if (section) {
-							const closestSectionSubscribedTo = section.getClosestSectionSubscribedTo(true);
+							const closestSectionSubscribedTo = section.getClosestSectionSubscribedTo(true)
 							if (closestSectionSubscribedTo) {
-								comment.sectionSubscribedTo = closestSectionSubscribedTo;
+								comment.sectionSubscribedTo = closestSectionSubscribedTo
 
-								return true;
+								return true
 							}
 						}
 					}
 
-					return false;
+					return false
 				})),
 			bySection: Comment.groupBySection(all),
-		});
+		})
 	}
 
 	/**
@@ -934,15 +934,15 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	onMessageFromWorker = (event) => {
-		const message = /** @type {MessageFromWorker} */ (event.data);
+		const message = /** @type {MessageFromWorker} */ (event.data)
 
 		if (message.task === 'wakeUp') {
-			this.check();
+			this.check()
 		} else {
-			this.resolvers[message.resolverId](message);
-			delete this.resolvers[message.resolverId];
+			this.resolvers[message.resolverId](message)
+			delete this.resolvers[message.resolverId]
 		}
-	};
+	}
 
 	/**
 	 * _For internal use._ Initialize the update checker.
@@ -950,12 +950,12 @@ class UpdateChecker extends EventEmitter {
 	 * @param {Worker} worker
 	 */
 	init(worker) {
-		this.worker = worker;
+		this.worker = worker
 
 		visits
 			.on('process', (/** @type {string[]} */ currentPageData) => {
-				const bootProcess = controller.getBootProcess();
-				const previousVisitTime = currentPageData.at(-2);
+				const bootProcess = controller.getBootProcess()
+				const previousVisitTime = currentPageData.at(-2)
 				this.setup(
 					previousVisitTime ? Number(previousVisitTime) : undefined,
 					(
@@ -965,9 +965,9 @@ class UpdateChecker extends EventEmitter {
 						) ||
 						undefined
 					)
-				);
-				this.initted = true;
-			});
+				)
+				this.initted = true
+			})
 	}
 
 	/**
@@ -977,19 +977,19 @@ class UpdateChecker extends EventEmitter {
 	 * @param {string} [submittedCommentId]
 	 */
 	setup(previousVisitTime, submittedCommentId) {
-		this.unscheduleCheck();
-		this.previousVisitRevisionId = undefined;
+		this.unscheduleCheck()
+		this.previousVisitRevisionId = undefined
 		if (!this.initted) {
-			this.worker.addEventListener('message', this.onMessageFromWorker);
+			this.worker.addEventListener('message', this.onMessageFromWorker)
 		}
-		this.setAlarmViaWorker(this.updateCheckInterval * 1000);
+		this.setAlarmViaWorker(this.updateCheckInterval * 1000)
 		if (previousVisitTime) {
-			this.maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId);
+			this.maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId)
 		}
 	}
 }
 
-const updateChecker = new UpdateChecker();
+const updateChecker = new UpdateChecker()
 
-export default updateChecker;
-export const processPage = updateChecker.processPage.bind(updateChecker);
+export default updateChecker
+export const processPage = updateChecker.processPage.bind(updateChecker)

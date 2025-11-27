@@ -1,9 +1,9 @@
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import CdError from './shared/CdError';
-import { calculateWordOverlap, genericGetOldestOrNewestByDateProp } from './shared/utils-general';
-import { endWithTwoNewlines, normalizeCode, removeWikiMarkup } from './shared/utils-wikitext';
-import { extractSignatures } from './utils-window';
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import CdError from './shared/CdError'
+import { calculateWordOverlap, genericGetOldestOrNewestByDateProp } from './shared/utils-general'
+import { endWithTwoNewlines, normalizeCode, removeWikiMarkup } from './shared/utils-wikitext'
+import { extractSignatures } from './utils-window'
 
 /**
  * Class that keeps the methods and data related to a section's source code. Also used for section
@@ -15,21 +15,21 @@ class SectionSource {
 	 *
 	 * @type {number}
 	 */
-	startIndex;
+	startIndex
 
 	/**
 	 * Index of the last character of the section code.
 	 *
 	 * @type {number}
 	 */
-	endIndex;
+	endIndex
 
 	/**
 	 * Section code.
 	 *
 	 * @type {string}
 	 */
-	code;
+	code
 
 	/**
 	 * Index of the first character of the section content (i.e., everything after the section
@@ -37,7 +37,7 @@ class SectionSource {
 	 *
 	 * @type {number}
 	 */
-	contentStartIndex;
+	contentStartIndex
 
 	/**
 	 * Index of the last character of the section content, before the code that we intentionally keep
@@ -45,14 +45,14 @@ class SectionSource {
 	 *
 	 * @type {number}
 	 */
-	contentEndIndex;
+	contentEndIndex
 
 	/**
 	 * Index of the first character of the section content relative to the section code start.
 	 *
 	 * @type {number}
 	 */
-	relativeContentStartIndex;
+	relativeContentStartIndex
 
 	/**
 	 * Index of the last character of the first chunk of the section code (i.e., everything before
@@ -60,7 +60,7 @@ class SectionSource {
 	 *
 	 * @type {number}
 	 */
-	firstChunkEndIndex;
+	firstChunkEndIndex
 
 	/**
 	 * Index of the last character of the first chunk of the section content (i.e., everything
@@ -68,21 +68,21 @@ class SectionSource {
 	 *
 	 * @type {number}
 	 */
-	firstChunkContentEndIndex;
+	firstChunkContentEndIndex
 
 	/**
 	 * First chunk of the section code (i.e., everything before the first section subdivision).
 	 *
 	 * @type {string}
 	 */
-	firstChunkCode;
+	firstChunkCode
 
 	/**
 	 * Normalized section heading.
 	 *
 	 * @type {string}
 	 */
-	headline;
+	headline
 
 	/**
 	 * Create a section's source object.
@@ -101,15 +101,15 @@ class SectionSource {
 		adjustedContextCode,
 		isInSectionContext,
 	}) {
-		this.section = section;
-		this.isInSectionContext = isInSectionContext;
+		this.section = section
+		this.isInSectionContext = isInSectionContext
 
 		try {
-			this.collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode);
+			this.collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode)
 		} catch (error) {
-			console.warn(`Couldn't read the "${this.headline}" section contents.`, error);
+			console.warn(`Couldn't read the "${this.headline}" section contents.`, error)
 
-			return;
+			return
 		}
 	}
 
@@ -122,13 +122,13 @@ class SectionSource {
 	 */
 	extractLastCommentIndentation(commentForm) {
 		if (this.lastCommentIndentation === undefined) {
-			const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
+			const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || []
 			if (replyPlaceholder) {
-				this.lastCommentIndentation = replyPlaceholder;
+				this.lastCommentIndentation = replyPlaceholder
 			} else {
-				this.lastCommentIndentation = null;
+				this.lastCommentIndentation = null
 
-				const lastComment = this.section.commentsInFirstChunk.at(-1);
+				const lastComment = this.section.commentsInFirstChunk.at(-1)
 				if (
 					lastComment &&
 					(commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
@@ -138,7 +138,7 @@ class SectionSource {
 						// commentForm.isSectionSubmitted()
 						const source = lastComment.locateInCode(
 							commentForm.isSectionSubmitted() ? this.section.presumedCode : undefined
-						);
+						)
 
 						if (
 							!source.indentation.startsWith('#') ||
@@ -148,7 +148,7 @@ class SectionSource {
 							// _in_ the target comment.
 							commentForm.getContainerListType() === 'ol'
 						) {
-							this.lastCommentIndentation = source.indentation;
+							this.lastCommentIndentation = source.indentation
 						}
 					} catch {
 						// Empty
@@ -157,7 +157,7 @@ class SectionSource {
 			}
 		}
 
-		return this.lastCommentIndentation;
+		return this.lastCommentIndentation
 	}
 
 	/**
@@ -177,23 +177,23 @@ class SectionSource {
 	modifyContext({ action, commentCode }) {
 		const originalContextCode = this.isInSectionContext
 			? this.section.presumedCode
-			: this.section.getSourcePage().source.getCode();
+			: this.section.getSourcePage().source.getCode()
 		if (!originalContextCode) {
 			throw new CdError({
 				type: 'internal',
 				message: 'Context (section or page) code is not set.',
-			});
+			})
 		}
 
-		let contextCode;
+		let contextCode
 		switch (/** @type {'replyInSection' | 'addSubsection'} */ (action)) {
 			case 'replyInSection': {
 				contextCode =
 					originalContextCode.slice(0, this.firstChunkContentEndIndex) +
 					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 					/** @type {string} */ (commentCode) +
-					originalContextCode.slice(this.firstChunkContentEndIndex);
-				break;
+					originalContextCode.slice(this.firstChunkContentEndIndex)
+				break
 			}
 
 			case 'addSubsection': {
@@ -201,8 +201,8 @@ class SectionSource {
 					endWithTwoNewlines(originalContextCode.slice(0, this.contentEndIndex)) +
 					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 					/** @type {string} */ (commentCode) +
-					originalContextCode.slice(this.contentEndIndex).trim();
-				break;
+					originalContextCode.slice(this.contentEndIndex).trim()
+				break
 			}
 		}
 
@@ -210,7 +210,7 @@ class SectionSource {
 			contextCode,
 			// eslint-disable-next-line object-shorthand
 			commentCode: /** @type {string} */ (commentCode),
-		};
+		}
 	}
 
 	/**
@@ -223,9 +223,9 @@ class SectionSource {
 	 * @private
 	 */
 	collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode) {
-		const fullHeadingMatch = sectionHeadingMatch[1];
-		const codeFromSection = contextCode.slice(sectionHeadingMatch.index);
-		const adjustedCodeFromSection = adjustedContextCode.slice(sectionHeadingMatch.index);
+		const fullHeadingMatch = sectionHeadingMatch[1]
+		const codeFromSection = contextCode.slice(sectionHeadingMatch.index)
+		const adjustedCodeFromSection = adjustedContextCode.slice(sectionHeadingMatch.index)
 
 		// Logically, should match since sectionHeadingMatch matched
 		const sectionMatch = (
@@ -246,7 +246,7 @@ class SectionSource {
 					'[^]*$)'
 				)
 			)
-		);
+		)
 
 		// To simplify the workings of the `replyInSection` mode we don't consider terminating line
 		// breaks to be a part of the first chunk of the section (i.e., the section subdivision before
@@ -268,40 +268,40 @@ class SectionSource {
 			) ||
 			adjustedCodeFromSection.match(
 				new RegExp('(' + mw.util.escapeRegExp(fullHeadingMatch) + '[^]*$)')
-			);
+			)
 		if (!sectionMatch || !firstChunkMatch) {
-			throw new CdError();
+			throw new CdError()
 		}
 
 		const code = codeFromSection.substr(
 			/** @type {number} */ (sectionMatch.index),
 			sectionMatch[1].length
-		);
+		)
 		const firstChunkCode = codeFromSection.substr(
 			/** @type {number} */ (firstChunkMatch.index),
 			firstChunkMatch[1].length
-		);
+		)
 
-		const startIndex = /** @type {number} */ (sectionHeadingMatch.index);
-		const endIndex = startIndex + code.length;
-		const contentStartIndex = startIndex + sectionHeadingMatch[0].length;
-		const firstChunkEndIndex = startIndex + firstChunkCode.length;
+		const startIndex = /** @type {number} */ (sectionHeadingMatch.index)
+		const endIndex = startIndex + code.length
+		const contentStartIndex = startIndex + sectionHeadingMatch[0].length
+		const firstChunkEndIndex = startIndex + firstChunkCode.length
 
-		let firstChunkContentEndIndex = firstChunkEndIndex;
-		let contentEndIndex = endIndex;
+		let firstChunkContentEndIndex = firstChunkEndIndex
+		let contentEndIndex = endIndex
 		cd.g.keepInSectionEnding.forEach((regexp) => {
-			const firstChunkRegexpMatch = firstChunkCode.match(regexp);
+			const firstChunkRegexpMatch = firstChunkCode.match(regexp)
 			if (firstChunkRegexpMatch) {
 				// `1` accounts for the first line break.
-				firstChunkContentEndIndex -= firstChunkRegexpMatch[0].length - 1;
+				firstChunkContentEndIndex -= firstChunkRegexpMatch[0].length - 1
 			}
 
-			const regexpMatch = code.match(regexp);
+			const regexpMatch = code.match(regexp)
 			if (regexpMatch) {
 				// `1` accounts for the first line break.
-				contentEndIndex -= regexpMatch[0].length - 1;
+				contentEndIndex -= regexpMatch[0].length - 1
 			}
-		});
+		})
 
 		/*
 			Sections may have `#` or `*` as a placeholder for a vote or bulleted reply. In this case,
@@ -315,21 +315,21 @@ class SectionSource {
 
 			the next reply would go back to `:`, not `*` as should be.
 		*/
-		const placeholderMatch = firstChunkCode.match(/\n([#*] *\n+)$/);
+		const placeholderMatch = firstChunkCode.match(/\n([#*] *\n+)$/)
 		if (placeholderMatch) {
-			firstChunkContentEndIndex -= placeholderMatch[1].length;
+			firstChunkContentEndIndex -= placeholderMatch[1].length
 		}
 
-		this.startIndex = startIndex;
-		this.endIndex = endIndex;
-		this.code = code;
-		this.contentStartIndex = contentStartIndex;
-		this.contentEndIndex = contentEndIndex;
-		this.relativeContentStartIndex = contentStartIndex - startIndex;
-		this.firstChunkEndIndex = firstChunkEndIndex;
-		this.firstChunkContentEndIndex = firstChunkContentEndIndex;
-		this.firstChunkCode = firstChunkCode;
-		this.headline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
+		this.startIndex = startIndex
+		this.endIndex = endIndex
+		this.code = code
+		this.contentStartIndex = contentStartIndex
+		this.contentEndIndex = contentEndIndex
+		this.relativeContentStartIndex = contentStartIndex - startIndex
+		this.firstChunkEndIndex = firstChunkEndIndex
+		this.firstChunkContentEndIndex = firstChunkContentEndIndex
+		this.firstChunkCode = firstChunkCode
+		this.headline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]))
 	}
 
 	/**
@@ -345,37 +345,37 @@ class SectionSource {
 	 */
 	calculateMatchScore(sectionIndex, thisHeadline, headlines) {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const doesHeadlineMatch = thisHeadline.includes('{{') ? 0.5 : this.headline === thisHeadline;
+		const doesHeadlineMatch = thisHeadline.includes('{{') ? 0.5 : this.headline === thisHeadline
 
-		let doesSectionIndexMatch;
-		let doPreviousHeadlinesMatch;
+		let doesSectionIndexMatch
+		let doPreviousHeadlinesMatch
 		if (this.isInSectionContext) {
-			doesSectionIndexMatch = 0;
-			doPreviousHeadlinesMatch = 0;
+			doesSectionIndexMatch = 0
+			doPreviousHeadlinesMatch = 0
 		} else {
 			// Matching section index is one of the most unreliable ways to tell matching sections as
 			// sections may be added and removed from the page, so we don't rely on it very much.
-			doesSectionIndexMatch = this.section.index === sectionIndex;
+			doesSectionIndexMatch = this.section.index === sectionIndex
 
-			const previousHeadlinesToCheckCount = 3;
+			const previousHeadlinesToCheckCount = 3
 			const previousHeadlinesInCode = headlines
 				.slice(-previousHeadlinesToCheckCount)
-				.reverse();
+				.reverse()
 			doPreviousHeadlinesMatch = sectionManager.getAll()
 				.slice(Math.max(0, this.section.index - previousHeadlinesToCheckCount), this.section.index)
 				.reverse()
 				.map((section) => section.headline)
-				.every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
+				.every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i])
 		}
 
-		headlines.push(this.headline);
+		headlines.push(this.headline)
 
 		const oldestSig = genericGetOldestOrNewestByDateProp(
 			extractSignatures(this.code),
 			'oldest',
 			true
-		);
-		const sectionOldestComment = this.section.oldestComment;
+		)
+		const sectionOldestComment = this.section.oldestComment
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const doesOldestCommentMatch = oldestSig
 			? Boolean(
@@ -387,12 +387,12 @@ class SectionSource {
 				)
 
 		// There's no comments neither in the code nor on the page.
-			: !sectionOldestComment;
+			: !sectionOldestComment
 
 		// Multiply by 0.5 to avoid situations like
 		// https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house&oldid=956309089#Unwanted_pings_on_en.wikipedia,
 		// even though they are not CD's fault
-		let oldestCommentWordOverlap = Number(!this.section.oldestComment && !oldestSig) * 0.5;
+		let oldestCommentWordOverlap = Number(!this.section.oldestComment && !oldestSig) * 0.5
 
 		if (this.section.oldestComment && oldestSig) {
 			// Use the comment text overlap factor due to this error
@@ -402,7 +402,7 @@ class SectionSource {
 			oldestCommentWordOverlap = calculateWordOverlap(
 				this.section.oldestComment.getText(),
 				removeWikiMarkup(this.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex))
-			);
+			)
 		}
 
 		// If changing this, change the maximal possible score in Section#searchInCode
@@ -417,8 +417,8 @@ class SectionSource {
 				// Shouldn't give too high a weight to this factor as it is true for every first section.
 				Number(doPreviousHeadlinesMatch) * 0.25
 			),
-		};
+		}
 	}
 }
 
-export default SectionSource;
+export default SectionSource

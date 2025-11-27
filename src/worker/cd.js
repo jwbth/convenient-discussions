@@ -1,4 +1,4 @@
-import cd from '../shared/cd';
+import cd from '../shared/cd'
 
 /**
  * @typedef {object} ConvenientDiscussionsWorkerExtension
@@ -12,4 +12,4 @@ import cd from '../shared/cd';
 
 // We change the type here, which is impossible with export...from
 // eslint-disable-next-line unicorn/prefer-export-from
-export default /** @type {ConvenientDiscussionsWorker} */ (cd);
+export default /** @type {ConvenientDiscussionsWorker} */ (cd)

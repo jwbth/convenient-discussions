@@ -1,18 +1,18 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-import TerserPlugin from 'terser-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin'
 // eslint-disable-next-line import/no-named-as-default
-import webpack from 'webpack';
-import WebpackBuildNotifierPlugin from 'webpack-build-notifier';
+import webpack from 'webpack'
+import WebpackBuildNotifierPlugin from 'webpack-build-notifier'
 
-import nonNullableConfig from './config.mjs';
-import { getUrl } from './misc/utils.mjs';
+import nonNullableConfig from './config.mjs'
+import { getUrl } from './misc/utils.mjs'
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
-const cdConfig = nonNullableConfig;
+const cdConfig = nonNullableConfig
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * @typedef {object} Environment
@@ -36,51 +36,51 @@ const config = (/** @type {Environment} */ env) => {
 	 *
 	 * The first command will not create the files themselves but serve at the specified paths.
 	 */
-	const isDev = Boolean(env.dev || process.env.npm_config_dev);
+	const isDev = Boolean(env.dev || process.env.npm_config_dev)
 
 	/**
 	 * Staging builds are for creating a production build with files (main file and configuration
 	 * file) having the .staging postfix. They are created by running
 	 * - npm run build --staging
 	 */
-	const isStaging = Boolean(env.staging || process.env.npm_config_staging);
+	const isStaging = Boolean(env.staging || process.env.npm_config_staging)
 
 	/**
 	 * Single builds include the main file, configuration and localization, as well as source maps, in
 	 * a single file. Create them like this:
 	 * - npm run single -- project=w lang=en
 	 */
-	const isSingle = Boolean(env.single || process.env.npm_config_single);
+	const isSingle = Boolean(env.single || process.env.npm_config_single)
 
-	let filenamePostfix = '';
-	let lang;
-	let wiki;
+	let filenamePostfix = ''
+	let lang
+	let wiki
 	if (isSingle) {
-		const project = env.project || 'w';
-		lang = env.lang || 'en';
+		const project = env.project || 'w'
+		lang = env.lang || 'en'
 		wiki = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'].includes(project)
 			? `${project}-${lang}`
-			: project;
-		filenamePostfix = `.single.${wiki}`;
+			: project
+		filenamePostfix = `.single.${wiki}`
 	} else if (isDev) {
-		filenamePostfix = '.dev';
+		filenamePostfix = '.dev'
 	} else if (isStaging) {
-		filenamePostfix = '.staging';
+		filenamePostfix = '.staging'
 	}
-	const bundleFilename = `convenientDiscussions${filenamePostfix}.js`;
+	const bundleFilename = `convenientDiscussions${filenamePostfix}.js`
 
 	if (!cdConfig.protocol || !cdConfig.main?.rootPath || !cdConfig.articlePath) {
-		throw new Error('No protocol/server/root path/article path found in config.json5.');
+		throw new Error('No protocol/server/root path/article path found in config.json5.')
 	}
 
-	let devtool;
+	let devtool
 	if (isSingle) {
-		devtool = 'eval';
+		devtool = 'eval'
 	} else if (isDev) {
-		devtool = 'eval-source-map';
+		devtool = 'eval-source-map'
 	} else {
 		// SourceMapDevToolPlugin is used.
-		devtool = false;
+		devtool = false
 	}
 
 	/** @type {import('webpack').WebpackPluginInstance[]} */
@@ -95,7 +95,7 @@ const config = (/** @type {Environment} */ env) => {
 			suppressSuccess: true,
 			suppressWarning: true,
 		}),
-	];
+	]
 
 	if (!isSingle) {
 		// Top banner
@@ -121,25 +121,25 @@ const config = (/** @type {Environment} */ env) => {
 								if (filename === filename.replace('.map.json', '') && filename.endsWith('.js')) {
 									assets[filename] = new compiler.webpack.sources.RawSource(
 										assets[filename].source().toString() + '\n/*! </nowiki> */'
-									);
+									)
 								}
-							});
+							})
 						}
-					);
-				});
+					)
+				})
 			},
-		});
+		})
 	}
 
 	if (!isDev && cdConfig.sourceMapsBaseUrl) {
 		plugins.push(new webpack.SourceMapDevToolPlugin({
 			filename: '[file].map.json',
 			append: `\n//# sourceMappingURL=${cdConfig.sourceMapsBaseUrl}[url]`,
-		}));
+		}))
 	}
 
 	if (process.env.CI) {
-		plugins.push(new webpack.ProgressPlugin());
+		plugins.push(new webpack.ProgressPlugin())
 	}
 
 	return /** @type {import('webpack').Configuration} */ ({
@@ -232,7 +232,7 @@ const config = (/** @type {Environment} */ env) => {
 							const licenseUrl = getUrl(
 								nonNullableConfig.main.server,
 								nonNullableConfig.main.rootPath + '/' + licenseFile
-							);
+							)
 
 							return licenseFile.includes('worker')
 							// A really messed up hack to include source maps for a web worker (works with
@@ -246,7 +246,7 @@ const config = (/** @type {Environment} */ env) => {
 	*
 	* For license information, see
 	* ${licenseUrl}
-	`;
+	`
 						},
 					},
 				}),
@@ -277,6 +277,6 @@ const config = (/** @type {Environment} */ env) => {
 			// some reason).
 			// writeToDisk: single,
 		},
-	});
-};
-export default config;
+	})
+}
+export default config

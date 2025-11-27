@@ -1,9 +1,9 @@
-import Comment from './Comment';
-import DivLabelWidget from './DivLabelWidget';
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { createCopyTextControl, es6ClassToOoJsClass } from './utils-oojs';
-import { mergeJquery, wrapHtml } from './utils-window';
+import Comment from './Comment'
+import DivLabelWidget from './DivLabelWidget'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { createCopyTextControl, es6ClassToOoJsClass } from './utils-oojs'
+import { mergeJquery, wrapHtml } from './utils-window'
 
 /**
  * @typedef {object} CopyLinkDialogContent
@@ -29,31 +29,31 @@ import { mergeJquery, wrapHtml } from './utils-window';
  */
 class CopyLinkDialog extends OO.ui.MessageDialog {
 	// @ts-expect-error: https://phabricator.wikimedia.org/T358416
-	static name = 'copyLinkDialog';
+	static name = 'copyLinkDialog'
 	static actions = [
 		{
 			label: cd.s('cld-close'),
 			action: 'close',
 		},
-	];
+	]
 
 	/** @type {DivLabelWidget} */
-	message;
+	message
 
 	/** @type {OO.ui.ButtonOptionWidget | undefined} */
-	anchorOption;
+	anchorOption
 
 	/** @type {OO.ui.ButtonOptionWidget | undefined} */
-	diffOption;
+	diffOption
 
 	/** @type {OO.ui.ButtonSelectWidget | undefined} */
-	linkTypeSelect;
+	linkTypeSelect
 
 	/** @type {OO.ui.PanelLayout} */
-	anchorPanel;
+	anchorPanel
 
 	/** @type {OO.ui.StackLayout} */
-	contentStack;
+	contentStack
 
 	/**
 	 * @typedef {{
@@ -70,7 +70,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 * }} CopyLinkDialogControlTypes
 	 */
 
-	controls = /** @type {ControlTypesByName<CopyLinkDialogControlTypes>} */ ({});
+	controls = /** @type {ControlTypesByName<CopyLinkDialogControlTypes>} */ ({})
 
 	/**
 	 * Create a "Copy link" dialog.
@@ -81,10 +81,10 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	constructor(object, content) {
 		super({
 			classes: ['cd-dialog-copyLink'],
-		});
-		this.object = object;
-		this.content = content;
-		this.readyDeferred = $.Deferred();
+		})
+		this.object = object
+		this.content = content
+		this.readyDeferred = $.Deferred()
 	}
 
 	/**
@@ -93,7 +93,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 * @returns {this is CopyLinkDialog<import('./Comment').default>}
 	 */
 	isComment() {
-		return this.object.TYPE === 'comment';
+		return this.object.TYPE === 'comment'
 	}
 
 	/**
@@ -106,39 +106,39 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 * @ignore
 	 */
 	initialize() {
-		super.initialize();
+		super.initialize()
 
 		// By default, the whole message is wrapped in a <label> element. We don't want that behavior
 		// and revert it.
-		this.message.$element.remove();
-		this.message = new DivLabelWidget({ classes: ['oo-ui-messageDialog-message'] });
-		this.text.$element.append(this.message.$element);
+		this.message.$element.remove()
+		this.message = new DivLabelWidget({ classes: ['oo-ui-messageDialog-message'] })
+		this.text.$element.append(this.message.$element)
 
 		if (this.isComment()) {
 			this.anchorOption = new OO.ui.ButtonOptionWidget({
 				data: 'anchor',
 				label: cd.s('cld-select-anchor'),
 				selected: true,
-			});
+			})
 			this.diffOption = new OO.ui.ButtonOptionWidget({
 				data: 'diff',
 				label: cd.s('cld-select-diff'),
 				disabled: true,
 				title: cd.s('loading-ellipsis'),
 				classes: ['cd-dialog-copyLink-diffButton'],
-			});
+			})
 			this.linkTypeSelect = new OO.ui.ButtonSelectWidget({
 				items: [this.anchorOption, this.diffOption],
 				classes: ['cd-dialog-copyLink-linkTypeSelect'],
-			});
+			})
 			this.linkTypeSelect.on('choose', (item) => {
 				this.contentStack.setItem(
 					item === this.anchorOption
 						? this.anchorPanel
 						: /** @type {OO.ui.PanelLayout} */ (this.diffPanel)
-				);
-				this.updateSize();
-			});
+				)
+				this.updateSize()
+			})
 		}
 
 		this.anchorPanel = new OO.ui.PanelLayout({
@@ -146,17 +146,17 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			padded: false,
 			expanded: false,
 			scrollable: true,
-		});
+		})
 		this.contentStack = new OO.ui.StackLayout({
 			items: [this.anchorPanel],
 			expanded: false,
-		});
+		})
 
 		if (this.isComment()) {
-			this.createDiffPanel();
+			this.createDiffPanel()
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -172,16 +172,16 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 */
 	getSetupProcess(data) {
 		return super.getSetupProcess(data).next(() => {
-			this.title.setLabel(cd.s(this.isComment() ? 'cld-title-comment' : 'cld-title-section'));
+			this.title.setLabel(cd.s(this.isComment() ? 'cld-title-comment' : 'cld-title-section'))
 			this.message.setLabel(
 				mergeJquery(
 					this.linkTypeSelect?.$element,
 					this.contentStack.$element,
 				)
-			);
-			this.size = this.isComment() ? 'larger' : 'large';
-			this.contentStack.setItem(this.anchorPanel);
-		});
+			)
+			this.size = this.isComment() ? 'larger' : 'large'
+			this.contentStack.setItem(this.anchorPanel)
+		})
 	}
 
 	/**
@@ -197,8 +197,8 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 */
 	getReadyProcess(data) {
 		return super.getReadyProcess(data).next(() => {
-			this.readyDeferred.resolve();
-		});
+			this.readyDeferred.resolve()
+		})
 	}
 
 	/**
@@ -210,16 +210,16 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 */
 	copyCallback = (successful, input) => {
 		if (successful) {
-			mw.notify(this.content.copyMessages.success);
+			mw.notify(this.content.copyMessages.success)
 		} else {
-			mw.notify(this.content.copyMessages.fail, { type: 'error' });
+			mw.notify(this.content.copyMessages.fail, { type: 'error' })
 		}
 
 		// Make external tools that react to text selection quiet
-		input.selectRange(0);
+		input.selectRange(0)
 
-		this.close();
-	};
+		this.close()
+	}
 
 	/**
 	 * @typedef {object} DiffPanelContent
@@ -237,10 +237,10 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 */
 	async createDiffPanel() {
 		if (this.isClosing() || !(this.object instanceof Comment)) {
-			throw new CdError();
+			throw new CdError()
 		}
 
-		let errorText;
+		let errorText
 		try {
 			/** @type {DiffPanelContent} */
 			const diffPanelContent = {
@@ -248,33 +248,33 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 				diffShort: await this.object.getDiffLink('short'),
 				diffWikilink: await this.object.getDiffLink('wikilink'),
 				$diffView: await this.object.generateDiffView(),
-			};
+			}
 
-			await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
+			await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles'])
 
 			this.diffPanel = new OO.ui.PanelLayout({
 				$content: this.createDiffPanelContent(diffPanelContent),
 				padded: false,
 				expanded: false,
 				scrollable: true,
-			});
-			this.contentStack.addItems([this.diffPanel]);
+			})
+			this.contentStack.addItems([this.diffPanel])
 			this.readyDeferred.then(() => {
-				mw.hook('wikipage.content').fire(diffPanelContent.$diffView);
-			});
+				mw.hook('wikipage.content').fire(diffPanelContent.$diffView)
+			})
 		} catch (error) {
 			if (error instanceof CdError) {
 				errorText = cd.s(
 					error.getType() === 'network' ? 'cld-diff-error-network' : 'cld-diff-error'
-				);
+				)
 			} else {
-				errorText = cd.s('cld-diff-error-unknown');
-				console.warn(error);
+				errorText = cd.s('cld-diff-error-unknown')
+				console.warn(error)
 			}
 		}
 
 		/** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption).setDisabled(Boolean(errorText));
-		/** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption).setTitle(errorText || '');
+		/** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption).setTitle(errorText || '')
 	}
 
 	/**
@@ -285,14 +285,14 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 */
 	createAnchorPanelContent() {
 		// Doesn't apply to DT IDs.
-		let helpOnlyCd;
-		let helpNotOnlyCd;
+		let helpOnlyCd
+		let helpNotOnlyCd
 		if (this.isComment() && this.content.fragment === this.object.id) {
-			helpOnlyCd = cd.s('cld-help-onlycd');
-			helpNotOnlyCd = wrapHtml(cd.sParse('cld-help-notonlycd'));
+			helpOnlyCd = cd.s('cld-help-onlycd')
+			helpNotOnlyCd = wrapHtml(cd.sParse('cld-help-notonlycd'))
 		}
 
-		const copyCallback = this.copyCallback;
+		const copyCallback = this.copyCallback
 
 		this.controls.wikilink = createCopyTextControl({
 			value: this.content.wikilink,
@@ -300,55 +300,55 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			label: cd.s('cld-wikilink'),
 			copyCallback,
 			help: helpOnlyCd,
-		});
+		})
 
 		this.controls.currentPageWikilink = createCopyTextControl({
 			value: this.content.currentPageWikilink,
 			label: cd.s('cld-currentpagewikilink'),
 			copyCallback,
 			help: helpNotOnlyCd,
-		});
+		})
 
 		this.controls.permanentWikilink = createCopyTextControl({
 			value: this.content.permanentWikilink,
 			label: cd.s('cld-permanentwikilink'),
 			copyCallback,
 			help: helpOnlyCd,
-		});
+		})
 
 		this.controls.link = createCopyTextControl({
 			value: this.content.link,
 			label: cd.s('cld-link'),
 			copyCallback,
 			help: helpOnlyCd,
-		});
+		})
 
 		this.controls.permanentLink = createCopyTextControl({
 			value: this.content.permanentLink,
 			label: cd.s('cld-permanentlink'),
 			copyCallback,
 			help: helpOnlyCd,
-		});
+		})
 
 		if (cd.g.debug) {
 			this.controls.jsCall = createCopyTextControl({
 				value: this.content.jsCall,
 				label: 'JS call',
 				copyCallback,
-			});
+			})
 
 			this.controls.jsBreakpoint = createCopyTextControl({
 				value: this.content.jsBreakpoint,
 				label: 'JS conditional breakpoint',
 				copyCallback,
-			});
+			})
 
 			if (this.content.jsBreakpointTimestamp) {
 				this.controls.jsBreakpointTimestamp = createCopyTextControl({
 					value: this.content.jsBreakpointTimestamp,
 					label: 'JS conditional breakpoint (timestamp)',
 					copyCallback,
-				});
+				})
 			}
 		}
 
@@ -361,7 +361,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			this.controls.jsCall?.field.$element,
 			this.controls.jsBreakpoint?.field.$element,
 			this.controls.jsBreakpointTimestamp?.field.$element,
-		);
+		)
 	}
 
 	/**
@@ -372,38 +372,38 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 * @protected
 	 */
 	createDiffPanelContent(diffPanelContent) {
-		const copyCallback = this.copyCallback;
+		const copyCallback = this.copyCallback
 
 		this.controls.standard = createCopyTextControl({
 			value: diffPanelContent.diffStandard,
 			disabled: !diffPanelContent.diffStandard,
 			label: cd.s('cld-diff'),
 			copyCallback,
-		});
+		})
 
 		this.controls.short = createCopyTextControl({
 			value: diffPanelContent.diffShort,
 			disabled: !diffPanelContent.diffShort,
 			label: cd.s('cld-shortdiff'),
 			copyCallback,
-		});
+		})
 
 		this.controls.wikilink = createCopyTextControl({
 			value: diffPanelContent.diffWikilink,
 			disabled: !diffPanelContent.diffWikilink,
 			label: cd.s('cld-diffwikilink'),
 			copyCallback,
-		});
+		})
 
 		return mergeJquery(
 			this.controls.standard.field.$element,
 			this.controls.short.field.$element,
 			this.controls.wikilink.field.$element,
 			diffPanelContent.$diffView,
-		);
+		)
 	}
 }
 
-es6ClassToOoJsClass(CopyLinkDialog);
+es6ClassToOoJsClass(CopyLinkDialog)
 
-export default CopyLinkDialog;
+export default CopyLinkDialog

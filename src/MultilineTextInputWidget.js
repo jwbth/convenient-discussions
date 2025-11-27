@@ -1,5 +1,5 @@
-import TextInputWidgetMixin from './TextInputWidgetMixin';
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
+import TextInputWidgetMixin from './TextInputWidgetMixin'
+import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
 
 /**
  * OOUI multiline text input widget.
@@ -19,7 +19,7 @@ class MultilineTextInputWidget extends mixInClass(
 	TextInputWidgetMixin
 ) {
 	/** @type {boolean} */
-	codeMirrorEnabled;
+	codeMirrorEnabled
 
 	/**
 	 * Focus the input and select a specified range within the text.
@@ -30,10 +30,10 @@ class MultilineTextInputWidget extends mixInClass(
 	 * @override
 	 */
 	selectRange(start, end = start) {
-		this.focus();
-		this.$input.textSelection('setSelection', { start, end });
+		this.focus()
+		this.$input.textSelection('setSelection', { start, end })
 
-		return this;
+		return this
 	};
 
 	/**
@@ -43,14 +43,14 @@ class MultilineTextInputWidget extends mixInClass(
 	 * @override
 	 */
 	getRange() {
-		const caretPosition = this.$input.textSelection('getCaretPosition', { startAndEnd: true });
-		const start = caretPosition[0];
-		const end = caretPosition[1];
+		const caretPosition = this.$input.textSelection('getCaretPosition', { startAndEnd: true })
+		const start = caretPosition[0]
+		const end = caretPosition[1]
 
 		return {
 			from: Math.min(start, end),
 			to: Math.max(start, end),
-		};
+		}
 	}
 
 	/**
@@ -60,7 +60,7 @@ class MultilineTextInputWidget extends mixInClass(
 	 */
 	setCodeMirror(codeMirror) {
 		/** @type {import('./CodeMirrorWikiEditor').default} */
-		this.codeMirror = codeMirror;
+		this.codeMirror = codeMirror
 	}
 
 	/**
@@ -71,12 +71,12 @@ class MultilineTextInputWidget extends mixInClass(
 	 */
 	focus() {
 		if (this.codeMirror) {
-			this.codeMirror.view.focus();
+			this.codeMirror.view.focus()
 
-			return this;
+			return this
 		}
 
-		return super.focus();
+		return super.focus()
 	}
 
 	/**
@@ -87,10 +87,10 @@ class MultilineTextInputWidget extends mixInClass(
 	isFocused() {
 		return this.codeMirror
 			? this.codeMirror.container.contains(document.activeElement)
-			: this.$input.is(':focus');
+			: this.$input.is(':focus')
 	}
 }
 
-es6ClassToOoJsClass(MultilineTextInputWidget);
+es6ClassToOoJsClass(MultilineTextInputWidget)
 
-export default MultilineTextInputWidget;
+export default MultilineTextInputWidget

@@ -1,33 +1,33 @@
 // @ts-check
-const { execSync } = require('node:child_process');
-const fs = require('node:fs');
-const path = require('node:path');
+const { execSync } = require('node:child_process')
+const fs = require('node:fs')
+const path = require('node:path')
 
 /**
  * Global setup for browser tests
  * Builds Convenient Discussions script before running tests
  */
 async function globalSetup() {
-	console.log('Building Convenient Discussions for browser tests...');
+	console.log('Building Convenient Discussions for browser tests...')
 
 	try {
 		// Build the script
 		execSync('npm run build', {
 			stdio: 'inherit',
 			cwd: process.cwd(),
-		});
+		})
 
 		// Verify the built file exists
-		const distPath = path.join(process.cwd(), 'dist', 'convenientDiscussions.js');
+		const distPath = path.join(process.cwd(), 'dist', 'convenientDiscussions.js')
 		if (!fs.existsSync(distPath)) {
-			throw new Error('Built script not found at: ' + distPath);
+			throw new Error('Built script not found at: ' + distPath)
 		}
 
-		console.log('✅ Convenient Discussions built successfully');
+		console.log('✅ Convenient Discussions built successfully')
 	} catch (error) {
-		console.error('❌ Failed to build Convenient Discussions:', error.message);
-		throw error;
+		console.error('❌ Failed to build Convenient Discussions:', error.message)
+		throw error
 	}
 }
 
-module.exports = globalSetup;
+module.exports = globalSetup

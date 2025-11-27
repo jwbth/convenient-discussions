@@ -13,7 +13,7 @@ async function waitForConvenientDiscussions(page) {
 	await page.waitForFunction(() => window.convenientDiscussions.comments &&
 		window.convenientDiscussions.comments.length > 0 &&
 		window.convenientDiscussions.settings &&
-		window.convenientDiscussions.g.CURRENT_PAGE, { timeout: 15_000 });
+		window.convenientDiscussions.g.CURRENT_PAGE, { timeout: 15_000 })
 }
 
 /**
@@ -26,7 +26,7 @@ const TEST_PAGES = {
 	SANDBOX: 'https://en.wikipedia.org/wiki/Wikipedia_talk:Sandbox',
 	// Compact test page with few comments for quick testing
 	JWBTH_TEST: 'https://test.wikipedia.org/wiki/User_talk:JWBTH',
-};
+}
 
 /**
  * Complete setup for Convenient Discussions browser testing
@@ -39,72 +39,72 @@ const TEST_PAGES = {
  * @param {string} url - Wikipedia talk page URL (defaults to JWBTH test page)
  */
 async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
-	console.log(`🚀 Setting up Convenient Discussions on: ${url}`);
+	console.log(`🚀 Setting up Convenient Discussions on: ${url}`)
 
 	// Set up console message capture
-	const consoleMessages = [];
+	const consoleMessages = []
 	page.on('console', (msg) => {
-		const type = msg.type();
-		const text = msg.text();
-		consoleMessages.push({ type, text });
+		const type = msg.type()
+		const text = msg.text()
+		consoleMessages.push({ type, text })
 
 		// Log errors and warnings immediately
 		if (type === 'error') {
-			console.log(`❌ Browser Error: ${text}`);
+			console.log(`❌ Browser Error: ${text}`)
 		} else if (type === 'warning') {
-			console.log(`⚠️ Browser Warning: ${text}`);
+			console.log(`⚠️ Browser Warning: ${text}`)
 		}
-	});
+	})
 
 	// Set up page error capture
 	page.on('pageerror', (error) => {
-		console.log(`💥 Page Error: ${error.message}`);
-		consoleMessages.push({ type: 'pageerror', text: error.message });
-	});
+		console.log(`💥 Page Error: ${error.message}`)
+		consoleMessages.push({ type: 'pageerror', text: error.message })
+	})
 
 	// Navigate to Wikipedia talk page
-	await page.goto(url);
-	console.log('📄 Navigated to Wikipedia page');
+	await page.goto(url)
+	console.log('📄 Navigated to Wikipedia page')
 
 	// Wait for page to load completely
-	await page.waitForLoadState('networkidle');
-	console.log('🌐 Page loaded');
+	await page.waitForLoadState('networkidle')
+	console.log('🌐 Page loaded')
 
 	// Wait for MediaWiki globals to be available
-	await page.waitForFunction(() => window.mw && window.$, { timeout: 10_000 });
-	console.log('⚙️ MediaWiki globals loaded');
+	await page.waitForFunction(() => window.mw && window.$, { timeout: 10_000 })
+	console.log('⚙️ MediaWiki globals loaded')
 
 	// Inject your built Convenient Discussions script
 	await page.addScriptTag({
 		path: './dist/convenientDiscussions.js',
-	});
-	console.log('💉 Convenient Discussions script injected');
+	})
+	console.log('💉 Convenient Discussions script injected')
 
 	// Wait for Convenient Discussions to initialize
 	await page.waitForFunction(() => window.convenientDiscussions &&
 		window.convenientDiscussions.comments !== undefined &&
-		window.convenientDiscussions.settings, { timeout: 15_000 });
-	console.log('🎯 Convenient Discussions initialized');
+		window.convenientDiscussions.settings, { timeout: 15_000 })
+	console.log('🎯 Convenient Discussions initialized')
 
 	// Additional wait for comments to be fully processed
-	await page.waitForTimeout(2000);
-	console.log('✅ Setup complete - ready for testing');
+	await page.waitForTimeout(2000)
+	console.log('✅ Setup complete - ready for testing')
 
 	// Log summary of console messages
-	const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror');
-	const warnings = consoleMessages.filter((msg) => msg.type === 'warning');
+	const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror')
+	const warnings = consoleMessages.filter((msg) => msg.type === 'warning')
 
 	if (errors.length > 0) {
-		console.log(`🔍 Found ${errors.length} console errors during setup`);
+		console.log(`🔍 Found ${errors.length} console errors during setup`)
 	}
 	if (warnings.length > 0) {
-		console.log(`🔍 Found ${warnings.length} console warnings during setup`);
+		console.log(`🔍 Found ${warnings.length} console warnings during setup`)
 	}
 
 	// Store console messages on the page for tests to access
 	await page.evaluate((messages) => {
-		window._testConsoleMessages = messages;
-	}, consoleMessages);
+		window._testConsoleMessages = messages
+	}, consoleMessages)
 }
 
 /**
@@ -115,9 +115,9 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
  * @returns {Promise<import('@playwright/test').Locator>}
  */
 async function getCommentByIndex(page, index = 0) {
-	await waitForConvenientDiscussions(page);
+	await waitForConvenientDiscussions(page)
 
-	return page.locator('.cd-comment').nth(index);
+	return page.locator('.cd-comment').nth(index)
 }
 
 /**
@@ -128,9 +128,9 @@ async function getCommentByIndex(page, index = 0) {
  * @returns {Promise<import('@playwright/test').Locator>}
  */
 async function getSpaciousComment(page, index = 0) {
-	await waitForConvenientDiscussions(page);
+	await waitForConvenientDiscussions(page)
 
-	return page.locator('.cd-comment.cd-comment-reformatted').nth(index);
+	return page.locator('.cd-comment.cd-comment-reformatted').nth(index)
 }
 
 /**
@@ -141,9 +141,9 @@ async function getSpaciousComment(page, index = 0) {
  * @returns {Promise<import('@playwright/test').Locator>}
  */
 async function getCompactComment(page, index = 0) {
-	await waitForConvenientDiscussions(page);
+	await waitForConvenientDiscussions(page)
 
-	return page.locator('.cd-comment:not(.cd-comment-reformatted)').nth(index);
+	return page.locator('.cd-comment:not(.cd-comment-reformatted)').nth(index)
 }
 
 /**
@@ -154,11 +154,11 @@ async function getCompactComment(page, index = 0) {
  */
 async function toggleSpaciousComments(page, enabled) {
 	await page.evaluate((enabled) => {
-		window.convenientDiscussions.settings.set('commentDisplay', enabled ? 'spacious' : 'compact');
-	}, enabled);
+		window.convenientDiscussions.settings.set('commentDisplay', enabled ? 'spacious' : 'compact')
+	}, enabled)
 
 	// Wait for setting to take effect
-	await page.waitForTimeout(100);
+	await page.waitForTimeout(100)
 }
 
 /**
@@ -172,8 +172,8 @@ async function createTestComment(page, content = 'Test comment content', spaciou
 	await page.evaluate(({ content, spacious }) => {
 		// This would need to be implemented based on your test setup
 		// For now, this is a placeholder
-		console.log('Creating test comment:', content, spacious);
-	}, { content, spacious });
+		console.log('Creating test comment:', content, spacious)
+	}, { content, spacious })
 }
 
 /**
@@ -183,10 +183,10 @@ async function createTestComment(page, content = 'Test comment content', spaciou
  * @returns {Promise<boolean>}
  */
 async function commentHasLayers(comment) {
-	const underlay = comment.locator('.cd-comment-underlay');
-	const overlay = comment.locator('.cd-comment-overlay');
+	const underlay = comment.locator('.cd-comment-underlay')
+	const overlay = comment.locator('.cd-comment-overlay')
 
-	return (await underlay.count()) > 0 && (await overlay.count()) > 0;
+	return (await underlay.count()) > 0 && (await overlay.count()) > 0
 }
 
 /**
@@ -195,11 +195,11 @@ async function commentHasLayers(comment) {
  * @param {import('@playwright/test').Locator} comment
  */
 async function highlightComment(comment) {
-	await comment.click();
+	await comment.click()
 
 	// Wait for layers to be created
-	await comment.locator('.cd-comment-underlay').waitFor({ state: 'visible' });
-	await comment.locator('.cd-comment-overlay').waitFor({ state: 'visible' });
+	await comment.locator('.cd-comment-underlay').waitFor({ state: 'visible' })
+	await comment.locator('.cd-comment-overlay').waitFor({ state: 'visible' })
 }
 
 /**
@@ -209,15 +209,15 @@ async function highlightComment(comment) {
  * @returns {Promise<{comment: any, underlay: any, overlay: any}>}
  */
 async function getCommentPositioning(comment) {
-	const commentBox = await comment.boundingBox();
-	const underlayBox = await comment.locator('.cd-comment-underlay').boundingBox();
-	const overlayBox = await comment.locator('.cd-comment-overlay').boundingBox();
+	const commentBox = await comment.boundingBox()
+	const underlayBox = await comment.locator('.cd-comment-underlay').boundingBox()
+	const overlayBox = await comment.locator('.cd-comment-overlay').boundingBox()
 
 	return {
 		comment: commentBox,
 		underlay: underlayBox,
 		overlay: overlayBox,
-	};
+	}
 }
 
 /**
@@ -227,7 +227,7 @@ async function getCommentPositioning(comment) {
  * @returns {Promise<Array<{type: string, text: string}>>}
  */
 async function getConsoleMessages(page) {
-	return await page.evaluate(() => window._testConsoleMessages || []);
+	return await page.evaluate(() => window._testConsoleMessages || [])
 }
 
 module.exports = {
@@ -243,4 +243,4 @@ module.exports = {
 	highlightComment,
 	getCommentPositioning,
 	getConsoleMessages,
-};
+}

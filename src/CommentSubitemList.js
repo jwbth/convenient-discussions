@@ -13,7 +13,7 @@ class CommentSubitemList {
 		 *
 		 * @type {TypeByStringKey<JQuery>}
 		 */
-		this.content = {};
+		this.content = {}
 	}
 
 	/**
@@ -23,7 +23,7 @@ class CommentSubitemList {
 	 * @param {JQuery} $element
 	 */
 	add(name, $element) {
-		this.content[name] = $element;
+		this.content[name] = $element
 	}
 
 	/**
@@ -32,17 +32,17 @@ class CommentSubitemList {
 	 * @param {string} name
 	 */
 	remove(name) {
-		const $element = this.content[name];
+		const $element = this.content[name]
 		if ($element) {
-			delete this.content[name];
-			const $wrappingList = $element.parent('dl, ul, ol');
-			$element.remove();
+			delete this.content[name]
+			const $wrappingList = $element.parent('dl, ul, ol')
+			$element.remove()
 			if ($wrappingList.is(':empty')) {
-				const $outerWrapper = $wrappingList.parent('dd, li');
+				const $outerWrapper = $wrappingList.parent('dd, li')
 				if ($outerWrapper.length && $outerWrapper.children().length === 1) {
-					$outerWrapper.remove();
+					$outerWrapper.remove()
 				} else {
-					$wrappingList.remove();
+					$wrappingList.remove()
 				}
 			}
 		}
@@ -55,8 +55,8 @@ class CommentSubitemList {
 	 * @returns {?JQuery}
 	 */
 	get(name) {
-		return this.content[name] || null;
+		return this.content[name] || null
 	}
 }
 
-export default CommentSubitemList;
+export default CommentSubitemList

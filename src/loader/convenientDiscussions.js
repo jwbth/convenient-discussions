@@ -5,32 +5,32 @@
  * @module convenientDiscussions
  */
 
-import { getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
+import { getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general'
 
-import cd from './cd';
-import debug from './convenientDiscussions.debug';
-import loader from './convenientDiscussions.loader.js';
-import util from './convenientDiscussions.util';
+import cd from './cd'
+import debug from './convenientDiscussions.debug'
+import loader from './convenientDiscussions.loader.js'
+import util from './convenientDiscussions.util'
 
-const mwStringsCache = /** @type {StringsByKey} */ ({});
+const mwStringsCache = /** @type {StringsByKey} */ ({})
 /** @type {boolean | undefined} */
-let isQqxMode;
+let isQqxMode
 
-const serverName = mw.config.get('wgServerName');
+const serverName = mw.config.get('wgServerName')
 
 // For historical reasons, ru.wikipedia.org has 'cd'.
-const localOptionsPrefix = serverName === 'ru.wikipedia.org' ? 'cd' : 'convenientDiscussions';
+const localOptionsPrefix = serverName === 'ru.wikipedia.org' ? 'cd' : 'convenientDiscussions'
 
 // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
 const subscriptionsOptionNameEnding = serverName === 'ru.wikipedia.org'
 	? 'watchedTopics'
-	: 'watchedSections';
+	: 'watchedSections'
 
-let server = mw.config.get('wgServer');
+let server = mw.config.get('wgServer')
 if (server.startsWith('//')) {
-	server = location.protocol + server;
+	server = location.protocol + server
 }
-const bodyClassList = document.body.classList;
+const bodyClassList = document.body.classList
 
 // Some users increase the font size (zoom), which leads to some short distances jumping between 3
 // and 4 physical pixels and similar. With the help of pixelDeviationRatio, we can make all widths
@@ -58,7 +58,7 @@ const devicePixelRatioToDivisor = [
 
 	// Thread lines are 1 physical pixel, comment markers are 3 physical pixels, 1 from each side (default)
 	[0, 1],
-];
+]
 
 const convenientDiscussionsWindow = {
 	/**
@@ -98,25 +98,25 @@ const convenientDiscussionsWindow = {
 	 * @memberof convenientDiscussions
 	 */
 	s(name, ...args) {
-		const fullName = `convenient-discussions-${name}`;
-		let options = /** @type {SOptions} */ ({});
-		const lastParam = args.at(-1);
+		const fullName = `convenient-discussions-${name}`
+		let options = /** @type {SOptions} */ ({})
+		const lastParam = args.at(-1)
 
 		// lastParam.options can be a `mw.user`-like object to provide to {{gender:}}
 		if (typeof lastParam === 'object' && !('options' in lastParam)) {
-			options = lastParam;
-			args.splice(-1);
+			options = lastParam
+			args.splice(-1)
 		}
-		const params = /** @type {string[]} */ (args);
+		const params = /** @type {string[]} */ (args)
 
-		isQqxMode ??= /[?&]uselang=qqx(?=&|$)/.test(location.search);
+		isQqxMode ??= /[?&]uselang=qqx(?=&|$)/.test(location.search)
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (!isQqxMode && mw.messages.get(fullName) !== null) {
-			return mw.message(fullName, ...params)[options.parse ? 'parse' : 'text']();
+			return mw.message(fullName, ...params)[options.parse ? 'parse' : 'text']()
 		}
-		const paramsString = params.length ? `: ${params.join(', ')}` : '';
+		const paramsString = params.length ? `: ${params.join(', ')}` : ''
 
-		return `(${fullName}${paramsString})`;
+		return `(${fullName}${paramsString})`
 	},
 
 	/**
@@ -132,12 +132,12 @@ const convenientDiscussionsWindow = {
 	sParse(name, ...params) {
 		if (params.some((param) => /[<>]/.test(param))) {
 			// mw.message().parse() escapes tags in parameters - work around that.
-			mw.messages.set('convenient-discussions-parsehack', cd.s(name, ...params));
+			mw.messages.set('convenient-discussions-parsehack', cd.s(name, ...params))
 
-			return mw.message('convenient-discussions-parsehack').parse();
+			return mw.message('convenient-discussions-parsehack').parse()
 		}
 
-		return cd.s(name, ...params, { parse: true });
+		return cd.s(name, ...params, { parse: true })
 	},
 
 	/**
@@ -158,35 +158,35 @@ const convenientDiscussionsWindow = {
 	 * @memberof convenientDiscussions
 	 */
 	mws(name, ...params) {
-		let options;
-		const lastParam = params.at(-1);
+		let options
+		const lastParam = params.at(-1)
 		if (typeof lastParam === 'object') {
-			options = lastParam;
-			params.splice(-1);
+			options = lastParam
+			params.splice(-1)
 		}
 		if (options && options.language === 'content') {
-			name = '(content)' + name;
+			name = '(content)' + name
 		}
 		if (!params.length && mwStringsCache[name]) {
-			return mwStringsCache[name];
+			return mwStringsCache[name]
 		}
 
-		let message;
+		let message
 		if (/^(discussiontools|visualeditor)-/.test(name)) {
 			message = mw.messages.exists(name)
 				? mw.message(name, ...params).parse()
-				: cd.sParse(name.slice(name.indexOf('-') + 1));
+				: cd.sParse(name.slice(name.indexOf('-') + 1))
 		} else {
-			message = mw.message(name, ...params).parse();
+			message = mw.message(name, ...params).parse()
 		}
 		if (!params.length && !message.startsWith('⧼')) {
 			// Use cache since in some places a message could be requested very frequently. Don't cache
 			// missing messages (they can come from dialogs opened with a network error, like
 			// UploadDialog; messages can still be accessed for some silly reason).
-			mwStringsCache[name] = message;
+			mwStringsCache[name] = message
 		}
 
-		return message;
+		return message
 	},
 
 	/**
@@ -198,12 +198,12 @@ const convenientDiscussionsWindow = {
 	 */
 	getApi(config) {
 		if (config) {
-			return new mw.Api({ ...cd.getApiConfig(), ...config });
+			return new mw.Api({ ...cd.getApiConfig(), ...config })
 		}
 
-		this.mwApi ??= new mw.Api(cd.getApiConfig());
+		this.mwApi ??= new mw.Api(cd.getApiConfig())
 
-		return this.mwApi;
+		return this.mwApi
 	},
 
 	getApiConfig() {
@@ -217,7 +217,7 @@ const convenientDiscussionsWindow = {
 					'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
 				},
 			},
-		};
+		}
 	},
 
 	/**
@@ -229,19 +229,19 @@ const convenientDiscussionsWindow = {
 	 */
 	getWindowManager(name = 'default') {
 		if (!(name in this.windowManagers)) {
-			const windowManager = new OO.ui.WindowManager();
+			const windowManager = new OO.ui.WindowManager()
 			windowManager.on('closing', async (_, closed) => {
 				// We don't have windows that can be reused.
-				await closed;
-				windowManager.clearWindows();
-			});
+				await closed
+				windowManager.clearWindows()
+			})
 
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			$(OO.ui.getTeleportTarget?.() || document.body).append(windowManager.$element);
-			this.windowManagers[name] = windowManager;
+			$(OO.ui.getTeleportTarget?.() || document.body).append(windowManager.$element)
+			this.windowManagers[name] = windowManager
 		}
 
-		return this.windowManagers[name];
+		return this.windowManagers[name]
 	},
 
 	/**
@@ -268,9 +268,9 @@ const convenientDiscussionsWindow = {
 
 	/** @type {{ [key: string]: any }} */
 	tests: {},
-};
+}
 
-Object.assign(cd, convenientDiscussionsWindow);
+Object.assign(cd, convenientDiscussionsWindow)
 
 /**
  * Collection of properties accessible from anywhere in the script that are not grouped in any other
@@ -615,12 +615,12 @@ const globalProperties = {
 		content: {},
 		user: {},
 	}),
-};
-
-Object.assign(cd.g, globalProperties);
-
-if (cd.g.debug) {
-	window.cd = cd;
 }
 
-export { convenientDiscussionsWindow, globalProperties };
+Object.assign(cd.g, globalProperties)
+
+if (cd.g.debug) {
+	window.cd = cd
+}
+
+export { convenientDiscussionsWindow, globalProperties }

@@ -6,17 +6,17 @@
 jest.mock('../src/CommentLayers', () => {
 	const mockPrototypes = {
 		get: jest.fn(),
-	};
+	}
 
 	class MockCommentLayers {
-		static prototypes = mockPrototypes;
+		static prototypes = mockPrototypes
 
 		constructor(comment) {
-			this.comment = comment;
+			this.comment = comment
 		}
 
 		getOverlayPrototype() {
-			return MockCommentLayers.prototypes.get('overlay');
+			return MockCommentLayers.prototypes.get('overlay')
 		}
 
 		setupAdditionalElements() {
@@ -24,74 +24,74 @@ jest.mock('../src/CommentLayers', () => {
 		}
 
 		create() {
-			this.createCalled = true;
+			this.createCalled = true
 			// Mock basic layer creation
-			this.underlay = { tagName: 'DIV' };
-			this.overlay = this.getOverlayPrototype();
-			this.line = { tagName: 'DIV' };
-			this.marker = { tagName: 'DIV' };
+			this.underlay = { tagName: 'DIV' }
+			this.overlay = this.getOverlayPrototype()
+			this.line = { tagName: 'DIV' }
+			this.marker = { tagName: 'DIV' }
 
-			this.updateStyles(true);
+			this.updateStyles(true)
 
 			// Create jQuery wrappers
-			this.$underlay = global.$(this.underlay);
-			this.$overlay = global.$(this.overlay);
-			this.$marker = global.$(this.marker);
+			this.$underlay = global.$(this.underlay)
+			this.$overlay = global.$(this.overlay)
+			this.$marker = global.$(this.marker)
 
 			// Allow subclasses to set up additional elements
-			this.setupAdditionalElements();
+			this.setupAdditionalElements()
 		}
 
 		updateStyles(wereJustCreated) {
-			this.updateStylesCalled = true;
-			this.updateStylesWereJustCreated = wereJustCreated;
+			this.updateStylesCalled = true
+			this.updateStylesWereJustCreated = wereJustCreated
 		}
 
 		destroy() {
-			this.destroyCalled = true;
-			this.underlay = undefined;
-			this.overlay = undefined;
-			this.line = undefined;
-			this.marker = undefined;
+			this.destroyCalled = true
+			this.underlay = undefined
+			this.overlay = undefined
+			this.line = undefined
+			this.marker = undefined
 		}
 	}
 
-	return MockCommentLayers;
-});
+	return MockCommentLayers
+})
 
 // Mock jQuery
 global.$ = jest.fn((element) => ({
 	element,
-}));
+}))
 
 // Mock setTimeout and clearTimeout
 global.setTimeout = jest.fn((callback, delay) => {
-	const id = Math.random();
+	const id = Math.random()
 	// Store callback for testing
-	global.setTimeout.callbacks = global.setTimeout.callbacks || {};
-	global.setTimeout.callbacks[id] = callback;
+	global.setTimeout.callbacks = global.setTimeout.callbacks || {}
+	global.setTimeout.callbacks[id] = callback
 
-	return id;
-});
+	return id
+})
 
-global.clearTimeout = jest.fn();
+global.clearTimeout = jest.fn()
 
-import CompactCommentLayers from '../src/CompactCommentLayers';
+import CompactCommentLayers from '../src/CompactCommentLayers'
 
 describe('CompactCommentLayers', () => {
-	let mockComment;
-	let layers;
+	let mockComment
+	let layers
 
 	beforeEach(() => {
-		jest.clearAllMocks();
-		global.setTimeout.callbacks = {};
+		jest.clearAllMocks()
+		global.setTimeout.callbacks = {}
 
 		// Mock the prototype registries
-		const CommentLayers = require('../src/CommentLayers');
+		const CommentLayers = require('../src/CommentLayers')
 		CommentLayers.prototypes.get.mockReturnValue({
 			tagName: 'DIV',
 			firstChild: { tagName: 'DIV' },
-		});
+		})
 
 		// Mock CompactCommentLayers prototypes
 		CompactCommentLayers.prototypes = {
@@ -106,7 +106,7 @@ describe('CompactCommentLayers', () => {
 					style: { display: '' },
 				},
 			}),
-		};
+		}
 
 		mockComment = {
 			isNew: false,
@@ -114,256 +114,256 @@ describe('CompactCommentLayers', () => {
 			isDeleted: false,
 			isLineGapped: false,
 			wasMenuHidden: false,
-		};
+		}
 
-		layers = new CompactCommentLayers(mockComment);
-	});
+		layers = new CompactCommentLayers(mockComment)
+	})
 
 	describe('constructor', () => {
 		it('should inherit from CommentLayers', () => {
-			const CommentLayers = require('../src/CommentLayers');
-			expect(layers).toBeInstanceOf(CommentLayers);
-		});
+			const CommentLayers = require('../src/CommentLayers')
+			expect(layers).toBeInstanceOf(CommentLayers)
+		})
 
 		it('should initialize with undefined overlay menu properties', () => {
-			expect(layers.overlayInnerWrapper).toBeUndefined();
-			expect(layers.overlayGradient).toBeUndefined();
-			expect(layers.overlayMenu).toBeUndefined();
-			expect(layers.$overlayMenu).toBeUndefined();
-			expect(layers.$overlayGradient).toBeUndefined();
-			expect(layers.hideMenuTimeout).toBeUndefined();
-		});
-	});
+			expect(layers.overlayInnerWrapper).toBeUndefined()
+			expect(layers.overlayGradient).toBeUndefined()
+			expect(layers.overlayMenu).toBeUndefined()
+			expect(layers.$overlayMenu).toBeUndefined()
+			expect(layers.$overlayGradient).toBeUndefined()
+			expect(layers.hideMenuTimeout).toBeUndefined()
+		})
+	})
 
 	describe('create', () => {
 		it('should call parent create method', () => {
-			layers.create();
+			layers.create()
 
-			expect(layers.createCalled).toBe(true);
-		});
+			expect(layers.createCalled).toBe(true)
+		})
 
 		it('should set up overlay menu elements from overlay structure', () => {
-			layers.create();
+			layers.create()
 
-			expect(layers.overlayInnerWrapper).toBeDefined();
-			expect(layers.overlayGradient).toBeDefined();
-			expect(layers.overlayMenu).toBeDefined();
-		});
+			expect(layers.overlayInnerWrapper).toBeDefined()
+			expect(layers.overlayGradient).toBeDefined()
+			expect(layers.overlayMenu).toBeDefined()
+		})
 
 		it('should create jQuery wrappers for overlay menu elements', () => {
-			layers.create();
+			layers.create()
 
-			expect(layers.$overlayMenu).toBeDefined();
-			expect(layers.$overlayGradient).toBeDefined();
-			expect(global.$).toHaveBeenCalledWith(layers.overlayMenu);
-			expect(global.$).toHaveBeenCalledWith(layers.overlayGradient);
-		});
+			expect(layers.$overlayMenu).toBeDefined()
+			expect(layers.$overlayGradient).toBeDefined()
+			expect(global.$).toHaveBeenCalledWith(layers.overlayMenu)
+			expect(global.$).toHaveBeenCalledWith(layers.overlayGradient)
+		})
 
 		it('should handle missing overlay gracefully', () => {
 			// Mock create to not set overlay
-			const CommentLayers = require('../src/CommentLayers');
-			const originalCreate = CommentLayers.prototype.create;
+			const CommentLayers = require('../src/CommentLayers')
+			const originalCreate = CommentLayers.prototype.create
 			CommentLayers.prototype.create = function () {
-				this.createCalled = true;
-				this.overlay = null;
-			};
+				this.createCalled = true
+				this.overlay = null
+			}
 
-			expect(() => layers.create()).not.toThrow();
-			expect(layers.overlayInnerWrapper).toBeUndefined();
+			expect(() => layers.create()).not.toThrow()
+			expect(layers.overlayInnerWrapper).toBeUndefined()
 
 			// Restore original create
-			CommentLayers.prototype.create = originalCreate;
-		});
-	});
+			CommentLayers.prototype.create = originalCreate
+		})
+	})
 
 	describe('updateStyles', () => {
 		beforeEach(() => {
-			layers.create();
-		});
+			layers.create()
+		})
 
 		it('should call parent updateStyles method', () => {
-			layers.updateStyles(true);
+			layers.updateStyles(true)
 
-			expect(layers.updateStylesCalled).toBe(true);
-			expect(layers.updateStylesWereJustCreated).toBe(true);
-		});
+			expect(layers.updateStylesCalled).toBe(true)
+			expect(layers.updateStylesWereJustCreated).toBe(true)
+		})
 
 		it('should call parent updateStyles with default parameter', () => {
-			layers.updateStyles();
+			layers.updateStyles()
 
-			expect(layers.updateStylesCalled).toBe(true);
-			expect(layers.updateStylesWereJustCreated).toBe(false);
-		});
-	});
+			expect(layers.updateStylesCalled).toBe(true)
+			expect(layers.updateStylesWereJustCreated).toBe(false)
+		})
+	})
 
 	describe('showMenu', () => {
 		beforeEach(() => {
-			layers.create();
-			layers.overlayInnerWrapper = { style: { display: 'none' } };
-		});
+			layers.create()
+			layers.overlayInnerWrapper = { style: { display: 'none' } }
+		})
 
 		it('should show overlay inner wrapper', () => {
-			layers.showMenu();
+			layers.showMenu()
 
-			expect(layers.overlayInnerWrapper.style.display).toBe('');
-		});
+			expect(layers.overlayInnerWrapper.style.display).toBe('')
+		})
 
 		it('should handle missing overlay inner wrapper gracefully', () => {
-			layers.overlayInnerWrapper = undefined;
+			layers.overlayInnerWrapper = undefined
 
-			expect(() => layers.showMenu()).not.toThrow();
-		});
-	});
+			expect(() => layers.showMenu()).not.toThrow()
+		})
+	})
 
 	describe('hideMenu', () => {
 		beforeEach(() => {
-			layers.create();
-			layers.overlayInnerWrapper = { style: { display: '' } };
-		});
+			layers.create()
+			layers.overlayInnerWrapper = { style: { display: '' } }
+		})
 
 		it('should hide overlay inner wrapper', () => {
-			layers.hideMenu();
+			layers.hideMenu()
 
-			expect(layers.overlayInnerWrapper.style.display).toBe('none');
-		});
+			expect(layers.overlayInnerWrapper.style.display).toBe('none')
+		})
 
 		it('should set wasMenuHidden flag on comment', () => {
-			layers.hideMenu();
+			layers.hideMenu()
 
-			expect(mockComment.wasMenuHidden).toBe(true);
-		});
+			expect(mockComment.wasMenuHidden).toBe(true)
+		})
 
 		it('should prevent default on event', () => {
 			const mockEvent = {
 				preventDefault: jest.fn(),
-			};
+			}
 
-			layers.hideMenu(mockEvent);
+			layers.hideMenu(mockEvent)
 
-			expect(mockEvent.preventDefault).toHaveBeenCalled();
-		});
+			expect(mockEvent.preventDefault).toHaveBeenCalled()
+		})
 
 		it('should handle missing event gracefully', () => {
-			expect(() => layers.hideMenu()).not.toThrow();
-		});
+			expect(() => layers.hideMenu()).not.toThrow()
+		})
 
 		it('should handle missing overlay inner wrapper gracefully', () => {
-			layers.overlayInnerWrapper = undefined;
+			layers.overlayInnerWrapper = undefined
 
-			expect(() => layers.hideMenu()).not.toThrow();
-		});
-	});
+			expect(() => layers.hideMenu()).not.toThrow()
+		})
+	})
 
 	describe('deferHideMenu', () => {
 		beforeEach(() => {
-			layers.create();
-		});
+			layers.create()
+		})
 
 		it('should set timeout for left button clicks', () => {
-			const mockEvent = { button: 0 };
+			const mockEvent = { button: 0 }
 
-			layers.deferHideMenu(mockEvent);
+			layers.deferHideMenu(mockEvent)
 
-			expect(global.setTimeout).toHaveBeenCalledWith(expect.any(Function), 1200);
-			expect(layers.hideMenuTimeout).toBeDefined();
-		});
+			expect(global.setTimeout).toHaveBeenCalledWith(expect.any(Function), 1200)
+			expect(layers.hideMenuTimeout).toBeDefined()
+		})
 
 		it('should not set timeout for non-left button clicks', () => {
-			const mockEvent = { button: 1 }; // Right button
+			const mockEvent = { button: 1 } // Right button
 
-			layers.deferHideMenu(mockEvent);
+			layers.deferHideMenu(mockEvent)
 
-			expect(global.setTimeout).not.toHaveBeenCalled();
-			expect(layers.hideMenuTimeout).toBeUndefined();
-		});
+			expect(global.setTimeout).not.toHaveBeenCalled()
+			expect(layers.hideMenuTimeout).toBeUndefined()
+		})
 
 		it('should bind hideMenu method correctly in timeout', () => {
-			const mockEvent = { button: 0 };
-			const hideMenuSpy = jest.spyOn(layers, 'hideMenu');
+			const mockEvent = { button: 0 }
+			const hideMenuSpy = jest.spyOn(layers, 'hideMenu')
 
-			layers.deferHideMenu(mockEvent);
+			layers.deferHideMenu(mockEvent)
 
 			// Execute the timeout callback
-			const timeoutId = layers.hideMenuTimeout;
-			const callback = global.setTimeout.callbacks[timeoutId];
-			callback();
+			const timeoutId = layers.hideMenuTimeout
+			const callback = global.setTimeout.callbacks[timeoutId]
+			callback()
 
-			expect(hideMenuSpy).toHaveBeenCalled();
-		});
-	});
+			expect(hideMenuSpy).toHaveBeenCalled()
+		})
+	})
 
 	describe('dontHideMenu', () => {
 		beforeEach(() => {
-			layers.create();
-		});
+			layers.create()
+		})
 
 		it('should clear timeout', () => {
-			layers.hideMenuTimeout = 123;
+			layers.hideMenuTimeout = 123
 
-			layers.dontHideMenu();
+			layers.dontHideMenu()
 
-			expect(global.clearTimeout).toHaveBeenCalledWith(123);
-		});
+			expect(global.clearTimeout).toHaveBeenCalledWith(123)
+		})
 
 		it('should handle undefined timeout gracefully', () => {
-			layers.hideMenuTimeout = undefined;
+			layers.hideMenuTimeout = undefined
 
-			expect(() => layers.dontHideMenu()).not.toThrow();
-			expect(global.clearTimeout).toHaveBeenCalledWith(undefined);
-		});
-	});
+			expect(() => layers.dontHideMenu()).not.toThrow()
+			expect(global.clearTimeout).toHaveBeenCalledWith(undefined)
+		})
+	})
 
 	describe('destroy', () => {
 		beforeEach(() => {
-			layers.create();
-			layers.hideMenuTimeout = 123;
-		});
+			layers.create()
+			layers.hideMenuTimeout = 123
+		})
 
 		it('should clear pending timeouts', () => {
-			const dontHideMenuSpy = jest.spyOn(layers, 'dontHideMenu');
+			const dontHideMenuSpy = jest.spyOn(layers, 'dontHideMenu')
 
-			layers.destroy();
+			layers.destroy()
 
-			expect(dontHideMenuSpy).toHaveBeenCalled();
-		});
+			expect(dontHideMenuSpy).toHaveBeenCalled()
+		})
 
 		it('should clean up compact-specific element references', () => {
-			layers.destroy();
+			layers.destroy()
 
-			expect(layers.overlayInnerWrapper).toBeUndefined();
-			expect(layers.overlayGradient).toBeUndefined();
-			expect(layers.overlayMenu).toBeUndefined();
-			expect(layers.$overlayMenu).toBeUndefined();
-			expect(layers.$overlayGradient).toBeUndefined();
-		});
+			expect(layers.overlayInnerWrapper).toBeUndefined()
+			expect(layers.overlayGradient).toBeUndefined()
+			expect(layers.overlayMenu).toBeUndefined()
+			expect(layers.$overlayMenu).toBeUndefined()
+			expect(layers.$overlayGradient).toBeUndefined()
+		})
 
 		it('should call parent destroy method', () => {
-			layers.destroy();
+			layers.destroy()
 
-			expect(layers.destroyCalled).toBe(true);
-		});
-	});
+			expect(layers.destroyCalled).toBe(true)
+		})
+	})
 
 	describe('inheritance behavior', () => {
 		it('should inherit all base class methods', () => {
-			expect(typeof layers.create).toBe('function');
-			expect(typeof layers.updateStyles).toBe('function');
-			expect(typeof layers.destroy).toBe('function');
-			expect(typeof layers.hideMenu).toBe('function');
-			expect(typeof layers.deferHideMenu).toBe('function');
-			expect(typeof layers.dontHideMenu).toBe('function');
-		});
+			expect(typeof layers.create).toBe('function')
+			expect(typeof layers.updateStyles).toBe('function')
+			expect(typeof layers.destroy).toBe('function')
+			expect(typeof layers.hideMenu).toBe('function')
+			expect(typeof layers.deferHideMenu).toBe('function')
+			expect(typeof layers.dontHideMenu).toBe('function')
+		})
 
 		it('should override base class menu methods with functional implementations', () => {
-			layers.create();
+			layers.create()
 
 			// These should not be no-ops like in the base class
-			expect(() => layers.hideMenu()).not.toThrow();
-			expect(() => layers.deferHideMenu({ button: 0 })).not.toThrow();
-			expect(() => layers.dontHideMenu()).not.toThrow();
+			expect(() => layers.hideMenu()).not.toThrow()
+			expect(() => layers.deferHideMenu({ button: 0 })).not.toThrow()
+			expect(() => layers.dontHideMenu()).not.toThrow()
 
 			// Should have actual functionality
-			expect(global.setTimeout).toHaveBeenCalled();
-		});
-	});
-});
+			expect(global.setTimeout).toHaveBeenCalled()
+		})
+	})
+})

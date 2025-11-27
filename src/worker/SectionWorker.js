@@ -1,6 +1,6 @@
-import SectionSkeleton from '../shared/SectionSkeleton';
+import SectionSkeleton from '../shared/SectionSkeleton'
 
-import { keepSafeKeys } from './worker';
+import { keepSafeKeys } from './worker'
 
 /**
  * Section class used in the worker scope.
@@ -9,13 +9,13 @@ import { keepSafeKeys } from './worker';
  */
 export default class SectionWorker extends SectionSkeleton {
 	/** @type {SectionWorker|undefined} */
-	parent;
+	parent
 
 	/** @type {string[]} */
-	ancestors;
+	ancestors
 
 	/** @type {string|undefined} */
-	oldestCommentId;
+	oldestCommentId
 
 	/**
 	 * Prepare sections for transferring to the main process.
@@ -24,9 +24,9 @@ export default class SectionWorker extends SectionSkeleton {
 	 */
 	static tweakSections(sections) {
 		sections.forEach((section) => {
-			section.parent = section.getParent();
-			section.ancestors = section.getAncestors().map((sect) => sect.headline);
-			section.oldestCommentId = section.oldestComment?.id;
+			section.parent = section.getParent()
+			section.ancestors = section.getAncestors().map((sect) => sect.headline)
+			section.oldestCommentId = section.oldestComment?.id
 
 			keepSafeKeys(section, [
 				'cachedAncestors',
@@ -36,7 +36,7 @@ export default class SectionWorker extends SectionSkeleton {
 				'lastElement',
 				'lastElementInFirstChunk',
 				'parser',
-			]);
-		});
+			])
+		})
 	}
 }

@@ -1,12 +1,12 @@
-import ProcessDialog from './ProcessDialog';
-import StorageItem from './StorageItem';
-import commentFormManager from './commentFormManager';
-import controller from './controller';
-import cd from './loader/cd';
-import settings from './settings';
-import { areObjectsEqual } from './shared/utils-general';
-import { saveGlobalOption, saveLocalOption } from './utils-api';
-import { createButtonControl, createCheckboxControl, createMulticheckboxControl, createMultitagControl, createNumberControl, createRadioControl, createTextControl, es6ClassToOoJsClass } from './utils-oojs';
+import ProcessDialog from './ProcessDialog'
+import StorageItem from './StorageItem'
+import commentFormManager from './commentFormManager'
+import controller from './controller'
+import cd from './loader/cd'
+import settings from './settings'
+import { areObjectsEqual } from './shared/utils-general'
+import { saveGlobalOption, saveLocalOption } from './utils-api'
+import { createButtonControl, createCheckboxControl, createMulticheckboxControl, createMultitagControl, createNumberControl, createRadioControl, createTextControl, es6ClassToOoJsClass } from './utils-oojs'
 
 /**
  * Class used to create a settings dialog.
@@ -15,8 +15,8 @@ import { createButtonControl, createCheckboxControl, createMulticheckboxControl,
  */
 class SettingsDialog extends ProcessDialog {
 	// @ts-expect-error: https://phabricator.wikimedia.org/T358416
-	static name = 'settingsDialog';
-	static title = cd.s('sd-title');
+	static name = 'settingsDialog'
+	static title = cd.s('sd-title')
 	static actions = [
 		{
 			action: 'close',
@@ -44,40 +44,40 @@ class SettingsDialog extends ProcessDialog {
 			label: cd.s('sd-reload'),
 			flags: ['primary', 'progressive'],
 		},
-	];
-	static size = 'large';
+	]
+	static size = 'large'
 
 	/**
 	 * @override
 	 */
-	static cdKey = 'sd';
+	static cdKey = 'sd'
 
 	/** @type {OO.ui.StackLayout} */
-	stack;
+	stack
 
 	/** @type {OO.ui.PanelLayout} */
-	loadingPanel;
+	loadingPanel
 
 	/** @type {OO.ui.PanelLayout} */
-	settingsPanel;
+	settingsPanel
 
 	/** @type {OO.ui.PanelLayout} */
-	reloadPanel;
+	reloadPanel
 
 	/** @type {OO.ui.PanelLayout} */
-	dataDeletedPanel;
+	dataDeletedPanel
 
 	/** @type {OO.ui.BookletLayout} */
-	bookletLayout;
+	bookletLayout
 
 	controls =
-	/** @type {Expand<ControlTypesByName<import('./settings').default['scheme']['controlTypes']>>} */ ({});
+	/** @type {Expand<ControlTypesByName<import('./settings').default['scheme']['controlTypes']>>} */ ({})
 
 	/** @type {Partial<import('./settings').SettingsValues>} */
-	loadedSettings;
+	loadedSettings
 
 	/** @type {Partial<import('./settings').SettingsValues>} */
-	collectedSettings;
+	collectedSettings
 
 	/**
 	 * Create a settings dialog.
@@ -86,9 +86,9 @@ class SettingsDialog extends ProcessDialog {
 	 * @param {string} [focusSelector]
 	 */
 	constructor(initialPageName, focusSelector) {
-		super({ classes: ['cd-dialog-settings'] });
-		this.initialPageName = initialPageName;
-		this.focusSelector = focusSelector;
+		super({ classes: ['cd-dialog-settings'] })
+		this.initialPageName = initialPageName
+		this.focusSelector = focusSelector
 	}
 
 	/**
@@ -100,7 +100,7 @@ class SettingsDialog extends ProcessDialog {
 	 * @ignore
 	 */
 	getBodyHeight() {
-		return 600;
+		return 600
 	}
 
 	/**
@@ -112,42 +112,42 @@ class SettingsDialog extends ProcessDialog {
 	 * @ignore
 	 */
 	initialize() {
-		super.initialize();
+		super.initialize()
 
-		this.pushPending();
+		this.pushPending()
 
 		this.loadingPanel = new OO.ui.PanelLayout({
 			padded: true,
 			expanded: false,
-		});
-		this.loadingPanel.$element.append($('<div>').text(cd.s('loading-ellipsis')));
+		})
+		this.loadingPanel.$element.append($('<div>').text(cd.s('loading-ellipsis')))
 
 		this.settingsPanel = new OO.ui.PanelLayout({
 			padded: false,
 			expanded: true,
-		});
+		})
 
 		this.reloadPanel = new OO.ui.PanelLayout({
 			padded: true,
 			expanded: false,
-		});
+		})
 		this.reloadPanel.$element.append(
 			$('<p>').text(cd.s('sd-saved', commentFormManager.maybeGetFormDataWontBeLostString()))
-		);
+		)
 
 		this.dataDeletedPanel = new OO.ui.PanelLayout({
 			padded: true,
 			expanded: false,
-		});
-		this.dataDeletedPanel.$element.append($('<p>').text(cd.s('sd-dataremoved')));
+		})
+		this.dataDeletedPanel.$element.append($('<p>').text(cd.s('sd-dataremoved')))
 
 		this.stack = new OO.ui.StackLayout({
 			items: [this.loadingPanel, this.settingsPanel, this.reloadPanel, this.dataDeletedPanel],
-		});
+		})
 
-		this.$body.append(this.stack.$element);
+		this.$body.append(this.stack.$element)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -164,10 +164,10 @@ class SettingsDialog extends ProcessDialog {
 	 */
 	getSetupProcess({ loadedSettings }) {
 		return super.getSetupProcess().next(() => {
-			this.stack.setItem(this.loadingPanel);
-			this.actions.setMode('settings');
-			this.loadedSettings = loadedSettings;
-		});
+			this.stack.setItem(this.loadingPanel)
+			this.actions.setMode('settings')
+			this.loadedSettings = loadedSettings
+		})
 	}
 
 	/**
@@ -185,22 +185,22 @@ class SettingsDialog extends ProcessDialog {
 			// this.settings can be empty after removing the data using the relevant functionality in the
 			// UI.
 			if (!Object.keys(this.loadedSettings).length) {
-				this.loadedSettings = settings.get();
+				this.loadedSettings = settings.get()
 			}
 
-			this.renderControls(this.loadedSettings);
+			this.renderControls(this.loadedSettings)
 
-			this.stack.setItem(this.settingsPanel);
-			this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name);
+			this.stack.setItem(this.settingsPanel)
+			this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name)
 			if (this.focusSelector) {
-				this.$body.find(this.focusSelector).trigger('focus');
+				this.$body.find(this.focusSelector).trigger('focus')
 			}
-			this.actions.setAbilities({ close: true });
+			this.actions.setAbilities({ close: true })
 
-			this.popPending();
+			this.popPending()
 
-			controller.addPreventUnloadCondition('dialog', () => this.isUnsaved());
-		});
+			controller.addPreventUnloadCondition('dialog', () => this.isUnsaved())
+		})
 	}
 
 	/**
@@ -216,52 +216,52 @@ class SettingsDialog extends ProcessDialog {
 		switch (action) {
 			case 'save': {
 				return new OO.ui.Process(async () => {
-					this.pushPending();
+					this.pushPending()
 
 					try {
-						await settings.save(this.collectSettings());
-						settings.set(settings);
+						await settings.save(this.collectSettings())
+						settings.set(settings)
 					} catch (error) {
-						this.handleError(error, 'error-settings-save', true);
+						this.handleError(error, 'error-settings-save', true)
 
-						return;
+						return
 					}
 
-					controller.removePreventUnloadCondition('dialog');
+					controller.removePreventUnloadCondition('dialog')
 
-					this.stack.setItem(this.reloadPanel);
-					this.actions.setMode('reboot');
+					this.stack.setItem(this.reloadPanel)
+					this.actions.setMode('reboot')
 
-					this.popPending();
-				});
+					this.popPending()
+				})
 			}
 			case 'reboot': {
 				return new OO.ui.Process(async () => {
-					this.close();
+					this.close()
 					if (!(await controller.rebootPage())) {
-						location.reload();
+						location.reload()
 					}
-				});
+				})
 			}
 			case 'close': {
 				return new OO.ui.Process(() => {
-					this.confirmClose();
-				});
+					this.confirmClose()
+				})
 			}
 			case 'reset': {
 				return new OO.ui.Process(() => {
 					if (confirm(cd.s('sd-reset-confirm'))) {
-						this.renderControls(settings.scheme.default);
+						this.renderControls(settings.scheme.default)
 						this.bookletLayout.setPage(
 							/** @type {string} */ (this.bookletLayout.getCurrentPageName())
-						);
+						)
 					}
-				});
+				})
 			}
 			// No default
 		}
 
-		return super.getActionProcess(action);
+		return super.getActionProcess(action)
 	}
 
 	/**
@@ -276,7 +276,7 @@ class SettingsDialog extends ProcessDialog {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const pages = settings.scheme.ui.map((pageData) => {
 			const $fields = pageData.controls.map((data) => {
-				const name = data.name;
+				const name = data.name
 				switch (data.type) {
 					case 'checkbox':
 						/** @type {CheckboxControl} */ (this.controls[name]) = createCheckboxControl({
@@ -284,9 +284,9 @@ class SettingsDialog extends ProcessDialog {
 							selected: /** @type {boolean} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						});
-						this.controls[name].input.on('change', this.updateAbilities);
-						break;
+						})
+						this.controls[name].input.on('change', this.updateAbilities)
+						break
 
 					case 'radio':
 						/** @type {RadioControl} */ (this.controls[name]) = createRadioControl({
@@ -294,9 +294,9 @@ class SettingsDialog extends ProcessDialog {
 							selected: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						});
-						this.controls[name].input.on('select', this.updateAbilities);
-						break;
+						})
+						this.controls[name].input.on('select', this.updateAbilities)
+						break
 
 					case 'text':
 						/** @type {TextControl} */ (this.controls[name]) = createTextControl({
@@ -304,9 +304,9 @@ class SettingsDialog extends ProcessDialog {
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						});
-						this.controls[name].input.on('change', this.updateAbilities);
-						break;
+						})
+						this.controls[name].input.on('change', this.updateAbilities)
+						break
 
 					case 'number':
 						/** @type {NumberControl} */ (this.controls[name]) = createNumberControl({
@@ -314,9 +314,9 @@ class SettingsDialog extends ProcessDialog {
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						});
-						this.controls[name].input.on('change', this.updateAbilities);
-						break;
+						})
+						this.controls[name].input.on('change', this.updateAbilities)
+						break
 
 					case 'multicheckbox':
 						/** @type {MulticheckboxControl} */ (this.controls[name]) = createMulticheckboxControl({
@@ -324,9 +324,9 @@ class SettingsDialog extends ProcessDialog {
 							selected: /** @type {string[]} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						});
-						this.controls[name].input.on('select', this.updateAbilities);
-						break;
+						})
+						this.controls[name].input.on('select', this.updateAbilities)
+						break
 
 					case 'multitag':
 						/** @type {MultitagControl} */ (this.controls[name]) = createMultitagControl({
@@ -334,19 +334,19 @@ class SettingsDialog extends ProcessDialog {
 							selected: /** @type {string[]} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						});
-						this.controls[name].input.on('change', this.updateAbilities);
-						break;
+						})
+						this.controls[name].input.on('change', this.updateAbilities)
+						break
 
 					case 'button':
 						/** @type {ButtonControl} */ (this.controls[name]) = createButtonControl({
 							.../** @type {import('./utils-oojs').ButtonControlOptions} */ (data),
-						});
-						break;
+						})
+						break
 				}
 
-				return this.controls[name].field.$element;
-			});
+				return this.controls[name].field.$element
+			})
 
 			// eslint-disable-next-line jsdoc/require-jsdoc
 			return new (es6ClassToOoJsClass(
@@ -356,26 +356,26 @@ class SettingsDialog extends ProcessDialog {
 				class extends OO.ui.PageLayout {
 					// eslint-disable-next-line jsdoc/require-jsdoc
 					constructor() {
-						super(pageData.name);
-						this.$element.append($fields);
+						super(pageData.name)
+						this.$element.append($fields)
 					}
 
 					/**
 					 * @override
 					 */
 					setupOutlineItem() {
-						/** @type {OO.ui.OutlineOptionWidget} */ (this.outlineItem).setLabel(pageData.label);
+						/** @type {OO.ui.OutlineOptionWidget} */ (this.outlineItem).setLabel(pageData.label)
 					}
 				}
-			))();
-		});
+			))()
+		})
 
-		this.controls.removeData.input.connect(this, { click: this.removeData });
+		this.controls.removeData.input.connect(this, { click: this.removeData })
 		this.controls.desktopNotifications.input.connect(this, {
 			choose: this.onDesktopNotificationsSelectChange,
-		});
+		})
 
-		return pages;
+		return pages
 	}
 
 	/**
@@ -386,15 +386,15 @@ class SettingsDialog extends ProcessDialog {
 	 * @protected
 	 */
 	renderControls(settingValues) {
-		settings.initUi();
+		settings.initUi()
 
 		this.bookletLayout = new OO.ui.BookletLayout({
 			outlined: true,
-		});
-		this.bookletLayout.addPages(this.createPages(settingValues), 0);
-		this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
+		})
+		this.bookletLayout.addPages(this.createPages(settingValues), 0)
+		this.settingsPanel.$element.empty().append(this.bookletLayout.$element)
 
-		this.updateAbilities();
+		this.updateAbilities()
 	}
 
 	/**
@@ -405,10 +405,10 @@ class SettingsDialog extends ProcessDialog {
 	 */
 	getStateSettings() {
 		return settings.scheme.states.reduce((obj, state) => {
-			/** @type {(typeof this.loadedSettings)[state]} */ (obj[state]) = this.loadedSettings[state];
+			/** @type {(typeof this.loadedSettings)[state]} */ (obj[state]) = this.loadedSettings[state]
 
-			return obj;
-		}, /** @type {Partial<import('./settings').SettingsValues>} */ ({}));
+			return obj
+		}, /** @type {Partial<import('./settings').SettingsValues>} */ ({}))
 	}
 
 	/**
@@ -420,44 +420,44 @@ class SettingsDialog extends ProcessDialog {
 	collectSettings() {
 		this.collectedSettings = Object.entries(this.controls).reduce(
 			(settingsValues, [name, control]) => {
-				const n = /** @type {keyof import('./settings').DocumentedSettingsValues} */ (name);
+				const n = /** @type {keyof import('./settings').DocumentedSettingsValues} */ (name)
 				/**
 				 * @typedef {Partial<import('./settings').DocumentedSettingsValues>[n]} RelevantSettingType
 				 */
 
 				switch (control.type) {
 					case 'checkbox':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.isSelected();
-						break;
+						/** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.isSelected()
+						break
 					case 'radio':
 						/** @type {RelevantSettingType} */ (settingsValues[n]) =
 						/** @type {string | undefined} */ (control.input.findSelectedItem()?.getData()) ||
-							settings.scheme.default[n];
-						break;
+							settings.scheme.default[n]
+						break
 					case 'text':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.getValue();
-						break;
+						/** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.getValue()
+						break
 					case 'number':
 						/** @type {RelevantSettingType} */ (settingsValues[n]) = Number(
 							control.input.getValue()
-						);
-						break;
+						)
+						break
 					case 'multicheckbox':
 						/** @type {RelevantSettingType} */ (settingsValues[n]) = /** @type {string[]} */ (
 							control.input.findSelectedItemsData()
-						);
-						break;
+						)
+						break
 					case 'multitag':
 						/** @type {RelevantSettingType} */ (settingsValues[n]) = (
 							control.uiToData || ((val) => val)
-						).call(null, /** @type {string[]} */ (control.input.getValue()));
-						break;
+						).call(null, /** @type {string[]} */ (control.input.getValue()))
+						break
 				}
 
-				return settingsValues;
+				return settingsValues
 			},
 			/** @type {Partial<import('./settings').SettingsValues>} */ ({})
-		);
+		)
 
 		return {
 			...settings.scheme.default,
@@ -466,7 +466,7 @@ class SettingsDialog extends ProcessDialog {
 			'insertButtons-altered':
 				JSON.stringify(this.collectedSettings.insertButtons) !==
 				JSON.stringify(settings.scheme.default.insertButtons),
-		};
+		}
 	}
 
 	/**
@@ -475,40 +475,40 @@ class SettingsDialog extends ProcessDialog {
 	 * @protected
 	 */
 	updateAbilities = async () => {
-		const threadsEnabled = this.controls.enableThreads.input.isSelected();
-		this.controls.collapseThreads.input.setDisabled(!threadsEnabled);
+		const threadsEnabled = this.controls.enableThreads.input.isSelected()
+		this.controls.collapseThreads.input.setDisabled(!threadsEnabled)
 		this.controls.collapseThreadsLevel.input.setDisabled(
 			!threadsEnabled || !this.controls.collapseThreads.input.isSelected()
-		);
+		)
 		this.controls.hideTimezone.input.setDisabled(
 			this.controls.timestampFormat.input.findSelectedItem()?.getData() === 'relative'
-		);
+		)
 		this.controls.notifyCollapsedThreads.input.setDisabled(
 			this.controls.desktopNotifications.input.findSelectedItem()?.getData() === 'none' &&
 			this.controls.notifications.input.findSelectedItem()?.getData() === 'none'
-		);
-		this.controls.outdentLevel.input.setDisabled(!this.controls.outdent.input.isSelected());
+		)
+		this.controls.outdentLevel.input.setDisabled(!this.controls.outdent.input.isSelected())
 		this.controls.showContribsLink.input.setDisabled(
 			this.controls.commentDisplay.input.findSelectedItem()?.getData() !== 'spacious'
-		);
+		)
 		this.controls.useTemplateData.input.setDisabled(
 			!(
 			/** @type {import('./RadioOptionWidget').default} */ (
 					this.controls.autocompleteTypes.input.findItemFromData('templates')
 				).isSelected()
 			)
-		);
+		)
 
-		let valid = true;
+		let valid = true
 		await Promise.all(
 			Object.values(this.controls)
 				.filter((control) => control.type === 'number')
 				.map((control) => control.input.getValidity())
 		).catch(() => {
-			valid = false;
-		});
+			valid = false
+		})
 
-		const collectedSettings = this.collectSettings();
+		const collectedSettings = this.collectSettings()
 		this.actions.setAbilities({
 			save: !areObjectsEqual(collectedSettings, this.loadedSettings) && valid,
 			reset: !areObjectsEqual(
@@ -520,8 +520,8 @@ class SettingsDialog extends ProcessDialog {
 					...this.getStateSettings(),
 				}
 			),
-		});
-	};
+		})
+	}
 
 	/**
 	 * Handler of the event of change of the desktop notifications radio select.
@@ -530,17 +530,17 @@ class SettingsDialog extends ProcessDialog {
 	 * @protected
 	 */
 	onDesktopNotificationsSelectChange = (option) => {
-		if (typeof Notification === 'undefined') return;
+		if (typeof Notification === 'undefined') return
 
 		if (option.getData() !== 'none' && Notification.permission !== 'granted') {
-			OO.ui.alert(cd.s('dn-grantpermission'));
+			OO.ui.alert(cd.s('dn-grantpermission'))
 			Notification.requestPermission((permission) => {
 				if (permission !== 'granted') {
-					this.controls.desktopNotifications.input.selectItemByData('none');
+					this.controls.desktopNotifications.input.selectItemByData('none')
 				}
-			});
+			})
 		}
-	};
+	}
 
 	/**
 	 * Remove script data as requested by the user after confirmation.
@@ -549,7 +549,7 @@ class SettingsDialog extends ProcessDialog {
 	 */
 	removeData = async () => {
 		if (confirm(cd.s('sd-removedata-confirm'))) {
-			this.pushPending();
+			this.pushPending()
 
 			try {
 				await Promise.all([
@@ -557,27 +557,27 @@ class SettingsDialog extends ProcessDialog {
 					saveLocalOption(cd.g.visitsOptionName, null),
 					saveLocalOption(cd.g.subscriptionsOptionName, null),
 					saveGlobalOption(cd.g.settingsOptionName, null),
-				]);
+				])
 			} catch (error) {
-				this.handleError(error, 'sd-error-removedata', false);
+				this.handleError(error, 'sd-error-removedata', false)
 
-				return;
+				return
 			}
 
-			new StorageItem('commentForms').removeItem();
-			new StorageItem('thanks').removeItem();
-			new StorageItem('seenRenderedChanges').removeItem();
-			new StorageItem('collapsedThreads').removeItem();
-			new StorageItem('mutedUsers').removeItem();
+			new StorageItem('commentForms').removeItem()
+			new StorageItem('thanks').removeItem()
+			new StorageItem('seenRenderedChanges').removeItem()
+			new StorageItem('collapsedThreads').removeItem()
+			new StorageItem('mutedUsers').removeItem()
 
-			this.stack.setItem(this.dataDeletedPanel);
-			this.actions.setMode('dataRemoved');
+			this.stack.setItem(this.dataDeletedPanel)
+			this.actions.setMode('dataRemoved')
 
-			this.popPending();
+			this.popPending()
 		}
-	};
+	}
 }
 
-es6ClassToOoJsClass(SettingsDialog);
+es6ClassToOoJsClass(SettingsDialog)
 
-export default SettingsDialog;
+export default SettingsDialog

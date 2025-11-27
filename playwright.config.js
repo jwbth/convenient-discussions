@@ -1,11 +1,11 @@
 // @ts-check
 
-const fs = require('node:fs');
-const path = require('node:path');
+const fs = require('node:fs')
+const path = require('node:path')
 
-const { defineConfig, devices } = require('@playwright/test');
+const { defineConfig, devices } = require('@playwright/test')
 
-const authFile = path.join(__dirname, 'playwright', '.auth', 'user.json');
+const authFile = path.join(__dirname, 'playwright', '.auth', 'user.json')
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -55,4 +55,4 @@ module.exports = defineConfig({
 
 	/* Build the script before running tests */
 	globalSetup: require.resolve('./playwright/global-setup.js'),
-});
+})

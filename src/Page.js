@@ -6,13 +6,13 @@
  * @module Page
  */
 
-import PageSource from './PageSource';
-import TextMasker from './TextMasker';
-import cd from './loader/cd';
-import pageRegistry from './pageRegistry';
-import CdError from './shared/CdError';
-import { defined, mergeRegexps } from './shared/utils-general';
-import { handleApiReject, requestInBackground } from './utils-api';
+import PageSource from './PageSource'
+import TextMasker from './TextMasker'
+import cd from './loader/cd'
+import pageRegistry from './pageRegistry'
+import CdError from './shared/CdError'
+import { defined, mergeRegexps } from './shared/utils-general'
+import { handleApiReject, requestInBackground } from './utils-api'
 
 /**
  * @typedef {object} ApiResponseEdit
@@ -38,7 +38,7 @@ import { handleApiReject, requestInBackground } from './utils-api';
  */
 export default class Page {
 	/** @readonly */
-	TYPE = 'page';
+	TYPE = 'page'
 
 	/**
 	 * Page ID on the wiki. Filled upon running {@link Page#loadCode} or {@link Page#edit}. In the
@@ -47,7 +47,7 @@ export default class Page {
 	 * @name pageId
 	 * @type {number|undefined}
 	 */
-	pageId;
+	pageId
 
 	/**
 	 * ID of the revision that has {@link Page#code}. Filled upon running {@link Page#loadCode}.
@@ -55,7 +55,7 @@ export default class Page {
 	 * @name revisionId
 	 * @type {number|undefined}
 	 */
-	revisionId;
+	revisionId
 
 	/**
 	 * Page where {@link Page#name} redirects. Filled upon running {@link Page#loadCode}.
@@ -63,7 +63,7 @@ export default class Page {
 	 * @name redirectTarget
 	 * @type {string|null|undefined}
 	 */
-	redirectTarget;
+	redirectTarget
 
 	/**
 	 * If {@link Page#name} redirects to some other page, the value is that page. If not, the value is
@@ -72,7 +72,7 @@ export default class Page {
 	 * @name realName
 	 * @type {string|undefined}
 	 */
-	realName;
+	realName
 
 	/**
 	 * Time when {@link Page#code} was queried (as the server reports it). Filled upon running
@@ -81,7 +81,7 @@ export default class Page {
 	 * @name queryTimestamp
 	 * @type {string|undefined}
 	 */
-	queryTimestamp;
+	queryTimestamp
 
 	/**
 	 * Create a page instance.
@@ -93,13 +93,13 @@ export default class Page {
 	constructor(mwTitle, genderedName) {
 		// TODO: remove after uses by foreign scripts are replaced.
 		if (!(mwTitle instanceof mw.Title)) {
-			mwTitle = new mw.Title(mwTitle);
+			mwTitle = new mw.Title(mwTitle)
 		}
 
 		/**
 		 * Page's {@link mw.Title mw.Title} object.
 		 */
-		this.mwTitle = mwTitle;
+		this.mwTitle = mwTitle
 
 		/**
 		 * Page name, with a namespace name, not necessarily normalized (not normalized if a gendered
@@ -107,7 +107,7 @@ export default class Page {
 		 *
 		 * @type {string}
 		 */
-		this.name = genderedName || mwTitle.getPrefixedText();
+		this.name = genderedName || mwTitle.getPrefixedText()
 
 		/**
 		 * Page title, with no namespace name, normalized. The word separator is a space, not an
@@ -115,14 +115,14 @@ export default class Page {
 		 *
 		 * @type {string}
 		 */
-		this.title = mwTitle.getMainText();
+		this.title = mwTitle.getMainText()
 
 		/**
 		 * Namespace number.
 		 *
 		 * @type {number}
 		 */
-		this.namespaceId = mwTitle.getNamespaceId();
+		this.namespaceId = mwTitle.getNamespaceId()
 
 		/**
 		 * Page's source code object. This is mostly for polymorphism with {@link CommentSource} and
@@ -130,7 +130,7 @@ export default class Page {
 		 *
 		 * @type {PageSource}
 		 */
-		this.source = new PageSource(this);
+		this.source = new PageSource(this)
 
 		/**
 		 * Is the page actionable, i.e. you can add a section to it. Can be `true` only for the current
@@ -138,7 +138,7 @@ export default class Page {
 		 *
 		 * @type {boolean}
 		 */
-		this.isActionable = false;
+		this.isActionable = false
 	}
 
 	/**
@@ -147,7 +147,7 @@ export default class Page {
 	 * @returns {boolean}
 	 */
 	isCurrent() {
-		return this.name === cd.g.pageName;
+		return this.name === cd.g.pageName
 	}
 
 	/**
@@ -156,7 +156,7 @@ export default class Page {
 	 * @returns {boolean}
 	 */
 	isOwnTalkPage() {
-		return mw.config.get('wgNamespaceNumber') === 3 && this.title === cd.user.getName();
+		return mw.config.get('wgNamespaceNumber') === 3 && this.title === cd.user.getName()
 	}
 
 	/**
@@ -165,7 +165,7 @@ export default class Page {
 	 * @returns {boolean}
 	 */
 	isProbablyTalkPage() {
-		return cd.loader.isProbablyTalkPage(this.realName || this.name, this.namespaceId);
+		return cd.loader.isProbablyTalkPage(this.realName || this.name, this.namespaceId)
 	}
 
 	/**
@@ -176,17 +176,17 @@ export default class Page {
 	 * @returns {boolean}
 	 */
 	isArchive() {
-		let result = false;
+		let result = false
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const name = this.realName || this.name;
+		const name = this.realName || this.name
 		for (const sourceRegexp of Page.getSourcePagesMap().keys()) {
 			if (sourceRegexp.test(name)) {
-				result = true;
-				break;
+				result = true
+				break
 			}
 		}
 
-		return result;
+		return result
 	}
 
 	/**
@@ -198,10 +198,10 @@ export default class Page {
 	 */
 	canHaveArchives() {
 		if (this.isArchive()) {
-			return false;
+			return false
 		}
 
-		return !mergeRegexps(cd.config.pagesWithoutArchives)?.test(this.realName || this.name);
+		return !mergeRegexps(cd.config.pagesWithoutArchives)?.test(this.realName || this.name)
 	}
 
 	/**
@@ -214,19 +214,19 @@ export default class Page {
 	 */
 	getArchivePrefix(onlyExplicit = false) {
 		if (!this.canHaveArchives()) {
-			return;
+			return
 		}
 
-		let result;
-		const name = this.realName || this.name;
+		let result
+		const name = this.realName || this.name
 		for (const [sourceRegexp, replacement] of Page.getArchivePagesMap().entries()) {
 			if (sourceRegexp.test(name)) {
-				result = name.replace(sourceRegexp, replacement);
-				break;
+				result = name.replace(sourceRegexp, replacement)
+				break
 			}
 		}
 
-		return result ?? (onlyExplicit ? undefined : name + '/');
+		return result ?? (onlyExplicit ? undefined : name + '/')
 	}
 
 	/**
@@ -237,16 +237,16 @@ export default class Page {
 	 * @returns {Page}
 	 */
 	getArchivedPage() {
-		let result;
-		const name = this.realName || this.name;
+		let result
+		const name = this.realName || this.name
 		for (const [archiveRegexp, replacement] of Page.getSourcePagesMap().entries()) {
 			if (archiveRegexp.test(name)) {
-				result = name.replace(archiveRegexp, replacement);
-				break;
+				result = name.replace(archiveRegexp, replacement)
+				break
 			}
 		}
 
-		return (result && pageRegistry.get(result)) || this;
+		return (result && pageRegistry.get(result)) || this
 	}
 
 	/**
@@ -296,63 +296,63 @@ export default class Page {
 				redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
 				curtimestamp: true,
 			})
-			.catch(handleApiReject);
+			.catch(handleApiReject)
 		const { query, curtimestamp: queryTimestamp } =
-		/** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
+		/** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request)
 
-		const page = query?.pages?.[0];
-		const revision = page?.revisions?.[0];
-		const content = revision?.slots?.main.content;
+		const page = query?.pages?.[0]
+		const revision = page?.revisions?.[0]
+		const content = revision?.slots?.main.content
 
 		if (!query || !page) {
 			throw new CdError({
 				type: 'response',
 				code: 'noData',
-			});
+			})
 		}
 
 		if (page.missing) {
-			this.source.setCode('');
-			this.revisionId = undefined;
-			this.redirectTarget = undefined;
-			this.realName = this.name;
-			this.queryTimestamp = queryTimestamp;
+			this.source.setCode('')
+			this.revisionId = undefined
+			this.redirectTarget = undefined
+			this.realName = this.name
+			this.queryTimestamp = queryTimestamp
 
 			if (tolerateMissing) {
-				return;
+				return
 			}
 
 			throw new CdError({
 				type: 'response',
 				code: 'missing',
-			});
+			})
 		}
 		if (page.invalid) {
 			throw new CdError({
 				type: 'response',
 				code: 'invalid',
-			});
+			})
 		}
 
 		if (!revision || content === undefined) {
 			throw new CdError({
 				type: 'response',
 				code: 'noData',
-			});
+			})
 		}
 
-		const redirectTarget = query.redirects?.[0]?.to || null;
+		const redirectTarget = query.redirects?.[0]?.to || null
 
 		// It's more convenient to unify regexps to have \n as the last character of anything, not
 		// (?:\n|$), and it doesn't seem to affect anything substantially.
-		this.source.setCode(content + '\n');
+		this.source.setCode(content + '\n')
 
-		this.revisionId = revision.revid;
-		this.redirectTarget = redirectTarget;
-		this.realName = redirectTarget || this.name;
-		this.queryTimestamp = /** @type {string} */ (queryTimestamp);
+		this.revisionId = revision.revid
+		this.redirectTarget = redirectTarget
+		this.realName = redirectTarget || this.name
+		this.queryTimestamp = /** @type {string} */ (queryTimestamp)
 
-		return this.source;
+		return this.source
 	}
 
 	/**
@@ -380,24 +380,24 @@ export default class Page {
 			...cd.g.apiErrorFormatHtml,
 
 			...customOptions,
-		});
+		})
 
 		// `page` and `oldid` can not be used together.
 		if (customOptions?.oldid) {
-			delete options.page;
+			delete options.page
 		}
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const request = inBackground
 			? requestInBackground(options).catch(handleApiReject)
-			: cd.getApi().post(options).catch(handleApiReject);
-		const { parse } = /** @type {import('./utils-api').ApiResponseParse} */ (await request);
+			: cd.getApi().post(options).catch(handleApiReject)
+		const { parse } = /** @type {import('./utils-api').ApiResponseParse} */ (await request)
 
 		if (markAsRead) {
-			this.markAsRead(parse.revid);
+			this.markAsRead(parse.revid)
 		}
 
-		return parse;
+		return parse
 	}
 
 	/**
@@ -429,7 +429,7 @@ export default class Page {
 			prop: 'revisions',
 			redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
 			...customOptions,
-		});
+		})
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const request = inBackground
@@ -437,10 +437,10 @@ export default class Page {
 			: cd
 					.getApi()
 					.post(/** @type {import('types-mediawiki/api_params').UnknownApiParams} */ (options))
-					.catch(handleApiReject);
-		const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
+					.catch(handleApiReject)
+		const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request)
 
-		return /** @type {Revision<T>[]} */ (response.query?.pages?.[0]?.revisions);
+		return /** @type {Revision<T>[]} */ (response.query?.pages?.[0]?.revisions)
 	}
 
 	/**
@@ -456,7 +456,7 @@ export default class Page {
 	 */
 	async edit(customOptions) {
 		/** @type {ApiResponseEdit} */
-		let response;
+		let response
 		try {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const request = cd
@@ -482,33 +482,33 @@ export default class Page {
 						contentType: 'multipart/form-data',
 					}
 				)
-				.catch(handleApiReject);
-			response = await request;
+				.catch(handleApiReject)
+			response = await request
 		} catch (error) {
 			if (error instanceof CdError && error.isServerDefinedApiError()) {
 				switch (error.getCode()) {
 					case 'editconflict': {
-						error.setMessage(cd.sParse('error-editconflict'));
-						break;
+						error.setMessage(cd.sParse('error-editconflict'))
+						break
 					}
 
 					case 'missingtitle': {
-						error.setMessage(cd.sParse('error-pagedeleted'));
-						break;
+						error.setMessage(cd.sParse('error-pagedeleted'))
+						break
 					}
 
 					default: {
-						const message = error.getHtml();
+						const message = error.getHtml()
 						if (message.includes('<table') || message.includes('<div')) {
-							error.set$message($(message));
+							error.set$message($(message))
 						} else {
-							error.setMessage(message);
+							error.setMessage(message)
 						}
 					}
 				}
 			}
 
-			throw error;
+			throw error
 		}
 
 		if (response.edit.result !== 'Success') {
@@ -516,10 +516,10 @@ export default class Page {
 				type: 'response',
 				code: response.edit.captcha ? 'captcha' : 'fail',
 				apiResponse: response,
-			});
+			})
 		}
 
-		return response.edit.newtimestamp || 'nochange';
+		return response.edit.newtimestamp || 'nochange'
 	}
 
 	/**
@@ -533,8 +533,8 @@ export default class Page {
 				titles: this.name,
 			})
 			.catch(() => {
-				mw.notify(cd.s('error-purgecache'), { type: 'warn' });
-			});
+				mw.notify(cd.s('error-purgecache'), { type: 'warn' })
+			})
 	}
 
 	/**
@@ -547,7 +547,7 @@ export default class Page {
 			action: 'setnotificationtimestamp',
 			titles: this.name,
 			newerthanrevid: revisionId,
-		});
+		})
 	}
 
 	/**
@@ -557,7 +557,7 @@ export default class Page {
 	 * @returns {string}
 	 */
 	getUrl(parameters) {
-		return mw.util.getUrl(this.name, parameters);
+		return mw.util.getUrl(this.name, parameters)
 	}
 
 	/**
@@ -572,7 +572,7 @@ export default class Page {
 			cd.g.server +
 			decodeURI(this.getUrl(permanent ? { oldid: mw.config.get('wgRevisionId') } : {})) +
 			(fragment ? `#${fragment}` : '')
-		);
+		)
 	}
 
 	/**
@@ -582,7 +582,7 @@ export default class Page {
 	 * @returns {Promise<Map<Page, StringsByKey>>}
 	 */
 	async getFirstTemplateTransclusion(pages) {
-		let data;
+		let data
 		try {
 			data = /** @type {import('./utils-api').ApiResponseParseTree} */ (
 				await cd
@@ -593,18 +593,18 @@ export default class Page {
 						page: this.name,
 					})
 					.catch(handleApiReject)
-			);
+			)
 		} catch (error) {
 			if (
 				error instanceof CdError &&
 				['missingtitle', 'notwikitext'].includes(error.getCode() || '')
 			) {
-				return new Map();
+				return new Map()
 			}
-			throw error;
+			throw error
 		}
 
-		const $templates = $($.parseXML(data.parse.parsetree)).find('template');
+		const $templates = $($.parseXML(data.parse.parsetree)).find('template')
 
 		return new Map(
 			pages
@@ -632,7 +632,7 @@ export default class Page {
 								.children('part')
 								.get()
 								.map((part) => {
-									const $name = $(part).children('name');
+									const $name = $(part).children('name')
 
 									// Key, value
 									return [
@@ -641,13 +641,13 @@ export default class Page {
 											.children('value')
 											.text()
 											.trim(),
-									];
+									]
 								})
 						),
 					])
 				)
 				.filter(defined)
-		);
+		)
 	}
 
 	/**
@@ -669,9 +669,9 @@ export default class Page {
 					prop: ['diff'],
 				})
 				.catch(handleApiReject)
-		);
+		)
 
-		return response.compare.body;
+		return response.compare.body
 	}
 
 	/**
@@ -683,7 +683,7 @@ export default class Page {
 	 * @returns {string}
 	 */
 	getCommentFormHeadlineInputPlaceholder() {
-		return cd.s('cf-headline-topic');
+		return cd.s('cf-headline-topic')
 	}
 
 	/**
@@ -695,7 +695,7 @@ export default class Page {
 	 * @returns {string}
 	 */
 	getCommentFormCommentInputPlaceholder() {
-		return cd.s('cf-comment-placeholder');
+		return cd.s('cf-comment-placeholder')
 	}
 
 	/**
@@ -707,7 +707,7 @@ export default class Page {
 	 * @returns {undefined}
 	 */
 	getCommentFormTargetComment() {
-		return;
+		return
 	}
 
 	/**
@@ -716,8 +716,8 @@ export default class Page {
 	 * @param {string | null | undefined} redirectTarget
 	 */
 	setRedirectTarget(redirectTarget) {
-		this.redirectTarget = redirectTarget;
-		this.realName = redirectTarget || this.name;
+		this.redirectTarget = redirectTarget
+		this.realName = redirectTarget || this.name
 	}
 
 	/**
@@ -729,7 +729,7 @@ export default class Page {
 	/**
 	 * @type {PagesMap | undefined}
 	 */
-	static pagesMaps;
+	static pagesMaps
 
 	/**
 	 * Set some map object variables related to archive pages.
@@ -741,7 +741,7 @@ export default class Page {
 		const pagesMaps = {
 			archive: new Map(),
 			source: new Map(),
-		};
+		}
 		const pathToRegexp = (
 			/** @type {string} */ path,
 			/** @type {RegExp[]|undefined} */ replacements,
@@ -751,31 +751,31 @@ export default class Page {
 				new TextMasker(path)
 					.mask(/\\[$\\]/g)
 					.withText((pattern) => {
-						pattern = mw.util.escapeRegExp(pattern);
+						pattern = mw.util.escapeRegExp(pattern)
 						if (replacements) {
 							pattern = pattern.replace(/\\\$/, '$').replace(/\$(\d+)/, (s, n) => {
-								const replacement = replacements.at(n - 1);
+								const replacement = replacements.at(n - 1)
 
-								return replacement ? `(${replacement.source})` : s;
-							});
+								return replacement ? `(${replacement.source})` : s
+							})
 						}
-						pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
+						pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$'
 
-						return pattern;
+						return pattern
 					})
 					.unmask()
 					.getText()
-			);
+			)
 		cd.config.archivePaths.forEach((entry) => {
 			if (entry instanceof RegExp) {
-				pagesMaps.source.set(new RegExp(entry.source + '.*'), '');
+				pagesMaps.source.set(new RegExp(entry.source + '.*'), '')
 			} else {
-				pagesMaps.archive.set(pathToRegexp(entry.source, entry.replacements, false), entry.archive);
-				pagesMaps.source.set(pathToRegexp(entry.archive, entry.replacements, true), entry.source);
+				pagesMaps.archive.set(pathToRegexp(entry.source, entry.replacements, false), entry.archive)
+				pagesMaps.source.set(pathToRegexp(entry.archive, entry.replacements, true), entry.source)
 			}
-		});
+		})
 
-		return pagesMaps;
+		return pagesMaps
 	}
 
 	/**
@@ -785,9 +785,9 @@ export default class Page {
 	 * @private
 	 */
 	static getArchivePagesMap() {
-		this.pagesMaps ??= this.getArchivePagesMaps();
+		this.pagesMaps ??= this.getArchivePagesMaps()
 
-		return this.pagesMaps.archive;
+		return this.pagesMaps.archive
 	}
 
 	/**
@@ -797,9 +797,9 @@ export default class Page {
 	 * @private
 	 */
 	static getSourcePagesMap() {
-		this.pagesMaps ??= this.getArchivePagesMaps();
+		this.pagesMaps ??= this.getArchivePagesMaps()
 
-		return this.pagesMaps.source;
+		return this.pagesMaps.source
 	}
 
 	/**
@@ -810,7 +810,7 @@ export default class Page {
 	 * @returns {string}
 	 */
 	getCommentFormMethodName(mode) {
-		return mode;
+		return mode
 	}
 
 	/**
@@ -820,7 +820,7 @@ export default class Page {
 	 * @returns {undefined}
 	 */
 	getRelevantSection() {
-		return;
+		return
 	}
 
 	/**
@@ -829,7 +829,7 @@ export default class Page {
 	 * @returns {undefined}
 	 */
 	getRelevantComment() {
-		return;
+		return
 	}
 
 	/**
@@ -840,7 +840,7 @@ export default class Page {
 	 * @returns {undefined}
 	 */
 	getIdentifyingData() {
-		return;
+		return
 	}
 
 	/**
@@ -851,7 +851,7 @@ export default class Page {
 	 * @returns {import('./Comment').default | undefined}
 	 */
 	getCommentAboveCommentToBeAdded(_commentForm) {
-		return;
+		return
 	}
 
 	/**
@@ -860,6 +860,6 @@ export default class Page {
 	 * @returns {Page}
 	 */
 	findNewSelf() {
-		return this;
+		return this
 	}
 }

@@ -63,7 +63,7 @@ class CdError extends Error {
 	 * @type {ErrorData<ErrorType>}
 	 * @private
 	 */
-	data;
+	data
 
 	/**
 	 * Create a custom error.
@@ -72,26 +72,26 @@ class CdError extends Error {
 	 */
 	constructor(data = {}) {
 		if (typeof data === 'string') {
-			data = { message: data };
+			data = { message: data }
 		}
 
-		data.type ??= 'internal';
-		data.details ??= {};
+		data.type ??= 'internal'
+		data.details ??= {}
 		super(
 			data.type +
 			(data.code ? '/' + data.code : '') +
 			(typeof data.message === 'string' ? ': ' + data.message : '')
-		);
+		)
 
-		this.name = 'CdError';
-		this.data = /** @type {ErrorData<ErrorType>} */ (data);
+		this.name = 'CdError'
+		this.data = /** @type {ErrorData<ErrorType>} */ (data)
 	}
 
 	/**
 	 * @returns {this is CdError<'api'>}
 	 */
 	isServerDefinedApiError() {
-		return this.data.type === 'api';
+		return this.data.type === 'api'
 	}
 
 	/**
@@ -100,7 +100,7 @@ class CdError extends Error {
 	 * @returns {T}
 	 */
 	getType() {
-		return /** @type {T} */ (this.data.type);
+		return /** @type {T} */ (this.data.type)
 	}
 
 	/**
@@ -109,7 +109,7 @@ class CdError extends Error {
 	 * @returns {string | undefined}
 	 */
 	getMessage() {
-		return this.data.message;
+		return this.data.message
 	}
 
 	/**
@@ -118,7 +118,7 @@ class CdError extends Error {
 	 * @returns {JQuery | undefined}
 	 */
 	get$message() {
-		return this.data.$message;
+		return this.data.$message
 	}
 
 	/**
@@ -129,7 +129,7 @@ class CdError extends Error {
 	 * @param {string} message
 	 */
 	setMessage(message) {
-		this.data.message = message;
+		this.data.message = message
 	}
 
 	/**
@@ -138,7 +138,7 @@ class CdError extends Error {
 	 * @param {JQuery} $message
 	 */
 	set$message($message) {
-		this.data.$message = $message;
+		this.data.$message = $message
 	}
 
 	/**
@@ -147,7 +147,7 @@ class CdError extends Error {
 	 * @returns {string | undefined}
 	 */
 	getCode() {
-		return this.data.code;
+		return this.data.code
 	}
 
 	/**
@@ -158,7 +158,7 @@ class CdError extends Error {
 	getHtml() {
 		return /** @type {T extends 'api' ? string : undefined} */ (
 			this.isServerDefinedApiError() ? this.data.html : undefined
-		);
+		)
 	}
 
 	/**
@@ -178,7 +178,7 @@ class CdError extends Error {
 	getApiResponse() {
 		return /** @type {ApiResponseType} */ (
 			this.isServerDefinedApiError() ? this.data.apiResponse : undefined
-		);
+		)
 	}
 
 	/**
@@ -187,7 +187,7 @@ class CdError extends Error {
 	 * @returns {{ [x: string]: any }}
 	 */
 	getDetails() {
-		return this.data.details;
+		return this.data.details
 	}
 
 	/**
@@ -196,7 +196,7 @@ class CdError extends Error {
 	 * @param {{ [x: string]: any }} details
 	 */
 	setDetails(details) {
-		this.data.details = details;
+		this.data.details = details
 	}
 
 	/**
@@ -209,8 +209,8 @@ class CdError extends Error {
 		return new CdError({
 			type: 'javascript',
 			message: error instanceof Error ? error.stack : error,
-		});
+		})
 	}
 }
 
-export default CdError;
+export default CdError

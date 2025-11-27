@@ -2,7 +2,7 @@
  * Advanced caching system for autocomplete with LRU eviction and memory management.
  */
 
-import cd from './loader/cd';
+import cd from './loader/cd'
 
 /**
  * @typedef {object} CacheEntry
@@ -36,13 +36,13 @@ class AutocompleteCache {
 	 * @param {boolean} [options.enableStats] Whether to collect statistics
 	 */
 	constructor(options = {}) {
-		this.maxSize = options.maxSize || 1000;
-		this.ttl = options.ttl || 5 * cd.g.msInMin;
-		this.maxMemory = options.maxMemory || 10 * 1024 * 1024;  // 10MB
-		this.enableStats = options.enableStats !== false;
+		this.maxSize = options.maxSize || 1000
+		this.ttl = options.ttl || 5 * cd.g.msInMin
+		this.maxMemory = options.maxMemory || 10 * 1024 * 1024  // 10MB
+		this.enableStats = options.enableStats !== false
 
 		/** @type {Map<string, CacheEntry>} */
-		this.cache = new Map();
+		this.cache = new Map()
 
 		/** @type {CacheStats} */
 		this.stats = {
@@ -52,13 +52,13 @@ class AutocompleteCache {
 			size: 0,
 			maxSize: this.maxSize,
 			hitRate: 0,
-		};
+		}
 
 		// Periodic cleanup
 		/** @type {number | undefined} */
 		this.cleanupInterval = setInterval(() => {
-			this.cleanup();
-		}, cd.g.msInMin);
+			this.cleanup()
+		}, cd.g.msInMin)
 	}
 
 	/**
@@ -68,39 +68,39 @@ class AutocompleteCache {
 	 * @returns {any[] | undefined} Cached data or null if not found
 	 */
 	get(key) {
-		const entry = this.cache.get(key);
+		const entry = this.cache.get(key)
 
 		if (!entry) {
 			if (this.enableStats) {
-				this.stats.misses++;
-				this.updateHitRate();
+				this.stats.misses++
+				this.updateHitRate()
 			}
 
-			return;
+			return
 		}
 
 		// Check if entry has expired
 		if (this.isExpired(entry)) {
-			this.cache.delete(key);
+			this.cache.delete(key)
 			if (this.enableStats) {
-				this.stats.misses++;
-				this.stats.size--;
-				this.updateHitRate();
+				this.stats.misses++
+				this.stats.size--
+				this.updateHitRate()
 			}
 
-			return;
+			return
 		}
 
 		// Update access information
-		entry.accessCount++;
-		entry.lastAccessed = Date.now();
+		entry.accessCount++
+		entry.lastAccessed = Date.now()
 
 		if (this.enableStats) {
-			this.stats.hits++;
-			this.updateHitRate();
+			this.stats.hits++
+			this.updateHitRate()
 		}
 
-		return entry.data;
+		return entry.data
 	}
 
 	/**
@@ -110,34 +110,34 @@ class AutocompleteCache {
 	 * @param {any[]} data Data to cache
 	 */
 	set(key, data) {
-		const now = Date.now();
+		const now = Date.now()
 		const entry = {
 			data: [...data], // Create a copy to avoid mutations
 			timestamp: now,
 			accessCount: 1,
 			lastAccessed: now,
-		};
+		}
 
 		// If key already exists, update it
 		if (this.cache.has(key)) {
-			this.cache.set(key, entry);
+			this.cache.set(key, entry)
 
-			return;
+			return
 		}
 
 		// Check if we need to evict entries
 		if (this.cache.size >= this.maxSize) {
-			this.evictLRU();
+			this.evictLRU()
 		}
 
 		// Check memory usage
 		if (this.getEstimatedMemoryUsage() > this.maxMemory) {
-			this.evictByMemoryPressure();
+			this.evictByMemoryPressure()
 		}
 
-		this.cache.set(key, entry);
+		this.cache.set(key, entry)
 		if (this.enableStats) {
-			this.stats.size++;
+			this.stats.size++
 		}
 	}
 
@@ -148,28 +148,28 @@ class AutocompleteCache {
 	 * @returns {boolean} Whether the entry has expired
 	 */
 	isExpired(entry) {
-		return Date.now() - entry.timestamp > this.ttl;
+		return Date.now() - entry.timestamp > this.ttl
 	}
 
 	/**
 	 * Evict the least recently used entry.
 	 */
 	evictLRU() {
-		let oldestKey;
-		let oldestTime = Infinity;
+		let oldestKey
+		let oldestTime = Infinity
 
 		for (const [key, entry] of this.cache) {
 			if (entry.lastAccessed < oldestTime) {
-				oldestTime = entry.lastAccessed;
-				oldestKey = key;
+				oldestTime = entry.lastAccessed
+				oldestKey = key
 			}
 		}
 
 		if (oldestKey) {
-			this.cache.delete(oldestKey);
+			this.cache.delete(oldestKey)
 			if (this.enableStats) {
-				this.stats.evictions++;
-				this.stats.size--;
+				this.stats.evictions++
+				this.stats.size--
 			}
 		}
 	}
@@ -180,24 +180,24 @@ class AutocompleteCache {
 	evictByMemoryPressure() {
 		// Sort entries by access frequency and recency
 		const entries = Array.from(this.cache.entries()).sort((a, b) => {
-			const [, entryA] = a;
-			const [, entryB] = b;
+			const [, entryA] = a
+			const [, entryB] = b
 
 			// Prefer keeping frequently accessed and recently accessed entries
-			const scoreA = entryA.accessCount * 0.7 + (Date.now() - entryA.lastAccessed) * -0.3;
-			const scoreB = entryB.accessCount * 0.7 + (Date.now() - entryB.lastAccessed) * -0.3;
+			const scoreA = entryA.accessCount * 0.7 + (Date.now() - entryA.lastAccessed) * -0.3
+			const scoreB = entryB.accessCount * 0.7 + (Date.now() - entryB.lastAccessed) * -0.3
 
-			return scoreA - scoreB;
-		});
+			return scoreA - scoreB
+		})
 
 		// Remove the least valuable entries (first 25%)
-		const toRemove = Math.ceil(entries.length * 0.25);
+		const toRemove = Math.ceil(entries.length * 0.25)
 		for (let i = 0; i < toRemove; i++) {
-			const [key] = entries[i];
-			this.cache.delete(key);
+			const [key] = entries[i]
+			this.cache.delete(key)
 			if (this.enableStats) {
-				this.stats.evictions++;
-				this.stats.size--;
+				this.stats.evictions++
+				this.stats.size--
 			}
 		}
 	}
@@ -206,21 +206,21 @@ class AutocompleteCache {
 	 * Clean up expired entries.
 	 */
 	cleanup() {
-		const now = Date.now();
-		const toDelete = [];
+		const now = Date.now()
+		const toDelete = []
 
 		for (const [key, entry] of this.cache) {
 			if (now - entry.timestamp > this.ttl) {
-				toDelete.push(key);
+				toDelete.push(key)
 			}
 		}
 
 		toDelete.forEach((key) => {
-			this.cache.delete(key);
+			this.cache.delete(key)
 			if (this.enableStats) {
-				this.stats.size--;
+				this.stats.size--
 			}
-		});
+		})
 	}
 
 	/**
@@ -229,16 +229,16 @@ class AutocompleteCache {
 	 * @returns {number} Estimated memory usage in bytes
 	 */
 	getEstimatedMemoryUsage() {
-		let totalSize = 0;
+		let totalSize = 0
 
 		for (const [key, entry] of this.cache) {
 			// Rough estimation: key size + data size + metadata
-			totalSize += key.length * 2; // UTF-16 characters
-			totalSize += this.estimateDataSize(entry.data);
-			totalSize += 64; // Estimated metadata overhead
+			totalSize += key.length * 2 // UTF-16 characters
+			totalSize += this.estimateDataSize(entry.data)
+			totalSize += 64 // Estimated metadata overhead
 		}
 
-		return totalSize;
+		return totalSize
 	}
 
 	/**
@@ -248,28 +248,28 @@ class AutocompleteCache {
 	 * @returns {number} Estimated size in bytes
 	 */
 	estimateDataSize(data) {
-		let size = 0;
+		let size = 0
 
 		for (const item of data) {
 			if (typeof item === 'string') {
-				size += item.length * 2; // UTF-16
+				size += item.length * 2 // UTF-16
 			} else if (typeof item === 'object' && item !== null) {
 				// Rough estimation for objects
-				size += JSON.stringify(item).length * 2;
+				size += JSON.stringify(item).length * 2
 			} else {
-				size += 8; // Rough estimate for primitives
+				size += 8 // Rough estimate for primitives
 			}
 		}
 
-		return size;
+		return size
 	}
 
 	/**
 	 * Update hit rate statistics.
 	 */
 	updateHitRate() {
-		const total = this.stats.hits + this.stats.misses;
-		this.stats.hitRate = total > 0 ? (this.stats.hits / total) * 100 : 0;
+		const total = this.stats.hits + this.stats.misses
+		this.stats.hitRate = total > 0 ? (this.stats.hits / total) * 100 : 0
 	}
 
 	/**
@@ -281,16 +281,16 @@ class AutocompleteCache {
 		return {
 			...this.stats,
 			memoryUsage: this.getEstimatedMemoryUsage(),
-		};
+		}
 	}
 
 	/**
 	 * Clear all cache entries.
 	 */
 	clear() {
-		this.cache.clear();
+		this.cache.clear()
 		if (this.enableStats) {
-			this.stats.size = 0;
+			this.stats.size = 0
 		}
 	}
 
@@ -301,9 +301,9 @@ class AutocompleteCache {
 	 * @returns {boolean} Whether the key exists and is not expired
 	 */
 	has(key) {
-		const entry = this.cache.get(key);
+		const entry = this.cache.get(key)
 
-		return entry !== undefined && !this.isExpired(entry);
+		return entry !== undefined && !this.isExpired(entry)
 	}
 
 	/**
@@ -312,7 +312,7 @@ class AutocompleteCache {
 	 * @returns {number} Number of cache entries
 	 */
 	size() {
-		return this.cache.size;
+		return this.cache.size
 	}
 
 	/**
@@ -320,10 +320,10 @@ class AutocompleteCache {
 	 */
 	destroy() {
 		if (this.cleanupInterval) {
-			clearInterval(this.cleanupInterval);
-			this.cleanupInterval = undefined;
+			clearInterval(this.cleanupInterval)
+			this.cleanupInterval = undefined
 		}
-		this.clear();
+		this.clear()
 	}
 
 	/**
@@ -334,24 +334,24 @@ class AutocompleteCache {
 	 * @returns {Promise<void>}
 	 */
 	async prefetch(keys, fetchFn) {
-		const missingKeys = keys.filter((key) => !this.has(key));
+		const missingKeys = keys.filter((key) => !this.has(key))
 
 		if (missingKeys.length === 0) {
-			return;
+			return
 		}
 
 		// Fetch data for missing keys in parallel
 		const promises = missingKeys.map(async (key) => {
 			try {
-				const data = await fetchFn(key);
-				this.set(key, data);
+				const data = await fetchFn(key)
+				this.set(key, data)
 			} catch (error) {
 				// Silently ignore prefetch errors
-				console.warn(`Prefetch failed for key ${key}:`, error);
+				console.warn(`Prefetch failed for key ${key}:`, error)
 			}
-		});
+		})
 
-		await Promise.all(promises);
+		await Promise.all(promises)
 	}
 
 	/**
@@ -363,7 +363,7 @@ class AutocompleteCache {
 	getTopEntries(limit = 10) {
 		return Array.from(this.cache.entries())
 			.sort((a, b) => b[1].accessCount - a[1].accessCount)
-			.slice(0, limit);
+			.slice(0, limit)
 	}
 
 	/**
@@ -383,7 +383,7 @@ class AutocompleteCache {
 	 */
 	export() {
 		/** @type {TypeByStringKey<CacheEntry>} */
-		const entries = {};
+		const entries = {}
 		for (const [key, entry] of this.cache) {
 			if (!this.isExpired(entry)) {
 				entries[key] = {
@@ -391,7 +391,7 @@ class AutocompleteCache {
 					timestamp: entry.timestamp,
 					accessCount: entry.accessCount,
 					lastAccessed: entry.lastAccessed,
-				};
+				}
 			}
 		}
 
@@ -403,9 +403,9 @@ class AutocompleteCache {
 				ttl: this.ttl,
 				maxMemory: this.maxMemory,
 			},
-		};
+		}
 
-		return data;
+		return data
 	}
 
 	/**
@@ -414,24 +414,24 @@ class AutocompleteCache {
 	 * @param {Partial<CacheData>} data Serialized cache data
 	 */
 	import(data) {
-		this.clear();
+		this.clear()
 
 		if (data.entries) {
 			for (const [key, entry] of Object.entries(data.entries)) {
 				if (!this.isExpired(entry)) {
-					this.cache.set(key, entry);
+					this.cache.set(key, entry)
 				}
 			}
 		}
 
 		if (data.stats) {
-			this.stats = { ...this.stats, ...data.stats };
+			this.stats = { ...this.stats, ...data.stats }
 		}
 
 		if (this.enableStats) {
-			this.stats.size = this.cache.size;
+			this.stats.size = this.cache.size
 		}
 	}
 }
 
-export default AutocompleteCache;
+export default AutocompleteCache

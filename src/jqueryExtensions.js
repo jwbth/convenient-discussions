@@ -4,10 +4,10 @@
  * @module jqueryExtensions
  */
 
-import controller from './controller';
-import cd from './loader/cd';
-import { isMetadataNode, sleep } from './shared/utils-general';
-import { createSvg } from './utils-window';
+import controller from './controller'
+import cd from './loader/cd'
+import { isMetadataNode, sleep } from './shared/utils-general'
+import { createSvg } from './utils-window'
 
 /**
  * jQuery. See {@link JQuery.fn jQuery.fn} for extensions.
@@ -33,7 +33,7 @@ export default {
 	 * @this {JQuery}
 	 */
 	cdRemoveNonElementNodes() {
-		return this.filter((_, el) => Boolean(el.tagName && !isMetadataNode(el)));
+		return this.filter((_, el) => Boolean(el.tagName && !isMetadataNode(el)))
 	},
 
 	/**
@@ -49,70 +49,70 @@ export default {
 	 * @this {JQuery}
 	 */
 	cdScrollTo(alignment = 'top', smooth = true, /** @type {() => void | undefined} */ callback = undefined) {
-		const defaultScrollPaddingTop = 7;
-		const $elements = this.cdRemoveNonElementNodes();
+		const defaultScrollPaddingTop = 7
+		const $elements = this.cdRemoveNonElementNodes()
 
 		// Filter out elements like .mw-empty-elt
 		const findFirstVisibleElementOffset = (
 			/** @type {JQuery} */ $els,
 			/** @type {'backward' | 'forward'} */ direction
 		) => {
-			const elements = $els.get();
+			const elements = $els.get()
 			if (direction === 'backward') {
-				elements.reverse();
+				elements.reverse()
 			}
 			for (const el of elements) {
-				const offset = /** @type {JQuery.Coordinates} */ ($(el).offset());
+				const offset = /** @type {JQuery.Coordinates} */ ($(el).offset())
 				if (!(offset.top === 0 && offset.left === 0)) {
-					return offset;
+					return offset
 				}
 			}
-		};
+		}
 
-		let offsetFirst = findFirstVisibleElementOffset($elements, 'forward');
-		let offsetLast = findFirstVisibleElementOffset($elements, 'backward');
+		let offsetFirst = findFirstVisibleElementOffset($elements, 'forward')
+		let offsetLast = findFirstVisibleElementOffset($elements, 'backward')
 		if (!offsetFirst || !offsetLast) {
 			// Find closest visible ancestor
-			const $firstVisibleAncestor = $elements.first().closest(':visible');
+			const $firstVisibleAncestor = $elements.first().closest(':visible')
 			if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(controller.$root)) {
-				offsetFirst = findFirstVisibleElementOffset($firstVisibleAncestor, 'forward');
-				offsetLast = offsetFirst;
+				offsetFirst = findFirstVisibleElementOffset($firstVisibleAncestor, 'forward')
+				offsetLast = offsetFirst
 				mw.notify(cd.s('error-elementhidden-container'), {
 					tag: 'cd-elementhidden-container',
-				});
+				})
 			}
 
 			if (!offsetFirst || !offsetLast) {
 				mw.notify(cd.s('error-elementhidden'), {
 					type: 'error',
 					tag: 'cd-elementhidden',
-				});
+				})
 
-				return /** @type {JQuery} */ (/** @type {unknown} */ (this));
+				return /** @type {JQuery} */ (/** @type {unknown} */ (this))
 			}
 		}
 
 		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-		const offsetBottom = offsetLast.top + /** @type {number} */ ($elements.last().outerHeight());
+		const offsetBottom = offsetLast.top + /** @type {number} */ ($elements.last().outerHeight())
 
-		let top;
+		let top
 		if (alignment === 'center') {
 			top = Math.min(
 				offsetFirst.top,
 				offsetFirst.top +
 				(offsetBottom - offsetFirst.top) * 0.5 -
 				/** @type {number} */ ($(window).height()) * 0.5
-			);
+			)
 		} else if (alignment === 'bottom') {
-			top = offsetBottom - /** @type {number} */ ($(window).height()) + defaultScrollPaddingTop;
+			top = offsetBottom - /** @type {number} */ ($(window).height()) + defaultScrollPaddingTop
 		} else {
-			top = offsetFirst.top - (controller.getBodyScrollPaddingTop() || defaultScrollPaddingTop);
+			top = offsetFirst.top - (controller.getBodyScrollPaddingTop() || defaultScrollPaddingTop)
 		}
 
-		controller.toggleAutoScrolling(true);
-		controller.scrollToY(top, smooth, callback);
+		controller.toggleAutoScrolling(true)
+		controller.scrollToY(top, smooth, callback)
 
-		return /** @type {JQuery} */ (/** @type {unknown} */ (this));
+		return /** @type {JQuery} */ (/** @type {unknown} */ (this))
 	},
 
 	/**
@@ -128,41 +128,41 @@ export default {
 	 * @this {JQuery}
 	 */
 	cdIsInViewport(partially = false) {
-		const $elements = this.cdRemoveNonElementNodes();
+		const $elements = this.cdRemoveNonElementNodes()
 		if (!$elements.length) {
-			return null;
+			return null
 		}
 
 		// Workaround for hidden elements (use cases like checking if the add section form is in the
 		// viewport).
-		const wasHidden = $elements.get().every((el) => el.style.display === 'none');
+		const wasHidden = $elements.get().every((el) => el.style.display === 'none')
 		if (wasHidden) {
-			$elements.show();
+			$elements.show()
 		}
 
-		const elementTop = /** @type {JQuery.Coordinates} */ ($elements.first().offset()).top;
+		const elementTop = /** @type {JQuery.Coordinates} */ ($elements.first().offset()).top
 		const elementBottom =
 		/** @type {JQuery.Coordinates} */ ($elements.last().offset()).top +
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-			/** @type {number} */ ($elements.last().height());
+			/** @type {number} */ ($elements.last().height())
 
 		// The element is hidden.
 		if (elementTop === 0 && elementBottom === 0) {
-			return false;
+			return false
 		}
 
 		if (wasHidden) {
-			$elements.hide();
+			$elements.hide()
 		}
 
-		const scrollTop = /** @type {number} */ ($(window).scrollTop());
-		const viewportTop = scrollTop + controller.getBodyScrollPaddingTop();
+		const scrollTop = /** @type {number} */ ($(window).scrollTop())
+		const viewportTop = scrollTop + controller.getBodyScrollPaddingTop()
 		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-		const viewportBottom = scrollTop + /** @type {number} */ ($(window).height());
+		const viewportBottom = scrollTop + /** @type {number} */ ($(window).height())
 
 		return partially
 			? elementBottom > viewportTop && elementTop < viewportBottom
-			: elementTop >= viewportTop && elementBottom <= viewportBottom;
+			: elementTop >= viewportTop && elementBottom <= viewportBottom
 	},
 
 	/**
@@ -178,17 +178,17 @@ export default {
 	 */
 	cdScrollIntoView(alignment = 'top', smooth = true, callback = undefined) {
 		if (this.cdIsInViewport()) {
-			callback?.();
+			callback?.()
 		} else if (callback) {
 			// Add sleep() for a more smooth animation in case there is .focus() in the callback.
 			sleep().then(() => {
-				this.cdScrollTo(alignment, smooth, callback);
-			});
+				this.cdScrollTo(alignment, smooth, callback)
+			})
 		} else {
-			this.cdScrollTo(alignment, smooth, callback);
+			this.cdScrollTo(alignment, smooth, callback)
 		}
 
-		return /** @type {JQuery} */ (/** @type {unknown} */ (this));
+		return /** @type {JQuery} */ (/** @type {unknown} */ (this))
 	},
 
 	/**
@@ -202,13 +202,13 @@ export default {
 	cdGetText() {
 		const dummyElement = document.createElement('div');
 		[...this[0].childNodes].forEach((node) => {
-			dummyElement.append(node.cloneNode(true));
-		});
-		document.body.append(dummyElement);
-		const text = dummyElement.innerText;
-		dummyElement.remove();
+			dummyElement.append(node.cloneNode(true))
+		})
+		document.body.append(dummyElement)
+		const text = dummyElement.innerText
+		dummyElement.remove()
 
-		return text;
+		return text
 	},
 
 	/**
@@ -220,7 +220,7 @@ export default {
 	 */
 	cdAddCloseButton() {
 		if (this.find('.cd-closeButton').length) {
-			return /** @type {JQuery} */ (/** @type {unknown} */ (this));
+			return /** @type {JQuery} */ (/** @type {unknown} */ (this))
 		}
 
 		this.prepend(
@@ -235,11 +235,11 @@ export default {
 				)
 				.addClass('cd-closeButton cd-icon')
 				.on('click', () => {
-					this.empty();
+					this.empty()
 				})
-		);
+		)
 
-		return /** @type {JQuery} */ (/** @type {unknown} */ (this));
+		return /** @type {JQuery} */ (/** @type {unknown} */ (this))
 	},
 
 	/**
@@ -250,8 +250,8 @@ export default {
 	 * @this {JQuery}
 	 */
 	cdRemoveCloseButton() {
-		this.find('.cd-closeButton').remove();
+		this.find('.cd-closeButton').remove()
 
-		return /** @type {JQuery} */ (/** @type {unknown} */ (this));
+		return /** @type {JQuery} */ (/** @type {unknown} */ (this))
 	},
-};
+}

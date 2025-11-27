@@ -1,17 +1,17 @@
-import Comment from './Comment';
-import EventEmitter from './EventEmitter';
-import StorageItemWithKeys from './StorageItemWithKeys';
-import Thread from './Thread';
-import commentFormManager from './commentFormManager';
-import controller from './controller';
-import cd from './loader/cd';
-import settings from './settings';
-import TreeWalker from './shared/TreeWalker';
-import { definedAndNotNull, reorderArray, sleep, subtractDaysFromNow, unique } from './shared/utils-general';
-import updateChecker from './updateChecker';
-import { getPagesExistence } from './utils-api';
-import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
-import visits from './visits';
+import Comment from './Comment'
+import EventEmitter from './EventEmitter'
+import StorageItemWithKeys from './StorageItemWithKeys'
+import Thread from './Thread'
+import commentFormManager from './commentFormManager'
+import controller from './controller'
+import cd from './loader/cd'
+import settings from './settings'
+import TreeWalker from './shared/TreeWalker'
+import { definedAndNotNull, reorderArray, sleep, subtractDaysFromNow, unique } from './shared/utils-general'
+import updateChecker from './updateChecker'
+import { getPagesExistence } from './utils-api'
+import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window'
+import visits from './visits'
 
 // TODO: Make it extend a generic registry.
 
@@ -35,21 +35,21 @@ export class CommentManager extends EventEmitter {
 	 * @type {C[]}
 	 * @private
 	 */
-	items = [];
+	items = []
 
 	/**
 	 * List of underlays.
 	 *
 	 * @type {Element[]}
 	 */
-	underlays = [];
+	underlays = []
 
 	/**
 	 * List of containers of layers.
 	 *
 	 * @type {Element[]}
 	 */
-	layersContainers = [];
+	layersContainers = []
 
 	/**
 	 * @typedef {object} ThanksData
@@ -61,14 +61,14 @@ export class CommentManager extends EventEmitter {
 	 * @type {StorageItemWithKeys<ThanksData>}
 	 * @private
 	 */
-	thanksStorage;
+	thanksStorage
 
 	/**
 	 * Whether timestamps in the default format are shown to the user.
 	 *
 	 * @type {boolean}
 	 */
-	areTimestampsDefault;
+	areTimestampsDefault
 
 	/**
 	 * Type guard to check if this is a CommentManager managing SpaciousComment instances.
@@ -76,7 +76,7 @@ export class CommentManager extends EventEmitter {
 	 * @returns {this is CommentManager<import('./SpaciousComment').default>}
 	 */
 	isSpaciousCommentManager() {
-		return this.commentDisplay === 'spacious';
+		return this.commentDisplay === 'spacious'
 	}
 
 	/**
@@ -85,7 +85,7 @@ export class CommentManager extends EventEmitter {
 	 * @returns {this is CommentManager<import('./CompactComment').default>}
 	 */
 	isCompactCommentManager() {
-		return this.commentDisplay === 'compact';
+		return this.commentDisplay === 'compact'
 	}
 
 	/**
@@ -99,11 +99,11 @@ export class CommentManager extends EventEmitter {
 			) &&
 			settings.get('timestampFormat') === 'default' &&
 			mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
-			!settings.get('hideTimezone');
+			!settings.get('hideTimezone')
 
 		this.thanksStorage = new StorageItemWithKeys('thanks')
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
-			.save();
+			.save()
 
 		controller
 			.on('scroll', this.registerSeen)
@@ -115,28 +115,28 @@ export class CommentManager extends EventEmitter {
 				// history.pushState() is called from Comment#scrollTo() (after clicks on added (gray)
 				// items in the TOC). A marginal state of this happening is when a page with a comment ID in
 				// the fragment is opened and then a link with the same fragment is clicked.
-				if (!Comment.isAnyId(fragment) || history.state?.cdJumpedToComment) return;
+				if (!Comment.isAnyId(fragment) || history.state?.cdJumpedToComment) return
 
-				this.getByAnyId(fragment, true)?.scrollTo();
+				this.getByAnyId(fragment, true)?.scrollTo()
 			})
 			.on('selectionChange', this.getSelectedComment)
 			.on('beforeReboot', (passedData) => {
 				// Stop all animations, clear all timeouts.
 				this.items.forEach((comment) => {
-					comment.stopAnimations();
-				});
+					comment.stopAnimations()
+				})
 
 				// If the page is reloaded externally, its content is already replaced, so we won't break
 				// anything if we remove the layers containers early. And we better do so to avoid comment
 				// layers hanging around without their owner comments.
 				if (passedData.isPageReloadedExternally) {
-					this.resetLayers();
+					this.resetLayers()
 				}
 			})
 			.on('startReboot', this.resetLayers)
 			.on('desktopNotificationClick', () => {
-				this.maybeRedrawLayers(true);
-			});
+				this.maybeRedrawLayers(true)
+			})
 		visits
 			.on('process', this.registerSeen)
 			.on('process', async () => {
@@ -150,26 +150,26 @@ export class CommentManager extends EventEmitter {
 				// event handler of updateChecker's newChanges event ran earlier than the handler attached
 				// in Thread.init(). So, threads were being collapsed just after comment layers were
 				// redrawn.
-				await sleep(2000);
-				this.maybeRedrawLayers(true);
-			});
+				await sleep(2000)
+				this.maybeRedrawLayers(true)
+			})
 		updateChecker
 		// If the layers of deleted comments have been configured in Comment#unmarkAsChanged(), they
 		// will prevent layers before them from being updated due to the "stop at the first three
 		// unmoved comments" optimization in .maybeRedrawLayers(). So we just do the whole job here.
 			.on('newChanges', async () => {
 				// This should run after Thread.init() that also reacts to the newChanges event.
-				await sleep();
+				await sleep()
 
-				this.maybeRedrawLayers(true);
+				this.maybeRedrawLayers(true)
 			})
 			.on('commentsUpdate', ({ all }) => {
-				this.addNewCommentsNotes(all);
-			});
+				this.addNewCommentsNotes(all)
+			})
 		commentFormManager
-			.on('teardown', this.registerSeen);
+			.on('teardown', this.registerSeen)
 		Thread
-			.on('init', this.addToggleChildThreadsButtons);
+			.on('init', this.addToggleChildThreadsButtons)
 	}
 
 	/**
@@ -178,15 +178,15 @@ export class CommentManager extends EventEmitter {
 	 */
 	setup() {
 		// This can be updated after an in-script page reload.
-		this.commentDisplay = settings.get('commentDisplay');
+		this.commentDisplay = settings.get('commentDisplay')
 
-		this.reformatTimestamps();
-		this.findAndUpdateTableComments();
-		this.adjustDom();
+		this.reformatTimestamps()
+		this.findAndUpdateTableComments()
+		this.adjustDom()
 
 		// Our handler may run earlier than DT's (e.g. in Chrome if the page was loaded in a background
 		// tab). This hack seems to work better than adding and removing a `wikipage.content` hook.
-		$(this.handleDtTimestampsClick);
+		$(this.handleDtTimestampsClick)
 	}
 
 	/**
@@ -195,7 +195,7 @@ export class CommentManager extends EventEmitter {
 	 * @param {C} item
 	 */
 	add(item) {
-		this.items.push(item);
+		this.items.push(item)
 	}
 
 	/**
@@ -205,7 +205,7 @@ export class CommentManager extends EventEmitter {
 	 * @returns {C[]}
 	 */
 	getAll() {
-		return this.items;
+		return this.items
 	}
 
 	/**
@@ -216,10 +216,10 @@ export class CommentManager extends EventEmitter {
 	 */
 	getByIndex(index) {
 		if (index < 0) {
-			index = this.items.length + index;
+			index = this.items.length + index
 		}
 
-		return this.items[index];
+		return this.items[index]
 	}
 
 	/**
@@ -228,7 +228,7 @@ export class CommentManager extends EventEmitter {
 	 * @returns {number}
 	 */
 	getCount() {
-		return this.items.length;
+		return this.items.length
 	}
 
 	/**
@@ -238,14 +238,14 @@ export class CommentManager extends EventEmitter {
 	 * @returns {C[]}
 	 */
 	query(condition) {
-		return this.items.filter(condition);
+		return this.items.filter(condition)
 	}
 
 	/**
 	 * Reset the comment list.
 	 */
 	reset() {
-		this.items = [];
+		this.items = []
 	}
 
 	/**
@@ -258,22 +258,22 @@ export class CommentManager extends EventEmitter {
 	 * @returns {boolean} Whether there is a time conflict.
 	 */
 	initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
-		let timeConflict = false;
-		const unseenComments = bootManager.getBootProcess().passedData.unseenComments;
+		let timeConflict = false
+		const unseenComments = bootManager.getBootProcess().passedData.unseenComments
 		this.items.forEach((comment) => {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const commentTimeConflict = comment.initNewAndSeen(
 				currentPageData,
 				currentTime,
 				markAsReadRequested ? undefined : unseenComments?.find((c) => c.id === comment.id)
-			);
+			)
 
-			timeConflict ||= commentTimeConflict;
-		});
+			timeConflict ||= commentTimeConflict
+		})
 
-		this.configureAndAddLayers((comment) => Boolean(comment.isNew));
+		this.configureAndAddLayers((comment) => Boolean(comment.isNew))
 
-		return timeConflict;
+		return timeConflict
 	}
 
 	/**
@@ -282,23 +282,23 @@ export class CommentManager extends EventEmitter {
 	 * @param {(comment: C) => boolean} condition
 	 */
 	configureAndAddLayers(condition) {
-		const comments = this.items.filter(condition);
+		const comments = this.items.filter(condition)
 
 		const floatingRects = comments.length
 			? controller.getFloatingElements().map(getExtendedRect)
-			: undefined;
+			: undefined
 		comments.forEach((comment) => {
 			comment.configureLayers({
 				add: false,
 				update: false,
 				floatingRects,
-			});
-		});
+			})
+		})
 
 		// Faster to add them in one sequence.
 		comments.forEach((comment) => {
-			comment.addLayers();
-		});
+			comment.addLayers()
+		})
 	}
 
 	/**
@@ -308,17 +308,17 @@ export class CommentManager extends EventEmitter {
 	 * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
 	 */
 	maybeRedrawLayers = (redrawAll = false) => {
-		if (bootManager.isBooting() || (document.hidden && !redrawAll)) return;
+		if (bootManager.isBooting() || (document.hidden && !redrawAll)) return
 
 		this.layersContainers.forEach((container) => {
-			container.cdCouldHaveMoved = true;
-		});
+			container.cdCouldHaveMoved = true
+		})
 
-		let floatingRects;
+		let floatingRects
 		/** @type {C[]} */
-		const comments = [];
-		const rootBottom = controller.$root[0].getBoundingClientRect().bottom + window.scrollY;
-		let notMovedCount = 0;
+		const comments = []
+		const rootBottom = controller.$root[0].getBoundingClientRect().bottom + window.scrollY
+		let notMovedCount = 0
 
 		// We go from the end and stop at the first _three_ comments that have not been misplaced. A
 		// quirky reason for this is that the mouse could be over some comment making its underlay to be
@@ -336,7 +336,7 @@ export class CommentManager extends EventEmitter {
 
 					// Need to generate a gray line to close the gaps between adjacent list item elements.
 					comment.isLineGapped
-				);
+				)
 
 			if (
 				comment.layers &&
@@ -347,88 +347,88 @@ export class CommentManager extends EventEmitter {
 				comment.offset &&
 				comment.offset.bottom > rootBottom
 			) {
-				comment.removeLayers();
+				comment.removeLayers()
 			} else if (shouldBeHighlighted) {
-				floatingRects ??= controller.getFloatingElements().map(getExtendedRect);
+				floatingRects ??= controller.getFloatingElements().map(getExtendedRect)
 				const isMoved = comment.configureLayers({
 					// If a comment was hidden, then became visible, we need to add the layers.
 					add: true,
 
 					update: false,
 					floatingRects,
-				});
+				})
 				if (isMoved || redrawAll) {
-					notMovedCount = 0;
-					comments.push(comment);
+					notMovedCount = 0
+					comments.push(comment)
 				} else if (isMoved === undefined) {
-					comment.removeLayers();
+					comment.removeLayers()
 
 					// Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
 					// layers preceding them.
 				} else if (comment.layers?.getContainer().cdIsTopLayersContainer) {
 					// isMoved === false
-					notMovedCount++;
+					notMovedCount++
 					if (notMovedCount === 2) {
-						return true;
+						return true
 					}
 				}
 			}
 
-			return false;
-		});
+			return false
+		})
 
 		// It's faster to update the offsets separately in one sequence.
 		comments.forEach((comment) => {
-			comment.layers?.updateOffset();
-		});
-	};
+			comment.layers?.updateOffset()
+		})
+	}
 
 	/**
 	 * _For internal use._ Empty the underlay registry and the layers container elements. Done on page
 	 * reload.
 	 */
 	resetLayers = () => {
-		this.underlays = [];
+		this.underlays = []
 		this.layersContainers.forEach((container) => {
-			container.innerHTML = '';
-		});
-	};
+			container.innerHTML = ''
+		})
+	}
 
 	/**
 	 * _For internal use._ Mark comments that are currently in the viewport as read, and also
 	 * {@link Comment#flash flash} comments that are prescribed to flash.
 	 */
 	registerSeen = () => {
-		if (document.hidden) return;
+		if (document.hidden) return
 
-		const commentInViewport = this.findInViewport();
-		if (!commentInViewport) return;
+		const commentInViewport = this.findInViewport()
+		if (!commentInViewport) return
 
 		const registerIfInViewport = (/** @type {C} */ comment) => {
-			const isInViewport = comment.isInViewport();
+			const isInViewport = comment.isInViewport()
 			if (isInViewport) {
-				comment.registerSeen();
+				comment.registerSeen()
 
-				return false;
+				return false
 			} else if (isInViewport === false) {
 				// isInViewport could also be `null`.
-				return true;
+				return true
 			}
-		};
+		}
 
 		// Back
 		this.items
 			.slice(0, commentInViewport.index)
 			.reverse()
-			.some(registerIfInViewport);
+			.some(registerIfInViewport)
 
 		// Forward
 		this.items
 			.slice(commentInViewport.index)
-			.some(registerIfInViewport);
+			.some(registerIfInViewport)
 
-		this.emit('registerSeen');
-	};
+		this.emit('registerSeen')
+	}
 
 	/**
 	 * Find any one comment inside the viewport.
@@ -440,48 +440,48 @@ export class CommentManager extends EventEmitter {
 	findInViewport(findClosestDirection) {
 		// Reset the roughOffset property. It is used only within this method.
 		this.items.forEach((comment) => {
-			comment.roughOffset = undefined;
-		});
+			comment.roughOffset = undefined
+		})
 
-		const viewportTop = window.scrollY + controller.getBodyScrollPaddingTop();
-		const viewportBottom = window.scrollY + window.innerHeight;
+		const viewportTop = window.scrollY + controller.getBodyScrollPaddingTop()
+		const viewportBottom = window.scrollY + window.innerHeight
 
 		// Visibility is checked in the sense that an element is visible on the page, not necessarily in
 		// the viewport.
 		const isCommentVisible = (/** @type {C} */ comment) => {
-			comment.getOffset({ set: true });
+			comment.getOffset({ set: true })
 
-			return Boolean(comment.roughOffset);
-		};
+			return Boolean(comment.roughOffset)
+		}
 		const findVisible = (
 			/** @type {'forward' | 'backward'} */ direction,
 			startIndex = 0,
 			/** @type {number | undefined} */ endIndex = undefined
 		) => {
-			let comments = reorderArray(this.items, startIndex, direction === 'backward');
+			let comments = reorderArray(this.items, startIndex, direction === 'backward')
 			if (endIndex !== undefined) {
 				comments = comments.filter((comment) =>
 					direction === 'forward'
 						? comment.index >= startIndex && comment.index < endIndex
 						: comment.index <= startIndex && comment.index > endIndex
-				);
+				)
 			}
 
-			return comments.find(isCommentVisible);
-		};
+			return comments.find(isCommentVisible)
+		}
 
-		const firstVisibleComment = findVisible('forward');
-		const lastVisibleComment = findVisible('backward', this.items.length - 1);
+		const firstVisibleComment = findVisible('forward')
+		const lastVisibleComment = findVisible('backward', this.items.length - 1)
 		if (!firstVisibleComment) {
-			return;
+			return
 		}
 
 		const searchArea = {
 			top: firstVisibleComment,
 			bottom: /** @type {C} */ (lastVisibleComment),
-		};
-		let comment = searchArea.top;
-		let foundComment;
+		}
+		let comment = searchArea.top
+		let foundComment
 
 		const findClosest = (
 			/** @type {'forward' | 'backward' | undefined} */ direction,
@@ -494,7 +494,7 @@ export class CommentManager extends EventEmitter {
 						currentSearchArea[(direction === 'forward' ? reverse : !reverse) ? 'top' : 'bottom']
 							.index
 					)
-				: undefined;
+				: undefined
 
 		// Here, we don't iterate over this.items as it may look like. We perform a so-called
 		// interpolation search: narrow the search region by getting a proportion of the distance
@@ -505,25 +505,25 @@ export class CommentManager extends EventEmitter {
 		// there is only few comments. Usually the cycle finishes after a few steps.
 		for (const _item of this.items) {
 			if (!comment.roughOffset) {
-				comment.getOffset({ set: true });
+				comment.getOffset({ set: true })
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				if (!comment.roughOffset) {
 					const commentCandidate = (
 						findVisible('forward', comment.index, searchArea.bottom.index) ||
 						findVisible('backward', comment.index, searchArea.top.index)
-					);
+					)
 					if (commentCandidate) {
-						comment = commentCandidate;
+						comment = commentCandidate
 					} else {
-						foundComment = findClosest(findClosestDirection, searchArea);
-						break;
+						foundComment = findClosest(findClosestDirection, searchArea)
+						break
 					}
 				}
 			}
 
 			if (comment.isInViewport(false)) {
-				foundComment = comment;
-				break;
+				foundComment = comment
+				break
 			}
 
 			if (
@@ -540,50 +540,50 @@ export class CommentManager extends EventEmitter {
 					(comment === lastVisibleComment && viewportTop > comment.roughOffset.top)
 				)
 			) {
-				foundComment = findClosest(findClosestDirection, searchArea, true);
-				break;
+				foundComment = findClosest(findClosestDirection, searchArea, true)
+				break
 			}
 
 			// Should usually be the case only if there is one comment on the page. But the proportion
 			// below fails in rare cases too (see the console.warn call).
 			if (searchArea.top === searchArea.bottom) {
-				foundComment = findClosest(findClosestDirection, searchArea);
-				break;
+				foundComment = findClosest(findClosestDirection, searchArea)
+				break
 			}
 
 			if (comment === firstVisibleComment) {
-				comment = searchArea.bottom;
+				comment = searchArea.bottom
 			} else {
 				searchArea[
 					viewportTop > /** @type {import('./Comment').CommentOffset} */ (comment.roughOffset).top
 						? 'top'
 						: 'bottom'
-				] = comment;
+				] = comment
 
 				// There's not a single comment in the viewport.
 				if (searchArea.bottom.index - searchArea.top.index <= 1) {
-					foundComment = findClosest(findClosestDirection, searchArea);
-					break;
+					foundComment = findClosest(findClosestDirection, searchArea)
+					break
 				}
 
 				// Determine the ID of the next comment to check.
 				const higherTop = /** @type {import('./Comment').CommentOffset} */ (
 					searchArea.top.roughOffset
-				).top;
+				).top
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 				const lowerBottom = /** @type {import('./Comment').CommentOffset} */ (
 					searchArea.bottom.roughOffset
-				).bottomForVisibility;
+				).bottomForVisibility
 				const proportion = (
 					(viewportTop - higherTop) /
 					((lowerBottom - viewportBottom) + (viewportTop - higherTop))
-				);
+				)
 				if (proportion < 0 || proportion >= 1) {
 					console.warn(
 						'The proportion shouldn\'t be less than 0 or greater or equal to 1.',
 						'proportion', proportion,
 						'searchArea', searchArea
-					);
+					)
 				}
 				comment = this.items[
 					Math.round(
@@ -591,11 +591,11 @@ export class CommentManager extends EventEmitter {
 						searchArea.top.index +
 						0.5
 					)
-				];
+				]
 			}
 		}
 
-		return foundComment;
+		return foundComment
 	}
 
 	/**
@@ -606,7 +606,7 @@ export class CommentManager extends EventEmitter {
 	 * @param {MouseEvent | JQuery.MouseMoveEvent | JQuery.MouseOverEvent} event
 	 */
 	maybeHighlightHovered = (event) => {
-		if (!this.isCompactCommentManager()) return;
+		if (!this.isCompactCommentManager()) return
 
 		const isObstructingElementHovered = controller.isObstructingElementHovered();
 
@@ -614,9 +614,9 @@ export class CommentManager extends EventEmitter {
 		/** @type {import('./CompactComment').default[]} */ (this.items)
 			.filter((comment) => Boolean(comment.layers))
 			.forEach((comment) => {
-				comment.updateHoverState(event, isObstructingElementHovered);
-			});
-	};
+				comment.updateHoverState(event, isObstructingElementHovered)
+			})
+	}
 
 	/**
 	 * Get a comment by ID in the CD format.
@@ -629,25 +629,25 @@ export class CommentManager extends EventEmitter {
 	 */
 	getById(id, impreciseDate = false) {
 		if (!this.items.length || !id) {
-			return;
+			return
 		}
 
 		const findById = (/** @type {string | undefined} */ idOrUndefined) =>
-			this.items.find((comment) => comment.id === idOrUndefined);
+			this.items.find((comment) => comment.id === idOrUndefined)
 
-		let comment = findById(id);
+		let comment = findById(id)
 		if (!comment && impreciseDate) {
-			const { date, author } = Comment.parseId(id) || {};
+			const { date, author } = Comment.parseId(id) || {}
 			if (date) {
 				for (let gap = 1; !comment && gap <= 3; gap++) {
 					comment = findById(
 						Comment.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author)
-					);
+					)
 				}
 			}
 		}
 
-		return comment;
+		return comment
 	}
 
 	/**
@@ -666,27 +666,27 @@ export class CommentManager extends EventEmitter {
 	 * @returns {(ReturnComponents extends true ? DtIdComponents : Comment) | undefined}
 	 */
 	getByDtId(id, returnComponents) {
-		const data = Comment.parseDtId(id);
+		const data = Comment.parseDtId(id)
 		if (!data) {
-			return;
+			return
 		}
 
 		let comments = this.items.filter((comment) => (
 			comment.date &&
 			comment.date.getTime() === data.date.getTime() &&
 			comment.author.getName() === data.author
-		));
+		))
 
-		let comment;
+		let comment
 		if (comments.length === 1) {
-			comment = comments[0];
+			comment = comments[0]
 		} else if (comments.length > 1) {
 			comments = comments.filter((c) => (
 				c.getParent()?.date?.getTime() === data.parentDate?.getTime() &&
 				c.getParent()?.author.getName() === data.parentAuthor &&
 				(!data.sectionIdBeginning || c.section?.id.startsWith(data.sectionIdBeginning))
-			));
-			comment = comments.length === 1 ? comments[0] : comments[data.index || 0];
+			))
+			comment = comments.length === 1 ? comments[0] : comments[data.index || 0]
 		}
 
 		/**
@@ -694,12 +694,12 @@ export class CommentManager extends EventEmitter {
 		 */
 
 		if (returnComponents) {
-			/** @type {DtIdComponents} */ (data).comment = comment;
+			/** @type {DtIdComponents} */ (data).comment = comment
 
-			return /** @type {DtIdComponentsOrComment} */ (data);
+			return /** @type {DtIdComponentsOrComment} */ (data)
 		}
 
-		return /** @type {DtIdComponentsOrComment} */ (comment);
+		return /** @type {DtIdComponentsOrComment} */ (comment)
 	}
 
 	/**
@@ -712,7 +712,7 @@ export class CommentManager extends EventEmitter {
 	 * @returns {Comment | undefined}
 	 */
 	getByAnyId(id, impreciseDate = false) {
-		return Comment.isId(id) ? this.getById(id, impreciseDate) : this.getByDtId(id);
+		return Comment.isId(id) ? this.getById(id, impreciseDate) : this.getByDtId(id)
 	}
 
 	/**
@@ -722,9 +722,9 @@ export class CommentManager extends EventEmitter {
 	 */
 	reviewHighlightables() {
 		this.items.forEach((comment) => {
-			comment.reviewHighlightables();
-			comment.isLineGapped = comment.highlightables.length > 1 && comment.level > 0;
-		});
+			comment.reviewHighlightables()
+			comment.isLineGapped = comment.highlightables.length > 1 && comment.level > 0
+		})
 	}
 
 	/**
@@ -733,19 +733,19 @@ export class CommentManager extends EventEmitter {
 	 * @param {import('./updateChecker').CommentWorkerNew[]} newComments
 	 */
 	addNewCommentsNotes(newComments) {
-		controller.saveRelativeScrollPosition();
+		controller.saveRelativeScrollPosition()
 
 		this.items.forEach((comment) => {
-			comment.subitemList.remove('newCommentsNote');
-		});
+			comment.subitemList.remove('newCommentsNote')
+		})
 
 		// Section-level replies notes.
-		$('.cd-thread-newCommentsNote').remove();
+		$('.cd-thread-newCommentsNote').remove()
 
-		const newCommentIndexes = newComments.map((comment) => comment.index);
+		const newCommentIndexes = newComments.map((comment) => comment.index)
 		Comment.groupByParent(newComments).forEach((comments, parent) => {
 			if (parent instanceof Comment) {
-				this.addNewCommentsNote(parent, comments, 'thread', newCommentIndexes);
+				this.addNewCommentsNote(parent, comments, 'thread', newCommentIndexes)
 			} else {
 				// Add notes for level 0 comments and their children and the rest of the comments (for
 				// example, level 1 comments without a parent and their children) separately.
@@ -754,17 +754,17 @@ export class CommentManager extends EventEmitter {
 					.reduce(
 						(arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
 						/** @type {import('./updateChecker').CommentWorkerNew[]} */ ([])
-					);
+					)
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
-				this.addNewCommentsNote(parent, sectionComments, 'section', newCommentIndexes);
-				this.addNewCommentsNote(parent, threadComments, 'thread', newCommentIndexes);
+				const threadComments = comments.filter((comment) => !sectionComments.includes(comment))
+				this.addNewCommentsNote(parent, sectionComments, 'section', newCommentIndexes)
+				this.addNewCommentsNote(parent, threadComments, 'thread', newCommentIndexes)
 			}
-		});
+		})
 
-		Thread.emit('toggle');
+		Thread.emit('toggle')
 
-		controller.restoreRelativeScrollPosition();
+		controller.restoreRelativeScrollPosition()
 	}
 
 	/**
@@ -777,18 +777,18 @@ export class CommentManager extends EventEmitter {
 	 * @private
 	 */
 	addNewCommentsNote(parent, childComments, type, newCommentIndexes) {
-		if (!childComments.length) return;
+		if (!childComments.length) return
 
 		const descendantComments = parent instanceof Comment
 			? childComments.reduce(
 					(arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
 					/** @type {import('./updateChecker').CommentWorkerNew[]} */ ([])
 				)
-			: childComments;
+			: childComments
 
 		const authors = descendantComments
 			.map((comment) => comment.author)
-			.filter(unique);
+			.filter(unique)
 		const button = new OO.ui.ButtonWidget({
 			label: cd.s(
 				type === 'thread' ? 'thread-newcomments' : 'section-newcomments',
@@ -800,50 +800,50 @@ export class CommentManager extends EventEmitter {
 			framed: false,
 			flags: ['progressive'],
 			classes: ['cd-button-ooui'],
-		});
+		})
 		button.on('click', () => {
 			bootManager.rebootTalkPage({
 				commentIds: descendantComments.map((comment) => comment.id).filter(definedAndNotNull),
 				pushState: true,
-			});
-		});
+			})
+		})
 
 		/** @type {JQuery} */
-		let $buttoned;
+		let $buttoned
 		/** @type {JQuery} */
-		let $classed;
+		let $classed
 		if (parent instanceof Comment) {
-			button.$element.addClass('cd-thread-button');
-			const { $wrappingItem } = parent.addSubitem('newCommentsNote', 'bottom');
-			$classed = $buttoned = $wrappingItem;
+			button.$element.addClass('cd-thread-button')
+			const { $wrappingItem } = parent.addSubitem('newCommentsNote', 'bottom')
+			$classed = $buttoned = $wrappingItem
 
 			// Update the collapsed range for the thread.
 			if (parent.thread?.isCollapsed) {
-				parent.thread.expand();
-				parent.thread.collapse(true);
+				parent.thread.expand()
+				parent.thread.collapse(true)
 			}
 		} else if (type === 'thread' && parent.$replyButtonWrapper) {
-			button.$element.addClass('cd-thread-button');
+			button.$element.addClass('cd-thread-button')
 			const tagName =
-			/** @type {JQuery} */ (parent.$replyButtonContainer)[0].tagName === 'DL' ? 'dd' : 'li';
-			$classed = $buttoned = $(`<${tagName}>`).insertBefore(parent.$replyButtonWrapper);
+			/** @type {JQuery} */ (parent.$replyButtonContainer)[0].tagName === 'DL' ? 'dd' : 'li'
+			$classed = $buttoned = $(`<${tagName}>`).insertBefore(parent.$replyButtonWrapper)
 		} else {
-			button.$element.addClass('cd-section-button');
+			button.$element.addClass('cd-section-button')
 			if (type === 'section') {
-				$classed = $buttoned = $('<div>');
+				$classed = $buttoned = $('<div>')
 			} else {
-				$buttoned = $('<dd>');
-				$classed = $('<dl>').append($buttoned);
+				$buttoned = $('<dd>')
+				$classed = $('<dl>').append($buttoned)
 			}
 
 			$classed.insertAfter(
 				parent.$addSubsectionButtonsContainer && !parent.getChildren().length
 					? parent.$addSubsectionButtonsContainer
 					: parent.$replyButtonContainer || parent.lastElementInFirstChunk
-			);
+			)
 		}
-		$buttoned.append(button.$element);
-		$classed.addClass('cd-thread-button-container cd-thread-newCommentsNote');
+		$buttoned.append(button.$element)
+		$classed.addClass('cd-thread-button-container cd-thread-newCommentsNote')
 	}
 
 	/**
@@ -851,58 +851,58 @@ export class CommentManager extends EventEmitter {
 	 * relevant setting is enabled.
 	 */
 	async reformatComments() {
-		if (!this.isSpaciousCommentManager()) return;
+		if (!this.isSpaciousCommentManager()) return
 
-		$(document.body).addClass('cd-reformattedComments');
-		if (!cd.page.exists()) return;
+		$(document.body).addClass('cd-reformattedComments')
+		if (!cd.page.exists()) return
 
 		const pagesToCheckExistence = this.items.reduce((acc, comment) => {
 			// Only call reformatting methods on SpaciousComment instances
 			const spaciousComment = /** @type {import('./SpaciousComment').default} */ (
 			/** @type {unknown} */ (comment)
-			);
-			acc.push(...spaciousComment.replaceSignatureWithHeader());
-			spaciousComment.addMenu();
+			)
+			acc.push(...spaciousComment.replaceSignatureWithHeader())
+			spaciousComment.addMenu()
 
-			return acc;
-		}, /** @type {import('./SpaciousComment').ReplaceSignatureWithHeaderReturn} */ ([]));
+			return acc
+		}, /** @type {import('./SpaciousComment').ReplaceSignatureWithHeaderReturn} */ ([]))
 
 		// Check existence of user and user talk pages and apply respective changes to elements.
 		const pageNamesToLinks = pagesToCheckExistence.reduce((acc, page) => {
 			if (!(page.pageName in acc)) {
-				acc[page.pageName] = [];
+				acc[page.pageName] = []
 			}
-			acc[page.pageName].push(page.link);
+			acc[page.pageName].push(page.link)
 
-			return acc;
-		}, /** @type {{ [x: string]: HTMLAnchorElement[] }} */ ({}));
+			return acc
+		}, /** @type {{ [x: string]: HTMLAnchorElement[] }} */ ({}))
 
-		const pagesExistence = await getPagesExistence(Object.keys(pageNamesToLinks));
+		const pagesExistence = await getPagesExistence(Object.keys(pageNamesToLinks))
 		Object.keys(pagesExistence).forEach((name) => {
 			pageNamesToLinks[name].forEach((link) => {
-				link.title = pagesExistence[name].normalized;
+				link.title = pagesExistence[name].normalized
 				if (pagesExistence[name].exists) {
-					link.href = mw.util.getUrl(pagesExistence[name].normalized);
+					link.href = mw.util.getUrl(pagesExistence[name].normalized)
 				} else {
-					link.classList.add('new');
+					link.classList.add('new')
 					link.href = mw.util.getUrl(name, {
 						action: 'edit',
 						redlink: 1,
-					});
+					})
 				}
-			});
-		});
+			})
+		})
 	}
 
 	/**
 	 * _For internal use._ Change the format of the comment timestamps according to the settings.
 	 */
 	reformatTimestamps() {
-		if (this.areTimestampsDefault) return;
+		if (this.areTimestampsDefault) return
 
 		this.items.forEach((comment) => {
-			comment.reformatTimestamp(this.areTimestampsDefault);
-		});
+			comment.reformatTimestamp(this.areTimestampsDefault)
+		})
 	}
 
 	/**
@@ -911,10 +911,10 @@ export class CommentManager extends EventEmitter {
 	 * @private
 	 */
 	resetSelectedComment() {
-		const comment = this.items.find((c) => c.isSelected);
+		const comment = this.items.find((c) => c.isSelected)
 		if (comment) {
-			comment.setSelected(false);
-			this.emit('unselect', comment);
+			comment.setSelected(false)
+			this.emit('unselect', comment)
 		}
 	}
 
@@ -924,41 +924,41 @@ export class CommentManager extends EventEmitter {
 	 * @returns {Comment | undefined}
 	 */
 	getSelectedComment = () => {
-		const selection = window.getSelection();
-		let comment;
+		const selection = window.getSelection()
+		let comment
 		if (selection.toString().trim()) {
 			const { higherNode } =
 			/** @type {import('./utils-window').HigherNodeAndOffsetInSelection} */ (
 					getHigherNodeAndOffsetInSelection(selection)
-				);
-			const treeWalker = new TreeWalker(controller.rootElement, undefined, false, higherNode);
-			let commentIndex;
+				)
+			const treeWalker = new TreeWalker(controller.rootElement, undefined, false, higherNode)
+			let commentIndex
 			do {
 				commentIndex =
 					treeWalker.currentNode instanceof HTMLElement
 						? treeWalker.currentNode.dataset.cdCommentIndex
-						: undefined;
-			} while (commentIndex === undefined && treeWalker.parentNode());
+						: undefined
+			} while (commentIndex === undefined && treeWalker.parentNode())
 			if (commentIndex === undefined) {
-				this.resetSelectedComment();
+				this.resetSelectedComment()
 			} else {
-				comment = this.getByIndex(Number(commentIndex));
+				comment = this.getByIndex(Number(commentIndex))
 				if (comment) {
 					if (!comment.isSelected) {
-						this.resetSelectedComment();
-						comment.setSelected(true);
-						this.emit('select', comment);
+						this.resetSelectedComment()
+						comment.setSelected(true)
+						this.emit('select', comment)
 					}
 				} else {
-					this.resetSelectedComment();
+					this.resetSelectedComment()
 				}
 			}
 		} else {
-			this.resetSelectedComment();
+			this.resetSelectedComment()
 		}
 
-		return comment;
-	};
+		return comment
+	}
 
 	/**
 	 * Find a previous comment by time by the specified author within a 1-day window.
@@ -976,7 +976,7 @@ export class CommentManager extends EventEmitter {
 				comment.date.getTime() > date.getTime() - cd.g.msInDay
 			)
 			.sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
-			.at(-1);
+			.at(-1)
 	}
 
 	/**
@@ -986,11 +986,11 @@ export class CommentManager extends EventEmitter {
 	 */
 	setDtIds(ids) {
 		ids.forEach((id) => {
-			const comment = this.getByDtId(id);
+			const comment = this.getByDtId(id)
 			if (comment) {
-				comment.dtId = id;
+				comment.dtId = id
 			}
-		});
+		})
 	}
 
 	/**
@@ -1003,11 +1003,11 @@ export class CommentManager extends EventEmitter {
 			.querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
 			.forEach((signature) => {
 				const index = /** @type {HTMLElement} */ (signature.closest('.cd-comment-part')).dataset
-					.cdCommentIndex;
+					.cdCommentIndex
 				if (index !== undefined) {
-					this.items[Number(index)].isTableComment = true;
+					this.items[Number(index)].isTableComment = true
 				}
-			});
+			})
 	}
 
 	/**
@@ -1022,30 +1022,30 @@ export class CommentManager extends EventEmitter {
 	 */
 	searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes) {
 		if (newCommentIndexes.includes(childComment.index)) {
-			newCommentsInSubtree.push(childComment);
+			newCommentsInSubtree.push(childComment)
 		}
 		childComment.children.forEach((cc) => {
-			this.searchForNewCommentsInSubtree(cc, newCommentsInSubtree, newCommentIndexes);
-		});
+			this.searchForNewCommentsInSubtree(cc, newCommentsInSubtree, newCommentIndexes)
+		})
 
-		return newCommentsInSubtree;
+		return newCommentsInSubtree
 	}
 
 	/**
 	 * _For internal use._ Perform some DOM-related tasks after parsing comments.
 	 */
 	adjustDom() {
-		this.mergeAdjacentCommentLevels();
-		this.mergeAdjacentCommentLevels();
+		this.mergeAdjacentCommentLevels()
+		this.mergeAdjacentCommentLevels()
 		if (
 			controller.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
 		) {
-			console.warn('.cd-commentLevel adjacencies have left.');
+			console.warn('.cd-commentLevel adjacencies have left.')
 		}
 
 		this.items.forEach((comment) => {
-			comment.maybeSplitParent();
-		});
+			comment.maybeSplitParent()
+		})
 	}
 
 	/**
@@ -1054,12 +1054,12 @@ export class CommentManager extends EventEmitter {
 	 * @private
 	 */
 	handleDtTimestampsClick = () => {
-		if (this.isSpaciousCommentManager()) return;
+		if (this.isSpaciousCommentManager()) return
 
 		this.items.forEach((comment) => {
-			comment.handleDtTimestampClick();
-		});
-	};
+			comment.handleDtTimestampClick()
+		})
+	}
 
 	/**
 	 * Combine two adjacent `.cd-commentLevel` elements into one, recursively going deeper in terms of
@@ -1071,8 +1071,8 @@ export class CommentManager extends EventEmitter {
 		/** @type {NodeListOf<HTMLElement>} */
 		const levels = controller.rootElement.querySelectorAll(
 			'.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'
-		);
-		if (!levels.length) return;
+		)
+		if (!levels.length) return
 
 		const isOrHasCommentLevel = (/** @type {HTMLElement} */ el) =>
 			Boolean(
@@ -1081,10 +1081,10 @@ export class CommentManager extends EventEmitter {
 			);
 
 		[...levels].forEach((bottomElement) => {
-			const topElement = /** @type {HTMLElement | null} */ (bottomElement.previousElementSibling);
+			const topElement = /** @type {HTMLElement | null} */ (bottomElement.previousElementSibling)
 
 			// If the previous element was removed in this cycle
-			if (!topElement) return;
+			if (!topElement) return
 
 			for (
 				let /** @type {HTMLElement | undefined} */ currentTopElement = topElement,
@@ -1097,12 +1097,12 @@ export class CommentManager extends EventEmitter {
 					undefined,
 				firstMoved = undefined
 			) {
-				const topTag = currentTopElement.tagName;
-				const bottomInnerTags = /** @type {Record<'DD' | 'LI', 'DD' | 'LI'>} */ ({});
+				const topTag = currentTopElement.tagName
+				const bottomInnerTags = /** @type {Record<'DD' | 'LI', 'DD' | 'LI'>} */ ({})
 				if (topTag === 'UL') {
-					bottomInnerTags.DD = 'LI';
+					bottomInnerTags.DD = 'LI'
 				} else if (topTag === 'DL') {
-					bottomInnerTags.LI = 'DD';
+					bottomInnerTags.LI = 'DD'
 				}
 
 				if (
@@ -1125,15 +1125,15 @@ export class CommentManager extends EventEmitter {
 					)
 				) {
 					while (currentBottomElement.childNodes.length) {
-						let child = /** @type {ChildNode} */ (currentBottomElement.firstChild);
+						let child = /** @type {ChildNode} */ (currentBottomElement.firstChild)
 						if (child instanceof HTMLElement) {
 							if (child.tagName in bottomInnerTags) {
 								child = this.changeElementType(
 									child,
 									bottomInnerTags[/** @type {keyof typeof bottomInnerTags} */ (child.tagName)]
-								);
+								)
 							}
-							firstMoved ??= /** @type {HTMLElement} */ (child);
+							firstMoved ??= /** @type {HTMLElement} */ (child)
 						} else if (firstMoved === undefined && child.textContent.trim()) {
 							// Don't fill the firstMoved variable which is used further to merge elements if
 							// there is a non-empty text node between. (An example that is now fixed:
@@ -1143,17 +1143,17 @@ export class CommentManager extends EventEmitter {
 							// elements. This could be seen only as an additional precaution, since it doesn't
 							// fix the source of the problem: the fact that a bare text node is (probably) a
 							// part of the reply. It shouldn't be happening.
-							firstMoved = undefined;
-							const newChild = document.createElement('span');
-							newChild.append(child);
-							child = newChild;
+							firstMoved = undefined
+							const newChild = document.createElement('span')
+							newChild.append(child)
+							child = newChild
 						}
-						currentTopElement.append(child);
+						currentTopElement.append(child)
 					}
-					currentBottomElement.remove();
+					currentBottomElement.remove()
 				}
 			}
-		});
+		})
 	}
 
 	/**
@@ -1167,25 +1167,25 @@ export class CommentManager extends EventEmitter {
 	 * @returns {HTMLElement}
 	 */
 	changeElementType(element, newType) {
-		const newElement = document.createElement(newType);
+		const newElement = document.createElement(newType)
 		while (element.firstChild) {
-			newElement.append(element.firstChild);
+			newElement.append(element.firstChild)
 		}
 		[...element.attributes].forEach((attribute) => {
-			newElement.setAttribute(attribute.name, attribute.value);
-		});
+			newElement.setAttribute(attribute.name, attribute.value)
+		})
 
 		// If this element is a part of a comment, replace it in the Comment object instance.
-		const commentIndex = element.dataset.cdCommentIndex;
+		const commentIndex = element.dataset.cdCommentIndex
 		if (commentIndex === undefined) {
-			/** @type {HTMLElement} */ (element.parentElement).replaceChild(newElement, element);
+			/** @type {HTMLElement} */ (element.parentElement).replaceChild(newElement, element)
 		} else {
-			this.items[Number(commentIndex)].replaceElement(element, newElement);
+			this.items[Number(commentIndex)].replaceElement(element, newElement)
 		}
 
-		controller.replaceScrollAnchorElement(element, newElement);
+		controller.replaceScrollAnchorElement(element, newElement)
 
-		return newElement;
+		return newElement
 	}
 
 	/**
@@ -1194,39 +1194,39 @@ export class CommentManager extends EventEmitter {
 	 */
 	connectBrokenThreads() {
 		/** @type {Element[]} */
-		const items = [];
+		const items = []
 
 		controller.rootElement
 			.querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
 			.forEach((el) => {
 				if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
-					items.push(el);
+					items.push(el)
 				}
-			});
+			})
 
 		// When editing https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_212#c-PrimeHunter-20240509091500-2605:A601:AAF7:3700:A1D7:26C1:E273:28CF-20240509055600
 		controller.rootElement
 			.querySelectorAll('dd.cd-comment-part:not(.cd-comment-part-last) + dd > .cd-comment-part:first-child, li.cd-comment-part:not(.cd-comment-part-last) + li > .cd-comment-part:first-child')
 			.forEach((el) => {
-				items.push(/** @type {HTMLElement} */ (el.parentElement));
-			});
+				items.push(/** @type {HTMLElement} */ (el.parentElement))
+			})
 
 		// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
 		controller.rootElement
 			.querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')
 			.forEach((el) => {
-				const possibleItem = /** @type {HTMLElement} */ (el.parentElement).nextElementSibling;
+				const possibleItem = /** @type {HTMLElement} */ (el.parentElement).nextElementSibling
 				if (possibleItem?.firstElementChild?.classList.contains('cd-commentLevel')) {
-					items.push(possibleItem);
+					items.push(possibleItem)
 				}
-			});
+			})
 
 		// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Image_breaking_a_thread
 		controller.rootElement
 			.querySelectorAll('.cd-commentLevel + .thumb + .cd-commentLevel > li')
 			.forEach((el) => {
-				items.push(el);
-			});
+				items.push(el)
+			})
 
 		if (controller.areThereOutdents()) {
 			// Outdent templates. We could instead merge adjacent <li>s, but if there is a {{outdent|0}}
@@ -1235,18 +1235,18 @@ export class CommentManager extends EventEmitter {
 			controller.rootElement
 				.querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
 				.forEach((el) => {
-					items.push(/** @type {HTMLElement} */ (el.parentElement));
-				});
+					items.push(/** @type {HTMLElement} */ (el.parentElement))
+				})
 			controller.rootElement
 				.querySelectorAll(`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`)
 				.forEach((el) => {
-					items.push(el);
-				});
+					items.push(el)
+				})
 		}
 
 		items.forEach((item) => {
-			item.classList.add('cd-connectToPreviousItem');
-		});
+			item.classList.add('cd-connectToPreviousItem')
+		})
 	}
 
 	/**
@@ -1254,9 +1254,9 @@ export class CommentManager extends EventEmitter {
 	 */
 	addToggleChildThreadsButtons = () => {
 		this.items.forEach((comment) => {
-			comment.addToggleChildThreadsButton();
-		});
-	};
+			comment.addToggleChildThreadsButton()
+		})
+	}
 
 	/**
 	 * Expand all threads of a certain level (and higher, i.e. shallower) on the page.
@@ -1269,11 +1269,11 @@ export class CommentManager extends EventEmitter {
 			.reverse()
 			.filter((comment) => comment.level <= level)
 			.forEach((comment) => {
-				comment.thread?.expand(undefined, true);
-			});
+				comment.thread?.expand(undefined, true)
+			})
 		this.items.forEach((comment) => {
-			comment.updateToggleChildThreadsButton();
-		});
+			comment.updateToggleChildThreadsButton()
+		})
 	}
 
 	/**
@@ -1287,12 +1287,12 @@ export class CommentManager extends EventEmitter {
 			.reverse()
 			.filter((comment) => comment.level === level)
 			.forEach((comment) => {
-				comment.thread?.collapse(undefined, true);
-			});
+				comment.thread?.collapse(undefined, true)
+			})
 		this.items
 			.forEach((comment) => {
-				comment.updateToggleChildThreadsButton();
-			});
+				comment.updateToggleChildThreadsButton()
+			})
 	}
 
 	/**
@@ -1303,17 +1303,17 @@ export class CommentManager extends EventEmitter {
 	 * @private
 	 */
 	goToNewCommentInDirection(direction) {
-		if (controller.isAutoScrolling()) return;
+		if (controller.isAutoScrolling()) return
 
-		const commentInViewport = this.findInViewport(direction);
-		if (!commentInViewport) return;
+		const commentInViewport = this.findInViewport(direction)
+		if (!commentInViewport) return
 
 		const candidates = reorderArray(
 			this.getAll(),
 			commentInViewport.index,
 			direction === 'backward'
-		).filter((comment) => comment.isNew && !comment.isInViewport());
-		const comment = candidates.find((c) => c.isInViewport() === false) || candidates.at(0);
+		).filter((comment) => comment.isNew && !comment.isInViewport())
+		const comment = candidates.find((c) => c.isInViewport() === false) || candidates.at(0)
 		if (comment) {
 			comment.scrollTo({
 				flash: false,
@@ -1321,9 +1321,9 @@ export class CommentManager extends EventEmitter {
 					// The default controller.handleScroll() callback is executed in $#cdScrollTo, but
 					// that happens after a 300ms timeout, so we have a chance to have our callback executed
 					// first.
-					comment.registerSeen(direction, true);
+					comment.registerSeen(direction, true)
 				},
-			});
+			})
 		}
 	}
 
@@ -1331,24 +1331,24 @@ export class CommentManager extends EventEmitter {
 	 * Scroll to the previous new comment.
 	 */
 	goToPreviousNewComment() {
-		this.goToNewCommentInDirection('backward');
+		this.goToNewCommentInDirection('backward')
 	}
 
 	/**
 	 * Scroll to the next new comment.
 	 */
 	goToNextNewComment() {
-		this.goToNewCommentInDirection('forward');
+		this.goToNewCommentInDirection('forward')
 	}
 
 	/**
 	 * Scroll to the first unseen comment.
 	 */
 	goToFirstUnseenComment() {
-		if (controller.isAutoScrolling()) return;
+		if (controller.isAutoScrolling()) return
 
-		const candidates = this.query((c) => c.isSeen === false);
-		const comment = candidates.find((c) => c.isInViewport() === false) || candidates[0];
+		const candidates = this.query((c) => c.isSeen === false)
+		const comment = candidates.find((c) => c.isInViewport() === false) || candidates[0]
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		comment?.scrollTo({
 			flash: false,
@@ -1356,9 +1356,9 @@ export class CommentManager extends EventEmitter {
 				// The default controller.handleScroll() callback is executed in $#cdScrollTo, but
 				// that happens after a 300ms timeout, so we have a chance to have our callback executed
 				// first.
-				comment.registerSeen('forward', true);
+				comment.registerSeen('forward', true)
 			},
-		});
+		})
 	}
 
 	/**
@@ -1367,8 +1367,8 @@ export class CommentManager extends EventEmitter {
 	 * @returns {StorageItemWithKeys<ThanksData>}
 	 */
 	getThanksStorage() {
-		return this.thanksStorage;
+		return this.thanksStorage
 	}
 }
 
-export default new CommentManager();
+export default new CommentManager()

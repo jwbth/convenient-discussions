@@ -6,10 +6,10 @@
  * @module utilsGeneral
  */
 
-import html_entity_decode from 'locutus/php/strings/html_entity_decode';
+import html_entity_decode from 'locutus/php/strings/html_entity_decode'
 
-import CdError from './CdError';
-import cd from './cd';
+import CdError from './CdError'
+import cd from './cd'
 
 /**
  * Callback for
@@ -22,7 +22,7 @@ import cd from './cd';
  * @returns {boolean}
  */
 export function unique(el, i, arr) {
-	return arr.indexOf(el) === i;
+	return arr.indexOf(el) === i
 }
 
 /**
@@ -35,11 +35,11 @@ export function unique(el, i, arr) {
  */
 export function isInline(node, considerTextNodesAsInline = false) {
 	if (considerTextNodesAsInline && isText(node)) {
-		return true;
+		return true
 	}
 
 	if (!isElement(node)) {
-		return;
+		return
 	}
 
 	if (
@@ -48,9 +48,9 @@ export function isInline(node, considerTextNodesAsInline = false) {
 		// `<meta property="mw:PageProp/toc">` is currently present in place of the TOC in Vector 2022.
 		(node.tagName === 'META' && node.getAttribute('property') === 'mw:PageProp/toc')
 	) {
-		return true;
+		return true
 	} else if (cd.g.popularNotInlineElements.includes(node.tagName)) {
-		return false;
+		return false
 	}
 
 	if (
@@ -61,13 +61,13 @@ export function isInline(node, considerTextNodesAsInline = false) {
 		node.isConnected
 	) {
 		// This is very expensive. Avoid by any means.
-		console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
+		console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node)
 		node.cdIsInline = window
 			.getComputedStyle(node)
-			.display.startsWith('inline');
+			.display.startsWith('inline')
 	}
 
-	return node.cdIsInline;
+	return node.cdIsInline
 }
 
 /**
@@ -79,13 +79,13 @@ export function isInline(node, considerTextNodesAsInline = false) {
  * @returns {string}
  */
 export function generatePageNamePattern(string) {
-	const firstChar = string[0];
+	const firstChar = string[0]
 	if (!firstChar) {
-		return '';
+		return ''
 	}
 
-	const firstCharUpperCase = firstChar.toUpperCase();
-	const firstCharLowerCase = firstChar.toLowerCase();
+	const firstCharUpperCase = firstChar.toUpperCase()
+	const firstCharLowerCase = firstChar.toLowerCase()
 
 	// Could be issues, probably not very serious, resulting from the difference of PHP's
 	// mb_strtoupper and JavaScript's String#toUpperCase, see ucFirst() and
@@ -93,9 +93,9 @@ export function generatePageNamePattern(string) {
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const firstCharPattern = firstCharUpperCase === firstCharLowerCase
 		? mw.util.escapeRegExp(firstChar)
-		: '[' + firstCharUpperCase + firstCharLowerCase + ']';
+		: '[' + firstCharUpperCase + firstCharLowerCase + ']'
 
-	return firstCharPattern + mw.util.escapeRegExp(string.slice(1)).replace(/[ _]+/g, '[ _]+');
+	return firstCharPattern + mw.util.escapeRegExp(string.slice(1)).replace(/[ _]+/g, '[ _]+')
 }
 
 /**
@@ -105,7 +105,7 @@ export function generatePageNamePattern(string) {
  * @returns {boolean}
  */
 export function isUndo(summary) {
-	return Boolean(summary && cd.config.undoTexts.some((text) => summary.includes(text)));
+	return Boolean(summary && cd.config.undoTexts.some((text) => summary.includes(text)))
 }
 
 /**
@@ -118,7 +118,7 @@ export function isUndo(summary) {
  * @returns {el is T}
  */
 export function defined(el) {
-	return el !== undefined;
+	return el !== undefined
 }
 
 /**
@@ -131,7 +131,7 @@ export function defined(el) {
  * @returns {el is T}
  */
 export function definedAndNotNull(el) {
-	return el !== undefined && el !== null;
+	return el !== undefined && el !== null
 }
 
 /**
@@ -153,7 +153,7 @@ export function reorderArray(arr, startIndex, reverse = false) {
 				.reverse()
 		: arr
 				.slice(startIndex)
-				.concat(arr.slice(0, startIndex));
+				.concat(arr.slice(0, startIndex))
 }
 
 /**
@@ -163,7 +163,7 @@ export function reorderArray(arr, startIndex, reverse = false) {
  * @returns {string}
  */
 export function underlinesToSpaces(string) {
-	return string.replace(/_/g, ' ');
+	return string.replace(/_/g, ' ')
 }
 
 /**
@@ -173,7 +173,7 @@ export function underlinesToSpaces(string) {
  * @returns {string}
  */
 export function spacesToUnderlines(string) {
-	return string.replace(/ /g, '_');
+	return string.replace(/ /g, '_')
 }
 
 /**
@@ -183,7 +183,7 @@ export function spacesToUnderlines(string) {
  * @returns {string}
  */
 export function removeDoubleSpaces(string) {
-	return string.replace(/ {2,}/g, ' ');
+	return string.replace(/ {2,}/g, ' ')
 }
 
 /**
@@ -205,9 +205,9 @@ export function removeDoubleSpaces(string) {
 export function charAt(string, offset, backwards = false) {
 	const maybePair = backwards
 		? string.slice(offset - 1, offset + 1)
-		: string.slice(offset, offset + 2);
+		: string.slice(offset, offset + 2)
 
-	return /^[\uD800-\uDBFF][\uDC00-\uDFFF]$/.test(maybePair) ? maybePair : string.charAt(offset);
+	return /^[\uD800-\uDBFF][\uDC00-\uDFFF]$/.test(maybePair) ? maybePair : string.charAt(offset)
 }
 
 /**
@@ -221,10 +221,10 @@ export function charAt(string, offset, backwards = false) {
  */
 export function phpCharToUpper(char) {
 	if (cd.g.phpCharToUpper[char] === 0) {
-		return char;
+		return char
 	}
 
-	return cd.g.phpCharToUpper[char] || char.toUpperCase();
+	return cd.g.phpCharToUpper[char] || char.toUpperCase()
 }
 
 /**
@@ -236,9 +236,9 @@ export function phpCharToUpper(char) {
  * @returns {string}
  */
 export function ucFirst(string) {
-	const firstChar = charAt(string, 0);
+	const firstChar = charAt(string, 0)
 
-	return phpCharToUpper(firstChar) + string.slice(firstChar.length);
+	return phpCharToUpper(firstChar) + string.slice(firstChar.length)
 }
 
 /**
@@ -248,7 +248,7 @@ export function ucFirst(string) {
  * @returns {string[]}
  */
 export function getContentLanguageMessages(messages) {
-	return messages.map((name) => cd.g.contentLanguageMessages[name]);
+	return messages.map((name) => cd.g.contentLanguageMessages[name])
 }
 
 /**
@@ -262,9 +262,9 @@ export function mergeRegexps(arr) {
 		.map((regexpOrString) =>
 			regexpOrString instanceof RegExp ? regexpOrString.source : regexpOrString
 		)
-		.join('|');
+		.join('|')
 
-	return pattern ? new RegExp(`(${pattern})`) : undefined;
+	return pattern ? new RegExp(`(${pattern})`) : undefined
 }
 
 /**
@@ -277,13 +277,13 @@ export function mergeRegexps(arr) {
  * @returns {Promise.<string>}
  */
 export async function getNativePromiseState(promise) {
-	const obj = {};
+	const obj = {}
 
 	// eslint-disable-next-line @typescript-eslint/await-thenable
 	return Promise.race([promise, obj]).then(
 		(value) => value === obj ? 'pending' : 'resolved',
 		() => 'rejected'
-	);
+	)
 }
 
 /**
@@ -304,7 +304,7 @@ function isConvertibleToPrimitiveValue(val) {
 			(typeof Node === 'function' && val instanceof Node) ||
 			(typeof Worker === 'function' && val instanceof Worker)
 		)
-	);
+	)
 }
 
 /**
@@ -314,7 +314,7 @@ function isConvertibleToPrimitiveValue(val) {
  * @returns {*}
  */
 function toPrimitive(val) {
-	return val instanceof RegExp || val instanceof Date ? val.toString() : val;
+	return val instanceof RegExp || val instanceof Date ? val.toString() : val
 }
 
 /**
@@ -328,12 +328,12 @@ function toPrimitive(val) {
  */
 export function areObjectsEqual(object1, object2) {
 	if (isConvertibleToPrimitiveValue(object1) || isConvertibleToPrimitiveValue(object2)) {
-		return toPrimitive(object1) === toPrimitive(object2);
+		return toPrimitive(object1) === toPrimitive(object2)
 	}
 
-	const keys1 = Object.keys(object1).filter((key) => object1[key] !== undefined);
+	const keys1 = Object.keys(object1).filter((key) => object1[key] !== undefined)
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined);
+	const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined)
 
 	return (
 	// To avoid results where {} is equal to `new Map(['a', 1])`
@@ -346,7 +346,7 @@ export function areObjectsEqual(object1, object2) {
 				/** @type {UnknownsByKey} */ (object2[key])
 			)
 		)
-	);
+	)
 }
 
 /**
@@ -360,7 +360,7 @@ export function areObjectsEqual(object1, object2) {
  * @returns {string}
  */
 export function removeDirMarks(text, replaceWithSpace = false) {
-	return text.replace(/[\u200E\u200F]/g, replaceWithSpace ? ' ' : '');
+	return text.replace(/[\u200E\u200F]/g, replaceWithSpace ? ' ' : '')
 }
 
 // keepClonableValues() actually returns Partial<T>, but for our purposes we can consider it T (we
@@ -377,9 +377,9 @@ export function removeDirMarks(text, replaceWithSpace = false) {
  * @returns {T}
  */
 export function keepClonableValues(obj, allowedFuncNames = []) {
-	const newObj = { ...obj };
+	const newObj = { ...obj }
 	Object.keys(newObj).forEach((key) => {
-		const val = newObj[key];
+		const val = newObj[key]
 		if (
 			typeof val === 'object' &&
 			val !== null &&
@@ -387,21 +387,21 @@ export function keepClonableValues(obj, allowedFuncNames = []) {
 		) {
 			try {
 				if (!areObjectsEqual(/** @type {T} */ (val), JSON.parse(JSON.stringify(val)))) {
-					delete newObj[key];
+					delete newObj[key]
 				}
 			} catch {
-				delete newObj[key];
+				delete newObj[key]
 			}
 		} else if (typeof val === 'function') {
 			if (allowedFuncNames.includes(key)) {
-				newObj[/** @type {keyof T} */ (key)] = val.toString();
+				newObj[/** @type {keyof T} */ (key)] = val.toString()
 			} else {
-				delete newObj[key];
+				delete newObj[key]
 			}
 		}
-	});
+	})
 
-	return newObj;
+	return newObj
 }
 
 /**
@@ -415,20 +415,20 @@ export function keepClonableValues(obj, allowedFuncNames = []) {
  */
 function calculateArrayOverlap(arr1, arr2) {
 	if (!arr1.length || !arr2.length) {
-		return 0;
+		return 0
 	}
 
-	let total = arr2.length;
-	let overlap = 0;
+	let total = arr2.length
+	let overlap = 0
 	arr1.forEach((el1) => {
 		if (arr2.includes(el1)) {
-			overlap++;
+			overlap++
 		} else {
-			total++;
+			total++
 		}
-	});
+	})
 
-	return overlap / total;
+	return overlap / total
 }
 
 /**
@@ -441,11 +441,11 @@ function calculateArrayOverlap(arr1, arr2) {
  * @returns {number}
  */
 export function calculateWordOverlap(s1, s2, caseInsensitive = false) {
-	const regexp = new RegExp(`[${cd.g.letterPattern}]{2,}`, 'g');
+	const regexp = new RegExp(`[${cd.g.letterPattern}]{2,}`, 'g')
 	const strToArr = (/** @type {string} */ s) =>
-		((caseInsensitive ? s.toLowerCase() : s).match(regexp) || []).filter(unique);
+		((caseInsensitive ? s.toLowerCase() : s).match(regexp) || []).filter(unique)
 
-	return calculateArrayOverlap(strToArr(s1), strToArr(s2));
+	return calculateArrayOverlap(strToArr(s1), strToArr(s2))
 }
 
 /**
@@ -457,7 +457,7 @@ export function calculateWordOverlap(s1, s2, caseInsensitive = false) {
  */
 export function addToArrayIfAbsent(arr, el) {
 	if (el !== undefined && !arr.includes(el)) {
-		arr.push(el);
+		arr.push(el)
 	}
 }
 
@@ -470,7 +470,7 @@ export function addToArrayIfAbsent(arr, el) {
  */
 export function removeFromArrayIfPresent(arr, el) {
 	if (el !== undefined && arr.includes(el)) {
-		arr.splice(arr.indexOf(el), 1);
+		arr.splice(arr.indexOf(el), 1)
 	}
 }
 
@@ -484,7 +484,7 @@ export function removeFromArrayIfPresent(arr, el) {
  * @returns {string | undefined}
  */
 export function getLastArrayElementOrSelf(value) {
-	return Array.isArray(value) ? value.at(-1) : value;
+	return Array.isArray(value) ? value.at(-1) : value
 }
 
 /**
@@ -494,7 +494,7 @@ export function getLastArrayElementOrSelf(value) {
  * @returns {any[]}
  */
 export function ensureArray(value) {
-	return Array.isArray(value) ? value : [value];
+	return Array.isArray(value) ? value : [value]
 }
 
 /**
@@ -511,7 +511,7 @@ export function isHeadingNode(node, onlyHElements = false) {
 			(!onlyHElements && node.classList.contains('mw-heading')) ||
 			['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName)
 		)
-	);
+	)
 }
 
 /**
@@ -532,7 +532,7 @@ export function getHeadingLevel(node) {
 			)[1]
 		) ||
 		undefined
-	);
+	)
 }
 
 /**
@@ -542,7 +542,7 @@ export function getHeadingLevel(node) {
  * @returns {node is TextLike}
  */
 export function isText(node) {
-	return Boolean(node && node.nodeType === Node.TEXT_NODE);
+	return Boolean(node && node.nodeType === Node.TEXT_NODE)
 }
 
 /**
@@ -570,7 +570,7 @@ export function isText(node) {
  * @returns {node is ElementLike}
  */
 export function isElement(node) {
-	return Boolean(node && node.nodeType === Node.ELEMENT_NODE);
+	return Boolean(node && node.nodeType === Node.ELEMENT_NODE)
 }
 
 /**
@@ -580,7 +580,7 @@ export function isElement(node) {
  * @returns {node is NodeLike}
  */
 export function isNode(node) {
-	return Boolean(node && typeof node === 'object' && 'nodeType' in node);
+	return Boolean(node && typeof node === 'object' && 'nodeType' in node)
 }
 
 /**
@@ -590,7 +590,7 @@ export function isNode(node) {
  * @returns {node is Element}
  */
 export function isNativeElement(node) {
-	return Boolean(node && node.nodeType === Node.ELEMENT_NODE && !isDomHandlerElement(node));
+	return Boolean(node && node.nodeType === Node.ELEMENT_NODE && !isDomHandlerElement(node))
 }
 
 /**
@@ -600,7 +600,7 @@ export function isNativeElement(node) {
  * @returns {node is import('domhandler').Node}
  */
 export function isDomHandlerNode(node) {
-	return Boolean(node && 'type' in node && 'parent' in node);
+	return Boolean(node && 'type' in node && 'parent' in node)
 }
 
 /**
@@ -610,7 +610,7 @@ export function isDomHandlerNode(node) {
  * @returns {node is import('domhandler').Element}
  */
 export function isDomHandlerElement(node) {
-	return Boolean(node && 'type' in node && 'attribs' in node);
+	return Boolean(node && 'type' in node && 'attribs' in node)
 }
 
 /**
@@ -620,7 +620,7 @@ export function isDomHandlerElement(node) {
  * @returns {boolean}
  */
 export function isMetadataNode(node) {
-	return isElement(node) && ['STYLE', 'LINK'].includes(node.tagName);
+	return isElement(node) && ['STYLE', 'LINK'].includes(node.tagName)
 }
 
 /**
@@ -637,12 +637,12 @@ export function isMetadataNode(node) {
 export function decodeHtmlEntities(string) {
 	// eslint-disable-next-line unicorn/prefer-includes
 	if (!string.includes('&')) {
-		return string;
+		return string
 	}
-	let result = string;
+	let result = string
 	// eslint-disable-next-line unicorn/prefer-includes
 	if (result.includes('&#38;amp;')) {
-		result = result.replace(/&#38;amp;/g, '&amp;amp;');
+		result = result.replace(/&#38;amp;/g, '&amp;amp;')
 	}
 	// eslint-disable-next-line unicorn/prefer-includes
 	if (result.includes('&#')) {
@@ -650,14 +650,14 @@ export function decodeHtmlEntities(string) {
 		result = result.replace(
 			/&#(\d+);/g,
 			/** @type {ReplaceCallback<1>} */ (_s, code) => String.fromCodePoint(Number(code))
-		);
+		)
 	}
 	// eslint-disable-next-line unicorn/prefer-includes
 	if (result.includes('&')) {
-		result = /** @type {string} */ (html_entity_decode(result));
+		result = /** @type {string} */ (html_entity_decode(result))
 	}
 
-	return result;
+	return result
 }
 
 /**
@@ -666,7 +666,7 @@ export function decodeHtmlEntities(string) {
  * @returns {number}
  */
 export function getDayTimestamp() {
-	return Math.floor(Date.now() / cd.g.msInDay);
+	return Math.floor(Date.now() / cd.g.msInDay)
 }
 
 /**
@@ -684,7 +684,7 @@ export function generateFixedPosTimestamp(date, seconds) {
 		String(date.getUTCHours()).padStart(2, '0') +
 		String(date.getUTCMinutes()).padStart(2, '0') +
 		(seconds || '')
-	);
+	)
 }
 
 /**
@@ -699,10 +699,10 @@ export function countOccurrences(string, regexp) {
 	if (!regexp.global) {
 		throw new CdError({
 			message: 'The regexp supplied to countOccurrences() must have the "g" flag.',
-		});
+		})
 	}
 
-	return (string.match(regexp) || []).length;
+	return (string.match(regexp) || []).length
 }
 
 /**
@@ -714,8 +714,8 @@ export function countOccurrences(string, regexp) {
  */
 export function sleep(ms) {
 	return new Promise((resolve) => {
-		setTimeout(resolve, ms);
-	});
+		setTimeout(resolve, ms)
+	})
 }
 
 /**
@@ -764,26 +764,26 @@ export function getDbnameForHostname(hostname) {
 		'test.wikidata.org': 'testwikidatawiki',
 		'www.wikidata.org': 'wikidatawiki',
 		'www.wikifunctions.org': 'wikifunctionswiki',
-	});
+	})
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const languagedProjectsRegexp = /^([^.]+)\.(wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wiktionary|wikimedia|wikipedia)\./;
+	const languagedProjectsRegexp = /^([^.]+)\.(wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wiktionary|wikimedia|wikipedia)\./
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const wikimediaNonChaptersRegexp = /^(advisory|commons|donate|foundation|incubator|login|meta|outreach|quality|species|strategy|usability|vote)$|^wikimania/;
+	const wikimediaNonChaptersRegexp = /^(advisory|commons|donate|foundation|incubator|login|meta|outreach|quality|species|strategy|usability|vote)$|^wikimania/
 
 	if (hostname in specialCases) {
-		return specialCases[hostname];
+		return specialCases[hostname]
 	}
 
-	let [, subdomain, languagedProject] = hostname.match(languagedProjectsRegexp) || [];
-	subdomain = subdomain.replace(/-/g, '_');
+	let [, subdomain, languagedProject] = hostname.match(languagedProjectsRegexp) || []
+	subdomain = subdomain.replace(/-/g, '_')
 	if (
 		languagedProject === 'wikipedia' ||
 		(languagedProject === 'wikimedia' && wikimediaNonChaptersRegexp.test(subdomain))
 	) {
-		languagedProject = 'wiki';
+		languagedProject = 'wiki'
 	}
 
-	return subdomain + languagedProject;
+	return subdomain + languagedProject
 }
 
 /**
@@ -801,13 +801,13 @@ export function getDbnameForHostname(hostname) {
  * @returns {ParsedWikiUrl | undefined}
  */
 export function parseWikiUrl(url) {
-	let hostname = cd.g.serverName;
-	let fragment;
+	let hostname = cd.g.serverName
+	let fragment
 	let pageName = url
 		.replace(/^(?:https?:)?\/\/([^/]+)/, /** @type {ReplaceCallback<1>} */ (_s, m1) => {
-			hostname = m1;
+			hostname = m1
 
-			return '';
+			return ''
 		})
 
 	// Could we just get by with `[&?]action=edit` (see below)?
@@ -817,18 +817,18 @@ export function parseWikiUrl(url) {
 		.replace(cd.g.startsWithScriptTitleRegexp, '')
 		.replace(/[&?]action=edit.*/, '')
 		.replace(/#(.*)/, /** @type {ReplaceCallback<1>} */ (_s, m1) => {
-			fragment = m1;
+			fragment = m1
 
-			return '';
+			return ''
 		})
-		.replace(/_/g, ' ');
+		.replace(/_/g, ' ')
 	try {
-		pageName = decodeURIComponent(pageName);
+		pageName = decodeURIComponent(pageName)
 	} catch {
-		return;
+		return
 	}
 
-	return { pageName, hostname, fragment };
+	return { pageName, hostname, fragment }
 }
 
 /**
@@ -838,7 +838,7 @@ export function parseWikiUrl(url) {
  * @returns {string}
  */
 export function canonicalUrlToPageName(url) {
-	return decodeURIComponent(url.slice(url.indexOf('/wiki/') + 6)).replace(/_/g, ' ');
+	return decodeURIComponent(url.slice(url.indexOf('/wiki/') + 6)).replace(/_/g, ' ')
 }
 
 /**
@@ -848,12 +848,12 @@ export function canonicalUrlToPageName(url) {
  * @returns {boolean | undefined}
  */
 export function getQueryParamBooleanValue(param) {
-	const match = location.search.match(new RegExp('[?&]' + param + '=([^&]+)'));
+	const match = location.search.match(new RegExp('[?&]' + param + '=([^&]+)'))
 	if (match) {
 		if (/1|true|yes|y/.test(match[1])) {
-			return true;
+			return true
 		} else if (/0|false|no|n/.test(match[1])) {
-			return false;
+			return false
 		}
 	}
 }
@@ -868,7 +868,7 @@ export function getQueryParamBooleanValue(param) {
  * @returns {M}
  */
 export function mergeMaps(maps) {
-	return /** @type {M} */ (new Map(maps.flatMap((map) => [...map])));
+	return /** @type {M} */ (new Map(maps.flatMap((map) => [...map])))
 }
 
 /**
@@ -903,7 +903,7 @@ export function genericGetOldestOrNewestByDateProp(items, which, allowDateless) 
 				? item
 				: candidate,
 		/** @type {T | undefined} */ (undefined)
-	));
+	))
 }
 
 /**
@@ -917,7 +917,7 @@ export function genericGetOldestOrNewestByDateProp(items, which, allowDateless) 
 export function typedKeysOf(obj) {
 	// Why this isn't in the native Object.keys type:
 	// https://stackoverflow.com/questions/55012174/why-doesnt-object-keys-return-a-keyof-type-in-typescript
-	return /** @type {(keyof T)[]} */ (Object.keys(obj));
+	return /** @type {(keyof T)[]} */ (Object.keys(obj))
 }
 
 /**
@@ -932,7 +932,7 @@ export function typedKeysOf(obj) {
 export function typedEntries(obj) {
 	return /** @type {{ [K in keyof T]-?: [K, NonNullable<T[K]>] }[keyof T][]} */ (
 		Object.entries(obj)
-	);
+	)
 }
 
 /**
@@ -945,7 +945,7 @@ export function typedEntries(obj) {
  * @returns {key is keyof T}
  */
 export function isKeyOf(key, obj) {
-	return key in obj;
+	return key in obj
 }
 
 /**
@@ -955,5 +955,5 @@ export function isKeyOf(key, obj) {
  * @returns {number}
  */
 export function subtractDaysFromNow(number) {
-	return Date.now() - number * cd.g.msInDay;
+	return Date.now() - number * cd.g.msInDay
 }

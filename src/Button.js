@@ -1,4 +1,4 @@
-import { isCmdModifierPressed } from './utils-window';
+import { isCmdModifierPressed } from './utils-window'
 
 /**
  * @callback Action
@@ -33,7 +33,7 @@ class Button {
 	 * @type {((event: MouseEvent | KeyboardEvent) => void) | undefined}
 	 * @private
 	 */
-	callback;
+	callback
 
 	/**
 	 * Create a button.
@@ -56,8 +56,8 @@ class Button {
 		action,
 	} = {}) {
 		if (!buttonElement) {
-			buttonElement = Button.cloneButtonPrototype(tagName);
-			element?.append(buttonElement);
+			buttonElement = Button.cloneButtonPrototype(tagName)
+			element?.append(buttonElement)
 		}
 
 		/**
@@ -66,13 +66,13 @@ class Button {
 		 *
 		 * @type {HTMLElement}
 		 */
-		this.element = element || buttonElement;
+		this.element = element || buttonElement
 
 		if (id) {
-			this.element.id = id;
+			this.element.id = id
 		}
 		if (classes.length) {
-			this.element.classList.add(...classes);
+			this.element.classList.add(...classes)
 		}
 
 		/**
@@ -81,10 +81,10 @@ class Button {
 		 *
 		 * @type {HTMLElement}
 		 */
-		this.buttonElement = buttonElement;
+		this.buttonElement = buttonElement
 
 		if (buttonClasses.length) {
-			this.buttonElement.classList.add(...buttonClasses);
+			this.buttonElement.classList.add(...buttonClasses)
 		}
 
 		/**
@@ -95,27 +95,27 @@ class Button {
 		 *
 		 * @type {HTMLElement}
 		 */
-		this.labelElement = labelElement || buttonElement;
+		this.labelElement = labelElement || buttonElement
 
 		/**
 		 * Button icon element, a descendant of the {@link Button#buttonElement button element}.
 		 *
 		 * @type {HTMLElement|undefined}
 		 */
-		this.iconElement = iconElement;
+		this.iconElement = iconElement
 
 		if (href !== undefined) {
-			this.setHref(href);
+			this.setHref(href)
 		}
 		if (label !== undefined) {
-			this.setLabel(label);
+			this.setLabel(label)
 		}
 		if (tooltip !== undefined) {
-			this.setTooltip(tooltip);
+			this.setTooltip(tooltip)
 		}
-		this.setFlags(flags);
+		this.setFlags(flags)
 		if (action !== undefined) {
-			this.setAction(action);
+			this.setAction(action)
 		}
 	}
 
@@ -127,17 +127,17 @@ class Button {
 	 */
 	setFlags(flags) {
 		if (flags?.includes('progressive')) {
-			this.buttonElement.classList.add('cd-button-progressive');
+			this.buttonElement.classList.add('cd-button-progressive')
 
 			// Set the class to an OOUI icon to make it look like icons with the "progressive" flag do.
 			// Somehow OOUI doesn't set it at the building stage.
-			this.iconElement?.classList.add('oo-ui-image-progressive');
+			this.iconElement?.classList.add('oo-ui-image-progressive')
 		} else {
-			this.buttonElement.classList.remove('cd-button-progressive');
-			this.iconElement?.classList.remove('oo-ui-image-progressive');
+			this.buttonElement.classList.remove('cd-button-progressive')
+			this.iconElement?.classList.remove('oo-ui-image-progressive')
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -147,11 +147,11 @@ class Button {
 	 * @returns {this} This button.
 	 */
 	setDisabled(disabled) {
-		this.element.classList.toggle('cd-button-disabled', disabled);
-		this.buttonElement.ariaDisabled = String(disabled);
-		this.buttonElement.tabIndex = disabled ? -1 : 0;
+		this.element.classList.toggle('cd-button-disabled', disabled)
+		this.buttonElement.ariaDisabled = String(disabled)
+		this.buttonElement.tabIndex = disabled ? -1 : 0
 
-		return this;
+		return this
 	}
 
 	/**
@@ -161,10 +161,10 @@ class Button {
 	 * @returns {this} This button.
 	 */
 	setPending(pending) {
-		this.setDisabled(pending);
-		this.element.classList.toggle('cd-button-pending', pending);
+		this.setDisabled(pending)
+		this.element.classList.toggle('cd-button-pending', pending)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -175,10 +175,10 @@ class Button {
 	 */
 	setHref(href) {
 		if ('href' in this.buttonElement) {
-			this.buttonElement.href = href;
+			this.buttonElement.href = href
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -189,10 +189,10 @@ class Button {
 	 */
 	setLabel(label) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		this.labelElement ||= this.buttonElement;
-		this.labelElement.textContent = label;
+		this.labelElement ||= this.buttonElement
+		this.labelElement.textContent = label
 
-		return this;
+		return this
 	}
 
 	/**
@@ -202,9 +202,9 @@ class Button {
 	 * @returns {this} This button.
 	 */
 	setTooltip(tooltip) {
-		this.buttonElement.title = tooltip;
+		this.buttonElement.title = tooltip
 
-		return this;
+		return this
 	}
 
 	/**
@@ -222,9 +222,9 @@ class Button {
 				!(this.buttonElement instanceof HTMLAnchorElement && this.buttonElement.href)
 			)
 		) {
-			event.preventDefault();
-			event.stopPropagation();
-			action(event, this);
+			event.preventDefault()
+			event.stopPropagation()
+			action(event, this)
 		}
 	}
 
@@ -236,10 +236,10 @@ class Button {
 	 */
 	setAction(action) {
 		if (this.callback) {
-			this.buttonElement.removeEventListener('click', this.callback);
-			this.buttonElement.removeEventListener('keydown', this.callback);
-			this.buttonElement.classList.remove('cd-clickHandled');
-			this.callback = undefined;
+			this.buttonElement.removeEventListener('click', this.callback)
+			this.buttonElement.removeEventListener('keydown', this.callback)
+			this.buttonElement.classList.remove('cd-clickHandled')
+			this.callback = undefined
 		}
 
 		if (action) {
@@ -249,15 +249,15 @@ class Button {
 					// eslint-disable-next-line @typescript-eslint/no-deprecated
 					[OO.ui.Keys.ENTER, OO.ui.Keys.SPACE].includes(event.keyCode)
 				) {
-					this.maybeExecuteAction(action, event);
+					this.maybeExecuteAction(action, event)
 				}
-			};
-			this.buttonElement.addEventListener('click', this.callback);
-			this.buttonElement.addEventListener('keydown', this.callback);
-			this.buttonElement.classList.add('cd-clickHandled');
+			}
+			this.buttonElement.addEventListener('click', this.callback)
+			this.buttonElement.addEventListener('keydown', this.callback)
+			this.buttonElement.classList.add('cd-clickHandled')
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -266,7 +266,7 @@ class Button {
 	 * @returns {boolean}
 	 */
 	isDisabled() {
-		return this.element.classList.contains('cd-button-disabled');
+		return this.element.classList.contains('cd-button-disabled')
 	}
 
 	/**
@@ -275,7 +275,7 @@ class Button {
 	 * @returns {boolean}
 	 */
 	isPending() {
-		return this.element.classList.contains('cd-button-pending');
+		return this.element.classList.contains('cd-button-pending')
 	}
 
 	/**
@@ -284,9 +284,9 @@ class Button {
 	 * @returns {this} This button.
 	 */
 	hide() {
-		this.element.style.display = 'none';
+		this.element.style.display = 'none'
 
-		return this;
+		return this
 	}
 
 	/**
@@ -295,9 +295,9 @@ class Button {
 	 * @returns {this} This button.
 	 */
 	show() {
-		this.element.style.display = '';
+		this.element.style.display = ''
 
-		return this;
+		return this
 	}
 
 	/**
@@ -308,12 +308,12 @@ class Button {
 	 */
 	toggle(show) {
 		if (show) {
-			this.show();
+			this.show()
 		} else {
-			this.hide();
+			this.hide()
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -322,7 +322,7 @@ class Button {
 	 * @returns {boolean}
 	 */
 	isConnected() {
-		return this.element.isConnected;
+		return this.element.isConnected
 	}
 
 	/**
@@ -331,21 +331,21 @@ class Button {
 	 * @param {OO.ui.Icon} icon
 	 */
 	setIcon(icon) {
-		const iconElement = this.iconElement;
+		const iconElement = this.iconElement
 		if (!iconElement) return;
 
 		[...iconElement.classList]
 			.filter((className) => className.startsWith('oo-ui-icon-'))
 			.forEach((className) => {
-				iconElement.classList.remove(className);
-			});
-		iconElement.classList.add(`oo-ui-icon-${icon}`);
+				iconElement.classList.remove(className)
+			})
+		iconElement.classList.add(`oo-ui-icon-${icon}`)
 	}
 
 	/**
 	 * @type {{ [name: string]: HTMLElement | undefined }}
 	 */
-	static prototypes = {};
+	static prototypes = {}
 
 	/**
 	 * Clone a button prototype (a skeleton with few properties set) without recreating it if it
@@ -358,14 +358,14 @@ class Button {
 	 */
 	static cloneButtonPrototype(tagName) {
 		if (!this.prototypes[tagName]) {
-			const prototype = document.createElement(tagName);
-			prototype.tabIndex = 0;
-			prototype.setAttribute('role', 'button');
-			this.prototypes[tagName] = prototype;
+			const prototype = document.createElement(tagName)
+			prototype.tabIndex = 0
+			prototype.setAttribute('role', 'button')
+			this.prototypes[tagName] = prototype
 		}
 
-		return /** @type {HTMLElement} */ (this.prototypes[tagName].cloneNode(true));
+		return /** @type {HTMLElement} */ (this.prototypes[tagName].cloneNode(true))
 	}
 }
 
-export default Button;
+export default Button

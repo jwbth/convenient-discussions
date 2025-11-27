@@ -1,4 +1,4 @@
-import CommentLayers from './CommentLayers.js';
+import CommentLayers from './CommentLayers.js'
 
 /**
  * Specialized layer management for compact comments.
@@ -10,14 +10,14 @@ class CompactCommentLayers extends CommentLayers {
 	 *
 	 * @type {boolean}
 	 */
-	isHovered = false;
+	isHovered = false
 
 	/**
 	 * Was the overlay menu manually hidden by the user.
 	 *
 	 * @type {boolean}
 	 */
-	wasMenuHidden = false;
+	wasMenuHidden = false
 
 	/**
 	 * Create a CompactCommentLayers instance.
@@ -30,42 +30,42 @@ class CompactCommentLayers extends CommentLayers {
 	 *
 	 * @type {HTMLElement | undefined}
 	 */
-	overlayInnerWrapper;
+	overlayInnerWrapper
 
 	/**
 	 * Gradient element in comment's overlay.
 	 *
 	 * @type {HTMLElement | undefined}
 	 */
-	overlayGradient;
+	overlayGradient
 
 	/**
 	 * Menu element in comment's overlay.
 	 *
 	 * @type {HTMLElement | undefined}
 	 */
-	overlayMenu;
+	overlayMenu
 
 	/**
 	 * Menu element in the comment's overlay as jQuery object.
 	 *
 	 * @type {JQuery | undefined}
 	 */
-	$overlayMenu;
+	$overlayMenu
 
 	/**
 	 * Gradient element in the comment's overlay as jQuery object.
 	 *
 	 * @type {JQuery | undefined}
 	 */
-	$overlayGradient;
+	$overlayGradient
 
 	/**
 	 * Timeout ID for hiding the menu.
 	 *
 	 * @type {number | undefined}
 	 */
-	hideMenuTimeout;
+	hideMenuTimeout
 
 	/**
 	 * Get the compact-specific overlay prototype.
@@ -75,7 +75,7 @@ class CompactCommentLayers extends CommentLayers {
 	 * @override
 	 */
 	getOverlayPrototype() {
-		return CompactCommentLayers.prototypes.get('overlay');
+		return CompactCommentLayers.prototypes.get('overlay')
 	}
 
 	/**
@@ -86,18 +86,18 @@ class CompactCommentLayers extends CommentLayers {
 	 */
 	setupAdditionalElements() {
 		// Set up compact-specific overlay menu elements
-		this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
-		this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);
-		this.overlayMenu = /** @type {HTMLElement} */ (this.overlayInnerWrapper.lastChild);
+		this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild)
+		this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild)
+		this.overlayMenu = /** @type {HTMLElement} */ (this.overlayInnerWrapper.lastChild)
 
 		// Create jQuery wrappers for overlay menu elements
-		this.$overlayMenu = /** @type {JQuery} */ ($(this.overlayMenu));
-		this.$overlayGradient = /** @type {JQuery} */ ($(this.overlayGradient));
+		this.$overlayMenu = /** @type {JQuery} */ ($(this.overlayMenu))
+		this.$overlayGradient = /** @type {JQuery} */ ($(this.overlayGradient))
 
 		// Set up event listeners for menu management
-		this.overlayInnerWrapper.addEventListener('contextmenu', this.hideMenu);
-		this.overlayInnerWrapper.addEventListener('mousedown', this.deferHideMenu);
-		this.overlayInnerWrapper.addEventListener('mouseup', this.dontHideMenu);
+		this.overlayInnerWrapper.addEventListener('contextmenu', this.hideMenu)
+		this.overlayInnerWrapper.addEventListener('mousedown', this.deferHideMenu)
+		this.overlayInnerWrapper.addEventListener('mouseup', this.dontHideMenu)
 	}
 
 	/**
@@ -109,7 +109,7 @@ class CompactCommentLayers extends CommentLayers {
 	 */
 	updateStyles(wereJustCreated = false) {
 		// Call parent updateStyles for common styling
-		super.updateStyles(wereJustCreated);
+		super.updateStyles(wereJustCreated)
 
 		// Compact-specific styling would go here
 		// For now, the base implementation handles the common styling needs
@@ -120,7 +120,7 @@ class CompactCommentLayers extends CommentLayers {
 	 */
 	showMenu() {
 		if (this.overlayInnerWrapper) {
-			this.overlayInnerWrapper.style.display = '';
+			this.overlayInnerWrapper.style.display = ''
 		}
 	}
 
@@ -131,12 +131,12 @@ class CompactCommentLayers extends CommentLayers {
 	 * @override
 	 */
 	hideMenu = (event) => {
-		if (!this.overlayInnerWrapper) return;
+		if (!this.overlayInnerWrapper) return
 
-		event?.preventDefault();
-		this.overlayInnerWrapper.style.display = 'none';
-		this.comment.wasMenuHidden = true;
-	};
+		event?.preventDefault()
+		this.overlayInnerWrapper.style.display = 'none'
+		this.comment.wasMenuHidden = true
+	}
 
 	/**
 	 * Defer hiding the menu after a timeout.
@@ -146,10 +146,10 @@ class CompactCommentLayers extends CommentLayers {
 	 */
 	deferHideMenu = (event) => {
 		// Ignore everything other than left button clicks.
-		if (event.button !== 0) return;
+		if (event.button !== 0) return
 
-		this.hideMenuTimeout = setTimeout(this.hideMenu, 1200);
-	};
+		this.hideMenuTimeout = setTimeout(this.hideMenu, 1200)
+	}
 
 	/**
 	 * Cancel the deferred menu hiding.
@@ -157,8 +157,8 @@ class CompactCommentLayers extends CommentLayers {
 	 * @override
 	 */
 	dontHideMenu = () => {
-		clearTimeout(this.hideMenuTimeout);
-	};
+		clearTimeout(this.hideMenuTimeout)
+	}
 
 	/**
 	 * Destroy the layer elements and clean up references.
@@ -167,17 +167,17 @@ class CompactCommentLayers extends CommentLayers {
 	 */
 	destroy() {
 		// Clear any pending timeouts
-		this.dontHideMenu();
+		this.dontHideMenu()
 
 		// Clean up compact-specific elements
-		this.overlayInnerWrapper = undefined;
-		this.overlayGradient = undefined;
-		this.overlayMenu = undefined;
-		this.$overlayMenu = undefined;
-		this.$overlayGradient = undefined;
+		this.overlayInnerWrapper = undefined
+		this.overlayGradient = undefined
+		this.overlayMenu = undefined
+		this.$overlayMenu = undefined
+		this.$overlayGradient = undefined
 
 		// Call parent destroy method
-		super.destroy();
+		super.destroy()
 	}
 
 	/**
@@ -188,25 +188,25 @@ class CompactCommentLayers extends CommentLayers {
 	 */
 	static initPrototypes() {
 		// Get the base overlay prototype and enhance it with compact-specific elements
-		const baseOverlay = CommentLayers.prototypes.get('overlay');
+		const baseOverlay = CommentLayers.prototypes.get('overlay')
 
 		// Create compact-specific overlay menu elements
-		const overlayInnerWrapper = document.createElement('div');
-		overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
-		baseOverlay.append(overlayInnerWrapper);
+		const overlayInnerWrapper = document.createElement('div')
+		overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper'
+		baseOverlay.append(overlayInnerWrapper)
 
-		const overlayGradient = document.createElement('div');
-		overlayGradient.textContent = '\u00A0';
-		overlayGradient.className = 'cd-comment-overlay-gradient';
-		overlayInnerWrapper.append(overlayGradient);
+		const overlayGradient = document.createElement('div')
+		overlayGradient.textContent = '\u00A0'
+		overlayGradient.className = 'cd-comment-overlay-gradient'
+		overlayInnerWrapper.append(overlayGradient)
 
-		const overlayMenu = document.createElement('div');
-		overlayMenu.className = 'cd-comment-overlay-menu';
-		overlayInnerWrapper.append(overlayMenu);
+		const overlayMenu = document.createElement('div')
+		overlayMenu.className = 'cd-comment-overlay-menu'
+		overlayInnerWrapper.append(overlayMenu)
 
 		// Store the enhanced overlay prototype
-		this.prototypes.add('overlay', baseOverlay);
+		this.prototypes.add('overlay', baseOverlay)
 	}
 }
 
-export default CompactCommentLayers;
+export default CompactCommentLayers

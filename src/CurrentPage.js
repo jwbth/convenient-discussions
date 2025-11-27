@@ -1,12 +1,12 @@
-import CommentForm from './CommentForm';
-import Page from './Page';
-import commentFormManager from './commentFormManager';
-import commentManager from './commentManager';
-import controller from './controller';
-import cd from './loader/cd';
-import pageRegistry from './pageRegistry';
-import sectionManager from './sectionManager';
-import { areObjectsEqual } from './shared/utils-general';
+import CommentForm from './CommentForm'
+import Page from './Page'
+import commentFormManager from './commentFormManager'
+import commentManager from './commentManager'
+import controller from './controller'
+import cd from './loader/cd'
+import pageRegistry from './pageRegistry'
+import sectionManager from './sectionManager'
+import { areObjectsEqual } from './shared/utils-general'
 
 /**
  * The page the user is visiting. Extends the base {@link Page} class with methods and properties
@@ -17,19 +17,19 @@ export default class CurrentPage extends Page {
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$archivingInfo;
+	$archivingInfo
 
 	/**
 	 * @type {JQuery | undefined}
 	 * @private
 	 */
-	$addSectionButtonContainer;
+	$addSectionButtonContainer
 
 	/**
 	 * @type {CommentForm | undefined}
 	 * @private
 	 */
-	addSectionForm;
+	addSectionForm
 
 	/**
 	 * Create a CurrentPage instance.
@@ -38,8 +38,8 @@ export default class CurrentPage extends Page {
 	 * @param {string} [genderedName]
 	 */
 	constructor(mwTitle, genderedName) {
-		super(mwTitle, genderedName);
-		this.isActionable = this.isCommentable();
+		super(mwTitle, genderedName)
+		this.isActionable = this.isCommentable()
 	}
 
 	/**
@@ -52,7 +52,7 @@ export default class CurrentPage extends Page {
 	isArchive() {
 		return (
 			super.isArchive() || Boolean(this.findArchivingInfoElement()?.attr('data-is-archive-page'))
-		);
+		)
 	}
 
 	/**
@@ -63,12 +63,12 @@ export default class CurrentPage extends Page {
 	 * @returns {boolean | undefined}
 	 */
 	canHaveArchives() {
-		const $archivingInfo = this.findArchivingInfoElement();
+		const $archivingInfo = this.findArchivingInfoElement()
 		if ($archivingInfo?.length) {
-			return !$archivingInfo.attr('data-is-archive-page');
+			return !$archivingInfo.attr('data-is-archive-page')
 		}
 
-		return super.canHaveArchives();
+		return super.canHaveArchives()
 	}
 
 	/**
@@ -80,18 +80,18 @@ export default class CurrentPage extends Page {
 	 * @returns {string | undefined}
 	 */
 	getArchivePrefix(onlyExplicit = false) {
-		const $archivingInfo = this.findArchivingInfoElement();
+		const $archivingInfo = this.findArchivingInfoElement()
 		if ($archivingInfo?.length) {
 			if ($archivingInfo.attr('data-is-archive-page')) {
-				return;
+				return
 			}
-			const archivePrefix = $archivingInfo.attr('data-archive-prefix');
+			const archivePrefix = $archivingInfo.attr('data-archive-prefix')
 			if (archivePrefix) {
-				return archivePrefix;
+				return archivePrefix
 			}
 		}
 
-		return super.getArchivePrefix(onlyExplicit);
+		return super.getArchivePrefix(onlyExplicit)
 	}
 
 	/**
@@ -102,18 +102,18 @@ export default class CurrentPage extends Page {
 	 * @returns {Page}
 	 */
 	getArchivedPage() {
-		const $archivingInfo = this.findArchivingInfoElement();
+		const $archivingInfo = this.findArchivingInfoElement()
 		if ($archivingInfo?.length) {
-			const sourcePage = $archivingInfo.attr('data-source-page');
+			const sourcePage = $archivingInfo.attr('data-source-page')
 			if (sourcePage) {
-				const page = pageRegistry.get(sourcePage);
+				const page = pageRegistry.get(sourcePage)
 				if (page) {
-					return page;
+					return page
 				}
 			}
 		}
 
-		return super.getArchivedPage();
+		return super.getArchivedPage()
 	}
 
 	/**
@@ -122,7 +122,7 @@ export default class CurrentPage extends Page {
 	 * @returns {boolean}
 	 */
 	isCommentable() {
-		return cd.loader.isPageOfType('talk') && (this.isActive() || !this.exists());
+		return cd.loader.isPageOfType('talk') && (this.isActive() || !this.exists())
 	}
 
 	/**
@@ -131,7 +131,7 @@ export default class CurrentPage extends Page {
 	 * @returns {boolean}
 	 */
 	exists() {
-		return Boolean(mw.config.get('wgArticleId'));
+		return Boolean(mw.config.get('wgArticleId'))
 	}
 
 	/**
@@ -152,7 +152,7 @@ export default class CurrentPage extends Page {
 			this.exists() &&
 			cd.util.isCurrentRevision() &&
 			!this.isArchive()
-		);
+		)
 	}
 
 	/**
@@ -161,7 +161,7 @@ export default class CurrentPage extends Page {
 	 * @returns {boolean}
 	 */
 	isCurrentArchive() {
-		return cd.util.isCurrentRevision() && this.isArchive();
+		return cd.util.isCurrentRevision() && this.isArchive()
 	}
 
 	/**
@@ -174,9 +174,9 @@ export default class CurrentPage extends Page {
 		// This is not reevaluated after page reloads. Since archive settings we need rarely change, the
 		// reevaluation is unlikely to make any difference
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		this.$archivingInfo ??= controller.$root?.find('.cd-archivingInfo');
+		this.$archivingInfo ??= controller.$root?.find('.cd-archivingInfo')
 
-		return this.$archivingInfo;
+		return this.$archivingInfo
 	}
 
 	/**
@@ -190,7 +190,7 @@ export default class CurrentPage extends Page {
 			// There is a special welcome text in New Topic Tool for 404 pages.
 			(cd.g.isDtNewTopicToolEnabled && !this.exists())
 		) {
-			return;
+			return
 		}
 
 		this.$addSectionButtonContainer = $('<div>')
@@ -202,12 +202,12 @@ export default class CurrentPage extends Page {
 					flags: ['progressive'],
 					classes: ['cd-button-ooui', 'cd-section-button'],
 				}).on('click', () => {
-					this.addSection();
+					this.addSection()
 				}).$element
 			)
 		// If appending to controller.rootElement, it can land on a wrong place, like on 404 pages
 		// with New Topic Tool enabled.
-			.insertAfter(controller.$root);
+			.insertAfter(controller.$root)
 	}
 
 	/**
@@ -217,7 +217,7 @@ export default class CurrentPage extends Page {
 	 * @param {import('./CommentForm').CommentFormInitialState} [dtFormData]
 	 */
 	autoAddSection(dtFormData) {
-		const { searchParams } = new URL(location.href);
+		const { searchParams } = new URL(location.href)
 
 		// &action=edit&section=new when DT's New Topic Tool is enabled.
 		if (
@@ -225,7 +225,7 @@ export default class CurrentPage extends Page {
 			Number(searchParams.get('cdaddtopic')) ||
 			dtFormData
 		) {
-			this.addSection(dtFormData);
+			this.addSection(dtFormData)
 		}
 	}
 
@@ -249,15 +249,15 @@ export default class CurrentPage extends Page {
 			// Sometimes there is more than one "Add section" button on the page, and they lead to opening
 			// forms with different content.
 			if (!areObjectsEqual(preloadConfig, this.addSectionForm.getPreloadConfig())) {
-				mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
+				mw.notify(cd.s('cf-error-formconflict'), { type: 'error' })
 
-				return;
+				return
 			}
 
 			this.addSectionForm.$element.cdScrollIntoView('center');
 
 			// Headline input may be missing if the `nosummary` preload parameter is truthy.
-			(this.addSectionForm.headlineInput || this.addSectionForm.commentInput).focus();
+			(this.addSectionForm.headlineInput || this.addSectionForm.commentInput).focus()
 		} else {
 			this.addSectionForm = commentFormManager.setupCommentForm(
 				this,
@@ -268,21 +268,21 @@ export default class CurrentPage extends Page {
 				},
 				initialState,
 				commentForm
-			);
+			)
 
-			this.$addSectionButtonContainer?.hide();
+			this.$addSectionButtonContainer?.hide()
 			if (!this.exists()) {
-				cd.loader.$content.children('.noarticletext, .warningbox').hide();
+				cd.loader.$content.children('.noarticletext, .warningbox').hide()
 			}
-			$('#ca-addsection').addClass('selected');
-			$('#ca-view').removeClass('selected');
+			$('#ca-addsection').addClass('selected')
+			$('#ca-view').removeClass('selected')
 			this.addSectionForm.on('teardown', () => {
-				$('#ca-addsection').removeClass('selected');
-				$('#ca-view').addClass('selected');
-			});
+				$('#ca-addsection').removeClass('selected')
+				$('#ca-view').addClass('selected')
+			})
 		}
 
-		return this.addSectionForm;
+		return this.addSectionForm
 	}
 
 	/**
@@ -292,11 +292,11 @@ export default class CurrentPage extends Page {
 	 * @param {import('./CommentForm').default} commentForm
 	 */
 	addCommentFormToPage(_mode, commentForm) {
-		const firstSection = sectionManager.getByIndex(0);
+		const firstSection = sectionManager.getByIndex(0)
 		if (firstSection && commentForm.isNewTopicOnTop()) {
-			firstSection.$heading.before(commentForm.$element);
+			firstSection.$heading.before(commentForm.$element)
 		} else {
-			controller.$root.after(commentForm.$element);
+			controller.$root.after(commentForm.$element)
 		}
 	}
 
@@ -310,10 +310,10 @@ export default class CurrentPage extends Page {
 				.removeClass('ext-discussiontools-init-replylink-open')
 
 				.children('.noarticletext, .warningbox')
-				.show();
+				.show()
 		}
 
-		this.$addSectionButtonContainer?.show();
+		this.$addSectionButtonContainer?.show()
 	}
 
 	/**
@@ -325,6 +325,6 @@ export default class CurrentPage extends Page {
 	 * @returns {import('./Comment').default | undefined}
 	 */
 	getCommentAboveCommentToBeAdded(commentForm) {
-		return commentForm.isNewTopicOnTop() ? undefined : commentManager.getByIndex(-1);
+		return commentForm.isNewTopicOnTop() ? undefined : commentManager.getByIndex(-1)
 	}
 }

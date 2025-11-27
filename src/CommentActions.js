@@ -1,5 +1,5 @@
-import cd from './loader/cd';
-import commentManager from './commentManager';
+import cd from './loader/cd'
+import commentManager from './commentManager'
 
 /**
  * @typedef {import('./CommentButton').default} CommentButton
@@ -21,66 +21,66 @@ class CommentActions {
 		 *
 		 * @type {import('./Comment').default}
 		 */
-		this.comment = comment;
+		this.comment = comment
 
 		/**
 		 * Reply button.
 		 *
 		 * @type {CommentButton | undefined}
 		 */
-		this.replyButton = undefined;
+		this.replyButton = undefined
 
 		/**
 		 * Edit button.
 		 *
 		 * @type {CommentButton | undefined}
 		 */
-		this.editButton = undefined;
+		this.editButton = undefined
 
 		/**
 		 * Thank button.
 		 *
 		 * @type {CommentButton | undefined}
 		 */
-		this.thankButton = undefined;
+		this.thankButton = undefined
 
 		/**
 		 * Copy link button.
 		 *
 		 * @type {CommentButton | undefined}
 		 */
-		this.copyLinkButton = undefined;
+		this.copyLinkButton = undefined
 
 		/**
 		 * "Go to parent" button.
 		 *
 		 * @type {CommentButton | undefined}
 		 */
-		this.goToParentButton = undefined;
+		this.goToParentButton = undefined
 
 		/**
 		 * "Go to child" button.
 		 *
 		 * @type {CommentButton | undefined}
 		 */
-		this.goToChildButton = undefined;
+		this.goToChildButton = undefined
 
 		/**
 		 * "Toggle child threads" button.
 		 *
 		 * @type {CommentButton | undefined}
 		 */
-		this.toggleChildThreadsButton = undefined;
+		this.toggleChildThreadsButton = undefined
 	}
 
 	/**
 	 * Create and add all appropriate action buttons for this comment.
 	 */
 	create() {
-		this.addReplyButton();
-		this.addEditButton();
-		this.addThankButton();
-		this.addGoToParentButton();
+		this.addReplyButton()
+		this.addEditButton()
+		this.addThankButton()
+		this.addGoToParentButton()
 	}
 
 	/**
@@ -88,25 +88,25 @@ class CommentActions {
 	 */
 	onReplyAction = () => {
 		if (this.comment.replyForm) {
-			this.comment.replyForm.cancel();
+			this.comment.replyForm.cancel()
 		} else {
-			this.comment.reply();
+			this.comment.reply()
 		}
-	};
+	}
 
 	/**
 	 * Reusable action for edit button.
 	 */
 	onEditAction = () => {
-		this.comment.edit();
-	};
+		this.comment.edit()
+	}
 
 	/**
 	 * Reusable action for thank button.
 	 */
 	onThankAction = () => {
-		this.comment.thank();
-	};
+		this.comment.thank()
+	}
 
 	/**
 	 * Reusable action for copy link button.
@@ -114,29 +114,29 @@ class CommentActions {
 	 * @param {MouseEvent | KeyboardEvent} event The event object.
 	 */
 	onCopyLinkAction = (event) => {
-		this.comment.copyLink(event);
-	};
+		this.comment.copyLink(event)
+	}
 
 	/**
 	 * Reusable action for go to parent button.
 	 */
 	onGoToParentAction = () => {
-		this.comment.goToParent();
-	};
+		this.comment.goToParent()
+	}
 
 	/**
 	 * Reusable action for go to child button.
 	 */
 	onGoToChildAction = () => {
-		/** @type {import('./Comment').default} */ (this.comment.targetChild).scrollTo({ pushState: true });
-	};
+		/** @type {import('./Comment').default} */ (this.comment.targetChild).scrollTo({ pushState: true })
+	}
 
 	/**
 	 * Reusable action for toggle child threads button.
 	 */
 	onToggleChildThreadsAction = () => {
-		this.comment.toggleChildThreads();
-	};
+		this.comment.toggleChildThreads()
+	}
 
 	/**
 	 * Create a reply button and add it to the appropriate container.
@@ -144,10 +144,10 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addReplyButton() {
-		if (!this.comment.isActionable) return;
+		if (!this.comment.isActionable) return
 
-		this.replyButton = this.createReplyButton(this.onReplyAction);
-		this.appendButton(this.replyButton);
+		this.replyButton = this.createReplyButton(this.onReplyAction)
+		this.appendButton(this.replyButton)
 
 		// Check if reply should be disabled due to outdented comments
 		if (
@@ -158,8 +158,8 @@ class CommentActions {
 				this.comment.elements[0].matches('ol *')
 			)
 		) {
-			this.replyButton.setDisabled(true);
-			this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'));
+			this.replyButton.setDisabled(true)
+			this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'))
 		}
 	}
 
@@ -169,10 +169,10 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addEditButton() {
-		if (!this.comment.isEditable) return;
+		if (!this.comment.isEditable) return
 
-		this.editButton = this.createEditButton(this.onEditAction);
-		this.appendButton(this.editButton);
+		this.editButton = this.createEditButton(this.onEditAction)
+		this.appendButton(this.editButton)
 	}
 
 	/**
@@ -187,7 +187,7 @@ class CommentActions {
 			!this.comment.date ||
 			this.comment.isOwn
 		)
-			return;
+			return
 
 		const isThanked = Object.entries(commentManager.getThanksStorage().getData()).some(
 			// TODO: Remove `|| this.comment.dtId === thank.id || this.comment.id === thank.id` part
@@ -196,13 +196,13 @@ class CommentActions {
 				this.comment.dtId === id || this.comment.id === id ||
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				this.comment.dtId === thank?.id || this.comment.id === thank.id
-		);
+		)
 
-		this.thankButton = this.createThankButton(this.onThankAction, isThanked);
-		this.appendButton(this.thankButton);
+		this.thankButton = this.createThankButton(this.onThankAction, isThanked)
+		this.appendButton(this.thankButton)
 
 		if (isThanked) {
-			this.setThanked();
+			this.setThanked()
 		}
 	}
 
@@ -212,10 +212,10 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addCopyLinkButton() {
-		if (!this.comment.id) return;
+		if (!this.comment.id) return
 
-		this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction);
-		this.appendButton(this.copyLinkButton);
+		this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction)
+		this.appendButton(this.copyLinkButton)
 	}
 
 	/**
@@ -224,10 +224,10 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addGoToParentButton() {
-		if (!this.comment.getParent()) return;
+		if (!this.comment.getParent()) return
 
-		this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction);
-		this.appendButton(this.goToParentButton);
+		this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction)
+		this.appendButton(this.goToParentButton)
 	}
 
 	/**
@@ -236,13 +236,13 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	maybeAddGoToChildButton() {
-		if (!this.comment.targetChild) return;
+		if (!this.comment.targetChild) return
 
-		this.comment.configureLayers();
-		if (this.goToChildButton?.isConnected()) return;
+		this.comment.configureLayers()
+		if (this.goToChildButton?.isConnected()) return
 
-		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction);
-		this.prependButton(this.goToChildButton);
+		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction)
+		this.prependButton(this.goToChildButton)
 	}
 
 	/**
@@ -255,15 +255,15 @@ class CommentActions {
 			!this.comment.getChildren().some((child) => child.thread) ||
 			this.toggleChildThreadsButton?.isConnected()
 		) {
-			return;
+			return
 		}
 
-		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction);
-		this.appendButton(this.toggleChildThreadsButton);
+		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction)
+		this.appendButton(this.toggleChildThreadsButton)
 
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
-			this.comment.maybeOnboardOntoToggleChildThreads();
-		});
+			this.comment.maybeOnboardOntoToggleChildThreads()
+		})
 	}
 
 	/**
@@ -274,7 +274,7 @@ class CommentActions {
 			this.thankButton
 				.setDisabled(true)
 				.setLabel(cd.s('cm-thanked'))
-				.setTooltip(cd.s('cm-thanked-tooltip'));
+				.setTooltip(cd.s('cm-thanked-tooltip'))
 		}
 	}
 
@@ -286,7 +286,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	createReplyButton(_action) {
-		throw new Error('createReplyButton must be implemented by subclasses');
+		throw new Error('createReplyButton must be implemented by subclasses')
 	}
 
 	/**
@@ -297,7 +297,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	createEditButton(_action) {
-		throw new Error('createEditButton must be implemented by subclasses');
+		throw new Error('createEditButton must be implemented by subclasses')
 	}
 
 	/**
@@ -309,7 +309,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	createThankButton(_action, _isThanked) {
-		throw new Error('createThankButton must be implemented by subclasses');
+		throw new Error('createThankButton must be implemented by subclasses')
 	}
 
 	/**
@@ -320,7 +320,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	createCopyLinkButton(_action) {
-		throw new Error('createCopyLinkButton must be implemented by subclasses');
+		throw new Error('createCopyLinkButton must be implemented by subclasses')
 	}
 
 	/**
@@ -331,7 +331,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	createGoToParentButton(_action) {
-		throw new Error('createGoToParentButton must be implemented by subclasses');
+		throw new Error('createGoToParentButton must be implemented by subclasses')
 	}
 
 	/**
@@ -342,7 +342,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	createGoToChildButton(_action) {
-		throw new Error('createGoToChildButton must be implemented by subclasses');
+		throw new Error('createGoToChildButton must be implemented by subclasses')
 	}
 
 	/**
@@ -353,7 +353,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	createToggleChildThreadsButton(_action) {
-		throw new Error('createToggleChildThreadsButton must be implemented by subclasses');
+		throw new Error('createToggleChildThreadsButton must be implemented by subclasses')
 	}
 
 	/**
@@ -363,7 +363,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	appendButton(_button) {
-		throw new Error('appendButton must be implemented by subclasses');
+		throw new Error('appendButton must be implemented by subclasses')
 	}
 
 	/**
@@ -373,7 +373,7 @@ class CommentActions {
 	 * @abstract
 	 */
 	prependButton(_button) {
-		throw new Error('prependButton must be implemented by subclasses');
+		throw new Error('prependButton must be implemented by subclasses')
 	}
 
 	/**
@@ -385,7 +385,7 @@ class CommentActions {
 	 */
 	getOverlayMenu() {
 		// Default implementation returns undefined - overlay menu is not available for all comment types
-		return undefined;
+		return undefined
 	}
 
 	/**
@@ -395,8 +395,8 @@ class CommentActions {
 	 * @protected
 	 */
 	hasOverlayMenu() {
-		return Boolean(this.getOverlayMenu());
+		return Boolean(this.getOverlayMenu())
 	}
 }
 
-export default CommentActions;
+export default CommentActions

@@ -6,7 +6,7 @@
  */
 
 /** @type {WindowOrWorkerGlobalScope} */
-const context = self;
+const context = self
 
 /**
  * The main script object, globally available (the modules use the {@link module:cd cd} alias).
@@ -15,7 +15,7 @@ const context = self;
  * @global
  */
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-context.convenientDiscussions ??= /** @type {ConvenientDiscussionsBase} */ ({});
+context.convenientDiscussions ??= /** @type {ConvenientDiscussionsBase} */ ({})
 
 const convenientDiscussionsShared = {
 	/**
@@ -27,11 +27,11 @@ const convenientDiscussionsShared = {
 		return (
 			'WorkerGlobalScope' in self &&
 			self instanceof /** @type {any} */ (self.WorkerGlobalScope)
-		);
+		)
 	},
-};
+}
 
-Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
+Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
 
 /**
  * @typedef {object} ApiErrorFormatHtml
@@ -139,6 +139,6 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @typedef {typeof convenientDiscussionsShared & ConvenientDiscussionsExtension} ConvenientDiscussionsBase
  */
 
-const convenientDiscussions = context.convenientDiscussions;
+const convenientDiscussions = context.convenientDiscussions
 
-export default convenientDiscussions;
+export default convenientDiscussions

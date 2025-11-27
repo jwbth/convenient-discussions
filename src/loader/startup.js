@@ -5,22 +5,22 @@
  */
 
 // Import polyfills for a bunch of ES2022+ features
-import '../shared/polyfills';
+import '../shared/polyfills'
 
-import './convenientDiscussions';
+import './convenientDiscussions'
 
-import defaultConfig from '../../config/default';
-import configUrls from '../../config/urls.json';
-import i18nList from '../../data/i18nList.json';
-import languageFallbacks from '../../data/languageFallbacks.json';
-import en from '../../i18n/en.json';
-import { typedKeysOf, unique } from '../shared/utils-general';
-import { getFooter } from '../utils-window';
+import defaultConfig from '../../config/default'
+import configUrls from '../../config/urls.json'
+import i18nList from '../../data/i18nList.json'
+import languageFallbacks from '../../data/languageFallbacks.json'
+import en from '../../i18n/en.json'
+import { typedKeysOf, unique } from '../shared/utils-general'
+import { getFooter } from '../utils-window'
 
-import cd from './cd';
+import cd from './cd'
 
-await bootstrap();
-$(start);
+await bootstrap()
+$(start)
 
 /**
  * The function that is called first.
@@ -29,9 +29,9 @@ $(start);
  */
 async function bootstrap() {
 	if (cd.isRunning) {
-		console.warn('One instance of Convenient Discussions is already running.');
+		console.warn('One instance of Convenient Discussions is already running.')
 
-		return;
+		return
 	}
 
 	/**
@@ -41,7 +41,7 @@ async function bootstrap() {
 	 * @type {boolean}
 	 * @memberof convenientDiscussions
 	 */
-	cd.isRunning = true;
+	cd.isRunning = true
 
 	if (
 		mw.config.get('wgMFMode') ||
@@ -54,12 +54,12 @@ async function bootstrap() {
 
 		mw.config.get('wgIsMainPage')
 	) {
-		return;
+		return
 	}
 
-	cd.debug.init();
-	cd.debug.startTimer('total time');
-	cd.debug.startTimer('bootstrap');
+	cd.debug.init()
+	cd.debug.startTimer('total time')
+	cd.debug.startTimer('bootstrap')
 
 	/**
 	 * The script has started.
@@ -68,11 +68,11 @@ async function bootstrap() {
 	 * @param {object} cd {@link convenientDiscussions} object.
 	 * @global
 	 */
-	mw.hook('convenientDiscussions.started').fire(cd);
+	mw.hook('convenientDiscussions.started').fire(cd)
 
 	if (SINGLE_CONFIG_FILE_NAME) {
 		try {
-			cd.config = (await import(`../config/${SINGLE_CONFIG_FILE_NAME}`)).default;
+			cd.config = (await import(`../config/${SINGLE_CONFIG_FILE_NAME}`)).default
 		} catch {
 			// Empty
 		}
@@ -85,40 +85,40 @@ async function bootstrap() {
 				.replace(/&nbsp;/g, '\u00A0')
 				.replace(/&#32;/g, ' ')
 				.replace(/&rlm;/g, '\u200F')
-				.replace(/&lrm;/g, '\u200E');
+				.replace(/&lrm;/g, '\u200E')
 
-		cd.i18n = (/** @type {I18n} */ { en });
+		cd.i18n = (/** @type {I18n} */ { en })
 		typedKeysOf(cd.i18n.en).forEach((name) => {
-			cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
-		});
+			cd.i18n.en[name] = replaceEntities(cd.i18n.en[name])
+		})
 		if (SINGLE_LANG_CODE !== 'en') {
-			cd.i18n[SINGLE_LANG_CODE] = await import(`../i18n/${SINGLE_LANG_CODE}.json`);
-			const langObj = cd.i18n[SINGLE_LANG_CODE];
+			cd.i18n[SINGLE_LANG_CODE] = await import(`../i18n/${SINGLE_LANG_CODE}.json`)
+			const langObj = cd.i18n[SINGLE_LANG_CODE]
 			Object.keys(cd.i18n[SINGLE_LANG_CODE])
 				.filter((name) => typeof langObj[name] === 'string')
 				.forEach((name) => {
-					langObj[name] = replaceEntities(langObj[name]);
-				});
-			langObj.dayjsLocale = await import(`dayjs/locale/${SINGLE_LANG_CODE}`);
-			langObj.dateFnsLocale = await import(`date-fns/locale/${SINGLE_LANG_CODE}`);
+					langObj[name] = replaceEntities(langObj[name])
+				})
+			langObj.dayjsLocale = await import(`dayjs/locale/${SINGLE_LANG_CODE}`)
+			langObj.dateFnsLocale = await import(`date-fns/locale/${SINGLE_LANG_CODE}`)
 		}
 	}
 
-	setLanguages();
-	cd.loader.maybeLoadTalkPageModules();
+	setLanguages()
+	cd.loader.maybeLoadTalkPageModules()
 
 	try {
 		await Promise.all([
 			(/** @type {any} */ (cd).config) ? Promise.resolve() : getConfig(),
 			getStringsPromise(),
-		]);
+		])
 	} catch (error) {
-		console.error(error);
+		console.error(error)
 
-		return;
+		return
 	}
 
-	cd.debug.stopTimer('bootstrap');
+	cd.debug.stopTimer('bootstrap')
 }
 
 /**
@@ -126,15 +126,15 @@ async function bootstrap() {
  */
 function setLanguages() {
 	const getLanguageOrFallback = (/** @type {string} */ lang) =>
-		cd.util.getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks);
+		cd.util.getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks)
 
-	cd.g.userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'));
+	cd.g.userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'))
 
 	// Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
 	// used for signature parsing we have to use the real content language (see init.loadSiteData()).
 	// As a result, we use cd.g.contentLanguage only for the script's own messages, not the native
 	// MediaWiki messages.
-	cd.g.contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'));
+	cd.g.contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'))
 }
 
 /**
@@ -144,39 +144,39 @@ function setLanguages() {
  */
 function getConfig() {
 	return new Promise((resolve, reject) => {
-		let key = mw.config.get('wgServerName');
+		let key = mw.config.get('wgServerName')
 		if (IS_STAGING) {
-			key += '.staging';
+			key += '.staging'
 		}
 		const configUrl =
 		/** @type {StringsByKey} */ (configUrls)[key] ||
-			/** @type {StringsByKey} */ (configUrls)[mw.config.get('wgServerName')];
+			/** @type {StringsByKey} */ (configUrls)[mw.config.get('wgServerName')]
 		if (configUrl) {
 			const rejectWithMsg = (/** @type {unknown} */ error) => {
 				reject(
 					new Error(`Convenient Discussions can't run: couldn't load the configuration.`, {
 						cause: error,
 					})
-				);
-			};
+				)
+			}
 
-			const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || [];
+			const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || []
 			if (gadgetName && mw.user.options.get(`gadget-${gadgetName}`)) {
 				// A gadget is enabled on the wiki, and it should be loaded and executed without any
 				// additional requests; we just wait until it happens.
 				mw.loader.using(`ext.gadget.${gadgetName}`).then(() => {
-					resolve();
-				});
+					resolve()
+				})
 
-				return;
+				return
 			}
 			mw.loader.getScript(configUrl).then(() => {
-				resolve();
-			}, rejectWithMsg);
+				resolve()
+			}, rejectWithMsg)
 		} else {
-			resolve();
+			resolve()
 		}
-	});
+	})
 }
 
 /**
@@ -195,7 +195,7 @@ export function getStringsPromise() {
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		? (cd.i18n ? Promise.resolve() : cd.getStringsPromise || getStrings())
 
-		: getStrings();
+		: getStrings()
 }
 
 /**
@@ -218,7 +218,7 @@ async function getStrings() {
 					ttlInDays: 1,
 				})
 			)
-	).catch(() => {});
+	).catch(() => {})
 }
 
 /**
@@ -228,26 +228,26 @@ async function getStrings() {
  * @fires preprocessed
  */
 async function start() {
-	cd.debug.startTimer('start');
+	cd.debug.startTimer('start')
 
 	// MAIN TASKS
 
-	makeSureConfigIsSet();
-	await makeSureStringsAreSet();
-	cd.loader.init();
+	makeSureConfigIsSet()
+	await makeSureStringsAreSet()
+	cd.loader.init()
 
 	// ADDITIONAL TWEAKS
 
 	if (mw.config.get('wgIsArticle')) {
-		addFooterSwitcher();
+		addFooterSwitcher()
 	}
-	tweakAddTopicButton();
-	addCommentLinksIfOnSpecialSearch();
+	tweakAddTopicButton()
+	addCommentLinksIfOnSpecialSearch()
 
 	// TRIVIA
 
 	if (!cd.loader.isBooting()) {
-		cd.debug.stopTimer('start');
+		cd.debug.stopTimer('start')
 	}
 
 	/**
@@ -258,16 +258,16 @@ async function start() {
 	 * @param {object} cd {@link convenientDiscussions} object.
 	 * @global
 	 */
-	mw.hook('convenientDiscussions.preprocessed').fire(cd);
+	mw.hook('convenientDiscussions.preprocessed').fire(cd)
 }
 
 /**
  * Merge the loaded configuration with the default configuration if not already.
  */
 function makeSureConfigIsSet() {
-	if (cd.config._mergedWithDefault) return;
+	if (cd.config._mergedWithDefault) return
 
-	cd.config = { ...defaultConfig, ...cd.config, _mergedWithDefault: true };
+	cd.config = { ...defaultConfig, ...cd.config, _mergedWithDefault: true }
 }
 
 /**
@@ -277,17 +277,17 @@ function makeSureConfigIsSet() {
  */
 async function makeSureStringsAreSet() {
 	if (Object.keys(mw.messages.get()).some((key) => key.startsWith('convenient-discussions-')))
-		return;
+		return
 
 	// Strings that should be displayed in the site language, not the user language.
 	const contentStrings = [
 		'es-',
 		'cf-autocomplete-commentlinktext',
 		'move-',
-	];
+	]
 
 	if (!SINGLE_LANG_CODE) {
-		await import('../../dist/convenientDiscussions-i18n/en');
+		await import('../../dist/convenientDiscussions-i18n/en')
 	}
 	const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
 		const lang = contentStrings.some((contentStringName) =>
@@ -295,42 +295,42 @@ async function makeSureStringsAreSet() {
 			(contentStringName.endsWith('-') && name.startsWith(contentStringName))
 		)
 			? cd.g.contentLanguage
-			: cd.g.userLanguage;
-		acc[name] = (lang in cd.i18n && cd.i18n[lang][name]) ?? cd.i18n.en[name];
+			: cd.g.userLanguage
+		acc[name] = (lang in cd.i18n && cd.i18n[lang][name]) ?? cd.i18n.en[name]
 
-		return acc;
-	}, /** @type {StringsByKey} */ ({}));
+		return acc
+	}, /** @type {StringsByKey} */ ({}))
 
 	Object.keys(strings).forEach((name) => {
-		mw.messages.set(`convenient-discussions-${name}`, strings[name]);
-	});
+		mw.messages.set(`convenient-discussions-${name}`, strings[name])
+	})
 }
 
 /**
  * Add a footer link to enable/disable CD on this page once.
  */
 function addFooterSwitcher() {
-	const enable = !cd.loader.isPageOfType('talk');
-	const url = new URL(location.href);
-	url.searchParams.set('cdtalkpage', enable ? '1' : '0');
-	const $li = $('<li>').attr('id', 'footer-togglecd');
+	const enable = !cd.loader.isPageOfType('talk')
+	const url = new URL(location.href)
+	url.searchParams.set('cdtalkpage', enable ? '1' : '0')
+	const $li = $('<li>').attr('id', 'footer-togglecd')
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const $a = $('<a>')
 		.attr('href', url.toString())
 		.addClass('noprint')
 		.text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
-		.appendTo($li);
+		.appendTo($li)
 	if (enable) {
 		$a.on('click', (event) => {
-			if (event.ctrlKey || event.shiftKey || event.metaKey) return;
+			if (event.ctrlKey || event.shiftKey || event.metaKey) return
 
-			event.preventDefault();
-			history.pushState(history.state, '', url.toString());
-			$li.remove();
-			start();
-		});
+			event.preventDefault()
+			history.pushState(history.state, '', url.toString())
+			$li.remove()
+			start()
+		})
 	}
-	getFooter().append($li);
+	getFooter().append($li)
 }
 
 /**
@@ -343,24 +343,24 @@ function addFooterSwitcher() {
 function tweakAddTopicButton() {
 	const dtCreatePage =
 		cd.g.isDtNewTopicToolEnabled &&
-		mw.user.options.get('discussiontools-newtopictool-createpage');
+		mw.user.options.get('discussiontools-newtopictool-createpage')
 	if (!cd.loader.isArticlePageOfTypeTalk() || (mw.config.get('wgAction') === 'view' && !dtCreatePage))
-		return;
+		return
 
-	const $button = $('#ca-addsection a');
+	const $button = $('#ca-addsection a')
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	const href = /** @type {HTMLAnchorElement | undefined} */ ($button[0])?.href;
+	const href = /** @type {HTMLAnchorElement | undefined} */ ($button[0])?.href
 	if (href) {
-		const url = new URL(href);
+		const url = new URL(href)
 		if (dtCreatePage) {
-			url.searchParams.set('dtenable', '0');
+			url.searchParams.set('dtenable', '0')
 		}
 		if (!dtCreatePage || mw.config.get('wgAction') !== 'view') {
-			url.searchParams.delete('action');
-			url.searchParams.delete('section');
-			url.searchParams.set('cdaddtopic', '1');
+			url.searchParams.delete('action')
+			url.searchParams.delete('section')
+			url.searchParams.set('cdaddtopic', '1')
 		}
-		$button.attr('href', url.toString());
+		$button.attr('href', url.toString())
 	}
 }
 
@@ -369,19 +369,19 @@ function tweakAddTopicButton() {
  * option from the "Couldn't find the comment" message, add comment links to titles.
  */
 function addCommentLinksIfOnSpecialSearch() {
-	if (mw.config.get('wgCanonicalSpecialPageName') !== 'Search') return;
+	if (mw.config.get('wgCanonicalSpecialPageName') !== 'Search') return
 
-	const [, commentId] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
+	const [, commentId] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || []
 	if (commentId) {
 		mw.loader.using('mediawiki.api').then(
 			async () => {
-				await cd.loader.getSiteDataPromise();
+				await cd.loader.getSiteDataPromise()
 				$('.mw-search-result-heading').each((_, el) => {
 					const originalHref = $(el)
 						.find('a')
 						.first()
-						.attr('href');
-					if (!originalHref) return;
+						.attr('href')
+					if (!originalHref) return
 
 					$(el).append(
 						' ',
@@ -394,10 +394,10 @@ function addCommentLinksIfOnSpecialSearch() {
 									.text(cd.s('deadanchor-search-gotocomment')),
 								document.createTextNode(cd.mws('parentheses-end')),
 							)
-					);
-				});
+					)
+				})
 			},
 			console.error
-		);
+		)
 	}
 }

@@ -6,32 +6,32 @@
  * @module processFragment
  */
 
-import Comment from './Comment';
-import commentManager from './commentManager';
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import { defined, sleep, underlinesToSpaces } from './shared/utils-general';
-import { removeWikiMarkup } from './shared/utils-wikitext';
-import { formatDateNative, isExistentAnchor, wrapHtml } from './utils-window';
+import Comment from './Comment'
+import commentManager from './commentManager'
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import { defined, sleep, underlinesToSpaces } from './shared/utils-general'
+import { removeWikiMarkup } from './shared/utils-wikitext'
+import { formatDateNative, isExistentAnchor, wrapHtml } from './utils-window'
 
 /** @type {string} */
-let decodedValue;
+let decodedValue
 /** @type {Date | undefined} */
-let date;
+let date
 /** @type {string | undefined} */
-let author;
+let author
 /** @type {string} */
-let guessedCommentText;
+let guessedCommentText
 /** @type {string} */
-let guessedSectionText;
+let guessedSectionText
 /** @type {string} */
-let sectionName;
+let sectionName
 /** @type {string} */
-let sectionNameDotDecoded;
+let sectionNameDotDecoded
 /** @type {string} */
-let token;
+let token
 /** @type {string} */
-let searchQuery;
+let searchQuery
 
 /**
  * @typedef {object} SearchResult
@@ -41,29 +41,29 @@ let searchQuery;
  */
 
 /** @type {SearchResult[]} */
-let searchResults;
+let searchResults
 
 /**
  * _For internal use._ Perform URL fragment-related tasks.
  */
 export default async function processFragment() {
-	const value = location.hash.slice(1);
-	let commentId;
+	const value = location.hash.slice(1)
+	let commentId
 	try {
-		decodedValue = decodeURIComponent(value);
+		decodedValue = decodeURIComponent(value)
 		if (Comment.isId(value)) {
-			commentId = decodedValue;
+			commentId = decodedValue
 		}
 	} catch (error) {
-		console.error(error);
+		console.error(error)
 	}
 
-	let comment;
+	let comment
 	if (commentId) {
-		({ date, author } = Comment.parseId(commentId) || {});
-		comment = commentManager.getById(commentId, true);
+		({ date, author } = Comment.parseId(commentId) || {})
+		comment = commentManager.getById(commentId, true)
 	} else if (decodedValue) {
-		({ comment, date, author } = commentManager.getByDtId(decodedValue, true) || {});
+		({ comment, date, author } = commentManager.getByDtId(decodedValue, true) || {})
 	}
 
 	if (comment) {
@@ -73,15 +73,15 @@ export default async function processFragment() {
 			comment.scrollTo({
 				smooth: false,
 				expandThreads: true,
-			});
+			})
 
 			// Replace CD's comment ID in the fragment with DiscussionTools' if available.
 			history.replaceState(
 				{ ...history.state, cdJumpedToComment: true },
 				'',
 				comment.dtId ? `#${comment.dtId}` : undefined
-			);
-		});
+			)
+		})
 	}
 
 	if (decodedValue && !cd.page.isArchive() &&
@@ -98,7 +98,7 @@ export default async function processFragment() {
 			isExistentAnchor(decodedValue)
 		)
 	) {
-		maybeNotifyNotFound();
+		maybeNotifyNotFound()
 	}
 }
 
@@ -110,45 +110,45 @@ export default async function processFragment() {
  * @private
  */
 function maybeNotifyNotFound() {
-	let label;
-	guessedCommentText = '';
-	guessedSectionText = '';
+	let label
+	guessedCommentText = ''
+	guessedSectionText = ''
 
 	if (date && author) {
-		label = cd.sParse('deadanchor-comment-lead');
-		const priorComment = commentManager.findPriorComment(date, author);
+		label = cd.sParse('deadanchor-comment-lead')
+		const priorComment = commentManager.findPriorComment(date, author)
 		if (priorComment) {
 			guessedCommentText = (' ' + cd.sParse('deadanchor-comment-previous', '#' + priorComment.id))
 			// Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
-				.replace(cd.g.articlePathRegexp, '$1');
-			label += guessedCommentText;
+				.replace(cd.g.articlePathRegexp, '$1')
+			label += guessedCommentText
 		}
 	} else {
-		sectionName = underlinesToSpaces(decodedValue);
+		sectionName = underlinesToSpaces(decodedValue)
 		label = (
 			cd.sParse('deadanchor-section-lead', sectionName) +
 			' ' +
 			cd.sParse('deadanchor-section-reason')
-		);
-		const sectionMatch = sectionManager.findByHeadlineParts(sectionName);
+		)
+		const sectionMatch = sectionManager.findByHeadlineParts(sectionName)
 		if (sectionMatch) {
 			guessedSectionText = (
 				' ' +
 				cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.headline)
 			)
 			// Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
-				.replace(cd.g.articlePathRegexp, '$1');
-			label += guessedSectionText;
+				.replace(cd.g.articlePathRegexp, '$1')
+			label += guessedSectionText
 		}
 	}
 
 	if (cd.page.canHaveArchives()) {
-		searchForNotFoundItem();
+		searchForNotFoundItem()
 	} else {
 		mw.notify(wrapHtml(label), {
 			type: 'warn',
 			autoHideSeconds: 'long',
-		});
+		})
 	}
 }
 
@@ -160,21 +160,21 @@ function maybeNotifyNotFound() {
 async function searchForNotFoundItem() {
 	token = date
 		? formatDateNative(date, false, cd.g.timestampTools.content.timezone)
-		: sectionName.replace(/"/g, '');
-	searchQuery = `"${token}"`;
+		: sectionName.replace(/"/g, '')
+	searchQuery = `"${token}"`
 
 	if (!date) {
 		try {
 			sectionNameDotDecoded = decodeURIComponent(
 				sectionName.replace(/\.([0-9A-F]{2})/g, '%$1')
-			);
+			)
 		} catch {
 			// Empty
 		}
 	}
 	if (sectionName && sectionName !== sectionNameDotDecoded) {
-		const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
-		searchQuery += ` OR "${tokenDotDecoded}"`;
+		const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '')
+		searchQuery += ` OR "${tokenDotDecoded}"`
 	}
 
 	if (date) {
@@ -185,12 +185,12 @@ async function searchForNotFoundItem() {
 				new Date(date.getTime() - cd.g.msInMin * gap),
 				false,
 				cd.g.timestampTools.content.timezone
-			);
-			searchQuery += ` OR "${adjustedToken}"`;
+			)
+			searchQuery += ` OR "${adjustedToken}"`
 		}
 	}
-	const archivePrefix = cd.page.getArchivePrefix();
-	searchQuery += ` prefix:${archivePrefix}`;
+	const archivePrefix = cd.page.getArchivePrefix()
+	searchQuery += ` prefix:${archivePrefix}`
 
 	const response = await cd.getApi().get({
 		action: 'query',
@@ -202,10 +202,10 @@ async function searchForNotFoundItem() {
 		srsort: 'create_timestamp_desc',
 
 		srlimit: 20,
-	});
-	searchResults = response?.query?.search;
+	})
+	searchResults = response?.query?.search
 
-	notifyAboutSearchResults();
+	notifyAboutSearchResults()
 }
 
 /**
@@ -221,7 +221,7 @@ function notifyAboutSearchResults() {
 			sort: 'create_timestamp_desc',
 			cdcomment: date && decodedValue,
 		})
-	);
+	)
 
 	if (searchResults.length === 0) {
 		mw.notify(
@@ -248,21 +248,21 @@ function notifyAboutSearchResults() {
 				type: 'warn',
 				autoHideSeconds: 'long',
 			}
-		);
+		)
 	} else {
-		let exactMatchPageTitle;
+		let exactMatchPageTitle
 
 		// Will be either sectionName or sectionNameDotDecoded.
-		let sectionNameFound = sectionName;
+		let sectionNameFound = sectionName
 
 		if (date) {
 			const matches = Object.entries(searchResults)
 				.map(([, result]) => result)
 				.filter((result) => (
 					removeWikiMarkup(result.snippet)?.includes(token)
-				));
+				))
 			if (matches.length === 1) {
-				exactMatchPageTitle = matches[0].title;
+				exactMatchPageTitle = matches[0].title
 			}
 		} else {
 			// Obtain the first exact section title match (which would be from the most recent archive).
@@ -274,32 +274,32 @@ function notifyAboutSearchResults() {
 					[sectionName, sectionNameDotDecoded]
 						.filter(defined)
 						.includes(result.sectiontitle)
-				));
+				))
 			if (exactMatch) {
-				exactMatchPageTitle = exactMatch.title;
-				sectionNameFound = underlinesToSpaces(/** @type {string} */ (exactMatch.sectiontitle));
+				exactMatchPageTitle = exactMatch.title
+				sectionNameFound = underlinesToSpaces(/** @type {string} */ (exactMatch.sectiontitle))
 			}
 		}
 
-		let label;
+		let label
 		if (exactMatchPageTitle) {
-			const fragment = date ? decodedValue : sectionNameFound;
-			const wikilink = `${exactMatchPageTitle}#${fragment}`;
+			const fragment = date ? decodedValue : sectionNameFound
+			const wikilink = `${exactMatchPageTitle}#${fragment}`
 			label = date
 				? (
 						cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
 						guessedCommentText
 					)
-				: cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
+				: cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl)
 		} else {
 			label = date
 				? cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + guessedCommentText
-				: cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
+				: cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl)
 		}
 
 		mw.notify(wrapHtml(label), {
 			type: 'warn',
 			autoHideSeconds: 'long',
-		});
+		})
 	}
 }

@@ -1,8 +1,8 @@
-import CommentActions from './CommentActions';
-import CommentButton from './CommentButton';
-import PrototypeRegistry from './PrototypeRegistry';
-import cd from './loader/cd';
-import { createSvg } from './utils-window';
+import CommentActions from './CommentActions'
+import CommentButton from './CommentButton'
+import PrototypeRegistry from './PrototypeRegistry'
+import cd from './loader/cd'
+import { createSvg } from './utils-window'
 
 /**
  * Actions management for spacious comments with menu-based styling.
@@ -16,7 +16,7 @@ class SpaciousCommentActions extends CommentActions {
 	 * @override
 	 */
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
-	comment = this.comment;
+	comment = this.comment
 
 	/**
 	 * @type {PrototypeRegistry<{
@@ -24,7 +24,7 @@ class SpaciousCommentActions extends CommentActions {
 	 *   goToChildButtonSvg: SVGElement
 	 * }>}
 	 */
-	static prototypes = new PrototypeRegistry();
+	static prototypes = new PrototypeRegistry()
 	/**
 	 * Create a reply button for spacious comments.
 	 *
@@ -38,7 +38,7 @@ class SpaciousCommentActions extends CommentActions {
 			classes: ['cd-comment-button-labeled'],
 			// flags: ['progressive'],
 			action,
-		});
+		})
 	}
 
 	/**
@@ -53,7 +53,7 @@ class SpaciousCommentActions extends CommentActions {
 			label: cd.s('cm-edit'),
 			classes: ['cd-comment-button-labeled'],
 			action,
-		});
+		})
 	}
 
 	/**
@@ -70,7 +70,7 @@ class SpaciousCommentActions extends CommentActions {
 			tooltip: cd.s(isThanked ? 'cm-thanked-tooltip' : 'cm-thank-tooltip'),
 			classes: ['cd-comment-button-labeled'],
 			action,
-		});
+		})
 	}
 
 	/**
@@ -87,7 +87,7 @@ class SpaciousCommentActions extends CommentActions {
 			classes: ['cd-comment-button-labeled'],
 			action,
 			href: this.comment.dtId && '#' + this.comment.dtId,
-		});
+		})
 	}
 
 	/**
@@ -102,11 +102,11 @@ class SpaciousCommentActions extends CommentActions {
 			tooltip: cd.s('cm-gotoparent-tooltip'),
 			classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent', 'cd-icon'],
 			action,
-		});
+		})
 
-		button.element.append(SpaciousCommentActions.prototypes.get('goToParentButtonSvg'));
+		button.element.append(SpaciousCommentActions.prototypes.get('goToParentButtonSvg'))
 
-		return button;
+		return button
 	}
 
 	/**
@@ -121,11 +121,11 @@ class SpaciousCommentActions extends CommentActions {
 			tooltip: cd.s('cm-gotochild-tooltip'),
 			classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild', 'cd-icon'],
 			action,
-		});
+		})
 
-		button.element.append(SpaciousCommentActions.prototypes.get('goToChildButtonSvg'));
+		button.element.append(SpaciousCommentActions.prototypes.get('goToChildButtonSvg'))
 
-		return button;
+		return button
 	}
 
 	/**
@@ -140,11 +140,11 @@ class SpaciousCommentActions extends CommentActions {
 			tooltip: cd.s('cm-togglechildthreads-tooltip'),
 			classes: ['cd-comment-button-icon', 'cd-comment-button-toggleChildThreads', 'cd-icon'],
 			action,
-		});
+		})
 
-		this.comment.updateToggleChildThreadsButton();
+		this.comment.updateToggleChildThreadsButton()
 
-		return button;
+		return button
 	}
 
 	/**
@@ -160,10 +160,10 @@ class SpaciousCommentActions extends CommentActions {
 			button === this.toggleChildThreadsButton
 		) {
 			// These buttons go in the header
-			this.comment.headerElement.append(button.element);
+			this.comment.headerElement.append(button.element)
 		} else {
 			// Other buttons go in the menu
-			this.comment.menuElement?.append(button.element);
+			this.comment.menuElement?.append(button.element)
 		}
 	}
 
@@ -179,9 +179,9 @@ class SpaciousCommentActions extends CommentActions {
 			this.comment.headerElement.insertBefore(
 				button.element,
 				(this.goToParentButton?.element || this.comment.timestampElement).nextSibling
-			);
+			)
 		} else {
-			this.comment.headerElement.prepend(button.element);
+			this.comment.headerElement.prepend(button.element)
 		}
 	}
 
@@ -195,19 +195,19 @@ class SpaciousCommentActions extends CommentActions {
 			!this.comment.getChildren().some((child) => child.thread) ||
 			this.toggleChildThreadsButton?.isConnected()
 		) {
-			return;
+			return
 		}
 
-		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction);
+		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction)
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
-			this.comment.maybeOnboardOntoToggleChildThreads();
-		});
+			this.comment.maybeOnboardOntoToggleChildThreads()
+		})
 
 		// Insert in header before change note
 		this.comment.headerElement.insertBefore(
 			this.toggleChildThreadsButton.element,
 			this.comment.$changeNote?.[0] || null
-		);
+		)
 	}
 
 	/**
@@ -219,12 +219,12 @@ class SpaciousCommentActions extends CommentActions {
 		this.prototypes.add(
 			'goToParentButtonSvg',
 			createSvg(16, 16, 20, 20).html(`<path d="M10 5l8 10H2z" />`)[0]
-		);
+		)
 		this.prototypes.add(
 			'goToChildButtonSvg',
 			createSvg(16, 16, 20, 20).html(`<path d="M10 15L2 5h16z" />`)[0]
-		);
+		)
 	}
 }
 
-export default SpaciousCommentActions;
+export default SpaciousCommentActions

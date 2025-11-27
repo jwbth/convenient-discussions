@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import AutocompleteFactory from '../src/AutocompleteFactory';
-import CdError from '../src/shared/CdError';
+import AutocompleteFactory from '../src/AutocompleteFactory'
+import CdError from '../src/shared/CdError'
 
 // Mock all autocomplete classes
 jest.mock('../src/MentionsAutocomplete', () => ({
@@ -13,7 +13,7 @@ jest.mock('../src/MentionsAutocomplete', () => ({
 		getLabel: () => 'Mentions',
 		getTrigger: () => '@',
 	})),
-}));
+}))
 
 jest.mock('../src/WikilinksAutocomplete', () => ({
 	default: jest.fn().mockImplementation((config) => ({
@@ -22,7 +22,7 @@ jest.mock('../src/WikilinksAutocomplete', () => ({
 		getLabel: () => 'Wikilinks',
 		getTrigger: () => '[[',
 	})),
-}));
+}))
 
 jest.mock('../src/TemplatesAutocomplete', () => ({
 	default: jest.fn().mockImplementation((config) => ({
@@ -31,7 +31,7 @@ jest.mock('../src/TemplatesAutocomplete', () => ({
 		getLabel: () => 'Templates',
 		getTrigger: () => '{{',
 	})),
-}));
+}))
 
 jest.mock('../src/TagsAutocomplete', () => ({
 	default: jest.fn().mockImplementation((config) => ({
@@ -40,7 +40,7 @@ jest.mock('../src/TagsAutocomplete', () => ({
 		getLabel: () => 'Tags',
 		getTrigger: () => '<',
 	})),
-}));
+}))
 
 jest.mock('../src/CommentLinksAutocomplete', () => ({
 	default: jest.fn().mockImplementation((config) => ({
@@ -49,92 +49,92 @@ jest.mock('../src/CommentLinksAutocomplete', () => ({
 		getLabel: () => 'Comment Links',
 		getTrigger: () => '[[#',
 	})),
-}));
+}))
 
 describe('AutocompleteFactory', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
-	});
+		jest.clearAllMocks()
+	})
 
 	describe('create', () => {
 		it('should create MentionsAutocomplete instance', () => {
-			const config = { default: ['user1', 'user2'] };
-			const instance = AutocompleteFactory.create('mentions', config);
+			const config = { default: ['user1', 'user2'] }
+			const instance = AutocompleteFactory.create('mentions', config)
 
-			expect(instance.type).toBe('mentions');
-			expect(instance.config).toEqual(config);
-			expect(require('../src/MentionsAutocomplete').default).toHaveBeenCalledWith(config);
-		});
+			expect(instance.type).toBe('mentions')
+			expect(instance.config).toEqual(config)
+			expect(require('../src/MentionsAutocomplete').default).toHaveBeenCalledWith(config)
+		})
 
 		it('should create WikilinksAutocomplete instance', () => {
-			const config = { cache: {} };
-			const instance = AutocompleteFactory.create('wikilinks', config);
+			const config = { cache: {} }
+			const instance = AutocompleteFactory.create('wikilinks', config)
 
-			expect(instance.type).toBe('wikilinks');
-			expect(instance.config).toEqual(config);
-			expect(require('../src/WikilinksAutocomplete').default).toHaveBeenCalledWith(config);
-		});
+			expect(instance.type).toBe('wikilinks')
+			expect(instance.config).toEqual(config)
+			expect(require('../src/WikilinksAutocomplete').default).toHaveBeenCalledWith(config)
+		})
 
 		it('should create TemplatesAutocomplete instance', () => {
-			const config = { data: { useTemplateData: true } };
-			const instance = AutocompleteFactory.create('templates', config);
+			const config = { data: { useTemplateData: true } }
+			const instance = AutocompleteFactory.create('templates', config)
 
-			expect(instance.type).toBe('templates');
-			expect(instance.config).toEqual(config);
-			expect(require('../src/TemplatesAutocomplete').default).toHaveBeenCalledWith(config);
-		});
+			expect(instance.type).toBe('templates')
+			expect(instance.config).toEqual(config)
+			expect(require('../src/TemplatesAutocomplete').default).toHaveBeenCalledWith(config)
+		})
 
 		it('should create TagsAutocomplete instance', () => {
-			const config = { default: ['div', 'span'] };
-			const instance = AutocompleteFactory.create('tags', config);
+			const config = { default: ['div', 'span'] }
+			const instance = AutocompleteFactory.create('tags', config)
 
-			expect(instance.type).toBe('tags');
-			expect(instance.config).toEqual(config);
-			expect(require('../src/TagsAutocomplete').default).toHaveBeenCalledWith(config);
-		});
+			expect(instance.type).toBe('tags')
+			expect(instance.config).toEqual(config)
+			expect(require('../src/TagsAutocomplete').default).toHaveBeenCalledWith(config)
+		})
 
 		it('should create CommentLinksAutocomplete instance', () => {
-			const config = { data: { comments: [] } };
-			const instance = AutocompleteFactory.create('commentLinks', config);
+			const config = { data: { comments: [] } }
+			const instance = AutocompleteFactory.create('commentLinks', config)
 
-			expect(instance.type).toBe('commentLinks');
-			expect(instance.config).toEqual(config);
-			expect(require('../src/CommentLinksAutocomplete').default).toHaveBeenCalledWith(config);
-		});
+			expect(instance.type).toBe('commentLinks')
+			expect(instance.config).toEqual(config)
+			expect(require('../src/CommentLinksAutocomplete').default).toHaveBeenCalledWith(config)
+		})
 
 		it('should create instance with empty config when no options provided', () => {
-			const instance = AutocompleteFactory.create('mentions');
+			const instance = AutocompleteFactory.create('mentions')
 
-			expect(instance.config).toEqual({});
-			expect(require('../src/MentionsAutocomplete').default).toHaveBeenCalledWith({});
-		});
+			expect(instance.config).toEqual({})
+			expect(require('../src/MentionsAutocomplete').default).toHaveBeenCalledWith({})
+		})
 
 		it('should throw CdError for unknown type', () => {
 			expect(() => {
-				AutocompleteFactory.create('unknown');
-			}).toThrow(CdError);
+				AutocompleteFactory.create('unknown')
+			}).toThrow(CdError)
 
 			expect(() => {
-				AutocompleteFactory.create('unknown');
-			}).toThrow('Unknown autocomplete type: unknown');
-		});
+				AutocompleteFactory.create('unknown')
+			}).toThrow('Unknown autocomplete type: unknown')
+		})
 
 		it('should throw CdError for null type', () => {
 			expect(() => {
-				AutocompleteFactory.create(null);
-			}).toThrow(CdError);
-		});
+				AutocompleteFactory.create(null)
+			}).toThrow(CdError)
+		})
 
 		it('should throw CdError for undefined type', () => {
 			expect(() => {
-				AutocompleteFactory.create(undefined);
-			}).toThrow(CdError);
-		});
-	});
+				AutocompleteFactory.create(undefined)
+			}).toThrow(CdError)
+		})
+	})
 
 	describe('getSupportedTypes', () => {
 		it('should return all supported autocomplete types', () => {
-			const types = AutocompleteFactory.getSupportedTypes();
+			const types = AutocompleteFactory.getSupportedTypes()
 
 			expect(types).toEqual([
 				'mentions',
@@ -142,68 +142,68 @@ describe('AutocompleteFactory', () => {
 				'templates',
 				'tags',
 				'commentLinks',
-			]);
-		});
+			])
+		})
 
 		it('should return array with correct length', () => {
-			const types = AutocompleteFactory.getSupportedTypes();
+			const types = AutocompleteFactory.getSupportedTypes()
 
-			expect(types).toHaveLength(5);
-		});
+			expect(types).toHaveLength(5)
+		})
 
 		it('should return new array each time (not reference)', () => {
-			const types1 = AutocompleteFactory.getSupportedTypes();
-			const types2 = AutocompleteFactory.getSupportedTypes();
+			const types1 = AutocompleteFactory.getSupportedTypes()
+			const types2 = AutocompleteFactory.getSupportedTypes()
 
-			expect(types1).toEqual(types2);
-			expect(types1).not.toBe(types2);
-		});
-	});
+			expect(types1).toEqual(types2)
+			expect(types1).not.toBe(types2)
+		})
+	})
 
 	describe('isTypeSupported', () => {
 		it('should return true for supported types', () => {
-			expect(AutocompleteFactory.isTypeSupported('mentions')).toBe(true);
-			expect(AutocompleteFactory.isTypeSupported('wikilinks')).toBe(true);
-			expect(AutocompleteFactory.isTypeSupported('templates')).toBe(true);
-			expect(AutocompleteFactory.isTypeSupported('tags')).toBe(true);
-			expect(AutocompleteFactory.isTypeSupported('commentLinks')).toBe(true);
-		});
+			expect(AutocompleteFactory.isTypeSupported('mentions')).toBe(true)
+			expect(AutocompleteFactory.isTypeSupported('wikilinks')).toBe(true)
+			expect(AutocompleteFactory.isTypeSupported('templates')).toBe(true)
+			expect(AutocompleteFactory.isTypeSupported('tags')).toBe(true)
+			expect(AutocompleteFactory.isTypeSupported('commentLinks')).toBe(true)
+		})
 
 		it('should return false for unsupported types', () => {
-			expect(AutocompleteFactory.isTypeSupported('unknown')).toBe(false);
-			expect(AutocompleteFactory.isTypeSupported('invalid')).toBe(false);
-			expect(AutocompleteFactory.isTypeSupported('')).toBe(false);
-		});
+			expect(AutocompleteFactory.isTypeSupported('unknown')).toBe(false)
+			expect(AutocompleteFactory.isTypeSupported('invalid')).toBe(false)
+			expect(AutocompleteFactory.isTypeSupported('')).toBe(false)
+		})
 
 		it('should return false for null and undefined', () => {
-			expect(AutocompleteFactory.isTypeSupported(null)).toBe(false);
-			expect(AutocompleteFactory.isTypeSupported(undefined)).toBe(false);
-		});
+			expect(AutocompleteFactory.isTypeSupported(null)).toBe(false)
+			expect(AutocompleteFactory.isTypeSupported(undefined)).toBe(false)
+		})
 
 		it('should be case sensitive', () => {
-			expect(AutocompleteFactory.isTypeSupported('Mentions')).toBe(false);
-			expect(AutocompleteFactory.isTypeSupported('MENTIONS')).toBe(false);
-			expect(AutocompleteFactory.isTypeSupported('WikiLinks')).toBe(false);
-		});
-	});
+			expect(AutocompleteFactory.isTypeSupported('Mentions')).toBe(false)
+			expect(AutocompleteFactory.isTypeSupported('MENTIONS')).toBe(false)
+			expect(AutocompleteFactory.isTypeSupported('WikiLinks')).toBe(false)
+		})
+	})
 
 	describe('integration', () => {
 		it('should create different instances for different types', () => {
-			const mentions = AutocompleteFactory.create('mentions');
-			const wikilinks = AutocompleteFactory.create('wikilinks');
+			const mentions = AutocompleteFactory.create('mentions')
+			const wikilinks = AutocompleteFactory.create('wikilinks')
 
-			expect(mentions.type).toBe('mentions');
-			expect(wikilinks.type).toBe('wikilinks');
-			expect(mentions).not.toBe(wikilinks);
-		});
+			expect(mentions.type).toBe('mentions')
+			expect(wikilinks.type).toBe('wikilinks')
+			expect(mentions).not.toBe(wikilinks)
+		})
 
 		it('should pass configuration correctly to all types', () => {
-			const config = { test: 'value', cache: {}, default: [] };
+			const config = { test: 'value', cache: {}, default: [] }
 
 			AutocompleteFactory.getSupportedTypes().forEach((type) => {
-				const instance = AutocompleteFactory.create(type, config);
-				expect(instance.config).toEqual(config);
-			});
-		});
-	});
-});
+				const instance = AutocompleteFactory.create(type, config)
+				expect(instance.config).toEqual(config)
+			})
+		})
+	})
+})

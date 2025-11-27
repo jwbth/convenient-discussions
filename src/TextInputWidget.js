@@ -1,5 +1,5 @@
-import TextInputWidgetMixin from './TextInputWidgetMixin';
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
+import TextInputWidgetMixin from './TextInputWidgetMixin'
+import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
 
 /**
  * An input was changed manually.
@@ -13,6 +13,6 @@ import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
  */
 class TextInputWidget extends mixInClass(OO.ui.TextInputWidget, TextInputWidgetMixin) {}
 
-es6ClassToOoJsClass(TextInputWidget);
+es6ClassToOoJsClass(TextInputWidget)
 
-export default TextInputWidget;
+export default TextInputWidget

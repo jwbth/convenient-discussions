@@ -5,21 +5,21 @@
 // Mock dependencies
 jest.mock('../src/CommentLayers', () => class MockCommentLayers {
 	constructor(comment) {
-		this.comment = comment;
+		this.comment = comment
 	}
 
 	create() {
-		this.createCalled = true;
+		this.createCalled = true
 		// Mock basic layer creation
-		this.underlay = { tagName: 'DIV' };
-		this.overlay = { tagName: 'DIV' };
-		this.line = { tagName: 'DIV' };
-		this.marker = { tagName: 'DIV' };
+		this.underlay = { tagName: 'DIV' }
+		this.overlay = { tagName: 'DIV' }
+		this.line = { tagName: 'DIV' }
+		this.marker = { tagName: 'DIV' }
 	}
 
 	updateStyles(wereJustCreated) {
-		this.updateStylesCalled = true;
-		this.updateStylesWereJustCreated = wereJustCreated;
+		this.updateStylesCalled = true
+		this.updateStylesWereJustCreated = wereJustCreated
 	}
 
 	destroy() {
@@ -37,111 +37,111 @@ jest.mock('../src/CommentLayers', () => class MockCommentLayers {
 	dontHideMenu() {
 		// Mock dontHideMenu method
 	}
-});
+})
 
-import SpaciousCommentLayers from '../src/SpaciousCommentLayers';
+import SpaciousCommentLayers from '../src/SpaciousCommentLayers'
 
 describe('SpaciousCommentLayers', () => {
-	let mockComment;
-	let layers;
+	let mockComment
+	let layers
 
 	beforeEach(() => {
-		jest.clearAllMocks();
+		jest.clearAllMocks()
 
 		mockComment = {
 			isNew: false,
 			isOwn: false,
 			isDeleted: false,
 			isLineGapped: false,
-		};
+		}
 
-		layers = new SpaciousCommentLayers(mockComment);
-	});
+		layers = new SpaciousCommentLayers(mockComment)
+	})
 
 	describe('constructor', () => {
 		it('should inherit from CommentLayers', () => {
-			const CommentLayers = require('../src/CommentLayers');
-			expect(layers).toBeInstanceOf(CommentLayers);
-		});
+			const CommentLayers = require('../src/CommentLayers')
+			expect(layers).toBeInstanceOf(CommentLayers)
+		})
 
 		it('should initialize with comment reference', () => {
-			expect(layers.comment).toBe(mockComment);
-		});
-	});
+			expect(layers.comment).toBe(mockComment)
+		})
+	})
 
 	describe('create', () => {
 		it('should call parent create method', () => {
-			layers.create();
+			layers.create()
 
-			expect(layers.createCalled).toBe(true);
-		});
+			expect(layers.createCalled).toBe(true)
+		})
 
 		it('should create basic layer elements through parent', () => {
-			layers.create();
+			layers.create()
 
-			expect(layers.underlay).toBeDefined();
-			expect(layers.overlay).toBeDefined();
-			expect(layers.line).toBeDefined();
-			expect(layers.marker).toBeDefined();
-		});
+			expect(layers.underlay).toBeDefined()
+			expect(layers.overlay).toBeDefined()
+			expect(layers.line).toBeDefined()
+			expect(layers.marker).toBeDefined()
+		})
 
 		it('should not create overlay menu elements', () => {
-			layers.create();
+			layers.create()
 
 			// Spacious comments don't have overlay menu elements
-			expect(layers.overlayInnerWrapper).toBeUndefined();
-			expect(layers.overlayGradient).toBeUndefined();
-			expect(layers.overlayMenu).toBeUndefined();
-		});
-	});
+			expect(layers.overlayInnerWrapper).toBeUndefined()
+			expect(layers.overlayGradient).toBeUndefined()
+			expect(layers.overlayMenu).toBeUndefined()
+		})
+	})
 
 	describe('updateStyles', () => {
 		beforeEach(() => {
-			layers.create();
-		});
+			layers.create()
+		})
 
 		it('should call parent updateStyles method', () => {
-			layers.updateStyles(true);
+			layers.updateStyles(true)
 
-			expect(layers.updateStylesCalled).toBe(true);
-			expect(layers.updateStylesWereJustCreated).toBe(true);
-		});
+			expect(layers.updateStylesCalled).toBe(true)
+			expect(layers.updateStylesWereJustCreated).toBe(true)
+		})
 
 		it('should call parent updateStyles with default parameter', () => {
-			layers.updateStyles();
+			layers.updateStyles()
 
-			expect(layers.updateStylesCalled).toBe(true);
-			expect(layers.updateStylesWereJustCreated).toBe(false);
-		});
+			expect(layers.updateStylesCalled).toBe(true)
+			expect(layers.updateStylesWereJustCreated).toBe(false)
+		})
 
 		it('should handle false parameter correctly', () => {
-			layers.updateStyles(false);
+			layers.updateStyles(false)
 
-			expect(layers.updateStylesCalled).toBe(true);
-			expect(layers.updateStylesWereJustCreated).toBe(false);
-		});
-	});
+			expect(layers.updateStylesCalled).toBe(true)
+			expect(layers.updateStylesWereJustCreated).toBe(false)
+		})
+	})
 
 	describe('inheritance behavior', () => {
 		it('should inherit all base class methods', () => {
-			const CommentLayers = require('../src/CommentLayers');
-			const baseInstance = new CommentLayers(mockComment);
+			const CommentLayers = require('../src/CommentLayers')
+			const baseInstance = new CommentLayers(mockComment)
 
 			// Check that spacious layers has the same methods as base class
-			expect(typeof layers.create).toBe('function');
-			expect(typeof layers.updateStyles).toBe('function');
-			expect(typeof layers.destroy).toBe('function');
-			expect(typeof layers.hideMenu).toBe('function');
-			expect(typeof layers.deferHideMenu).toBe('function');
-			expect(typeof layers.dontHideMenu).toBe('function');
-		});
+			expect(typeof layers.create).toBe('function')
+			expect(typeof layers.updateStyles).toBe('function')
+			expect(typeof layers.destroy).toBe('function')
+			expect(typeof layers.hideMenu).toBe('function')
+			expect(typeof layers.deferHideMenu).toBe('function')
+			expect(typeof layers.dontHideMenu).toBe('function')
+		})
 
 		it('should maintain base class properties', () => {
-			expect(layers.comment).toBe(mockComment);
-			expect(layers.underlay).toBeUndefined();
-			expect(layers.overlay).toBeUndefined();
-			expect(layers.line).toBeUndefined();
-			expect(layers.marker).toBeUndefined();
-		});
-	});
-});
+			expect(layers.comment).toBe(mockComment)
+			expect(layers.underlay).toBeUndefined()
+			expect(layers.overlay).toBeUndefined()
+			expect(layers.line).toBeUndefined()
+			expect(layers.marker).toBeUndefined()
+		})
+	})
+})

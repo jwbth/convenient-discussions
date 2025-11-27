@@ -1,5 +1,5 @@
 // @ts-check
-const { chromium } = require('@playwright/test');
+const { chromium } = require('@playwright/test')
 
 /**
  * Authentication setup for test.wikipedia.org
@@ -13,47 +13,47 @@ const { chromium } = require('@playwright/test');
  * @returns {Promise<void>}
  */
 async function setupAuth(username, password) {
-	const browser = await chromium.launch();
-	const context = await browser.newContext();
-	const page = await context.newPage();
+	const browser = await chromium.launch()
+	const context = await browser.newContext()
+	const page = await context.newPage()
 
 	try {
-		console.log('🔐 Setting up authentication for test.wikipedia.org...');
+		console.log('🔐 Setting up authentication for test.wikipedia.org...')
 
 		// Navigate to test.wikipedia.org login page
-		await page.goto('https://test.wikipedia.org/wiki/Special:UserLogin');
+		await page.goto('https://test.wikipedia.org/wiki/Special:UserLogin')
 
 		// Wait for login form to be visible
-		await page.waitForSelector('#wpName1', { timeout: 10000 });
+		await page.waitForSelector('#wpName1', { timeout: 10000 })
 
 		// Fill in credentials
-		await page.fill('#wpName1', username);
-		await page.fill('#wpPassword1', password);
+		await page.fill('#wpName1', username)
+		await page.fill('#wpPassword1', password)
 
 		// Click login button
-		await page.click('#wpLoginAttempt');
+		await page.click('#wpLoginAttempt')
 
 		// Wait for successful login (redirect or user menu appears)
-		await page.waitForSelector('#pt-userpage, #pt-anonuserpage', { timeout: 15000 });
+		await page.waitForSelector('#pt-userpage, #pt-anonuserpage', { timeout: 15000 })
 
 		// Verify we're logged in by checking for user menu
-		const userMenu = await page.locator('#pt-userpage');
+		const userMenu = await page.locator('#pt-userpage')
 		if (await userMenu.count() === 0) {
-			throw new Error('Login failed - user menu not found');
+			throw new Error('Login failed - user menu not found')
 		}
 
-		console.log('✅ Successfully logged in to test.wikipedia.org');
+		console.log('✅ Successfully logged in to test.wikipedia.org')
 
 		// Save authentication state
-		await context.storageState({ path: 'playwright/.auth/user.json' });
-		console.log('💾 Authentication state saved to .auth/user.json');
+		await context.storageState({ path: 'playwright/.auth/user.json' })
+		console.log('💾 Authentication state saved to .auth/user.json')
 
 	} catch (error) {
-		console.error('❌ Authentication setup failed:', error.message);
-		throw error;
+		console.error('❌ Authentication setup failed:', error.message)
+		throw error
 	} finally {
-		await browser.close();
+		await browser.close()
 	}
 }
 
-module.exports = { setupAuth };
+module.exports = { setupAuth }

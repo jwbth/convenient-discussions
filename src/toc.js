@@ -4,20 +4,20 @@
  * @module toc
  */
 
-import Comment from './Comment';
-import LiveTimestamp from './LiveTimestamp';
-import TocItem from './TocItem';
-import commentManager from './commentManager';
-import controller from './controller';
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import settings from './settings';
-import CdError from './shared/CdError';
-import SectionSkeleton from './shared/SectionSkeleton';
-import { defined } from './shared/utils-general';
-import updateChecker from './updateChecker';
-import { formatDate, formatDateNative, getLinkedAnchor } from './utils-window';
-import visits from './visits';
+import Comment from './Comment'
+import LiveTimestamp from './LiveTimestamp'
+import TocItem from './TocItem'
+import commentManager from './commentManager'
+import controller from './controller'
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import settings from './settings'
+import CdError from './shared/CdError'
+import SectionSkeleton from './shared/SectionSkeleton'
+import { defined } from './shared/utils-general'
+import updateChecker from './updateChecker'
+import { formatDate, formatDateNative, getLinkedAnchor } from './utils-window'
+import visits from './visits'
 
 /**
  * @typedef {Pick<TocItem, 'level' | 'number' | '$element'>} TocItemShort
@@ -28,25 +28,25 @@ import visits from './visits';
  */
 class Toc {
 	/** @type {JQuery | undefined} */
-	$element;
+	$element
 
 	/** @type {TocItem[] | undefined} */
-	items;
+	items
 
 	/** @type {boolean | undefined} */
-	floating;
+	floating
 
 	/** @type {boolean} */
-	canBeModified = false;
+	canBeModified = false
 
 	/** @type {Promise<void> | undefined} */
-	visitsPromise;
+	visitsPromise
 
 	/** @type {Promise<void> | undefined} */
-	updateTocSectionsPromise;
+	updateTocSectionsPromise
 
 	/** @type {(() => void) | undefined} */
-	resolveUpdateTocSectionsPromise;
+	resolveUpdateTocSectionsPromise
 
 	/**
 	 * _For internal use._ Initialize the TOC. (Executed only once.)
@@ -55,8 +55,8 @@ class Toc {
 	 */
 	init(subscriptions) {
 		mw.hook('wikipage.tableOfContents.vector').add(() => {
-			this.resolveUpdateTocSectionsPromise?.();
-		});
+			this.resolveUpdateTocSectionsPromise?.()
+		})
 
 		visits
 			.on('process', () => {
@@ -71,19 +71,19 @@ class Toc {
 					this.addNewComments(
 						Comment.groupBySection(commentManager.query((c) => c.isSeen === false)),
 						controller.getBootProcess()
-					);
+					)
 				}
-				this.addCommentCount();
-			});
+				this.addCommentCount()
+			})
 		subscriptions
-			.on('process', this.markSubscriptions);
+			.on('process', this.markSubscriptions)
 		controller
-			.on('reboot', this.maybeHide);
+			.on('reboot', this.maybeHide)
 		updateChecker
 			.on('commentsUpdate', ({ bySection }) => {
-				this.addNewComments(bySection);
+				this.addNewComments(bySection)
 			})
-			.on('sectionsUpdate', this.addNewSections);
+			.on('sectionsUpdate', this.addNewSections)
 	}
 
 	/**
@@ -94,12 +94,12 @@ class Toc {
 	 * @private
 	 */
 	maybeHide = () => {
-		if (this.isInSidebar() || !this.isPresent()) return;
+		if (this.isInSidebar() || !this.isPresent()) return
 
 		if (mw.cookie.get('hidetoc') === '1') {
-			/** @type {HTMLInputElement} */ (this.$element.find('.toctogglecheckbox')[0]).checked = true;
+			/** @type {HTMLInputElement} */ (this.$element.find('.toctogglecheckbox')[0]).checked = true
 		}
-	};
+	}
 
 	/**
 	 * _For internal use._ Setup the TOC data and, for sidebar TOC, update its content. (Executed at
@@ -109,22 +109,22 @@ class Toc {
 	 * @param {boolean} [hideToc] Whether the TOC should be hidden.
 	 */
 	setup(sections, hideToc) {
-		this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc');
-		this.items = undefined;
-		this.floating = undefined;
+		this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc')
+		this.items = undefined
+		this.floating = undefined
 		this.visitsPromise = new Promise((resolve) => {
 			visits.once('process', () => {
-				resolve();
-			});
-		});
+				resolve()
+			})
+		})
 
 		if (this.isInSidebar() && sections) {
 			// Update the section list of the TOC
-			mw.hook('wikipage.tableOfContents').fire(hideToc ? [] : sections);
+			mw.hook('wikipage.tableOfContents').fire(hideToc ? [] : sections)
 
 			this.updateTocSectionsPromise = new Promise((resolve) => {
-				this.resolveUpdateTocSectionsPromise = resolve;
-			});
+				this.resolveUpdateTocSectionsPromise = resolve
+			})
 		}
 	}
 
@@ -135,7 +135,7 @@ class Toc {
 	 * @returns {TocItem | undefined}
 	 */
 	getItem(id) {
-		if (!this.isPresent()) return;
+		if (!this.isPresent()) return
 
 		if (!this.items) {
 			try {
@@ -145,14 +145,14 @@ class Toc {
 					...this.$element[0].querySelectorAll('li > a[href]'),
 				])
 					.filter((link) => link.getAttribute('href') !== '#')
-					.map((link) => new TocItem(link, this));
+					.map((link) => new TocItem(link, this))
 			} catch (error) {
-				console.error("Couldn't find an element for an item of the table of contents.", error);
-				this.items = [];
+				console.error("Couldn't find an element for an item of the table of contents.", error)
+				this.items = []
 			}
 		}
 
-		return this.items.find((item) => item.id === id);
+		return this.items.find((item) => item.id === id)
 	}
 
 	/**
@@ -161,64 +161,64 @@ class Toc {
 	 * @private
 	 */
 	markSubscriptions = async () => {
-		if (!this.isPresent()) return;
+		if (!this.isPresent()) return
 
 		// Ensure the bell icons are added after the TOC is updated and the comment counts are added in
 		// visits#process().
-		await Promise.all([this.visitsPromise, this.updateTocSectionsPromise].filter(defined));
+		await Promise.all([this.visitsPromise, this.updateTocSectionsPromise].filter(defined))
 
 		sectionManager
 			.query((section) => section.subscriptionState || this.isInSidebar())
 			.forEach((section) => {
-				section.updateTocLink();
-			});
-	};
+				section.updateTocLink()
+			})
+	}
 
 	/**
 	 * Add the number of comments to each section link.
 	 */
 	async addCommentCount() {
 		// We add the comment count even if the "Modify TOC" setting is off.
-		if (!this.isPresent()) return;
+		if (!this.isPresent()) return
 
-		await this.updateTocSectionsPromise;
+		await this.updateTocSectionsPromise
 
-		let usedFullForm = false;
+		let usedFullForm = false
 		sectionManager.getAll().forEach((section) => {
-			const item = section.getTocItem();
-			if (!item) return;
+			const item = section.getTocItem()
+			if (!item) return
 
-			const count = section.comments.length;
-			if (!count) return;
+			const count = section.comments.length
+			if (!count) return
 
-			const beforeSpan = document.createElement('span');
-			beforeSpan.className = 'cd-toc-commentCount-before';
+			const beforeSpan = document.createElement('span')
+			beforeSpan.className = 'cd-toc-commentCount-before'
 
-			const span = document.createElement('span');
-			span.className = 'cd-toc-commentCount';
+			const span = document.createElement('span')
+			span.className = 'cd-toc-commentCount'
 
-			const bdi = document.createElement('bdi');
-			const unseenCount = section.newComments?.length;
+			const bdi = document.createElement('bdi')
+			const unseenCount = section.newComments?.length
 			if (unseenCount) {
 				bdi.textContent = cd.s(
 					usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
 					String(count),
 					String(unseenCount)
-				);
+				)
 			} else {
 				bdi.textContent = usedFullForm
 					? String(count)
-					: cd.s('toc-commentcount-full', String(count));
+					: cd.s('toc-commentcount-full', String(count))
 			}
 
-			span.append(bdi);
-			item.$text.append(beforeSpan, span);
+			span.append(bdi)
+			item.$text.append(beforeSpan, span)
 
-			usedFullForm = true;
-		});
+			usedFullForm = true
+		})
 
 		if (cd.g.isDtVisualEnhancementsEnabled) {
-			this.$element.find('.ext-discussiontools-init-sidebar-meta').remove();
+			this.$element.find('.ext-discussiontools-init-sidebar-meta').remove()
 		}
 	}
 
@@ -229,13 +229,13 @@ class Toc {
 	 * @private
 	 */
 	handleSectionClick = (event) => {
-		event.preventDefault();
+		event.preventDefault()
 		controller.rebootPage({
 			sectionId:
 				getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget)) || undefined,
 			pushState: true,
-		});
-	};
+		})
+	}
 
 	/**
 	 * Add a collapse/expand toggle to a 2-level section.
@@ -249,25 +249,25 @@ class Toc {
 		// Don't bother with ARIA attributes since chances that somebody will interact with
 		// collapsed subsections with their help tend to zero, I believe, although this may
 		// change.
-		const button = document.createElement('button');
+		const button = document.createElement('button')
 		button.className =
-			'cdx-button cdx-button--weight-quiet cdx-button--icon-only vector-toc-toggle';
-		button.setAttribute('ariaExpanded', 'true');
-		button.setAttribute('ariaControls', ul.id);
+			'cdx-button cdx-button--weight-quiet cdx-button--icon-only vector-toc-toggle'
+		button.setAttribute('ariaExpanded', 'true')
+		button.setAttribute('ariaControls', ul.id)
 
-		const span = document.createElement('span');
-		span.className = 'vector-icon vector-icon--x-small mw-ui-icon-wikimedia-expand';
-		button.append(span);
+		const span = document.createElement('span')
+		span.className = 'vector-icon vector-icon--x-small mw-ui-icon-wikimedia-expand'
+		button.append(span)
 
-		upperLevelMatch.$element.append(button);
+		upperLevelMatch.$element.append(button)
 
 		// Expand the section.
-		button.click();
+		button.click()
 
 		// If this section was previously added by us, the TOC will remember its state and try to
 		// switch it on click, so we need to click again to get it back.
 		if (newSectionTocIds.includes(upperLevelMatch.$element.attr('id') || '')) {
-			button.click();
+			button.click()
 		}
 	}
 
@@ -282,61 +282,61 @@ class Toc {
 	 * @private
 	 */
 	addNewSection(section, currentTree, $topUl, newSectionTocIds) {
-		let item = /** @type {TocItemShort|undefined} */ (section.match?.getTocItem());
-		const level = /** @type {number} */ (section.tocLevel);
+		let item = /** @type {TocItemShort|undefined} */ (section.match?.getTocItem())
+		const level = /** @type {number} */ (section.tocLevel)
 		if (!item) {
-			const currentLevelMatch = currentTree.at(level - 1);
-			const upperLevelMatch = currentLevelMatch ? undefined : currentTree.at(-1);
+			const currentLevelMatch = currentTree.at(level - 1)
+			const upperLevelMatch = currentLevelMatch ? undefined : currentTree.at(-1)
 
-			const li = document.createElement('li');
-			li.id = `toc-${section.id}`;
+			const li = document.createElement('li')
+			li.id = `toc-${section.id}`
 			const levelClass = this.isInSidebar()
 				? `vector-toc-list-item vector-toc-level-${level}`
-				: `toclevel-${level}`;
-			li.className = `${levelClass} cd-toc-addedSection`;
+				: `toclevel-${level}`
+			li.className = `${levelClass} cd-toc-addedSection`
 
-			const a = document.createElement('a');
-			a.href = `#${section.id}`;
+			const a = document.createElement('a')
+			a.href = `#${section.id}`
 			if (this.isInSidebar()) {
-				a.className = 'vector-toc-link cd-toc-link-sidebar';
+				a.className = 'vector-toc-link cd-toc-link-sidebar'
 			}
-			a.addEventListener('click', this.handleSectionClick);
+			a.addEventListener('click', this.handleSectionClick)
 
-			let number;
+			let number
 			if (currentLevelMatch) {
-				number = currentLevelMatch.number;
+				number = currentLevelMatch.number
 			} else if (upperLevelMatch) {
-				number = upperLevelMatch.number + '.1';
+				number = upperLevelMatch.number + '.1'
 			} else {
-				number = '1';
+				number = '1'
 			}
-			const numberSpan = document.createElement('span');
-			const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber';
-			numberSpan.className = `${numberClass} cd-toc-hiddenTocNumber`;
-			numberSpan.textContent = number;
-			a.append(numberSpan);
+			const numberSpan = document.createElement('span')
+			const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber'
+			numberSpan.className = `${numberClass} cd-toc-hiddenTocNumber`
+			numberSpan.textContent = number
+			a.append(numberSpan)
 
 			if (this.isInSidebar()) {
-				const textDiv = document.createElement('div');
-				textDiv.className = 'vector-toc-text';
-				textDiv.append(document.createTextNode(section.headline));
-				a.append(textDiv);
-				li.append(a);
+				const textDiv = document.createElement('div')
+				textDiv.className = 'vector-toc-text'
+				textDiv.append(document.createTextNode(section.headline))
+				a.append(textDiv)
+				li.append(a)
 			} else {
-				const textSpan = document.createElement('span');
-				textSpan.className = 'toctext';
-				textSpan.textContent = section.headline;
-				a.append(textSpan);
-				li.append(a);
+				const textSpan = document.createElement('span')
+				textSpan.className = 'toctext'
+				textSpan.textContent = section.headline
+				a.append(textSpan)
+				li.append(a)
 			}
 
 			if (currentLevelMatch) {
-				currentLevelMatch.$element.after(li);
+				currentLevelMatch.$element.after(li)
 			} else if (upperLevelMatch) {
-				const ul = document.createElement('ul');
-				ul.id = `toc-${section.id}-sublist`;
-				ul.className = 'vector-toc-list';
-				ul.append(li);
+				const ul = document.createElement('ul')
+				ul.id = `toc-${section.id}-sublist`
+				ul.className = 'vector-toc-list'
+				ul.append(li)
 
 				if (
 					this.isInSidebar() &&
@@ -349,25 +349,25 @@ class Toc {
 						ul,
 						upperLevelMatch,
 						/** @type {string[]} */ (newSectionTocIds)
-					);
+					)
 				}
 
-				upperLevelMatch.$element.append(ul);
+				upperLevelMatch.$element.append(ul)
 			} else if (this.isInSidebar()) {
-				$topUl.children('#toc-mw-content-text').after(li);
+				$topUl.children('#toc-mw-content-text').after(li)
 			} else {
-				$topUl.prepend(li);
+				$topUl.prepend(li)
 			}
 
 			item = {
 				level,
 				number,
 				$element: $(li),
-			};
+			}
 		}
 
-		currentTree[level - 1] = item;
-		currentTree.splice(level);
+		currentTree[level - 1] = item
+		currentTree.splice(level)
 	}
 
 	/**
@@ -382,20 +382,20 @@ class Toc {
 	 * @private
 	 */
 	addNewSections = (sections) => {
-		if (!settings.get('modifyToc') || !this.isPresent()) return;
+		if (!settings.get('modifyToc') || !this.isPresent()) return
 
 		if (!this.isInSidebar()) {
-			controller.saveRelativeScrollPosition(true);
+			controller.saveRelativeScrollPosition(true)
 		}
 
-		const $addedSections = this.$element.find('.cd-toc-addedSection');
+		const $addedSections = this.$element.find('.cd-toc-addedSection')
 		const newSectionTocIds = this.isInSidebar()
 			? $addedSections
 					.filter('.vector-toc-level-1')
 					.get()
 					.map((/** @type {HTMLElement} */ sectionElement) => sectionElement.id)
-			: undefined;
-		$addedSections.remove();
+			: undefined
+		$addedSections.remove()
 
 		/*
 			Note the case when the page starts with sections of levels lower than the base level, like
@@ -432,28 +432,28 @@ class Toc {
 					/** @type {unknown} */ (sections)
 					)
 				)
-			);
-		});
+			)
+		})
 		sections.forEach((section) => {
 			section.tocLevel = section.parent
 				? /** @type {number} */ (
 					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 					/** @type {import('./updateChecker').SectionWorkerMatched} */ (section.parent).tocLevel
 					) + 1
-				: 1;
-		});
+				: 1
+		})
 
 		/** @type {TocItemShort[]} */
-		const currentTree = [];
-		const $topUl = this.$element.children('ul');
+		const currentTree = []
+		const $topUl = this.$element.children('ul')
 		sections.forEach((section) => {
-			this.addNewSection(section, currentTree, $topUl, newSectionTocIds);
-		});
+			this.addNewSection(section, currentTree, $topUl, newSectionTocIds)
+		})
 
 		if (!this.isInSidebar()) {
-			controller.restoreRelativeScrollPosition(true);
+			controller.restoreRelativeScrollPosition(true)
 		}
-	};
+	}
 
 	/**
 	 * Get the element to add a comment list after for a section.
@@ -465,32 +465,32 @@ class Toc {
 	getTargetElementForSection(section) {
 		// There could be a collision of hrefs between the existing section and not yet rendered
 		// section, so we compose the selector carefully.
-		let $target;
+		let $target
 		if ('getTocItem' in section) {
-			$target = section.getTocItem()?.$link;
+			$target = section.getTocItem()?.$link
 		} else {
 			/** @type {JQuery | undefined} */
-			let $sectionLink;
+			let $sectionLink
 			if (section.match) {
-				$sectionLink = section.match.getTocItem()?.$link;
+				$sectionLink = section.match.getTocItem()?.$link
 			} else {
-				const id = CSS.escape(section.id);
+				const id = CSS.escape(section.id)
 				$sectionLink = /** @type {JQuery} */ (this.$element).find(
 					`.cd-toc-addedSection a[href="#${id}"]`
-				);
+				)
 			}
 
 			if ($sectionLink?.length) {
 				// We need to place the not-rendered-comment list below the rendered-comment list.
-				$target = $sectionLink;
-				const $next = $sectionLink.next('.cd-toc-newCommentList');
+				$target = $sectionLink
+				const $next = $sectionLink.next('.cd-toc-newCommentList')
 				if ($next.length) {
-					$target = $next;
+					$target = $next
 				}
 			}
 		}
 
-		return $target?.[0];
+		return $target?.[0]
 	}
 
 	/**
@@ -500,25 +500,25 @@ class Toc {
 	 * @private
 	 */
 	handleCommentClick = (event) => {
-		event.preventDefault();
-		const id = getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget));
+		event.preventDefault()
+		const id = getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget))
 		if (!id) {
-			throw new CdError();
+			throw new CdError()
 		}
 
-		const comment = commentManager.getByAnyId(id);
+		const comment = commentManager.getByAnyId(id)
 		if (comment) {
 			comment.scrollTo({
 				smooth: false,
 				pushState: true,
-			});
+			})
 		} else {
 			controller.rebootPage({
 				commentIds: [id],
 				pushState: true,
-			});
+			})
 		}
-	};
+	}
 
 	/**
 	 * Add a comment list (an `ul` element) to a section.
@@ -530,40 +530,40 @@ class Toc {
 	 */
 	addCommentList(comments, target) {
 		// Should never be the case
-		if (!target) return;
+		if (!target) return
 
-		const ITEM_LIMIT = 3;
+		const ITEM_LIMIT = 3
 
 		// jQuery is too expensive here given that very many comments may be added.
-		const ul = document.createElement('ul');
+		const ul = document.createElement('ul')
 
 		// Check for the Section type without importing Section
-		ul.className = 'getParent' in comments[0] ? 'cd-toc-newCommentList' : 'cd-toc-addedCommentList';
+		ul.className = 'getParent' in comments[0] ? 'cd-toc-newCommentList' : 'cd-toc-addedCommentList'
 
 		// Tooltip text will have items that didn't fit in the limit
 		const tooltipText = comments.reduce((tooltipTextAcc, comment, i) => {
-			const parent = 'getParent' in comment ? comment.getParent() : comment.parent;
+			const parent = 'getParent' in comment ? comment.getParent() : comment.parent
 
 			// Add as item, not as tooltip text. If there are `itemLimit + 1` comments or less, show all
 			// of them. If there are more, show itemLimit and "N more". (Because showing itemLimit and
 			// then "1 more" is stupid.)
-			const addAsItem = i < ITEM_LIMIT || comments.length === ITEM_LIMIT + 1;
+			const addAsItem = i < ITEM_LIMIT || comments.length === ITEM_LIMIT + 1
 
 			/** @type {string} */
-			let date;
+			let date
 			/** @type {string} */
-			let nativeDate;
+			let nativeDate
 			if (comment.date) {
-				nativeDate = formatDateNative(comment.date);
+				nativeDate = formatDateNative(comment.date)
 				date =
 					settings.get('timestampFormat') === 'default' || !addAsItem
 						? nativeDate
-						: formatDate(comment.date);
+						: formatDate(comment.date)
 			} else {
-				nativeDate = date = cd.s('navpanel-newcomments-unknowndate');
+				nativeDate = date = cd.s('navpanel-newcomments-unknowndate')
 			}
 
-			const dateIfNative = settings.get('timestampFormat') === 'default' ? date : '';
+			const dateIfNative = settings.get('timestampFormat') === 'default' ? date : ''
 			const text =
 			// Names
 				(
@@ -576,74 +576,74 @@ class Toc {
 				(cd.g.contentDirection === 'rtl' ? '\u200F' : '') +
 
 				cd.mws('comma-separator') +
-				dateIfNative;
+				dateIfNative
 
 			if (addAsItem) {
-				const li = document.createElement('li');
-				ul.append(li);
+				const li = document.createElement('li')
+				ul.append(li)
 
-				const a = document.createElement('a');
-				const id = /** @type {string} */ ('dtId' in comment ? comment.dtId : comment.id);
-				a.href = `#${id}`;
+				const a = document.createElement('a')
+				const id = /** @type {string} */ ('dtId' in comment ? comment.dtId : comment.id)
+				a.href = `#${id}`
 				if (this.isInSidebar()) {
-					a.className = 'vector-toc-link cd-toc-link-sidebar';
+					a.className = 'vector-toc-link cd-toc-link-sidebar'
 				}
-				a.addEventListener('click', this.handleCommentClick);
+				a.addEventListener('click', this.handleCommentClick)
 
-				let timestampSpan;
+				let timestampSpan
 				if (settings.get('timestampFormat') !== 'default' && comment.date) {
-					timestampSpan = document.createElement('span');
-					timestampSpan.textContent = date;
-					timestampSpan.title = /** @type {string} */ (nativeDate);
-					new LiveTimestamp(timestampSpan, comment.date, false).init();
+					timestampSpan = document.createElement('span')
+					timestampSpan.textContent = date
+					timestampSpan.title = /** @type {string} */ (nativeDate)
+					new LiveTimestamp(timestampSpan, comment.date, false).init()
 				}
 
 				if (this.isInSidebar()) {
-					const textDiv = document.createElement('div');
-					textDiv.className = 'vector-toc-text cd-toc-commentLinkText-sidebar';
-					textDiv.textContent = text;
+					const textDiv = document.createElement('div')
+					textDiv.className = 'vector-toc-text cd-toc-commentLinkText-sidebar'
+					textDiv.textContent = text
 					if (timestampSpan) {
-						textDiv.append(timestampSpan);
+						textDiv.append(timestampSpan)
 					}
-					a.append(textDiv);
-					li.append(a);
+					a.append(textDiv)
+					li.append(a)
 				} else {
-					const bulletSpan = document.createElement('span');
-					const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber';
-					bulletSpan.className = `${numberClass} cd-toc-bullet`;
-					bulletSpan.innerHTML = cd.sParse('bullet');
-					li.append(bulletSpan);
+					const bulletSpan = document.createElement('span')
+					const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber'
+					bulletSpan.className = `${numberClass} cd-toc-bullet`
+					bulletSpan.innerHTML = cd.sParse('bullet')
+					li.append(bulletSpan)
 
-					const textSpan = document.createElement('span');
-					textSpan.className = 'toctext';
-					a.textContent = text;
+					const textSpan = document.createElement('span')
+					textSpan.className = 'toctext'
+					a.textContent = text
 					if (timestampSpan) {
-						a.append(timestampSpan);
+						a.append(timestampSpan)
 					}
-					textSpan.append(a);
-					li.append(textSpan);
+					textSpan.append(a)
+					li.append(textSpan)
 				}
 			} else {
 				// In the tooltip, always show the date in the default format - we won't be auto-updating
 				// relative dates there due to low benefit.
-				tooltipTextAcc += text + (dateIfNative ? '' : nativeDate) + '\n';
+				tooltipTextAcc += text + (dateIfNative ? '' : nativeDate) + '\n'
 			}
 
-			return tooltipTextAcc;
-		}, '');
+			return tooltipTextAcc
+		}, '')
 
 		if (comments.length > ITEM_LIMIT + 1) {
-			const span = document.createElement('span');
-			span.className = 'cd-toc-more';
-			span.title = tooltipText.trim();
-			span.textContent = cd.s('toc-more', String(comments.length - ITEM_LIMIT));
+			const span = document.createElement('span')
+			span.className = 'cd-toc-more'
+			span.title = tooltipText.trim()
+			span.textContent = cd.s('toc-more', String(comments.length - ITEM_LIMIT))
 
-			const li = document.createElement('li');
-			li.append(span);
-			ul.append(li);
+			const li = document.createElement('li')
+			li.append(span)
+			ul.append(li)
 		}
 
-		/** @type {HTMLElement} */ (target.parentElement).insertBefore(ul, target.nextSibling);
+		/** @type {HTMLElement} */ (target.parentElement).insertBefore(ul, target.nextSibling)
 	}
 
 	/**
@@ -655,10 +655,10 @@ class Toc {
 	 * @private
 	 */
 	async addNewComments(commentsBySection, bootProcess) {
-		if (!settings.get('modifyToc') || !this.isPresent()) return;
+		if (!settings.get('modifyToc') || !this.isPresent()) return
 
-		await this.updateTocSectionsPromise;
-		this.$element.find('.cd-toc-addedCommentList').remove();
+		await this.updateTocSectionsPromise
+		this.$element.find('.cd-toc-addedCommentList').remove()
 		if (!this.isInSidebar()) {
 			controller.saveRelativeScrollPosition(
 				Boolean(
@@ -672,17 +672,17 @@ class Toc {
 					bootProcess.passedData.commentIds ||
 					bootProcess.passedData.sectionId
 				)
-			);
+			)
 		}
 
 		commentsBySection.forEach((comments, section) => {
-			if (!section) return;
+			if (!section) return
 
-			this.addCommentList(comments, this.getTargetElementForSection(section));
-		});
+			this.addCommentList(comments, this.getTargetElementForSection(section))
+		})
 
 		if (!this.isInSidebar()) {
-			controller.restoreRelativeScrollPosition(true);
+			controller.restoreRelativeScrollPosition(true)
 		}
 	}
 
@@ -692,7 +692,7 @@ class Toc {
 	 * @returns {boolean}
 	 */
 	isInSidebar() {
-		return cd.g.skin === 'vector-2022';
+		return cd.g.skin === 'vector-2022'
 	}
 
 	/**
@@ -708,10 +708,10 @@ class Toc {
 				!this.isInSidebar() &&
 				this.isPresent() &&
 				this.$element.closest($(controller.getFloatingElements())).length
-			);
+			)
 		}
 
-		return this.floating;
+		return this.floating
 	}
 
 	/**
@@ -720,7 +720,7 @@ class Toc {
 	 * @returns {this is { $element: JQuery<HTMLElement> }}
 	 */
 	isPresent() {
-		return Boolean(this.$element?.length);
+		return Boolean(this.$element?.length)
 	}
 
 	/**
@@ -729,14 +729,14 @@ class Toc {
 	 * @returns {number|undefined}
 	 */
 	getBottomOffset() {
-		if (!this.isPresent()) return;
+		if (!this.isPresent()) return
 
 		return (
 		/** @type {JQuery.Coordinates} */ (this.$element.offset()).top +
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			/** @type {number} */ (this.$element.outerHeight())
-		);
+		)
 	}
 }
 
-export default new Toc();
+export default new Toc()

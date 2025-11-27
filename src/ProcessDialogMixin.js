@@ -1,6 +1,6 @@
-import controller from './controller';
-import cd from './loader/cd';
-import CdError from './shared/CdError';
+import controller from './controller'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
 
 /**
  * Mixin that adds process dialog functionality.
@@ -15,7 +15,7 @@ class ProcessDialogMixin {
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {any} */
 		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor;
+		this.constructor = this.constructor
 	}
 
 	/**
@@ -25,9 +25,9 @@ class ProcessDialogMixin {
 	 * @this {ProcessDialogMixin & OO.ui.ProcessDialog}
 	 */
 	isUnsaved() {
-		const saveButton = this.actions.get({ actions: 'save' })[0];
+		const saveButton = this.actions.get({ actions: 'save' })[0]
 
-		return saveButton.isVisible() && !saveButton.isDisabled();
+		return saveButton.isVisible() && !saveButton.isDisabled()
 	}
 
 	/**
@@ -36,10 +36,10 @@ class ProcessDialogMixin {
 	 * @this {ProcessDialogMixin & OO.ui.ProcessDialog}
 	 */
 	confirmClose() {
-		const cdKey = /** @type {string} */ (this.constructor.cdKey) || 'dialog';
+		const cdKey = /** @type {string} */ (this.constructor.cdKey) || 'dialog'
 		if (!this.isUnsaved() || confirm(cd.s(`${cdKey}-close-confirm`))) {
-			this.close({ action: 'close' });
-			controller.removePreventUnloadCondition('dialog');
+			this.close({ action: 'close' })
+			controller.removePreventUnloadCondition('dialog')
 		}
 	}
 
@@ -54,33 +54,33 @@ class ProcessDialogMixin {
 	 * @this {ProcessDialogMixin & OO.ui.ProcessDialog}
 	 */
 	handleError(error, messageName, recoverable) {
-		let errorInstance;
+		let errorInstance
 		if (error instanceof CdError) {
-			let message = cd.s(/** @type {string} */ (messageName));
+			let message = cd.s(/** @type {string} */ (messageName))
 			if (error.getType() === 'network') {
-				message += ' ' + cd.s('error-network');
+				message += ' ' + cd.s('error-network')
 			}
-			errorInstance = new OO.ui.Error(message, { recoverable });
+			errorInstance = new OO.ui.Error(message, { recoverable })
 		} else {
-			errorInstance = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
+			errorInstance = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false })
 		}
 
-		this.showErrors(errorInstance);
-		console.warn(error);
+		this.showErrors(errorInstance)
+		console.warn(error)
 		this.$errors
 			.find('.oo-ui-buttonElement:not(.oo-ui-flaggedElement-primary) > .oo-ui-buttonElement-button')
 			.on('click', () => {
 				if (recoverable) {
-					this.updateSize();
+					this.updateSize()
 				} else {
-					this.close();
+					this.close()
 				}
-			});
+			})
 
-		this.actions.setAbilities({ close: true });
-		this.updateSize();
-		this.popPending();
+		this.actions.setAbilities({ close: true })
+		this.updateSize()
+		this.popPending()
 	}
 }
 
-export default ProcessDialogMixin;
+export default ProcessDialogMixin

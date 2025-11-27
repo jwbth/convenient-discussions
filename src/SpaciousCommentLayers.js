@@ -1,4 +1,4 @@
-import CommentLayers from './CommentLayers.js';
+import CommentLayers from './CommentLayers.js'
 
 /**
  * Specialized layer management for spacious comments.
@@ -17,11 +17,11 @@ class SpaciousCommentLayers extends CommentLayers {
 	 */
 	updateStyles(wereJustCreated = false) {
 		// Call parent updateStyles for common styling
-		super.updateStyles(wereJustCreated);
+		super.updateStyles(wereJustCreated)
 
 		// Spacious-specific styling would go here
 		// For now, the base implementation handles the common styling needs
 	}
 }
 
-export default SpaciousCommentLayers;
+export default SpaciousCommentLayers

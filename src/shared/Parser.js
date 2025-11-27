@@ -9,10 +9,10 @@
  * @module Parser
  */
 
-import CommentSkeleton from './CommentSkeleton';
-import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
-import ElementsTreeWalker from './ElementsTreeWalker';
-import cd from './cd';
+import CommentSkeleton from './CommentSkeleton'
+import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker'
+import ElementsTreeWalker from './ElementsTreeWalker'
+import cd from './cd'
 import {
 	defined,
 	getHeadingLevel,
@@ -25,8 +25,8 @@ import {
 	ucFirst,
 	underlinesToSpaces,
 	unique
-} from './utils-general';
-import { parseTimestamp } from './utils-timestamp';
+} from './utils-general'
+import { parseTimestamp } from './utils-timestamp'
 
 /**
  * @template {AnyNode} [N=AnyNode]
@@ -68,13 +68,13 @@ import { parseTimestamp } from './utils-timestamp';
  */
 class Parser {
 	/** @type {RegExp} */
-	static punctuationRegexp;
+	static punctuationRegexp
 
 	/** @type {AnyElement[]} */
-	noSignatureElements;
+	noSignatureElements
 
 	/** @type {string[]} */
-	rejectClasses;
+	rejectClasses
 
 	/**
 	 * Create a page parser in the provided context.
@@ -83,13 +83,13 @@ class Parser {
 	 *   the tasks we need in the current context (window or worker).
 	 */
 	constructor(context) {
-		this.context = context;
-		this.existingCommentIds = /** @type {string[]} */ ([]);
+		this.context = context
+		this.existingCommentIds = /** @type {string[]} */ ([])
 
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof Parser} */
 		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor;
+		this.constructor = this.constructor
 	}
 
 	/**
@@ -111,17 +111,17 @@ class Parser {
 
 			...cd.config.closedDiscussionClasses,
 			cd.config.outdentClass,
-		];
+		]
 
 		// Example of a comment in a figure element:
 		// https://ru.wikipedia.org/w/index.php?title=Википедия%3AФорум%2FНовости&diff=prev&oldid=131939933
-		const tagSelector = ['blockquote', 'q', 'cite', 'figure', 'th'].join(', ');
+		const tagSelector = ['blockquote', 'q', 'cite', 'figure', 'th'].join(', ')
 
-		const classSelector = cd.g.noSignatureClasses.map((name) => `.${name}`).join(', ');
+		const classSelector = cd.g.noSignatureClasses.map((name) => `.${name}`).join(', ')
 
 		this.noSignatureElements = [
 			...this.context.rootElement.querySelectorAll(`${tagSelector}, ${classSelector}`),
-		];
+		]
 	}
 
 	/**
@@ -132,7 +132,7 @@ class Parser {
 	 * @returns {InstanceType<typeof this.context.CommentClass>}
 	 */
 	createComment(signature, targets) {
-		return new this.context.CommentClass(this, signature, targets);
+		return new this.context.CommentClass(this, signature, targets)
 	}
 
 	/**
@@ -144,7 +144,7 @@ class Parser {
 	 * @returns {InstanceType<typeof this.context.SectionClass>}
 	 */
 	createSection(heading, targets, subscriptions) {
-		return new this.context.SectionClass(this, heading, targets, subscriptions);
+		return new this.context.SectionClass(this, heading, targets, subscriptions)
 	}
 
 	/**
@@ -180,8 +180,8 @@ class Parser {
 					.concat([...this.getElementsByClassName('ext-discussiontools-init-replylink-buttons')])
 					.filter(unique)
 			)
-		);
-		this.context.removeDtButtonHtmlComments();
+		)
+		this.context.removeDtButtonHtmlComments()
 	}
 
 	/**
@@ -206,21 +206,21 @@ class Parser {
 				node.parentElement.parentElement.classList.contains(cd.config.outdentClass)
 			)
 		) {
-			return;
+			return
 		}
 
-		const span = Parser.createElement('span');
-		span.className = cd.config.outdentClass;
-		span.textContent = text;
+		const span = Parser.createElement('span')
+		span.className = cd.config.outdentClass
+		span.textContent = text
 		if (isElement(node.nextSibling) && node.nextSibling.tagName === 'BR') {
-			Parser.remove(node.nextSibling);
+			Parser.remove(node.nextSibling)
 		}
 
 		// Don't have Node#replaceChild() in the worker.
 		if (node.parentElement) {
-			Parser.insertBefore(node.parentElement, span, node);
+			Parser.insertBefore(node.parentElement, span, node)
 		}
-		Parser.remove(node);
+		Parser.remove(node)
 	}
 
 	/**
@@ -240,34 +240,34 @@ class Parser {
 	 * @private
 	 */
 	findTimestamp(node) {
-		const text = node.textContent;
+		const text = node.textContent
 
 		// While we're here, wrap outdents inserted by Factotum into a span.
-		this.handleFactotumOutdents(text, node);
+		this.handleFactotumOutdents(text, node)
 
-		const parsedTimestamp = parseTimestamp(text);
+		const parsedTimestamp = parseTimestamp(text)
 		if (!parsedTimestamp || this.noSignatureElements.some((el) => Parser.contains(el, node))) {
-			return;
+			return
 		}
 
-		const { date, match } = parsedTimestamp;
-		const element = /** @type {HTMLElementFor<N>} */ (Parser.createElement('span'));
-		element.classList.add('cd-timestamp');
-		Parser.appendChild(element, Parser.createTextNode(match[2]));
+		const { date, match } = parsedTimestamp
+		const element = /** @type {HTMLElementFor<N>} */ (Parser.createElement('span'))
+		element.classList.add('cd-timestamp')
+		Parser.appendChild(element, Parser.createTextNode(match[2]))
 		const remainedText = node.textContent.slice(
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			/** @type {number} */ (match.index) + match[0].length
-		);
-		const afterNode = remainedText ? document.createTextNode(remainedText) : undefined;
-		node.textContent = match[1];
+		)
+		const afterNode = remainedText ? document.createTextNode(remainedText) : undefined
+		node.textContent = match[1]
 		if (node.parentElement) {
-			Parser.insertBefore(node.parentElement, element, node.nextSibling || undefined);
+			Parser.insertBefore(node.parentElement, element, node.nextSibling || undefined)
 			if (afterNode) {
-				Parser.insertBefore(node.parentElement, afterNode, element.nextSibling || undefined);
+				Parser.insertBefore(node.parentElement, afterNode, element.nextSibling || undefined)
 			}
 		}
 
-		return { element, date };
+		return { element, date }
 	}
 
 	/**
@@ -289,13 +289,13 @@ class Parser {
 	 * @private
 	 */
 	getSignatureFromTimestamp(timestamp) {
-		let unsignedElement;
+		let unsignedElement
 		{
 			/** @type {ElementLike | null} */
-			let el = timestamp.element;
+			let el = timestamp.element
 			while (!unsignedElement && (el = el.parentElement) && isInline(el) !== false) {
 				if (el.classList.contains(cd.config.unsignedClass)) {
-					unsignedElement = el;
+					unsignedElement = el
 				}
 			}
 		}
@@ -304,8 +304,8 @@ class Parser {
 		// the first signature to consider it the signature of the comment author while keeping the
 		// last. There is no point for us to parse them as distinct comments as a reply posted using our
 		// script will go below all of them anyway.
-		let isExtraSignature = false;
-		const elementsTreeWalker = new ElementsTreeWalker(this.context.rootElement, timestamp.element);
+		let isExtraSignature = false
+		const elementsTreeWalker = new ElementsTreeWalker(this.context.rootElement, timestamp.element)
 		while (
 			elementsTreeWalker.previousNode() &&
 			(
@@ -314,61 +314,61 @@ class Parser {
 			)
 		) {
 			if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
-				isExtraSignature = true;
-				break;
+				isExtraSignature = true
+				break
 			}
 		}
 
-		const startElement = unsignedElement || timestamp.element;
-		const treeWalker = new ElementsAndTextTreeWalker(this.context.rootElement, startElement);
-		const authorData = /** @type {AuthorData} */ ({});
+		const startElement = unsignedElement || timestamp.element
+		const treeWalker = new ElementsAndTextTreeWalker(this.context.rootElement, startElement)
+		const authorData = /** @type {AuthorData} */ ({})
 
-		let length = 0;
+		let length = 0
 		/** @type {ElementLike | undefined} */
-		let firstSignatureElement;
+		let firstSignatureElement
 		/** @type {NodeLike[]} */
-		let signatureNodes = [];
+		let signatureNodes = []
 		if (unsignedElement) {
-			firstSignatureElement = startElement;
+			firstSignatureElement = startElement
 		} else {
-			signatureNodes.push(startElement);
-			treeWalker.previousSibling();
+			signatureNodes.push(startElement)
+			treeWalker.previousSibling()
 		}
 
 		// Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
 		// so we need to walk the tree anyway.
 		/** @type {ElementLike | TextLike | null} */
-		let node = treeWalker.currentNode;
+		let node = treeWalker.currentNode
 		do {
-			length += node.textContent.length;
+			length += node.textContent.length
 			if (isElement(node)) {
-				authorData.isLastLinkAuthorLink = /** @type {boolean} */ (false);
+				authorData.isLastLinkAuthorLink = /** @type {boolean} */ (false)
 
 				if (node.tagName === 'A') {
-					if (!this.processLinkData(node, authorData)) break;
+					if (!this.processLinkData(node, authorData)) break
 				} else {
-					const links = [...node.getElementsByTagName('a')].reverse();
+					const links = [...node.getElementsByTagName('a')].reverse()
 					for (const link of links) {
 						// https://en.wikipedia.org/wiki/Template:Talkback and similar cases
-						if (link.classList.contains('external')) continue;
+						if (link.classList.contains('external')) continue
 
-						this.processLinkData(link, authorData);
+						this.processLinkData(link, authorData)
 					}
 				}
 
 				if (authorData.isLastLinkAuthorLink) {
-					firstSignatureElement = node;
+					firstSignatureElement = node
 				}
 			}
-			signatureNodes.push(node);
+			signatureNodes.push(node)
 
-			node = treeWalker.previousSibling();
+			node = treeWalker.previousSibling()
 			if (!node && !firstSignatureElement) {
-				node = treeWalker.parentNode();
-				if (!node || isInline(node) === false) break;
+				node = treeWalker.parentNode()
+				if (!node || isInline(node) === false) break
 
-				length = 0;
-				signatureNodes = [];
+				length = 0
+				signatureNodes = []
 			}
 		} while (
 			length < cd.config.signatureScanLimit &&
@@ -421,25 +421,25 @@ class Parser {
 					)
 				)
 			)
-		);
+		)
 
-		if (!authorData.name) return;
+		if (!authorData.name) return
 
 		if (!signatureNodes.length) {
-			signatureNodes = [startElement];
+			signatureNodes = [startElement]
 		}
 
-		const fseIndex = firstSignatureElement ? signatureNodes.indexOf(firstSignatureElement) : -1;
-		signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
+		const fseIndex = firstSignatureElement ? signatureNodes.indexOf(firstSignatureElement) : -1
+		signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1)
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const signatureContainer = /** @type {ElementFor<N>} */ (signatureNodes[0].parentElement);
+		const signatureContainer = /** @type {ElementFor<N>} */ (signatureNodes[0].parentElement)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const startElementNextSibling = signatureNodes[0].nextSibling;
-		const element = Parser.createElement('span');
-		element.classList.add('cd-signature');
-		signatureNodes.reverse().forEach((n) => Parser.appendChild(element, n));
-		Parser.insertBefore(signatureContainer, element, startElementNextSibling || undefined);
+		const startElementNextSibling = signatureNodes[0].nextSibling
+		const element = Parser.createElement('span')
+		element.classList.add('cd-signature')
+		signatureNodes.reverse().forEach((n) => Parser.appendChild(element, n))
+		Parser.insertBefore(signatureContainer, element, startElementNextSibling || undefined)
 
 		return {
 			// eslint-disable-next-line object-shorthand
@@ -452,7 +452,7 @@ class Parser {
 			authorName: authorData.name,
 			isUnsigned: Boolean(unsignedElement),
 			isExtraSignature,
-		};
+		}
 	}
 
 	/**
@@ -464,7 +464,7 @@ class Parser {
 	 */
 	findRemainingUnsigneds() {
 		if (!cd.config.unsignedClass) {
-			return [];
+			return []
 		}
 
 		/** @type {Partial<SignatureTarget<N>>[]} */
@@ -475,7 +475,7 @@ class Parser {
 			.filter((element) => {
 				// Only templates with no timestamp interest us.
 				if (this.context.getElementByClassName(element, 'cd-timestamp')) {
-					return false;
+					return false
 				}
 
 				// Cases like https://ru.wikipedia.org/?diff=84883816
@@ -485,40 +485,40 @@ class Parser {
 					el = el.parentElement
 				) {
 					if (el.classList.contains('cd-signature')) {
-						return false;
+						return false
 					}
 				}
 
-				return true;
+				return true
 			})
 			.forEach((element) => {
 				/** @type {HTMLElementFor<N>[]} */ ([...element.getElementsByTagName('a')]).some((link) => {
-					const { userName: authorName, linkType } = Parser.processLink(link) || {};
+					const { userName: authorName, linkType } = Parser.processLink(link) || {}
 					if (authorName) {
-						let authorLink;
-						let authorTalkLink;
+						let authorLink
+						let authorTalkLink
 						if (linkType === 'user') {
-							authorLink = /** @type {HTMLElementFor<N>} */ (link);
+							authorLink = /** @type {HTMLElementFor<N>} */ (link)
 						} else if (linkType === 'userTalk') {
-							authorTalkLink = /** @type {HTMLElementFor<N>} */ (link);
+							authorTalkLink = /** @type {HTMLElementFor<N>} */ (link)
 						}
-						element.classList.add('cd-signature');
+						element.classList.add('cd-signature')
 						unsigneds.push({
 							element,
 							authorName,
 							isUnsigned: true,
 							authorLink,
 							authorTalkLink,
-						});
+						})
 
-						return true;
+						return true
 					}
 
-					return false;
-				});
-			});
+					return false
+				})
+			})
 
-		return unsigneds;
+		return unsigneds
 	}
 
 	/**
@@ -531,7 +531,7 @@ class Parser {
 	findSignatures() {
 		// Move extra signatures (additional signatures for a comment, if there is more than one) to an
 		// array which then assign to a relevant signature (the one which goes first).
-		let extraSignatures = /** @type {SignatureTarget<N>[]} */ ([]);
+		let extraSignatures = /** @type {SignatureTarget<N>[]} */ ([])
 
 		return /** @type {SignatureTarget<N>[]} */ (this.context
 			.getAllTextNodes()
@@ -544,15 +544,15 @@ class Parser {
 			.reverse()
 			.map((sig) => {
 				if (sig.isExtraSignature) {
-					extraSignatures.push(/** @type {SignatureTarget<N>} */ (sig));
+					extraSignatures.push(/** @type {SignatureTarget<N>} */ (sig))
 				} else {
-					sig.extraSignatures = extraSignatures;
-					extraSignatures = [];
+					sig.extraSignatures = extraSignatures
+					extraSignatures = []
 				}
 
-				return { ...sig, type: /** @type {const} */ ('signature') };
+				return { ...sig, type: /** @type {const} */ ('signature') }
 			})
-			.filter((sig) => !sig.isExtraSignature));
+			.filter((sig) => !sig.isExtraSignature))
 	}
 
 	/**
@@ -589,19 +589,19 @@ class Parser {
 		// We ignore all spaces as an easy way to ignore only whitespace text nodes between element
 		// nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const partTextNoSpaces = element.textContent.replace(/\s+/g, '');
+		const partTextNoSpaces = element.textContent.replace(/\s+/g, '')
 
-		let nodes;
-		let children = [element];
-		let levelsPassed = 0;
+		let nodes
+		let children = [element]
+		let levelsPassed = 0
 		do {
-			nodes = children;
+			nodes = children
 			children = nodes.reduce(
 				(arr, el) => arr.concat([...this.getChildElements(el)]),
 				/** @type {ElementLike[]} */ ([])
-			);
+			)
 			if (['DL', 'UL', 'OL'].includes(nodes[0].tagName)) {
-				levelsPassed++;
+				levelsPassed++
 			}
 		} while (
 			children.length &&
@@ -620,9 +620,9 @@ class Parser {
 				(!child.textContent.trim() && isInline(child))
 			)) &&
 			children.map((child) => child.textContent).join('').replace(/\s+/g, '') === partTextNoSpaces
-		);
+		)
 
-		return { nodes, levelsPassed };
+		return { nodes, levelsPassed }
 	}
 
 	/**
@@ -641,11 +641,11 @@ class Parser {
 					el = /** @type {HTMLElementFor<N> | null} */ (el.parentElement)
 				) {
 					if (el.classList.contains('mw-heading')) {
-						return el;
+						return el
 					}
 				}
 
-				return element;
+				return element
 			})
 			.filter(
 				(element) =>
@@ -657,7 +657,7 @@ class Parser {
 				isWrapper: !isHeadingNode(element, true),
 				level: /** @type {number} */ (getHeadingLevel(element)),
 				element,
-			}));
+			}))
 	}
 
 	/**
@@ -691,22 +691,22 @@ class Parser {
 	 * }} The parent nodes resultant from the split (at least one).
 	 */
 	splitParentAfterNode(node) {
-		const parent = /** @type {ElementLike} */ (node.parentElement);
+		const parent = /** @type {ElementLike} */ (node.parentElement)
 
 		// TypeScript things...
 		const clone = isDomHandlerElement(parent)
 			? parent.cloneNode()
-			: /** @type {Element} */ (parent.cloneNode());
+			: /** @type {Element} */ (parent.cloneNode())
 
-		let lastChild;
+		let lastChild
 		while ((lastChild = parent.lastChild) && lastChild !== node) {
-			Parser.insertBefore(clone, lastChild, clone.firstChild || undefined);
+			Parser.insertBefore(clone, lastChild, clone.firstChild || undefined)
 		}
 		if (this.getChildElements(clone).length > 0 && parent.parentElement) {
-			Parser.insertBefore(parent.parentElement, clone, parent.nextSibling || undefined);
+			Parser.insertBefore(parent.parentElement, clone, parent.nextSibling || undefined)
 		}
 
-		return { parent, clone };
+		return { parent, clone }
 	}
 
 	/**
@@ -719,61 +719,61 @@ class Parser {
 	 * @private
 	 */
 	processLinkData(link, authorData) {
-		const result = Parser.processLink(link);
+		const result = Parser.processLink(link)
 		if (result) {
-			const { userName, linkType } = result;
-			authorData.name ??= userName;
+			const { userName, linkType } = result
+			authorData.name ??= userName
 			if (authorData.name === userName) {
 				if (['user', 'userForeign'].includes(linkType)) {
 					// Break only when the second user link is a link to another wiki (but not the other way
 					// around, see an example: https://en.wikipedia.org/?diff=1012665097).
 					if (authorData.notForeignLink && linkType === 'userForeign') {
-						return false;
+						return false
 					}
 					if (linkType !== 'userForeign') {
-						authorData.notForeignLink = link;
+						authorData.notForeignLink = link
 					}
-					authorData.link = link;
+					authorData.link = link
 				} else if (['userTalk', 'userTalkForeign'].includes(linkType)) {
 					if (authorData.talkNotForeignLink) {
-						return false;
+						return false
 					}
 					if (linkType !== 'userTalkForeign') {
-						authorData.talkNotForeignLink = link;
+						authorData.talkNotForeignLink = link
 					}
-					authorData.talkLink = link;
+					authorData.talkLink = link
 				} else if (['contribs', 'contribsForeign'].includes(linkType)) {
 					// authorData.contribsNotForeignLink is used only to make sure there are no two contribs
 					// links to the current hostname in a signature.
 					if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
-						return false;
+						return false
 					}
 					if (linkType !== 'contribsForeign') {
-						authorData.contribsNotForeignLink = link;
+						authorData.contribsNotForeignLink = link
 					}
 				} else if (['userSubpage', 'userSubpageForeign'].includes(linkType)) {
 					// A user subpage link after a user link is OK. A user subpage link before a user link is
 					// not OK (example: https://ru.wikipedia.org/?diff=112885854). Perhaps part of the
 					// comment.
 					if (authorData.link || authorData.talkLink) {
-						return false;
+						return false
 					}
 				} else if (['userTalkSubpage', 'userTalkSubpageForeign'].includes(linkType)) {
 					// Same as with a user page above.
 					if (authorData.link || authorData.talkLink) {
-						return false;
+						return false
 					}
 				} else if (authorData.link || authorData.talkLink) {
 					// Cases like https://ru.wikipedia.org/?diff=115909247
-					return false;
+					return false
 				}
-				authorData.isLastLinkAuthorLink = true;
+				authorData.isLastLinkAuthorLink = true
 			} else {
 				// Don't return false here in case the user mentioned a redirect to their user page here.
 			}
 		}
 
-		return true;
+		return true
 	}
 
 	/**
@@ -784,13 +784,13 @@ class Parser {
 	 */
 	getNestingLevel(element) {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const treeWalker = new ElementsTreeWalker(this.context.rootElement, element);
-		let nestingLevel = 0;
+		const treeWalker = new ElementsTreeWalker(this.context.rootElement, element)
+		let nestingLevel = 0
 		while (treeWalker.parentNode()) {
-			nestingLevel++;
+			nestingLevel++
 		}
 
-		return nestingLevel;
+		return nestingLevel
 	}
 
 	/**
@@ -802,7 +802,7 @@ class Parser {
 	getChildElements(element) {
 		return /** @type {ElementLike[]} */ (
 			element[/** @type {keyof ElementLike} */ (this.context.childElementsProp)]
-		);
+		)
 	}
 
 	/**
@@ -814,7 +814,7 @@ class Parser {
 	getElementsByTagName(name) {
 		return /** @type {ElementLike[]} */ ([
 			...this.context.rootElement.getElementsByTagName(name),
-		]);
+		])
 	}
 
 	/**
@@ -826,7 +826,7 @@ class Parser {
 	getElementsByClassName(name) {
 		return /** @type {ElementLike[]} */ ([
 			...this.context.rootElement.getElementsByClassName(name),
-		]);
+		])
 	}
 
 	/**
@@ -848,51 +848,51 @@ class Parser {
 	 * @returns {ProcessLinkReturn | undefined}
 	 */
 	static processLink(element) {
-		const href = element.getAttribute('href');
-		let userName;
+		const href = element.getAttribute('href')
+		let userName
 		/** @type {LinkType} */
-		let linkType = 'unknown';
+		let linkType = 'unknown'
 		if (href) {
-			const { pageName, hostname, fragment } = parseWikiUrl(href) || {};
+			const { pageName, hostname, fragment } = parseWikiUrl(href) || {}
 			if (!pageName || CommentSkeleton.isAnyId(fragment)) {
-				return;
+				return
 			}
 
-			const match = pageName.match(cd.g.userNamespacesRegexp);
+			const match = pageName.match(cd.g.userNamespacesRegexp)
 			if (match) {
-				userName = match[1];
+				userName = match[1]
 				if (cd.g.userLinkRegexp.test(pageName)) {
-					linkType = 'user';
+					linkType = 'user'
 				} else if (cd.g.userTalkLinkRegexp.test(pageName)) {
-					linkType = 'userTalk';
+					linkType = 'userTalk'
 				} else if (cd.g.userSubpageLinkRegexp.test(pageName)) {
-					linkType = 'userSubpage';
+					linkType = 'userSubpage'
 				} else if (cd.g.userTalkSubpageLinkRegexp.test(pageName)) {
-					linkType = 'userTalkSubpage';
+					linkType = 'userTalkSubpage'
 				}
 
 				// Another alternative is a user link to another site where the prefix is specified before
 				// the namespace. Enough to capture the user name from, not enough to make any inferences.
 			} else if (cd.g.contribsPageLinkRegexp.test(pageName)) {
-				userName = pageName.replace(cd.g.contribsPageLinkRegexp, '');
+				userName = pageName.replace(cd.g.contribsPageLinkRegexp, '')
 				if (cd.g.isIPv6Address?.(userName)) {
-					userName = userName.toUpperCase();
+					userName = userName.toUpperCase()
 				}
-				linkType = 'contribs';
+				linkType = 'contribs'
 			}
 			if (hostname !== cd.g.serverName) {
-				linkType += 'Foreign';
+				linkType += 'Foreign'
 
 				// Some bug in type checking - can't do `linkType = /** @type {LinkType} */ (linkType +
 				// 'Foreign');` so that linkType doesn't end up just a string.
 				// eslint-disable-next-line no-self-assign
-				linkType = /** @type {LinkType} */ (linkType);
+				linkType = /** @type {LinkType} */ (linkType)
 			}
 			if (!userName) {
-				return;
+				return
 			}
 
-			userName = ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
+			userName = ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim()
 		} else if (
 			element.classList.contains('mw-selflink') &&
 			cd.g.namespaceNumber === 3 &&
@@ -900,12 +900,12 @@ class Parser {
 		) {
 			// Comments of users that have only the user talk page link in their signature on their talk
 			// page.
-			userName = cd.g.pageTitle;
+			userName = cd.g.pageTitle
 		} else {
-			return;
+			return
 		}
 
-		return { userName, linkType };
+		return { userName, linkType }
 	}
 
 	/**
@@ -915,7 +915,7 @@ class Parser {
 	 * @returns {ElementLike}
 	 */
 	static createElement(name) {
-		return document.createElement(name);
+		return document.createElement(name)
 	}
 
 	/**
@@ -925,7 +925,7 @@ class Parser {
 	 * @returns {TextLike}
 	 */
 	static createTextNode(text) {
-		return document.createTextNode(text);
+		return document.createTextNode(text)
 	}
 
 	/**
@@ -936,7 +936,7 @@ class Parser {
 	 * @returns {NodeLike}
 	 */
 	static appendChild(parent, child) {
-		return parent.appendChild(/** @type {any} */ (child));
+		return parent.appendChild(/** @type {any} */ (child))
 	}
 
 	/**
@@ -947,7 +947,7 @@ class Parser {
 	 * @returns {boolean}
 	 */
 	static contains(el, node) {
-		return el.contains(/** @type {any} */ (node));
+		return el.contains(/** @type {any} */ (node))
 	}
 
 	/**
@@ -959,7 +959,7 @@ class Parser {
 	 * @returns {NodeLike}
 	 */
 	static insertBefore(parent, node, referenceNode) {
-		return parent.insertBefore(/** @type {any} */ (node), /** @type {any} */ (referenceNode));
+		return parent.insertBefore(/** @type {any} */ (node), /** @type {any} */ (referenceNode))
 	}
 
 	/**
@@ -969,7 +969,7 @@ class Parser {
 	 * @returns {void}
 	 */
 	static remove(node) {
-		/** @type {any} */ (node).remove();
+		/** @type {any} */ (node).remove()
 	}
 
 	/**
@@ -980,8 +980,8 @@ class Parser {
 		// https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=138050961#c-Lesless-20240526055500-Deinocheirus-20240525165500
 		// Non-Latin punctuation is collected manually from https://en.wikipedia.org/wiki/Full_stop and
 		// other sources.
-		this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[)\\]]*(?:[.!?…।։။۔]+ |[。！？]+)`);
+		this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[)\\]]*(?:[.!?…।։။۔]+ |[。！？]+)`)
 	}
 }
 
-export default Parser;
+export default Parser

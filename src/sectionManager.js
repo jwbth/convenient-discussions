@@ -1,9 +1,9 @@
-import controller from './controller';
-import cd from './loader/cd';
-import settings from './settings';
-import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './shared/utils-general';
-import { getExtendedRect, getVisibilityByRects } from './utils-window';
-import visits from './visits';
+import controller from './controller'
+import cd from './loader/cd'
+import settings from './settings'
+import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './shared/utils-general'
+import { getExtendedRect, getVisibilityByRects } from './utils-window'
+import visits from './visits'
 
 /**
  * @typedef {{
@@ -24,7 +24,7 @@ class SectionManager {
 	 * @type {import('./Section').default[]}
 	 * @private
 	 */
-	items = [];
+	items = []
 
 	/**
 	 * _For internal use._ Initialize the registry.
@@ -32,20 +32,20 @@ class SectionManager {
 	 * @param {import('./Subscriptions').default} subscriptions
 	 */
 	init(subscriptions) {
-		this.improvePerformance = settings.get('improvePerformance');
+		this.improvePerformance = settings.get('improvePerformance')
 
 		controller
-			.on('scroll', this.maybeUpdateVisibility);
+			.on('scroll', this.maybeUpdateVisibility)
 		subscriptions
-			.on('process', this.addSubscribeButtons);
+			.on('process', this.addSubscribeButtons)
 		visits
-			.on('process', this.updateNewCommentsData);
+			.on('process', this.updateNewCommentsData)
 
 		if (this.improvePerformance) {
 			// Unhide when the user opens a search box to allow searching the full page.
 			$(window)
 				.on('focus', this.maybeUpdateVisibility)
-				.on('blur', this.maybeUnhideAll);
+				.on('blur', this.maybeUnhideAll)
 		}
 	}
 
@@ -56,19 +56,19 @@ class SectionManager {
 	 */
 	setup() {
 		this.items.forEach((section) => {
-			section.isLastSection = section.index === this.items.length - 1;
+			section.isLastSection = section.index === this.items.length - 1
 
 			// This should be above adding reply buttons so that the order is right.
-			section.maybeAddAddSubsectionButtons();
+			section.maybeAddAddSubsectionButtons()
 
-			section.maybeAddReplyButton();
-		});
+			section.maybeAddReplyButton()
+		})
 
 		// Run this after running section.addReplyButton() for each section because reply buttons must
 		// be in place for this.
 		this.items.forEach((section) => {
-			section.showAddSubsectionButtonsOnReplyButtonHover();
-		});
+			section.showAddSubsectionButtonsOnReplyButtonHover()
+		})
 	}
 
 	/**
@@ -77,7 +77,7 @@ class SectionManager {
 	 * @param {import('./Section').default} item
 	 */
 	add(item) {
-		this.items.push(item);
+		this.items.push(item)
 	}
 
 	/**
@@ -86,7 +86,7 @@ class SectionManager {
 	 * @returns {import('./Section').default[]}
 	 */
 	getAll() {
-		return this.items;
+		return this.items
 	}
 
 	/**
@@ -97,10 +97,10 @@ class SectionManager {
 	 */
 	getByIndex(index) {
 		if (index < 0) {
-			index = this.items.length + index;
+			index = this.items.length + index
 		}
 
-		return this.items[index] || null;
+		return this.items[index] || null
 	}
 
 	/**
@@ -109,7 +109,7 @@ class SectionManager {
 	 * @returns {number}
 	 */
 	getCount() {
-		return this.items.length;
+		return this.items.length
 	}
 
 	/**
@@ -119,14 +119,14 @@ class SectionManager {
 	 * @returns {import('./Section').default[]}
 	 */
 	query(condition) {
-		return this.items.filter(condition);
+		return this.items.filter(condition)
 	}
 
 	/**
 	 * Reset the section list.
 	 */
 	reset() {
-		this.items = [];
+		this.items = []
 	}
 
 	/**
@@ -136,7 +136,7 @@ class SectionManager {
 	 * @returns {?import('./Section').default}
 	 */
 	getById(id) {
-		return (id && this.items.find((section) => section.id === id)) || null;
+		return (id && this.items.find((section) => section.id === id)) || null
 	}
 
 	/**
@@ -146,7 +146,7 @@ class SectionManager {
 	 * @returns {import('./Section').default[]}
 	 */
 	getByHeadline(headline) {
-		return this.items.filter((section) => section.headline === headline);
+		return this.items.filter((section) => section.headline === headline)
 	}
 
 	/**
@@ -156,7 +156,7 @@ class SectionManager {
 	 * @returns {import('./Section').default[]}
 	 */
 	getBySubscribeId(subscribeId) {
-		return this.items.filter((section) => section.subscribeId === subscribeId);
+		return this.items.filter((section) => section.subscribeId === subscribeId)
 	}
 
 	/**
@@ -176,7 +176,7 @@ class SectionManager {
 				}))
 				.filter((match) => match.score > 0.66)
 				.sort((m1, m2) => m2.score - m1.score)[0]?.section || null
-		);
+		)
 	}
 
 	/**
@@ -194,20 +194,20 @@ class SectionManager {
 	 */
 	search({ index, headline, id, ancestors, oldestCommentId }) {
 		/** @type {SectionMatch[]} */
-		const matches = [];
+		const matches = []
 		this.items.some((section) => {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const doesIndexMatch = section.index === index;
+			const doesIndexMatch = section.index === index
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const doesHeadlineMatch = section.headline === headline;
+			const doesHeadlineMatch = section.headline === headline
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const doesIdMatch = section.id === id;
+			const doesIdMatch = section.id === id
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const doAncestorsMatch = ancestors
 				? areObjectsEqual(section.getAncestors().map((sect) => sect.headline), ancestors)
-				: false;
+				: false
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const doesOldestCommentMatch = section.oldestComment?.id === oldestCommentId;
+			const doesOldestCommentMatch = section.oldestComment?.id === oldestCommentId
 
 			const score = (
 				Number(doesHeadlineMatch) * 1 +
@@ -215,24 +215,24 @@ class SectionManager {
 				Number(doesOldestCommentMatch) * 1 +
 				Number(doesIdMatch) * 0.5 +
 				Number(doesIndexMatch) * 0.001
-			);
+			)
 			if (score >= 2) {
-				matches.push({ section, score });
+				matches.push({ section, score })
 			}
 
 			// 3.5 score means it's the best match for sure. Two sections can't have coinciding IDs, so
 			// there can't be two sections with the 3.5 score. (We do this because there can be very many
 			// sections on the page, so searching for a match for every section, e.g. in updateChecker.js,
 			// can be expensive.)
-			return score >= 3.5;
-		});
+			return score >= 3.5
+		})
 
 		return (
 			matches.reduce(
 				(best, match) => (!best || match.score > best.score ? match : best),
 				/** @type {SectionMatch|undefined} */ (undefined)
 			) || null
-		);
+		)
 	}
 
 	/**
@@ -241,14 +241,14 @@ class SectionManager {
 	 * @private
 	 */
 	addSubscribeButtons = () => {
-		if (!cd.user.isRegistered()) return;
+		if (!cd.user.isRegistered()) return
 
-		controller.saveRelativeScrollPosition();
+		controller.saveRelativeScrollPosition()
 		this.items.forEach((section) => {
-			section.addSubscribeButton();
-		});
-		controller.restoreRelativeScrollPosition();
-	};
+			section.addSubscribeButton()
+		})
+		controller.restoreRelativeScrollPosition()
+	}
 
 	/**
 	 * Generate an DiscussionTools ID for a section.
@@ -258,10 +258,10 @@ class SectionManager {
 	 * @returns {string}
 	 */
 	generateDtSubscriptionId(author, timestamp) {
-		const date = new Date(timestamp);
-		date.setSeconds(0);
+		const date = new Date(timestamp)
+		date.setSeconds(0)
 
-		return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, '00')}`;
+		return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, '00')}`
 	}
 
 	/**
@@ -270,8 +270,8 @@ class SectionManager {
 	 */
 	addMetadataAndActions() {
 		this.items.forEach((section) => {
-			section.addMetadataAndActions();
-		});
+			section.addMetadataAndActions()
+		})
 	}
 
 	/**
@@ -279,9 +279,9 @@ class SectionManager {
 	 */
 	updateNewCommentsData = () => {
 		this.items.forEach((section) => {
-			section.updateNewCommentsData();
-		});
-	};
+			section.updateNewCommentsData()
+		})
+	}
 
 	/**
 	 * _For internal use._ Get the top offset of the first section relative to the viewport.
@@ -291,21 +291,21 @@ class SectionManager {
 	 * @returns {number | undefined}
 	 */
 	getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset = undefined) {
-		if (scrollY <= controller.getBodyScrollPaddingTop()) return;
+		if (scrollY <= controller.getBodyScrollPaddingTop()) return
 
 		return this.items.reduce((result, section) => {
 			if (result !== undefined) {
-				return result;
+				return result
 			}
 
-			const rect = getExtendedRect(section.headingElement);
+			const rect = getExtendedRect(section.headingElement)
 
 			// The third check to exclude the possibility that the first section is above the TOC, like
 			// at https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
 			return getVisibilityByRects(rect) && (!tocOffset || rect.outerTop > tocOffset)
 				? rect.outerTop
-				: undefined;
-		}, /** @type {number | undefined} */ (undefined));
+				: undefined
+		}, /** @type {number | undefined} */ (undefined))
 	}
 
 	/**
@@ -314,7 +314,7 @@ class SectionManager {
 	 * @returns {?import('./Section').default}
 	 */
 	getCurrentSection() {
-		const firstSectionTop = this.getFirstSectionRelativeTopOffset();
+		const firstSectionTop = this.getFirstSectionRelativeTopOffset()
 
 		return (
 			(
@@ -324,16 +324,16 @@ class SectionManager {
 					.slice()
 					.reverse()
 					.find((section) => {
-						const extendedRect = getExtendedRect(section.headingElement);
+						const extendedRect = getExtendedRect(section.headingElement)
 
 						return (
 							getVisibilityByRects(extendedRect) &&
 							extendedRect.outerTop < controller.getBodyScrollPaddingTop() + 1
-						);
+						)
 					})
 			) ||
 			null
-		);
+		)
 	}
 
 	/**
@@ -351,23 +351,23 @@ class SectionManager {
 			// When the document has no focus, all sections are visible (see .maybeUnhideAll()).
 			!document.hasFocus()
 		) {
-			return;
+			return
 		}
 
 		// Don't care about top scroll padding (the sticky header's height) here.
-		const viewportTop = window.scrollY;
+		const viewportTop = window.scrollY
 
-		const threeScreens = window.innerHeight * 3;
+		const threeScreens = window.innerHeight * 3
 
 		/** @type {import('./Section').default | undefined} */
-		let firstSectionToHide;
+		let firstSectionToHide
 		if (document.documentElement.scrollHeight - viewportTop > 20_000) {
-			const currentSection = this.getCurrentSection();
+			const currentSection = this.getCurrentSection()
 			firstSectionToHide = this.items
 				.filter((section) => !currentSection || section.index > currentSection.index)
 				.find((section) => {
-					const rect = section.headingElement.getBoundingClientRect();
-					const blockSize = 10_000;
+					const rect = section.headingElement.getBoundingClientRect()
+					const blockSize = 10_000
 
 					return (
 						getVisibilityByRects(rect) &&
@@ -381,24 +381,24 @@ class SectionManager {
 							Math.floor(viewportTop / blockSize) !==
 							Math.floor((viewportTop + rect.top - threeScreens) / blockSize)
 						)
-					);
-				});
+					)
+				})
 		}
 
 		/** @type {import('./Section').default[]} */
-		const subsectionsToHide = [];
+		const subsectionsToHide = []
 		if (firstSectionToHide) {
 			this.items
 				.slice(firstSectionToHide.index)
 				.some((section) => {
 					if (section.level === 2) {
-						return true;
+						return true
 					}
 
-					subsectionsToHide.push(section);
+					subsectionsToHide.push(section)
 
-					return false;
-				});
+					return false
+				})
 		}
 		this.items
 			.filter((section) =>
@@ -409,9 +409,9 @@ class SectionManager {
 			.forEach((section) => {
 				section.updateVisibility(
 					!(firstSectionToHide && section.index >= firstSectionToHide.index)
-				);
-			});
-	};
+				)
+			})
+	}
 
 	/**
 	 * _For internal use._ Unhide the sections.
@@ -420,12 +420,12 @@ class SectionManager {
 	 * blurred.
 	 */
 	maybeUnhideAll = () => {
-		if (!controller.isLongPage()) return;
+		if (!controller.isLongPage()) return
 
 		this.items.forEach((section) => {
-			section.updateVisibility(true);
-		});
-	};
+			section.updateVisibility(true)
+		})
+	}
 }
 
-export default new SectionManager();
+export default new SectionManager()

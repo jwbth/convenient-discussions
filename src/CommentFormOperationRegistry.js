@@ -1,5 +1,5 @@
-import CommentFormOperation from './CommentFormOperation';
-import { removeFromArrayIfPresent } from './shared/utils-general';
+import CommentFormOperation from './CommentFormOperation'
+import { removeFromArrayIfPresent } from './shared/utils-general'
 
 /**
  * An operation registry: a storage of operations that a comment form currently undergoes, such as
@@ -9,7 +9,7 @@ class CommentFormOperationRegistry {
 	/**
 	 * @type {CommentFormOperation[]}
 	 */
-	items = [];
+	items = []
 
 	/**
 	 * Create an operation registry.
@@ -17,7 +17,7 @@ class CommentFormOperationRegistry {
 	 * @param {import('./CommentForm').default} commentForm
 	 */
 	constructor(commentForm) {
-		this.commentForm = commentForm;
+		this.commentForm = commentForm
 	}
 
 	/**
@@ -29,11 +29,11 @@ class CommentFormOperationRegistry {
 	 * @returns {CommentFormOperation}
 	 */
 	add(type, options = {}, clearMessages = true) {
-		const operation = new CommentFormOperation(this, type, options);
-		this.items.push(operation);
-		operation.open(clearMessages);
+		const operation = new CommentFormOperation(this, type, options)
+		this.items.push(operation)
+		operation.open(clearMessages)
 
-		return operation;
+		return operation
 	}
 
 	/**
@@ -42,7 +42,7 @@ class CommentFormOperationRegistry {
 	 * @param {CommentFormOperation} operation
 	 */
 	remove(operation) {
-		removeFromArrayIfPresent(this.items, operation);
+		removeFromArrayIfPresent(this.items, operation)
 	}
 
 	/**
@@ -52,8 +52,8 @@ class CommentFormOperationRegistry {
 		// Use .slice() because CommentFormOperationRegistry#close() also removes the operation from the
 		// operation registry, this disrupting .forEach().
 		this.items.slice().forEach((op) => {
-			op.close();
-		});
+			op.close()
+		})
 	}
 
 	/**
@@ -63,7 +63,7 @@ class CommentFormOperationRegistry {
 	 * @returns {CommentFormOperation[]}
 	 */
 	filterByType(type) {
-		return this.items.filter((op) => op.getType() === type);
+		return this.items.filter((op) => op.getType() === type)
 	}
 
 	/**
@@ -73,8 +73,8 @@ class CommentFormOperationRegistry {
 	 * @returns {CommentFormOperation[]}
 	 */
 	query(callback) {
-		return this.items.filter(callback);
+		return this.items.filter(callback)
 	}
 }
 
-export default CommentFormOperationRegistry;
+export default CommentFormOperationRegistry

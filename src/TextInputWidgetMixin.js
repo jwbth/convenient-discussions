@@ -1,6 +1,6 @@
-import { convertHtmlToWikitext } from './utils-api';
-import { es6ClassToOoJsClass } from './utils-oojs';
-import { cleanUpPasteDom, getElementFromPasteHtml, isElementConvertibleToWikitext } from './utils-window';
+import { convertHtmlToWikitext } from './utils-api'
+import { es6ClassToOoJsClass } from './utils-oojs'
+import { cleanUpPasteDom, getElementFromPasteHtml, isElementConvertibleToWikitext } from './utils-window'
 
 /**
  * Mixin that is intended to be used on classes that extend
@@ -12,7 +12,7 @@ class TextInputWidgetMixin {
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof TextInputWidgetMixin} */
 		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor;
+		this.constructor = this.constructor
 	}
 
 	/**
@@ -27,7 +27,7 @@ class TextInputWidgetMixin {
 		 * @type {string | undefined}
 		 * @private
 		 */
-		this.selectedTextForAutocomplete = undefined;
+		this.selectedTextForAutocomplete = undefined
 
 		/**
 		 * Whether the autocomplete menu is currently active. When active, the selected text
@@ -36,11 +36,11 @@ class TextInputWidgetMixin {
 		 * @type {boolean}
 		 * @private
 		 */
-		this.autocompleteMenuActive = false;
+		this.autocompleteMenuActive = false
 
 		this.$input.on('input', () => {
-			this.emit('manualChange', this.getValue());
-		});
+			this.emit('manualChange', this.getValue())
+		})
 
 		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin
 		/**
@@ -53,11 +53,11 @@ class TextInputWidgetMixin {
 		this.handleSelectionChange = () => {
 			// Only update selection if this input is focused and autocomplete menu is not active
 			if (document.activeElement === this.$input[0] && !this.autocompleteMenuActive) {
-				this.updateSelectedTextForAutocomplete();
+				this.updateSelectedTextForAutocomplete()
 			}
-		};
+		}
 
-		document.addEventListener('selectionchange', this.handleSelectionChange);
+		document.addEventListener('selectionchange', this.handleSelectionChange)
 	}
 
 	/**
@@ -68,16 +68,16 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	insertContent(content) {
-		this.focus();
+		this.focus()
 		// eslint-disable-next-line @typescript-eslint/no-deprecated
 		if (!document.execCommand('insertText', false, content)) {
 			Object.getPrototypeOf(Object.getPrototypeOf(this.constructor)).prototype.insertContent.call(
 				this,
 				content
-			);
+			)
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -87,15 +87,15 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	async getWikitextFromSelection() {
-		const div = document.createElement('div');
-		const selection = window.getSelection();
+		const div = document.createElement('div')
+		const selection = window.getSelection()
 		if (selection.type === 'Range') {
-			div.append(selection.getRangeAt(0).cloneContents());
+			div.append(selection.getRangeAt(0).cloneContents())
 
-			return await this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]));
+			return await this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]))
 		}
 
-		return '';
+		return ''
 	}
 
 	/**
@@ -108,7 +108,7 @@ class TextInputWidgetMixin {
 	getWikitextFromPaste(html) {
 		return this.maybeConvertElementToWikitext(
 			cleanUpPasteDom(getElementFromPasteHtml(html), this.$element[0])
-		);
+		)
 	}
 
 	/**
@@ -124,14 +124,14 @@ class TextInputWidgetMixin {
 	 */
 	async maybeConvertElementToWikitext({ element, text, syntaxHighlightLanguages }) {
 		if (!isElementConvertibleToWikitext(element)) {
-			return text;
+			return text
 		}
 
-		this.pushPending().setDisabled(true);
-		const wikitext = await convertHtmlToWikitext(element.innerHTML, syntaxHighlightLanguages);
-		this.popPending().setDisabled(false);
+		this.pushPending().setDisabled(true)
+		const wikitext = await convertHtmlToWikitext(element.innerHTML, syntaxHighlightLanguages)
+		this.popPending().setDisabled(false)
 
-		return wikitext ?? text;
+		return wikitext ?? text
 	}
 
 	/**
@@ -141,14 +141,14 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	updateSelectedTextForAutocomplete() {
-		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (this.$input[0]);
-		const start = element.selectionStart;
-		const end = element.selectionEnd;
+		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (this.$input[0])
+		const start = element.selectionStart
+		const end = element.selectionEnd
 
 		// Only capture selection if there's actually selected text
 		this.selectedTextForAutocomplete = (start !== end && start !== null && end !== null)
 			? element.value.substring(start, end)
-			: undefined;
+			: undefined
 	}
 
 	/**
@@ -158,7 +158,7 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	setAutocompleteMenuActive(active) {
-		this.autocompleteMenuActive = active;
+		this.autocompleteMenuActive = active
 	}
 
 	/**
@@ -168,7 +168,7 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	getSelectedTextForAutocomplete() {
-		return this.selectedTextForAutocomplete;
+		return this.selectedTextForAutocomplete
 	}
 
 	/**
@@ -180,10 +180,10 @@ class TextInputWidgetMixin {
 		document.removeEventListener(
 			'selectionchange',
 			/** @type {NonNullable<typeof this.handleSelectionChange>} */ (this.handleSelectionChange)
-		);
+		)
 	}
 }
 
-es6ClassToOoJsClass(TextInputWidgetMixin);
+es6ClassToOoJsClass(TextInputWidgetMixin)
 
-export default TextInputWidgetMixin;
+export default TextInputWidgetMixin

@@ -5,7 +5,7 @@
 
 // Array.prototype.at polyfill (ES2022). We require ES2022 or newer, but apparently .at() would be
 // the only deal breaker for older browsers, so why not add a polyfill for it
-import 'core-js/actual/array/at';
+import 'core-js/actual/array/at'
 
 // Array.prototype.findLastIndex polyfill (ES2023)
-import 'core-js/actual/array/find-last-index';
+import 'core-js/actual/array/find-last-index'

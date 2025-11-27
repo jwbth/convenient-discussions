@@ -5,7 +5,7 @@
  * @template {{ [id: string]: Element }} Ids List of prototype IDs.
  */
 class PrototypeRegistry {
-	elements = /** @type {Ids} */ ({});
+	elements = /** @type {Ids} */ ({})
 
 	/**
 	 * Register a prototype.
@@ -14,7 +14,7 @@ class PrototypeRegistry {
 	 * @param {Ids[keyof Ids]} prototype
 	 */
 	add(id, prototype) {
-		this.elements[id] = prototype;
+		this.elements[id] = prototype
 	}
 
 	/**
@@ -25,8 +25,8 @@ class PrototypeRegistry {
 	 * @returns {Ids[T]}
 	 */
 	get(id) {
-		return /** @type {Ids[T]}} */ (this.elements[id].cloneNode(true));
+		return /** @type {Ids[T]}} */ (this.elements[id].cloneNode(true))
 	}
 }
 
-export default PrototypeRegistry;
+export default PrototypeRegistry

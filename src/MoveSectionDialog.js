@@ -1,15 +1,15 @@
-import AutocompleteManager from './AutocompleteManager';
-import ProcessDialog from './ProcessDialog';
-import Pseudolink from './Pseudolink';
-import TextInputWidget from './TextInputWidget';
-import controller from './controller';
-import cd from './loader/cd';
-import pageRegistry from './pageRegistry';
-import CdError from './shared/CdError';
-import { defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './shared/utils-general';
-import { encodeWikilink, endWithTwoNewlines } from './shared/utils-wikitext';
-import { createCheckboxControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs';
-import { buildEditSummary, findFirstTimestamp, wrapHtml } from './utils-window';
+import AutocompleteManager from './AutocompleteManager'
+import ProcessDialog from './ProcessDialog'
+import Pseudolink from './Pseudolink'
+import TextInputWidget from './TextInputWidget'
+import controller from './controller'
+import cd from './loader/cd'
+import pageRegistry from './pageRegistry'
+import CdError from './shared/CdError'
+import { defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './shared/utils-general'
+import { encodeWikilink, endWithTwoNewlines } from './shared/utils-wikitext'
+import { createCheckboxControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs'
+import { buildEditSummary, findFirstTimestamp, wrapHtml } from './utils-window'
 
 /**
  * @typedef {object} ArchiveConfig
@@ -24,8 +24,8 @@ import { buildEditSummary, findFirstTimestamp, wrapHtml } from './utils-window';
  */
 class MoveSectionDialog extends ProcessDialog {
 	// @ts-expect-error: https://phabricator.wikimedia.org/T358416
-	static name = 'moveSectionDialog';
-	static title = cd.s('msd-title');
+	static name = 'moveSectionDialog'
+	static title = cd.s('msd-title')
 	static actions = /** @type {const} */ ([
 		{
 			action: 'close',
@@ -40,22 +40,22 @@ class MoveSectionDialog extends ProcessDialog {
 			flags: ['primary', 'progressive'],
 			disabled: true,
 		},
-	]);
+	])
 
 	/** @type {OO.ui.StackLayout} */
-	stack;
+	stack
 
 	/** @type {OO.ui.PanelLayout} */
-	loadingPanel;
+	loadingPanel
 
 	/** @type {OO.ui.PanelLayout} */
-	movePanel;
+	movePanel
 
 	/** @type {OO.ui.PanelLayout} */
-	successPanel;
+	successPanel
 
 	/** @type {[Promise<any>, JQuery.Promise<any>, Promise<ArchiveConfig | void>]} */
-	initRequests;
+	initRequests
 
 	/**
 	 * @typedef {{
@@ -66,7 +66,7 @@ class MoveSectionDialog extends ProcessDialog {
 	 * }} MoveSectionDialogControlTypes
 	 */
 
-	controls = /** @type {ControlTypesByName<MoveSectionDialogControlTypes>} */ ({});
+	controls = /** @type {ControlTypesByName<MoveSectionDialogControlTypes>} */ ({})
 
 	/**
 	 * Create a move section dialog.
@@ -74,8 +74,8 @@ class MoveSectionDialog extends ProcessDialog {
 	 * @param {import('./Section').default} section
 	 */
 	constructor(section) {
-		super();
-		this.section = section;
+		super()
+		this.section = section
 	}
 
 	/**
@@ -87,7 +87,7 @@ class MoveSectionDialog extends ProcessDialog {
 	 * @ignore
 	 */
 	getBodyHeight() {
-		return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
+		return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight
 	}
 
 	/**
@@ -99,23 +99,23 @@ class MoveSectionDialog extends ProcessDialog {
 	 * @ignore
 	 */
 	initialize() {
-		super.initialize();
+		super.initialize()
 
-		this.pushPending();
+		this.pushPending()
 
-		const sourcePage = this.section.getSourcePage();
-		const archivingConfigPages = [];
+		const sourcePage = this.section.getSourcePage()
+		const archivingConfigPages = []
 		if (sourcePage.canHaveArchives()) {
 			archivingConfigPages.push(
 				sourcePage,
 				...(cd.config.archivingConfig.subpages || [])
 					.map((subpage) => pageRegistry.get(sourcePage.name + '/' + subpage))
 					.filter(definedAndNotNull)
-			);
+			)
 		}
 		const templatePages = (cd.config.archivingConfig.templates || [])
 			.map((template) => pageRegistry.get(template.name))
-			.filter(definedAndNotNull);
+			.filter(definedAndNotNull)
 		this.initRequests = [
 			sourcePage.loadCode(),
 			mw.loader.using('mediawiki.widgets'),
@@ -125,30 +125,30 @@ class MoveSectionDialog extends ProcessDialog {
 				(transclusions) => this.guessArchiveConfig(mergeMaps(transclusions)),
 				() => {}
 			),
-		];
+		]
 
 		this.loadingPanel = new OO.ui.PanelLayout({
 			padded: true,
 			expanded: false,
-		});
-		this.loadingPanel.$element.append($('<div>').text(cd.s('loading-ellipsis')));
+		})
+		this.loadingPanel.$element.append($('<div>').text(cd.s('loading-ellipsis')))
 
 		this.movePanel = new OO.ui.PanelLayout({
 			padded: true,
 			expanded: false,
-		});
+		})
 
 		this.successPanel = new OO.ui.PanelLayout({
 			padded: true,
 			expanded: false,
-		});
+		})
 
 		this.stack = new OO.ui.StackLayout({
 			items: [this.loadingPanel, this.movePanel, this.successPanel],
-		});
-		this.$body.append(this.stack.$element);
+		})
+		this.$body.append(this.stack.$element)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -164,9 +164,9 @@ class MoveSectionDialog extends ProcessDialog {
 	 */
 	getSetupProcess(data) {
 		return super.getSetupProcess(data).next(() => {
-			this.stack.setItem(this.loadingPanel);
-			this.actions.setMode('move');
-		});
+			this.stack.setItem(this.loadingPanel)
+			this.actions.setMode('move')
+		})
 	}
 
 	/**
@@ -182,17 +182,17 @@ class MoveSectionDialog extends ProcessDialog {
 	 */
 	getReadyProcess(data) {
 		return super.getReadyProcess(data).next(async () => {
-			let archiveConfig;
+			let archiveConfig
 			try {
-				archiveConfig = (await Promise.all(this.initRequests))[2];
+				archiveConfig = (await Promise.all(this.initRequests))[2]
 			} catch {
-				this.abort({ message: cd.sParse('cf-error-getpagecode'), recoverable: false });
+				this.abort({ message: cd.sParse('cf-error-getpagecode'), recoverable: false })
 
-				return;
+				return
 			}
 
 			try {
-				this.section.locateInCode();
+				this.section.locateInCode()
 			} catch (error) {
 				if (error instanceof CdError) {
 					this.abort({
@@ -200,16 +200,16 @@ class MoveSectionDialog extends ProcessDialog {
 							error.getCode() === 'locateSection' ? 'error-locatesection' : 'error-unknown'
 						),
 						recoverable: false,
-					});
+					})
 				} else {
-					console.warn(error);
+					console.warn(error)
 					this.abort({
 						message: cd.sParse('error-javascript'),
 						recoverable: false,
-					});
+					})
 				}
 
-				return;
+				return
 			}
 
 			this.controls.title = createTitleControl({
@@ -219,60 +219,60 @@ class MoveSectionDialog extends ProcessDialog {
 				showMissing: false,
 				showSuggestionsOnFocus: false,
 				validate: () => {
-					const title = this.controls.title.input.getMWTitle();
-					const page = title && pageRegistry.get(title);
+					const title = this.controls.title.input.getMWTitle()
+					const page = title && pageRegistry.get(title)
 
-					return Boolean(page && page !== this.section.getSourcePage());
+					return Boolean(page && page !== this.section.getSourcePage())
 				},
-			});
+			})
 
 			this.controls.title.input
 				.on('change', this.onTitleInputChange)
 				.on('enter', () => {
 					if (!this.actions.get({ actions: 'move' })[0].isDisabled()) {
-						this.executeAction('move');
+						this.executeAction('move')
 					}
-				});
+				})
 
 			const archivePath =
 				archiveConfig?.path ||
-				(cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true));
+				(cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true))
 			if (archivePath) {
 				this.insertArchivePageButton = new Pseudolink({
 					label: archivePath,
 					input: this.controls.title.input,
-				});
+				})
 				$(this.insertArchivePageButton.buttonElement).on('click', () => {
-					this.controls.keepLink.input.setSelected(false);
-					this.controls.chronologicalOrder.input.setSelected(archiveConfig?.isSorted || false);
-				});
+					this.controls.keepLink.input.setSelected(false)
+					this.controls.chronologicalOrder.input.setSelected(archiveConfig?.isSorted || false)
+				})
 			}
 
 			this.controls.keepLink = createCheckboxControl({
 				value: 'keepLink',
 				selected: !cd.page.isArchive(),
 				label: cd.s('msd-keeplink'),
-			});
+			})
 			this.controls.chronologicalOrder = createCheckboxControl({
 				value: 'chronologicalOrder',
 				selected: false,
 				label: cd.s('msd-chronologicalorder'),
-			});
+			})
 
-			this.controls.summaryEnding = /** @type {TextControl} */ ({});
+			this.controls.summaryEnding = /** @type {TextControl} */ ({})
 			this.controls.summaryEnding.input = new TextInputWidget({
 				// TODO: Take into account the whole summary length, updating the maximum value dynamically.
 				maxLength: 250,
-			});
+			})
 			this.summaryEndingAutocomplete = new AutocompleteManager({
 				types: ['mentions', 'wikilinks'],
 				inputs: [this.controls.summaryEnding.input],
-			});
-			this.summaryEndingAutocomplete.init();
+			})
+			this.summaryEndingAutocomplete.init()
 			this.controls.summaryEnding.field = new OO.ui.FieldLayout(this.controls.summaryEnding.input, {
 				label: cd.s('msd-summaryending'),
 				align: 'top',
-			});
+			})
 
 			this.movePanel.$element.append([
 				this.controls.title.field.$element,
@@ -280,23 +280,23 @@ class MoveSectionDialog extends ProcessDialog {
 				this.controls.keepLink.field.$element,
 				this.controls.chronologicalOrder.field.$element,
 				this.controls.summaryEnding.field.$element,
-			].filter(defined));
+			].filter(defined))
 
-			this.stack.setItem(this.movePanel);
-			this.controls.title.input.focus();
-			this.onTitleInputChange();
-			this.actions.setAbilities({ close: true });
+			this.stack.setItem(this.movePanel)
+			this.controls.title.input.focus()
+			this.onTitleInputChange()
+			this.actions.setAbilities({ close: true })
 
 			// A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
 			// figure out a way to do this out of the box.
-			this.$body.css('overflow', 'hidden');
+			this.$body.css('overflow', 'hidden')
 			sleep(500).then(() => {
-				this.$body.css('overflow', '');
-			});
+				this.$body.css('overflow', '')
+			})
 
-			this.updateSize();
-			this.popPending();
-		});
+			this.updateSize()
+			this.popPending()
+		})
 	}
 
 	/**
@@ -312,63 +312,63 @@ class MoveSectionDialog extends ProcessDialog {
 	getActionProcess(action) {
 		if (action === 'move') {
 			return new OO.ui.Process(async () => {
-				this.pushPending();
-				this.controls.title.input.$input.trigger('blur');
+				this.pushPending()
+				this.controls.title.input.$input.trigger('blur')
 
 				const targetPage = /** @type {import('./Page').default} */ (
 					pageRegistry.get(/** @type {mw.Title} */ (this.controls.title.input.getMWTitle()))
-				);
+				)
 
 				// Should be ruled out by making the button disabled.
 				if (targetPage === this.section.getSourcePage()) {
 					this.abort({
 						message: cd.sParse('msd-error-wrongpage'),
 						recoverable: false,
-					});
+					})
 
-					return;
+					return
 				}
 
-				let source;
-				let target;
+				let source
+				let target
 				try {
 					[source, target] = await Promise.all([
 						this.loadSourcePage(),
 						this.loadTargetPage(targetPage),
-					]);
-					await this.editTargetPage(source, target);
-					await this.editSourcePage(source, target);
+					])
+					await this.editTargetPage(source, target)
+					await this.editSourcePage(source, target)
 				} catch (error) {
 					if (error instanceof CdError) {
 						this.abort({
 							message: /** @type {string} */ (error.getMessage()),
 							recoverable: error.getDetails().recoverable,
 							closeDialog: error.getDetails().closeDialog,
-						});
+						})
 					} else {
-						throw error;
+						throw error
 					}
 
-					return;
+					return
 				}
 
 				this.successPanel.$element.append(
 					wrapHtml(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
-				);
+				)
 
 				controller.rebootPage({
 					sectionId: this.controls.keepLink.input.isSelected() ? this.section.id : undefined,
-				});
+				})
 
-				this.stack.setItem(this.successPanel);
-				this.actions.setMode('success');
-				this.popPending();
-			});
+				this.stack.setItem(this.successPanel)
+				this.actions.setMode('success')
+				this.popPending()
+			})
 		}   // if (action === 'close')
 
 		return new OO.ui.Process(() => {
-			this.close();
-		});
+			this.close()
+		})
 	}
 
 	/**
@@ -377,12 +377,12 @@ class MoveSectionDialog extends ProcessDialog {
 	 * @protected
 	 */
 	onTitleInputChange = async () => {
-		let move = true;
+		let move = true
 		await this.controls.title.input.getValidity().catch(() => {
-			move = false;
-		});
-		this.actions.setAbilities({ move });
-	};
+			move = false
+		})
+		this.actions.setAbilities({ move })
+	}
 
 	/**
 	 * @typedef {object} Source
@@ -400,7 +400,7 @@ class MoveSectionDialog extends ProcessDialog {
 	 */
 	async loadSourcePage() {
 		try {
-			await this.section.getSourcePage().loadCode(undefined, false);
+			await this.section.getSourcePage().loadCode(undefined, false)
 		} catch (error) {
 			if (error instanceof CdError) {
 				if (error.getType() === 'api') {
@@ -412,25 +412,25 @@ class MoveSectionDialog extends ProcessDialog {
 						: new CdError({
 							message: cd.sParse('error-api', error.getCode()),
 							details: { recoverable: true },
-						});
+						})
 				} else if (error.getType() === 'network') {
 					throw new CdError({
 						message: cd.sParse('error-network'),
 						details: { recoverable: true },
-					});
+					})
 				}
 			} else {
-				console.warn(error);
+				console.warn(error)
 				throw new CdError({
 					message: cd.sParse('error-javascript'),
 					details: { recoverable: false },
-				});
+				})
 			}
 		}
 
-		let sectionSource;
+		let sectionSource
 		try {
-			sectionSource = this.section.locateInCode();
+			sectionSource = this.section.locateInCode()
 		} catch (error) {
 			if (error instanceof CdError) {
 				throw new CdError({
@@ -440,15 +440,15 @@ class MoveSectionDialog extends ProcessDialog {
 						),
 						true,
 					],
-				});
+				})
 			} else {
-				console.warn(error);
-				throw new CdError({ details: [cd.sParse('error-javascript'), false] });
+				console.warn(error)
+				throw new CdError({ details: [cd.sParse('error-javascript'), false] })
 			}
 		}
 
-		const pageName = this.section.getSourcePage().name;
-		const headlineEncoded = encodeWikilink(this.section.headline);
+		const pageName = this.section.getSourcePage().name
+		const headlineEncoded = encodeWikilink(this.section.headline)
 
 		return {
 			page: this.section.getSourcePage(),
@@ -456,7 +456,7 @@ class MoveSectionDialog extends ProcessDialog {
 			sectionWikilink: this.controls.keepLink.input.isSelected()
 				? `${pageName}#${headlineEncoded}`
 				: pageName,
-		};
+		}
 	}
 
 	/**
@@ -476,7 +476,7 @@ class MoveSectionDialog extends ProcessDialog {
 	 */
 	async loadTargetPage(targetPage) {
 		try {
-			await targetPage.loadCode();
+			await targetPage.loadCode()
 		} catch (error) {
 			if (error instanceof CdError) {
 				if (error.getType() === 'api') {
@@ -484,16 +484,16 @@ class MoveSectionDialog extends ProcessDialog {
 					// Should be filtered before submit anyway.
 						? new CdError({ details: [cd.sParse('msd-error-invalidpagename'), false] })
 
-						: new CdError({ details: [cd.sParse('error-api', error.getCode()), true] });
+						: new CdError({ details: [cd.sParse('error-api', error.getCode()), true] })
 				} else if (error.getType() === 'network') {
-					throw new CdError({ details: [cd.sParse('error-network'), true] });
+					throw new CdError({ details: [cd.sParse('error-network'), true] })
 				}
 			} else {
-				console.warn(error);
-				throw new CdError({ details: [cd.sParse('error-javascript'), false] });
+				console.warn(error)
+				throw new CdError({ details: [cd.sParse('error-javascript'), false] })
 			}
 		}
-		const realName = /** @type {NonNullable<typeof targetPage.realName>} */ (targetPage.realName);
+		const realName = /** @type {NonNullable<typeof targetPage.realName>} */ (targetPage.realName)
 
 		return {
 			page: targetPage,
@@ -503,7 +503,7 @@ class MoveSectionDialog extends ProcessDialog {
 					: undefined
 			),
 			sectionWikilink: `${realName}#${encodeWikilink(this.section.headline)}`,
-		};
+		}
 	}
 
 	/**
@@ -515,33 +515,33 @@ class MoveSectionDialog extends ProcessDialog {
 	 * @protected
 	 */
 	async editTargetPage(source, target) {
-		let codeBeginning;
-		let codeEnding;
+		let codeBeginning
+		let codeEnding
 		if (this.controls.keepLink.input.isSelected()) {
 			const code = cd.config.getMoveTargetPageCode(
 				source.sectionWikilink.replace(/=/g, '{{=}}'),
 				cd.g.userSignature.replace(/=/g, '{{=}}')
-			);
+			)
 			if (Array.isArray(code)) {
-				codeBeginning = code[0] + '\n';
-				codeEnding = '\n' + code[1];
+				codeBeginning = code[0] + '\n'
+				codeEnding = '\n' + code[1]
 			} else {
-				codeBeginning = code;
-				codeEnding = '';
+				codeBeginning = code
+				codeEnding = ''
 			}
 		} else {
-			codeBeginning = '';
-			codeEnding = '';
+			codeBeginning = ''
+			codeEnding = ''
 		}
 
-		const sectionCode = source.sectionSource.code;
-		const relativeContentStartIndex = source.sectionSource.relativeContentStartIndex;
+		const sectionCode = source.sectionSource.code
+		const relativeContentStartIndex = source.sectionSource.relativeContentStartIndex
 
-		let summaryEnding = this.controls.summaryEnding.input.getValue();
-		summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding;
+		let summaryEnding = this.controls.summaryEnding.input.getValue()
+		summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding
 
 		try {
-			const code = target.page.source.getCode();
+			const code = target.page.source.getCode()
 			await target.page.edit({
 				text: (
 					endWithTwoNewlines(code.slice(0, target.targetIndex)) +
@@ -562,23 +562,23 @@ class MoveSectionDialog extends ProcessDialog {
 				}),
 				baserevid: target.page.revisionId,
 				starttimestamp: target.page.queryTimestamp,
-			});
+			})
 		} catch (error) {
-			const genericMessage = cd.sParse('msd-error-editingtargetpage');
+			const genericMessage = cd.sParse('msd-error-editingtargetpage')
 			if (error instanceof CdError) {
 				if (error.getType() === 'network') {
-					throw new CdError({ details: [genericMessage + ' ' + cd.sParse('error-network'), true] });
+					throw new CdError({ details: [genericMessage + ' ' + cd.sParse('error-network'), true] })
 				} else {
-					let message = /** @type {string} */ (error.getMessage());
+					let message = /** @type {string} */ (error.getMessage())
 					if (error.getCode() === 'editconflict') {
 						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-						message += ' ' + cd.sParse('msd-error-editconflict-retry');
+						message += ' ' + cd.sParse('msd-error-editconflict-retry')
 					}
-					throw new CdError({ details: [genericMessage + ' ' + message, true] });
+					throw new CdError({ details: [genericMessage + ' ' + message, true] })
 				}
 			} else {
-				console.warn(error);
-				throw new CdError({ details: [genericMessage + ' ' + cd.sParse('error-javascript'), false] });
+				console.warn(error)
+				throw new CdError({ details: [genericMessage + ' ' + cd.sParse('error-javascript'), false] })
 			}
 		}
 	}
@@ -591,13 +591,13 @@ class MoveSectionDialog extends ProcessDialog {
 	 * @throws {Array.<string|boolean>}
 	 */
 	async editSourcePage(source, target) {
-		const sectionCode = source.sectionSource.code;
+		const sectionCode = source.sectionSource.code
 
-		let summaryEnding = this.controls.summaryEnding.input.getValue();
-		summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding;
+		let summaryEnding = this.controls.summaryEnding.input.getValue()
+		summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding
 
 		try {
-			const code = source.page.source.getCode();
+			const code = source.page.source.getCode()
 			await source.page.edit({
 				text: (
 					code.slice(0, source.sectionSource.startIndex) +
@@ -622,12 +622,12 @@ class MoveSectionDialog extends ProcessDialog {
 				}),
 				baserevid: source.page.revisionId,
 				starttimestamp: source.page.queryTimestamp,
-			});
+			})
 		} catch (error) {
 			// Errors when editing the target page are recoverable because we haven't performed any
 			// actions yet. Errors when editing the source page are not recoverable because we have
 			// already edited the source page.
-			const genericMessage = cd.sParse('msd-error-editingsourcepage');
+			const genericMessage = cd.sParse('msd-error-editingsourcepage')
 			if (error instanceof CdError) {
 				throw new CdError({
 					details: [
@@ -643,12 +643,12 @@ class MoveSectionDialog extends ProcessDialog {
 						false,
 						true,
 					],
-				});
+				})
 			} else {
-				console.warn(error);
+				console.warn(error)
 				throw new CdError({
 					details: [genericMessage + ' ' + cd.sParse('error-javascript'), false, true],
-				});
+				})
 			}
 		}
 	}
@@ -671,28 +671,28 @@ class MoveSectionDialog extends ProcessDialog {
 		this.showErrors(new OO.ui.Error(wrapHtml(message, {
 			callbacks: {
 				'cd-message-reloadPage': () => {
-					this.close();
-					controller.rebootPage();
+					this.close()
+					controller.rebootPage()
 				},
 			},
-		}), { recoverable }));
+		}), { recoverable }))
 		this.$errors
 			.find('.oo-ui-buttonElement-button')
 			.on('click', () => {
 				if (closeDialog) {
-					this.close();
+					this.close()
 				} else {
-					this.updateSize();
+					this.updateSize()
 				}
-			});
+			})
 
 		this.actions.setAbilities({
 			close: true,
 			move: recoverable,
-		});
+		})
 
-		this.updateSize();
-		this.popPending();
+		this.updateSize()
+		this.popPending()
 	}
 
 	/**
@@ -705,14 +705,14 @@ class MoveSectionDialog extends ProcessDialog {
 	guessArchiveConfig(templateToParameters) {
 		return Array.from(templateToParameters).reduce((config, [page, parameters]) => {
 			if (config) {
-				return config;
+				return config
 			}
 
 			const templateConfig = /** @type {import('../config/default').ArchivingTemplateEntry} */ (
 				(cd.config.archivingConfig.templates || []).find(
 					(template) => pageRegistry.get(template.name) === page
 				)
-			);
+			)
 
 			/**
 			 * Find a parameter mentioned in the template config in the list of actual template
@@ -738,22 +738,22 @@ class MoveSectionDialog extends ProcessDialog {
 								),
 							),
 						value
-					);
+					)
 
 				const presentPathParam = ensureArray(templateConfig[prop]).find(
 					(pathParam) => parameters[pathParam]
-				);
+				)
 
-				return presentPathParam ? replaceAll(parameters[presentPathParam]) : undefined;
-			};
+				return presentPathParam ? replaceAll(parameters[presentPathParam]) : undefined
+			}
 
-			let path = findPresentParamAndReplaceAll('pathParam');
+			let path = findPresentParamAndReplaceAll('pathParam')
 			if (!path) {
-				path = findPresentParamAndReplaceAll('relativePathParam');
+				path = findPresentParamAndReplaceAll('relativePathParam')
 				if (path) {
-					const [absolutePairKey, absolutePairValue] = templateConfig.absolutePathPair || [];
+					const [absolutePairKey, absolutePairValue] = templateConfig.absolutePathPair || []
 					if (!(absolutePairKey && parameters[absolutePairKey]?.match(absolutePairValue))) {
-						path = cd.page.name + '/' + path;
+						path = cd.page.name + '/' + path
 					}
 				}
 			}
@@ -761,11 +761,11 @@ class MoveSectionDialog extends ProcessDialog {
 			return {
 				path,
 				isSorted: cd.config.archivingConfig.areArchivesSorted || false,
-			};
-		}, /** @type {ArchiveConfig | undefined} */ (undefined));
+			}
+		}, /** @type {ArchiveConfig | undefined} */ (undefined))
 	}
 }
 
-es6ClassToOoJsClass(MoveSectionDialog);
+es6ClassToOoJsClass(MoveSectionDialog)
 
-export default MoveSectionDialog;
+export default MoveSectionDialog

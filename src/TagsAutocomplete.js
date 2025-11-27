@@ -1,6 +1,6 @@
-import BaseAutocomplete from './BaseAutocomplete';
-import cd from './loader/cd';
-import { ensureArray } from './shared/utils-general';
+import BaseAutocomplete from './BaseAutocomplete'
+import cd from './loader/cd'
+import { ensureArray } from './shared/utils-general'
 
 /**
  * @typedef {string | [string, string, string?]} TagEntry
@@ -18,7 +18,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 *   options
 	 */
 	constructor(config = {}) {
-		super(config);
+		super(config)
 	}
 
 	/**
@@ -51,13 +51,13 @@ class TagsAutocomplete extends BaseAutocomplete {
 			],
 			['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
 			['templatestyles', '<templatestyles src="', '" />'],
-		];
+		]
 
 		return /** @type {Array<TagEntry>} */ (cd.g.allowedTags)
 			.filter((tagString) => !tagAdditions.some((tagArray) => tagArray[0] === tagString))
 			.concat(tagAdditions)
-			.sort((item1, item2) => ensureArray(item1)[0] > ensureArray(item2)[0] ? 1 : -1);
-	};
+			.sort((item1, item2) => ensureArray(item1)[0] > ensureArray(item2)[0] ? 1 : -1)
+	}
 
 	/**
 	 * Get the display label for tags autocomplete.
@@ -66,7 +66,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getLabel() {
-		return cd.s('cf-autocomplete-tags-label');
+		return cd.s('cf-autocomplete-tags-label')
 	}
 
 	/**
@@ -76,7 +76,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getTrigger() {
-		return '<';
+		return '<'
 	}
 
 	/**
@@ -93,7 +93,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 			end: Array.isArray(entry) ? entry[2] : `</${entry}>`,
 			content: selectedText,
 			selectContent: !selectedText,
-		};
+		}
 	}
 
 	/**
@@ -105,7 +105,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 */
 	validateInput(text) {
 		// Tags autocomplete only works with alphabetic characters
-		return Boolean(text && /^[a-z]+$/i.test(text));
+		return Boolean(text && /^[a-z]+$/i.test(text))
 	}
 
 	/**
@@ -117,7 +117,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 */
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async makeApiRequest(_text) {
-		return [];
+		return []
 	}
 
 	/**
@@ -128,7 +128,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 * @protected
 	 */
 	isLocalOnly() {
-		return true;
+		return true
 	}
 
 	/**
@@ -141,9 +141,9 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 */
 	getLocalMatches(text) {
 		// Filter tags that start with the input text
-		const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
+		const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i')
 
-		return this.getDefaultEntries().filter((tag) => regexp.test(Array.isArray(tag) ? tag[0] : tag));
+		return this.getDefaultEntries().filter((tag) => regexp.test(Array.isArray(tag) ? tag[0] : tag))
 	}
 
 	/**
@@ -154,7 +154,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 * @returns {string} The display label
 	 */
 	getLabelFromEntry(entry) {
-		return Array.isArray(entry) ? entry[0] : entry;
+		return Array.isArray(entry) ? entry[0] : entry
 	}
 
 	/**
@@ -167,8 +167,8 @@ class TagsAutocomplete extends BaseAutocomplete {
 		return {
 			keepAsEnd: /^>/,
 			replaceEnd: false,
-		};
+		}
 	}
 }
 
-export default TagsAutocomplete;
+export default TagsAutocomplete

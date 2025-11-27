@@ -129,4 +129,4 @@ export default {
 	]),
 
 	sourceMapsBaseUrl: 'https://tools-static.wmflabs.org/convenient-discussions/source-maps/',
-};
+}

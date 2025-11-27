@@ -1,8 +1,8 @@
-import TextMasker from './TextMasker';
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { isKeyOf } from './shared/utils-general';
-import { escapePipesOutsideLinks, generateTagsRegexp } from './shared/utils-wikitext';
+import TextMasker from './TextMasker'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { isKeyOf } from './shared/utils-general'
+import { escapePipesOutsideLinks, generateTagsRegexp } from './shared/utils-wikitext'
 
 /**
  * Class that processes the comment form input and prepares the wikitext to insert into the page.
@@ -22,16 +22,16 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 
 	/** @type {CommentFormTarget} */
-	target;
+	target
 
 	/** @type {string} */
-	indentation;
+	indentation
 
 	/** @type {string|undefined} */
-	restLinesIndentation;
+	restLinesIndentation
 
 	/** @type {string} */
-	signature;
+	signature
 
 	/**
 	 * Create a comment form input processor.
@@ -41,13 +41,13 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @param {import('./CommentForm').CommentFormAction} action
 	 */
 	constructor(text, commentForm, action) {
-		super(text.trim());
-		this.initialText = this.text;
-		this.commentForm = commentForm;
-		this.target = /** @type {CommentFormTarget} */ (commentForm.getTarget());
-		this.action = action;
+		super(text.trim())
+		this.initialText = this.text
+		this.commentForm = commentForm
+		this.target = /** @type {CommentFormTarget} */ (commentForm.getTarget())
+		this.action = action
 
-		this.initIndentationData();
+		this.initIndentationData()
 	}
 
 	/**
@@ -56,7 +56,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {this is { target: import('./Comment').default }}
 	 */
 	isCommentTarget() {
-		return this.target.TYPE === 'comment';
+		return this.target.TYPE === 'comment'
 	}
 
 	/**
@@ -69,7 +69,7 @@ class CommentFormInputTransformer extends TextMasker {
 	isMode(mode) {
 		return (
 		/** @type {import('./CommentForm').CommentFormMode} */ (this.commentForm.getMode()) === mode
-		);
+		)
 	}
 
 	/**
@@ -79,20 +79,20 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	initIndentationData() {
 		if (this.isMode('reply')) {
-			this.indentation = this.target.source.replyIndentation;
+			this.indentation = this.target.source.replyIndentation
 		} else if (this.isMode('edit')) {
-			this.indentation = this.target.source.indentation;
+			this.indentation = this.target.source.indentation
 		} else if (this.isMode('replyInSection')) {
 			const lastCommentIndentation = this.target.source.extractLastCommentIndentation(
 				this.commentForm
-			);
+			)
 			this.indentation =
 				lastCommentIndentation &&
 				(lastCommentIndentation.startsWith('#') || cd.config.indentationCharMode === 'mimic')
 					? lastCommentIndentation[0]
-					: cd.config.defaultIndentationChar;
+					: cd.config.defaultIndentationChar
 		} else {
-			this.indentation = '';
+			this.indentation = ''
 		}
 
 		if (this.isIndented()) {
@@ -100,7 +100,7 @@ class CommentFormInputTransformer extends TextMasker {
 			// real page. This pseudolist's margin is made invisible by CSS.
 			this.restLinesIndentation = this.action === 'preview'
 				? ':'
-				: this.indentation.replace(/\*/g, ':');
+				: this.indentation.replace(/\*/g, ':')
 		}
 	}
 
@@ -110,7 +110,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {this is { restLinesIndentation: string }}
 	 */
 	isIndented() {
-		return Boolean(this.indentation);
+		return Boolean(this.indentation)
 	}
 
 	/**
@@ -130,7 +130,7 @@ class CommentFormInputTransformer extends TextMasker {
 			.addTrailingNewline()
 			.addIntentationChars()
 			.unmask()
-			.getText();
+			.getText()
 	}
 
 	/**
@@ -141,7 +141,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	processAndMaskSensitiveCode() {
-		return /** @type {this} */ (this.maskSensitiveCode((code) => this.processCode(code, true)));
+		return /** @type {this} */ (this.maskSensitiveCode((code) => this.processCode(code, true)))
 	}
 
 	/**
@@ -159,29 +159,29 @@ class CommentFormInputTransformer extends TextMasker {
 
 				// Quote matches
 				this.text.match(cd.g.quoteRegexp) || []
-			);
-			this.areThereTagsAroundMultipleLines = matches.some((match) => match.includes('\n'));
-			this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match));
+			)
+			this.areThereTagsAroundMultipleLines = matches.some((match) => match.includes('\n'))
+			this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match))
 		}
 
 		// If the user wrapped the comment in <small></small>, remove the tags to later wrap the
 		// comment together with the signature into the tags and possibly ensure the correct line
 		// spacing.
-		this.wrapInSmall = false;
+		this.wrapInSmall = false
 		if (!this.commentForm.headlineInput) {
 			this.text = this.text.replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
 				// Filter out <small>text</small><small>text</small>
 				if (/<\/small>/i.test(content)) {
-					return s;
+					return s
 				}
 
-				this.wrapInSmall = true;
+				this.wrapInSmall = true
 
-				return content;
-			});
+				return content
+			})
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -196,7 +196,7 @@ class CommentFormInputTransformer extends TextMasker {
 				? ''
 				: this.isMode('edit')
 					? this.target.source.signatureCode
-					: cd.g.userSignature;
+					: cd.g.userSignature
 
 		// Make so that the signature doesn't turn out to be at the end of the last item of the list if
 		// the comment contains one.
@@ -208,10 +208,10 @@ class CommentFormInputTransformer extends TextMasker {
 
 			/(^|\n)[:*#;].*$/.test(this.text)
 		) {
-			this.text += '\n';
+			this.text += '\n'
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -225,11 +225,11 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	handleIndentedComment(code, isWrapped, isInTemplate) {
 		if (!this.isIndented()) {
-			return code;
+			return code
 		}
 
 		// Remove spaces at the beginning of lines.
-		code = code.replace(/^ +/gm, '');
+		code = code.replace(/^ +/gm, '')
 
 		// Replace list markup (`:*#;`) with respective tags if otherwise the layout will be broken.
 		if (/^[:*#;]/m.test(code) && (isWrapped || this.restLinesIndentation === '#')) {
@@ -239,9 +239,9 @@ class CommentFormInputTransformer extends TextMasker {
 				// `[:^#;]` of a different nature in a template, e.g.
 				// `{{quote|link=#Section|1=* Item 1.\n* Item 2.\n}}`. Putting that parameter at the end
 				// will work.
-				code = code.replace(/\|(?:[^|=}]*=)?(?=[:*#;])/, '$&\n');
+				code = code.replace(/\|(?:[^|=}]*=)?(?=[:*#;])/, '$&\n')
 			}
-			code = CommentFormInputTransformer.listMarkupToTags(code);
+			code = CommentFormInputTransformer.listMarkupToTags(code)
 		}
 
 		code = code.replace(
@@ -258,7 +258,7 @@ class CommentFormInputTransformer extends TextMasker {
 				(newlines.length > 1 ? '\n\n\n' : '\n') +
 
 				CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, nextLine)
-		);
+		)
 
 		// Add newlines before and after gallery (yes, even if the comment starts with it).
 		code = code
@@ -266,21 +266,21 @@ class CommentFormInputTransformer extends TextMasker {
 				/(^|[^\n])(\u0001\d+_gallery\u0002)/g,
 				/** @type {ReplaceCallback<2>} */ (_s, before, m) => before + '\n' + m
 			)
-			.replace(/\u0001\d+_gallery\u0002(?=(?:$|[^\n]))/g, (s) => s + '\n');
+			.replace(/\u0001\d+_gallery\u0002(?=(?:$|[^\n]))/g, (s) => s + '\n')
 
 		// Table markup is OK only with colons as indentation characters.
 		if (this.restLinesIndentation.includes('#') && code.includes('\u0003')) {
 			throw new CdError({
 				type: 'parse',
 				code: 'numberedList-table',
-			});
+			})
 		}
 
 		if (this.restLinesIndentation === '#' && CommentFormInputTransformer.galleryRegexp.test(code)) {
 			throw new CdError({
 				type: 'parse',
 				code: 'numberedList',
-			});
+			})
 		}
 
 		code = code.replace(
@@ -300,7 +300,7 @@ class CommentFormInputTransformer extends TextMasker {
 					newlines.length > 1 ? '\n\n' : ''
 				)
 			)
-		);
+		)
 
 		// We we only check for `:` here, not other markup, because we only add `:` in those places.
 		code = code.replace(
@@ -313,9 +313,9 @@ class CommentFormInputTransformer extends TextMasker {
 						: m1 +
 							'\n' +
 							CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, '')
-		);
+		)
 
-		return code;
+		return code
 	}
 
 	/**
@@ -329,25 +329,25 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {string} code
 	 */
 	processNewlines(code, isInTemplate = false) {
-		const entireLineRegexp = new RegExp(/^\u0001\d+_(block|template)\u0002 *$/);
-		const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-		const fileRegexp = new RegExp('^' + CommentFormInputTransformer.filePatternEnd, 'i');
+		const entireLineRegexp = new RegExp(/^\u0001\d+_(block|template)\u0002 *$/)
+		const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/
+		const fileRegexp = new RegExp('^' + CommentFormInputTransformer.filePatternEnd, 'i')
 
-		let currentLineInTemplates = '';
-		let nextLineInTemplates = '';
+		let currentLineInTemplates = ''
+		let nextLineInTemplates = ''
 		if (isInTemplate) {
-			currentLineInTemplates = '|=';
-			nextLineInTemplates = String.raw`|\||}}`;
+			currentLineInTemplates = '|='
+			nextLineInTemplates = String.raw`|\||}}`
 		}
-		const paragraphTemplatePattern = mw.util.escapeRegExp(`{{${cd.config.paragraphTemplates[0]}}}`);
+		const paragraphTemplatePattern = mw.util.escapeRegExp(`{{${cd.config.paragraphTemplates[0]}}}`)
 		const currentLineEndingRegexp = new RegExp(
 			`(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x01\\d+_block\\x02|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$`,
 			'i'
-		);
+		)
 		const nextLineBeginningRegexp = new RegExp(
 			`^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}${nextLineInTemplates})`,
 			'i'
-		);
+		)
 
 		code = code.replace(
 			// Capture newline characters
@@ -386,9 +386,9 @@ class CommentFormInputTransformer extends TextMasker {
 				// Newline if needed. Current line can match galleryRegexp only if the comment will not be
 				// indented.
 				(this.isIndented() && !CommentFormInputTransformer.galleryRegexp.test(nextLine) ? '' : '\n')
-		);
+		)
 
-		return code;
+		return code
 	}
 
 	/**
@@ -404,10 +404,10 @@ class CommentFormInputTransformer extends TextMasker {
 			code,
 			Boolean(isInTemplate || this.areThereTagsAroundListMarkup),
 			isInTemplate
-		);
-		code = this.processNewlines(code, isInTemplate);
+		)
+		code = this.processNewlines(code, isInTemplate)
 
-		return code;
+		return code
 	}
 
 	/**
@@ -417,9 +417,9 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	processAllCode() {
-		this.text = this.processCode(this.text);
+		this.text = this.processCode(this.text)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -429,24 +429,24 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	addHeadline() {
-		const headline = this.commentForm.headlineInput?.getValue().trim();
+		const headline = this.commentForm.headlineInput?.getValue().trim()
 		if (!headline || (this.commentForm.isNewSectionApi() && this.action === 'submit')) {
-			return this;
+			return this
 		}
 
-		let level;
+		let level
 		if (this.isMode('addSection')) {
-			level = 2;
+			level = 2
 		} else if (this.isMode('addSubsection')) {
-			level = this.target.level + 1;
+			level = this.target.level + 1
 		} else if (this.isMode('edit')) {
 			// See CommentForm#loadComment(): I think a situation where the headline input is present and
 			// but not in the source or vice versa is impossible, but need to recheck.
-			level = /** @type {number} */ (this.target.source.headingLevel);
+			level = /** @type {number} */ (this.target.source.headingLevel)
 		}
 
 		// TypeScript can't do exhaustiveness checking here
-		const equalSigns = '='.repeat(/** @type {number} */ (level));
+		const equalSigns = '='.repeat(/** @type {number} */ (level))
 
 		if (
 			this.isMode('addSection') ||
@@ -458,11 +458,11 @@ class CommentFormInputTransformer extends TextMasker {
 				this.target.source.code.startsWith('\n')
 			)
 		) {
-			/** @type {this} */ (this).text = '\n' + /** @type {this} */ (this).text;
+			/** @type {this} */ (this).text = '\n' + /** @type {this} */ (this).text
 		}
-		this.text = `${equalSigns} ${headline} ${equalSigns}\n${this.text}`;
+		this.text = `${equalSigns} ${headline} ${equalSigns}\n${this.text}`
 
-		return this;
+		return this
 	}
 
 	/**
@@ -471,7 +471,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {this is { target: import('./Comment').default<true> }}
 	 */
 	isTargetOpeningSection() {
-		return (this.isMode('reply') || this.isMode('edit')) && this.target.isOpeningSection();
+		return (this.isMode('reply') || this.isMode('edit')) && this.target.isOpeningSection()
 	}
 
 	/**
@@ -483,42 +483,42 @@ class CommentFormInputTransformer extends TextMasker {
 	addSignature() {
 		if (!this.commentForm.omitSignatureCheckbox?.isSelected()) {
 			// Remove signature tildes from the end of the comment.
-			this.text = this.text.replace(/\s*~{3,}$/, '');
+			this.text = this.text.replace(/\s*~{3,}$/, '')
 		}
 
 		if (this.action === 'preview' && this.signature) {
-			this.signature = `<span class="cd-commentForm-signature">${this.signature}</span>`;
+			this.signature = `<span class="cd-commentForm-signature">${this.signature}</span>`
 		}
 
 		// A space in the beggining of the last line, creating <pre>, or a heading.
 		if (!this.isIndented() && /(^|\n)[ =].*$/.test(this.text)) {
-			this.text += '\n';
+			this.text += '\n'
 		}
 
 		// Remove starting spaces if the line starts with the signature.
 		if (!this.text || this.text.endsWith('\n') || this.text.endsWith(' ')) {
-			this.signature = this.signature.trimStart();
+			this.signature = this.signature.trimStart()
 		}
 
 		// Process the small font wrappers, add the signature.
 		if (this.wrapInSmall) {
 			const before = /^[:*#; ]/.test(this.text)
 				? '\n' + (this.isIndented() ? this.restLinesIndentation : '')
-				: '';
+				: ''
 			if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.text)) {
 				const escapedCodeWithSignature = (
 					escapePipesOutsideLinks(this.text.trim(), this.maskedTexts) +
 					this.signature
-				);
-				this.text = `{{${cd.config.smallDivTemplates[0]}|1=${escapedCodeWithSignature}}}`;
+				)
+				this.text = `{{${cd.config.smallDivTemplates[0]}|1=${escapedCodeWithSignature}}}`
 			} else {
-				this.text = `<small>${before}${this.text}${this.signature}</small>`;
+				this.text = `<small>${before}${this.text}${this.signature}</small>`
 			}
 		} else {
-			this.text += this.signature;
+			this.text += this.signature
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -533,16 +533,16 @@ class CommentFormInputTransformer extends TextMasker {
 			!this.isCommentTarget() ||
 			!this.target.source.isReplyOutdented
 		) {
-			return this;
+			return this
 		}
 
-		const outdentDifference = this.target.level - this.target.source.replyIndentation.length;
+		const outdentDifference = this.target.level - this.target.source.replyIndentation.length
 		this.text =
 			`{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
 			(/^[:*#]+/.test(this.text) ? '\n' : ' ') +
-			this.text;
+			this.text
 
-		return this;
+		return this
 	}
 
 	/**
@@ -553,10 +553,10 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	addTrailingNewline() {
 		if (!this.isMode('edit')) {
-			this.text += '\n';
+			this.text += '\n'
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -569,45 +569,45 @@ class CommentFormInputTransformer extends TextMasker {
 		// If the comment starts with a list or table, replace all asterisks in the indentation
 		// characters with colons to have the comment HTML generated correctly.
 		if (this.isIndented() && this.action !== 'preview' && /^[*#;\u0003]/.test(this.text)) {
-			this.indentation = this.restLinesIndentation;
+			this.indentation = this.restLinesIndentation
 		}
 
 		if (this.action !== 'preview') {
-			this.text = CommentFormInputTransformer.prependIndentationToLine(this.indentation, this.text);
+			this.text = CommentFormInputTransformer.prependIndentationToLine(this.indentation, this.text)
 
 			if (this.isMode('addSubsection')) {
-				this.text += '\n';
+				this.text += '\n'
 			}
 		} else if (this.isIndented() && this.initialText) {
-			this.text = CommentFormInputTransformer.prependIndentationToLine(':', this.text);
+			this.text = CommentFormInputTransformer.prependIndentationToLine(':', this.text)
 		}
 
-		return this;
+		return this
 	}
 
 	/** @type {string} */
-	static filePatternEnd;
+	static filePatternEnd
 
-	static galleryRegexp = /^\u0001\d+_gallery\u0002$/m;
+	static galleryRegexp = /^\u0001\d+_gallery\u0002$/m
 
 	static listTags = /** @type {const} */ ({
 		':': 'dl',
 		';': 'dl',
 		'*': 'ul',
 		'#': 'ol',
-	});
+	})
 	static itemTags = /** @type {const} */ ({
 		':': 'dd',
 		';': 'dt',
 		'*': 'li',
 		'#': 'li',
-	});
+	})
 
 	/**
 	 * Initialize the class.
 	 */
 	static init() {
-		this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`;
+		this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`
 	}
 
 	/**
@@ -648,7 +648,7 @@ class CommentFormInputTransformer extends TextMasker {
 			CommentFormInputTransformer.linesToLists(
 				code.split('\n').map((line) => ({ text: line }))
 			)
-		);
+		)
 	}
 
 	/**
@@ -666,17 +666,17 @@ class CommentFormInputTransformer extends TextMasker {
 		 * @property {ListType | undefined} [type]
 		 */
 		/** @type {AccumulatedList} */
-		let accumulatedList = { items: [] };
+		let accumulatedList = { items: [] }
 		for (let i = 0; i <= lines.length; i++) {
 			if (i === lines.length) {
 				// When at the end of code, finalize the list that we accumulated, if any.
 				if (this.isList(accumulatedList)) {
-					this.linesToList(lines, i, accumulatedList, areItems);
+					this.linesToList(lines, i, accumulatedList, areItems)
 				}
 			} else {
-				const text = lines[i].text;
-				const firstChar = text[0] || '';
-				const listType = isKeyOf(firstChar, this.listTags) ? this.listTags[firstChar] : undefined;
+				const text = lines[i].text
+				const firstChar = text[0] || ''
+				const listType = isKeyOf(firstChar, this.listTags) ? this.listTags[firstChar] : undefined
 				if (
 					this.isList(accumulatedList) &&
 
@@ -684,25 +684,25 @@ class CommentFormInputTransformer extends TextMasker {
 					listType !== accumulatedList.type
 				) {
 					// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-					const itemsCount = accumulatedList.items.length;
-					this.linesToList(lines, i, accumulatedList, areItems);
+					const itemsCount = accumulatedList.items.length
+					this.linesToList(lines, i, accumulatedList, areItems)
 
 					// Shift the current index and start accumulating a new list.
-					i -= itemsCount - 1;
-					accumulatedList = { items: [] };
+					i -= itemsCount - 1
+					accumulatedList = { items: [] }
 				}
 				if (listType) {
 					// Start accumulating a list.
-					accumulatedList.type = listType;
+					accumulatedList.type = listType
 					accumulatedList.items.push({
 						type: this.itemTags[/** @type {keyof typeof this.itemTags} */ (firstChar)],
 						text: text.slice(1),
-					});
+					})
 				}
 			}
 		}
 
-		return /** @type {(Line | List)[]} */ (lines);
+		return /** @type {(Line | List)[]} */ (lines)
 	}
 
 	/**
@@ -712,7 +712,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {obj is List}
 	 */
 	static isList(obj) {
-		return 'type' in obj && 'items' in obj;
+		return 'type' in obj && 'items' in obj
 	}
 
 	/**
@@ -727,22 +727,22 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	static linesToList(linesAndLists, i, list, areItems = false) {
 		if (areItems) {
-			const previousItemIndex = i - list.items.length - 1;
+			const previousItemIndex = i - list.items.length - 1
 			if (previousItemIndex >= 0) {
 				linesAndLists.splice(previousItemIndex, list.items.length + 1, {
 					type: /** @type {ListType} */ (linesAndLists[previousItemIndex].type),
 					items: [/** @type {Item} */ (linesAndLists[previousItemIndex]), list],
-				});
+				})
 			} else {
 				linesAndLists.splice(i - list.items.length, list.items.length, {
 					type: /** @type {ListType} */ (linesAndLists[0].type),
 					items: [list],
-				});
+				})
 			}
 		} else {
-			linesAndLists.splice(i - list.items.length, list.items.length, list);
+			linesAndLists.splice(i - list.items.length, list.items.length, list)
 		}
-		this.linesToLists(/** @type {Item[]} */ (list.items), true);
+		this.linesToLists(/** @type {Item[]} */ (list.items), true)
 	}
 
 	/**
@@ -760,21 +760,21 @@ class CommentFormInputTransformer extends TextMasker {
 					.map((item) => {
 						const itemText = this.isList(item)
 							? this.listsToTags(item.items, true)
-							: item.text.trim();
+							: item.text.trim()
 
-						return `<${item.type}>${itemText}</${item.type}>`;
+						return `<${item.type}>${itemText}</${item.type}>`
 					})
-					.join('');
-				text += `<${lineOrList.type}>${itemsText}</${lineOrList.type}>`;
+					.join('')
+				text += `<${lineOrList.type}>${itemsText}</${lineOrList.type}>`
 			} else {
-				text += areItems ? lineOrList.text.trim() : lineOrList.text;
+				text += areItems ? lineOrList.text.trim() : lineOrList.text
 			}
 			if (i !== linesAndLists.length - 1) {
-				text += '\n';
+				text += '\n'
 			}
 
-			return text;
-		}, '');
+			return text
+		}, '')
 	}
 
 	/**
@@ -789,8 +789,8 @@ class CommentFormInputTransformer extends TextMasker {
 			indentation +
 			(indentation && cd.config.spaceAfterIndentationChars && !/^[:*#;]/.test(line) ? ' ' : '') +
 			line
-		);
+		)
 	}
 }
 
-export default CommentFormInputTransformer;
+export default CommentFormInputTransformer

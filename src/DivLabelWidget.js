@@ -1,4 +1,4 @@
-import { es6ClassToOoJsClass } from './utils-oojs';
+import { es6ClassToOoJsClass } from './utils-oojs'
 
 /**
  * OOUI label widget.
@@ -16,9 +16,9 @@ import { es6ClassToOoJsClass } from './utils-oojs';
  * @augments OO.ui.LabelWidget
  */
 class DivLabelWidget extends OO.ui.LabelWidget {
-	static tagName = 'div';
+	static tagName = 'div'
 }
 
-es6ClassToOoJsClass(DivLabelWidget);
+es6ClassToOoJsClass(DivLabelWidget)
 
-export default DivLabelWidget;
+export default DivLabelWidget

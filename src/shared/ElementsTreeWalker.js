@@ -1,4 +1,4 @@
-import TreeWalker from './TreeWalker';
+import TreeWalker from './TreeWalker'
 
 /**
  * Tree walker that walks only on element nodes.
@@ -14,8 +14,8 @@ class ElementsTreeWalker extends TreeWalker {
 	 * @param {AcceptedNode} [startNode]
 	 */
 	constructor(root, startNode) {
-		super(root, undefined, true, startNode);
+		super(root, undefined, true, startNode)
 	}
 }
 
-export default ElementsTreeWalker;
+export default ElementsTreeWalker

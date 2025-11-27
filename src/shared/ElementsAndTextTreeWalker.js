@@ -1,5 +1,5 @@
-import TreeWalker from './TreeWalker';
-import { isElement, isText } from './utils-general';
+import TreeWalker from './TreeWalker'
+import { isElement, isText } from './utils-general'
 
 /**
  * Tree walker that walks on both element and text nodes.
@@ -14,8 +14,8 @@ class ElementsAndTextTreeWalker extends TreeWalker {
 	 * @param {ElementLike | TextLike} [startNode]
 	 */
 	constructor(root, startNode) {
-		super(root, (node) => isText(node) || isElement(node), false, startNode);
+		super(root, (node) => isText(node) || isElement(node), false, startNode)
 	}
 }
 
-export default ElementsAndTextTreeWalker;
+export default ElementsAndTextTreeWalker

@@ -14,10 +14,10 @@ class StorageItem {
 	 *
 	 * @type {string}
 	 */
-	static prefix = 'convenientDiscussions';
+	static prefix = 'convenientDiscussions'
 
 	/** @type {EntryType} */
-	data;
+	data
 
 	/**
 	 * Create an instance of a storage item, getting its contents from the local storage. In case of
@@ -32,11 +32,11 @@ class StorageItem {
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof StorageItem} */
 		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor;
+		this.constructor = this.constructor
 
-		this.key = key;
+		this.key = key
 
-		this.reload();
+		this.reload()
 	}
 
 	/**
@@ -49,13 +49,13 @@ class StorageItem {
 	 * @returns {this}
 	 */
 	reload() {
-		const obj = mw.storage.getObject(`${this.constructor.prefix}-${this.key}`);
+		const obj = mw.storage.getObject(`${this.constructor.prefix}-${this.key}`)
 		if (obj === false) {
-			console.error('Storage is unavailable.');
+			console.error('Storage is unavailable.')
 		}
-		this.data = obj || {};
+		this.data = obj || {}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -64,9 +64,9 @@ class StorageItem {
 	 * @returns {this}
 	 */
 	removeItem() {
-		mw.storage.remove(`${this.constructor.prefix}-${this.key}`);
+		mw.storage.remove(`${this.constructor.prefix}-${this.key}`)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -75,7 +75,7 @@ class StorageItem {
 	 * @returns {EntryType}
 	 */
 	getData() {
-		return this.data;
+		return this.data
 	}
 
 	/**
@@ -85,9 +85,9 @@ class StorageItem {
 	 * @returns {this}
 	 */
 	setData(value) {
-		this.data = value;
+		this.data = value
 
-		return this;
+		return this
 	}
 
 	/**
@@ -96,10 +96,10 @@ class StorageItem {
 	 * @returns {this}
 	 */
 	save() {
-		mw.storage.setObject(`${this.constructor.prefix}-${this.key}`, this.data);
+		mw.storage.setObject(`${this.constructor.prefix}-${this.key}`, this.data)
 
-		return this;
+		return this
 	}
 }
 
-export default StorageItem;
+export default StorageItem

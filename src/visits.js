@@ -1,12 +1,12 @@
-import LZString from 'lz-string';
+import LZString from 'lz-string'
 
-import EventEmitter from './EventEmitter';
-import commentManager from './commentManager';
-import cd from './loader/cd';
-import settings from './settings';
-import CdError from './shared/CdError';
-import { subtractDaysFromNow, typedKeysOf } from './shared/utils-general';
-import { getUserInfo, saveLocalOption } from './utils-api';
+import EventEmitter from './EventEmitter'
+import commentManager from './commentManager'
+import cd from './loader/cd'
+import settings from './settings'
+import CdError from './shared/CdError'
+import { subtractDaysFromNow, typedKeysOf } from './shared/utils-general'
+import { getUserInfo, saveLocalOption } from './utils-api'
 
 /**
  * @typedef {object} EventMap
@@ -20,10 +20,10 @@ import { getUserInfo, saveLocalOption } from './utils-api';
  */
 class Visits extends EventEmitter {
 	/** @type {{ [articleId: number]: string[] }} */
-	data;
+	data
 
 	/** @type {string[]} */
-	currentPageData;
+	currentPageData
 
 	/**
 	 * Request the pages visits data from the server.
@@ -37,26 +37,26 @@ class Visits extends EventEmitter {
 	 * @param {boolean} [reuse] Whether to reuse a cached userinfo request.
 	 */
 	async load(bootProcess, reuse = false) {
-		if (!cd.user.isRegistered()) return;
+		if (!cd.user.isRegistered()) return
 
 		try {
 			// mw.user.options is not used even on first run because it appears to be cached sometimes
 			// which can be critical for determining subscriptions.
-			this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
+			this.unpack(await getUserInfo(reuse).then(({ visits }) => visits))
 		} catch (error) {
-			console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', error);
+			console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', error)
 
-			return;
+			return
 		}
 
-		const articleId = mw.config.get('wgArticleId');
-		this.data = {};
+		const articleId = mw.config.get('wgArticleId')
+		this.data = {}
 		if (!(articleId in this.data)) {
-			this.data[articleId] = [];
+			this.data[articleId] = []
 		}
-		this.currentPageData = this.data[articleId];
+		this.currentPageData = this.data[articleId]
 
-		this.process(bootProcess.passedData.markAsRead || false);
+		this.process(bootProcess.passedData.markAsRead || false)
 	}
 
 	/**
@@ -67,16 +67,16 @@ class Visits extends EventEmitter {
 	 * @private
 	 */
 	process(markAsReadRequested) {
-		const currentTime = Math.floor(Date.now() / 1000);
+		const currentTime = Math.floor(Date.now() / 1000)
 
-		this.update(currentTime, markAsReadRequested);
+		this.update(currentTime, markAsReadRequested)
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const shiftDueToTimeConflict =
 			this.currentPageData.length &&
 			commentManager.initNewAndSeen(this.currentPageData, currentTime, markAsReadRequested)
 				? 60
-				: 0;
+				: 0
 
 		// (Nearly) eliminate the possibility that we will wrongfully mark a seen comment as unseen/new
 		// at the next page load by adding a minute to the visit time if there is at least one comment
@@ -91,10 +91,10 @@ class Visits extends EventEmitter {
 		//
 		// We could decide that not marking unseen comments as seen is an absolute priority and remove
 		// the timeConflict stuff.
-		this.currentPageData.push(String(currentTime + shiftDueToTimeConflict));
+		this.currentPageData.push(String(currentTime + shiftDueToTimeConflict))
 
-		this.save();
-		this.emit('process', this.currentPageData);
+		this.save()
+		this.emit('process', this.currentPageData)
 
 		/**
 		 * New comments have been highlighted.
@@ -102,7 +102,7 @@ class Visits extends EventEmitter {
 		 * @event newCommentsHighlighted
 		 * @param {object} cd {@link convenientDiscussions} object.
 		 */
-		mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
+		mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd)
 	}
 
 	/**
@@ -125,9 +125,9 @@ class Visits extends EventEmitter {
 				markAsReadRequested
 			) {
 				// Remove visits _before_ the found one.
-				this.currentPageData.splice(0, i);
+				this.currentPageData.splice(0, i)
 
-				break;
+				break
 			}
 		}
 	}
@@ -146,7 +146,7 @@ class Visits extends EventEmitter {
 				.map((key) => `${key},${this.data[key].join(',')}\n`)
 				.join('')
 				.trim()
-		);
+		)
 	}
 
 	/**
@@ -156,16 +156,16 @@ class Visits extends EventEmitter {
 	 * @private
 	 */
 	unpack(compressed) {
-		this.data = {};
-		if (!compressed) return;
+		this.data = {}
+		if (!compressed) return
 
-		const string = LZString.decompressFromEncodedURIComponent(compressed);
+		const string = LZString.decompressFromEncodedURIComponent(compressed)
 		if (string) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const regexp = /^(\d+),(.+)$/gm;
-			let match;
+			const regexp = /^(\d+),(.+)$/gm
+			let match
 			while ((match = regexp.exec(string))) {
-				this.data[Number(match[1])] = match[2].split(',');
+				this.data[Number(match[1])] = match[2].split(',')
 			}
 		}
 	}
@@ -174,24 +174,24 @@ class Visits extends EventEmitter {
 	 * Save the pages visits data to the server.
 	 */
 	async save() {
-		let compressed = this.pack();
+		let compressed = this.pack()
 		if (compressed.length > 20_480) {
-			this.cleanUp(((compressed.length - 20_480) / compressed.length) + 0.05);
-			compressed = this.pack();
+			this.cleanUp(((compressed.length - 20_480) / compressed.length) + 0.05)
+			compressed = this.pack()
 		}
 
 		try {
-			await saveLocalOption(cd.g.visitsOptionName, compressed);
+			await saveLocalOption(cd.g.visitsOptionName, compressed)
 		} catch (error) {
 			if (error instanceof CdError) {
 				if (error.getType() === 'internal' && error.getCode() === 'sizeLimit') {
-					this.cleanUp(0.1);
-					this.save();
+					this.cleanUp(0.1)
+					this.save()
 				} else {
-					console.error(error);
+					console.error(error)
 				}
 			} else {
-				console.error(error);
+				console.error(error)
 			}
 		}
 	}
@@ -203,18 +203,18 @@ class Visits extends EventEmitter {
 	 * @private
 	 */
 	cleanUp(share = 0.1) {
-		const visits = { ...this.data };
+		const visits = { ...this.data }
 		const timestamps = typedKeysOf(visits)
 			.reduce((acc, key) => acc.concat(Number(visits[key])), /** @type {number[]} */ ([]))
-			.sort((a, b) => a - b);
-		const boundary = timestamps[Math.floor(timestamps.length * share)];
+			.sort((a, b) => a - b)
+		const boundary = timestamps[Math.floor(timestamps.length * share)]
 		typedKeysOf(visits).forEach((key) => {
-			visits[key] = visits[key].filter((visit) => Number(visit) >= boundary);
+			visits[key] = visits[key].filter((visit) => Number(visit) >= boundary)
 			if (!visits[key].length) {
-				delete visits[key];
+				delete visits[key]
 			}
-		});
-		this.data = visits;
+		})
+		this.data = visits
 	}
 
 	/**
@@ -224,13 +224,13 @@ class Visits extends EventEmitter {
 	 * @param {Date|number} [dateOrDays]
 	 */
 	rollBack(dateOrDays = 1) {
-		this.currentPageData.splice(1);
+		this.currentPageData.splice(1)
 		this.currentPageData[0] = (
 			(typeof dateOrDays === 'object' ? dateOrDays.getTime() : subtractDaysFromNow(dateOrDays)) /
 			1000
-		).toFixed(0);
-		this.save();
+		).toFixed(0)
+		this.save()
 	}
 }
 
-export default new Visits();
+export default new Visits()

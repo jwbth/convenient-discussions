@@ -1,5 +1,5 @@
-import DivLabelWidget from './DivLabelWidget';
-import { es6ClassToOoJsClass } from './utils-oojs';
+import DivLabelWidget from './DivLabelWidget'
+import { es6ClassToOoJsClass } from './utils-oojs'
 
 /**
  * Class that extends {@link OO.ui.RadioOptionWidget OO.ui.RadioOptionWidget} and allows to
@@ -14,12 +14,12 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
 	 * @param {OO.ui.RadioOptionWidget.ConfigOptions & { help: string }} config
 	 */
 	constructor(config) {
-		super(config);
+		super(config)
 
 		this.$help = config.help
 			? this.createHelpElement(config.help)
-			: $();
-		this.$label.append(this.$help);
+			: $()
+		this.$label.append(this.$help)
 	}
 
 	/**
@@ -32,13 +32,13 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
 		const helpWidget = new DivLabelWidget({
 			label: text,
 			classes: ['oo-ui-inline-help'],
-		});
-		this.radio.$input.attr('aria-describedby', helpWidget.getElementId());
+		})
+		this.radio.$input.attr('aria-describedby', helpWidget.getElementId())
 
-		return helpWidget.$element;
+		return helpWidget.$element
 	}
 }
 
-es6ClassToOoJsClass(RadioOptionWidget);
+es6ClassToOoJsClass(RadioOptionWidget)
 
-export default RadioOptionWidget;
+export default RadioOptionWidget

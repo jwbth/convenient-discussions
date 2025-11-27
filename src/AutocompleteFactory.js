@@ -1,9 +1,9 @@
-import CommentLinksAutocomplete from './CommentLinksAutocomplete';
-import MentionsAutocomplete from './MentionsAutocomplete';
-import TagsAutocomplete from './TagsAutocomplete';
-import TemplatesAutocomplete from './TemplatesAutocomplete';
-import WikilinksAutocomplete from './WikilinksAutocomplete';
-import CdError from './shared/CdError';
+import CommentLinksAutocomplete from './CommentLinksAutocomplete'
+import MentionsAutocomplete from './MentionsAutocomplete'
+import TagsAutocomplete from './TagsAutocomplete'
+import TemplatesAutocomplete from './TemplatesAutocomplete'
+import WikilinksAutocomplete from './WikilinksAutocomplete'
+import CdError from './shared/CdError'
 
 /**
  * @typedef {'mentions' | 'commentLinks' | 'wikilinks' | 'templates' | 'tags'} AutocompleteType
@@ -29,20 +29,20 @@ const AutocompleteFactory = {
 		switch (type) {
 			case 'mentions':
 				// Lazy import to avoid circular dependencies
-				return new MentionsAutocomplete(options);
+				return new MentionsAutocomplete(options)
 			case 'wikilinks':
-				return new WikilinksAutocomplete(options);
+				return new WikilinksAutocomplete(options)
 			case 'templates':
-				return new TemplatesAutocomplete(options);
+				return new TemplatesAutocomplete(options)
 			case 'tags':
-				return new TagsAutocomplete(options);
+				return new TagsAutocomplete(options)
 			case 'commentLinks':
-				return new CommentLinksAutocomplete(options);
+				return new CommentLinksAutocomplete(options)
 			default:
 				throw new CdError({
 					type: 'internal',
 					message: `Unknown autocomplete type: ${String(type)}`,
-				});
+				})
 		}
 	},
 
@@ -52,7 +52,7 @@ const AutocompleteFactory = {
 	 * @returns {AutocompleteType[]} Array of supported types
 	 */
 	getSupportedTypes() {
-		return ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'];
+		return ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks']
 	},
 
 	/**
@@ -62,8 +62,8 @@ const AutocompleteFactory = {
 	 * @returns {type is AutocompleteType} Whether the type is supported
 	 */
 	isTypeSupported(type) {
-		return this.getSupportedTypes().includes(/** @type {AutocompleteType} */ (type));
+		return this.getSupportedTypes().includes(/** @type {AutocompleteType} */ (type))
 	},
-};
+}
 
-export default AutocompleteFactory;
+export default AutocompleteFactory

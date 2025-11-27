@@ -1,9 +1,9 @@
-import ForeignStructuredUpload from './ForeignStructuredUpload';
-import Pseudolink from './Pseudolink';
-import cd from './loader/cd';
-import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname } from './shared/utils-general';
-import { createCheckboxControl, createRadioControl, createTextControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs';
-import { mergeJquery, wrapHtml } from './utils-window';
+import ForeignStructuredUpload from './ForeignStructuredUpload'
+import Pseudolink from './Pseudolink'
+import cd from './loader/cd'
+import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname } from './shared/utils-general'
+import { createCheckboxControl, createRadioControl, createTextControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs'
+import { mergeJquery, wrapHtml } from './utils-window'
 
 // TODO: Make it work on third-party wikis (where the target host is not Wikimedia Commons)
 
@@ -34,17 +34,17 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 */
 
 	/** @type {ControlTypesByName<UploadDialogControlTypes>} */
-	controls;
+	controls
 
 	/**
 	 * @override
 	 * @type {ForeignStructuredUpload}
 	 */
 	// @ts-expect-error: Initialized in createUpload(); narrowing parent type
-	upload;
+	upload
 
 	/** @type {string | undefined} */
-	preset;
+	preset
 
 	/**
 	 * Create a booklet layout for foreign structured upload.
@@ -52,12 +52,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @param  {...any} args
 	 */
 	constructor(...args) {
-		super(...args);
+		super(...args)
 
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof ForeignStructuredUploadBookletLayout} */
 		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor;
+		this.constructor = this.constructor
 	}
 
 	/**
@@ -67,19 +67,19 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @param {string} [enProjectName]
 	 */
 	setup(file, enProjectName) {
-		this.modifyUploadForm();
-		this.modifyInfoForm();
+		this.modifyUploadForm()
+		this.modifyInfoForm()
 
 		if (file) {
-			this.setFile(file);
+			this.setFile(file)
 		}
-		this.enProjectName = enProjectName;
+		this.enProjectName = enProjectName
 		this
 			.on('fileSaved', () => {
 				// Pretend that the page hasn't changed to 'insert'
-				this.setPage('info');
-			});
-		this.onPresetChange();
+				this.setPage('info')
+			})
+		this.onPresetChange()
 	}
 
 	/**
@@ -89,16 +89,16 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 */
 	modifyUploadForm() {
 		// We hide that checkbox, replacing it with a radio select
-		this.ownWorkCheckbox.setSelected(true);
+		this.ownWorkCheckbox.setSelected(true)
 
 		const fieldset = /** @type {OO.ui.FieldsetLayout} */ (this.uploadForm.getItems()[0]);
 
 		// Hide everything related to the "own work" checkbox
 		/** @type {OO.ui.FieldLayout[]} */ (fieldset.getItems()).slice(1).forEach((layout) => {
-			layout.toggle(false);
-		});
+			layout.toggle(false)
+		})
 
-		this.controls = /** @type {ControlTypesByName<UploadDialogControlTypes>} */ ({});
+		this.controls = /** @type {ControlTypesByName<UploadDialogControlTypes>} */ ({})
 		this.controls.preset = createRadioControl({
 			label: cd.s('ud-preset'),
 			options: [
@@ -125,18 +125,18 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 					label: cd.s('ud-preset-no'),
 				},
 			],
-		});
+		})
 
-		const subjectPage = cd.page.mwTitle.getSubjectPage();
+		const subjectPage = cd.page.mwTitle.getSubjectPage()
 		if (subjectPage) {
 			this.insertSubjectPageButton = new Pseudolink({
 				label: subjectPage.getPrefixedText(),
-			});
+			})
 		}
 		if (cd.page.mwTitle.isTalkPage()) {
 			this.insertTalkPageButton = new Pseudolink({
 				label: cd.page.name,
-			});
+			})
 		}
 		this.controls.title = createTitleControl({
 			$overlay: this.$overlay,
@@ -154,38 +154,38 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 				$('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help'))
 			),
 			classes: ['cd-uploadDialog-fieldLayout-internal'],
-		});
-		this.insertSubjectPageButton?.setInput(this.controls.title.input);
-		this.insertTalkPageButton?.setInput(this.controls.title.input);
+		})
+		this.insertSubjectPageButton?.setInput(this.controls.title.input)
+		this.insertTalkPageButton?.setInput(this.controls.title.input)
 
 		const projectScreenshotItem = /** @type {import('./RadioOptionWidget').default} */ (
 			this.controls.preset.input.findItemFromData('projectScreenshot')
-		);
-		projectScreenshotItem.$label.append(this.controls.title.field.$element);
+		)
+		projectScreenshotItem.$label.append(this.controls.title.field.$element)
 
 		this.controls.configure = createCheckboxControl({
 			value: 'configure',
 			label: cd.s('ud-configure'),
-		});
-		fieldset.addItems([this.controls.preset.field, this.controls.configure.field]);
+		})
+		fieldset.addItems([this.controls.preset.field, this.controls.configure.field])
 
 		this.controls.preset.input
 			.on('select', (item) => {
-				this.onPresetChange(/** @type {OO.ui.RadioOptionWidget} */ (item));
-			});
+				this.onPresetChange(/** @type {OO.ui.RadioOptionWidget} */ (item))
+			})
 		projectScreenshotItem.radio.$input
 			.on('focus', () => {
-				this.controls.title.input.focus();
-			});
-		this.configureManuallySelected = false;
+				this.controls.title.input.focus()
+			})
+		this.configureManuallySelected = false
 		this.controls.configure.input
 			.on('change', this.onPresetChange)
 			.on('manualChange', (selected) => {
-				this.configureManuallySelected = selected;
-			});
+				this.configureManuallySelected = selected
+			})
 		this.controls.title.input
 			.on('change', this.onUploadFormChange)
-			.on('enter', () => this.emit('submitUpload'));
+			.on('enter', () => this.emit('submitUpload'))
 	}
 
 	/**
@@ -196,13 +196,13 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @override
 	 */
 	onUploadFormChange = async () => {
-		let valid = true;
+		let valid = true
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		await this.controls?.title.input.getValidity().catch(() => {
-			valid = false;
-		});
-		this.emit('uploadValid', this.selectFileWidget.getValue() && valid);
-	};
+			valid = false
+		})
+		this.emit('uploadValid', this.selectFileWidget.getValue() && valid)
+	}
 
 	/**
 	 * Handle events changing the preset.
@@ -213,24 +213,24 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	onPresetChange = (itemOrSelected) => {
 		const preset = /** @type {import('./RadioOptionWidget').default} */ (
 			this.controls.preset.input.findSelectedItem()
-		)?.getData();
-		const titleInputDisabled = preset !== 'projectScreenshot';
-		this.controls.title.input.setDisabled(titleInputDisabled);
-		this.insertSubjectPageButton?.setDisabled(titleInputDisabled);
-		this.insertTalkPageButton?.setDisabled(titleInputDisabled);
+		)?.getData()
+		const titleInputDisabled = preset !== 'projectScreenshot'
+		this.controls.title.input.setDisabled(titleInputDisabled)
+		this.insertSubjectPageButton?.setDisabled(titleInputDisabled)
+		this.insertTalkPageButton?.setDisabled(titleInputDisabled)
 
 		if (typeof itemOrSelected !== 'boolean') {
 			// A radio option was selected, not the checkbox.
 			if (preset === 'no') {
-				this.configureManuallySelected = this.controls.configure.input.isSelected();
-				this.controls.configure.input.setDisabled(true).setSelected(true);
+				this.configureManuallySelected = this.controls.configure.input.isSelected()
+				this.controls.configure.input.setDisabled(true).setSelected(true)
 			} else {
-				this.controls.configure.input.setDisabled(false).setSelected(this.configureManuallySelected);
+				this.controls.configure.input.setDisabled(false).setSelected(this.configureManuallySelected)
 			}
 		}
 
-		this.emit('changeSteps', this.isInfoFormOmitted());
-	};
+		this.emit('changeSteps', this.isInfoFormOmitted())
+	}
 
 	/**
 	 * Find out whether the information form should be omitted given the current state of controls.
@@ -241,12 +241,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	isInfoFormOmitted() {
 		const preset = /** @type {import('./RadioOptionWidget').default} */ (
 			this.controls.preset.input.findSelectedItem()
-		)?.getData();
+		)?.getData()
 
 		return (
 			(preset === 'projectScreenshot' || preset === 'mediawikiScreenshot') &&
 			!this.controls.configure.input.isSelected()
-		);
+		)
 	}
 
 	/**
@@ -260,7 +260,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		/** @type {import('./RadioOptionWidget').default} */ (
 				this.controls.preset.input.findSelectedItem()
 			)?.getData() === 'ownWork' && !this.controls.configure.input.isSelected()
-		);
+		)
 	}
 
 	/**
@@ -272,11 +272,11 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		this.controls.source = createTextControl({
 			label: cd.s('ud-source'),
 			required: true,
-		});
+		})
 		this.controls.author = createTextControl({
 			label: cd.s('ud-author'),
 			required: true,
-		});
+		})
 		this.controls.license = createTextControl({
 			label: cd.s('ud-license'),
 			required: true,
@@ -285,10 +285,10 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 				cd.mws('mwe-upwiz-license-custom-explain', null, cd.mws('mwe-upwiz-license-custom-url')),
 				{ targetBlank: true }
 			),
-		});
+		})
 
-		this.controls.source.input.on('change', this.onInfoFormChange);
-		this.controls.author.input.on('change', this.onInfoFormChange);
+		this.controls.source.input.on('change', this.onInfoFormChange)
+		this.controls.author.input.on('change', this.onInfoFormChange)
 		this.controls.license.input.on('change', this.onInfoFormChange);
 
 		// Add items to the fieldset
@@ -296,7 +296,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 			this.controls.source.field,
 			this.controls.author.field,
 			this.controls.license.field,
-		], 2);
+		], 2)
 	}
 
 	/**
@@ -307,7 +307,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @override
 	 */
 	onInfoFormChange = async () => {
-		let valid = true;
+		let valid = true
 		await Promise.all(
 			[
 				this.uploadPromise,
@@ -321,10 +321,10 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 				this.controls?.license.input.getValidity(),
 			].filter(defined)
 		).catch(() => {
-			valid = false;
-		});
-		this.emit('infoValid', valid);
-	};
+			valid = false
+		})
+		this.emit('infoValid', valid)
+	}
 
 	/**
 	 * Returns a {@link mw.ForeignStructuredUpload mw.ForeignStructuredUpload} with the target
@@ -335,7 +335,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @override
 	 */
 	createUpload() {
-		return new ForeignStructuredUpload(this.target);
+		return new ForeignStructuredUpload(this.target)
 	}
 
 	/**
@@ -355,48 +355,48 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		/** @type {import('./RadioOptionWidget').default} */ (
 				this.controls.preset.input.findSelectedItem()
 			)?.getData()
-		);
+		)
 
 		// Keep the inputs if the user pressed "Back" and didn't choose another preset.
 		if (this.preset && preset !== this.preset) {
-			this.clear();
+			this.clear()
 		}
-		this.preset = preset;
+		this.preset = preset
 
-		let deferred = super.uploadFile();
+		let deferred = super.uploadFile()
 
 		// Use UTC date to make it precise and avoid leaking the user's timezone
-		const date = moment().utc().locale('en');
+		const date = moment().utc().locale('en')
 
 		// Use +2 days as the max date to avoid getting the user confused if they want to set the local
 		// date nevertheless
-		this.dateWidget.mustBeBefore = moment(date.clone().add(2, 'day').format('YYYY-MM-DD'));
+		this.dateWidget.mustBeBefore = moment(date.clone().add(2, 'day').format('YYYY-MM-DD'))
 
-		let pageName = '';
-		let historyText = '';
-		let hasIwPrefix = false;
+		let pageName = ''
+		let historyText = ''
+		let hasIwPrefix = false
 		switch (this.preset) {
 			case 'projectScreenshot':
 			case 'mediawikiScreenshot': {
 				/** @type {string} */
 				const filenameDate =
 					this.getExactDateFromLastModified(/** @type {File} */(this.getFile())) ||
-					date.format('YYYY-MM-DD HH-mm-ss');
+					date.format('YYYY-MM-DD HH-mm-ss')
 
-				const title = this.controls.title.input.getMWTitle();
+				const title = this.controls.title.input.getMWTitle()
 				if (title) {
-					pageName = title.getPrefixedText();
+					pageName = title.getPrefixedText()
 
 					// Rough check, because we don't need to know for sure (that's just to make the description
 					// more human-readable, with a project name instead of a domain).
-					hasIwPrefix = /:[^ ]/.test(title.getMainText());
+					hasIwPrefix = /:[^ ]/.test(title.getMainText())
 
 					if (hasIwPrefix) {
 						// Avoid uppercasing the first character; that would make interwiki prefixes look weird.
-						pageName = this.controls.title.input.getValue();
+						pageName = this.controls.title.input.getValue()
 					}
 
-					historyText = this.constructor.generateHistoryText(cd.g.serverName, pageName);
+					historyText = this.constructor.generateHistoryText(cd.g.serverName, pageName)
 				}
 
 				if (this.preset === 'projectScreenshot') {
@@ -408,123 +408,123 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
 					// For page names with an interwiki prefix, the project name will be obtained with a
 					// network request (see below)
-					const projectName = hasIwPrefix || !this.enProjectName ? '' : this.enProjectName;
+					const projectName = hasIwPrefix || !this.enProjectName ? '' : this.enProjectName
 
 					const filenameMainPart = `${projectName} ${pageName}`
 						.trim()
-						.replace(new RegExp('[' + mw.config.get('wgIllegalFileChars', '') + ']', 'g'), '-');
+						.replace(new RegExp('[' + mw.config.get('wgIllegalFileChars', '') + ']', 'g'), '-')
 					const projectNameOrPageLink =
 						projectName ||
-						(hasIwPrefix && !pageName.startsWith(':') ? `[[:${pageName}]]` : `[[${pageName}]]`);
-					let pageNameOrProjectName;
+						(hasIwPrefix && !pageName.startsWith(':') ? `[[:${pageName}]]` : `[[${pageName}]]`)
+					let pageNameOrProjectName
 					if (!hasIwPrefix && pageName && window.getInterwikiPrefixForHostnameSync) {
 						const prefix = window.getInterwikiPrefixForHostnameSync(
 							cd.g.serverName,
 							'commons.wikimedia.org'
-						);
-						pageNameOrProjectName = `[[:${prefix}${pageName}]]`;
+						)
+						pageNameOrProjectName = `[[:${prefix}${pageName}]]`
 					} else {
-						pageNameOrProjectName = projectNameOrPageLink;
+						pageNameOrProjectName = projectNameOrPageLink
 					}
 
-					this.filenameWidget.setValue(`${filenameMainPart} ${filenameDate}`);
-					this.descriptionWidget.setValue(`Screenshot of ${pageNameOrProjectName}`);
-					this.controls.source.input.setValue('Screenshot');
-					this.controls.author.input.setValue(`${projectNameOrPageLink} authors${historyText}`);
+					this.filenameWidget.setValue(`${filenameMainPart} ${filenameDate}`)
+					this.descriptionWidget.setValue(`Screenshot of ${pageNameOrProjectName}`)
+					this.controls.source.input.setValue('Screenshot')
+					this.controls.author.input.setValue(`${projectNameOrPageLink} authors${historyText}`)
 					this.controls.license.input.setValue(
 						hasIwPrefix
 							? '{{Wikimedia-screenshot}}'
 							: this.constructor.getTemplateForHostname(cd.g.serverName)
-					);
+					)
 
 					// Load the English project name for the file name if we can
 					if (hasIwPrefix) {
 						/** @type {string} */
-						let unprefixedPageName;
+						let unprefixedPageName
 						/** @type {string} */
-						let hostname;
+						let hostname
 						/** @type {string} */
-						let messageName;
+						let messageName
 						deferred = deferred
 							.then(
 								() => window.getUrlFromInterwikiLink?.(pageName),
 								(/** @type {unknown} */ error) => {
-									throw new Error('badUpload', { cause: error });
+									throw new Error('badUpload', { cause: error })
 								}
 							)
 							.then(
 								(url) => {
 									if (!url) {
-										throw new Error('noUrl');
+										throw new Error('noUrl')
 									}
 
-									hostname = new URL(url, cd.g.server).hostname;
+									hostname = new URL(url, cd.g.server).hostname
 									this.controls.license.input.setValue(
 										this.constructor.getTemplateForHostname(hostname)
-									);
-									const dbname = getDbnameForHostname(hostname);
-									unprefixedPageName = canonicalUrlToPageName(url);
-									messageName = `project-localized-name-${dbname}`;
+									)
+									const dbname = getDbnameForHostname(hostname)
+									unprefixedPageName = canonicalUrlToPageName(url)
+									messageName = `project-localized-name-${dbname}`
 
-									return cd.getApi().getMessages(messageName, { amlang: 'en' });
+									return cd.getApi().getMessages(messageName, { amlang: 'en' })
 								})
 							.then(
 								(messages) => {
-									const newProjectName = messages[messageName];
-									if (!newProjectName) return;
+									const newProjectName = messages[messageName]
+									if (!newProjectName) return
 
 									const newHistoryText = this.constructor.generateHistoryText(
 										hostname,
 										unprefixedPageName
-									);
-									this.filenameWidget.setValue(`${newProjectName} ${unprefixedPageName} ${filenameDate}`);
-									this.controls.author.input.setValue(`${newProjectName} authors${newHistoryText}`);
+									)
+									this.filenameWidget.setValue(`${newProjectName} ${unprefixedPageName} ${filenameDate}`)
+									this.controls.author.input.setValue(`${newProjectName} authors${newHistoryText}`)
 								},
 								(/** @type {unknown} */ error) => {
 									// Unless there is something wrong with uploading, always resolve - this
 									// functionality is non-essential.
 									if (error instanceof Error && error.message === 'badUpload') {
-										throw error.cause;
+										throw error.cause
 									}
 								}
-							);
+							)
 					}
 				} else {  // this.preset === 'mediawikiScreenshot'
-					this.filenameWidget.setValue(`MediaWiki ${filenameDate}`);
-					this.descriptionWidget.setValue(`Screenshot of MediaWiki`);
-					this.controls.source.input.setValue('Screenshot');
-					this.controls.author.input.setValue(`[[Special:Version|MediaWiki contributors]]`);
-					this.controls.license.input.setValue('{{MediaWiki-screenshot}}');
-					this.categoriesWidget.addTag('MediaWiki screenshots');
+					this.filenameWidget.setValue(`MediaWiki ${filenameDate}`)
+					this.descriptionWidget.setValue(`Screenshot of MediaWiki`)
+					this.controls.source.input.setValue('Screenshot')
+					this.controls.author.input.setValue(`[[Special:Version|MediaWiki contributors]]`)
+					this.controls.license.input.setValue('{{MediaWiki-screenshot}}')
+					this.categoriesWidget.addTag('MediaWiki screenshots')
 				}
-				break;
+				break
 			}
 
 			case 'ownWork': {
-				this.controls.source.input.setValue(this.upload.config.format.ownwork);
-				this.controls.author.input.setValue(this.upload.getDefaultUser());
-				this.controls.license.input.setValue(this.upload.config.format.license);
-				break;
+				this.controls.source.input.setValue(this.upload.config.format.ownwork)
+				this.controls.author.input.setValue(this.upload.getDefaultUser())
+				this.controls.license.input.setValue(this.upload.config.format.license)
+				break
 			}
 		}
 
-		const omitted = this.isInfoFormOmitted();
-		const addedInputsDisabled = this.areAddedInputsDisabled();
-		this.filenameWidget.setDisabled(omitted);
-		this.descriptionWidget.setDisabled(omitted);
-		this.categoriesWidget.setDisabled(omitted);
-		this.dateWidget.setDisabled(omitted);
-		this.controls.source.input.setDisabled(omitted || addedInputsDisabled);
-		this.controls.author.input.setDisabled(omitted || addedInputsDisabled);
-		this.controls.license.input.setDisabled(omitted || addedInputsDisabled);
+		const omitted = this.isInfoFormOmitted()
+		const addedInputsDisabled = this.areAddedInputsDisabled()
+		this.filenameWidget.setDisabled(omitted)
+		this.descriptionWidget.setDisabled(omitted)
+		this.categoriesWidget.setDisabled(omitted)
+		this.dateWidget.setDisabled(omitted)
+		this.controls.source.input.setDisabled(omitted || addedInputsDisabled)
+		this.controls.author.input.setDisabled(omitted || addedInputsDisabled)
+		this.controls.license.input.setDisabled(omitted || addedInputsDisabled)
 
 		deferred.catch(() => {
 			// Hack to reenable the upload action after an error
-			this.onUploadFormChange();
-		});
+			this.onUploadFormChange()
+		})
 
 		// If the promise failed, return the failed promise, not catched
-		return deferred;
+		return deferred
 	}
 
 	/**
@@ -546,7 +546,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 */
 	getDateFromLastModified(file) {
 		if (file?.lastModified) {
-			return moment(file.lastModified).utc().format('YYYY-MM-DD');
+			return moment(file.lastModified).utc().format('YYYY-MM-DD')
 		}
 	}
 
@@ -562,7 +562,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 */
 	getExactDateFromLastModified(file) {
 		if (file.lastModified) {
-			return moment(file.lastModified).utc().format('YYYY-MM-DD HH-mm-ss');
+			return moment(file.lastModified).utc().format('YYYY-MM-DD HH-mm-ss')
 		}
 	}
 
@@ -577,11 +577,11 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @override
 	 */
 	getText() {
-		this.upload.setSource(this.controls.source.input.getValue());
-		this.upload.setUser(this.controls.author.input.getValue());
-		this.upload.setLicense(this.controls.license.input.getValue());
+		this.upload.setSource(this.controls.source.input.getValue())
+		this.upload.setUser(this.controls.author.input.getValue())
+		this.upload.setLicense(this.controls.license.input.getValue())
 
-		return super.getText();
+		return super.getText()
 	}
 
 	/**
@@ -596,25 +596,25 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @override
 	 */
 	saveFile() {
-		this.categoriesWidget.addTag('Uploaded with Convenient Discussions');
+		this.categoriesWidget.addTag('Uploaded with Convenient Discussions')
 
-		const promise = super.saveFile();
+		const promise = super.saveFile()
 		promise.catch(() => {
 			if (this.isInfoFormOmitted()) {
-				this.cancelUpload();
+				this.cancelUpload()
 			}
-		});
+		})
 
 		// If the promise failed, return the failed promise, not catched
-		return promise;
+		return promise
 	}
 
 	/**
 	 * Cancel the upload. (This method is not in the parent class - it's our own.)
 	 */
 	cancelUpload() {
-		this.onUploadFormChange();
-		this.setPage('upload');
+		this.onUploadFormChange()
+		this.setPage('upload')
 	}
 
 	/**
@@ -633,19 +633,19 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		// mw.Upload.BookletLayout.prototype.clear. When we clear the fields that were filled in (e.g.
 		// by choosing the "Own work" preset, pressing "Upload", then pressing "Back", then choosing "No
 		// preset", then pressing "Upload" again), they end up invalid anyway.
-		this.progressBarWidget.setProgress(0);
-		this.filenameWidget.setValue('').setValidityFlag(true);
-		this.descriptionWidget.setValue('').setValidityFlag(true);
-		this.categoriesWidget.setValue([]);
+		this.progressBarWidget.setProgress(0)
+		this.filenameWidget.setValue('').setValidityFlag(true)
+		this.descriptionWidget.setValue('').setValidityFlag(true)
+		this.categoriesWidget.setValue([])
 		if (!this.dateWidget.getValue()) {
-			this.dateWidget.setValidityFlag(true);
+			this.dateWidget.setValidityFlag(true)
 		}
 
 		// Clear the fields we added as well. We add them on the "setup" step, so they aren't there
 		// when .clear() initially runs.
-		this.controls.source.input.setValue('').setValidityFlag(true);
-		this.controls.author.input.setValue('').setValidityFlag(true);
-		this.controls.license.input.setValue('').setValidityFlag(true);
+		this.controls.source.input.setValue('').setValidityFlag(true)
+		this.controls.author.input.setValue('').setValidityFlag(true)
+		this.controls.license.input.setValue('').setValidityFlag(true)
 	}
 
 	/**
@@ -663,7 +663,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 			// Don't link the history page for Special pages
 			(hostname === location.hostname && mw.Title.newFromText(pageName)?.getNamespaceId() === -1)
 		) {
-			return '';
+			return ''
 		}
 		const path = mw.util.getUrl(pageName, {
 			action: 'history',
@@ -671,10 +671,10 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 				new Date(),
 				String(new Date().getUTCSeconds()).padStart(2, '0')
 			),
-		});
-		const link = `https://${hostname}${path}`;
+		})
+		const link = `https://${hostname}${path}`
 
-		return `, see the [${link} page history]`;
+		return `, see the [${link} page history]`
 	}
 
 	/**
@@ -698,15 +698,15 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
 			[/^(.+)\.wikivoyage.org$/, `{{Wikivoyage-screenshot%s}}`],
 		])).reduce((result, [regexp, format]) => {
-			if (result) return result;
+			if (result) return result
 
-			const match = hostname.match(regexp);
+			const match = hostname.match(regexp)
 
-			return match ? format.replace('%s', match[1] ? '|' + match[1] : '') : undefined;
-		}, /** @type {string  | undefined} */ (undefined)) || '{{Wikimedia-screenshot}}';
+			return match ? format.replace('%s', match[1] ? '|' + match[1] : '') : undefined
+		}, /** @type {string  | undefined} */ (undefined)) || '{{Wikimedia-screenshot}}'
 	}
 }
 
-es6ClassToOoJsClass(ForeignStructuredUploadBookletLayout);
+es6ClassToOoJsClass(ForeignStructuredUploadBookletLayout)
 
-export default ForeignStructuredUploadBookletLayout;
+export default ForeignStructuredUploadBookletLayout

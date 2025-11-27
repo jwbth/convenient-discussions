@@ -1,7 +1,7 @@
-import cd from './loader/cd';
-import CdError from './shared/CdError';
-import { isElement, isText } from './shared/utils-general';
-import { createSvg } from './utils-window';
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { isElement, isText } from './shared/utils-general'
+import { createSvg } from './utils-window'
 
 /**
  * An item of the table of contents.
@@ -12,14 +12,14 @@ export default class TocItem {
 	 *
 	 * @type {JQuery}
 	 */
-	$link;
+	$link
 
 	/**
 	 * Section text jQuery element (including the title, number, and other possible additions).
 	 *
 	 * @type {JQuery}
 	 */
-	$text;
+	$text
 
 	/**
 	 * Create a table of contents item object.
@@ -29,48 +29,48 @@ export default class TocItem {
 	 * @throws {Array.<string|Element>}
 	 */
 	constructor(a, toc) {
-		this.toc = toc;
-		this.canBeModified = this.toc.canBeModified;
+		this.toc = toc
+		this.canBeModified = this.toc.canBeModified
 
 		const textSpan = /** @type {HTMLElement | null} */ (
 			a.querySelector(this.toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
-		);
+		)
 		if (!textSpan) {
-			throw new CdError({ message: `Link text not found`, details: a });
+			throw new CdError({ message: `Link text not found`, details: a })
 		}
 
-		const li = /** @type {HTMLElement} */ (a.parentNode);
+		const li = /** @type {HTMLElement} */ (a.parentNode)
 		if (li.tagName !== 'LI') {
-			throw new CdError({ message: `Parent is not <li>`, details: a });
+			throw new CdError({ message: `Parent is not <li>`, details: a })
 		}
 
-		const numberSpan = a.querySelector(this.toc.isInSidebar() ? '.vector-toc-numb' : '.tocnumber');
-		let number;
+		const numberSpan = a.querySelector(this.toc.isInSidebar() ? '.vector-toc-numb' : '.tocnumber')
+		let number
 		if (numberSpan) {
-			number = numberSpan.textContent;
+			number = numberSpan.textContent
 		} else {
-			console.error(`Couldn't find the number for a TOC link`, a);
-			number = '?';
+			console.error(`Couldn't find the number for a TOC link`, a)
+			number = '?'
 		}
 
-		this.id = /** @type {string} */ (a.getAttribute('href')).slice(1);
+		this.id = /** @type {string} */ (a.getAttribute('href')).slice(1)
 		if (!this.id) {
-			console.error(`Couldn't find the ID for a TOC link`, a);
+			console.error(`Couldn't find the ID for a TOC link`, a)
 		}
 
 		const levelMatch = li.className.match(
 			this.toc.isInSidebar() ? /vector-toc-level-(\d+)/ : /\btoclevel-(\d+)/
-		);
+		)
 		if (levelMatch) {
-			this.level = Number(levelMatch[1]);
+			this.level = Number(levelMatch[1])
 		} else {
-			console.error(`Couldn't find the level for a TOC link`, a);
+			console.error(`Couldn't find the level for a TOC link`, a)
 		}
 		/** @type {string} */
-		this.number = number;
-		this.$element = $(li);
-		this.$link = $(a);
-		this.$text = $(textSpan);
+		this.number = number
+		this.$element = $(li)
+		this.$link = $(a)
+		this.$text = $(textSpan)
 	}
 
 	/**
@@ -80,7 +80,7 @@ export default class TocItem {
 	 * @param {JQuery} $headline
 	 */
 	replaceText($headline) {
-		if (!this.canBeModified) return;
+		if (!this.canBeModified) return
 
 		this.$text
 			.contents()
@@ -96,13 +96,13 @@ export default class TocItem {
 					.each((_, el) => {
 						if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
 							[...el.attributes].forEach((attr) => {
-								el.removeAttribute(attr.name);
-							});
+								el.removeAttribute(attr.name)
+							})
 						} else {
 							[...el.childNodes].forEach((child) => {
-								el.before(child);
-							});
-							el.remove();
+								el.before(child)
+							})
+							el.remove()
 						}
 					})
 					.end()
@@ -110,7 +110,7 @@ export default class TocItem {
 					.get()
 			)
 			.end()
-			.remove();
+			.remove()
 	}
 
 	/**
@@ -120,7 +120,7 @@ export default class TocItem {
 	 * @param {?boolean} subscriptionState
 	 */
 	updateSubscriptionState(subscriptionState) {
-		if (!this.canBeModified) return;
+		if (!this.canBeModified) return
 
 		if (subscriptionState) {
 			this.$link
@@ -135,12 +135,12 @@ export default class TocItem {
 							)
 						)
 						.attr('title', cd.s('toc-watched'))
-				);
+				)
 		} else {
 			this.$link
 				.removeAttr('title')
 				.find('.cd-toc-subscriptionIcon, .cd-toc-subscriptionIcon-before')
-				.remove();
+				.remove()
 		}
 	}
 }

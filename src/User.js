@@ -1,4 +1,4 @@
-import cd from './loader/cd';
+import cd from './loader/cd'
 
 /**
  * A MediaWiki user. Is structurally similar to
@@ -10,10 +10,10 @@ import cd from './loader/cd';
  * To create an instance, use {@link module:userRegistry.get}.
  */
 export default class User {
-	options = new mw.Map();
+	options = new mw.Map()
 
 	/** @type {boolean | undefined} */
-	registered;
+	registered
 
 	/**
 	 * Create a user object.
@@ -22,11 +22,11 @@ export default class User {
 	 * @param {AnyByKey} options
 	 */
 	constructor(name, options = {}) {
-		this.name = name;
-		this.muted = false;
+		this.name = name
+		this.muted = false
 		Object.keys(options).forEach((n) => {
-			this.options.set(n, options[n]);
-		});
+			this.options.set(n, options[n])
+		})
 	}
 
 	/**
@@ -38,12 +38,12 @@ export default class User {
 	 */
 	isRegistered() {
 		if (this.name === '<unregistered>') {
-			return false;
+			return false
 		}
 
-		this.registered ??= !mw.util.isIPAddress(this.name);
+		this.registered ??= !mw.util.isIPAddress(this.name)
 
-		return this.registered;
+		return this.registered
 	}
 
 	/**
@@ -52,7 +52,7 @@ export default class User {
 	 * @returns {boolean}
 	 */
 	isTemporary() {
-		return 'isTemporaryUser' in mw.util ? mw.util.isTemporaryUser(this.name) : false;
+		return 'isTemporaryUser' in mw.util ? mw.util.isTemporaryUser(this.name) : false
 	}
 
 	/**
@@ -61,7 +61,7 @@ export default class User {
 	 * @returns {string}
 	 */
 	getName() {
-		return this.name;
+		return this.name
 	}
 
 	/**
@@ -70,7 +70,7 @@ export default class User {
 	 * @param {'male'|'female'|'unknown'} value
 	 */
 	setGender(value) {
-		this.options.set('gender', value);
+		this.options.set('gender', value)
 	}
 
 	/**
@@ -79,7 +79,7 @@ export default class User {
 	 * @returns {'male'|'female'|'unknown'|undefined}
 	 */
 	getGender() {
-		return this.options.get('gender');
+		return this.options.get('gender')
 	}
 
 	/**
@@ -88,7 +88,7 @@ export default class User {
 	 * @param {string[]} rights
 	 */
 	setRights(rights) {
-		this.rights = rights;
+		this.rights = rights
 	}
 
 	/**
@@ -97,7 +97,7 @@ export default class User {
 	 * @returns {string[] | undefined}
 	 */
 	getRights() {
-		return this.rights?.slice();
+		return this.rights?.slice()
 	}
 
 	/**
@@ -109,13 +109,13 @@ export default class User {
 	 * @returns {string}
 	 */
 	getNamespaceAlias() {
-		const gender = this.getGender();
+		const gender = this.getGender()
 
 		return (
 			cd.config.genderNeutralUserNamespaceAlias ||
 			(cd.config.userNamespacesByGender && gender && cd.config.userNamespacesByGender[gender]) ||
 			mw.config.get('wgFormattedNamespaces')[2]
-		);
+		)
 	}
 
 	/**
@@ -124,7 +124,7 @@ export default class User {
 	 * @returns {?number}
 	 */
 	getGlobalId() {
-		return this.globalId || null;
+		return this.globalId || null
 	}
 
 	/**
@@ -133,7 +133,7 @@ export default class User {
 	 * @param {number} value
 	 */
 	setGlobalId(value) {
-		this.globalId = value;
+		this.globalId = value
 	}
 
 	/**
@@ -142,7 +142,7 @@ export default class User {
 	 * @returns {boolean}
 	 */
 	isMuted() {
-		return this.muted;
+		return this.muted
 	}
 
 	/**
@@ -151,6 +151,6 @@ export default class User {
 	 * @param {boolean} value
 	 */
 	setMuted(value) {
-		this.muted = value;
+		this.muted = value
 	}
 }

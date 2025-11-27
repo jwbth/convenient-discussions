@@ -16,24 +16,24 @@
 (function loadConvenientDiscussionsDev() {
 	// Check if already loaded
 	if (window.convenientDiscussions) {
-		console.log('[CD Dev] Already loaded. Reload the page to load a fresh version.');
-		return;
+		console.log('[CD Dev] Already loaded. Reload the page to load a fresh version.')
+		return
 	}
 
 	// Create and inject the module script
-	const script = document.createElement('script');
-	script.type = 'module';
-	script.src = 'http://localhost:9000/src/app.js';
+	const script = document.createElement('script')
+	script.type = 'module'
+	script.src = 'http://localhost:9000/src/app.js'
 
 	script.onload = () => {
-		console.log('[CD Dev] Loaded with HMR support');
-		console.log('[CD Dev] Edit source files to see changes instantly');
-	};
+		console.log('[CD Dev] Loaded with HMR support')
+		console.log('[CD Dev] Edit source files to see changes instantly')
+	}
 
 	script.onerror = () => {
-		console.error('[CD Dev] Failed to load. Make sure dev server is running (npm start)');
-	};
+		console.error('[CD Dev] Failed to load. Make sure dev server is running (npm start)')
+	}
 
-	document.head.appendChild(script);
-	console.log('[CD Dev] Loading...');
-})();
+	document.head.appendChild(script)
+	console.log('[CD Dev] Loading...')
+})()

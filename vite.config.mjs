@@ -1,16 +1,16 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-import { defineConfig } from 'vite';
-import banner from 'vite-plugin-banner';
+import { defineConfig } from 'vite'
+import banner from 'vite-plugin-banner'
 
-import nonNullableConfig from './config.mjs';
-import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs';
+import nonNullableConfig from './config.mjs'
+import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs'
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
-const cdConfig = nonNullableConfig;
+const cdConfig = nonNullableConfig
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * Custom plugin to append closing nowiki tag to the bundle.
@@ -27,11 +27,11 @@ function appendNowikiPlugin(bundleFilename) {
 			// Only apply to the main bundle (not worker)
 			for (const [fileName, chunk] of Object.entries(bundle)) {
 				if (chunk.type === 'chunk' && fileName === bundleFilename) {
-					chunk.code = chunk.code + '\n/* </nowiki> */';
+					chunk.code = chunk.code + '\n/* </nowiki> */'
 				}
 			}
 		},
-	};
+	}
 }
 
 /**
@@ -48,36 +48,36 @@ function licenseExtractionPlugin(buildMode) {
 		generateBundle(_options, bundle) {
 			// Only apply to production/staging builds (not dev or single)
 			if (buildMode.isDev || buildMode.isSingle) {
-				return;
+				return
 			}
 
-			const licensePattern = /@preserve|@license|@cc_on/i;
-			const commentPattern = /\/\*!?\s*([\s\S]*?)\s*\*\//g;
-			const extractedLicenses = new Map();
+			const licensePattern = /@preserve|@license|@cc_on/i
+			const commentPattern = /\/\*!?\s*([\s\S]*?)\s*\*\//g
+			const extractedLicenses = new Map()
 
 			// Extract licenses from all chunks
 			for (const [fileName, chunk] of Object.entries(bundle)) {
 				if (chunk.type === 'chunk' && fileName.endsWith('.js')) {
-					const licenses = [];
-					let match;
+					const licenses = []
+					let match
 
 					// Find all comments that match the license pattern
 					while ((match = commentPattern.exec(chunk.code)) !== null) {
-						const commentContent = match[1];
+						const commentContent = match[1]
 						if (licensePattern.test(commentContent)) {
-							licenses.push(match[0]);
+							licenses.push(match[0])
 						}
 					}
 
 					if (licenses.length > 0) {
-						extractedLicenses.set(fileName, licenses);
+						extractedLicenses.set(fileName, licenses)
 
 						// Remove license comments from the source code
-						let modifiedCode = chunk.code;
+						let modifiedCode = chunk.code
 						for (const license of licenses) {
-							modifiedCode = modifiedCode.replace(license, '');
+							modifiedCode = modifiedCode.replace(license, '')
 						}
-						chunk.code = modifiedCode;
+						chunk.code = modifiedCode
 					}
 				}
 			}
@@ -85,27 +85,27 @@ function licenseExtractionPlugin(buildMode) {
 			// Generate LICENSE files
 			for (const [fileName, licenses] of extractedLicenses.entries()) {
 				/** @type {string} */
-				const fileNameStr = fileName;
-				const licenseFileName = fileNameStr + '.LICENSE.js';
+				const fileNameStr = fileName
+				const licenseFileName = fileNameStr + '.LICENSE.js'
 				/** @type {string} */
-				let licenseContent = licenses.join('\n\n');
+				let licenseContent = licenses.join('\n\n')
 
 				// Add custom banner based on file type
 				if (fileNameStr.includes('worker')) {
 					// For worker files, add source map URL
 					if (cdConfig.sourceMapsBaseUrl) {
-						const sourceMapUrl = cdConfig.sourceMapsBaseUrl + 'convenientDiscussions.worker.js.map';
-						licenseContent = '//# sourceMappingURL=' + sourceMapUrl + '\n\n' + licenseContent;
+						const sourceMapUrl = cdConfig.sourceMapsBaseUrl + 'convenientDiscussions.worker.js.map'
+						licenseContent = '//# sourceMappingURL=' + sourceMapUrl + '\n\n' + licenseContent
 					}
 				} else {
 					// For main bundle, add documentation banner
-					let licenseUrl = '';
+					let licenseUrl = ''
 					if (cdConfig.main?.server && cdConfig.main.rootPath && cdConfig.protocol) {
-						licenseUrl = cdConfig.protocol + '://' + cdConfig.main.server + cdConfig.main.rootPath + '/' + licenseFileName;
+						licenseUrl = cdConfig.protocol + '://' + cdConfig.main.server + cdConfig.main.rootPath + '/' + licenseFileName
 					}
 
-					const customBanner = '\n  * For documentation and feedback, see the script\'s homepage:\n  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions\n  *\n  * For license information, see\n  * ' + licenseUrl + '\n  ';
-					licenseContent = '/*' + customBanner + '*/\n\n' + licenseContent;
+					const customBanner = '\n  * For documentation and feedback, see the script\'s homepage:\n  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions\n  *\n  * For license information, see\n  * ' + licenseUrl + '\n  '
+					licenseContent = '/*' + customBanner + '*/\n\n' + licenseContent
 				}
 
 				// Emit the license file
@@ -113,10 +113,10 @@ function licenseExtractionPlugin(buildMode) {
 					type: 'asset',
 					fileName: licenseFileName,
 					source: licenseContent,
-				});
+				})
 			}
 		},
-	};
+	}
 }
 
 /**
@@ -127,19 +127,19 @@ function licenseExtractionPlugin(buildMode) {
  * @returns {import('vite').Plugin}
  */
 function buildNotificationPlugin() {
-	let lastBuildFailed = false;
+	let lastBuildFailed = false
 
 	return {
 		name: 'build-notification',
 		buildEnd(error) {
 			if (error) {
 				// Build failed - show error notification
-				console.error('\n❌ Build failed with errors:\n', error);
-				lastBuildFailed = true;
+				console.error('\n❌ Build failed with errors:\n', error)
+				lastBuildFailed = true
 			} else if (lastBuildFailed) {
 				// First successful build after an error - show success notification
-				console.log('\n✅ Build succeeded after previous error\n');
-				lastBuildFailed = false;
+				console.log('\n✅ Build succeeded after previous error\n')
+				lastBuildFailed = false
 			}
 			// Otherwise, suppress success notifications (matching webpack-build-notifier behavior)
 		},
@@ -147,7 +147,7 @@ function buildNotificationPlugin() {
 			// Reset error state at the start of each build
 			// (lastBuildFailed is preserved across builds to track state)
 		},
-	};
+	}
 }
 
 /**
@@ -165,26 +165,26 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
 		generateBundle(_options, bundle) {
 			// Only apply to production/staging builds (not dev or single)
 			if (buildMode.isDev || buildMode.isSingle) {
-				return;
+				return
 			}
 
 			for (const [fileName, chunk] of Object.entries(bundle)) {
 				if (chunk.type === 'chunk' && fileName.endsWith('.js')) {
-					const mapFileName = `${fileName}.map`;
+					const mapFileName = `${fileName}.map`
 
 					// Check if source map exists
 					if (mapFileName in bundle) {
 						// Replace the default sourceMappingURL comment with custom URL
-						const customUrl = `${baseUrl}${mapFileName}`;
+						const customUrl = `${baseUrl}${mapFileName}`
 						chunk.code = chunk.code.replace(
 							/\/\/# sourceMappingURL=.*$/m,
 							`//# sourceMappingURL=${customUrl}`
-						);
+						)
 					}
 				}
 			}
 		},
-	};
+	}
 }
 
 /**
@@ -206,26 +206,26 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
  * @returns {BuildMode}
  */
 function determineBuildMode(env, mode) {
-	const isDev = Boolean(env.VITE_DEV || process.env.npm_config_dev || mode === 'development');
-	const isStaging = Boolean(env.VITE_STAGING || process.env.npm_config_staging);
-	const isSingle = Boolean(env.VITE_SINGLE || process.env.npm_config_single || mode === 'single');
+	const isDev = Boolean(env.VITE_DEV || process.env.npm_config_dev || mode === 'development')
+	const isStaging = Boolean(env.VITE_STAGING || process.env.npm_config_staging)
+	const isSingle = Boolean(env.VITE_SINGLE || process.env.npm_config_single || mode === 'single')
 
-	let filenamePostfix = '';
-	let lang;
-	let wiki;
-	let project;
+	let filenamePostfix = ''
+	let lang
+	let wiki
+	let project
 
 	if (isSingle) {
-		project = env.VITE_PROJECT || process.env.npm_config_project || 'w';
-		lang = env.VITE_LANG || process.env.npm_config_lang || 'en';
+		project = env.VITE_PROJECT || process.env.npm_config_project || 'w'
+		lang = env.VITE_LANG || process.env.npm_config_lang || 'en'
 		wiki = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'].includes(project)
 			? `${project}-${lang}`
-			: project;
-		filenamePostfix = `.single.${wiki}`;
+			: project
+		filenamePostfix = `.single.${wiki}`
 	} else if (isDev) {
-		filenamePostfix = '.dev';
+		filenamePostfix = '.dev'
 	} else if (isStaging) {
-		filenamePostfix = '.staging';
+		filenamePostfix = '.staging'
 	}
 
 	return {
@@ -236,20 +236,20 @@ function determineBuildMode(env, mode) {
 		lang,
 		wiki,
 		filenamePostfix,
-	};
+	}
 }
 
 export default defineConfig(({ mode, command }) => {
-	const buildMode = determineBuildMode(process.env, mode);
-	const bundleFilename = `convenientDiscussions${buildMode.filenamePostfix}`;
+	const buildMode = determineBuildMode(process.env, mode)
+	const bundleFilename = `convenientDiscussions${buildMode.filenamePostfix}`
 
 	if (!cdConfig.protocol || !cdConfig.main?.rootPath || !cdConfig.articlePath) {
-		throw new Error('No protocol/server/root path/article path found in config.json5.');
+		throw new Error('No protocol/server/root path/article path found in config.json5.')
 	}
 
 	// For dev server (serve command), always use dev mode settings
-	const isDevServer = command === 'serve';
-	const effectiveIsDev = isDevServer || buildMode.isDev;
+	const isDevServer = command === 'serve'
+	const effectiveIsDev = isDevServer || buildMode.isDev
 
 	// Environment variable defines for build-time replacement
 	const defines = {
@@ -262,9 +262,9 @@ export default defineConfig(({ mode, command }) => {
 			? JSON.stringify(buildMode.lang)
 			: 'undefined',
 		CACHE_BUSTER: generateRandomId(),
-	};
+	}
 
-	const plugins = [];
+	const plugins = []
 
 	// Add inline worker string plugin (must be early in pipeline)
 	// plugins.push(inlineWorkerStringPlugin());
@@ -279,21 +279,21 @@ export default defineConfig(({ mode, command }) => {
 			 * @returns {string | undefined}
 			 */
 			transform(code, id) {
-				if (id.includes('node_modules')) return;
+				if (id.includes('node_modules')) return
 
 				// Replace environment defines in source code
-				let transformedCode = code;
+				let transformedCode = code
 				for (const [key, value] of Object.entries(defines)) {
-					const regex = new RegExp(`\\b${key}\\b`, 'g');
-					transformedCode = transformedCode.replace(regex, value);
+					const regex = new RegExp(`\\b${key}\\b`, 'g')
+					transformedCode = transformedCode.replace(regex, value)
 				}
 
-				return transformedCode === code ? undefined : transformedCode;
+				return transformedCode === code ? undefined : transformedCode
 			},
-		});
+		})
 	}
 
-	plugins.push(buildNotificationPlugin());
+	plugins.push(buildNotificationPlugin())
 
 	// // Add nowiki banner plugins for non-single builds
 	// if (!buildMode.isSingle) {
@@ -509,8 +509,8 @@ export default defineConfig(({ mode, command }) => {
 				origin: '*',
 			},
 		},
-	};
-});
+	}
+})
 
 /**
  * Generate an 8-character random ID.
@@ -518,5 +518,5 @@ export default defineConfig(({ mode, command }) => {
  * @returns {string}
  */
 function generateRandomId() {
-	return Math.random().toString(36).substring(2, 10);
+	return Math.random().toString(36).substring(2, 10)
 }

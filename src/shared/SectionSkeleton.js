@@ -1,7 +1,7 @@
-import CommentSkeleton from './CommentSkeleton';
-import TreeWalker from './TreeWalker';
-import cd from './cd';
-import { defined, isElement, isHeadingNode, isMetadataNode, isText } from './utils-general';
+import CommentSkeleton from './CommentSkeleton'
+import TreeWalker from './TreeWalker'
+import cd from './cd'
+import { defined, isElement, isHeadingNode, isMetadataNode, isText } from './utils-general'
 
 /**
  * Class containing the main properties of a section and building it from a heading (we should
@@ -19,21 +19,21 @@ class SectionSkeleton {
 	 *
 	 * @type {string}
 	 */
-	headline;
+	headline
 
 	/**
 	 * The name of the page the section is on in terms of wikitext.
 	 *
 	 * @type {string | undefined}
 	 */
-	sourcePageName;
+	sourcePageName
 
 	/**
 	 * Sequental number of the section at the time of the page load.
 	 *
 	 * @type {number | undefined}
 	 */
-	sectionNumber;
+	sectionNumber
 
 	/**
 	 * Nesting level of the heading relative to the root element.
@@ -41,14 +41,14 @@ class SectionSkeleton {
 	 * @type {number}
 	 * @protected
 	 */
-	headingNestingLevel;
+	headingNestingLevel
 
 	/**
 	 * Last element in the section.
 	 *
 	 * @type {ElementFor<N>}
 	 */
-	lastElement;
+	lastElement
 
 	/**
 	 * Last element in the first chunk of the section, i.e. all elements up to the first subheading
@@ -56,7 +56,7 @@ class SectionSkeleton {
 	 *
 	 * @type {ElementFor<N>}
 	 */
-	lastElementInFirstChunk;
+	lastElementInFirstChunk
 
 	/**
 	 * Comments contained in the first chunk of the section, i.e. all elements up to the first
@@ -64,21 +64,21 @@ class SectionSkeleton {
 	 *
 	 * @type {import('./CommentSkeleton').default<N>[]}
 	 */
-	commentsInFirstChunk;
+	commentsInFirstChunk
 
 	/**
 	 * Oldest comment in the section.
 	 *
 	 * @type {import('./CommentSkeleton').default<N> | undefined}
 	 */
-	oldestComment;
+	oldestComment
 
 	/**
 	 * Comments contained in the section.
 	 *
 	 * @type {import('./CommentSkeleton').default<N>[]}
 	 */
-	comments;
+	comments
 
 	/**
 	 * Create a section skeleton instance.
@@ -88,21 +88,21 @@ class SectionSkeleton {
 	 * @param {import('./Parser').Target<N>[]} targets
 	 */
 	constructor(parser, heading, targets) {
-		this.parser = parser;
+		this.parser = parser
 
 		/**
 		 * Heading element (`.mw-heading` or `<h1>` - `<h6>`).
 		 *
 		 * @type {ElementFor<N>}
 		 */
-		this.headingElement = heading.element;
+		this.headingElement = heading.element
 
 		/**
 		 * @param {AnyNode} node
 		 * @returns {AnyElement | null}
 		 */
 		const returnSelfIfHElement = (/** @type {?AnyNode} */ node) =>
-			node && isHeadingNode(node, true) ? /** @type {ElementLike} */ (node) : null;
+			node && isHeadingNode(node, true) ? /** @type {ElementLike} */ (node) : null
 
 		/**
 		 * `<hN>` element of the section (`<h1>`-`<h6>`).
@@ -117,7 +117,7 @@ class SectionSkeleton {
 			// Russian Wikivoyage and anything with .mw-h2section (not to be confused with .mw-heading2).
 			// Also, a precaution in case something in MediaWiki changes.
 			this.headingElement.querySelectorAll('h1, h2, h3, h4, h5, h6')[0]
-		);
+		)
 
 		/**
 		 * Headline element.
@@ -131,16 +131,16 @@ class SectionSkeleton {
 		// (https://www.mediawiki.org/wiki/Heading_HTML_changes). We should test for the existence of
 		// .mw-headline to make sure it's not there. (Could also check that .mw-editsection follows
 		// hN.)
-			: this.parser.context.getElementByClassName(this.hElement, 'mw-headline') || this.hElement;
+			: this.parser.context.getElementByClassName(this.hElement, 'mw-headline') || this.hElement
 
 		/**
 		 * Section id.
 		 *
 		 * @type {string}
 		 */
-		this.id = /** @type {string} */ (this.headlineElement.getAttribute('id'));
+		this.id = /** @type {string} */ (this.headlineElement.getAttribute('id'))
 
-		this.parseHeadline();
+		this.parseHeadline()
 
 		/**
 		 * Section level. A level is a number representing the number of `=` characters in the section
@@ -150,7 +150,7 @@ class SectionSkeleton {
 		 */
 		this.level = Number(
 			/** @type {RegExpMatchArray} */ (this.hElement.tagName.match(/^H([1-6])$/))[1]
-		);
+		)
 
 		const editLink = [
 			...(
@@ -164,22 +164,22 @@ class SectionSkeleton {
 		// &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
 		// user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
 		// there's probably no harm in that.
-			.find((link) => link.getAttribute('href')?.includes('action=edit'));
+			.find((link) => link.getAttribute('href')?.includes('action=edit'))
 
 		if (editLink) {
 			// `href` property with the full URL is not available in the worker context.
-			const href = editLink.getAttribute('href');
+			const href = editLink.getAttribute('href')
 			if (href) {
-				const editUrl = new URL(cd.g.server + href);
-				const sectionParam = editUrl.searchParams.get('section');
+				const editUrl = new URL(cd.g.server + href)
+				const sectionParam = editUrl.searchParams.get('section')
 				if (sectionParam?.startsWith('T-')) {
-					this.sourcePageName = editUrl.searchParams.get('title') || undefined;
-					this.sectionNumber = Number((sectionParam.match(/\d+/) || [])[0]);
+					this.sourcePageName = editUrl.searchParams.get('title') || undefined
+					this.sectionNumber = Number((sectionParam.match(/\d+/) || [])[0])
 				} else {
-					this.sectionNumber = Number(sectionParam);
+					this.sectionNumber = Number(sectionParam)
 				}
 				if (Number.isNaN(this.sectionNumber)) {
-					this.sectionNumber = undefined;
+					this.sectionNumber = undefined
 				}
 
 				/**
@@ -187,11 +187,11 @@ class SectionSkeleton {
 				 *
 				 * @type {string}
 				 */
-				this.editUrl = editUrl.href;
+				this.editUrl = editUrl.href
 			}
 		}
 
-		this.initContent(heading, targets);
+		this.initContent(heading, targets)
 
 		/**
 		 * Section index. Same as the index in the array returned by
@@ -199,7 +199,7 @@ class SectionSkeleton {
 		 *
 		 * @type {number}
 		 */
-		this.index = cd.sections.length;
+		this.index = cd.sections.length
 	}
 
 	/**
@@ -210,18 +210,18 @@ class SectionSkeleton {
 	 * @private
 	 */
 	initContent(heading, targets) {
-		this.headingNestingLevel = this.parser.getNestingLevel(this.headingElement);
+		this.headingNestingLevel = this.parser.getNestingLevel(this.headingElement)
 
 		// Find the next heading element
-		const headingIndex = targets.indexOf(heading);
+		const headingIndex = targets.indexOf(heading)
 		/** @type {number | undefined} */
 		let nextHeadingIndex = targets
-			.findIndex((target, i) => i > headingIndex && target.type === 'heading');
-		let nextHeadingElement;
+			.findIndex((target, i) => i > headingIndex && target.type === 'heading')
+		let nextHeadingElement
 		if (nextHeadingIndex === -1) {
-			nextHeadingIndex = undefined;
+			nextHeadingIndex = undefined
 		} else {
-			nextHeadingElement = targets[nextHeadingIndex]?.element;
+			nextHeadingElement = targets[nextHeadingIndex]?.element
 		}
 
 		// Find the next heading element whose section is not a descendant of this section
@@ -230,12 +230,12 @@ class SectionSkeleton {
 			i > headingIndex &&
 			target.type === 'heading' &&
 			/** @type {import('./Parser').HeadingTarget<N>} */ (target).level <= this.level
-		));
-		let nextNotDescendantHeadingElement;
+		))
+		let nextNotDescendantHeadingElement
 		if (nndheIndex === -1) {
-			nndheIndex = undefined;
+			nndheIndex = undefined
 		} else {
-			nextNotDescendantHeadingElement = targets[nndheIndex]?.element;
+			nextNotDescendantHeadingElement = targets[nndheIndex]?.element
 		}
 
 		/** @typedef {ElementLike} TreeWalkerAcceptedNode */
@@ -245,28 +245,28 @@ class SectionSkeleton {
 				!isMetadataNode(node) &&
 				!/** @type {ElementLike} */ (node).classList.contains('cd-section-button-container'),
 			true
-		);
+		)
 
 		this.lastElement = /** @type {ElementFor<N>} */ (
 			this.getLastElement(nextNotDescendantHeadingElement, treeWalker)
-		);
+		)
 
 		this.lastElementInFirstChunk = nextHeadingElement === nextNotDescendantHeadingElement
 			? this.lastElement
-			: /** @type {ElementFor<N>} */ (this.getLastElement(nextHeadingElement, treeWalker));
+			: /** @type {ElementFor<N>} */ (this.getLastElement(nextHeadingElement, treeWalker))
 
 		const targetsToComments = (/** @type {import('./Parser').Target<N>[]} */ targetsRange) =>
 			targetsRange
 				.filter((target) => target.type === 'signature')
 				.map((target) => target.comment)
-				.filter(defined);
+				.filter(defined)
 
-		this.comments = targetsToComments(targets.slice(headingIndex, nndheIndex));
-		this.commentsInFirstChunk = targetsToComments(targets.slice(headingIndex, nextHeadingIndex));
+		this.comments = targetsToComments(targets.slice(headingIndex, nndheIndex))
+		this.commentsInFirstChunk = targetsToComments(targets.slice(headingIndex, nextHeadingIndex))
 		this.commentsInFirstChunk.forEach((comment) => {
-			comment.section = this;
-		});
-		this.oldestComment = CommentSkeleton.getOldest(this.comments, true);
+			comment.section = this
+		})
+		this.oldestComment = CommentSkeleton.getOldest(this.comments, true)
 	}
 
 	/**
@@ -298,15 +298,15 @@ class SectionSkeleton {
 	 */
 	getLastElement(followingHeadingElement, treeWalker) {
 		/** @type {ElementLike} */
-		let lastElement;
+		let lastElement
 		if (followingHeadingElement) {
-			treeWalker.currentNode = followingHeadingElement;
+			treeWalker.currentNode = followingHeadingElement
 			while (!treeWalker.previousSibling()) {
-				if (!treeWalker.parentNode()) break;
+				if (!treeWalker.parentNode()) break
 			}
-			lastElement = treeWalker.currentNode;
+			lastElement = treeWalker.currentNode
 		} else {
-			lastElement = /** @type {ElementLike} */ (this.parser.context.rootElement.lastElementChild);
+			lastElement = /** @type {ElementLike} */ (this.parser.context.rootElement.lastElementChild)
 		}
 
 		// Some wrappers that include the section heading added by users
@@ -314,14 +314,14 @@ class SectionSkeleton {
 			this.parser.constructor.contains(lastElement, this.headingElement) &&
 			lastElement !== this.headingElement
 		) {
-			lastElement = /** @type {ElementLike} */ (lastElement.lastElementChild);
+			lastElement = /** @type {ElementLike} */ (lastElement.lastElementChild)
 		}
 
 		if (cd.config.reflistTalkClasses.some((name) => lastElement.classList.contains(name))) {
-			lastElement = /** @type {ElementLike} */ (lastElement.previousElementSibling);
+			lastElement = /** @type {ElementLike} */ (lastElement.previousElementSibling)
 		}
 
-		return lastElement;
+		return lastElement
 	}
 
 	/**
@@ -335,7 +335,7 @@ class SectionSkeleton {
 
 			'mw-editsection-like',
 			...cd.config.excludeFromHeadlineClasses,
-		];
+		]
 
 		this.headline = [...this.headlineElement.childNodes]
 			.filter((node) => (
@@ -347,7 +347,7 @@ class SectionSkeleton {
 			))
 			.map((node) => node.textContent)
 			.join('')
-			.trim();
+			.trim()
 	}
 
 	/**
@@ -360,7 +360,7 @@ class SectionSkeleton {
 	 */
 	getParent(ignoreFirstLevel = true, sections = /** @type {this[]} */ (cd.sections)) {
 		if (ignoreFirstLevel && this.level <= 2) {
-			return;
+			return
 		}
 
 		return (
@@ -368,7 +368,7 @@ class SectionSkeleton {
 				.slice(0, this.index)
 				.reverse()
 				.find((section) => section.level < this.level)
-		);
+		)
 	}
 
 	/**
@@ -383,14 +383,14 @@ class SectionSkeleton {
 	getAncestors() {
 		if (!this.cachedAncestors) {
 			/** @type {this[]} */
-			this.cachedAncestors = [];
-			let section;
+			this.cachedAncestors = []
+			let section
 			for (section = this.getParent(); section; section = section.getParent()) {
-				this.cachedAncestors.push(section);
+				this.cachedAncestors.push(section)
 			}
 		}
 
-		return this.cachedAncestors;
+		return this.cachedAncestors
 	}
 }
 
@@ -399,4 +399,4 @@ class SectionSkeleton {
  * @typedef {Omit<RemoveMethods<SectionSkeleton>, 'parent'>} SectionBase
  */
 
-export default SectionSkeleton;
+export default SectionSkeleton

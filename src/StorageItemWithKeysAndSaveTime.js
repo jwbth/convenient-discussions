@@ -1,4 +1,4 @@
-import StorageItemWithKeys from './StorageItemWithKeys';
+import StorageItemWithKeys from './StorageItemWithKeys'
 
 /*
 	Structure of storage items:
@@ -53,7 +53,7 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
 	 * @override
 	 */
 	get(key) {
-		return this.data[key];
+		return this.data[key]
 	}
 
 	/**
@@ -64,7 +64,7 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
 	 * @returns {this}
 	 */
 	setWithTime(pageKey, pageData) {
-		pageKey = String(pageKey);
+		pageKey = String(pageKey)
 
 		if (
 		// Is pageData not empty
@@ -80,13 +80,13 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
 					[this.key]: pageData,
 					saveTime: Date.now(),
 				})
-			);
+			)
 		} else {
-			this.remove(pageKey);
+			this.remove(pageKey)
 		}
 
-		return this;
+		return this
 	}
 }
 
-export default StorageItemWithKeysAndSaveTime;
+export default StorageItemWithKeysAndSaveTime

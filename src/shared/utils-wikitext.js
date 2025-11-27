@@ -4,10 +4,10 @@
  * @module utilsWikitext
  */
 
-import TextMasker from '../TextMasker';
+import TextMasker from '../TextMasker'
 
-import cd from './cd';
-import { decodeHtmlEntities } from './utils-general';
+import cd from './cd'
+import { decodeHtmlEntities } from './utils-general'
 
 /**
  * Generate a regular expression that searches for specified tags in the text (opening, closing, and
@@ -17,9 +17,9 @@ import { decodeHtmlEntities } from './utils-general';
  * @returns {RegExp}
  */
 export function generateTagsRegexp(tags) {
-	const tagsJoined = tags.join('|');
+	const tagsJoined = tags.join('|')
 
-	return new RegExp(`(<(${tagsJoined})(?: [\\w ]+(?:=[^<>]+?)?| *)>)([^]*?)(</\\2>)`, 'ig');
+	return new RegExp(`(<(${tagsJoined})(?: [\\w ]+(?:=[^<>]+?)?| *)>)([^]*?)(</\\2>)`, 'ig')
 }
 
 /**
@@ -50,7 +50,7 @@ export function maskDistractingCode(code) {
 			/(<\/?(?:br|p)\b.*)(\n+)(>)/g,
 			/** @type {ReplaceCallback} */ (_s, before, newline, after) =>
 				before + ' '.repeat(newline.length) + after
-		);
+		)
 }
 
 /**
@@ -72,7 +72,7 @@ export function removeWikiMarkup(code) {
 	const fileEmbedRegexp = new RegExp(
 		`\\[\\[${cd.g.filePrefixPattern}[^\\]]+?(?:\\|[^\\]]+?\\| *((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))? *\\]\\]`,
 		'ig'
-	);
+	)
 
 	return code
 	// Remove comments
@@ -115,7 +115,7 @@ export function removeWikiMarkup(code) {
 	// Replace multiple spaces with one space
 		.replace(/ {2,}/g, ' ')
 
-		.trim();
+		.trim()
 }
 
 /**
@@ -126,7 +126,7 @@ export function removeWikiMarkup(code) {
  * @returns {string}
  */
 export function normalizeCode(text) {
-	return decodeHtmlEntities(text).replace(/\s+/g, ' ').trim();
+	return decodeHtmlEntities(text).replace(/\s+/g, ' ').trim()
 }
 
 /**
@@ -145,7 +145,7 @@ export function encodeWikilink(link) {
 		.replace(/\{/g, '%7B')
 		.replace(/\|/g, '%7C')
 		.replace(/\}/g, '%7D')
-		.replace(/\s+/g, ' ');
+		.replace(/\s+/g, ' ')
 }
 
 /**
@@ -156,7 +156,7 @@ export function encodeWikilink(link) {
  * @returns {string}
  */
 export function endWithTwoNewlines(code) {
-	return code.replace(/([^\n])\n?$/, '$1\n\n');
+	return code.replace(/([^\n])\n?$/, '$1\n\n')
 }
 
 /**
@@ -170,7 +170,7 @@ export function endWithTwoNewlines(code) {
 export function brsToNewlines(code, replacement = '\n') {
 	return code.replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
 		s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => replacement)
-	));
+	))
 }
 
 /**
@@ -188,9 +188,9 @@ export function brsToNewlines(code, replacement = '\n') {
  * @returns {string}
  */
 export function escapePipesOutsideLinks(code, maskedTexts) {
-	const textMasker = new TextMasker(code, maskedTexts);
+	const textMasker = new TextMasker(code, maskedTexts)
 	if (!maskedTexts) {
-		textMasker.maskSensitiveCode();
+		textMasker.maskSensitiveCode()
 	}
 
 	return textMasker
@@ -202,7 +202,7 @@ export function escapePipesOutsideLinks(code, maskedTexts) {
 				.replace(/\|/g, '{{!}}')
 		))
 		.unmask(maskedTexts ? 'link' : undefined)
-		.getText();
+		.getText()
 }
 
 /**
@@ -220,5 +220,5 @@ export function extractNumeralAndConvertToNumber(string, digits = '0123456789') 
 			.replace(new RegExp(`[^${digits}]`, 'g'), '')
 
 			.replace(new RegExp(`[${digits}]`, 'g'), (s) => String(digits.indexOf(s)))
-	);
+	)
 }

@@ -7,7 +7,7 @@
  * @module notifications
  */
 
-import controller from './controller';
+import controller from './controller'
 
 /**
  * Notification object created by running
@@ -37,8 +37,8 @@ export default {
 	init() {
 		controller
 			.on('beforeReboot', (passedData) => {
-				this.close(passedData.closeNotificationsSmoothly ?? true);
-			});
+				this.close(passedData.closeNotificationsSmoothly ?? true)
+			})
 	},
 
 	/**
@@ -53,10 +53,10 @@ export default {
 	 * @returns {Notification}
 	 */
 	add(message, options, data = {}) {
-		const notification = mw.notification.notify(message, options);
-		this.data.push({ ...data, notification });
+		const notification = mw.notification.notify(message, options)
+		this.data.push({ ...data, notification })
 
-		return notification;
+		return notification
 	},
 
 	/**
@@ -66,7 +66,7 @@ export default {
 	 * @returns {NotificationData[]}
 	 */
 	get() {
-		return this.data;
+		return this.data
 	},
 
 	/**
@@ -77,10 +77,10 @@ export default {
 	close(smooth = true) {
 		this.data.forEach((datum) => {
 			if (!smooth) {
-				datum.notification.$notification.hide();
+				datum.notification.$notification.hide()
 			}
-			datum.notification.close();
-		});
-		this.data = [];
+			datum.notification.close()
+		})
+		this.data = []
 	},
-};
+}

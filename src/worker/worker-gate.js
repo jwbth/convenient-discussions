@@ -7,4 +7,4 @@
  * @see module:worker
  */
 
-import './worker';
+import './worker'

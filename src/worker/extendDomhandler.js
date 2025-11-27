@@ -1,33 +1,33 @@
 /* eslint-disable unicorn/prefer-dom-node-append */
 /* eslint-disable unicorn/prefer-includes */
-import { DataNode, Document, Element, Node, NodeWithChildren, Text } from 'domhandler';
-import { DomUtils } from 'htmlparser2';
+import { DataNode, Document, Element, Node, NodeWithChildren, Text } from 'domhandler'
+import { DomUtils } from 'htmlparser2'
 
-import { decodeHtmlEntities } from '../shared/utils-general';
+import { decodeHtmlEntities } from '../shared/utils-general'
 
-self.Node = Node;
+self.Node = Node
 
-Node.ELEMENT_NODE = 1;
-Node.TEXT_NODE = 3;
-Node.COMMENT_NODE = 8;
+Node.ELEMENT_NODE = 1
+Node.TEXT_NODE = 3
+Node.COMMENT_NODE = 8
 
 /**
  * @param {import('domhandler').ChildNode} referenceNode
  */
 Node.prototype.after = function after(referenceNode) {
-	DomUtils.append(referenceNode, /** @type {import('domhandler').ChildNode} */ (this));
-};
+	DomUtils.append(referenceNode, /** @type {import('domhandler').ChildNode} */ (this))
+}
 
 /**
  * @param {import('domhandler').ChildNode} referenceNode
  */
 Node.prototype.before = function before(referenceNode) {
-	DomUtils.prepend(referenceNode, /** @type {import('domhandler').ChildNode} */ (this));
-};
+	DomUtils.prepend(referenceNode, /** @type {import('domhandler').ChildNode} */ (this))
+}
 
 Node.prototype.remove = function remove() {
-	DomUtils.removeElement(/** @type {import('domhandler').ChildNode} */ (this));
-};
+	DomUtils.removeElement(/** @type {import('domhandler').ChildNode} */ (this))
+}
 
 /**
  * @param {Node} node
@@ -39,8 +39,8 @@ Node.prototype.follows = function follows(node) {
 			/** @type {import('domhandler').AnyNode} */ (this),
 			/** @type {import('domhandler').AnyNode} */ (node)
 		) & 4 /* FOLLOWING */
-	);
-};
+	)
+}
 
 /**
  * @param {(node: Node) => boolean} callback
@@ -49,28 +49,28 @@ Node.prototype.follows = function follows(node) {
  */
 Node.prototype.traverseSubtree = function traverseSubtree(callback, checkSelf = false) {
 	if (checkSelf && callback(this)) {
-		return true;
+		return true
 	}
 
 	if (this instanceof NodeWithChildren) {
 		for (let n = this.firstChild; n; n = n.nextSibling) {
 			if (n.traverseSubtree(callback, true)) {
-				return true;
+				return true
 			}
 		}
 	}
 
-	return false;
-};
+	return false
+}
 
 Object.defineProperty(Node.prototype, 'textContent', {
 	/**
 	 * @returns {''}
 	 */
 	get() {
-		return '';
+		return ''
 	},
-});
+})
 
 Object.defineProperty(Node.prototype, 'parentElement', {
 	/**
@@ -78,16 +78,16 @@ Object.defineProperty(Node.prototype, 'parentElement', {
 	 * @returns {?Element}
 	 */
 	get() {
-		return this.parentNode instanceof Element ? this.parentNode : null;
+		return this.parentNode instanceof Element ? this.parentNode : null
 	},
-});
+})
 
 Object.defineProperty(DataNode.prototype, 'textContent', {
 	/**
 	 * @returns {string}
 	 */
 	get() {
-		return decodeHtmlEntities(this.data);
+		return decodeHtmlEntities(this.data)
 	},
 
 	/**
@@ -95,9 +95,9 @@ Object.defineProperty(DataNode.prototype, 'textContent', {
 	 * @param {string} value
 	 */
 	set(value) {
-		this.data = value;
+		this.data = value
 	},
-});
+})
 
 /**
  * @param {Node} node
@@ -105,21 +105,21 @@ Object.defineProperty(DataNode.prototype, 'textContent', {
  */
 NodeWithChildren.prototype.contains = function contains(node) {
 	if (node === this) {
-		return true;
+		return true
 	}
 
 	if (!this.childNodes.length) {
-		return false;
+		return false
 	}
 
 	for (let /** @type {Node | null} */ n = node; n; n = n.parentNode) {
 		if (n === this) {
-			return true;
+			return true
 		}
 	}
 
-	return false;
-};
+	return false
+}
 
 /**
  * @param {(node: Node) => boolean} callback Callback function that takes a node and returns true if
@@ -128,26 +128,26 @@ NodeWithChildren.prototype.contains = function contains(node) {
  * @returns {Node[]} Array of nodes that passed the callback function.
  */
 NodeWithChildren.prototype.filterRecursively = function filterRecursively(callback, limit) {
-	const nodes = /** @type {Node[]} */ ([]);
+	const nodes = /** @type {Node[]} */ ([])
 	this.traverseSubtree((node) => {
 		if (callback(node)) {
-			nodes.push(node);
+			nodes.push(node)
 
-			return Boolean(limit && nodes.length === limit);
+			return Boolean(limit && nodes.length === limit)
 		}
 
-		return false;
-	});
+		return false
+	})
 
-	return nodes;
-};
+	return nodes
+}
 
 /**
  * @param {import('domhandler').ChildNode} node
  */
 Element.prototype.appendChild = function appendChild(node) {
-	DomUtils.appendChild(this, node);
-};
+	DomUtils.appendChild(this, node)
+}
 
 /**
  * @param {import('domhandler').ChildNode} node
@@ -156,13 +156,13 @@ Element.prototype.appendChild = function appendChild(node) {
  */
 Element.prototype.insertBefore = function insertBefore(node, referenceNode) {
 	if (referenceNode) {
-		DomUtils.prepend(referenceNode, node);
+		DomUtils.prepend(referenceNode, node)
 	} else {
-		this.appendChild(node);
+		this.appendChild(node)
 	}
 
-	return node;
-};
+	return node
+}
 
 /**
  * @param {string} name
@@ -173,8 +173,8 @@ Element.prototype.getElementsByClassName = function getElementsByClassName(name,
 	return /** @type {Element[]} */ (this.filterRecursively(
 		(node) => node instanceof Element && node.classList.contains(name),
 		limit
-	));
-};
+	))
+}
 
 /**
  * @param {RegExp} regexp
@@ -183,21 +183,21 @@ Element.prototype.getElementsByClassName = function getElementsByClassName(name,
 Element.prototype.getElementsByAttribute = function getElementsByAttribute(regexp) {
 	return /** @type {Element[]} */ (this.filterRecursively(
 		(node) => node instanceof Element && Object.keys(node.attribs).some((name) => regexp.test(name))
-	));
-};
+	))
+}
 
 /**
  * @param {string} selector
  * @returns {Element[]}
  */
 Element.prototype.querySelectorAll = function querySelectorAll(selector) {
-	const tokens = selector.split(/ *, */);
+	const tokens = selector.split(/ *, */)
 	const tagNames = new Set(tokens
 		.filter((token) => !token.startsWith('.'))
-		.map((name) => name.toUpperCase()));
+		.map((name) => name.toUpperCase()))
 	const classNames = tokens
 		.filter((token) => token.startsWith('.'))
-		.map((name) => name.slice(1));
+		.map((name) => name.slice(1))
 
 	return /** @type {Element[]} */ (this.filterRecursively((node) =>
 		node instanceof Element &&
@@ -205,16 +205,16 @@ Element.prototype.querySelectorAll = function querySelectorAll(selector) {
 			tagNames.has(node.tagName) ||
 			classNames.some((name) => node.classList.contains(name))
 		)
-	));
-};
+	))
+}
 
 /**
  * @param {string} name
  * @returns {Element[]}
  */
 Element.prototype.getElementsByTagName = function getElementsByTagName(name) {
-	return DomUtils.getElementsByTagName(name, this);
-};
+	return DomUtils.getElementsByTagName(name, this)
+}
 
 // Note that the Element class already has the `children` property containing all child nodes, which
 // differs from what this property stands for in the browser DOM representation (only child nodes
@@ -231,9 +231,9 @@ Object.defineProperty(Element.prototype, 'childElements', {
 	 * @readonly
 	 */
 	get() {
-		return this.childNodes.filter((node) => node instanceof Element);
+		return this.childNodes.filter((node) => node instanceof Element)
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'previousElementSibling', {
 	/**
@@ -247,13 +247,13 @@ Object.defineProperty(Element.prototype, 'previousElementSibling', {
 	get() {
 		for (let n = this.previousSibling; n; n = n.previousSibling) {
 			if (n instanceof Element) {
-				return n;
+				return n
 			}
 		}
 
-		return null;
+		return null
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'nextElementSibling', {
 	/**
@@ -267,13 +267,13 @@ Object.defineProperty(Element.prototype, 'nextElementSibling', {
 	get() {
 		for (let n = this.nextSibling; n; n = n.nextSibling) {
 			if (n instanceof Element) {
-				return n;
+				return n
 			}
 		}
 
-		return null;
+		return null
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'firstElementChild', {
 	/**
@@ -285,16 +285,16 @@ Object.defineProperty(Element.prototype, 'firstElementChild', {
 	 * @readonly
 	 */
 	get() {
-		let element;
+		let element
 		for (let n = this.firstChild; n; n = n.nextSibling) {
 			if (n instanceof Element) {
-				element = n;
+				element = n
 			}
 		}
 
-		return element || null;
+		return element || null
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'lastElementChild', {
 
@@ -307,16 +307,16 @@ Object.defineProperty(Element.prototype, 'lastElementChild', {
 	 * @readonly
 	 */
 	get() {
-		let element;
+		let element
 		for (let n = this.lastChild; n; n = n.previousSibling) {
 			if (n instanceof Element) {
-				element = n;
+				element = n
 			}
 		}
 
-		return element || null;
+		return element || null
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'textContent', {
 	/**
@@ -332,30 +332,30 @@ Object.defineProperty(Element.prototype, 'textContent', {
 		return this.childNodes.reduce(
 			(text, node) => text + ('textContent' in node ? node.textContent : ''),
 			''
-		);
+		)
 	},
 
 	set(value) {
 		this.childNodes.forEach((/** @type {Node} */ node) => {
-			node.remove();
-		});
-		this.appendChild(new Text(value || ''));
+			node.remove()
+		})
+		this.appendChild(new Text(value || ''))
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'innerHTML', {
 	get() {
 		// decodeEntities acts opposite to its value ¯\_(ツ)_/¯
-		return DomUtils.getInnerHTML(this, { decodeEntities: false });
+		return DomUtils.getInnerHTML(this, { decodeEntities: false })
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'outerHTML', {
 	get() {
 		// decodeEntities acts opposite to its value ¯\_(ツ)_/¯
-		return DomUtils.getOuterHTML(this, { decodeEntities: false });
+		return DomUtils.getOuterHTML(this, { decodeEntities: false })
 	},
-});
+})
 
 /**
  * @param {string} name
@@ -363,8 +363,8 @@ Object.defineProperty(Element.prototype, 'outerHTML', {
  * @readonly
  */
 Element.prototype.hasAttribute = function hasAttribute(name) {
-	return typeof this.attribs[name] !== 'undefined';
-};
+	return typeof this.attribs[name] !== 'undefined'
+}
 
 /**
  * @param {string} name
@@ -372,15 +372,15 @@ Element.prototype.hasAttribute = function hasAttribute(name) {
  * @readonly
  */
 Element.prototype.getAttribute = function getAttribute(name) {
-	let value = this.attribs[name] || null;
+	let value = this.attribs[name] || null
 	if (value && typeof value === 'string' && value.includes('&')) {
 		value = value
 			.replace(/&amp;/g, '&')
-			.replace(/&quot;/g, '"');
+			.replace(/&quot;/g, '"')
 	}
 
-	return value;
-};
+	return value
+}
 
 /**
  * @param {string} name
@@ -389,27 +389,27 @@ Element.prototype.getAttribute = function getAttribute(name) {
 Element.prototype.setAttribute = function setAttribute(name, value) {
 	if (value && typeof value === 'string') {
 		if (value.includes('&')) {
-			value = value.replace(/&/g, '&amp;');
+			value = value.replace(/&/g, '&amp;')
 		}
 		if (value.includes('"')) {
-			value = value.replace(/"/g, '&quot;');
+			value = value.replace(/"/g, '&quot;')
 		}
 	}
-	this.attribs[name] = value || '';
-};
+	this.attribs[name] = value || ''
+}
 
 /**
  * @param {string} name
  */
 Element.prototype.removeAttribute = function removeAttribute(name) {
-	delete this.attribs[name];
-};
+	delete this.attribs[name]
+}
 
 Object.defineProperty(Element.prototype, 'tagName', {
 	get() {
-		return this.name.toUpperCase();
+		return this.name.toUpperCase()
 	},
-});
+})
 
 // We have to create a getter as there is no way to access an object from a method of that object's
 // property (Element#classList.add() and such in this case).
@@ -430,79 +430,79 @@ Object.defineProperty(Element.prototype, 'classList', {
 	get() {
 		if (!this._classList) {
 			/** @private */
-			this._classList = /** @type {import('domhandler').TokenList} */ (/** @type {string[]} */ ([]));
-			const classList = this._classList;
+			this._classList = /** @type {import('domhandler').TokenList} */ (/** @type {string[]} */ ([]))
+			const classList = this._classList
 
-			classList.movedFromClassAttr = false;
+			classList.movedFromClassAttr = false
 
 			classList.moveFromClassAttr = (/** @type {string|undefined} */ classAttr) => {
-				classList.push(...(classAttr || '').split(' '));
-				classList.movedFromClassAttr = true;
-			};
+				classList.push(...(classAttr || '').split(' '))
+				classList.movedFromClassAttr = true
+			}
 
 			classList.add = (/** @type {string[]} */ ...names) => {
 				names.forEach((name) => {
-					let classAttr = this.getAttribute('class') || '';
+					let classAttr = this.getAttribute('class') || ''
 					if (classAttr) {
-						classAttr += ' ';
+						classAttr += ' '
 					}
-					classAttr += name;
-					this.setAttribute('class', classAttr);
+					classAttr += name
+					this.setAttribute('class', classAttr)
 					if (classList.movedFromClassAttr) {
-						classList.push(name);
+						classList.push(name)
 					} else {
-						classList.moveFromClassAttr(classAttr);
+						classList.moveFromClassAttr(classAttr)
 					}
-				});
-			};
+				})
+			}
 
 			classList.remove = (/** @type {string[]} */...names) => {
 				names.forEach((name) => {
-					let classAttr = this.getAttribute('class') || '';
-					const index = ` ${classAttr} `.indexOf(` ${name} `);
+					let classAttr = this.getAttribute('class') || ''
+					const index = ` ${classAttr} `.indexOf(` ${name} `)
 					if (index !== -1) {
 						classAttr = (
 							classAttr.slice(0, index) + classAttr.slice(index + name.length + 1)
-						).trim();
-						this.setAttribute('class', classAttr);
+						).trim()
+						this.setAttribute('class', classAttr)
 						if (classList.movedFromClassAttr) {
-							classList.push(name);
+							classList.push(name)
 						} else {
-							classList.moveFromClassAttr(classAttr);
+							classList.moveFromClassAttr(classAttr)
 						}
 					}
-				});
-			};
+				})
+			}
 
 			classList.contains = (/** @type {string} */ name) => {
-				const classAttr = this.getAttribute('class');
+				const classAttr = this.getAttribute('class')
 				if (!classAttr) {
-					return false;
+					return false
 				}
 
 				if (!classList.movedFromClassAttr) {
-					classList.moveFromClassAttr(classAttr);
+					classList.moveFromClassAttr(classAttr)
 				}
 
 				// This can run tens of thousand times, so we microoptimize it (don't use template strings
 				// and String#includes()).
-				return Boolean(classList.length) && classList.includes(name);
-			};
+				return Boolean(classList.length) && classList.includes(name)
+			}
 		}
 
-		return this._classList;
+		return this._classList
 	},
-});
+})
 
 Object.defineProperty(Element.prototype, 'className', {
 	get() {
-		return this.getAttribute('class');
+		return this.getAttribute('class')
 	},
 
 	set(value) {
-		this.setAttribute('class', value);
+		this.setAttribute('class', value)
 	},
-});
+})
 
 // We need the Document class to imitate window.document for the code to be more easily ported to
 // other library if needed.
@@ -512,16 +512,16 @@ Object.defineProperty(Element.prototype, 'className', {
  * @returns {Element} The created element.
  */
 Document.prototype.createElement = function createElement(name) {
-	return new Element(name, {});
-};
+	return new Element(name, {})
+}
 
 /**
  * @param {string} [content]
  * @returns {Text}
  */
 Document.prototype.createTextNode = function createTextNode(content = '') {
-	return new Text(content);
-};
+	return new Text(content)
+}
 
-Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName.bind(Element);
-Document.prototype.querySelectorAll = Element.prototype.querySelectorAll.bind(Element);
+Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName.bind(Element)
+Document.prototype.querySelectorAll = Element.prototype.querySelectorAll.bind(Element)

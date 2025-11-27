@@ -1,8 +1,8 @@
-import BaseAutocomplete from './BaseAutocomplete';
-import cd from './loader/cd';
-import { defined, ucFirst } from './shared/utils-general';
-import userRegistry from './userRegistry';
-import { handleApiReject } from './utils-api';
+import BaseAutocomplete from './BaseAutocomplete'
+import cd from './loader/cd'
+import { defined, ucFirst } from './shared/utils-general'
+import userRegistry from './userRegistry'
+import { handleApiReject } from './utils-api'
 
 /**
  * @typedef {string} MentionEntry
@@ -20,7 +20,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 *   options
 	 */
 	constructor(config = {}) {
-		super(config);
+		super(config)
 	}
 
 	/**
@@ -30,7 +30,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getLabel() {
-		return cd.s('cf-autocomplete-mentions-label');
+		return cd.s('cf-autocomplete-mentions-label')
 	}
 
 	/**
@@ -40,7 +40,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getTrigger() {
-		return cd.config.mentionCharacter;
+		return cd.config.mentionCharacter
 	}
 
 	/**
@@ -52,12 +52,12 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 * @returns {import('./tribute/Tribute').InsertData & { end: string, content: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
-		const name = entry.trim();
-		const user = userRegistry.get(name);
-		const userNamespace = user.getNamespaceAlias();
+		const name = entry.trim()
+		const user = userRegistry.get(name)
+		const userNamespace = user.getNamespaceAlias()
 		const pageName = user.isRegistered()
 			? `${userNamespace}:${name}`
-			: `${cd.g.contribsPages[0]}/${name}`;
+			: `${cd.g.contribsPages[0]}/${name}`
 
 		// Use selected text as content if available, otherwise use the user name
 
@@ -66,12 +66,12 @@ class MentionsAutocomplete extends BaseAutocomplete {
 			end: name.match(/[(,]/) ? `${name}]]` : ']]',
 			content: selectedText || name,
 			omitContentCheck() {
-				return !selectedText && !this.start.includes('/');
+				return !selectedText && !this.start.includes('/')
 			},
 			cmdModify() {
-				this.end += cd.mws('colon-separator', { language: 'content' });
+				this.end += cd.mws('colon-separator', { language: 'content' })
 			},
-		};
+		}
 	}
 
 	/**
@@ -82,7 +82,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 * @returns {string} The display label
 	 */
 	getLabelFromEntry(entry) {
-		return entry;
+		return entry
 	}
 
 	/**
@@ -94,7 +94,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	getCollectionProperties() {
 		return {
 			requireLeadingSpace: cd.config.mentionRequiresLeadingSpace,
-		};
+		}
 	}
 
 	/**
@@ -116,7 +116,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 					new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')
 				) || []
 			).length <= 4
-		);
+		)
 	}
 
 	/**
@@ -127,7 +127,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 * @returns {Promise<string[]>} Promise resolving to array of user names
 	 */
 	async makeApiRequest(text) {
-		text = ucFirst(text);
+		text = ucFirst(text)
 
 		// First, try to use the search to get only users that have talk pages. Most legitimate
 		// users do, while spammers don't.
@@ -135,15 +135,15 @@ class MentionsAutocomplete extends BaseAutocomplete {
 			search: text,
 			namespace: 3,
 			redirects: 'resolve',
-		});
+		})
 
 		const users = response[1]
 			.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
 			.filter(defined)
-			.filter((name) => !name.includes('/'));
+			.filter((name) => !name.includes('/'))
 
 		if (users.length) {
-			return users;
+			return users
 		}
 
 		// If we didn't succeed with search, try the entire users database.
@@ -155,18 +155,18 @@ class MentionsAutocomplete extends BaseAutocomplete {
 				list: 'allusers',
 				auprefix: text,
 			})
-			.catch(handleApiReject);
+			.catch(handleApiReject)
 
 		if (BaseAutocomplete.currentPromise) {
-			BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise);
+			BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
 		}
 
 		if (!allUsersResponse.query) {
-			throw new Error('No query data in response');
+			throw new Error('No query data in response')
 		}
 
-		return allUsersResponse.query.allusers.map((/** @type {{ name: string }} */ user) => user.name);
+		return allUsersResponse.query.allusers.map((/** @type {{ name: string }} */ user) => user.name)
 	}
 }
 
-export default MentionsAutocomplete;
+export default MentionsAutocomplete

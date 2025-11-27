@@ -1,9 +1,9 @@
-import Button from './Button';
-import Subscriptions from './Subscriptions';
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import { definedAndNotNull, spacesToUnderlines, unique } from './shared/utils-general';
-import { handleApiReject, splitIntoBatches } from './utils-api';
+import Button from './Button'
+import Subscriptions from './Subscriptions'
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import { definedAndNotNull, spacesToUnderlines, unique } from './shared/utils-general'
+import { handleApiReject, splitIntoBatches } from './utils-api'
 
 /**
  * Implementation of DiscussionTools' topic subscriptions.
@@ -12,7 +12,7 @@ import { handleApiReject, splitIntoBatches } from './utils-api';
  */
 class DtSubscriptions extends Subscriptions {
 	/** @type {string} @private */
-	pageSubscribeId;
+	pageSubscribeId
 
 	/**
 	 * Request the subscription list from the server and assign it to the instance.
@@ -21,11 +21,11 @@ class DtSubscriptions extends Subscriptions {
 	 * @returns {Promise.<void>}
 	 */
 	async load() {
-		if (!cd.user.isRegistered()) return;
+		if (!cd.user.isRegistered()) return
 
-		const title = spacesToUnderlines(mw.config.get('wgTitle'));
+		const title = spacesToUnderlines(mw.config.get('wgTitle'))
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		this.pageSubscribeId ??= `p-topics-${cd.g.namespaceNumber}:${title}`;
+		this.pageSubscribeId ??= `p-topics-${cd.g.namespaceNumber}:${title}`
 		this.data = await this.getSubscriptions(
 			sectionManager
 				.getAll()
@@ -33,7 +33,7 @@ class DtSubscriptions extends Subscriptions {
 				.filter(definedAndNotNull)
 				.filter(unique)
 				.concat(this.pageSubscribeId || [])
-		);
+		)
 	}
 
 	/**
@@ -45,10 +45,10 @@ class DtSubscriptions extends Subscriptions {
 	 */
 	processOnTalkPage(bootProcess) {
 		if (bootProcess?.isFirstRun()) {
-			this.addPageSubscribeButton();
+			this.addPageSubscribeButton()
 		}
 
-		super.processOnTalkPage();
+		super.processOnTalkPage()
 	}
 
 	/**
@@ -58,7 +58,7 @@ class DtSubscriptions extends Subscriptions {
 	 * @returns {boolean}
 	 */
 	areLoaded() {
-		return Boolean(this.data);
+		return Boolean(this.data)
 	}
 
 	/**
@@ -69,7 +69,7 @@ class DtSubscriptions extends Subscriptions {
 	 */
 	async getSubscriptions(ids) {
 		if (!ids.length) {
-			return {};
+			return {}
 		}
 
 		/**
@@ -78,18 +78,18 @@ class DtSubscriptions extends Subscriptions {
 		 */
 
 		const intValuesToBoolean = (/** @type {ApiDtSubscriptions['subscriptions']} */ obj) =>
-			Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, Boolean(value)]));
+			Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, Boolean(value)]))
 
-		const subscriptions = /** @type {import('./Subscriptions').SubscriptionsData} */ ({});
+		const subscriptions = /** @type {import('./Subscriptions').SubscriptionsData} */ ({})
 		for (const nextIds of splitIntoBatches(ids)) {
 			const response = /** @type {ApiDtSubscriptions} */ (await cd.getApi().post({
 				action: 'discussiontoolsgetsubscriptions',
 				commentname: nextIds,
-			}).catch(handleApiReject));
-			Object.assign(subscriptions, intValuesToBoolean(response.subscriptions));
+			}).catch(handleApiReject))
+			Object.assign(subscriptions, intValuesToBoolean(response.subscriptions))
 		}
 
-		return subscriptions;
+		return subscriptions
 	}
 
 	/**
@@ -98,7 +98,7 @@ class DtSubscriptions extends Subscriptions {
 	 * @private
 	 */
 	addPageSubscribeButton() {
-		if (!cd.user.isRegistered() || cd.page.isArchive() || $('#ca-dt-page-subscribe').length) return;
+		if (!cd.user.isRegistered() || cd.page.isArchive() || $('#ca-dt-page-subscribe').length) return
 
 		const portletLink = mw.util.addPortletLink(
 			'p-cactions',
@@ -108,26 +108,26 @@ class DtSubscriptions extends Subscriptions {
 			}),
 			'',
 			'ca-cd-page-subscribe'
-		);
-		if (!portletLink) return;
+		)
+		if (!portletLink) return
 
 		this.pageSubscribeButton = new Button({
 			buttonElement: /** @type {HTMLElement} */ (portletLink.firstElementChild),
 			action: async () => {
-				this.pageSubscribeButton.setPending(true);
+				this.pageSubscribeButton.setPending(true)
 				try {
 					await (
 						this.getState(this.pageSubscribeId)
 							? this.unsubscribe(this.pageSubscribeId)
 							: this.subscribe(this.pageSubscribeId)
-					);
-					this.updatePageSubscribeButton();
+					)
+					this.updatePageSubscribeButton()
 				} finally {
-					this.pageSubscribeButton.setPending(false);
+					this.pageSubscribeButton.setPending(false)
 				}
 			},
-		});
-		this.updatePageSubscribeButton();
+		})
+		this.updatePageSubscribeButton()
 	}
 
 	/**
@@ -146,13 +146,13 @@ class DtSubscriptions extends Subscriptions {
 				page: cd.page.name + (id ? `#${id}` : ''),
 				commentname: subscribeId,
 				subscribe,
-			}).catch(handleApiReject);
+			}).catch(handleApiReject)
 		} catch (error) {
-			mw.notify(cd.s('error-settings-save'), { type: 'error' });
-			throw error;
+			mw.notify(cd.s('error-settings-save'), { type: 'error' })
+			throw error
 		}
 
-		this.updateLocally(subscribeId, subscribe);
+		this.updateLocally(subscribeId, subscribe)
 	}
 
 	/**
@@ -165,7 +165,7 @@ class DtSubscriptions extends Subscriptions {
 	 * @protected
 	 */
 	actuallySubscribe(subscribeId, id) {
-		return this.changeSubscription(subscribeId, id, true);
+		return this.changeSubscription(subscribeId, id, true)
 	}
 
 	/**
@@ -178,7 +178,7 @@ class DtSubscriptions extends Subscriptions {
 	 * @protected
 	 */
 	actuallyUnsubscribe(subscribeId, id) {
-		return this.changeSubscription(subscribeId, id, false);
+		return this.changeSubscription(subscribeId, id, false)
 	}
 
 	/**
@@ -197,8 +197,8 @@ class DtSubscriptions extends Subscriptions {
 				this.getState(this.pageSubscribeId)
 					? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip')
 					: cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
-			);
+			)
 	}
 }
 
-export default DtSubscriptions;
+export default DtSubscriptions

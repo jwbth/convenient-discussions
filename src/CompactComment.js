@@ -1,12 +1,12 @@
-import Comment from './Comment';
-import CommentLayers from './CommentLayers';
-import CompactCommentActions from './CompactCommentActions';
-import CompactCommentLayers from './CompactCommentLayers';
-import LiveTimestamp from './LiveTimestamp';
-import PrototypeRegistry from './PrototypeRegistry';
-import commentManager from './commentManager';
-import cd from './loader/cd';
-import { isInline } from './shared/utils-general';
+import Comment from './Comment'
+import CommentLayers from './CommentLayers'
+import CompactCommentActions from './CompactCommentActions'
+import CompactCommentLayers from './CompactCommentLayers'
+import LiveTimestamp from './LiveTimestamp'
+import PrototypeRegistry from './PrototypeRegistry'
+import commentManager from './commentManager'
+import cd from './loader/cd'
+import { isInline } from './shared/utils-general'
 
 /**
  * A compact comment class that handles compact MediaWiki talk page formatting
@@ -22,7 +22,7 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	// @ts-expect-error: Narrowing parent type
-	layers;
+	layers
 
 	/**
 	 * Comment actions for compact comments.
@@ -31,9 +31,9 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	// @ts-expect-error: Narrowing parent type
-	actions;
+	actions
 
-	isHovered = false;
+	isHovered = false
 
 	/**
 	 * Create the comment's underlay and overlay with contents for compact comments.
@@ -44,12 +44,12 @@ class CompactComment extends Comment {
 	 */
 	createLayers() {
 		// Create compact layers
-		this.layers = new CompactCommentLayers(this);
-		this.layers.create();
+		this.layers = new CompactCommentLayers(this)
+		this.layers.create()
 
 		// Create compact actions
-		this.actions = new CompactCommentActions(this);
-		this.actions.create();
+		this.actions = new CompactCommentActions(this)
+		this.actions.create()
 
 		/**
 		 * An underlay and overlay have been created for a comment.
@@ -58,7 +58,7 @@ class CompactComment extends Comment {
 		 * @param {Comment} comment
 		 * @param {object} cd {@link convenientDiscussions} object.
 		 */
-		mw.hook('convenientDiscussions.commentLayersCreated').fire(this, cd);
+		mw.hook('convenientDiscussions.commentLayersCreated').fire(this, cd)
 	}
 
 	/**
@@ -70,11 +70,11 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	bindEvents(element) {
-		element.addEventListener('mouseenter', this.handleHover);
+		element.addEventListener('mouseenter', this.handleHover)
 		element.addEventListener('mouseleave', () => {
-			this.handleUnhover();
-		});
-		element.addEventListener('touchstart', this.handleHover);
+			this.handleUnhover()
+		})
+		element.addEventListener('touchstart', this.handleHover)
 	}
 
 	/**
@@ -88,17 +88,17 @@ class CompactComment extends Comment {
 	addChangeNoteImpl($changeNote) {
 		// Add the mark to the last block element, going as many nesting levels down as needed to
 		// avoid it appearing after a block element.
-		let $last;
-		let $tested = $(this.highlightables).last();
+		let $last
+		let $tested = $(this.highlightables).last()
 		do {
-			$last = $tested;
-			$tested = $last.children().last();
-		} while ($tested.length && !isInline($tested[0]));
+			$last = $tested
+			$tested = $last.children().last()
+		} while ($tested.length && !isInline($tested[0]))
 
 		if (!$last.find('.cd-changeNote-before').length) {
-			$last.append(' ', $('<span>').addClass('cd-changeNote-before'));
+			$last.append(' ', $('<span>').addClass('cd-changeNote-before'))
 		}
-		$last.append($changeNote);
+		$last.append($changeNote)
 	}
 
 	/**
@@ -113,7 +113,7 @@ class CompactComment extends Comment {
 		return {
 			startNode: this.elements[0],
 			startOffset: 0,
-		};
+		}
 	}
 
 	/**
@@ -128,7 +128,7 @@ class CompactComment extends Comment {
 		return {
 			endNode: this.signatureElement,
 			endOffset: 0,
-		};
+		}
 	}
 
 	/**
@@ -140,10 +140,10 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	getSelectionEndBoundary() {
-		const dummyEndBoundary = document.createElement('span');
-		this.$elements.last().append(dummyEndBoundary);
+		const dummyEndBoundary = document.createElement('span')
+		this.$elements.last().append(dummyEndBoundary)
 
-		return dummyEndBoundary;
+		return dummyEndBoundary
 	}
 
 	/**
@@ -154,7 +154,7 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	cleanupSelectionEndBoundary(endBoundary) {
-		endBoundary.remove();
+		endBoundary.remove()
 	}
 
 	/**
@@ -165,7 +165,7 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	updateToggleChildThreadsButtonImpl() {
-		this.actions.toggleChildThreadsButton.setIcon(this.areChildThreadsCollapsed() ? 'add' : 'subtract');
+		this.actions.toggleChildThreadsButton.setIcon(this.areChildThreadsCollapsed() ? 'add' : 'subtract')
 	}
 
 	/**
@@ -177,13 +177,13 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	updateMainTimestampElement(timestamp, title) {
-		this.timestampElement.textContent = timestamp;
-		this.timestampElement.title = title;
+		this.timestampElement.textContent = timestamp
+		this.timestampElement.title = title
 		new LiveTimestamp(
 			this.timestampElement,
 			/** @type {Date} */(this.date),
 			!this.hideTimezone
-		).init();
+		).init()
 	}
 
 	/**
@@ -200,7 +200,7 @@ class CompactComment extends Comment {
 			noteText: cd.s(stringName),
 			refreshLinkSeparator: ' ',
 			diffLinkSeparator: refreshLink ? cd.sParse('dot-separator') : ' ',
-		};
+		}
 	}
 
 	/**
@@ -211,8 +211,8 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	initializeCommentStructureImpl() {
-		this.timestampElement = this.$elements.find('.cd-signature .cd-timestamp')[0];
-		this.reformatTimestamp();
+		this.timestampElement = this.$elements.find('.cd-signature .cd-timestamp')[0]
+		this.reformatTimestamp()
 	}
 
 	/**
@@ -223,42 +223,42 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	handleHover = (event) => {
-		if (this.isHovered || bootManager.isPageOverlayOn()) return;
+		if (this.isHovered || bootManager.isPageOverlayOn()) return
 
 		if (event?.type === 'touchstart') {
 			if (this.layers?.wasMenuHidden) {
-				this.layers.wasMenuHidden = false;
+				this.layers.wasMenuHidden = false
 
-				return;
+				return
 			}
 
 			// FIXME: decouple
 			/** @type {import('./commentManager').default<CompactComment>} */ (commentManager)
 				.query((comment) => comment.isHovered)
 				.forEach((comment) => {
-					comment.handleUnhover();
-				});
+					comment.handleUnhover()
+				})
 		}
 
 		// Animation will be directed to wrong properties if we keep it going.
-		this.layers?.$animatedBackground?.stop(true, true);
+		this.layers?.$animatedBackground?.stop(true, true)
 
 		// Configure layers (create if they don't exist, update if they do)
-		const layersResult = this.configureLayers();
+		const layersResult = this.configureLayers()
 
 		// If configureLayers returns undefined, it means the comment is invisible or there was an error
 		if (layersResult === undefined) {
-			return;
+			return
 		}
 
 		// If layers still don't exist after configuration, something went wrong
 		if (!this.layers) {
-			return;
+			return
 		}
 
-		this.isHovered = true;
-		this.updateClassesForFlag('hovered', true);
-	};
+		this.isHovered = true
+		this.updateClassesForFlag('hovered', true)
+	}
 
 	/**
 	 * Handle unhover event for compact comments.
@@ -268,17 +268,17 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	handleUnhover(force = false) {
-		if (!this.isHovered || (this.toggleChildThreadsPopup && !force)) return;
+		if (!this.isHovered || (this.toggleChildThreadsPopup && !force)) return
 
 		// Animation will be directed to wrong properties if we keep it going.
-		this.layers?.$animatedBackground?.stop(true, true);
+		this.layers?.$animatedBackground?.stop(true, true)
 
-		this.layers?.dontHideMenu();
+		this.layers?.dontHideMenu()
 
-		this.updateClassesForFlag('hovered', false);
-		this.isHovered = false;
+		this.updateClassesForFlag('hovered', false)
+		this.isHovered = false
 
-		this.teardownOnboardOntoToggleChildThreadsPopup();
+		this.teardownOnboardOntoToggleChildThreadsPopup()
 	}
 
 	/**
@@ -289,13 +289,13 @@ class CompactComment extends Comment {
 	 * @param {boolean} isObstructingElementHovered
 	 */
 	updateHoverState(event, isObstructingElementHovered) {
-		const layersOffset = this.layers?.offset;
-		const layersContainerOffset = this.layers?.getContainerOffset();
+		const layersOffset = this.layers?.offset
+		const layersContainerOffset = this.layers?.getContainerOffset()
 		if (!layersOffset || !layersContainerOffset) {
 			// Something has happened with the comment (or the layers container); it disappeared.
-			this.removeLayers();
+			this.removeLayers()
 
-			return;
+			return
 		}
 		if (
 			!isObstructingElementHovered &&
@@ -304,9 +304,9 @@ class CompactComment extends Comment {
 			event.pageX >= layersOffset.left + layersContainerOffset.left &&
 			event.pageX <= layersOffset.left + layersOffset.width + layersContainerOffset.left
 		) {
-			this.handleHover();
+			this.handleHover()
 		} else {
-			this.handleUnhover();
+			this.handleUnhover()
 		}
 	}
 
@@ -316,18 +316,18 @@ class CompactComment extends Comment {
 	 *   overlay: HTMLElement
 	 * }>}
 	 */
-	static prototypes = new PrototypeRegistry();
+	static prototypes = new PrototypeRegistry()
 
 	/**
 	 * Initialize prototypes for compact comments.
 	 */
 	static initPrototypes() {
 		// Initialize shared layer prototypes (underlay, overlay)
-		CommentLayers.initPrototypes();
+		CommentLayers.initPrototypes()
 
 		// Initialize compact-specific layer prototypes
-		CompactCommentLayers.initPrototypes();
+		CompactCommentLayers.initPrototypes()
 	}
 }
 
-export default CompactComment;
+export default CompactComment

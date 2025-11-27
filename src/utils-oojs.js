@@ -4,11 +4,11 @@
  * @module utilsOoui
  */
 
-import CheckboxInputWidget from './CheckboxInputWidget';
-import RadioOptionWidget from './RadioOptionWidget';
-import TextInputWidget from './TextInputWidget';
-import cd from './loader/cd';
-import { copyText } from './utils-window';
+import CheckboxInputWidget from './CheckboxInputWidget'
+import RadioOptionWidget from './RadioOptionWidget'
+import TextInputWidget from './TextInputWidget'
+import cd from './loader/cd'
+import { copyText } from './utils-window'
 
 /**
  * OOjs namespace.
@@ -166,17 +166,17 @@ import { copyText } from './utils-window';
  *   think.
  */
 export async function showConfirmDialog(message, options = {}) {
-	const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
-	cd.getWindowManager().addWindows([dialog]);
-	const win = cd.getWindowManager().openWindow(dialog, { message, ...options });
+	const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] })
+	cd.getWindowManager().addWindows([dialog])
+	const win = cd.getWindowManager().openWindow(dialog, { message, ...options })
 	win.opened.then(() => {
 		if (message instanceof $) {
-			mw.hook('wikipage.content').fire(message);
+			mw.hook('wikipage.content').fire(message)
 		}
-	});
-	const closeData = await win.closed;
+	})
+	const closeData = await win.closed
 
-	return closeData?.action;
+	return closeData?.action
 }
 
 /**
@@ -293,7 +293,7 @@ export function createTextControl({
 		'text',
 		new TextInputWidget({ value, maxLength, required, classes }),
 		{ label, help }
-	);
+	)
 }
 
 /**
@@ -325,7 +325,7 @@ export function createNumberControl({
 			classes: ['cd-numberInput'],
 		}))),
 		{ label, help, classes }
-	);
+	)
 }
 
 /**
@@ -359,7 +359,7 @@ export function createCheckboxControl({
 			classes,
 			align: 'inline',
 		}
-	);
+	)
 }
 
 /**
@@ -376,17 +376,17 @@ export function createRadioControl({
 }) {
 	const input = new OO.ui.RadioSelectWidget({
 		items: options.map((config) => new RadioOptionWidget(config)),
-	});
+	})
 
 	// Workarounds for T359920
-	input.$element.off('mousedown');
-	input.$focusOwner = $();
+	input.$element.off('mousedown')
+	input.$focusOwner = $()
 
 	if (selected !== undefined) {
-		input.selectItemByData(selected);
+		input.selectItemByData(selected)
 	}
 
-	return createGenericControl('radio', input, { label, help });
+	return createGenericControl('radio', input, { label, help })
 }
 
 /**
@@ -411,24 +411,24 @@ export function createCopyTextControl({
 			textInput: { disabled },
 			help,
 			helpInline: Boolean(help),
-		});
+		})
 		field.on('copy', (successful) => {
-			copyCallback(successful, field.textInput);
-		});
+			copyCallback(successful, field.textInput)
+		})
 
-		return { type: 'copyText', field, input: field.textInput };
+		return { type: 'copyText', field, input: field.textInput }
 	}
 
 	// MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout instead
-	const input = new OO.ui.TextInputWidget({ value, disabled });
+	const input = new OO.ui.TextInputWidget({ value, disabled })
 	const button = new OO.ui.ButtonWidget({
 		label: cd.s('copy'),
 		icon: 'copy',
 		disabled,
-	});
+	})
 	button.on('click', () => {
-		copyCallback(copyText(input.getValue()), input);
-	});
+		copyCallback(copyText(input.getValue()), input)
+	})
 
 	return {
 		type: 'copyText',
@@ -439,7 +439,7 @@ export function createCopyTextControl({
 			helpInline: Boolean(help),
 		}),
 		input,
-	};
+	}
 }
 
 /**
@@ -468,7 +468,7 @@ export function createMulticheckboxControl({
 			classes,
 		}),
 		{ label }
-	);
+	)
 }
 
 /**
@@ -497,7 +497,7 @@ export function createMultitagControl({
 		}),
 		{ label, help },
 		{ uiToData },
-	);
+	)
 }
 
 /**
@@ -516,7 +516,7 @@ export function createButtonControl({
 		'button',
 		new OO.ui.ButtonWidget({ label: buttonLabel, flags }),
 		{ label, help }
-	);
+	)
 }
 
 /**
@@ -527,13 +527,13 @@ export function createButtonControl({
  * @returns {TitleControl}
  */
 export function createTitleControl(options) {
-	const { label, help, classes, ...titleInputOptions } = options;
+	const { label, help, classes, ...titleInputOptions } = options
 
 	return createGenericControl(
 		'title',
 		new mw.widgets.TitleInputWidget(titleInputOptions),
 		{ label, help, classes }
-	);
+	)
 }
 
 /**
@@ -563,13 +563,13 @@ export function createGenericControl(type, input, fieldOptions = {}, data = {}) 
 			helpInline: true,
 			...fieldOptions,
 		})
-	);
+	)
 
 	if (!fieldOptions.label) {
-		field.$element.addClass('cd-field-labelless');
+		field.$element.addClass('cd-field-labelless')
 	}
 
-	return { type, field, input, ...data };
+	return { type, field, input, ...data }
 }
 
 /**
@@ -594,10 +594,10 @@ export function createGenericControl(type, input, fieldOptions = {}, data = {}) 
  * @returns {T}
  */
 export function es6ClassToOoJsClass(TargetClass) {
-	const OriginClass = Object.getPrototypeOf(TargetClass);
+	const OriginClass = Object.getPrototypeOf(TargetClass)
 	if (OriginClass?.prototype) {
-		TargetClass.parent = TargetClass.super = OriginClass;
-		OO.initClass(OriginClass);
+		TargetClass.parent = TargetClass.super = OriginClass
+		OO.initClass(OriginClass)
 
 		// Move prototype properties
 		Object.getOwnPropertyNames(OriginClass.prototype)
@@ -609,19 +609,19 @@ export function es6ClassToOoJsClass(TargetClass) {
 					/** @type {PropertyDescriptor} */ (
 						Object.getOwnPropertyDescriptor(OriginClass.prototype, name)
 					)
-				);
-			});
+				)
+			})
 	}
 
 	// Move static properties
-	TargetClass.static = Object.create(OriginClass?.static || null);
+	TargetClass.static = Object.create(OriginClass?.static || null)
 	Object.keys(TargetClass)
 		.filter((key) => !['parent', 'super', 'static'].includes(key))
 		.forEach((key) => {
-			/** @type {AnyByKey} */ (TargetClass.static)[key] = TargetClass[key];
-		});
+			/** @type {AnyByKey} */ (TargetClass.static)[key] = TargetClass[key]
+		})
 
-	return TargetClass;
+	return TargetClass
 }
 
 /**
@@ -640,14 +640,14 @@ export function mixInClass(Base, Mixin) {
 		 * @param {any} args
 		 */
 		constructor(...args) {
-			super(...args);
+			super(...args)
 
 			if ('construct' in Mixin.prototype) {
-				Mixin.prototype.construct.call(this);
+				Mixin.prototype.construct.call(this)
 			}
 		}
 	}
-	OO.mixinClass(Class, Mixin);
+	OO.mixinClass(Class, Mixin)
 
 	// for...in in OO.mixinClass doesn't catch prototype properties declared with the `class` syntax
 	// (because they are not enumerable), so we set them manually. Alternatively, we could make them
@@ -659,10 +659,10 @@ export function mixInClass(Base, Mixin) {
 				Class.prototype,
 				name,
 				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
-			);
-		});
+			)
+		})
 
-	return /** @type {TBase & MixinType<TMixin>} */ (Class);
+	return /** @type {TBase & MixinType<TMixin>} */ (Class)
 }
 
 /**
@@ -686,9 +686,9 @@ export function mixInObject(obj, Mixin) {
 				obj,
 				name,
 				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
-			);
-		});
+			)
+		})
 
 	// Run the mixin's constructor
-	return /** @type {TBase & InstanceType<TMixin>} */ (Object.assign(obj, new Mixin()));
+	return /** @type {TBase & InstanceType<TMixin>} */ (Object.assign(obj, new Mixin()))
 }

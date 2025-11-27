@@ -1,21 +1,21 @@
-import fs from 'node:fs';
+import fs from 'node:fs'
 
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv);
+const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
 // node buildConfigs --test
 // npm run <command running this script> --test
-const testSuffix = (argv.test || process.env.npm_config_test) ? '.test' : '';
+const testSuffix = (argv.test || process.env.npm_config_test) ? '.test' : ''
 
 fs.readdirSync('./config/').forEach((filename) => {
-	const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || [];
-	if (!name || name === 'default') return;
+	const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || []
+	if (!name || name === 'default') return
 	let content = fs.readFileSync(`config/${filename}`, 'utf8')
 		.trim()
-		.replace(/[^]*?export default .*(?=\{\n(?: {2}|\t))/, '');
+		.replace(/[^]*?export default .*(?=\{\n(?: {2}|\t))/, '')
 
 	// When updating this code, update the code in misc/convenientDiscussions-generateBasicConfig.js
 	// as well.
@@ -72,14 +72,14 @@ if (!convenientDiscussions.isRunning) {
 }());
 
 // </nowiki>
-`;
-	fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true });
-	fs.writeFileSync(`dist/convenientDiscussions-config/${name}${testSuffix}.js`, content);
-});
+`
+	fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true })
+	fs.writeFileSync(`dist/convenientDiscussions-config/${name}${testSuffix}.js`, content)
+})
 
 fs.copyFileSync(
 	`misc/convenientDiscussions-generateBasicConfig.js`,
 	`dist/convenientDiscussions-generateBasicConfig.js`
-);
+)
 
-console.log('Project configs have been built successfully.');
+console.log('Project configs have been built successfully.')

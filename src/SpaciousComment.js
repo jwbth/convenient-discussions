@@ -1,14 +1,14 @@
-import Comment from './Comment';
-import CommentButton from './CommentButton';
-import CommentLayers from './CommentLayers';
-import LiveTimestamp from './LiveTimestamp';
-import PrototypeRegistry from './PrototypeRegistry';
-import SpaciousCommentActions from './SpaciousCommentActions';
-import SpaciousCommentLayers from './SpaciousCommentLayers';
-import cd from './loader/cd';
-import settings from './settings';
-import { isInline } from './shared/utils-general';
-import { createSvg } from './utils-window';
+import Comment from './Comment'
+import CommentButton from './CommentButton'
+import CommentLayers from './CommentLayers'
+import LiveTimestamp from './LiveTimestamp'
+import PrototypeRegistry from './PrototypeRegistry'
+import SpaciousCommentActions from './SpaciousCommentActions'
+import SpaciousCommentLayers from './SpaciousCommentLayers'
+import cd from './loader/cd'
+import settings from './settings'
+import { isInline } from './shared/utils-general'
+import { createSvg } from './utils-window'
 
 /**
  * @typedef {object[]} ReplaceSignatureWithHeaderReturn
@@ -30,7 +30,7 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	// @ts-expect-error: Narrowing parent type
-	layers;
+	layers
 
 	/**
 	 * Comment actions for spacious comments.
@@ -39,42 +39,42 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	// @ts-expect-error: Narrowing parent type
-	actions;
+	actions
 
 	/**
 	 * Header element for spacious comments.
 	 *
 	 * @type {HTMLElement}
 	 */
-	headerElement;
+	headerElement
 
 	/**
 	 * Author element within the header.
 	 *
 	 * @type {HTMLElement}
 	 */
-	authorElement;
+	authorElement
 
 	/**
 	 * Date element within the header.
 	 *
 	 * @type {HTMLElement}
 	 */
-	dateElement;
+	dateElement
 
 	/**
 	 * Comment header jQuery wrapper.
 	 *
 	 * @type {JQuery}
 	 */
-	$header;
+	$header
 
 	/**
 	 * Comment menu jQuery wrapper.
 	 *
 	 * @type {JQuery}
 	 */
-	$menu;
+	$menu
 
 	/**
 	 * Create the comment's underlay and overlay with contents for spacious comments.
@@ -85,12 +85,12 @@ class SpaciousComment extends Comment {
 	 */
 	createLayers() {
 		// Create spacious layers
-		this.layers = new SpaciousCommentLayers(this);
-		this.layers.create();
+		this.layers = new SpaciousCommentLayers(this)
+		this.layers.create()
 
 		// Create spacious actions
-		this.actions = new SpaciousCommentActions(this);
-		this.actions.create();
+		this.actions = new SpaciousCommentActions(this)
+		this.actions.create()
 
 		/**
 		 * An underlay and overlay have been created for a comment.
@@ -99,7 +99,7 @@ class SpaciousComment extends Comment {
 		 * @param {Comment} comment
 		 * @param {object} cd {@link convenientDiscussions} object.
 		 */
-		mw.hook('convenientDiscussions.commentLayersCreated').fire(this, cd);
+		mw.hook('convenientDiscussions.commentLayersCreated').fire(this, cd)
 	}
 
 	/**
@@ -110,14 +110,14 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	updateToggleChildThreadsButtonImpl() {
-		this.actions.toggleChildThreadsButton.element.innerHTML = '';
+		this.actions.toggleChildThreadsButton.element.innerHTML = ''
 		this.actions.toggleChildThreadsButton.element.append(
 			SpaciousComment.prototypes.get(
 				this.areChildThreadsCollapsed()
 					? 'expandChildThreadsButtonSvg'
 					: 'collapseChildThreadsButtonSvg'
 			)
-		);
+		)
 	}
 
 	/**
@@ -130,13 +130,13 @@ class SpaciousComment extends Comment {
 	 */
 	updateMainTimestampElement(timestamp, title) {
 		if (this.extraSignatures.length) {
-			this.timestampElement.textContent = timestamp;
-			this.timestampElement.title = title;
+			this.timestampElement.textContent = timestamp
+			this.timestampElement.title = title
 			new LiveTimestamp(
 				this.timestampElement,
 				/** @type {Date} */(this.date),
 				!this.hideTimezone
-			).init();
+			).init()
 		}
 	}
 
@@ -154,7 +154,7 @@ class SpaciousComment extends Comment {
 			noteText: cd.s(stringName + '-short'),
 			refreshLinkSeparator: cd.sParse('dot-separator'),
 			diffLinkSeparator: cd.sParse('dot-separator'),
-		};
+		}
 	}
 
 	/**
@@ -165,8 +165,8 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	initializeCommentStructureImpl() {
-		this.replaceSignatureWithHeader();
-		this.addMenu();
+		this.replaceSignatureWithHeader()
+		this.addMenu()
 	}
 
 	/**
@@ -176,70 +176,70 @@ class SpaciousComment extends Comment {
 	 * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
 	 */
 	replaceSignatureWithHeader() {
-		const pagesToCheckExistence = [];
+		const pagesToCheckExistence = []
 
-		const headerWrapper = SpaciousComment.prototypes.get('headerWrapperElement');
-		this.headerElement = /** @type {HTMLElement} */ (headerWrapper.firstChild);
+		const headerWrapper = SpaciousComment.prototypes.get('headerWrapperElement')
+		this.headerElement = /** @type {HTMLElement} */ (headerWrapper.firstChild)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const authorWrapper = /** @type {HTMLElement} */ (this.headerElement.firstChild);
-		const userInfoCardButton = /** @type {HTMLAnchorElement} */ (authorWrapper.firstChild);
-		const authorLink = /** @type {HTMLAnchorElement} */ (userInfoCardButton.nextElementSibling);
-		const authorLinksWrapper = /** @type {HTMLElement} */ (authorLink.nextElementSibling);
-		const bdiElement = /** @type {HTMLElement} */ (authorLink.firstChild);
-		const authorTalkLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.firstElementChild);
-		let contribsLink;
+		const authorWrapper = /** @type {HTMLElement} */ (this.headerElement.firstChild)
+		const userInfoCardButton = /** @type {HTMLAnchorElement} */ (authorWrapper.firstChild)
+		const authorLink = /** @type {HTMLAnchorElement} */ (userInfoCardButton.nextElementSibling)
+		const authorLinksWrapper = /** @type {HTMLElement} */ (authorLink.nextElementSibling)
+		const bdiElement = /** @type {HTMLElement} */ (authorLink.firstChild)
+		const authorTalkLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.firstElementChild)
+		let contribsLink
 		if (this.showContribsLink) {
-			contribsLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.lastElementChild);
+			contribsLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.lastElementChild)
 			if (!this.author.isRegistered()) {
-				/** @type {HTMLElement} */ (contribsLink.previousSibling).remove();
-				contribsLink.remove();
+				/** @type {HTMLElement} */ (contribsLink.previousSibling).remove()
+				contribsLink.remove()
 			}
 		}
 
 		if (mw.user.options.get('checkuser-userinfocard-enable') && this.author.isRegistered()) {
-			userInfoCardButton.dataset.username = this.author.getName();
+			userInfoCardButton.dataset.username = this.author.getName()
 			if (this.author.isTemporary()) {
-				const span = /** @type {HTMLElement} */ (userInfoCardButton.firstChild);
-				span.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar');
-				span.classList.add('ext-checkuser-userinfocard-button__icon--userTemporary');
+				const span = /** @type {HTMLElement} */ (userInfoCardButton.firstChild)
+				span.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
+				span.classList.add('ext-checkuser-userinfocard-button__icon--userTemporary')
 			}
 		} else {
-			userInfoCardButton.remove();
+			userInfoCardButton.remove()
 		}
 
 		if (this.authorLink) {
 			// Move the existing author link to the header.
 
 			if (this.extraSignatures.length) {
-				this.authorLink = /** @type {HTMLAnchorElement} */ (this.authorLink.cloneNode(true));
+				this.authorLink = /** @type {HTMLAnchorElement} */ (this.authorLink.cloneNode(true))
 			}
 
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse?.(
 				this.authorLink,
 				authorLink
-			);
-			authorLink.replaceWith(this.authorLink);
-			this.authorLink.classList.add('cd-comment-author');
-			this.authorLink.innerHTML = '';
-			this.authorLink.append(bdiElement);
+			)
+			authorLink.replaceWith(this.authorLink)
+			this.authorLink.classList.add('cd-comment-author')
+			this.authorLink.innerHTML = ''
+			this.authorLink.append(bdiElement)
 
-			cd.config.afterAuthorLinkParse?.(this.authorLink, beforeAuthorLinkParseReturn);
+			cd.config.afterAuthorLinkParse?.(this.authorLink, beforeAuthorLinkParseReturn)
 		} else {
 			// Use the bootstrap author link.
-			this.authorLink = authorLink;
-			let pageName;
+			this.authorLink = authorLink
+			let pageName
 			if (this.author.isRegistered()) {
-				pageName = 'User:' + this.author.getName();
+				pageName = 'User:' + this.author.getName()
 				pagesToCheckExistence.push({
 					pageName,
 					link: this.authorLink,
-				});
+				})
 			} else {
-				pageName = `${cd.g.contribsPages[0]}/${this.author.getName()}`;
+				pageName = `${cd.g.contribsPages[0]}/${this.author.getName()}`
 			}
-			this.authorLink.title = pageName;
-			this.authorLink.href = mw.util.getUrl(pageName);
+			this.authorLink.title = pageName
+			this.authorLink.href = mw.util.getUrl(pageName)
 		}
 
 		if (this.authorTalkLink) {
@@ -247,28 +247,28 @@ class SpaciousComment extends Comment {
 			if (this.extraSignatures.length) {
 				this.authorTalkLink = /** @type {HTMLAnchorElement} */ (
 					this.authorTalkLink.cloneNode(true)
-				);
+				)
 			}
-			authorTalkLink.replaceWith(this.authorTalkLink);
-			this.authorTalkLink.textContent = cd.s('comment-author-talk');
+			authorTalkLink.replaceWith(this.authorTalkLink)
+			this.authorTalkLink.textContent = cd.s('comment-author-talk')
 		} else {
 			// Use the bootstrap author talk link.
-			this.authorTalkLink = authorTalkLink;
-			const pageName = 'User talk:' + this.author.getName();
+			this.authorTalkLink = authorTalkLink
+			const pageName = 'User talk:' + this.author.getName()
 			pagesToCheckExistence.push({
 				pageName,
 				link: this.authorTalkLink,
-			});
-			this.authorTalkLink.title = pageName;
-			this.authorTalkLink.href = mw.util.getUrl(pageName);
+			})
+			this.authorTalkLink.title = pageName
+			this.authorTalkLink.href = mw.util.getUrl(pageName)
 		}
 
-		bdiElement.textContent = this.author.getName();
+		bdiElement.textContent = this.author.getName()
 
 		if (contribsLink && this.author.isRegistered()) {
-			const pageName = `${cd.g.contribsPages[0]}/${this.author.getName()}`;
-			contribsLink.title = pageName;
-			contribsLink.href = mw.util.getUrl(pageName);
+			const pageName = `${cd.g.contribsPages[0]}/${this.author.getName()}`
+			contribsLink.title = pageName
+			contribsLink.href = mw.util.getUrl(pageName)
 		}
 
 		if (this.timestamp) {
@@ -284,27 +284,27 @@ class SpaciousComment extends Comment {
 					classes: ['cd-comment-button-labeled', 'cd-comment-timestamp', 'mw-selflink-fragment'],
 					action: this.copyLink,
 					href: this.dtId && '#' + this.dtId,
-				});
+				})
 
-				this.headerElement.append(this.actions.copyLinkButton.element);
-				this.timestampElement = this.actions.copyLinkButton.labelElement;
+				this.headerElement.append(this.actions.copyLinkButton.element)
+				this.timestampElement = this.actions.copyLinkButton.labelElement
 			}
 			if (this.date) {
-				new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone).init();
+				new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone).init()
 			}
 		}
 
-		this.$header = /** @type {JQuery} */ ($(this.headerElement));
+		this.$header = /** @type {JQuery} */ ($(this.headerElement))
 
-		this.rewrapHighlightables();
-		this.highlightables[0].insertBefore(headerWrapper, this.highlightables[0].firstChild);
+		this.rewrapHighlightables()
+		this.highlightables[0].insertBefore(headerWrapper, this.highlightables[0].firstChild)
 
 		if (!this.extraSignatures.length) {
-			this.cleanUpSignature();
-			this.signatureElement.remove();
+			this.cleanUpSignature()
+			this.signatureElement.remove()
 		}
 
-		return pagesToCheckExistence;
+		return pagesToCheckExistence
 	}
 
 	/**
@@ -313,45 +313,45 @@ class SpaciousComment extends Comment {
 	 * @protected
 	 */
 	cleanUpSignature() {
-		let previousNode = this.signatureElement.previousSibling;
+		let previousNode = this.signatureElement.previousSibling
 
 		// Cases like https://ru.wikipedia.org/?diff=117350706
 		if (!previousNode) {
-			const parentElement = this.signatureElement.parentElement;
-			const parentPreviousNode = parentElement?.previousSibling;
+			const parentElement = this.signatureElement.parentElement
+			const parentPreviousNode = parentElement?.previousSibling
 			if (parentPreviousNode && isInline(parentPreviousNode, true)) {
-				const parentPreviousElementNode = parentElement.previousElementSibling;
+				const parentPreviousElementNode = parentElement.previousElementSibling
 
 				// Make sure we don't erase some blockquote with little content.
 				if (!parentPreviousElementNode || isInline(parentPreviousElementNode)) {
-					previousNode = parentPreviousNode;
+					previousNode = parentPreviousNode
 				}
 			}
 		}
 
-		const previousPreviousNode = previousNode?.previousSibling;
+		const previousPreviousNode = previousNode?.previousSibling
 
 		// Use this to tell the cases where a styled element should be kept
 		// https://commons.wikimedia.org/?diff=850489596 from cases where it should be removed
 		// https://en.wikipedia.org/?diff=1229675944
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const isPpnSpaced = previousNode?.textContent.startsWith(' ');
+		const isPpnSpaced = previousNode?.textContent.startsWith(' ')
 
-		this.processPossibleSignatureNode(previousNode);
+		this.processPossibleSignatureNode(previousNode)
 		if (
 			previousNode &&
 			previousPreviousNode &&
 			(!previousNode.parentNode || !previousNode.textContent.trim())
 		) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
+			const previousPreviousPreviousNode = previousPreviousNode.previousSibling
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const isPppnSpaced = previousPreviousNode.textContent.startsWith(' ');
-			this.processPossibleSignatureNode(previousPreviousNode, isPpnSpaced);
+			const isPppnSpaced = previousPreviousNode.textContent.startsWith(' ')
+			this.processPossibleSignatureNode(previousPreviousNode, isPpnSpaced)
 
 			// Rare cases like https://en.wikipedia.org/?diff=1022471527
 			if (!previousPreviousNode.parentNode) {
-				this.processPossibleSignatureNode(previousPreviousPreviousNode, isPppnSpaced);
+				this.processPossibleSignatureNode(previousPreviousPreviousNode, isPppnSpaced)
 			}
 		}
 	}
@@ -364,7 +364,7 @@ class SpaciousComment extends Comment {
 	 * @private
 	 */
 	processPossibleSignatureNode(node, isSpaced = false) {
-		if (!node) return;
+		if (!node) return
 
 		// Remove text at the end of the element that looks like a part of the signature.
 		if (
@@ -373,7 +373,7 @@ class SpaciousComment extends Comment {
 		) {
 			node.textContent = node.textContent
 				.replace(cd.config.signaturePrefixRegexp, '')
-				.replace(cd.config.signaturePrefixRegexp, '');
+				.replace(cd.config.signaturePrefixRegexp, '')
 		}
 
 		// Remove the entire element.
@@ -402,7 +402,7 @@ class SpaciousComment extends Comment {
 				)
 			)
 		) {
-			node.remove();
+			node.remove()
 		}
 	}
 
@@ -415,7 +415,7 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	addChangeNoteImpl($changeNote) {
-		this.$header.append($changeNote);
+		this.$header.append($changeNote)
 	}
 
 	/**
@@ -430,7 +430,7 @@ class SpaciousComment extends Comment {
 		return {
 			startNode: this.headerElement,
 			startOffset: this.headerElement.childNodes.length,
-		};
+		}
 	}
 
 	/**
@@ -445,7 +445,7 @@ class SpaciousComment extends Comment {
 		return {
 			endNode: this.menuElement || this.headerElement,
 			endOffset: 0,
-		};
+		}
 	}
 
 	/**
@@ -457,7 +457,7 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	getSelectionEndBoundary() {
-		return this.menuElement || this.headerElement;
+		return this.menuElement || this.headerElement
 	}
 
 	/**
@@ -465,26 +465,26 @@ class SpaciousComment extends Comment {
 	 * with buttons. Used when comment reformatting is enabled.
 	 */
 	addMenu() {
-		const menuElement = document.createElement('div');
-		menuElement.className = 'cd-comment-menu';
-		this.menuElement = menuElement;
-		this.$menu = $(menuElement);
+		const menuElement = document.createElement('div')
+		menuElement.className = 'cd-comment-menu'
+		this.menuElement = menuElement
+		this.$menu = $(menuElement)
 
-		this.actions?.addReplyButton();
-		this.actions?.addEditButton();
-		this.actions?.addThankButton();
-		this.actions?.addGoToParentButton();
+		this.actions?.addReplyButton()
+		this.actions?.addEditButton()
+		this.actions?.addThankButton()
+		this.actions?.addGoToParentButton()
 
 		// The menu may be re-added (after a comment's content is updated). We need to restore
 		// something.
-		this.actions?.maybeAddGoToChildButton();
+		this.actions?.maybeAddGoToChildButton()
 
 		// We need a wrapper to ensure correct positioning in LTR-in-RTL situations and vice versa.
-		const menuWrapper = document.createElement('div');
-		menuWrapper.className = 'cd-comment-menu-wrapper';
-		menuWrapper.append(this.menuElement);
+		const menuWrapper = document.createElement('div')
+		menuWrapper.className = 'cd-comment-menu-wrapper'
+		menuWrapper.append(this.menuElement)
 
-		this.highlightables[this.highlightables.length - 1].append(menuWrapper);
+		this.highlightables[this.highlightables.length - 1].append(menuWrapper)
 	}
 
 	/**
@@ -496,7 +496,7 @@ class SpaciousComment extends Comment {
 	 *   overlay: HTMLElement
 	 * }>}
 	 */
-	static prototypes = new PrototypeRegistry();
+	static prototypes = new PrototypeRegistry()
 
 	/**
 	 * Initialize prototypes for spacious comments.
@@ -504,66 +504,66 @@ class SpaciousComment extends Comment {
 	 */
 	static initPrototypes() {
 		// Initialize shared layer prototypes (underlay, overlay)
-		CommentLayers.initPrototypes();
+		CommentLayers.initPrototypes()
 
 		// Create header wrapper element
-		const headerElement = document.createElement('div');
-		headerElement.className = 'cd-comment-header';
+		const headerElement = document.createElement('div')
+		headerElement.className = 'cd-comment-header'
 
-		const authorWrapper = document.createElement('div');
-		authorWrapper.className = 'cd-comment-author-wrapper';
-		headerElement.append(authorWrapper);
+		const authorWrapper = document.createElement('div')
+		authorWrapper.className = 'cd-comment-author-wrapper'
+		headerElement.append(authorWrapper)
 
 		// Add user info card button
-		authorWrapper.append(Comment.createUserInfoCardButton());
+		authorWrapper.append(Comment.createUserInfoCardButton())
 
-		const authorLink = document.createElement('a');
-		authorLink.className = 'cd-comment-author mw-userlink';
-		authorWrapper.append(authorLink);
+		const authorLink = document.createElement('a')
+		authorLink.className = 'cd-comment-author mw-userlink'
+		authorWrapper.append(authorLink)
 
-		const bdiElement = document.createElement('bdi');
-		authorLink.append(bdiElement);
+		const bdiElement = document.createElement('bdi')
+		authorLink.append(bdiElement)
 
-		const authorLinksWrapper = document.createElement('span');
-		authorLinksWrapper.className = 'cd-comment-author-links';
+		const authorLinksWrapper = document.createElement('span')
+		authorLinksWrapper.className = 'cd-comment-author-links'
 
-		const authorTalkLink = document.createElement('a');
-		authorTalkLink.textContent = cd.s('comment-author-talk');
-		authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
+		const authorTalkLink = document.createElement('a')
+		authorTalkLink.textContent = cd.s('comment-author-talk')
+		authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink)
 
 		if (settings.get('showContribsLink')) {
-			const separator = document.createElement('span');
-			separator.innerHTML = cd.sParse('dot-separator');
+			const separator = document.createElement('span')
+			separator.innerHTML = cd.sParse('dot-separator')
 
-			const contribsLink = document.createElement('a');
-			contribsLink.textContent = cd.s('comment-author-contribs');
+			const contribsLink = document.createElement('a')
+			contribsLink.textContent = cd.s('comment-author-contribs')
 
-			authorLinksWrapper.append(separator, contribsLink);
+			authorLinksWrapper.append(separator, contribsLink)
 		}
 
-		authorLinksWrapper.append(cd.mws('parentheses-end'));
-		authorWrapper.append(' ', authorLinksWrapper);
+		authorLinksWrapper.append(cd.mws('parentheses-end'))
+		authorWrapper.append(' ', authorLinksWrapper)
 
 		// We need a wrapper to ensure correct positioning in LTR-in-RTL situations and vice versa.
-		const headerWrapper = document.createElement('div');
-		headerWrapper.className = 'cd-comment-header-wrapper';
-		headerWrapper.append(headerElement);
+		const headerWrapper = document.createElement('div')
+		headerWrapper.className = 'cd-comment-header-wrapper'
+		headerWrapper.append(headerElement)
 
-		this.prototypes.add('headerWrapperElement', headerWrapper);
+		this.prototypes.add('headerWrapperElement', headerWrapper)
 
 		// Create SVG icon prototypes for toggle child threads button
 		this.prototypes.add(
 			'collapseChildThreadsButtonSvg',
 			createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0]
-		);
+		)
 		this.prototypes.add(
 			'expandChildThreadsButtonSvg',
 			createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0]
-		);
+		)
 
 		// Initialize spacious-specific action prototypes
-		SpaciousCommentActions.initPrototypes();
+		SpaciousCommentActions.initPrototypes()
 	}
 }
 
-export default SpaciousComment;
+export default SpaciousComment

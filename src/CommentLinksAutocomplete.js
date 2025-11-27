@@ -1,7 +1,7 @@
-import BaseAutocomplete from './BaseAutocomplete';
-import cd from './loader/cd';
-import sectionManager from './sectionManager';
-import { underlinesToSpaces } from './shared/utils-general';
+import BaseAutocomplete from './BaseAutocomplete'
+import cd from './loader/cd'
+import sectionManager from './sectionManager'
+import { underlinesToSpaces } from './shared/utils-general'
 
 /**
  * @typedef {object} CommentLinkEntry
@@ -32,7 +32,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 *   Configuration object
 	 */
 	constructor(config = {}) {
-		super(config);
+		super(config)
 	}
 
 	/**
@@ -42,7 +42,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getLabel() {
-		return cd.s('cf-autocomplete-commentlinks-label');
+		return cd.s('cf-autocomplete-commentlinks-label')
 	}
 
 	/**
@@ -52,7 +52,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 * @returns {string}
 	 */
 	getTrigger() {
-		return '[[#';
+		return '[[#'
 	}
 
 	/**
@@ -67,13 +67,13 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 		// Use selected text if available, otherwise use the default content
 		const defaultContent = 'timestamp' in entry
 			? cd.s('cf-autocomplete-commentlinks-text', entry.authorName, entry.timestamp)
-			: /** @type {string} */ (entry.headline);
+			: /** @type {string} */ (entry.headline)
 
 		return {
 			start: `[[#${entry.urlFragment}|`,
 			end: ']]',
 			content: selectedText || defaultContent,
-		};
+		}
 	}
 
 	/**
@@ -86,7 +86,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 */
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async makeApiRequest(_text) {
-		return [];
+		return []
 	}
 
 	/**
@@ -97,7 +97,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 * @protected
 	 */
 	isLocalOnly() {
-		return true;
+		return true
 	}
 
 	/**
@@ -109,7 +109,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 */
 	validateInput(text) {
 		// Comment links autocomplete rejects input with forbidden characters
-		return !(/[#<>[\]|{}]/.test(text));
+		return !(/[#<>[\]|{}]/.test(text))
 	}
 
 	/**
@@ -120,7 +120,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 * @returns {string} The display label
 	 */
 	getLabelFromEntry(entry) {
-		return entry.label;
+		return entry.label
 	}
 
 	/**
@@ -132,13 +132,13 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	getCollectionProperties() {
 		return {
 			keepAsEnd: /^\]\]/,
-		};
+		}
 	}
 
 	/**
 	 * @override
 	 */
-	defaultLazy = () => this.generateCommentLinksData();
+	defaultLazy = () => this.generateCommentLinksData()
 
 	/**
 	 * Generate comment links data from comments and sections.
@@ -147,41 +147,41 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	generateCommentLinksData() {
-		const comments = /** @type {import('./Comment').default[]} */ (this.data.comments || []);
+		const comments = /** @type {import('./Comment').default[]} */ (this.data.comments || [])
 
 		// Process comments into comment link items
 		const commentItems = comments.reduce((acc, comment) => {
-			const urlFragment = comment.getUrlFragment();
+			const urlFragment = comment.getUrlFragment()
 			if (!urlFragment) {
-				return acc;
+				return acc
 			}
 
-			const authorName = comment.author.getName();
-			const timestamp = comment.timestamp;
+			const authorName = comment.author.getName()
+			const timestamp = comment.timestamp
 
 			// Generate comment snippet
-			let snippet;
-			const snippetMaxLength = 80;
+			let snippet
+			const snippetMaxLength = 80
 			if (comment.getText().length > snippetMaxLength) {
-				snippet = comment.getText().slice(0, snippetMaxLength);
+				snippet = comment.getText().slice(0, snippetMaxLength)
 				const spacePos = snippet.lastIndexOf(
 					cd.mws('word-separator', { language: 'content' })
-				);
+				)
 				if (spacePos !== -1) {
-					snippet = snippet.slice(0, spacePos);
+					snippet = snippet.slice(0, spacePos)
 					if (/[.…,;!?:-—–]/.test(snippet[snippet.length - 1])) {
-						snippet += ' ';
+						snippet += ' '
 					}
-					snippet += cd.s('ellipsis');
+					snippet += cd.s('ellipsis')
 				}
 			} else {
-				snippet = comment.getText();
+				snippet = comment.getText()
 			}
 
 			// Build display key
-			let authorTimestamp = authorName;
+			let authorTimestamp = authorName
 			if (timestamp) {
-				authorTimestamp += cd.mws('comma-separator', { language: 'content' }) + timestamp;
+				authorTimestamp += cd.mws('comma-separator', { language: 'content' }) + timestamp
 			}
 
 			acc.push({
@@ -189,10 +189,10 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 				urlFragment,
 				authorName,
 				timestamp,
-			});
+			})
 
-			return acc;
-		}, /** @type {CommentLinkEntry[]} */ ([]));
+			return acc
+		}, /** @type {CommentLinkEntry[]} */ ([]))
 
 		// Process sections into section link entries
 		const sectionItems = sectionManager.getAll().reduce((acc, section) => {
@@ -200,13 +200,13 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 				label: underlinesToSpaces(section.id),
 				urlFragment: underlinesToSpaces(section.id),
 				headline: section.headline,
-			});
+			})
 
-			return acc;
-		}, /** @type {CommentLinkEntry[]} */ ([]));
+			return acc
+		}, /** @type {CommentLinkEntry[]} */ ([]))
 
-		return commentItems.concat(sectionItems);
+		return commentItems.concat(sectionItems)
 	}
 }
 
-export default CommentLinksAutocomplete;
+export default CommentLinksAutocomplete

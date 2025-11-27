@@ -24,4 +24,4 @@ module.exports = {
 		"search": true,
 		"collapse": true,
 	},
-};
+}

@@ -24,10 +24,10 @@ export default class CommentFormOperation {
 	 * @param {CommentFormOperationOptions} options
 	 */
 	constructor(registry, type, options) {
-		this.registry = registry;
-		this.commentForm = registry.commentForm;
-		this.type = type;
-		this.options = options;
+		this.registry = registry
+		this.commentForm = registry.commentForm
+		this.type = type
+		this.options = options
 	}
 
 	/**
@@ -36,18 +36,18 @@ export default class CommentFormOperation {
 	 * @param {boolean} clearMessages Whether to clear the messages above the comment form.
 	 */
 	open(clearMessages) {
-		this.date = new Date();
-		this.closed = false;
-		this.delayed = false;
+		this.date = new Date()
+		this.closed = false
+		this.delayed = false
 
 		if (this.type !== 'preview' || !this.options.isAuto) {
 			if (clearMessages && !this.commentForm.captchaInput) {
-				this.commentForm.$messageArea.empty();
+				this.commentForm.$messageArea.empty()
 			}
 			this.commentForm.pushPending(
 				['load', 'submit'].includes(this.type),
 				this.options.affectsHeadline
-			);
+			)
 		}
 	}
 
@@ -57,31 +57,31 @@ export default class CommentFormOperation {
 	 * finished (either successfully or not).
 	 */
 	close() {
-		if (!this.isOpen() || this.isClosed()) return;
+		if (!this.isOpen() || this.isClosed()) return
 
 		if (!(this.type === 'preview' && this.options.isAuto)) {
 			this.commentForm.popPending(
 				['load', 'submit'].includes(this.type),
 				this.options.affectsHeadline
-			);
+			)
 		}
 
-		this.registry.remove(this);
-		this.closed = true;
+		this.registry.remove(this)
+		this.closed = true
 	}
 
 	/**
 	 * Mark the operation as delayed.
 	 */
 	delay() {
-		this.delayed = true;
+		this.delayed = true
 	}
 
 	/**
 	 * Unmark the operation as delayed.
 	 */
 	undelay() {
-		this.delayed = false;
+		this.delayed = false
 	}
 
 	/**
@@ -104,11 +104,11 @@ export default class CommentFormOperation {
 	 */
 	maybeClose() {
 		if (!this.isOpen()) {
-			return false;
+			return false
 		}
 
 		if (this.isClosed()) {
-			return true;
+			return true
 		}
 
 		if (
@@ -122,12 +122,12 @@ export default class CommentFormOperation {
 				!op.isDelayed()
 			).length
 		) {
-			this.close();
+			this.close()
 
-			return true;
+			return true
 		}
 
-		return false;
+		return false
 	}
 
 	/**
@@ -136,7 +136,7 @@ export default class CommentFormOperation {
 	 * @returns {CommentFormOperationType}
 	 */
 	getType() {
-		return this.type;
+		return this.type
 	}
 
 	/**
@@ -147,7 +147,7 @@ export default class CommentFormOperation {
 	 * @returns {CommentFormOperationOptions[T]}
 	 */
 	getOptionValue(name) {
-		return this.options[name];
+		return this.options[name]
 	}
 
 	/**
@@ -156,7 +156,7 @@ export default class CommentFormOperation {
 	 * @returns {Date | undefined}
 	 */
 	getDate() {
-		return this.date;
+		return this.date
 	}
 
 	/**
@@ -165,7 +165,7 @@ export default class CommentFormOperation {
 	 * @returns {this is { date: Date }}
 	 */
 	isOpen() {
-		return Boolean(this.date);
+		return Boolean(this.date)
 	}
 
 	/**
@@ -174,7 +174,7 @@ export default class CommentFormOperation {
 	 * @returns {this is { closed: true }}
 	 */
 	isClosed() {
-		return Boolean(this.closed);
+		return Boolean(this.closed)
 	}
 
 	/**
@@ -183,6 +183,6 @@ export default class CommentFormOperation {
 	 * @returns {this is { delayed: true }}
 	 */
 	isDelayed() {
-		return Boolean(this.delayed);
+		return Boolean(this.delayed)
 	}
 }

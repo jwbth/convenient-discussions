@@ -1,12 +1,12 @@
-import EventEmitter from './EventEmitter';
-import SettingsDialog from './SettingsDialog';
-import TextMasker from './TextMasker';
-import cd from './loader/cd';
-import pageRegistry from './pageRegistry';
-import { areObjectsEqual, defined, definedAndNotNull, subtractDaysFromNow, typedKeysOf, ucFirst } from './shared/utils-general';
-import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
-import { showConfirmDialog } from './utils-oojs';
-import { createSvg, formatDateImproved, formatDateNative, formatDateRelative, getFooter, wrapHtml } from './utils-window';
+import EventEmitter from './EventEmitter'
+import SettingsDialog from './SettingsDialog'
+import TextMasker from './TextMasker'
+import cd from './loader/cd'
+import pageRegistry from './pageRegistry'
+import { areObjectsEqual, defined, definedAndNotNull, subtractDaysFromNow, typedKeysOf, ucFirst } from './shared/utils-general'
+import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
+import { showConfirmDialog } from './utils-oojs'
+import { createSvg, formatDateImproved, formatDateNative, formatDateRelative, getFooter, wrapHtml } from './utils-window'
 
 /**
  * @typedef {object} SettingsValues
@@ -93,13 +93,13 @@ class Settings extends EventEmitter {
 	 * @type {SettingsValues}
 	 * @private
 	 */
-	values = /** @type {SettingsValues} */ ({});
+	values = /** @type {SettingsValues} */ ({})
 
 	/**
 	 * @type {Promise<void> | undefined}
 	 * @private
 	 */
-	initPromise;
+	initPromise
 
 	/**
 	 * @typedef {object} Scheme
@@ -241,7 +241,7 @@ class Settings extends EventEmitter {
 		 * @type {UiPageData[]}
 		 */
 		ui: [],
-	};
+	}
 
 	/**
 	 * Set the default settings to the settings scheme object.
@@ -294,7 +294,7 @@ class Settings extends EventEmitter {
 			// alternative to keep track of discussions.
 			'watchOnReply': !cd.g.isDtInstalled,
 			'useCodeMirror': cd.g.isCodeMirror6Installed && false,
-		};
+		}
 	}
 
 	/**
@@ -309,21 +309,21 @@ class Settings extends EventEmitter {
 				cd.config.outdentTemplates.length &&
 				pageRegistry.get(`Template:${cd.config.outdentTemplates[0]}`)?.getUrl()
 			) ||
-			'https://en.wikipedia.org/wiki/Template:Outdent';
+			'https://en.wikipedia.org/wiki/Template:Outdent'
 
-		const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43);
-		const threeDaysAgo = new Date(subtractDaysFromNow(3.3));
+		const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43)
+		const threeDaysAgo = new Date(subtractDaysFromNow(3.3))
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
+		const exampleDefault = formatDateNative(fortyThreeMinutesAgo)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
+		const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const exampleImproved2 = formatDateImproved(threeDaysAgo);
+		const exampleImproved2 = formatDateImproved(threeDaysAgo)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
+		const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const exampleRelative2 = formatDateRelative(threeDaysAgo);
+		const exampleRelative2 = formatDateRelative(threeDaysAgo)
 
 		this.scheme.ui = [
 			{
@@ -500,14 +500,14 @@ class Settings extends EventEmitter {
 						uiToData: (/** @type {string[]} */ value) =>
 							value
 								.map((v) => {
-									const textMasker = new TextMasker(v).mask(/\\[+;\\]/g);
-									let [, snippet, label] = textMasker.getText().match(/^(.*?)(?:;(.+))?$/) || [];
-									if (!snippet.replace(/^ +$/, '')) return;
+									const textMasker = new TextMasker(v).mask(/\\[+;\\]/g)
+									let [, snippet, label] = textMasker.getText().match(/^(.*?)(?:;(.+))?$/) || []
+									if (!snippet.replace(/^ +$/, '')) return
 
-									snippet = textMasker.unmaskText(snippet);
-									label &&= textMasker.unmaskText(label);
+									snippet = textMasker.unmaskText(snippet)
+									label &&= textMasker.unmaskText(label)
 
-									return [snippet, label].filter(defined);
+									return [snippet, label].filter(defined)
 								})
 								.filter(defined),
 					},
@@ -634,7 +634,7 @@ class Settings extends EventEmitter {
 					},
 				],
 			},
-		];
+		]
 	}
 
 	/**
@@ -643,9 +643,9 @@ class Settings extends EventEmitter {
 	 * @returns {Promise<void>}
 	 */
 	getInitPromise() {
-		this.initPromise ??= this.init();
+		this.initPromise ??= this.init()
 
-		return this.initPromise;
+		return this.initPromise
 	}
 
 	/**
@@ -656,17 +656,17 @@ class Settings extends EventEmitter {
 	async init() {
 		// We fill the settings after the modules are loaded so that the settings set via common.js
 		// have less chance not to load.
-		this.initDefaults();
+		this.initDefaults()
 
 		const options = {
 			[cd.g.settingsOptionName]: mw.user.options.get(cd.g.settingsOptionName),
 			[cd.g.localSettingsOptionName]: mw.user.options.get(cd.g.localSettingsOptionName),
-		};
+		}
 
 		const remoteSettings = await this.load({
 			options,
 			omitLocal: true,
-		});
+		})
 
 		this.set({
 			...this.scheme.default,
@@ -676,40 +676,40 @@ class Settings extends EventEmitter {
 			...this.getSettingPropertiesOfObject(window, 'cd'),
 
 			...remoteSettings,
-		});
+		})
 
 		// If the user has never changed the insert buttons configuration, it should change with the
 		// default configuration change.
 		if (!this.values['insertButtons-altered'] &&
 			JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)) {
-			this.values.insertButtons = cd.config.defaultInsertButtons;
+			this.values.insertButtons = cd.config.defaultInsertButtons
 		}
 
 		// Migrate users to the new schema where 0 doesn't mean autocollapse for collapseThreadsLevel
 		// and outdentLevel. Instead, you need to check a box.
 		if (remoteSettings.outdent === undefined) {
 			if (this.values.outdentLevel === 0) {
-				this.values.outdentLevel = this.scheme.default.outdentLevel;
-				this.values.outdent = false;
+				this.values.outdentLevel = this.scheme.default.outdentLevel
+				this.values.outdent = false
 			}
 			if (this.values.collapseThreadsLevel === 0) {
-				this.values.collapseThreadsLevel = this.scheme.default.collapseThreadsLevel;
-				this.values.collapseThreads = false;
+				this.values.collapseThreadsLevel = this.scheme.default.collapseThreadsLevel
+				this.values.collapseThreads = false
 			}
 		}
 
 		// Migrate users from the old commentDisplay boolean setting to the new commentDisplay string
 		// union setting
 		if (/** @type {any} */(remoteSettings).reformatComments === true) {
-			this.values.commentDisplay = 'spacious';
+			this.values.commentDisplay = 'spacious'
 		} else if (/** @type {any} */(remoteSettings).reformatComments === false) {
-			this.values.commentDisplay = 'compact';
+			this.values.commentDisplay = 'compact'
 		}
 
 		if (!areObjectsEqual(this.values, remoteSettings)) {
 			this.save().catch((/** @type {unknown} */ error) => {
-				console.warn('Couldn\'t save the settings to the server.', error);
-			});
+				console.warn('Couldn\'t save the settings to the server.', error)
+			})
 		}
 
 		// Undocumented settings and settings in variables `cd...` and `cdLocal...` override all other
@@ -718,7 +718,7 @@ class Settings extends EventEmitter {
 			...this.scheme.undocumented,
 			...this.getSettingPropertiesOfObject(window, 'cd', this.scheme.undocumented),
 			...this.getLocalOverrides(),
-		});
+		})
 	}
 
 	/**
@@ -740,28 +740,28 @@ class Settings extends EventEmitter {
 		reuse = false,
 	} = {}) {
 		if (!options?.[cd.g.settingsOptionName]) {
-			({ options } = await getUserInfo(reuse));
+			({ options } = await getUserInfo(reuse))
 		}
 
-		let globalSettings;
+		let globalSettings
 		try {
-			globalSettings = JSON.parse(options[cd.g.settingsOptionName]) || {};
+			globalSettings = JSON.parse(options[cd.g.settingsOptionName]) || {}
 		} catch {
-			globalSettings = {};
+			globalSettings = {}
 		}
 
-		let localSettings;
+		let localSettings
 		try {
-			localSettings = JSON.parse(options[cd.g.localSettingsOptionName]) || {};
+			localSettings = JSON.parse(options[cd.g.localSettingsOptionName]) || {}
 		} catch {
-			localSettings = {};
+			localSettings = {}
 		}
 
 		return {
 			...this.getSettingPropertiesOfObject(globalSettings),
 			...this.getSettingPropertiesOfObject(localSettings),
 			...(omitLocal ? this.getLocalOverrides() : {}),
-		};
+		}
 	}
 
 	/**
@@ -788,11 +788,11 @@ class Settings extends EventEmitter {
 					)
 				)
 				.forEach((prop) => {
-					target[name] = source[prop];
-				});
+					target[name] = source[prop]
+				})
 
-			return target;
-		}, /** @type {Partial<SettingsValues>} */ ({}));
+			return target
+		}, /** @type {Partial<SettingsValues>} */ ({}))
 	}
 
 	/**
@@ -802,7 +802,7 @@ class Settings extends EventEmitter {
 	 * @private
 	 */
 	getLocalOverrides() {
-		return this.getSettingPropertiesOfObject(window, 'cdLocal');
+		return this.getSettingPropertiesOfObject(window, 'cdLocal')
 	}
 
 	/**
@@ -826,8 +826,8 @@ class Settings extends EventEmitter {
 		Object.assign(
 			this.values,
 			typeof nameOrValues === 'string' ? { [nameOrValues]: value } : nameOrValues
-		);
-		this.emit('set', this);
+		)
+		this.emit('set', this)
 	}
 
 	/**
@@ -856,7 +856,7 @@ class Settings extends EventEmitter {
 			? name in this.values
 				? this.values[/** @type {SettingName} */ (name)]
 				: undefined
-			: this.values;
+			: this.values
 	}
 
 	/**
@@ -866,25 +866,25 @@ class Settings extends EventEmitter {
 	 * @param {Partial<DocumentedSettingsValues>} [settings] Settings to save.
 	 */
 	async save(settings = this.values) {
-		if (!cd.user.isRegistered()) return;
+		if (!cd.user.isRegistered()) return
 
 		if (cd.config.useGlobalPreferences) {
-			const globalSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({});
-			const localSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({});
+			const globalSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({})
+			const localSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({})
 			typedKeysOf(settings).forEach((key) => {
 				if (this.scheme.local.includes(key)) {
-					/** @type {(typeof settings)[key]} */ (localSettings[key]) = settings[key];
+					/** @type {(typeof settings)[key]} */ (localSettings[key]) = settings[key]
 				} else {
-					/** @type {(typeof settings)[key]} */ (globalSettings[key]) = settings[key];
+					/** @type {(typeof settings)[key]} */ (globalSettings[key]) = settings[key]
 				}
-			});
+			})
 
 			await Promise.all([
 				saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings)),
 				saveGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings)),
-			]);
+			])
 		} else {
-			await saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings));
+			await saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings))
 		}
 	}
 
@@ -898,11 +898,11 @@ class Settings extends EventEmitter {
 	 * @returns {Promise.<void>}
 	 */
 	async saveSettingOnTheFly(key, value) {
-		this.set(key, value);
-		const settings = await this.load();
-		settings[key] = value;
+		this.set(key, value)
+		const settings = await this.load()
+		settings[key] = value
 
-		this.save(settings);
+		this.save(settings)
 	}
 
 	/**
@@ -913,42 +913,42 @@ class Settings extends EventEmitter {
 	 * @returns {Promise.<void>}
 	 */
 	async showDialog(initalPageName, focusSelector) {
-		if (this.dialogPromise) return;
+		if (this.dialogPromise) return
 
 		this.dialogPromise = Promise.all([
 			this.load({ omitLocal: true }),
-		]);
+		])
 
-		let loadedSettings;
+		let loadedSettings
 		try {
-			[loadedSettings] = await this.dialogPromise;
+			[loadedSettings] = await this.dialogPromise
 		} catch {
-			mw.notify(cd.s('error-settings-load'), { type: 'error' });
+			mw.notify(cd.s('error-settings-load'), { type: 'error' })
 
-			return;
+			return
 		} finally {
-			delete this.dialogPromise;
+			delete this.dialogPromise
 		}
 
-		const dialog = new SettingsDialog(initalPageName, focusSelector);
-		const windowManager = cd.getWindowManager('settings');
-		windowManager.addWindows([dialog]);
-		windowManager.openWindow(dialog, { loadedSettings });
+		const dialog = new SettingsDialog(initalPageName, focusSelector)
+		const windowManager = cd.getWindowManager('settings')
+		windowManager.addWindows([dialog])
+		windowManager.openWindow(dialog, { loadedSettings })
 
-		cd.tests.settingsDialog = dialog;
+		cd.tests.settingsDialog = dialog
 	}
 
 	/**
 	 * Show a popup informing the user about the structured comment design in CD.
 	 */
 	async maybeOnboardOntoSpaciousComments() {
-		if (this.get('commentDisplay') !== null) return;
+		if (this.get('commentDisplay') !== null) return
 
-		const { commentDisplay } = await this.load({ reuse: true });
-		if (definedAndNotNull(commentDisplay)) return;
+		const { commentDisplay } = await this.load({ reuse: true })
+		if (definedAndNotNull(commentDisplay)) return
 
-		const dialog = new OO.ui.MessageDialog();
-		cd.getWindowManager().addWindows([dialog]);
+		const dialog = new OO.ui.MessageDialog()
+		cd.getWindowManager().addWindows([dialog])
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const win = cd.getWindowManager().openWindow(dialog, {
 			message: $('<div>')
@@ -976,10 +976,10 @@ class Settings extends EventEmitter {
 							wrapHtml(cd.sParse('popup-commentDisplay-text'), {
 								callbacks: {
 									'cd-notification-settings': () => {
-										this.showDialog('talkPage');
+										this.showDialog('talkPage')
 									},
 									'cd-notification-settings-compactComments': () => {
-										this.showDialog('talkPage', '.cd-setting-commentDisplay');
+										this.showDialog('talkPage', '.cd-setting-commentDisplay')
 									},
 								},
 							}).children()
@@ -993,14 +993,14 @@ class Settings extends EventEmitter {
 				},
 			],
 			size: 'large',
-		});
-		const closeData = await win.closed;
+		})
+		const closeData = await win.closed
 
 		// If the user pressed Escape (meaning they are likely just don't want to read anything),
 		// re-show the popup next time
 		if (closeData?.action) {
 			try {
-				await this.saveSettingOnTheFly('commentDisplay', 'spacious');
+				await this.saveSettingOnTheFly('commentDisplay', 'spacious')
 			} catch {
 				// Empty
 			}
@@ -1014,13 +1014,13 @@ class Settings extends EventEmitter {
 	 * settings after they make the choice.
 	 */
 	async maybeConfirmDesktopNotifications() {
-		if (typeof Notification === 'undefined') return;
+		if (typeof Notification === 'undefined') return
 
 		if (this.get('desktopNotifications') === 'unknown' && Notification.permission !== 'denied') {
 			// Avoid using the setting kept in mw.user.options, as it may be outdated. Also don't reuse
 			// the previous settings request, as the settings might be changed in
 			// this.maybeSuggestEnableCommentReformatting().
-			const { desktopNotifications } = await this.load();
+			const { desktopNotifications } = await this.load()
 			if (['unknown', undefined].includes(desktopNotifications)) {
 				const action = await showConfirmDialog(cd.s('dn-confirm'), {
 					size: 'medium',
@@ -1035,30 +1035,30 @@ class Settings extends EventEmitter {
 							action: 'reject',
 						},
 					],
-				});
-				let promise;
+				})
+				let promise
 				if (action === 'accept') {
 					if (Notification.permission === 'default') {
-						OO.ui.alert(cd.s('dn-grantpermission'));
+						OO.ui.alert(cd.s('dn-grantpermission'))
 						Notification.requestPermission((permission) => {
 							if (permission === 'granted') {
-								promise = this.saveSettingOnTheFly('desktopNotifications', 'all');
+								promise = this.saveSettingOnTheFly('desktopNotifications', 'all')
 							} else if (permission === 'denied') {
-								promise = this.saveSettingOnTheFly('desktopNotifications', 'none');
+								promise = this.saveSettingOnTheFly('desktopNotifications', 'none')
 							}
-						});
+						})
 					} else {
-						promise = this.saveSettingOnTheFly('desktopNotifications', 'all');
+						promise = this.saveSettingOnTheFly('desktopNotifications', 'all')
 					}
 				} else if (action === 'reject') {
-					promise = this.saveSettingOnTheFly('desktopNotifications', 'none');
+					promise = this.saveSettingOnTheFly('desktopNotifications', 'none')
 				}
 				if (promise) {
 					try {
-						await promise;
+						await promise
 					} catch (error) {
-						mw.notify(cd.s('error-settings-save'), { type: 'error' });
-						console.warn(error);
+						mw.notify(cd.s('error-settings-save'), { type: 'error' })
+						console.warn(error)
 					}
 				}
 			}
@@ -1068,8 +1068,8 @@ class Settings extends EventEmitter {
 			!['unknown', 'none'].includes(this.get('desktopNotifications')) &&
 			Notification.permission === 'default'
 		) {
-			await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
-			Notification.requestPermission();
+			await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') })
+			Notification.requestPermission()
 		}
 	}
 
@@ -1082,11 +1082,11 @@ class Settings extends EventEmitter {
 				$('<a>')
 					.text(cd.s('footer-settings'))
 					.on('click', () => {
-						this.showDialog();
+						this.showDialog()
 					})
 			)
-		);
+		)
 	}
 }
 
-export default new Settings();
+export default new Settings()

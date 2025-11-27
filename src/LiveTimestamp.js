@@ -1,11 +1,11 @@
-import dayjs from 'dayjs';
+import dayjs from 'dayjs'
 
-import EventEmitter from './EventEmitter';
-import cd from './loader/cd';
-import settings from './settings';
-import { removeFromArrayIfPresent } from './shared/utils-general';
-import { mixInObject } from './utils-oojs';
-import { formatDate } from './utils-window';
+import EventEmitter from './EventEmitter'
+import cd from './loader/cd'
+import settings from './settings'
+import { removeFromArrayIfPresent } from './shared/utils-general'
+import { mixInObject } from './utils-oojs'
+import { formatDate } from './utils-window'
 
 /**
  * @typedef {'default'|'improved'|'relative'} TimestampFormat
@@ -57,7 +57,7 @@ export const relativeTimeThresholds = [
 
 	// We don't update months and years. Additional `setTimeout`s are costly, and an algorithm for
 	// them is also too complex.
-];
+]
 
 /**
  * @typedef {object} EventMap
@@ -81,7 +81,7 @@ class LiveTimestamp extends mixInObject(
 	 * @param {boolean} addTimezone Whether to add a timezone to the timestamp.
 	 */
 	constructor(element, date, addTimezone) {
-		super();
+		super()
 
 		/**
 		 * Element that has the timestamp.
@@ -89,7 +89,7 @@ class LiveTimestamp extends mixInObject(
 		 * @type {Element}
 		 * @private
 		 */
-		this.element = element;
+		this.element = element
 
 		/**
 		 * Timestamp's date.
@@ -97,7 +97,7 @@ class LiveTimestamp extends mixInObject(
 		 * @type {Date}
 		 * @private
 		 */
-		this.date = date;
+		this.date = date
 
 		/**
 		 * Whether to add timezone to the timestamp.
@@ -105,9 +105,9 @@ class LiveTimestamp extends mixInObject(
 		 * @type {boolean}
 		 * @private
 		 */
-		this.addTimezone = addTimezone;
+		this.addTimezone = addTimezone
 
-		this.format = settings.get('timestampFormat');
+		this.format = settings.get('timestampFormat')
 	}
 
 	/**
@@ -119,13 +119,13 @@ class LiveTimestamp extends mixInObject(
 			if (!LiveTimestamp.improvedTimestampsInited) {
 				// Timestamps of the "improved" format are updated all together, at the boundaries of days.
 				// So, we only need to initiate the timeouts once.
-				LiveTimestamp.initImproved();
+				LiveTimestamp.initImproved()
 			}
 			if (this.date.getTime() > LiveTimestamp.yesterdayStart) {
-				LiveTimestamp.improvedTimestamps.push(this);
+				LiveTimestamp.improvedTimestamps.push(this)
 			}
 		} else if (this.format === 'relative') {
-			this.setUpdateTimeout();
+			this.setUpdateTimeout()
 		}
 	}
 
@@ -137,11 +137,11 @@ class LiveTimestamp extends mixInObject(
 	 */
 	setUpdateTimeout(update = false) {
 		if (update) {
-			this.update();
+			this.update()
 		}
 
-		const differenceMs = Date.now() - this.date.getTime();
-		const threshold = relativeTimeThresholds.find((thr) => differenceMs < thr.range * cd.g.msInMin);
+		const differenceMs = Date.now() - this.date.getTime()
+		const threshold = relativeTimeThresholds.find((thr) => differenceMs < thr.range * cd.g.msInMin)
 		if (threshold) {
 			// Find the relevant time boundary at which the timestamp should be updated.
 			for (
@@ -160,14 +160,14 @@ class LiveTimestamp extends mixInObject(
 				boundary <= threshold.range;
 				boundary += threshold.step
 			) {
-				const boundaryMs = boundary * cd.g.msInMin;
+				const boundaryMs = boundary * cd.g.msInMin
 				if (differenceMs < boundaryMs) {
-					removeFromArrayIfPresent(LiveTimestamp.updateTimeouts, this.updateTimeout);
+					removeFromArrayIfPresent(LiveTimestamp.updateTimeouts, this.updateTimeout)
 					this.updateTimeout = setTimeout(() => {
-						this.setUpdateTimeout(true);
-					}, boundaryMs - differenceMs);
-					LiveTimestamp.updateTimeouts.push(this.updateTimeout);
-					break;
+						this.setUpdateTimeout(true)
+					}, boundaryMs - differenceMs)
+					LiveTimestamp.updateTimeouts.push(this.updateTimeout)
+					break
 				}
 			}
 		}
@@ -177,34 +177,34 @@ class LiveTimestamp extends mixInObject(
 	 * _For internal use._ Update the timestamp.
 	 */
 	update() {
-		this.element.textContent = formatDate(this.date, this.addTimezone);
+		this.element.textContent = formatDate(this.date, this.addTimezone)
 	}
 
 	/** @type {number[]} */
-	static updateTimeouts = [];
+	static updateTimeouts = []
 
-	static improvedTimestampsInited = false;
+	static improvedTimestampsInited = false
 
 	/** @type {LiveTimestamp[]} */
-	static improvedTimestamps = [];
+	static improvedTimestamps = []
 
 	/** @type {number} */
-	static yesterdayStart;
+	static yesterdayStart
 
 	/**
 	 * _For internal use._ Initialize improved timestamps (when the timestamp format is set to
 	 * "improved").
 	 */
 	static initImproved() {
-		let date = dayjs();
-		const timezone = cd.g.timestampTools.user.timezone;
+		let date = dayjs()
+		const timezone = cd.g.timestampTools.user.timezone
 		if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(timezone)) {
-			date = typeof timezone === 'number' ? date.utcOffset(timezone) : date.tz(timezone);
+			date = typeof timezone === 'number' ? date.utcOffset(timezone) : date.tz(timezone)
 		} else {
-			date = date.utc();
+			date = date.utc()
 		}
-		date = date.startOf('day');
-		this.yesterdayStart = date.subtract(1, 'day').valueOf();
+		date = date.startOf('day')
+		this.yesterdayStart = date.subtract(1, 'day').valueOf()
 
 		this.updateTimeouts.push(
 			// Tomorrow start
@@ -212,9 +212,9 @@ class LiveTimestamp extends mixInObject(
 
 			// Day after tomorrow start
 			setTimeout(this.updateImproved, date.add(2, 'day').valueOf() - Date.now())
-		);
+		)
 
-		this.improvedTimestampsInited = true;
+		this.improvedTimestampsInited = true
 	}
 
 	/**
@@ -222,20 +222,20 @@ class LiveTimestamp extends mixInObject(
 	 */
 	static updateImproved = () => {
 		this.improvedTimestamps.forEach((timestamp) => {
-			timestamp.update();
-		});
-		this.emit('updateImproved');
-	};
+			timestamp.update()
+		})
+		this.emit('updateImproved')
+	}
 
 	/**
 	 * Reset the list of live timestamps on the page (this is run at every page load).
 	 */
 	static reset() {
-		this.updateTimeouts.forEach(clearTimeout);
-		this.updateTimeouts = [];
-		this.improvedTimestampsInited = false;
-		this.improvedTimestamps = [];
+		this.updateTimeouts.forEach(clearTimeout)
+		this.updateTimeouts = []
+		this.improvedTimestampsInited = false
+		this.improvedTimestamps = []
 	}
 }
 
-export default LiveTimestamp;
+export default LiveTimestamp

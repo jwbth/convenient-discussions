@@ -1,4 +1,4 @@
-import { generateTagsRegexp } from './shared/utils-wikitext';
+import { generateTagsRegexp } from './shared/utils-wikitext'
 
 /**
  * Class for replacing parts of a text that shouldn't be modified, with a placeholder, in order to
@@ -32,7 +32,7 @@ class TextMasker {
 		 * @type {string}
 		 * @protected
 		 */
-		this.text = text;
+		this.text = text
 
 		/**
 		 * Array of masked texts. Its indexes correspond to marker indexes.
@@ -40,7 +40,7 @@ class TextMasker {
 		 * @type {string[]}
 		 * @protected
 		 */
-		this.maskedTexts = maskedTexts || [];
+		this.maskedTexts = maskedTexts || []
 	}
 
 	/**
@@ -54,15 +54,15 @@ class TextMasker {
 	 */
 	mask(regexp, type, useGroups = false) {
 		if (type && !type.match(/^\w+$/)) {
-			console.warn('TextMasker.mask: the `type` argument should match `^\\w+$/`. Proceeding nevertheless.');
+			console.warn('TextMasker.mask: the `type` argument should match `^\\w+$/`. Proceeding nevertheless.')
 		}
 
 		this.text = this.text.replace(
 			regexp,
 			/** @type {ReplaceCallback<3>} */ (s, preText, textToMask) => {
 				if (!useGroups) {
-					preText = '';
-					textToMask = '';
+					preText = ''
+					textToMask = ''
 				}
 
 				// Handle tables separately.
@@ -72,11 +72,11 @@ class TextMasker {
 					String(this.maskedTexts.push(textToMask || s)) +
 					(type ? '_' + type : '') +
 					(type === 'table' ? '\u0004' : '\u0002')
-				);
+				)
 			}
-		);
+		)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -89,12 +89,12 @@ class TextMasker {
 	unmaskText(text, type) {
 		const regexp = type
 			? new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type}(?:_\\d+)?)?(?:\\x02|\\x04)`, 'g')
-			: /(?:\u0001|\u0003)(\d+)(?:_\w+)?(?:\u0002|\u0004)/g;
+			: /(?:\u0001|\u0003)(\d+)(?:_\w+)?(?:\u0002|\u0004)/g
 		while (regexp.test(text)) {
-			text = text.replace(regexp, (_s, num) => this.maskedTexts[num - 1]);
+			text = text.replace(regexp, (_s, num) => this.maskedTexts[num - 1])
 		}
 
-		return text;
+		return text
 	}
 
 	/**
@@ -104,9 +104,9 @@ class TextMasker {
 	 * @returns {this}
 	 */
 	unmask(type) {
-		this.text = this.unmaskText(this.text, type);
+		this.text = this.unmaskText(this.text, type)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -122,43 +122,43 @@ class TextMasker {
 	 * @author Jack who built the house
 	 */
 	maskTemplatesRecursively(handler, addLengths = false) {
-		let pos = 0;
-		const stack = [];
+		let pos = 0
+		const stack = []
 		while (true) {
-			const left = this.text.indexOf('{{', pos);
-			let right = this.text.indexOf('}}', pos);
+			const left = this.text.indexOf('{{', pos)
+			let right = this.text.indexOf('}}', pos)
 
 			if (left !== -1 && left < right) {
 				// Memorize the wrapper's start position; will search the wrapped next
-				stack.push(left);
-				pos = left + 2;
+				stack.push(left)
+				pos = left + 2
 			} else {
 				// Nothing more found _inside_ the wrapper; time to go up the hierarchy
 
 				// Get back to the wrapper
-				let stackLeft = stack.pop();
+				let stackLeft = stack.pop()
 
 				// No wrappers left - we're at the outermost level
-				if (stackLeft === undefined) break;
+				if (stackLeft === undefined) break
 
 				// Handle unclosed `{{` and unopened `}}`
 				if (typeof stackLeft === 'undefined') {
 					if (right === -1) {
-						pos += 2;
-						continue;
+						pos += 2
+						continue
 					} else {
-						stackLeft = 0;
+						stackLeft = 0
 					}
 				}
 				if (right === -1) {
-					right = this.text.length;
+					right = this.text.length
 				}
 
 				// Mask the template
-				right += 2;
-				let template = this.text.substring(stackLeft, right);
+				right += 2
+				let template = this.text.substring(stackLeft, right)
 				if (handler) {
-					template = handler(template);
+					template = handler(template)
 				}
 				this.text =
 					this.text.substring(0, stackLeft) +
@@ -177,14 +177,14 @@ class TextMasker {
 					) +
 
 					'\u0002' +
-					this.text.slice(right);
+					this.text.slice(right)
 
 				// Synchronize the position
-				pos = right - template.length;
+				pos = right - template.length
 			}
 		}
 
-		return this;
+		return this
 	}
 
 	/**
@@ -195,7 +195,7 @@ class TextMasker {
 	 * @returns {this}
 	 */
 	maskTags(tags, type) {
-		return this.mask(generateTagsRegexp(tags), type);
+		return this.mask(generateTagsRegexp(tags), type)
 	}
 
 	/**
@@ -213,7 +213,7 @@ class TextMasker {
 			.mask(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true)
 
 		// Tables with a signature inside that are clipped on comment editing.
-			.mask(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true);
+			.mask(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true)
 	}
 
 	/**
@@ -223,9 +223,9 @@ class TextMasker {
 	 * @returns {this}
 	 */
 	withText(func) {
-		this.text = func(this.text, this);
+		this.text = func(this.text, this)
 
-		return this;
+		return this
 	}
 
 	/**
@@ -234,7 +234,7 @@ class TextMasker {
 	 * @returns {string}
 	 */
 	getText() {
-		return this.text;
+		return this.text
 	}
 
 	/**
@@ -243,8 +243,8 @@ class TextMasker {
 	 * @returns {string[]}
 	 */
 	getMaskedTexts() {
-		return this.maskedTexts;
+		return this.maskedTexts
 	}
 }
 
-export default TextMasker;
+export default TextMasker

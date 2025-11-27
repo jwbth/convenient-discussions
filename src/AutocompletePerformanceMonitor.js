@@ -49,26 +49,26 @@ class AutocompletePerformanceMonitor {
 	 * @param {number} [options.reportInterval] Interval for automatic reporting (ms)
 	 */
 	constructor(options = {}) {
-		this.enabled = options.enabled !== false;
-		this.maxMetrics = options.maxMetrics || 1000;
-		this.reportInterval = options.reportInterval || 60_000;
+		this.enabled = options.enabled !== false
+		this.maxMetrics = options.maxMetrics || 1000
+		this.reportInterval = options.reportInterval || 60_000
 
 		/** @type {PerformanceMetric[]} */
-		this.metrics = [];
+		this.metrics = []
 
 		/** @type {Map<string, number>} */
-		this.operationCounts = new Map();
+		this.operationCounts = new Map()
 
 		/** @type {Map<string, number>} */
-		this.totalDurations = new Map();
+		this.totalDurations = new Map()
 
-		this.startTime = Date.now();
+		this.startTime = Date.now()
 
 		// Set up automatic reporting
 		if (this.enabled && this.reportInterval > 0) {
 			this.reportTimer = setInterval(() => {
-				this.generateReport();
-			}, this.reportInterval);
+				this.generateReport()
+			}, this.reportInterval)
 		}
 	}
 
@@ -94,7 +94,7 @@ class AutocompletePerformanceMonitor {
 	 */
 	startOperation(operation, autocompleteType, query) {
 		if (!this.enabled) {
-			return { end: () => {} };
+			return { end: () => {} }
 		}
 
 		/** @type {OperationContext} */
@@ -104,13 +104,13 @@ class AutocompletePerformanceMonitor {
 			query,
 			startTime: performance.now(),
 			memoryBefore: this.getMemoryUsage(),
-		};
+		}
 
 		return {
 			end: (resultCount = 0, cacheHit = false) => {
-				this.endOperation(context, resultCount, cacheHit);
+				this.endOperation(context, resultCount, cacheHit)
 			},
-		};
+		}
 	}
 
 	/**
@@ -122,12 +122,12 @@ class AutocompletePerformanceMonitor {
 	 */
 	endOperation(context, resultCount, cacheHit) {
 		if (!this.enabled) {
-			return;
+			return
 		}
 
-		const endTime = performance.now();
-		const duration = endTime - context.startTime;
-		const memoryAfter = this.getMemoryUsage();
+		const endTime = performance.now()
+		const duration = endTime - context.startTime
+		const memoryAfter = this.getMemoryUsage()
 
 		/** @type {PerformanceMetric} */
 		const metric = {
@@ -141,9 +141,9 @@ class AutocompletePerformanceMonitor {
 			query: context.query,
 			resultCount,
 			cacheHit,
-		};
+		}
 
-		this.addMetric(metric);
+		this.addMetric(metric)
 	}
 
 	/**
@@ -152,16 +152,16 @@ class AutocompletePerformanceMonitor {
 	 * @param {PerformanceMetric} metric Performance metric to add
 	 */
 	addMetric(metric) {
-		this.metrics.push(metric);
+		this.metrics.push(metric)
 
 		// Update aggregated data
-		const key = `${metric.autocompleteType}:${metric.operation}`;
-		this.operationCounts.set(key, (this.operationCounts.get(key) || 0) + 1);
-		this.totalDurations.set(key, (this.totalDurations.get(key) || 0) + metric.duration);
+		const key = `${metric.autocompleteType}:${metric.operation}`
+		this.operationCounts.set(key, (this.operationCounts.get(key) || 0) + 1)
+		this.totalDurations.set(key, (this.totalDurations.get(key) || 0) + metric.duration)
 
 		// Limit metrics array size
 		if (this.metrics.length > this.maxMetrics) {
-			this.metrics.shift();
+			this.metrics.shift()
 		}
 	}
 
@@ -174,21 +174,21 @@ class AutocompletePerformanceMonitor {
 		// Browser environment with memory API
 		if (typeof performance !== 'undefined' && 'memory' in performance) {
 			/** @type {any} */
-			const perfMemory = performance;
+			const perfMemory = performance
 
-			return perfMemory.memory.usedJSHeapSize;
+			return perfMemory.memory.usedJSHeapSize
 		}
 
 		// Node.js environment
 		if (typeof globalThis !== 'undefined' && 'process' in globalThis) {
 			/** @type {any} */
-			const nodeProcess = /** @type {any} */ (globalThis).process;
+			const nodeProcess = /** @type {any} */ (globalThis).process
 			if (nodeProcess && typeof nodeProcess.memoryUsage === 'function') {
-				return nodeProcess.memoryUsage().heapUsed;
+				return nodeProcess.memoryUsage().heapUsed
 			}
 		}
 
-		return 0;
+		return 0
 	}
 
 	/**
@@ -206,32 +206,32 @@ class AutocompletePerformanceMonitor {
 				cacheHitRate: 0,
 				totalMemoryUsage: 0,
 				byType: {},
-			};
+			}
 		}
 
-		const durations = this.metrics.map((m) => m.duration).sort((a, b) => a - b);
-		const cacheHits = this.metrics.filter((m) => m.cacheHit).length;
-		const totalMemory = this.getMemoryUsage();
+		const durations = this.metrics.map((m) => m.duration).sort((a, b) => a - b)
+		const cacheHits = this.metrics.filter((m) => m.cacheHit).length
+		const totalMemory = this.getMemoryUsage()
 
 		// Calculate percentiles
-		const median = this.getPercentile(durations, 50);
-		const p95 = this.getPercentile(durations, 95);
+		const median = this.getPercentile(durations, 50)
+		const p95 = this.getPercentile(durations, 95)
 
 		// Group by type
 		/** @type {{ [key: string]: TypePerformanceMetrics }} */
-		const byType = {};
-		const typeGroups = this.groupBy(this.metrics, 'autocompleteType');
+		const byType = {}
+		const typeGroups = this.groupBy(this.metrics, 'autocompleteType')
 
 		for (const [type, typeMetrics] of Object.entries(typeGroups)) {
-			const typeDurations = typeMetrics.map((m) => m.duration);
-			const typeCacheHits = typeMetrics.filter((m) => m.cacheHit).length;
+			const typeDurations = typeMetrics.map((m) => m.duration)
+			const typeCacheHits = typeMetrics.filter((m) => m.cacheHit).length
 
 			byType[type] = {
 				operationCount: typeMetrics.length,
 				averageResponseTime: typeDurations.reduce((a, b) => a + b, 0) / typeDurations.length,
 				cacheHitRate: (typeCacheHits / typeMetrics.length) * 100,
 				totalResults: typeMetrics.reduce((sum, m) => sum + m.resultCount, 0),
-			};
+			}
 		}
 
 		return {
@@ -242,7 +242,7 @@ class AutocompletePerformanceMonitor {
 			cacheHitRate: (cacheHits / this.metrics.length) * 100,
 			totalMemoryUsage: totalMemory,
 			byType,
-		};
+		}
 	}
 
 	/**
@@ -253,10 +253,10 @@ class AutocompletePerformanceMonitor {
 	 * @returns {number} Percentile value
 	 */
 	getPercentile(arr, percentile) {
-		if (arr.length === 0) return 0;
-		const index = Math.ceil((percentile / 100) * arr.length) - 1;
+		if (arr.length === 0) return 0
+		const index = Math.ceil((percentile / 100) * arr.length) - 1
 
-		return arr[Math.max(0, Math.min(index, arr.length - 1))];
+		return arr[Math.max(0, Math.min(index, arr.length - 1))]
 	}
 
 	/**
@@ -276,14 +276,14 @@ class AutocompletePerformanceMonitor {
 		/** @type {GroupedObject<T>} */
 		return array.reduce((groups, item) => {
 			/** @type {string} */
-			const key = /** @type {AnyByKey} */ (item)[property];
+			const key = /** @type {AnyByKey} */ (item)[property]
 			if (!(key in groups)) {
-				groups[key] = [];
+				groups[key] = []
 			}
-			groups[key].push(item);
+			groups[key].push(item)
 
-			return groups;
-		}, /** @type {GroupedObject<T>} */({}));
+			return groups
+		}, /** @type {GroupedObject<T>} */({}))
 	}
 
 	/**
@@ -292,8 +292,8 @@ class AutocompletePerformanceMonitor {
 	 * @returns {string} Formatted performance report
 	 */
 	generateReport() {
-		const summary = this.generateSummary();
-		const uptime = Date.now() - this.startTime;
+		const summary = this.generateSummary()
+		const uptime = Date.now() - this.startTime
 
 		let report = `
 === Autocomplete Performance Report ===
@@ -305,45 +305,45 @@ Median Response Time: ${summary.medianResponseTime.toFixed(2)}ms
 Cache Hit Rate: ${summary.cacheHitRate.toFixed(1)}%
 Memory Usage: ${this.formatBytes(summary.totalMemoryUsage)}
 
-`;
+`
 
 		report += `Performance by Type:
-`;
+`
 		for (const [type, metrics] of Object.entries(summary.byType)) {
 			report += `  ${type}:
 		Operations: ${metrics.operationCount}
 		Avg Response: ${metrics.averageResponseTime.toFixed(2)}ms
 		Cache Hit Rate: ${metrics.cacheHitRate.toFixed(1)}%
 		Total Results: ${metrics.totalResults}
-`;
+`
 		}
 
 		// Add performance warnings
-		const warnings = this.getPerformanceWarnings(summary);
+		const warnings = this.getPerformanceWarnings(summary)
 		if (warnings.length > 0) {
 			report += `
 Performance Warnings:
-`;
+`
 			warnings.forEach((warning) => {
-				report += `  ⚠️  ${warning}\n`;
-			});
+				report += `  ⚠️  ${warning}\n`
+			})
 		}
 
 		// Add optimization recommendations
-		const recommendations = this.getOptimizationRecommendations(summary);
+		const recommendations = this.getOptimizationRecommendations(summary)
 		if (recommendations.length > 0) {
 			report += `
 Optimization Recommendations:
-`;
+`
 			recommendations.forEach((rec) => {
 				report += `  💡 ${rec}
-`;
-			});
+`
+			})
 		}
 
-		console.log(report);
+		console.log(report)
 
-		return report;
+		return report
 	}
 
 	/**
@@ -353,35 +353,35 @@ Optimization Recommendations:
 	 * @returns {string[]} Array of warning messages
 	 */
 	getPerformanceWarnings(summary) {
-		const warnings = [];
+		const warnings = []
 
 		if (summary.averageResponseTime > 500) {
-			warnings.push(`High average response time: ${summary.averageResponseTime.toFixed(2)}ms`);
+			warnings.push(`High average response time: ${summary.averageResponseTime.toFixed(2)}ms`)
 		}
 
 		if (summary.p95ResponseTime > 1000) {
-			warnings.push(`High 95th percentile response time: ${summary.p95ResponseTime.toFixed(2)}ms`);
+			warnings.push(`High 95th percentile response time: ${summary.p95ResponseTime.toFixed(2)}ms`)
 		}
 
 		if (summary.cacheHitRate < 50) {
-			warnings.push(`Low cache hit rate: ${summary.cacheHitRate.toFixed(1)}%`);
+			warnings.push(`Low cache hit rate: ${summary.cacheHitRate.toFixed(1)}%`)
 		}
 
 		if (summary.totalMemoryUsage > 50 * 1024 * 1024) { // 50MB
-			warnings.push(`High memory usage: ${this.formatBytes(summary.totalMemoryUsage)}`);
+			warnings.push(`High memory usage: ${this.formatBytes(summary.totalMemoryUsage)}`)
 		}
 
 		// Check individual types
 		for (const [type, metrics] of Object.entries(summary.byType)) {
 			if (metrics.averageResponseTime > 300) {
-				warnings.push(`${type} has high response time: ${metrics.averageResponseTime.toFixed(2)}ms`);
+				warnings.push(`${type} has high response time: ${metrics.averageResponseTime.toFixed(2)}ms`)
 			}
 			if (metrics.cacheHitRate < 30) {
-				warnings.push(`${type} has low cache hit rate: ${metrics.cacheHitRate.toFixed(1)}%`);
+				warnings.push(`${type} has low cache hit rate: ${metrics.cacheHitRate.toFixed(1)}%`)
 			}
 		}
 
-		return warnings;
+		return warnings
 	}
 
 	/**
@@ -391,31 +391,31 @@ Optimization Recommendations:
 	 * @returns {string[]} Array of recommendation messages
 	 */
 	getOptimizationRecommendations(summary) {
-		const recommendations = [];
+		const recommendations = []
 
 		if (summary.cacheHitRate < 70) {
-			recommendations.push('Consider increasing cache TTL or implementing prefetching for common queries');
+			recommendations.push('Consider increasing cache TTL or implementing prefetching for common queries')
 		}
 
 		if (summary.averageResponseTime > 200) {
-			recommendations.push('Consider implementing request debouncing or increasing local search priority');
+			recommendations.push('Consider implementing request debouncing or increasing local search priority')
 		}
 
 		if (summary.totalMemoryUsage > 20 * 1024 * 1024) { // 20MB
-			recommendations.push('Consider reducing cache size or implementing more aggressive cache eviction');
+			recommendations.push('Consider reducing cache size or implementing more aggressive cache eviction')
 		}
 
 		// Type-specific recommendations
 		for (const [type, metrics] of Object.entries(summary.byType)) {
 			if (metrics.operationCount > 100 && metrics.cacheHitRate < 50) {
-				recommendations.push(`${type}: Implement better caching strategy for frequently used queries`);
+				recommendations.push(`${type}: Implement better caching strategy for frequently used queries`)
 			}
 			if (metrics.averageResponseTime > 400) {
-				recommendations.push(`${type}: Consider optimizing API requests or local search algorithms`);
+				recommendations.push(`${type}: Consider optimizing API requests or local search algorithms`)
 			}
 		}
 
-		return recommendations;
+		return recommendations
 	}
 
 	/**
@@ -425,12 +425,12 @@ Optimization Recommendations:
 	 * @returns {string} Formatted string
 	 */
 	formatBytes(bytes) {
-		if (bytes === 0) return '0 B';
-		const k = 1024;
-		const sizes = ['B', 'KB', 'MB', 'GB'];
-		const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
+		if (bytes === 0) return '0 B'
+		const k = 1024
+		const sizes = ['B', 'KB', 'MB', 'GB']
+		const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k))
 
-		return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+		return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
 	}
 
 	/**
@@ -440,7 +440,7 @@ Optimization Recommendations:
 	 * @returns {PerformanceMetric[]} Slow operations
 	 */
 	getSlowOperations(threshold = 500) {
-		return this.metrics.filter((m) => m.duration > threshold);
+		return this.metrics.filter((m) => m.duration > threshold)
 	}
 
 	/**
@@ -450,16 +450,16 @@ Optimization Recommendations:
 	 * @returns {PerformanceMetric[]} High memory operations
 	 */
 	getHighMemoryOperations(threshold = 1_048_576) {
-		return this.metrics.filter((m) => (m.memoryAfter - m.memoryBefore) > threshold);
+		return this.metrics.filter((m) => (m.memoryAfter - m.memoryBefore) > threshold)
 	}
 
 	/**
 	 * Clear all metrics.
 	 */
 	clear() {
-		this.metrics = [];
-		this.operationCounts.clear();
-		this.totalDurations.clear();
+		this.metrics = []
+		this.operationCounts.clear()
+		this.totalDurations.clear()
 	}
 
 	/**
@@ -481,17 +481,17 @@ Optimization Recommendations:
 			summary: this.generateSummary(),
 			startTime: this.startTime,
 			uptime: Date.now() - this.startTime,
-		};
+		}
 	}
 
 	/**
 	 * Disable monitoring.
 	 */
 	disable() {
-		this.enabled = false;
+		this.enabled = false
 		if (this.reportTimer) {
-			clearInterval(this.reportTimer);
-			this.reportTimer = undefined;
+			clearInterval(this.reportTimer)
+			this.reportTimer = undefined
 		}
 	}
 
@@ -499,11 +499,11 @@ Optimization Recommendations:
 	 * Enable monitoring.
 	 */
 	enable() {
-		this.enabled = true;
+		this.enabled = true
 		if (this.reportInterval > 0 && !this.reportTimer) {
 			this.reportTimer = setInterval(() => {
-				this.generateReport();
-			}, this.reportInterval);
+				this.generateReport()
+			}, this.reportInterval)
 		}
 	}
 
@@ -511,9 +511,9 @@ Optimization Recommendations:
 	 * Destroy the monitor and clean up resources.
 	 */
 	destroy() {
-		this.disable();
-		this.clear();
+		this.disable()
+		this.clear()
 	}
 }
 
-export default AutocompletePerformanceMonitor;
+export default AutocompletePerformanceMonitor
