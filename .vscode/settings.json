@@ -3,20 +3,19 @@
 	"editor.wordWrapColumn": 100,
 	"editor.tabSize": 2,
 	"editor.codeActionsOnSave": {
-		// "source.fixAll.eslint": "explicit",
+		"source.fixAll.eslint": "explicit"
 
 		// Moves `eslint/config` under `eslint-` plugins instead of directly below eslint
 		// "source.organizeImports": "explicit",
 	},
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.formatOnSave": false,
-	"editor.formatOnPaste": false,
+	"editor.formatOnSave": true,
+	"editor.formatOnPaste": true,
 	"[javascript]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"[json]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.formatOnSave": false
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"eslint.codeActionsOnSave.rules": [
 		"!unicorn/prefer-ternary",
@@ -29,7 +28,7 @@
 		// void while under construction.
 		"!@typescript-eslint/no-confusing-void-expression",
 
-		"*",
+		"*"
 	],
 	"files.trimTrailingWhitespace": true,
 	"files.trimFinalNewlines": true,
@@ -39,5 +38,5 @@
 	"javascript.preferences.quoteStyle": "single",
 
 	// Without this, `export {};` is changed to `export { };` by `source.organizeImports`
-	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false
 }

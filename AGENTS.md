@@ -217,20 +217,21 @@ npm run i18n
 - Don't introduce one-time variables. E.g., instead of writing
 
   ```js
-  const htmlToCompare = this.getElementHtmlToCompare(element);
-  this.updateCompareProperties(element, htmlToCompare);
+  const htmlToCompare = this.getElementHtmlToCompare(element)
+  this.updateCompareProperties(element, htmlToCompare)
   ```
 
   write this:
 
   ```js
-  this.updateCompareProperties(element, this.getElementHtmlToCompare(element));
+  this.updateCompareProperties(element, this.getElementHtmlToCompare(element))
   ```
 
   A variable should either be used at least twice or not exist. Exceptions:
   - Variables used in template strings. Those are OK to be used only once. Prefer them to having function calls inside template strings.
   - Cases where the use of the variable is in a loop or function while the assignment is not.
   - Cases where the assignment and the use of the variable are separated by a function with a side effect affecting that variable.
+
 - When using a method in a callback, don't bind it using `.bind()`. Instead, turn it into an arrow function. E.g. don't do this:
 
   ```js
@@ -264,14 +265,12 @@ npm run i18n
 - Use trailing commas in objects and arrays.
 - Add an empty line before `return` statements at the end of blocks (function, `if` statement, etc.) unless it's the only statement in that block.
 - Only add semicolons at the beginning of lines that may introduce ASI failures.
-- Use a tab for indentation.
+- Use tabs for indentation.
 - Use single quotes for strings.
 - Maximum line length is 100.
 - Code comments should have one empty line before them.
-- When adding inline comments, place 2 spaces before them: `expression;  // Comment`.
-- Put a space between inline JSDoc comments and the following expression: `/** @type {string} */ (variable)`, not `/** @type {string} */(variable)`.
 - When a function parameter is not used in the function, put an underscore in front of it.
-- When a class method is overriding a method of the parent class, add `@override` tag to its  JSDoc comment.
+- When a class method is overriding a method of the parent class, add `@override` tag to its JSDoc comment.
 - If ESLint reports wrong import order, unused imports, or wrong indentation, don't fix it. ESLint will apply automatic fixes.
 
 ### JSDoc
@@ -288,11 +287,11 @@ npm run i18n
 
   ```js
   /**
-	 * Get the archive prefix for the page.
-	 *
-	 * @param {boolean} [onlyExplicit=false]
-	 * @returns {string | undefined}
-	 */
+   * Get the archive prefix for the page.
+   *
+   * @param {boolean} [onlyExplicit=false]
+   * @returns {string | undefined}
+   */
   ```
 
 - Use spaces around logical operators, e.g. write `@type {RadioSelectControl | TextInputControl}`, not `@type {RadioSelectControl|TextInputControl}`.
