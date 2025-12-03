@@ -10,11 +10,12 @@ const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 // npm run <command running this script> --test
 const testSuffix = argv.test || process.env.npm_config_test ? '.test' : ''
 
-fs.readdirSync('./config/').forEach((filename) => {
+fs.readdirSync('./config/wikis/').forEach((filename) => {
 	const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || []
-	if (!name || name === 'default') return
+	if (!name) return
+
 	let content = fs
-		.readFileSync(`config/${filename}`, 'utf8')
+		.readFileSync(`config/wikis/${filename}`, 'utf8')
 		.trim()
 		.replace(/[^]*?export default .*(?=\{\n(?: {2}|\t))/, '')
 
@@ -22,7 +23,7 @@ fs.readdirSync('./config/').forEach((filename) => {
 	// as well.
 	content = `/**
  * This file was assembled automatically from the configuration at
- * https://github.com/jwbth/convenient-discussions/tree/main/config/${filename} by running
+ * https://github.com/jwbth/convenient-discussions/tree/main/config/wikis/${filename} by running
  * "node buildConfigs". The configuration might get outdated as the script evolves, so it's best
  * to keep it up to date by checking for the documentation updates from time to time. See the
  * documentation at

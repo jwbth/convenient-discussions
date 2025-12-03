@@ -252,8 +252,8 @@ You can also add any additional instuctions (for example hooks) you need below t
 
 === Examples === <!--T:76-->
 </translate>
-* [[w:en:User:Jack who built the house/convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/w-en.js <translate><!--T:87--> source in the repository</translate>])
-* [[w:ru:MediaWiki:Gadget-convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/w-ru.js <translate><!--T:88--> source in the repository</translate>])
+* [[w:en:User:Jack who built the house/convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/wikis/w-en.js <translate><!--T:87--> source in the repository</translate>])
+* [[w:ru:MediaWiki:Gadget-convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/wikis/w-ru.js <translate><!--T:88--> source in the repository</translate>])
 
 <translate>
 === How do I turn off the "Reply" buttons? === <!--T:98-->

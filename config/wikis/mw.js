@@ -1,4 +1,4 @@
-export default /** @type {Partial<typeof import('./default').default>} */ ({
+export default /** @type {Partial<typeof import('../default').default>} */ ({
 	messages: {
 		'sun': 'Sun',
 		'mon': 'Mon',
@@ -83,46 +83,18 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 	},
 	timezone: 'UTC',
 	useGlobalPreferences: true,
-	archivePaths: [
-		{
-			source: 'Commons:Undeletion requests/Current requests',
-			archive: 'Commons:Undeletion requests/Archive',
-		},
-		/\/Archive/,
-	],
 	signatureEndingRegexp: / \(talk\)$/,
 	tagName: 'convenient-discussions',
-	hookToFireWithAuthorWrappers: 'global.userlinks',
 	unsignedTemplates: [
 		'Unsigned',
-		'Non firmato',
-		'Non signé',
-		'Sig',
-		'Not signed',
-		'Nun firmatu',
-		'Unsigned2',
-		'UnsignedIP',
+		'Nosig',
 		'Unsigned IP',
-		'Unsigned-ip',
-		'UnsignedIP2',
-		'Unsignedip2',
-	],
-	smallDivTemplates: [
-		'smalldiv',
-		'Small div',
-	],
-	paragraphTemplates: [
-		'pb',
-		'Paragraph break',
+		'Unsigned2',
+		'Unsignedr',
+		'Nosigr',
 	],
 	outdentTemplates: [
 		'outdent',
-		'Od',
-		'Unindent',
-		'Out',
-		'Quito sangría',
-		'Quitar sangría',
-		'OD',
 	],
 	clearTemplates: [
 		'Clear',
@@ -151,57 +123,12 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 
 		return [pre, post];
 	},
-	noSignatureClasses: [
-		'collapsibleheader',
-	],
-	excludeFromHeadlineClasses: [
-		'adminMark',
-	],
 	closedDiscussionTemplates: [
 		[
-			'Closed',
-			'Closedh',
-			'Discussion top',
-			'Discussion-top',
-			'Discussion top',
-			'Archive top',
-			'Atop',
-			'DeletionHeader',
-			'Delh',
-			'Rfdh',
+			'Hidden archive top',
 		],
 		[
-			'End closed',
-			'Closedf',
-			'Ecs',
-			'Discussion bottom',
-			'Discussion-bottom',
-			'Archive bottom',
-			'Abot',
-			'DeletionFooter',
+			'Hidden archive bottom',
 		],
 	],
-	closedDiscussionClasses: [
-		'boilerplate',
-		'delh',
-	],
-	beforeAuthorLinkParse(authorLink) {
-		// https://commons.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
-		return authorLink.lastElementChild;
-	},
-	afterAuthorLinkParse(authorLink, adminMarkCandidate) {
-		if (adminMarkCandidate?.classList.contains('adminMark')) {
-			authorLink.append(adminMarkCandidate);
-		}
-	},
 });
-
-if (Number(mw.user.options.get('gadget-ThreadedDiscussions')) === 1) {
-	mw.notify(
-		convenientDiscussions.api.wrapHtml('Convenient Discussions is incompatible with Threaded Discussions gadget you have enabled. Please disable Threaded Discussions in <a href="https://commons.wikimedia.org/wiki/Special:Preferences#mw-prefsection-gadgets" target="_blank">gadget preferences</a>.'),
-		{
-			type: 'warn',
-			autoHide: false,
-		}
-	);
-}

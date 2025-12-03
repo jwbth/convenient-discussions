@@ -1,4 +1,4 @@
-export default /** @type {Partial<typeof import('./default').default>} */ ({
+export default /** @type {Partial<typeof import('../default').default>} */ ({
 	'messages': {
 		'sun': 'dim.',
 		'mon': 'lun.',

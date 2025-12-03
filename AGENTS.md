@@ -174,7 +174,7 @@ npm run i18n
 #### Multi-Wiki Support
 
 - **config.json5**: Main deployment configuration
-- **config/\*.js**: Wiki-specific configuration files
+- **config/wikis/\*.js**: Wiki-specific configuration files
 - **buildConfigs.js**: Configuration build script
 
 #### Internationalization

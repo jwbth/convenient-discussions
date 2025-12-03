@@ -1,4 +1,4 @@
-export default /** @type {Partial<typeof import('./default').default>} */ ({
+export default /** @type {Partial<typeof import('../default').default>} */ ({
 	messages: {
 		'sun': 'Вс',
 		'mon': 'Пн',
@@ -606,7 +606,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 });
 
 mw.hook('convenientDiscussions.commentFormCreated').add(
-	/** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+	/** @type {( ...args: import('../../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
 		(commentForm) => {
 			const userGroups = mw.config.get('wgUserGroups');
 			// @ts-ignore
@@ -620,7 +620,7 @@ mw.hook('convenientDiscussions.commentFormCreated').add(
 );
 
 mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
-	/** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+	/** @type {( ...args: import('../../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
 		(commentForm) => {
 			commentForm.$element.on('keydown', (event) => {
 				// Ctrl+Alt+W

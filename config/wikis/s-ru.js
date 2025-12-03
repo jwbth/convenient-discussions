@@ -1,4 +1,4 @@
-export default /** @type {Partial<typeof import('./default').default>} */ ({
+export default /** @type {Partial<typeof import('../default').default>} */ ({
 	messages: {
 		'sun': 'вс',
 		'mon': 'пн',
@@ -350,7 +350,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 });
 
 mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
-	/** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+	/** @type {( ...args: import('../../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
 		(commentForm) => {
 			commentForm.$element.on('keydown', (e) => {
 				// Ctrl+Alt+W
@@ -366,7 +366,7 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
 );
 
 mw.hook('convenientDiscussions.commentFormToolbarReady').add(
-	/** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+	/** @type {( ...args: import('../../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
 		(commentForm) => {
 			commentForm.commentInput.$input.wikiEditor('addToToolbar', {
 				section: 'main',

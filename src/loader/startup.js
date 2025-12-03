@@ -70,7 +70,7 @@ async function bootstrap() {
 
 	if (SINGLE_CONFIG_FILE_NAME) {
 		try {
-			cd.config = (await import(`../config/${SINGLE_CONFIG_FILE_NAME}`)).default
+			cd.config = (await import(`../config/wikis/${SINGLE_CONFIG_FILE_NAME}`)).default
 		} catch {
 			// Empty
 		}

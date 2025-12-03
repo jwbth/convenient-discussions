@@ -1,4 +1,4 @@
-export default /** @type {Partial<typeof import('./default').default>} */ ({
+export default /** @type {Partial<typeof import('../default').default>} */ ({
 	messages: {
 		'sun': 'Sun',
 		'mon': 'Mon',
@@ -58,7 +58,7 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 		'comma-separator': ', ',
 		'colon-separator': ': ',
 		'nextdiff': 'Newer edit →',
-		'pagetitle': '$1 - Wikimedia Commons',
+		'pagetitle': '$1 - Meta',
 		'discussiontools-topicsubscription-button-subscribe': 'subscribe',
 		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Subscribe}} to receive notifications about new comments.',
 		'discussiontools-topicsubscription-button-unsubscribe': 'unsubscribe',
@@ -83,23 +83,31 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 	},
 	timezone: 'UTC',
 	useGlobalPreferences: true,
+	archivePaths: [/\/Archive/],
 	signatureEndingRegexp: / \(talk\)$/,
 	tagName: 'convenient-discussions',
+	hookToFireWithAuthorWrappers: 'global.userlinks',
 	unsignedTemplates: [
 		'Unsigned',
-		'Nosig',
-		'Unsigned IP',
+		'Unsigned3',
 		'Unsigned2',
-		'Unsignedr',
-		'Nosigr',
+		'Unsigned IP',
+		'Unsigned-ip',
+		'UnsignedIP',
+	],
+	paragraphTemplates: [
+		'pb',
+		'Paragraph break',
 	],
 	outdentTemplates: [
 		'outdent',
+		'Unindent',
+		'Od',
+		'OUTDENT',
 	],
 	clearTemplates: [
 		'Clear',
-		'Clr',
-		'-',
+		'Br',
 	],
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
 		var pre = '';
@@ -123,12 +131,44 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 
 		return [pre, post];
 	},
+	noSignatureClasses: [
+		'NavHead',
+	],
+	noSignatureTemplates: [
+		'Moved',
+	],
+	excludeFromHeadlineClasses: [
+		'adminMark',
+	],
 	closedDiscussionTemplates: [
 		[
+			'Closed',
+			'Discussion top',
+			'Dt',
+			'Archive top',
 			'Hidden archive top',
+			'Hat',
 		],
 		[
+			'Discussion bottom',
+			'Archive bottom',
 			'Hidden archive bottom',
+			'Hab',
 		],
 	],
+	closedDiscussionClasses: [
+		'boilerplate',
+		'NavFrame',
+		'NavContent',
+		'mw-collapsed',
+	],
+	beforeAuthorLinkParse(authorLink) {
+		// https://meta.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
+		return authorLink.lastElementChild;
+	},
+	afterAuthorLinkParse(authorLink, adminMarkCandidate) {
+		if (adminMarkCandidate?.classList.contains('adminMark')) {
+			authorLink.append(adminMarkCandidate);
+		}
+	},
 });

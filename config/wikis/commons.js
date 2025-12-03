@@ -1,4 +1,4 @@
-export default /** @type {Partial<typeof import('./default').default>} */ ({
+export default /** @type {Partial<typeof import('../default').default>} */ ({
 	messages: {
 		'sun': 'Sun',
 		'mon': 'Mon',
@@ -58,7 +58,7 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 		'comma-separator': ', ',
 		'colon-separator': ': ',
 		'nextdiff': 'Newer edit →',
-		'pagetitle': '$1 - Meta',
+		'pagetitle': '$1 - Wikimedia Commons',
 		'discussiontools-topicsubscription-button-subscribe': 'subscribe',
 		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Subscribe}} to receive notifications about new comments.',
 		'discussiontools-topicsubscription-button-unsubscribe': 'unsubscribe',
@@ -83,17 +83,33 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 	},
 	timezone: 'UTC',
 	useGlobalPreferences: true,
-	archivePaths: [/\/Archive/],
+	archivePaths: [
+		{
+			source: 'Commons:Undeletion requests/Current requests',
+			archive: 'Commons:Undeletion requests/Archive',
+		},
+		/\/Archive/,
+	],
 	signatureEndingRegexp: / \(talk\)$/,
 	tagName: 'convenient-discussions',
 	hookToFireWithAuthorWrappers: 'global.userlinks',
 	unsignedTemplates: [
 		'Unsigned',
-		'Unsigned3',
+		'Non firmato',
+		'Non signé',
+		'Sig',
+		'Not signed',
+		'Nun firmatu',
 		'Unsigned2',
+		'UnsignedIP',
 		'Unsigned IP',
 		'Unsigned-ip',
-		'UnsignedIP',
+		'UnsignedIP2',
+		'Unsignedip2',
+	],
+	smallDivTemplates: [
+		'smalldiv',
+		'Small div',
 	],
 	paragraphTemplates: [
 		'pb',
@@ -101,13 +117,17 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 	],
 	outdentTemplates: [
 		'outdent',
-		'Unindent',
 		'Od',
-		'OUTDENT',
+		'Unindent',
+		'Out',
+		'Quito sangría',
+		'Quitar sangría',
+		'OD',
 	],
 	clearTemplates: [
 		'Clear',
-		'Br',
+		'Clr',
+		'-',
 	],
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
 		var pre = '';
@@ -132,10 +152,7 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 		return [pre, post];
 	},
 	noSignatureClasses: [
-		'NavHead',
-	],
-	noSignatureTemplates: [
-		'Moved',
+		'collapsibleheader',
 	],
 	excludeFromHeadlineClasses: [
 		'adminMark',
@@ -143,27 +160,33 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 	closedDiscussionTemplates: [
 		[
 			'Closed',
+			'Closedh',
 			'Discussion top',
-			'Dt',
+			'Discussion-top',
+			'Discussion top',
 			'Archive top',
-			'Hidden archive top',
-			'Hat',
+			'Atop',
+			'DeletionHeader',
+			'Delh',
+			'Rfdh',
 		],
 		[
+			'End closed',
+			'Closedf',
+			'Ecs',
 			'Discussion bottom',
+			'Discussion-bottom',
 			'Archive bottom',
-			'Hidden archive bottom',
-			'Hab',
+			'Abot',
+			'DeletionFooter',
 		],
 	],
 	closedDiscussionClasses: [
 		'boilerplate',
-		'NavFrame',
-		'NavContent',
-		'mw-collapsed',
+		'delh',
 	],
 	beforeAuthorLinkParse(authorLink) {
-		// https://meta.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
+		// https://commons.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
 		return authorLink.lastElementChild;
 	},
 	afterAuthorLinkParse(authorLink, adminMarkCandidate) {
@@ -172,3 +195,13 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 		}
 	},
 });
+
+if (Number(mw.user.options.get('gadget-ThreadedDiscussions')) === 1) {
+	mw.notify(
+		convenientDiscussions.api.wrapHtml('Convenient Discussions is incompatible with Threaded Discussions gadget you have enabled. Please disable Threaded Discussions in <a href="https://commons.wikimedia.org/wiki/Special:Preferences#mw-prefsection-gadgets" target="_blank">gadget preferences</a>.'),
+		{
+			type: 'warn',
+			autoHide: false,
+		}
+	);
+}
