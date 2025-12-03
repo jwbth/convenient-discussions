@@ -60,21 +60,32 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'nextdiff': 'Next edit →',
 		'pagetitle': '$1 - Wikipedia',
 		'discussiontools-topicsubscription-button-subscribe': 'subscribe',
-		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Subscribe}} to receive notifications about new comments.',
+		'discussiontools-topicsubscription-button-subscribe-tooltip':
+			'{{GENDER:|Subscribe}} to receive notifications about new comments.',
 		'discussiontools-topicsubscription-button-unsubscribe': 'unsubscribe',
-		'discussiontools-topicsubscription-button-unsubscribe-tooltip': '{{GENDER:|Unsubscribe}} to stop receiving notifications about new comments.',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip':
+			'{{GENDER:|Unsubscribe}} to stop receiving notifications about new comments.',
 		'discussiontools-topicsubscription-notify-subscribed-title': '{{GENDER:|You}} have subscribed!',
-		'discussiontools-topicsubscription-notify-subscribed-body': '{{GENDER:|You}} will receive notifications about new comments in this topic.',
-		'discussiontools-topicsubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
-		'discussiontools-topicsubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications about new comments in this topic.',
+		'discussiontools-topicsubscription-notify-subscribed-body':
+			'{{GENDER:|You}} will receive notifications about new comments in this topic.',
+		'discussiontools-topicsubscription-notify-unsubscribed-title':
+			'{{GENDER:|You}} have unsubscribed.',
+		'discussiontools-topicsubscription-notify-unsubscribed-body':
+			'{{GENDER:|You}} will no longer receive notifications about new comments in this topic.',
 		'discussiontools-newtopicssubscription-button-subscribe-label': 'Subscribe',
-		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Subscribe to receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip':
+			'Subscribe to receive notifications when new topics are started on this page.',
 		'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Unsubscribe',
-		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Unsubscribe to stop receiving notifications when new topics are started on this page.',
-		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|You}} have subscribed!',
-		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|You}} will receive notifications when new topics are started on this page.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip':
+			'Unsubscribe to stop receiving notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-subscribed-title':
+			'{{GENDER:|You}} have subscribed!',
+		'discussiontools-newtopicssubscription-notify-subscribed-body':
+			'{{GENDER:|You}} will receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-title':
+			'{{GENDER:|You}} have unsubscribed.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
+			'{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
 	},
 
 	specialPageAliases: {
@@ -106,78 +117,93 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 				pathParam: 'archive',
 				counterParam: 'counter',
 				replacements: new Map([
-					[/%\(counter\)(0\d)?d/, ({ counter }, match) => {
-						if (counter === null) {
-							return match[0];
-						}
-						const padding = match[1] ? match[1].slice(1) : '';
+					[
+						/%\(counter\)(0\d)?d/,
+						({ counter }, match) => {
+							if (counter === null) {
+								return match[0];
+							}
+							const padding = match[1] ? match[1].slice(1) : '';
 
-						return padding ? counter.padStart(Number(padding), '0') : counter;
-					}],
+							return padding ? counter.padStart(Number(padding), '0') : counter;
+						},
+					],
 
-					[/%\(year\)(0\d)?d/, ({ date }, match) => {
-						if (date === null) {
-							return match[0];
-						}
-						const padding = match[1] ? match[1].slice(1) : '';
-						const year = date.getFullYear();
+					[
+						/%\(year\)(0\d)?d/,
+						({ date }, match) => {
+							if (date === null) {
+								return match[0];
+							}
+							const padding = match[1] ? match[1].slice(1) : '';
+							const year = date.getFullYear();
 
-						return padding ? String(year).padStart(Number(padding), '0') : String(year);
-					}],
+							return padding ? String(year).padStart(Number(padding), '0') : String(year);
+						},
+					],
 
-					[/%\(month\)(0\d)?d/, ({ date }, match) => {
-						if (date === null) {
-							return match[0];
-						}
-						const padding = match[1] ? match[1].slice(1) : '';
-						const month = date.getMonth() + 1;
+					[
+						/%\(month\)(0\d)?d/,
+						({ date }, match) => {
+							if (date === null) {
+								return match[0];
+							}
+							const padding = match[1] ? match[1].slice(1) : '';
+							const month = date.getMonth() + 1;
 
-						return padding ? String(month).padStart(Number(padding), '0') : String(month);
-					}],
+							return padding ? String(month).padStart(Number(padding), '0') : String(month);
+						},
+					],
 
-					[/%\(monthname\)s/, ({ date }, match) => {
-						if (date === null) {
-							return match[0];
-						}
-						const monthNames = [
-							'January',
-							'February',
-							'March',
-							'April',
-							'May',
-							'June',
-							'July',
-							'August',
-							'September',
-							'October',
-							'November',
-							'December',
-						];
+					[
+						/%\(monthname\)s/,
+						({ date }, match) => {
+							if (date === null) {
+								return match[0];
+							}
+							const monthNames = [
+								'January',
+								'February',
+								'March',
+								'April',
+								'May',
+								'June',
+								'July',
+								'August',
+								'September',
+								'October',
+								'November',
+								'December',
+							];
 
-						return monthNames[date.getMonth()];
-					}],
+							return monthNames[date.getMonth()];
+						},
+					],
 
-					[/%\(monthnameshort\)s/, ({ date }, match) => {
-						if (date === null) {
-							return match[0];
-						}
-						const monthNamesShort = [
-							'Jan',
-							'Feb',
-							'Mar',
-							'Apr',
-							'May',
-							'Jun',
-							'Jul',
-							'Aug',
-							'Sep',
-							'Oct',
-							'Nov',
-							'Dec',
-						];
+					[
+						/%\(monthnameshort\)s/,
+						({ date }, match) => {
+							if (date === null) {
+								return match[0];
+							}
+							const monthNamesShort = [
+								'Jan',
+								'Feb',
+								'Mar',
+								'Apr',
+								'May',
+								'Jun',
+								'Jul',
+								'Aug',
+								'Sep',
+								'Oct',
+								'Nov',
+								'Dec',
+							];
 
-						return monthNamesShort[date.getMonth()];
-					}],
+							return monthNamesShort[date.getMonth()];
+						},
+					],
 				]),
 			},
 		],
@@ -201,10 +227,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 	tagName: 'convenient-discussions',
 
-	smallDivTemplates: [
-		'smalldiv',
-		'Div-small',
-	],
+	smallDivTemplates: ['smalldiv', 'Div-small'],
 
 	unsignedTemplates: [
 		'Unsigned',
@@ -532,26 +555,14 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		],
 	],
 
-	closedDiscussionClasses: [
-		'archived',
-		'boilerplate',
-	],
+	closedDiscussionClasses: ['archived', 'boilerplate'],
 
-	noHighlightClasses: [
-		'infobox',
-		'unresolved',
-		'resolved',
-	],
+	noHighlightClasses: ['infobox', 'unresolved', 'resolved'],
 
-	undoTexts: [
-		'Undid revision',
-		'Reverted edits',
-	],
+	undoTexts: ['Undid revision', 'Reverted edits'],
 
 	rejectNode(node) {
-		return ['boilerplate-header', 'side-box-right'].some((name) =>
-			node.classList.contains(name)
-		);
+		return ['boilerplate-header', 'side-box-right'].some((name) => node.classList.contains(name));
 	},
 
 	getMoveSourcePageCode(targetPageWikilink, signature) {
@@ -566,17 +577,22 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 	if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
 		mw.notify(
-			convenientDiscussions.api.wrapHtml('User script <a href="//en.wikipedia.org/wiki/User:Gary/comments_in_local_time.js">comments_in_local_time.js</a> is executed earlier than Convenient Discussions, which prevents the latter from working correctly. Follow the instructions <a href="' + mw.util.getUrl(convenientDiscussions.config.scriptPageWikilink) + '#Compatibility">here</a> to make them compatible.'),
+			convenientDiscussions.api.wrapHtml(
+				'User script <a href="//en.wikipedia.org/wiki/User:Gary/comments_in_local_time.js">comments_in_local_time.js</a> is executed earlier than Convenient Discussions, which prevents the latter from working correctly. Follow the instructions <a href="' +
+					mw.util.getUrl(convenientDiscussions.config.scriptPageWikilink) +
+					'#Compatibility">here</a> to make them compatible.',
+			),
 			{
 				type: 'warn',
 				autoHide: false,
-			}
+			},
 		);
 	}
 });
 
 mw.loader.using('mediawiki.util').then(() => {
-	mw.util.addCSS('\
+	mw.util.addCSS(
+		'\
 		.cd-comment-timestamp .localcomments {\
 			font-size: unset !important;\
 		}\
@@ -588,5 +604,6 @@ mw.loader.using('mediawiki.util').then(() => {
 		.hat-content > .cd-commentLevel:not(ol) {\
 			margin-left: -12px;\
 		}\
-	');
+	',
+	);
 });

@@ -60,21 +60,32 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'nextdiff': 'Newer edit →',
 		'pagetitle': '$1 - Wikimedia Commons',
 		'discussiontools-topicsubscription-button-subscribe': 'subscribe',
-		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Subscribe}} to receive notifications about new comments.',
+		'discussiontools-topicsubscription-button-subscribe-tooltip':
+			'{{GENDER:|Subscribe}} to receive notifications about new comments.',
 		'discussiontools-topicsubscription-button-unsubscribe': 'unsubscribe',
-		'discussiontools-topicsubscription-button-unsubscribe-tooltip': '{{GENDER:|Unsubscribe}} to stop receiving notifications about new comments.',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip':
+			'{{GENDER:|Unsubscribe}} to stop receiving notifications about new comments.',
 		'discussiontools-topicsubscription-notify-subscribed-title': '{{GENDER:|You}} have subscribed!',
-		'discussiontools-topicsubscription-notify-subscribed-body': '{{GENDER:|You}} will receive notifications about new comments in this topic.',
-		'discussiontools-topicsubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
-		'discussiontools-topicsubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications about new comments in this topic.',
+		'discussiontools-topicsubscription-notify-subscribed-body':
+			'{{GENDER:|You}} will receive notifications about new comments in this topic.',
+		'discussiontools-topicsubscription-notify-unsubscribed-title':
+			'{{GENDER:|You}} have unsubscribed.',
+		'discussiontools-topicsubscription-notify-unsubscribed-body':
+			'{{GENDER:|You}} will no longer receive notifications about new comments in this topic.',
 		'discussiontools-newtopicssubscription-button-subscribe-label': 'Subscribe',
-		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Subscribe to receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip':
+			'Subscribe to receive notifications when new topics are started on this page.',
 		'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Unsubscribe',
-		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Unsubscribe to stop receiving notifications when new topics are started on this page.',
-		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|You}} have subscribed!',
-		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|You}} will receive notifications when new topics are started on this page.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip':
+			'Unsubscribe to stop receiving notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-subscribed-title':
+			'{{GENDER:|You}} have subscribed!',
+		'discussiontools-newtopicssubscription-notify-subscribed-body':
+			'{{GENDER:|You}} will receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-title':
+			'{{GENDER:|You}} have unsubscribed.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
+			'{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
 	},
 	specialPageAliases: {
 		Contributions: 'Contributions',
@@ -107,28 +118,10 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'UnsignedIP2',
 		'Unsignedip2',
 	],
-	smallDivTemplates: [
-		'smalldiv',
-		'Small div',
-	],
-	paragraphTemplates: [
-		'pb',
-		'Paragraph break',
-	],
-	outdentTemplates: [
-		'outdent',
-		'Od',
-		'Unindent',
-		'Out',
-		'Quito sangría',
-		'Quitar sangría',
-		'OD',
-	],
-	clearTemplates: [
-		'Clear',
-		'Clr',
-		'-',
-	],
+	smallDivTemplates: ['smalldiv', 'Small div'],
+	paragraphTemplates: ['pb', 'Paragraph break'],
+	outdentTemplates: ['outdent', 'Od', 'Unindent', 'Out', 'Quito sangría', 'Quitar sangría', 'OD'],
+	clearTemplates: ['Clear', 'Clr', '-'],
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
 		var pre = '';
 		var post = '';
@@ -151,12 +144,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 		return [pre, post];
 	},
-	noSignatureClasses: [
-		'collapsibleheader',
-	],
-	excludeFromHeadlineClasses: [
-		'adminMark',
-	],
+	noSignatureClasses: ['collapsibleheader'],
+	excludeFromHeadlineClasses: ['adminMark'],
 	closedDiscussionTemplates: [
 		[
 			'Closed',
@@ -181,10 +170,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			'DeletionFooter',
 		],
 	],
-	closedDiscussionClasses: [
-		'boilerplate',
-		'delh',
-	],
+	closedDiscussionClasses: ['boilerplate', 'delh'],
 	beforeAuthorLinkParse(authorLink) {
 		// https://commons.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
 		return authorLink.lastElementChild;
@@ -198,10 +184,12 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 if (Number(mw.user.options.get('gadget-ThreadedDiscussions')) === 1) {
 	mw.notify(
-		convenientDiscussions.api.wrapHtml('Convenient Discussions is incompatible with Threaded Discussions gadget you have enabled. Please disable Threaded Discussions in <a href="https://commons.wikimedia.org/wiki/Special:Preferences#mw-prefsection-gadgets" target="_blank">gadget preferences</a>.'),
+		convenientDiscussions.api.wrapHtml(
+			'Convenient Discussions is incompatible with Threaded Discussions gadget you have enabled. Please disable Threaded Discussions in <a href="https://commons.wikimedia.org/wiki/Special:Preferences#mw-prefsection-gadgets" target="_blank">gadget preferences</a>.',
+		),
 		{
 			type: 'warn',
 			autoHide: false,
-		}
+		},
 	);
 }

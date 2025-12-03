@@ -60,21 +60,29 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'timezone-utc': 'UTC',
 		'pagetitle': '$1 — {{SITENAME}}',
 		'discussiontools-topicsubscription-button-subscribe': 'подписаться',
-		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Подпишитесь}}, чтобы получать уведомления о новых сообщениях.',
+		'discussiontools-topicsubscription-button-subscribe-tooltip':
+			'{{GENDER:|Подпишитесь}}, чтобы получать уведомления о новых сообщениях.',
 		'discussiontools-topicsubscription-button-unsubscribe': 'отписаться',
-		'discussiontools-topicsubscription-button-unsubscribe-tooltip': '{{GENDER:|Отпишитесь}}, чтобы перестать получать уведомления.',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip':
+			'{{GENDER:|Отпишитесь}}, чтобы перестать получать уведомления.',
 		'discussiontools-topicsubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
-		'discussiontools-topicsubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о новых сообщениях в этой теме.',
+		'discussiontools-topicsubscription-notify-subscribed-body':
+			'{{GENDER:|Вы}} будете получать уведомления о новых сообщениях в этой теме.',
 		'discussiontools-topicsubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
-		'discussiontools-topicsubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о новых сообщениях в этой теме.',
+		'discussiontools-topicsubscription-notify-unsubscribed-body':
+			'{{GENDER:|Вы}} больше не будете получать уведомления о новых сообщениях в этой теме.',
 		'discussiontools-newtopicssubscription-button-subscribe-label': 'Подписаться',
-		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Подпишитесь, чтобы получать уведомления о появлении новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip':
+			'Подпишитесь, чтобы получать уведомления о появлении новых тем на этой странице.',
 		'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Отписаться',
-		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Отмените подписку, чтобы больше не получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip':
+			'Отмените подписку, чтобы больше не получать уведомления о создании новых тем на этой странице.',
 		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
-		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-notify-subscribed-body':
+			'{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
+			'{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
 	},
 
 	specialPageAliases: {
@@ -83,57 +91,25 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		PermanentLink: 'Постоянная_ссылка',
 	},
 
-	substAliases: [
-		'подстановка:',
-		'подст:',
-	],
+	substAliases: ['подстановка:', 'подст:'],
 
 	timezone: 'UTC',
 
 	useGlobalPreferences: true,
 
-	unsignedTemplates: [
-		'Нет подписи',
-		'Unsigned',
-		'UnsignedIP',
-	],
+	unsignedTemplates: ['Нет подписи', 'Unsigned', 'UnsignedIP'],
 
-	pairQuoteTemplates: [
-		[
-			'Начало цитаты',
-		],
-		[
-			'Конец цитаты',
-		],
-	],
+	pairQuoteTemplates: [['Начало цитаты'], ['Конец цитаты']],
 
-	paragraphTemplates: [
-		'pb',
-		'Абзац',
-		'Paragraph break',
-	],
+	paragraphTemplates: ['pb', 'Абзац', 'Paragraph break'],
 
-	outdentTemplates: [
-		'od',
-		'Outdent',
-	],
+	outdentTemplates: ['od', 'Outdent'],
 
-	clearTemplates: [
-		'Clear',
-	],
+	clearTemplates: ['Clear'],
 
-	noSignatureTemplates: [
-		'Перенесено с',
-		'Перенесено на',
-	],
+	noSignatureTemplates: ['Перенесено с', 'Перенесено на'],
 
-	closedDiscussionTemplates: [
-		[
-			'Закрыто',
-			'Closed',
-		],
-		[],
-	],
+	closedDiscussionTemplates: [['Закрыто', 'Closed'], []],
 	signatureEndingRegexp: / \(обсуждение\)/,
 
 	pageWhitelist: [
@@ -144,8 +120,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		/^Викитека:Трибуна читателя/,
 	],
 
-	pageBlacklist: [
-	],
+	pageBlacklist: [],
 
 	userNamespacesByGender: {
 		female: 'Участница',
@@ -178,9 +153,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		/\/Архив-/,
 	],
 
-	pagesWithoutArchives: [
-		/^Викитека:К удалению\//,
-	],
+	pagesWithoutArchives: [/^Викитека:К удалению\//],
 
 	idleFragments: [/^Преамбула$/],
 
@@ -188,42 +161,26 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 	indentationCharMode: 'unify',
 
-	signaturePrefixRegexp: /(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200E\u200F]|&\w+;|&#\d+;)*(?:\s+\()?$/,
+	signaturePrefixRegexp:
+		/(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200E\u200F]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
 	tagName: 'convenient-discussions',
 
 	hookToFireWithAuthorWrappers: 'global.userlinks',
 
-	noSignatureClasses: [
-		'ambox',
-		'NavHead',
-	],
+	noSignatureClasses: ['ambox', 'NavHead'],
 
-	commentAntipatterns: [
-		/--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/,
-	],
+	commentAntipatterns: [/--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/],
 
-	excludeFromHeadlineClasses: [
-		'ch-helperText',
-		'userflags-wrapper',
-		'dclink-wrapper',
-	],
+	excludeFromHeadlineClasses: ['ch-helperText', 'userflags-wrapper', 'dclink-wrapper'],
 
-	noHighlightClasses: [
-		'infobox',
-	],
+	noHighlightClasses: ['infobox'],
 
-	dontConfirmEmptyCommentPages: [
-		/^Викитека:Заявки на статус /,
-		/^Викитека:Голосования\//,
-	],
+	dontConfirmEmptyCommentPages: [/^Викитека:Заявки на статус /, /^Викитека:Голосования\//],
 
 	indentationCharsPattern: String.raw`(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:*#]+)( *)`,
 
-	undoTexts: [
-		'отмена правки',
-		'откат правок',
-	],
+	undoTexts: ['отмена правки', 'откат правок'],
 
 	customCommentFormModules: [
 		{
@@ -247,13 +204,10 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	rejectNode(element) {
 		return (
 			element.classList.contains('ts-Закрыто-header') ||
-
 			// {{clear}}
-			(
-				element.tagName === 'DIV' &&
+			(element.tagName === 'DIV' &&
 				element.getAttribute('style') === 'clear:both;' &&
-				!element.childNodes.length
-			)
+				!element.childNodes.length)
 		);
 	},
 
@@ -263,7 +217,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		if (nextElement && nextElement.classList.contains('userflags-wrapper')) {
 			/** @type {HTMLElement} */ (authorLinkPrototype.parentNode).insertBefore(
 				nextElement,
-				authorLinkPrototype.nextSibling
+				authorLinkPrototype.nextSibling,
 			);
 		}
 	},
@@ -281,7 +235,15 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	},
 
 	getMoveSourcePageCode(targetPageWikilink, signature, timestamp) {
-		return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>\n';
+		return (
+			'{{перенесено на|' +
+			targetPageWikilink +
+			'|' +
+			signature +
+			'}}\n<small>Для бота: ' +
+			timestamp +
+			'</small>\n'
+		);
 	},
 
 	getMoveTargetPageCode(targetPageWikilink, signature) {
@@ -307,16 +269,28 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 			if (window.messagesHighlightColor !== undefined) {
 				const dummyElement = document.createElement('span');
 				dummyElement.style.color = window.messagesHighlightColor;
-				const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (cd.api.getRootElement().querySelectorAll(
-					'.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
-					'.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
-				));
+				const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (
+					cd.api
+						.getRootElement()
+						.querySelectorAll(
+							'.cd-comment-part[style="background-color: ' +
+								dummyElement.style.color +
+								';"],' +
+								'.cd-comment-part[style="background-color: ' +
+								window.messagesHighlightColor +
+								'"]',
+						)
+				);
 				hlmStyledElements.forEach((el) => {
 					el.style.backgroundColor = '';
 				});
 			}
 
-			const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+			const $text = cd.api.wrapHtml(
+				'У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' +
+					generateEditCommonJsLink() +
+					'">вашем common.js</a> (или другом файле настроек).',
+			);
 			mw.notify($text, {
 				type: 'warn',
 				autoHide: false,
@@ -329,7 +303,11 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 	}
 
 	if (typeof window.proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
-		const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+		const $text = cd.api.wrapHtml(
+			'У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' +
+				generateEditCommonJsLink() +
+				'">вашем common.js</a> (или другом файле настроек).',
+		);
 		mw.notify($text, {
 			type: 'warn',
 			autoHide: false,
@@ -341,7 +319,11 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 	}
 
 	if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-		const $text = cd.api.wrapHtml('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
+		const $text = cd.api.wrapHtml(
+			'Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' +
+				mw.util.getUrl(cd.config.scriptPageWikilink) +
+				'#Совместимость">здесь</a>, чтобы обеспечить их совместимость.',
+		);
 		mw.notify($text, {
 			type: 'warn',
 			autoHide: false,
@@ -362,7 +344,7 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
 				}
 			});
 		}
-	)
+	),
 );
 
 mw.hook('convenientDiscussions.commentFormToolbarReady').add(
@@ -416,5 +398,5 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(
 				});
 			}
 		}
-	)
+	),
 );

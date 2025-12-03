@@ -60,21 +60,32 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'nextdiff': 'Newer edit →',
 		'pagetitle': '$1 - Wikimedia Commons',
 		'discussiontools-topicsubscription-button-subscribe': 'subscribe',
-		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Subscribe}} to receive notifications about new comments.',
+		'discussiontools-topicsubscription-button-subscribe-tooltip':
+			'{{GENDER:|Subscribe}} to receive notifications about new comments.',
 		'discussiontools-topicsubscription-button-unsubscribe': 'unsubscribe',
-		'discussiontools-topicsubscription-button-unsubscribe-tooltip': '{{GENDER:|Unsubscribe}} to stop receiving notifications about new comments.',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip':
+			'{{GENDER:|Unsubscribe}} to stop receiving notifications about new comments.',
 		'discussiontools-topicsubscription-notify-subscribed-title': '{{GENDER:|You}} have subscribed!',
-		'discussiontools-topicsubscription-notify-subscribed-body': '{{GENDER:|You}} will receive notifications about new comments in this topic.',
-		'discussiontools-topicsubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
-		'discussiontools-topicsubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications about new comments in this topic.',
+		'discussiontools-topicsubscription-notify-subscribed-body':
+			'{{GENDER:|You}} will receive notifications about new comments in this topic.',
+		'discussiontools-topicsubscription-notify-unsubscribed-title':
+			'{{GENDER:|You}} have unsubscribed.',
+		'discussiontools-topicsubscription-notify-unsubscribed-body':
+			'{{GENDER:|You}} will no longer receive notifications about new comments in this topic.',
 		'discussiontools-newtopicssubscription-button-subscribe-label': 'Subscribe',
-		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Subscribe to receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip':
+			'Subscribe to receive notifications when new topics are started on this page.',
 		'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Unsubscribe',
-		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Unsubscribe to stop receiving notifications when new topics are started on this page.',
-		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|You}} have subscribed!',
-		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|You}} will receive notifications when new topics are started on this page.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip':
+			'Unsubscribe to stop receiving notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-subscribed-title':
+			'{{GENDER:|You}} have subscribed!',
+		'discussiontools-newtopicssubscription-notify-subscribed-body':
+			'{{GENDER:|You}} will receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-title':
+			'{{GENDER:|You}} have unsubscribed.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
+			'{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
 	},
 	specialPageAliases: {
 		Contributions: 'Contributions',
@@ -85,22 +96,9 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	useGlobalPreferences: true,
 	signatureEndingRegexp: / \(talk\)$/,
 	tagName: 'convenient-discussions',
-	unsignedTemplates: [
-		'Unsigned',
-		'Nosig',
-		'Unsigned IP',
-		'Unsigned2',
-		'Unsignedr',
-		'Nosigr',
-	],
-	outdentTemplates: [
-		'outdent',
-	],
-	clearTemplates: [
-		'Clear',
-		'Clr',
-		'-',
-	],
+	unsignedTemplates: ['Unsigned', 'Nosig', 'Unsigned IP', 'Unsigned2', 'Unsignedr', 'Nosigr'],
+	outdentTemplates: ['outdent'],
+	clearTemplates: ['Clear', 'Clr', '-'],
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
 		var pre = '';
 		var post = '';
@@ -123,12 +121,5 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 		return [pre, post];
 	},
-	closedDiscussionTemplates: [
-		[
-			'Hidden archive top',
-		],
-		[
-			'Hidden archive bottom',
-		],
-	],
+	closedDiscussionTemplates: [['Hidden archive top'], ['Hidden archive bottom']],
 });

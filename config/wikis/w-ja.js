@@ -1,5 +1,5 @@
 export default {
-	'messages': {
+	messages: {
 		'sun': '日',
 		'mon': '月',
 		'tue': '火',
@@ -60,37 +60,41 @@ export default {
 		'timezone-utc': 'UTC',
 		'pagetitle': '$1 - {{SITENAME}}',
 		'discussiontools-topicsubscription-button-subscribe': '更新を通知',
-		'discussiontools-topicsubscription-button-subscribe-tooltip': 'この節に新しいコメントが投稿されたら通知します。',
+		'discussiontools-topicsubscription-button-subscribe-tooltip':
+			'この節に新しいコメントが投稿されたら通知します。',
 		'discussiontools-topicsubscription-button-unsubscribe': '通知を解除',
-		'discussiontools-topicsubscription-button-unsubscribe-tooltip': '通知を受け取らないようにします。',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip':
+			'通知を受け取らないようにします。',
 		'discussiontools-topicsubscription-notify-subscribed-title': '通知を有効にしました',
-		'discussiontools-topicsubscription-notify-subscribed-body': 'このトピックに新しいコメントが投稿されたら通知を受け取ります。',
+		'discussiontools-topicsubscription-notify-subscribed-body':
+			'このトピックに新しいコメントが投稿されたら通知を受け取ります。',
 		'discussiontools-topicsubscription-notify-unsubscribed-title': '通知を無効にしました',
-		'discussiontools-topicsubscription-notify-unsubscribed-body': 'このトピックに新しいコメントが投稿されても通知は届かなくなります。',
+		'discussiontools-topicsubscription-notify-unsubscribed-body':
+			'このトピックに新しいコメントが投稿されても通知は届かなくなります。',
 		'discussiontools-newtopicssubscription-button-subscribe-label': '購読',
-		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'このページに新しい話題が追加されたとき、通知を受け取るようにします。',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip':
+			'このページに新しい話題が追加されたとき、通知を受け取るようにします。',
 		'discussiontools-newtopicssubscription-button-unsubscribe-label': '購読解除',
-		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'このページに新しい話題が追加されても通知を受け取らないようにします。',
-		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|}}通知を有効にしました',
-		'discussiontools-newtopicssubscription-notify-subscribed-body': 'このページに新しい話題が追加されると通知が届きます。',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip':
+			'このページに新しい話題が追加されても通知を受け取らないようにします。',
+		'discussiontools-newtopicssubscription-notify-subscribed-title':
+			'{{GENDER:|}}通知を有効にしました',
+		'discussiontools-newtopicssubscription-notify-subscribed-body':
+			'このページに新しい話題が追加されると通知が届きます。',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '通知を停止しました',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '新しい話題が追加されても通知を受け取らないようにしました。',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
+			'新しい話題が追加されても通知を受け取らないようにしました。',
 	},
-	'specialPageAliases': {
-		'Contributions': '投稿記録',
-		'Diff': '差分',
-		'PermanentLink': '固定リンク'
+	specialPageAliases: {
+		Contributions: '投稿記録',
+		Diff: '差分',
+		PermanentLink: '固定リンク',
 	},
-	'substAliases': [
-		'展開:',
-		'展開：'
-	],
-	'thumbAliases': [
-		'サムネイル',
-	],
-	'timezone': 'UTC',
-	'useGlobalPreferences': true,
-	'unsignedTemplates': [
+	substAliases: ['展開:', '展開：'],
+	thumbAliases: ['サムネイル'],
+	timezone: 'UTC',
+	useGlobalPreferences: true,
+	unsignedTemplates: [
 		'Unsigned',
 		'無署名',
 		'Unsig',
@@ -101,38 +105,15 @@ export default {
 		'Unsigip',
 		'署名補完/IP',
 		'Unsigned-IPuser2',
-		'Unsignedip2'
+		'Unsignedip2',
 	],
-	'paragraphTemplates': [
-		'pb',
-		'Paragraph break'
+	paragraphTemplates: ['pb', 'Paragraph break'],
+	outdentTemplates: ['outdent', 'Od', 'インデント戻し'],
+	clearTemplates: ['Clear', 'Clr', '-', 'Br', 'Clear both'],
+	closedDiscussionTemplates: [
+		['古い話題のはじめ', 'Archive top', 'Atop', 'Vfd top'],
+		['Archive bottom', 'Abtm', 'Abot', 'Vfd bottom'],
 	],
-	'outdentTemplates': [
-		'outdent',
-		'Od',
-		'インデント戻し'
-	],
-	'clearTemplates': [
-		'Clear',
-		'Clr',
-		'-',
-		'Br',
-		'Clear both'
-	],
-	'closedDiscussionTemplates': [
-		[
-			'古い話題のはじめ',
-			'Archive top',
-			'Atop',
-			'Vfd top'
-		],
-		[
-			'Archive bottom',
-			'Abtm',
-			'Abot',
-			'Vfd bottom'
-		]
-	],
-	'signatureEndingRegexp': /（会話）/,
-	'tagName': 'convenient-discussions',
+	signatureEndingRegexp: /（会話）/,
+	tagName: 'convenient-discussions',
 };

@@ -60,21 +60,29 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'nextdiff': 'Следующая правка →',
 		'pagetitle': '$1 — Википедия',
 		'discussiontools-topicsubscription-button-subscribe': 'подписаться',
-		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Подпишитесь}}, чтобы получать уведомления о новых сообщениях.',
+		'discussiontools-topicsubscription-button-subscribe-tooltip':
+			'{{GENDER:|Подпишитесь}}, чтобы получать уведомления о новых сообщениях.',
 		'discussiontools-topicsubscription-button-unsubscribe': 'отписаться',
-		'discussiontools-topicsubscription-button-unsubscribe-tooltip': '{{GENDER:|Отпишитесь}}, чтобы перестать получать уведомления.',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip':
+			'{{GENDER:|Отпишитесь}}, чтобы перестать получать уведомления.',
 		'discussiontools-topicsubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
-		'discussiontools-topicsubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о новых сообщениях в этой теме.',
+		'discussiontools-topicsubscription-notify-subscribed-body':
+			'{{GENDER:|Вы}} будете получать уведомления о новых сообщениях в этой теме.',
 		'discussiontools-topicsubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
-		'discussiontools-topicsubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о новых сообщениях в этой теме.',
+		'discussiontools-topicsubscription-notify-unsubscribed-body':
+			'{{GENDER:|Вы}} больше не будете получать уведомления о новых сообщениях в этой теме.',
 		'discussiontools-newtopicssubscription-button-subscribe-label': 'Подписаться',
-		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Подпишитесь, чтобы получать уведомления о появлении новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip':
+			'Подпишитесь, чтобы получать уведомления о появлении новых тем на этой странице.',
 		'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Отписаться',
-		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Отмените подписку, чтобы больше не получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip':
+			'Отмените подписку, чтобы больше не получать уведомления о создании новых тем на этой странице.',
 		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
-		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-notify-subscribed-body':
+			'{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
-		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
+			'{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
 	},
 
 	specialPageAliases: {
@@ -83,15 +91,9 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		PermanentLink: 'Постоянная ссылка',
 	},
 
-	substAliases: [
-		'подстановка:',
-		'подст:',
-	],
+	substAliases: ['подстановка:', 'подст:'],
 
-	thumbAliases: [
-		'мини',
-		'миниатюра',
-	],
+	thumbAliases: ['мини', 'миниатюра'],
 
 	timezone: 'UTC',
 
@@ -207,8 +209,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 					],
 					[
 						/%\(полугодие\)/,
-						({ date }, match) =>
-							date === null ? match[0] : String(date.getMonth() < 6 ? 1 : 2),
+						({ date }, match) => (date === null ? match[0] : String(date.getMonth() < 6 ? 1 : 2)),
 					],
 				]),
 			},
@@ -221,7 +222,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 	indentationCharMode: 'unify',
 
-	signaturePrefixRegexp: /(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
+	signaturePrefixRegexp:
+		/(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
 	signatureEndingRegexp: / \(обс\.\)$/,
 
@@ -270,40 +272,17 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	],
 
 	pairQuoteTemplates: [
-		[
-			'Начало цитаты',
-			'НачалоЦитаты',
-			'Нц',
-		],
-		[
-			'Конец цитаты',
-			'КонецЦитаты',
-			'Кц',
-		],
+		['Начало цитаты', 'НачалоЦитаты', 'Нц'],
+		['Конец цитаты', 'КонецЦитаты', 'Кц'],
 	],
 
-	smallDivTemplates: [
-		'block-small',
-		'Smalldiv',
-		'Div-small',
-	],
+	smallDivTemplates: ['block-small', 'Smalldiv', 'Div-small'],
 
-	paragraphTemplates: [
-		'pb',
-		'Абзац',
-	],
+	paragraphTemplates: ['pb', 'Абзац'],
 
-	outdentTemplates: [
-		'outdent',
-		'Od',
-		'Обратный отступ',
-	],
+	outdentTemplates: ['outdent', 'Od', 'Обратный отступ'],
 
-	clearTemplates: [
-		'Clear',
-		'Clr',
-		'-',
-	],
+	clearTemplates: ['Clear', 'Clr', '-'],
 
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
 		var pre = '{{цс|1=';
@@ -329,8 +308,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	noSignatureClasses: [
 		'ambox',
 		'NavHead',
-		'raaf',  // [[Википедия:Запросы к администраторам/Быстрые]]
-		'ts-Скрытый_блок-title',  // https://ru.wikipedia.org/?diff=141825627
+		'raaf', // [[Википедия:Запросы к администраторам/Быстрые]]
+		'ts-Скрытый_блок-title', // https://ru.wikipedia.org/?diff=141825627
 	],
 
 	noSignatureTemplates: [
@@ -348,21 +327,13 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'Скопировано на',
 	],
 
-	reflistTalkTemplates: [
-		'Reflist-talk',
-	],
+	reflistTalkTemplates: ['Reflist-talk'],
 
 	reflistTalkClasses: ['reflist-talk'],
 
-	commentAntipatterns: [
-		/--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/,
-	],
+	commentAntipatterns: [/--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/],
 
-	excludeFromHeadlineClasses: [
-		'ch-helperText',
-		'userflags-wrapper',
-		'dclink-wrapper',
-	],
+	excludeFromHeadlineClasses: ['ch-helperText', 'userflags-wrapper', 'dclink-wrapper'],
 
 	closedDiscussionTemplates: [
 		[
@@ -396,30 +367,21 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		],
 	],
 
-	closedDiscussionClasses: [
-		'NavContent',
-	],
+	closedDiscussionClasses: ['NavContent'],
 
-	noHighlightClasses: [
-		'infobox',
-	],
+	noHighlightClasses: ['infobox'],
 
-	dontConfirmEmptyCommentPages: [
-		/^Википедия:Заявки на статус /,
-		/^Википедия:Голосования\//,
-	],
+	dontConfirmEmptyCommentPages: [/^Википедия:Заявки на статус /, /^Википедия:Голосования\//],
 
 	indentationCharsPattern: String.raw`(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:*#]+)( *)`,
 
-	undoTexts: [
-		'отмена правки',
-		'откат правок',
-	],
+	undoTexts: ['отмена правки', 'откат правок'],
 
 	textReactions: [
 		{
 			regexp: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
-			message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
+			message:
+				'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
 			name: 'closerTemplateNotNeeded',
 			type: 'notice',
 			checkFunc(commentForm) {
@@ -463,8 +425,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 				/(\n?\n)$/,
 				(newlines) =>
 					'\n' +
-					(/** @type {string} */ (cd.settings.get('closerTemplate')) || '{{'.concat('subst:ПИ}}')) +
-					newlines
+					/** @type {string} */ ((cd.settings.get('closerTemplate')) || '{{'.concat('subst:ПИ}}')) +
+					newlines,
 			);
 		}
 
@@ -474,13 +436,10 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	rejectNode(node) {
 		return (
 			node.classList.contains('ts-Закрыто-header') ||
-
 			// {{clear}}
-			(
-				node.tagName === 'DIV' &&
+			(node.tagName === 'DIV' &&
 				node.getAttribute('style') === 'clear:both;' &&
-				!node.childNodes.length
-			)
+				!node.childNodes.length)
 		);
 	},
 
@@ -490,7 +449,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		if (nextElement?.classList.contains('userflags-wrapper')) {
 			/** @type {HTMLElement} */ (authorLinkPrototype.parentNode).insertBefore(
 				nextElement,
-				authorLinkPrototype.nextSibling
+				authorLinkPrototype.nextSibling,
 			);
 		}
 	},
@@ -500,7 +459,11 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			return true;
 		} else if (/^Википедия:(?:.+ запросы|Запросы|Оспаривание |Форум[/ ])/.test(title)) {
 			return true;
-		} else if (/^Википедия:(?:К восстановлению|К объединению|К переименованию|К разделению|К удалению|К улучшению)/.test(title)) {
+		} else if (
+			/^Википедия:(?:К восстановлению|К объединению|К переименованию|К разделению|К удалению|К улучшению)/.test(
+				title,
+			)
+		) {
 			return false;
 		}
 
@@ -508,7 +471,15 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	},
 
 	getMoveSourcePageCode(targetPageWikilink, signature, timestamp) {
-		return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>\n';
+		return (
+			'{{перенесено на|' +
+			targetPageWikilink +
+			'|' +
+			signature +
+			'}}\n<small>Для бота: ' +
+			timestamp +
+			'</small>\n'
+		);
 	},
 
 	getMoveTargetPageCode(targetPageWikilink, signature) {
@@ -563,16 +534,28 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 			if (window.messagesHighlightColor !== undefined) {
 				const dummyElement = document.createElement('span');
 				dummyElement.style.color = window.messagesHighlightColor;
-				const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (cd.api.getRootElement().querySelectorAll(
-					'.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
-					'.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
-				));
+				const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (
+					cd.api
+						.getRootElement()
+						.querySelectorAll(
+							'.cd-comment-part[style="background-color: ' +
+								dummyElement.style.color +
+								';"],' +
+								'.cd-comment-part[style="background-color: ' +
+								window.messagesHighlightColor +
+								'"]',
+						)
+				);
 				hlmStyledElements.forEach((el) => {
 					el.style.backgroundColor = '';
 				});
 			}
 
-			const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+			const $text = cd.api.wrapHtml(
+				'У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' +
+					generateEditCommonJsLink() +
+					'">вашем common.js</a> (или другом файле настроек).',
+			);
 			mw.notify($text, {
 				type: 'warn',
 				autoHide: false,
@@ -585,7 +568,11 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 	}
 
 	if (typeof window.proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
-		const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+		const $text = cd.api.wrapHtml(
+			'У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' +
+				generateEditCommonJsLink() +
+				'">вашем common.js</a> (или другом файле настроек).',
+		);
 		mw.notify($text, {
 			type: 'warn',
 			autoHide: false,
@@ -597,7 +584,11 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 	}
 
 	if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-		const $text = cd.api.wrapHtml('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
+		const $text = cd.api.wrapHtml(
+			'Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' +
+				mw.util.getUrl(cd.config.scriptPageWikilink) +
+				'#Совместимость">здесь</a>, чтобы обеспечить их совместимость.',
+		);
 		mw.notify($text, {
 			type: 'warn',
 			autoHide: false,
@@ -616,7 +607,7 @@ mw.hook('convenientDiscussions.commentFormCreated').add(
 				userGroups &&
 				userGroups.includes('closer');
 		}
-	)
+	),
 );
 
 mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
@@ -633,7 +624,7 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
 				}
 			});
 		}
-	)
+	),
 );
 
 mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
@@ -686,8 +677,10 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
 	}
 });
 
-mw.util.addCSS('\
+mw.util.addCSS(
+	'\
 	.ts-Закрыто > .cd-commentLevel:not(ol) {\
 		margin-left: -1em;\
 	}\
-');
+',
+);

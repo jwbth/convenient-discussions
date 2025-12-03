@@ -20,14 +20,14 @@ export default {
 		'wednesday': "יום ד'",
 		'thursday': "יום ה'",
 		'friday': "יום ו',",
-		'saturday': "שבת",
+		'saturday': 'שבת',
 		'jan': "ינו'",
 		'feb': "פבר'",
-		'mar': "מרץ",
+		'mar': 'מרץ',
 		'apr': "אפר'",
-		'may': "מאי",
-		'jun': "יוני",
-		'jul': "יולי",
+		'may': 'מאי',
+		'jun': 'יוני',
+		'jul': 'יולי',
 		'aug': "אוג'",
 		'sep': "ספט'",
 		'oct': "אוקט'",
@@ -66,8 +66,8 @@ export default {
 	},
 
 	specialPageAliases: {
-		'Contributions': 'תרומות',
-		'Diff': 'הבדלים',
+		Contributions: 'תרומות',
+		Diff: 'הבדלים',
 	},
 
 	timezone: 'Asia/Tel_Aviv',
@@ -154,7 +154,7 @@ export default {
 
 	paragraphTemplates: ['ש'],
 
-	quoteFormatting: ["{{ציטוטון|1=", "}}\n"],
+	quoteFormatting: ['{{ציטוטון|1=', '}}\n'],
 
 	/**
 	 * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
@@ -189,7 +189,7 @@ export default {
 	 */
 	// badCommentBeginnings: [],
 
-	 /**
+	/**
 	 * Regexps for strings that should be kept in the section endings when adding a reply or
 	 * subsection (so that this reply or subsection is added _before_ them, not after). Usually begin
 	 * with `\n+`. The default value will keep HTML comments placed after an empty line in the section
@@ -446,8 +446,7 @@ export default {
 	},
 
 	getMoveTargetPageCode: function (targetPageWikilink, signature) {
-		return [`{{הועבר|מ=${targetPageWikilink}} ${signature}\n`,
-						`{{הועבר|סוף}} ${signature}\n`];
+		return [`{{הועבר|מ=${targetPageWikilink}} ${signature}\n`, `{{הועבר|סוף}} ${signature}\n`];
 	},
 
 	/**
