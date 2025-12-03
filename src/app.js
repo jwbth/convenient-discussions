@@ -47,12 +47,10 @@ export function initGlobals() {
 
 	const script = mw.loader.moduleRegistry['mediawiki.Title'].script
 	cd.g.phpCharToUpper =
-		(
-			script &&
+		(script &&
 			typeof script === 'object' &&
 			'files' in script &&
-			script.files['phpCharToUpper.json']
-		) ||
+			script.files['phpCharToUpper.json']) ||
 		{}
 
 	cd.page = pageRegistry.getCurrent()
@@ -63,7 +61,7 @@ export function initGlobals() {
 		Object.entries(mw.messages.get())
 			.filter(([key]) => key.startsWith('convenient-discussions'))
 			.map(([, value]) => value)
-			.join(',')
+			.join(','),
 	)
 
 	if (cd.config.tagName && cd.user.isRegistered()) {
@@ -71,9 +69,7 @@ export function initGlobals() {
 		cd.g.summaryLengthLimit = mw.config.get('wgCommentCodePointLimit')
 	} else {
 		cd.g.summaryPostfix = ` ([[${cd.config.scriptPageWikilink}|${cd.s('script-name-short')}]])`
-		cd.g.summaryLengthLimit =
-			mw.config.get('wgCommentCodePointLimit') -
-			cd.g.summaryPostfix.length
+		cd.g.summaryLengthLimit = mw.config.get('wgCommentCodePointLimit') - cd.g.summaryPostfix.length
 	}
 
 	// We don't need it in the script - keep it for now for compatibility with `s-ru` config
@@ -120,8 +116,9 @@ export function initGlobals() {
 		getSectionById: sectionManager.getById.bind(sectionManager),
 		getSectionsByHeadline: sectionManager.getByHeadline.bind(sectionManager),
 		getLastActiveCommentForm: commentFormManager.getLastActive.bind(commentFormManager),
-		getLastActiveAlteredCommentForm: commentFormManager.getLastActiveAltered.bind(commentFormManager),
-		reloadPage: controller.rebootPage.bind(controller),  // Legacy alias for rebootPage
+		getLastActiveAlteredCommentForm:
+			commentFormManager.getLastActiveAltered.bind(commentFormManager),
+		reloadPage: controller.rebootPage.bind(controller), // Legacy alias for rebootPage
 		rebootPage: controller.rebootPage.bind(controller),
 		getRootElement: controller.getRootElement.bind(controller),
 	}
@@ -142,9 +139,8 @@ export function initTimestampTools() {
 	const content = timestampTools.content
 	const user = timestampTools.user
 
-	const [type, offset, timezoneName] = /** @type {string | undefined} */ (
-		mw.user.options.get('timecorrection')
-	)?.split('|') || []
+	const [type, offset, timezoneName] =
+		/** @type {string | undefined} */ (mw.user.options.get('timecorrection'))?.split('|') || []
 	user.timezone =
 		type === 'System'
 			? content.timezone
@@ -157,8 +153,7 @@ export function initTimestampTools() {
 					: undefined
 
 	try {
-		user.isSameAsLocalTimezone =
-			user.timezone === Intl.DateTimeFormat().resolvedOptions().timeZone
+		user.isSameAsLocalTimezone = user.timezone === Intl.DateTimeFormat().resolvedOptions().timeZone
 	} catch {
 		// Empty
 	}
@@ -168,9 +163,7 @@ export function initTimestampTools() {
 	const timezonePattern = `\\((?:${utcPattern}|[A-Z]{1,5}|[+-]\\d{0,4})\\)`
 
 	content.regexp = new RegExp(mainPartPattern + ' +' + timezonePattern)
-	content.parseRegexp = new RegExp(
-		`^([^]*(?:^|[^=])(?:\\b| ))(${content.regexp.source})(?!["»])`
-	)
+	content.parseRegexp = new RegExp(`^([^]*(?:^|[^=])(?:\\b| ))(${content.regexp.source})(?!["»])`)
 	content.noTzRegexp = new RegExp(mainPartPattern)
 	content.matchingGroups = getMatchingGroups(content.dateFormat)
 	content.timezoneRegexp = new RegExp(timezonePattern, 'g')
@@ -219,7 +212,7 @@ function getTimestampMainPartPattern(languageTarget) {
 				string += regexpAlternateGroup(
 					languageTarget === 'content'
 						? getContentLanguageMessages(dateTokenToMessageNames[code])
-						: dateTokenToMessageNames[code].map((token) => mw.msg(token))
+						: dateTokenToMessageNames[code].map((token) => mw.msg(token)),
 				)
 				break
 			}

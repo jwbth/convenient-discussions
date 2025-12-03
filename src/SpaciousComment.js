@@ -115,8 +115,8 @@ class SpaciousComment extends Comment {
 			SpaciousComment.prototypes.get(
 				this.areChildThreadsCollapsed()
 					? 'expandChildThreadsButtonSvg'
-					: 'collapseChildThreadsButtonSvg'
-			)
+					: 'collapseChildThreadsButtonSvg',
+			),
 		)
 	}
 
@@ -134,8 +134,8 @@ class SpaciousComment extends Comment {
 			this.timestampElement.title = title
 			new LiveTimestamp(
 				this.timestampElement,
-				/** @type {Date} */(this.date),
-				!this.hideTimezone
+				/** @type {Date} */ (this.date),
+				!this.hideTimezone,
 			).init()
 		}
 	}
@@ -191,7 +191,7 @@ class SpaciousComment extends Comment {
 		if (this.showContribsLink) {
 			contribsLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.lastElementChild)
 			if (!this.author.isRegistered()) {
-				/** @type {HTMLElement} */ (contribsLink.previousSibling).remove()
+				/** @type {HTMLElement} */ ;(contribsLink.previousSibling).remove()
 				contribsLink.remove()
 			}
 		}
@@ -217,7 +217,7 @@ class SpaciousComment extends Comment {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse?.(
 				this.authorLink,
-				authorLink
+				authorLink,
 			)
 			authorLink.replaceWith(this.authorLink)
 			this.authorLink.classList.add('cd-comment-author')
@@ -245,9 +245,7 @@ class SpaciousComment extends Comment {
 		if (this.authorTalkLink) {
 			// Move the existing author talk link to the header.
 			if (this.extraSignatures.length) {
-				this.authorTalkLink = /** @type {HTMLAnchorElement} */ (
-					this.authorTalkLink.cloneNode(true)
-				)
+				this.authorTalkLink = /** @type {HTMLAnchorElement} */ (this.authorTalkLink.cloneNode(true))
 			}
 			authorTalkLink.replaceWith(this.authorTalkLink)
 			this.authorTalkLink.textContent = cd.s('comment-author-talk')
@@ -380,27 +378,16 @@ class SpaciousComment extends Comment {
 		if (
 			node instanceof Element &&
 			node.textContent.length < 30 &&
-			(
-				(
-					!isSpaced &&
-					(node.getAttribute('style') || ['SUP', 'SUB'].includes(node.tagName)) &&
-
-					// Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
-					!node.classList.length
-				) ||
-
+			((!isSpaced &&
+				(node.getAttribute('style') || ['SUP', 'SUB'].includes(node.tagName)) &&
+				// Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
+				!node.classList.length) ||
 				// Cases like https://ru.wikipedia.org/?diff=119667594
-				(
-					(
-					// https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
-						node.getAttribute('style') ||
-
-						// https://en.wikipedia.org/?oldid=1220458782#c-Dxneo-20240423211700-Dilettante-20240423210300
-						['B', 'STRONG'].includes(node.tagName)
-					) &&
-					node.textContent.toLowerCase() === this.author.getName().toLowerCase()
-				)
-			)
+				(// https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
+				(node.getAttribute('style') ||
+					// https://en.wikipedia.org/?oldid=1220458782#c-Dxneo-20240423211700-Dilettante-20240423210300
+					['B', 'STRONG'].includes(node.tagName)) &&
+					node.textContent.toLowerCase() === this.author.getName().toLowerCase()))
 		) {
 			node.remove()
 		}
@@ -554,11 +541,11 @@ class SpaciousComment extends Comment {
 		// Create SVG icon prototypes for toggle child threads button
 		this.prototypes.add(
 			'collapseChildThreadsButtonSvg',
-			createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0]
+			createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0],
 		)
 		this.prototypes.add(
 			'expandChildThreadsButtonSvg',
-			createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0]
+			createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0],
 		)
 
 		// Initialize spacious-specific action prototypes

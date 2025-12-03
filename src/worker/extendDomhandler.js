@@ -37,8 +37,8 @@ Node.prototype.follows = function follows(node) {
 	return Boolean(
 		DomUtils.compareDocumentPosition(
 			/** @type {import('domhandler').AnyNode} */ (this),
-			/** @type {import('domhandler').AnyNode} */ (node)
-		) & 4 /* FOLLOWING */
+			/** @type {import('domhandler').AnyNode} */ (node),
+		) & 4 /* FOLLOWING */,
 	)
 }
 
@@ -170,10 +170,12 @@ Element.prototype.insertBefore = function insertBefore(node, referenceNode) {
  * @returns {Element[]}
  */
 Element.prototype.getElementsByClassName = function getElementsByClassName(name, limit) {
-	return /** @type {Element[]} */ (this.filterRecursively(
-		(node) => node instanceof Element && node.classList.contains(name),
-		limit
-	))
+	return /** @type {Element[]} */ (
+		this.filterRecursively(
+			(node) => node instanceof Element && node.classList.contains(name),
+			limit,
+		)
+	)
 }
 
 /**
@@ -181,9 +183,12 @@ Element.prototype.getElementsByClassName = function getElementsByClassName(name,
  * @returns {Element[]}
  */
 Element.prototype.getElementsByAttribute = function getElementsByAttribute(regexp) {
-	return /** @type {Element[]} */ (this.filterRecursively(
-		(node) => node instanceof Element && Object.keys(node.attribs).some((name) => regexp.test(name))
-	))
+	return /** @type {Element[]} */ (
+		this.filterRecursively(
+			(node) =>
+				node instanceof Element && Object.keys(node.attribs).some((name) => regexp.test(name)),
+		)
+	)
 }
 
 /**
@@ -192,20 +197,18 @@ Element.prototype.getElementsByAttribute = function getElementsByAttribute(regex
  */
 Element.prototype.querySelectorAll = function querySelectorAll(selector) {
 	const tokens = selector.split(/ *, */)
-	const tagNames = new Set(tokens
-		.filter((token) => !token.startsWith('.'))
-		.map((name) => name.toUpperCase()))
-	const classNames = tokens
-		.filter((token) => token.startsWith('.'))
-		.map((name) => name.slice(1))
+	const tagNames = new Set(
+		tokens.filter((token) => !token.startsWith('.')).map((name) => name.toUpperCase()),
+	)
+	const classNames = tokens.filter((token) => token.startsWith('.')).map((name) => name.slice(1))
 
-	return /** @type {Element[]} */ (this.filterRecursively((node) =>
-		node instanceof Element &&
-		(
-			tagNames.has(node.tagName) ||
-			classNames.some((name) => node.classList.contains(name))
+	return /** @type {Element[]} */ (
+		this.filterRecursively(
+			(node) =>
+				node instanceof Element &&
+				(tagNames.has(node.tagName) || classNames.some((name) => node.classList.contains(name))),
 		)
-	))
+	)
 }
 
 /**
@@ -297,7 +300,6 @@ Object.defineProperty(Element.prototype, 'firstElementChild', {
 })
 
 Object.defineProperty(Element.prototype, 'lastElementChild', {
-
 	/**
 	 * Get the last child node of the element that is an element itself (not, for example, a text
 	 * node or comment node).
@@ -331,7 +333,7 @@ Object.defineProperty(Element.prototype, 'textContent', {
 		// Array#join() would take longer.
 		return this.childNodes.reduce(
 			(text, node) => text + ('textContent' in node ? node.textContent : ''),
-			''
+			'',
 		)
 	},
 
@@ -374,9 +376,7 @@ Element.prototype.hasAttribute = function hasAttribute(name) {
 Element.prototype.getAttribute = function getAttribute(name) {
 	let value = this.attribs[name] || null
 	if (value && typeof value === 'string' && value.includes('&')) {
-		value = value
-			.replace(/&amp;/g, '&')
-			.replace(/&quot;/g, '"')
+		value = value.replace(/&amp;/g, '&').replace(/&quot;/g, '"')
 	}
 
 	return value
@@ -456,7 +456,7 @@ Object.defineProperty(Element.prototype, 'classList', {
 				})
 			}
 
-			classList.remove = (/** @type {string[]} */...names) => {
+			classList.remove = (/** @type {string[]} */ ...names) => {
 				names.forEach((name) => {
 					let classAttr = this.getAttribute('class') || ''
 					const index = ` ${classAttr} `.indexOf(` ${name} `)

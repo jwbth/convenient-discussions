@@ -38,10 +38,11 @@ const mockCd = {
 		mentionRequiresLeadingSpace: false,
 	},
 	getApi: () => ({
-		get: () => Promise.resolve({
-			query: { allusers: [] },
-			pages: {},
-		}),
+		get: () =>
+			Promise.resolve({
+				query: { allusers: [] },
+				pages: {},
+			}),
 	}),
 }
 
@@ -266,9 +267,11 @@ async function benchmarkCommentLinksAutocomplete() {
 }
 
 async function benchmarkAutocompleteManager() {
-	const mockInputs = [{
-		$input: [{ addEventListener: () => {} }],
-	}]
+	const mockInputs = [
+		{
+			$input: [{ addEventListener: () => {} }],
+		},
+	]
 
 	const manager = new AutocompleteManager({
 		types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
@@ -299,9 +302,7 @@ async function benchmarkConcurrentRequests() {
 	mentions.cache.test = ['testuser1', 'testuser2']
 
 	const callback = () => {}
-	const promises = Array.from({ length: 10 }, () =>
-		mentions.getValues('test', callback)
-	)
+	const promises = Array.from({ length: 10 }, () => mentions.getValues('test', callback))
 
 	await Promise.all(promises)
 }
@@ -318,9 +319,15 @@ async function runAllBenchmarks() {
 	try {
 		await benchmark.runBenchmark('Mentions Autocomplete (Cached)', benchmarkMentionsAutocomplete)
 		await benchmark.runBenchmark('Wikilinks Autocomplete (Local)', benchmarkWikilinksAutocomplete)
-		await benchmark.runBenchmark('Templates Autocomplete (100 items)', benchmarkTemplatesAutocomplete)
+		await benchmark.runBenchmark(
+			'Templates Autocomplete (100 items)',
+			benchmarkTemplatesAutocomplete,
+		)
 		await benchmark.runBenchmark('Tags Autocomplete (Predefined)', benchmarkTagsAutocomplete)
-		await benchmark.runBenchmark('Comment Links Autocomplete (50 comments)', benchmarkCommentLinksAutocomplete)
+		await benchmark.runBenchmark(
+			'Comment Links Autocomplete (50 comments)',
+			benchmarkCommentLinksAutocomplete,
+		)
 		await benchmark.runBenchmark('AutocompleteManager Integration', benchmarkAutocompleteManager)
 		await benchmark.runBenchmark('Large Dataset (1000 users)', benchmarkLargeDataset)
 		await benchmark.runBenchmark('Concurrent Requests (10x)', benchmarkConcurrentRequests)
@@ -369,8 +376,12 @@ function checkPerformanceThresholds(results) {
 		const memoryPass = Math.abs(result.memory.delta) <= thresholds.maxMemoryDelta
 
 		console.log(`${timePass && memoryPass ? '✅' : '❌'} ${name}:`)
-		console.log(`   Time: ${result.times.avg.toFixed(2)}ms (max: ${thresholds.maxAvgTime}ms) ${timePass ? '✅' : '❌'}`)
-		console.log(`   Memory: ${benchmark.formatBytes(result.memory.delta)} (max: ${benchmark.formatBytes(thresholds.maxMemoryDelta)}) ${memoryPass ? '✅' : '❌'}`)
+		console.log(
+			`   Time: ${result.times.avg.toFixed(2)}ms (max: ${thresholds.maxAvgTime}ms) ${timePass ? '✅' : '❌'}`,
+		)
+		console.log(
+			`   Memory: ${benchmark.formatBytes(result.memory.delta)} (max: ${benchmark.formatBytes(thresholds.maxMemoryDelta)}) ${memoryPass ? '✅' : '❌'}`,
+		)
 
 		if (!timePass || !memoryPass) {
 			allPassed = false
@@ -383,15 +394,22 @@ function checkPerformanceThresholds(results) {
 }
 
 // Export for use in tests
-export { PERFORMANCE_THRESHOLDS, PerformanceBenchmark, checkPerformanceThresholds, runAllBenchmarks }
+export {
+	PERFORMANCE_THRESHOLDS,
+	PerformanceBenchmark,
+	checkPerformanceThresholds,
+	runAllBenchmarks,
+}
 
 // Run benchmarks if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-	runAllBenchmarks().then(() => {
-		console.log('Benchmarks completed successfully')
-		process.exit(0)
-	}).catch((error) => {
-		console.error('Benchmarks failed:', error)
-		process.exit(1)
-	})
+	runAllBenchmarks()
+		.then(() => {
+			console.log('Benchmarks completed successfully')
+			process.exit(0)
+		})
+		.catch((error) => {
+			console.error('Benchmarks failed:', error)
+			process.exit(1)
+		})
 }

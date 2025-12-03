@@ -48,14 +48,18 @@ export default {
 	 * @memberof JQuery.fn
 	 * @this {JQuery}
 	 */
-	cdScrollTo(alignment = 'top', smooth = true, /** @type {() => void | undefined} */ callback = undefined) {
+	cdScrollTo(
+		alignment = 'top',
+		smooth = true,
+		/** @type {() => void | undefined} */ callback = undefined,
+	) {
 		const defaultScrollPaddingTop = 7
 		const $elements = this.cdRemoveNonElementNodes()
 
 		// Filter out elements like .mw-empty-elt
 		const findFirstVisibleElementOffset = (
 			/** @type {JQuery} */ $els,
-			/** @type {'backward' | 'forward'} */ direction
+			/** @type {'backward' | 'forward'} */ direction,
 		) => {
 			const elements = $els.get()
 			if (direction === 'backward') {
@@ -100,8 +104,8 @@ export default {
 			top = Math.min(
 				offsetFirst.top,
 				offsetFirst.top +
-				(offsetBottom - offsetFirst.top) * 0.5 -
-				/** @type {number} */ ($(window).height()) * 0.5
+					(offsetBottom - offsetFirst.top) * 0.5 -
+					/** @type {number} */ ($(window).height()) * 0.5,
 			)
 		} else if (alignment === 'bottom') {
 			top = offsetBottom - /** @type {number} */ ($(window).height()) + defaultScrollPaddingTop
@@ -142,7 +146,7 @@ export default {
 
 		const elementTop = /** @type {JQuery.Coordinates} */ ($elements.first().offset()).top
 		const elementBottom =
-		/** @type {JQuery.Coordinates} */ ($elements.last().offset()).top +
+			/** @type {JQuery.Coordinates} */ ($elements.last().offset()).top +
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			/** @type {number} */ ($elements.last().height())
 
@@ -200,8 +204,8 @@ export default {
 	 * @this {JQuery}
 	 */
 	cdGetText() {
-		const dummyElement = document.createElement('div');
-		[...this[0].childNodes].forEach((node) => {
+		const dummyElement = document.createElement('div')
+		;[...this[0].childNodes].forEach((node) => {
 			dummyElement.append(node.cloneNode(true))
 		})
 		document.body.append(dummyElement)
@@ -230,13 +234,13 @@ export default {
 				.append(
 					createSvg(20, 20).html(
 						`<path d="M4.34 2.93l12.73 12.73-1.41 1.41L2.93 4.35z" /><path d="M17.07 4.34L4.34 17.07l-1.41-1.41L15.66 2.93z" />
-				`
-					)
+				`,
+					),
 				)
 				.addClass('cd-closeButton cd-icon')
 				.on('click', () => {
 					this.empty()
-				})
+				}),
 		)
 
 		return /** @type {JQuery} */ (/** @type {unknown} */ (this))

@@ -186,7 +186,6 @@ export default class CurrentPage extends Page {
 	addAddTopicButton() {
 		if (
 			!$('#ca-addsection').length ||
-
 			// There is a special welcome text in New Topic Tool for 404 pages.
 			(cd.g.isDtNewTopicToolEnabled && !this.exists())
 		) {
@@ -203,10 +202,10 @@ export default class CurrentPage extends Page {
 					classes: ['cd-button-ooui', 'cd-section-button'],
 				}).on('click', () => {
 					this.addSection()
-				}).$element
+				}).$element,
 			)
-		// If appending to controller.rootElement, it can land on a wrong place, like on 404 pages
-		// with New Topic Tool enabled.
+			// If appending to controller.rootElement, it can land on a wrong place, like on 404 pages
+			// with New Topic Tool enabled.
 			.insertAfter(controller.$root)
 	}
 
@@ -243,7 +242,7 @@ export default class CurrentPage extends Page {
 		initialState,
 		commentForm,
 		preloadConfig = CommentForm.getDefaultPreloadConfig(),
-		newTopicOnTop = false
+		newTopicOnTop = false,
 	) {
 		if (this.addSectionForm) {
 			// Sometimes there is more than one "Add section" button on the page, and they lead to opening
@@ -254,10 +253,10 @@ export default class CurrentPage extends Page {
 				return
 			}
 
-			this.addSectionForm.$element.cdScrollIntoView('center');
+			this.addSectionForm.$element.cdScrollIntoView('center')
 
 			// Headline input may be missing if the `nosummary` preload parameter is truthy.
-			(this.addSectionForm.headlineInput || this.addSectionForm.commentInput).focus()
+			;(this.addSectionForm.headlineInput || this.addSectionForm.commentInput).focus()
 		} else {
 			this.addSectionForm = commentFormManager.setupCommentForm(
 				this,
@@ -267,7 +266,7 @@ export default class CurrentPage extends Page {
 					newTopicOnTop,
 				},
 				initialState,
-				commentForm
+				commentForm,
 			)
 
 			this.$addSectionButtonContainer?.hide()
@@ -306,7 +305,7 @@ export default class CurrentPage extends Page {
 	cleanUpCommentFormTraces() {
 		if (!this.exists()) {
 			cd.loader.$content
-			// In case DT's new topic tool is enabled. This is responsible for correct styles being set.
+				// In case DT's new topic tool is enabled. This is responsible for correct styles being set.
 				.removeClass('ext-discussiontools-init-replylink-open')
 
 				.children('.noarticletext, .warningbox')

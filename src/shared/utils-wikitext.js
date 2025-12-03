@@ -38,18 +38,18 @@ export function maskDistractingCode(code) {
 		.replace(
 			generateTagsRegexp(['nowiki', 'syntaxhighlight', 'source', 'pre']),
 			/** @type {ReplaceCallback} */ (_s, before, _tagName, content, after) =>
-				before + ' '.repeat(content.length) + after
+				before + ' '.repeat(content.length) + after,
 		)
 		.replace(
 			/<!--([^]*?)-->/g,
 			/** @type {ReplaceCallback} */ (_s, content) =>
-				'\u0001' + ' '.repeat(content.length + 5) + '\u0002'
+				'\u0001' + ' '.repeat(content.length + 5) + '\u0002',
 		)
 		.replace(/[\u200E\u200F]/g, () => ' ')
 		.replace(
 			/(<\/?(?:br|p)\b.*)(\n+)(>)/g,
 			/** @type {ReplaceCallback} */ (_s, before, newline, after) =>
-				before + ' '.repeat(newline.length) + after
+				before + ' '.repeat(newline.length) + after,
 		)
 }
 
@@ -71,51 +71,53 @@ export function removeWikiMarkup(code) {
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const fileEmbedRegexp = new RegExp(
 		`\\[\\[${cd.g.filePrefixPattern}[^\\]]+?(?:\\|[^\\]]+?\\| *((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))? *\\]\\]`,
-		'ig'
+		'ig',
 	)
 
-	return code
-	// Remove comments
-		.replace(/<!--[^]*?-->/g, '')
+	return (
+		code
+			// Remove comments
+			.replace(/<!--[^]*?-->/g, '')
 
-	// Remove text hidden by the script (for example, in wikitext.maskDistractingCode)
-		.replace(/\u0001 *\u0002/g, '')
+			// Remove text hidden by the script (for example, in wikitext.maskDistractingCode)
+			.replace(/\u0001 *\u0002/g, '')
 
-	// Pipe trick
-		.replace(cd.g.pipeTrickRegexp, '$1$2$3')
+			// Pipe trick
+			.replace(cd.g.pipeTrickRegexp, '$1$2$3')
 
-	// Extract displayed text from file embeddings
-		.replace(fileEmbedRegexp, (s, m) => cd.g.isThumbRegexp.test(s) ? m : '')
+			// Extract displayed text from file embeddings
+			.replace(fileEmbedRegexp, (s, m) => (cd.g.isThumbRegexp.test(s) ? m : ''))
 
-	// Extract displayed text from [[wikilinks]]
-		.replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
+			// Extract displayed text from [[wikilinks]]
+			.replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
 
-	// For optimization purposes, remove template names
-		.replace(/\{\{:?(?:[^|{}<>\n]+)(?:\|(.+?))?\}\}/g, '$1')
+			// For optimization purposes, remove template names
+			.replace(/\{\{:?(?:[^|{}<>\n]+)(?:\|(.+?))?\}\}/g, '$1')
 
-	// Extract displayed text from [links]
-		.replace(/\[https?:\/\/[^[\]<>"\n ]+ *([^\]]*)\]/g, '$1')
+			// Extract displayed text from [links]
+			.replace(/\[https?:\/\/[^[\]<>"\n ]+ *([^\]]*)\]/g, '$1')
 
-	// Remove bold
-		.replace(/'''(.+?)'''/g, '$1')
+			// Remove bold
+			.replace(/'''(.+?)'''/g, '$1')
 
-	// Remove italics
-		.replace(/''(.+?)''/g, '$1')
+			// Remove italics
+			.replace(/''(.+?)''/g, '$1')
 
-	// Replace <br> with a space
-		.replace(/<br ?\/?>/g, ' ')
+			// Replace <br> with a space
+			.replace(/<br ?\/?>/g, ' ')
 
-	// Remove opening and self-closing tags (won't work with <smth param=">">, but the native parser
-	// fails too).
-		.replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| *\/?)>/g, '')
+			// Remove opening and self-closing tags (won't work with <smth param=">">, but the native parser
+			// fails too).
+			.replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| *\/?)>/g, '')
 
-	// Remove closing tags
-		.replace(/<\/\w+(?: [\w ]+)? *>/g, '')
+			// Remove closing tags
+			.replace(/<\/\w+(?: [\w ]+)? *>/g, '')
 
-	// Replace multiple spaces with one space
-		.replace(/ {2,}/g, ' ')
+			// Replace multiple spaces with one space
+			.replace(/ {2,}/g, ' ')
 
-		.trim()
+			.trim()
+	)
 }
 
 /**
@@ -168,9 +170,9 @@ export function endWithTwoNewlines(code) {
  * @returns {string}
  */
 export function brsToNewlines(code, replacement = '\n') {
-	return code.replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
-		s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => replacement)
-	))
+	return code.replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gim, (s) =>
+		s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => replacement),
+	)
 }
 
 /**
@@ -195,12 +197,9 @@ export function escapePipesOutsideLinks(code, maskedTexts) {
 
 	return textMasker
 		.mask(/\[\[[^\]|]+\|/g, 'link')
-		.withText((text) => (
-			text
-				.replace(/\{/g, '&#123;')
-				.replace(/\}/g, '&#125;')
-				.replace(/\|/g, '{{!}}')
-		))
+		.withText((text) =>
+			text.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;').replace(/\|/g, '{{!}}'),
+		)
 		.unmask(maskedTexts ? 'link' : undefined)
 		.getText()
 }
@@ -216,9 +215,9 @@ export function escapePipesOutsideLinks(code, maskedTexts) {
 export function extractNumeralAndConvertToNumber(string, digits = '0123456789') {
 	return Number(
 		string
-		// Remove non-digits
+			// Remove non-digits
 			.replace(new RegExp(`[^${digits}]`, 'g'), '')
 
-			.replace(new RegExp(`[${digits}]`, 'g'), (s) => String(digits.indexOf(s)))
+			.replace(new RegExp(`[${digits}]`, 'g'), (s) => String(digits.indexOf(s))),
 	)
 }

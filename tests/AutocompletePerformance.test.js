@@ -45,7 +45,8 @@ jest.mock('../src/cd', () => ({
 
 jest.mock('../src/settings', () => ({
 	get: jest.fn((key) => {
-		if (key === 'autocompleteTypes') return ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks']
+		if (key === 'autocompleteTypes')
+			return ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks']
 		if (key === 'useTemplateData') return true
 
 		return null
@@ -146,12 +147,16 @@ describe('Autocomplete Performance Tests', () => {
 		tracker.setMemoryBaseline()
 
 		// Mock TextInputWidget
-		mockInputs = [{
-			$input: [{
-				addEventListener: jest.fn(),
-				removeEventListener: jest.fn(),
-			}],
-		}]
+		mockInputs = [
+			{
+				$input: [
+					{
+						addEventListener: jest.fn(),
+						removeEventListener: jest.fn(),
+					},
+				],
+			},
+		]
 
 		// Reset all mocks
 		jest.clearAllMocks()
@@ -299,10 +304,12 @@ describe('Autocomplete Performance Tests', () => {
 
 			const managers = []
 			for (let i = 0; i < 50; i++) {
-				managers.push(new AutocompleteManager({
-					types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
-					inputs: mockInputs,
-				}))
+				managers.push(
+					new AutocompleteManager({
+						types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
+						inputs: mockInputs,
+					}),
+				)
 			}
 
 			const afterCreation = tracker.getMemoryUsage()
@@ -322,9 +329,11 @@ describe('Autocomplete Performance Tests', () => {
 			const callback = jest.fn()
 
 			// Mock API request to simulate slow response
-			mentions.makeApiRequest = jest.fn().mockImplementation(() =>
-				new Promise((resolve) => setTimeout(() => resolve(['user1', 'user2']), 100))
-			)
+			mentions.makeApiRequest = jest
+				.fn()
+				.mockImplementation(
+					() => new Promise((resolve) => setTimeout(() => resolve(['user1', 'user2']), 100)),
+				)
 
 			// First call (cache miss)
 			const missMeasurement = tracker.startMeasurement('cache-miss')
@@ -353,9 +362,7 @@ describe('Autocomplete Performance Tests', () => {
 			const callback = jest.fn()
 
 			// Make multiple concurrent requests for the same query
-			const promises = Array.from({ length: 10 }, () =>
-				mentions.getValues('testuser', callback)
-			)
+			const promises = Array.from({ length: 10 }, () => mentions.getValues('testuser', callback))
 
 			await Promise.all(promises)
 
@@ -471,7 +478,7 @@ describe('Autocomplete Performance Tests', () => {
 
 			// Make multiple concurrent requests
 			const promises = Array.from({ length: 20 }, (_, i) =>
-				mentions.getValues(`User${i}`, callback)
+				mentions.getValues(`User${i}`, callback),
 			)
 
 			await Promise.all(promises)

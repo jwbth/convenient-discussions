@@ -68,7 +68,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	isMode(mode) {
 		return (
-		/** @type {import('./CommentForm').CommentFormMode} */ (this.commentForm.getMode()) === mode
+			/** @type {import('./CommentForm').CommentFormMode} */ (this.commentForm.getMode()) === mode
 		)
 	}
 
@@ -84,7 +84,7 @@ class CommentFormInputTransformer extends TextMasker {
 			this.indentation = this.target.source.indentation
 		} else if (this.isMode('replyInSection')) {
 			const lastCommentIndentation = this.target.source.extractLastCommentIndentation(
-				this.commentForm
+				this.commentForm,
 			)
 			this.indentation =
 				lastCommentIndentation &&
@@ -98,9 +98,8 @@ class CommentFormInputTransformer extends TextMasker {
 		if (this.isIndented()) {
 			// In the preview mode, imitate a list so that the user will see where it would break on a
 			// real page. This pseudolist's margin is made invisible by CSS.
-			this.restLinesIndentation = this.action === 'preview'
-				? ':'
-				: this.indentation.replace(/\*/g, ':')
+			this.restLinesIndentation =
+				this.action === 'preview' ? ':' : this.indentation.replace(/\*/g, ':')
 		}
 	}
 
@@ -119,8 +118,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {string}
 	 */
 	transform() {
-		return this
-			.processAndMaskSensitiveCode()
+		return this.processAndMaskSensitiveCode()
 			.findWrappers()
 			.initSignatureAndFixCode()
 			.processAllCode()
@@ -158,7 +156,7 @@ class CommentFormInputTransformer extends TextMasker {
 				this.text.match(generateTagsRegexp(['[a-z]+'])) || [],
 
 				// Quote matches
-				this.text.match(cd.g.quoteRegexp) || []
+				this.text.match(cd.g.quoteRegexp) || [],
 			)
 			this.areThereTagsAroundMultipleLines = matches.some((match) => match.includes('\n'))
 			this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match))
@@ -191,21 +189,18 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	initSignatureAndFixCode() {
-		this.signature =
-			this.commentForm.omitSignatureCheckbox?.isSelected()
-				? ''
-				: this.isMode('edit')
-					? this.target.source.signatureCode
-					: cd.g.userSignature
+		this.signature = this.commentForm.omitSignatureCheckbox?.isSelected()
+			? ''
+			: this.isMode('edit')
+				? this.target.source.signatureCode
+				: cd.g.userSignature
 
 		// Make so that the signature doesn't turn out to be at the end of the last item of the list if
 		// the comment contains one.
 		if (
 			this.signature &&
-
 			// The existing signature doesn't start with a newline.
 			!(this.commentForm.isMode('edit') && /^[ \t]*\n/.test(this.signature)) &&
-
 			/(^|\n)[:*#;].*$/.test(this.text)
 		) {
 			this.text += '\n'
@@ -252,19 +247,18 @@ class CommentFormInputTransformer extends TextMasker {
 			// line breaks, the result can be very different. The safest way to fight that is to use
 			// indentation.
 			(_s, newlines, nextLine) =>
-			// Newline sequences will be replaced with a paragraph template below. It could help
-			// visual formatting. If there is no paragraph template, there won't be multiple newlines,
-			// as they will have been removed above.
+				// Newline sequences will be replaced with a paragraph template below. It could help
+				// visual formatting. If there is no paragraph template, there won't be multiple newlines,
+				// as they will have been removed above.
 				(newlines.length > 1 ? '\n\n\n' : '\n') +
-
-				CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, nextLine)
+				CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, nextLine),
 		)
 
 		// Add newlines before and after gallery (yes, even if the comment starts with it).
 		code = code
 			.replace(
 				/(^|[^\n])(\u0001\d+_gallery\u0002)/g,
-				/** @type {ReplaceCallback<2>} */ (_s, before, m) => before + '\n' + m
+				/** @type {ReplaceCallback<2>} */ (_s, before, m) => before + '\n' + m,
 			)
 			.replace(/\u0001\d+_gallery\u0002(?=(?:$|[^\n]))/g, (s) => s + '\n')
 
@@ -285,10 +279,10 @@ class CommentFormInputTransformer extends TextMasker {
 
 		code = code.replace(
 			// Lines following lines with list, table, and gallery markup
-			/^((?:[:*#;\u0003].+|\u0001\d+_gallery\u0002))(\n+)(?![:#])/mg,
+			/^((?:[:*#;\u0003].+|\u0001\d+_gallery\u0002))(\n+)(?![:#])/gm,
 
 			// Add indentation characters
-			/** @type {ReplaceCallback<2>} */ (_s, previousLine, newlines) => (
+			/** @type {ReplaceCallback<2>} */ (_s, previousLine, newlines) =>
 				previousLine +
 				'\n' +
 				CommentFormInputTransformer.prependIndentationToLine(
@@ -297,9 +291,8 @@ class CommentFormInputTransformer extends TextMasker {
 					// Newline sequences will be replaced with a paragraph template below. If there is no
 					// paragraph template, there wouldn't be multiple newlines, as they would've been removed
 					// above.
-					newlines.length > 1 ? '\n\n' : ''
-				)
-			)
+					newlines.length > 1 ? '\n\n' : '',
+				),
 		)
 
 		// We we only check for `:` here, not other markup, because we only add `:` in those places.
@@ -312,7 +305,7 @@ class CommentFormInputTransformer extends TextMasker {
 						? `${m1}<br> \n`
 						: m1 +
 							'\n' +
-							CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, '')
+							CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, ''),
 		)
 
 		return code
@@ -342,11 +335,11 @@ class CommentFormInputTransformer extends TextMasker {
 		const paragraphTemplatePattern = mw.util.escapeRegExp(`{{${cd.config.paragraphTemplates[0]}}}`)
 		const currentLineEndingRegexp = new RegExp(
 			`(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x01\\d+_block\\x02|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$`,
-			'i'
+			'i',
 		)
 		const nextLineBeginningRegexp = new RegExp(
 			`^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}${nextLineInTemplates})`,
-			'i'
+			'i',
 		)
 
 		code = code.replace(
@@ -357,35 +350,28 @@ class CommentFormInputTransformer extends TextMasker {
 
 			/** @type {ReplaceCallback} */ (_s, currentLine, nextLine) =>
 				currentLine +
-
 				// Line break if needed
-				(
-					entireLineRegexp.test(currentLine) ||
-					entireLineRegexp.test(nextLine) ||
-					(
-						!this.isIndented() &&
-						(
-							entireLineFromStartRegexp.test(currentLine) ||
-							entireLineFromStartRegexp.test(nextLine)
-						)
-					) ||
-					fileRegexp.test(currentLine) ||
-					fileRegexp.test(nextLine) ||
-					CommentFormInputTransformer.galleryRegexp.test(currentLine) ||
-					CommentFormInputTransformer.galleryRegexp.test(nextLine) ||
-
-					// Removing <br>s after block elements is not a perfect solution as there would be no
-					// newlines when editing such a comment, but this way we would avoid empty lines in
-					// cases like `</div><br>`.
-					currentLineEndingRegexp.test(currentLine) ||
-					nextLineBeginningRegexp.test(nextLine)
-						? ''
-						: '<br>' + (this.isIndented() ? ' ' : '')
-				) +
-
+				(entireLineRegexp.test(currentLine) ||
+				entireLineRegexp.test(nextLine) ||
+				(!this.isIndented() &&
+					(entireLineFromStartRegexp.test(currentLine) ||
+						entireLineFromStartRegexp.test(nextLine))) ||
+				fileRegexp.test(currentLine) ||
+				fileRegexp.test(nextLine) ||
+				CommentFormInputTransformer.galleryRegexp.test(currentLine) ||
+				CommentFormInputTransformer.galleryRegexp.test(nextLine) ||
+				// Removing <br>s after block elements is not a perfect solution as there would be no
+				// newlines when editing such a comment, but this way we would avoid empty lines in
+				// cases like `</div><br>`.
+				currentLineEndingRegexp.test(currentLine) ||
+				nextLineBeginningRegexp.test(nextLine)
+					? ''
+					: '<br>' + (this.isIndented() ? ' ' : '')) +
 				// Newline if needed. Current line can match galleryRegexp only if the comment will not be
 				// indented.
-				(this.isIndented() && !CommentFormInputTransformer.galleryRegexp.test(nextLine) ? '' : '\n')
+				(this.isIndented() && !CommentFormInputTransformer.galleryRegexp.test(nextLine)
+					? ''
+					: '\n'),
 		)
 
 		return code
@@ -403,7 +389,7 @@ class CommentFormInputTransformer extends TextMasker {
 		code = this.handleIndentedComment(
 			code,
 			Boolean(isInTemplate || this.areThereTagsAroundListMarkup),
-			isInTemplate
+			isInTemplate,
 		)
 		code = this.processNewlines(code, isInTemplate)
 
@@ -450,15 +436,12 @@ class CommentFormInputTransformer extends TextMasker {
 
 		if (
 			this.isMode('addSection') ||
-
 			// To have pretty diffs
-			(
-				this.isMode('edit') &&
+			(this.isMode('edit') &&
 				this.isTargetOpeningSection() &&
-				this.target.source.code.startsWith('\n')
-			)
+				this.target.source.code.startsWith('\n'))
 		) {
-			/** @type {this} */ (this).text = '\n' + /** @type {this} */ (this).text
+			/** @type {this} */ ;(this).text = '\n' + /** @type {this} */ (this).text
 		}
 		this.text = `${equalSigns} ${headline} ${equalSigns}\n${this.text}`
 
@@ -506,10 +489,8 @@ class CommentFormInputTransformer extends TextMasker {
 				? '\n' + (this.isIndented() ? this.restLinesIndentation : '')
 				: ''
 			if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.text)) {
-				const escapedCodeWithSignature = (
-					escapePipesOutsideLinks(this.text.trim(), this.maskedTexts) +
-					this.signature
-				)
+				const escapedCodeWithSignature =
+					escapePipesOutsideLinks(this.text.trim(), this.maskedTexts) + this.signature
 				this.text = `{{${cd.config.smallDivTemplates[0]}|1=${escapedCodeWithSignature}}}`
 			} else {
 				this.text = `<small>${before}${this.text}${this.signature}</small>`
@@ -645,9 +626,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	static listMarkupToTags(code) {
 		return CommentFormInputTransformer.listsToTags(
-			CommentFormInputTransformer.linesToLists(
-				code.split('\n').map((line) => ({ text: line }))
-			)
+			CommentFormInputTransformer.linesToLists(code.split('\n').map((line) => ({ text: line }))),
 		)
 	}
 
@@ -679,7 +658,6 @@ class CommentFormInputTransformer extends TextMasker {
 				const listType = isKeyOf(firstChar, this.listTags) ? this.listTags[firstChar] : undefined
 				if (
 					this.isList(accumulatedList) &&
-
 					// Met another list markup, so finalize the currently accumulated one.
 					listType !== accumulatedList.type
 				) {

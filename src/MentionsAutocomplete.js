@@ -107,15 +107,11 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	validateInput(text) {
 		return Boolean(
 			text &&
-			text.length <= 85 &&
-			!/[#<>[\]|{}/@:]/.test(text) &&
-
-			// 5 spaces in a user name seem too many. "Jack who built the house" has 4 :-)
-			(
-				text.match(
-					new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')
-				) || []
-			).length <= 4
+				text.length <= 85 &&
+				!/[#<>[\]|{}/@:]/.test(text) &&
+				// 5 spaces in a user name seem too many. "Jack who built the house" has 4 :-)
+				(text.match(new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')) || [])
+					.length <= 4,
 		)
 	}
 

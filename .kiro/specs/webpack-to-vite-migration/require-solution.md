@@ -3,6 +3,7 @@
 ## Problem
 
 Vite doesn't transform `require()` calls like Webpack with Babel did. The `require()` calls in the codebase serve two purposes:
+
 1. **Lazy module loading** - to avoid circular dependencies and defer loading
 2. **CSS imports** - to load Less/CSS files
 
@@ -24,15 +25,17 @@ Convert `require()` to dynamic `import()` manually. This is the cleanest approac
 #### Pattern 1: CSS/Less Imports
 
 **Before:**
+
 ```js
-require('./global.less');
-require('./Comment.less');
+require('./global.less')
+require('./Comment.less')
 ```
 
 **After:**
+
 ```js
-import './global.less';
-import './Comment.less';
+import './global.less'
+import './Comment.less'
 ```
 
 Move these to the top of the file as static imports.
@@ -40,14 +43,16 @@ Move these to the top of the file as static imports.
 #### Pattern 2: Module Imports with `.default`
 
 **Before:**
+
 ```js
-const dialog = new (require('./SettingsDialog').default)(args);
+const dialog = new (require('./SettingsDialog').default)(args)
 ```
 
 **After:**
+
 ```js
-const { default: SettingsDialog } = await import('./SettingsDialog.js');
-const dialog = new SettingsDialog(args);
+const { default: SettingsDialog } = await import('./SettingsDialog.js')
+const dialog = new SettingsDialog(args)
 ```
 
 Make sure the containing function is `async`.
@@ -55,13 +60,15 @@ Make sure the containing function is `async`.
 #### Pattern 3: Simple Module Imports
 
 **Before:**
+
 ```js
-const userRegistry = require('./userRegistry').default;
+const userRegistry = require('./userRegistry').default
 ```
 
 **After:**
+
 ```js
-const { default: userRegistry } = await import('./userRegistry.js');
+const { default: userRegistry } = await import('./userRegistry.js')
 ```
 
 ### Option 2: Use Babel Plugin
@@ -70,8 +77,8 @@ Keep Babel in the Vite pipeline to transform `require()` calls:
 
 ```js
 // vite.config.mjs
-import { defineConfig } from 'vite';
-import babel from 'vite-plugin-babel';
+import { defineConfig } from 'vite'
+import babel from 'vite-plugin-babel'
 
 export default defineConfig({
   plugins: [
@@ -79,15 +86,18 @@ export default defineConfig({
       babelConfig: {
         plugins: [
           // Transform require() to import()
-          ['babel-plugin-transform-commonjs', {
-            transformImportCall: true,
-          }],
+          [
+            'babel-plugin-transform-commonjs',
+            {
+              transformImportCall: true,
+            },
+          ],
         ],
       },
       filter: /\.[jt]sx?$/,
     }),
   ],
-});
+})
 ```
 
 ### Option 3: Create a Require Shim
@@ -96,26 +106,29 @@ Create a runtime shim that makes `require()` work:
 
 ```js
 // src/requireShim.js
-const moduleCache = new Map();
+const moduleCache = new Map()
 
 export function require(modulePath) {
   if (moduleCache.has(modulePath)) {
-    return moduleCache.get(modulePath);
+    return moduleCache.get(modulePath)
   }
 
   // This won't work for dynamic paths, but can work for known modules
-  throw new Error(`Module not found: ${modulePath}. Use dynamic import() instead.`);
+  throw new Error(
+    `Module not found: ${modulePath}. Use dynamic import() instead.`,
+  )
 }
 
 // For specific modules, you can pre-register them:
 export function registerModule(path, module) {
-  moduleCache.set(path, module);
+  moduleCache.set(path, module)
 }
 ```
 
 Then in your code:
+
 ```js
-import { require } from './requireShim.js';
+import { require } from './requireShim.js'
 ```
 
 ### How the Plugin Works
@@ -130,43 +143,47 @@ The plugin (`vite-plugin-require-transform.mjs`) runs during the Vite build proc
 ### Transformation Patterns
 
 #### Pattern 1: CSS/Less Imports
+
 ```js
 // Before
-require('./global.less');
+require('./global.less')
 
 // After
-import './global.less';
+import './global.less'
 /* CSS import hoisted */
 ```
 
 #### Pattern 2: Default Imports
+
 ```js
 // Before
-const dialog = new (require('./SettingsDialog').default)(args);
+const dialog = new (require('./SettingsDialog').default)(args)
 
 // After
-import _require_0 from './SettingsDialog.js';
-const dialog = new (_require_0)(args);
+import _require_0 from './SettingsDialog.js'
+const dialog = new _require_0(args)
 ```
 
 #### Pattern 3: Destructuring Imports
+
 ```js
 // Before
-const { isVisible } = require('./utils-window');
+const { isVisible } = require('./utils-window')
 
 // After
-import * as _require_0 from './utils-window.js';
-const { isVisible } = _require_0;
+import * as _require_0 from './utils-window.js'
+const { isVisible } = _require_0
 ```
 
 #### Pattern 4: Whole Module Imports
+
 ```js
 // Before
-const settings = require('./settings').default;
+const settings = require('./settings').default
 
 // After
-import _require_0 from './settings.js';
-const settings = _require_0;
+import _require_0 from './settings.js'
+const settings = _require_0
 ```
 
 ### Manual Changes Required
@@ -174,29 +191,31 @@ const settings = _require_0;
 In addition to the plugin, some manual changes were needed in `src/app.js`:
 
 **Changed `go()` and `setStrings()` to async** because they have conditional imports:
+
 ```js
 // Before
 function setStrings() {
   if (!SINGLE_LANG_CODE) {
-    require('../dist/convenientDiscussions-i18n/en.js');
+    require('../dist/convenientDiscussions-i18n/en.js')
   }
 }
 
 // After
 async function setStrings() {
   if (!SINGLE_LANG_CODE) {
-    await import('../dist/convenientDiscussions-i18n/en.js');
+    await import('../dist/convenientDiscussions-i18n/en.js')
   }
 }
 ```
 
 **Updated callers** to handle the async functions:
+
 ```js
 $(() => {
   go().catch((error) => {
-    console.error('Error in go():', error);
-  });
-});
+    console.error('Error in go():', error)
+  })
+})
 ```
 
 ## Result
@@ -243,7 +262,6 @@ Total: ~38 usages (excluding mw.loader.require)
 
 Do NOT convert `mw.loader.require()` calls - these are MediaWiki's own module system and must stay as-is.
 
-
 ---
 
 # Worker Inlining Solution
@@ -270,6 +288,7 @@ This approach truly inlines the worker code while avoiding minification issues.
 ### Custom Vite Plugin (`vite-plugin-inline-worker-string.mjs`)
 
 The plugin:
+
 - Resolves imports like `'./worker/worker-gate?worker&inline-string'`
 - Builds the worker separately using Vite's build API
 - Returns the minified worker code as a JSON-stringified export
@@ -278,20 +297,20 @@ The plugin:
 ### Usage (`src/convenientDiscussions.js`)
 
 ```javascript
-import workerCode from './worker/worker-gate?worker&inline-string';
+import workerCode from './worker/worker-gate?worker&inline-string'
 
 // Later in getWorker():
-const blob = new Blob([workerCode], { type: 'application/javascript' });
-const blobUrl = URL.createObjectURL(blob);
-this.worker = new Worker(blobUrl);
+const blob = new Blob([workerCode], { type: 'application/javascript' })
+const blobUrl = URL.createObjectURL(blob)
+this.worker = new Worker(blobUrl)
 ```
 
 ### Type Declaration (`src/worker-gate.d.ts`)
 
 ```typescript
 declare module '*?worker&inline-string' {
-  const workerCode: string;
-  export default workerCode;
+  const workerCode: string
+  export default workerCode
 }
 ```
 

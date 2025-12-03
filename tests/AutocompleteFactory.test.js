@@ -136,13 +136,7 @@ describe('AutocompleteFactory', () => {
 		it('should return all supported autocomplete types', () => {
 			const types = AutocompleteFactory.getSupportedTypes()
 
-			expect(types).toEqual([
-				'mentions',
-				'wikilinks',
-				'templates',
-				'tags',
-				'commentLinks',
-			])
+			expect(types).toEqual(['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'])
 		})
 
 		it('should return array with correct length', () => {

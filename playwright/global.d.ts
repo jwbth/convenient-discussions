@@ -1,8 +1,8 @@
 declare global {
 	interface Window {
-		mw: any;
-		$: any;
+		mw: any
+		$: any
 	}
 }
 
-export {};
+export {}

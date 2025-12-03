@@ -360,7 +360,8 @@ const defaultConfig = {
 	 * @default
 	 * /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200e\u200f\u2060]|&amp;\w+;|&amp;#\d+;)*(?:\s+\()?$/
 	 */
-	signaturePrefixRegexp: /(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
+	signaturePrefixRegexp:
+		/(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
 	/**
 	 * Unchangable text (usually a user talk page link) at the end of Mediawiki:Signature (visible
@@ -428,12 +429,7 @@ const defaultConfig = {
 	 *   'unsignedIP2',
 	 * ]
 	 */
-	unsignedTemplates: [
-		'unsigned',
-		'unsignedIP',
-		'unsigned2',
-		'unsignedIP2',
-	],
+	unsignedTemplates: ['unsigned', 'unsignedIP', 'unsigned2', 'unsignedIP2'],
 
 	/**
 	 * Name of the class that the unsigned templates set to its container element.
@@ -454,10 +450,7 @@ const defaultConfig = {
 	 *   [],
 	 * ]
 	 */
-	pairQuoteTemplates: [
-		[],
-		[],
-	],
+	pairQuoteTemplates: [[], []],
 
 	/**
 	 * Name of the templates that are analogs of
@@ -679,10 +672,7 @@ const defaultConfig = {
 	 *   [],
 	 * ]
 	 */
-	closedDiscussionTemplates: [
-		[],
-		[],
-	],
+	closedDiscussionTemplates: [[], []],
 
 	/**
 	 * Classes of elements that are wrapped around closed discussions.
@@ -912,7 +902,7 @@ const defaultConfig = {
 			'<div class="cd-moveMark">' +
 			convenientDiscussions.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) +
 			'</div>\n'
-		);
+		)
 	},
 
 	/**
@@ -930,7 +920,7 @@ const defaultConfig = {
 			'<div class="cd-moveMark">' +
 			convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) +
 			'</div>\n'
-		);
+		)
 	},
 
 	/**
@@ -942,8 +932,8 @@ const defaultConfig = {
 	 * }
 	 */
 	getAnchorCode(id) {
-		return '<span id="' + id + '"></span>';
+		return '<span id="' + id + '"></span>'
 	},
-};
+}
 
-export default defaultConfig;
+export default defaultConfig

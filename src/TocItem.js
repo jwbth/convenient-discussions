@@ -59,7 +59,7 @@ export default class TocItem {
 		}
 
 		const levelMatch = li.className.match(
-			this.toc.isInSidebar() ? /vector-toc-level-(\d+)/ : /\btoclevel-(\d+)/
+			this.toc.isInSidebar() ? /vector-toc-level-(\d+)/ : /\btoclevel-(\d+)/,
 		)
 		if (levelMatch) {
 			this.level = Number(levelMatch[1])
@@ -84,9 +84,10 @@ export default class TocItem {
 
 		this.$text
 			.contents()
-			.filter((_, node) =>
-				isText(node) ||
-				(isElement(node) && ![...node.classList].some((name) => name.match(/^(cd-|vector-)/)))
+			.filter(
+				(_, node) =>
+					isText(node) ||
+					(isElement(node) && ![...node.classList].some((name) => name.match(/^(cd-|vector-)/))),
 			)
 			.eq(-1)
 			.after(
@@ -95,11 +96,11 @@ export default class TocItem {
 					.find('*')
 					.each((_, el) => {
 						if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
-							[...el.attributes].forEach((attr) => {
+							;[...el.attributes].forEach((attr) => {
 								el.removeAttribute(attr.name)
 							})
 						} else {
-							[...el.childNodes].forEach((child) => {
+							;[...el.childNodes].forEach((child) => {
 								el.before(child)
 							})
 							el.remove()
@@ -107,7 +108,7 @@ export default class TocItem {
 					})
 					.end()
 					.contents()
-					.get()
+					.get(),
 			)
 			.end()
 			.remove()
@@ -123,19 +124,17 @@ export default class TocItem {
 		if (!this.canBeModified) return
 
 		if (subscriptionState) {
-			this.$link
-				.find(this.toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
-				.append(
-					$('<span>').addClass('cd-toc-subscriptionIcon-before'),
-					$('<span>')
-						.addClass('cd-toc-subscriptionIcon cd-icon')
-						.append(
-							createSvg(14, 14, 20, 20).html(
-								`<path d="M16 7a5.38 5.38 0 0 0-4.46-4.85C11.6 1.46 11.53 0 10 0S8.4 1.46 8.46 2.15A5.38 5.38 0 0 0 4 7v6l-2 2v1h16v-1l-2-2zm-6 13a3 3 0 0 0 3-3H7a3 3 0 0 0 3 3z" />`
-							)
-						)
-						.attr('title', cd.s('toc-watched'))
-				)
+			this.$link.find(this.toc.isInSidebar() ? '.vector-toc-text' : '.toctext').append(
+				$('<span>').addClass('cd-toc-subscriptionIcon-before'),
+				$('<span>')
+					.addClass('cd-toc-subscriptionIcon cd-icon')
+					.append(
+						createSvg(14, 14, 20, 20).html(
+							`<path d="M16 7a5.38 5.38 0 0 0-4.46-4.85C11.6 1.46 11.53 0 10 0S8.4 1.46 8.46 2.15A5.38 5.38 0 0 0 4 7v6l-2 2v1h16v-1l-2-2zm-6 13a3 3 0 0 0 3-3H7a3 3 0 0 0 3 3z" />`,
+						),
+					)
+					.attr('title', cd.s('toc-watched')),
+			)
 		} else {
 			this.$link
 				.removeAttr('title')

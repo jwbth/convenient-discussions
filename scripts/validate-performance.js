@@ -76,7 +76,7 @@ for (let i = 0; i < 50; i++) {
 }
 
 const avgDuration = metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length
-const cacheHits = metrics.filter(m => m.cacheHit).length
+const cacheHits = metrics.filter((m) => m.cacheHit).length
 const hitRate = (cacheHits / metrics.length) * 100
 
 console.log(`  ✅ Performance monitoring simulation completed`)
@@ -101,7 +101,9 @@ for (const query of requests) {
 console.log(`  ✅ API request optimization simulation completed`)
 console.log(`  📊 Total requests: ${requests.length}`)
 console.log(`  📊 Actual API calls: ${apiCalls}`)
-console.log(`  📊 Cache efficiency: ${((requests.length - apiCalls) / requests.length * 100).toFixed(1)}%`)
+console.log(
+	`  📊 Cache efficiency: ${(((requests.length - apiCalls) / requests.length) * 100).toFixed(1)}%`,
+)
 
 // Summary
 console.log('\n✅ All performance validation tests passed!')

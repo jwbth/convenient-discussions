@@ -1,187 +1,201 @@
 /// <reference types="types-mediawiki" />
 
-import type { ApiResponse } from 'types-mediawiki/mw/Api';
+import type { ApiResponse } from 'types-mediawiki/mw/Api'
 
-import type CheckboxInputWidget from './CheckboxInputWidget';
-import type Comment from './Comment';
-import type CommentForm from './CommentForm';
-import type { CommentFormMode } from './CommentForm';
-import type CommentSource from './CommentSource';
-import type Section from './Section';
-import type SectionSource from './SectionSource';
-import type TextInputWidget from './TextInputWidget';
-import type { ConvenientDiscussions } from './loader/cd';
+import type CheckboxInputWidget from './CheckboxInputWidget'
+import type Comment from './Comment'
+import type CommentForm from './CommentForm'
+import type { CommentFormMode } from './CommentForm'
+import type CommentSource from './CommentSource'
+import type Section from './Section'
+import type SectionSource from './SectionSource'
+import type TextInputWidget from './TextInputWidget'
+import type { ConvenientDiscussions } from './loader/cd'
 
 declare global {
-	const IS_STAGING: boolean;
-	const IS_DEV: boolean;
-	const SINGLE_CONFIG_FILE_NAME: string | undefined;
-	const SINGLE_LANG_CODE: string | undefined;
-	const CACHE_BUSTER: string;
-	const moment: (...args: any) => any;
+	const IS_STAGING: boolean
+	const IS_DEV: boolean
+	const SINGLE_CONFIG_FILE_NAME: string | undefined
+	const SINGLE_LANG_CODE: string | undefined
+	const CACHE_BUSTER: string
+	const moment: (...args: any) => any
 
-	type Direction = 'ltr' | 'rtl';
-	type ListType = 'dl' | 'ul' | 'ol';
+	type Direction = 'ltr' | 'rtl'
+	type ListType = 'dl' | 'ul' | 'ol'
 
 	// Helper type to check if a string is present in the array
 	type HasProperty<T extends readonly string[], K extends string> = K extends T[number]
 		? true
-		: false;
+		: false
 
-	type ApiAnyResponse = ApiResponse | ApiRejectResponse;
+	type ApiAnyResponse = ApiResponse | ApiRejectResponse
 
 	/** See {@link https://github.com/microsoft/TypeScript/blob/837e3a1df996b505e1d376fa46166740b7ed5450/src/lib/es2015.promise.d.ts#L13} */
 	type PromiseExecutor<T> = (
 		resolve: (value: T | PromiseLike<T>) => void,
-		reject: (reason?: any) => void
-	) => void;
+		reject: (reason?: any) => void,
+	) => void
 	type AsyncPromiseExecutor<T> = (
 		resolve: (value: T | PromiseLike<T>) => void,
-		reject: (reason?: any) => void
-	) => Promise<void>;
+		reject: (reason?: any) => void,
+	) => Promise<void>
 
 	interface ApiResponseQueryPage {
-		title: string;
-		pageid: number | undefined;
-		known?: boolean;
-		missing?: boolean;
-		invalid?: boolean;
+		title: string
+		pageid: number | undefined
+		known?: boolean
+		missing?: boolean
+		invalid?: boolean
 		thumbnail?: {
-			source: string;
-			width: number;
-			height: number;
-		};
+			source: string
+			width: number
+			height: number
+		}
 		pageprops?: {
-			disambiguation?: '';
-		};
-		description?: string;
-		ns: number;
-		normalizedTitle?: string;
-		index?: number;
-		contentmodel: string;
-		redirects?: { title: string }[];
-		revisions?: Revision[];
+			disambiguation?: ''
+		}
+		description?: string
+		ns: number
+		normalizedTitle?: string
+		index?: number
+		contentmodel: string
+		redirects?: { title: string }[]
+		revisions?: Revision[]
 	}
 
 	interface BaseRevision {
-		revid: number;
-		parentid: number;
+		revid: number
+		parentid: number
 		slots?: {
 			main: {
-				contentmodel: string;
-				contentformat: string;
-				content: string;
-				nosuchsection: boolean;
-			};
-		};
-		comment: string;
-		minor: boolean;
-		timestamp: string;
-		user: string;
+				contentmodel: string
+				contentformat: string
+				content: string
+				nosuchsection: boolean
+			}
+		}
+		comment: string
+		minor: boolean
+		timestamp: string
+		user: string
 	}
 
 	export interface APIResponseTemplateData {
-		pages: TemplateDataPages;
+		pages: TemplateDataPages
 	}
 
-	export type TemplateDataPages = Record<string, TemplateData>;
+	export type TemplateDataPages = Record<string, TemplateData>
 
 	interface TemplateData {
-		title: string;
-		ns: number;
-		description?: StringsByKey;
-		params?: Record<string, TemplateDataParam>;
-		format?: string;
-		paramOrder?: string[];
-		sets?: AnyByKey[];
-		maps?: AnyByKey[];
+		title: string
+		ns: number
+		description?: StringsByKey
+		params?: Record<string, TemplateDataParam>
+		format?: string
+		paramOrder?: string[]
+		sets?: AnyByKey[]
+		maps?: AnyByKey[]
 	}
 
 	interface TemplateDataParam {
-		description: StringsByKey | null;
-		type: string;
-		label: StringsByKey | null;
-		required: boolean;
-		suggested: boolean;
-		deprecated: boolean;
-		aliases: any[];
-		autovalue: null | string;
-		default: null;
-		suggestedvalues: string[];
-		example: StringsByKey | null;
+		description: StringsByKey | null
+		type: string
+		label: StringsByKey | null
+		required: boolean
+		suggested: boolean
+		deprecated: boolean
+		aliases: any[]
+		autovalue: null | string
+		default: null
+		suggestedvalues: string[]
+		example: StringsByKey | null
 	}
 
 	// Generic Revision type that conditionally includes properties
 	type Revision<T extends readonly string[] = ['ids', 'timestamp', 'flags', 'comment', 'user']> =
-		Expand<BaseRevision & RevisionConditionalProperties<T>>;
+		Expand<BaseRevision & RevisionConditionalProperties<T>>
 
 	// Conditional type that adds properties based on the presence of strings in the array
-	type RevisionConditionalProperties<T extends readonly string[]> =
-		& (HasProperty<T, 'ids'> extends true ? { ids: string } : {}) &
+	type RevisionConditionalProperties<T extends readonly string[]> = (HasProperty<
+		T,
+		'ids'
+	> extends true
+		? { ids: string }
+		: {}) &
 		(HasProperty<T, 'timestamp'> extends true ? { timestamp: string } : {}) &
 		(HasProperty<T, 'flags'> extends true ? { minor: boolean } : {}) &
 		(HasProperty<T, 'comment'> extends true ? { comment: string } : {}) &
 		(HasProperty<T, 'user'> extends true ? { user: string } : {}) &
-		(HasProperty<T, 'parsedcomment'> extends true ? { parsedcomment: string } : {});
+		(HasProperty<T, 'parsedcomment'> extends true ? { parsedcomment: string } : {})
 
 	interface FromTo {
-		from: string;
-		to: string;
-		tofragment?: string;
-		index: number;
+		from: string
+		to: string
+		tofragment?: string
+		index: number
 	}
 
 	interface ApiResponseQueryBase {
 		query?: {
-			redirects?: FromTo[];
-			normalized?: FromTo[];
-		};
-		curtimestamp?: string;
-		batchcomplete?: boolean;
-		continue?: object;
+			redirects?: FromTo[]
+			normalized?: FromTo[]
+		}
+		curtimestamp?: string
+		batchcomplete?: boolean
+		continue?: object
 	}
 
 	interface ApiResponseQueryContentPages {
 		query?: {
-			pages?: ApiResponseQueryPage[];
-		};
+			pages?: ApiResponseQueryPage[]
+		}
 	}
 
-	type ApiResponseQuery<T extends object> = ApiResponseQueryBase & T;
+	type ApiResponseQuery<T extends object> = ApiResponseQueryBase & T
 
 	interface ApiResponseQueryContentGlobalUserInfo {
 		query?: {
 			globaluserinfo: {
-				home: string;
-				id: number;
-				registration: string;
-				name: string;
-			};
-		};
+				home: string
+				id: number
+				registration: string
+				name: string
+			}
+		}
 	}
 
 	interface ApiResponseQueryContentAllUsers {
 		query?: {
 			allusers: {
-				userid: number;
-				name: string;
-			}[];
-		};
+				userid: number
+				name: string
+			}[]
+		}
 	}
 
-	type ControlType = 'button' | 'checkbox' | 'copyText' | 'multicheckbox' | 'multilineText' | 'multitag' | 'number' | 'radio' | 'text' | 'title';
+	type ControlType =
+		| 'button'
+		| 'checkbox'
+		| 'copyText'
+		| 'multicheckbox'
+		| 'multilineText'
+		| 'multitag'
+		| 'number'
+		| 'radio'
+		| 'text'
+		| 'title'
 
 	interface ControlTypeToControl {
-		button: ButtonControl;
-		checkbox: CheckboxControl;
-		copyText: CopyTextControl;
-		multicheckbox: MulticheckboxControl;
-		multilineText: MultilineTextInputControl;
-		multitag: MultitagControl;
-		number: NumberControl;
-		radio: RadioControl;
-		title: TitleControl;
-		text: TextControl;
+		button: ButtonControl
+		checkbox: CheckboxControl
+		copyText: CopyTextControl
+		multicheckbox: MulticheckboxControl
+		multilineText: MultilineTextInputControl
+		multitag: MultitagControl
+		number: NumberControl
+		radio: RadioControl
+		title: TitleControl
+		text: TextControl
 	}
 
 	type ControlTypesByName<T> = Expand<{
@@ -191,84 +205,84 @@ declare global {
 				? ControlTypeToControl[T[K]]
 				: T[K] extends ControlType | undefined
 					? ControlTypeToControl[Exclude<T[K], undefined>] | undefined
-					: never;
-	}>;
+					: never
+	}>
 
 	interface GenericControl<T extends ControlType> {
-		type: T;
-		field: OO.ui.FieldLayout<ControlTypeToWidget[T]>;
-		input: ControlTypeToWidget[T];
+		type: T
+		field: OO.ui.FieldLayout<ControlTypeToWidget[T]>
+		input: ControlTypeToWidget[T]
 	}
 
-	type ButtonControl = GenericControl<'button'>;
+	type ButtonControl = GenericControl<'button'>
 
-	type CheckboxControl = GenericControl<'checkbox'>;
+	type CheckboxControl = GenericControl<'checkbox'>
 
 	type CopyTextControl = Omit<GenericControl<'copyText'>, 'field'> & {
-		field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout;
-	};
+		field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout
+	}
 
-	type MulticheckboxControl = GenericControl<'multicheckbox'>;
+	type MulticheckboxControl = GenericControl<'multicheckbox'>
 
-	type MultilineTextInputControl = GenericControl<'multilineText'>;
+	type MultilineTextInputControl = GenericControl<'multilineText'>
 
 	type MultitagControl = GenericControl<'multitag'> & {
-		uiToData?: (value: string[]) => (string | [string, string])[];
-	};
+		uiToData?: (value: string[]) => (string | [string, string])[]
+	}
 
-	type NumberControl = GenericControl<'number'>;
+	type NumberControl = GenericControl<'number'>
 
-	type RadioControl = GenericControl<'radio'>;
+	type RadioControl = GenericControl<'radio'>
 
-	type TitleControl = GenericControl<'title'>;
+	type TitleControl = GenericControl<'title'>
 
-	type TextControl = GenericControl<'text'>;
+	type TextControl = GenericControl<'text'>
 
 	interface ControlTypeToWidget {
-		radio: OO.ui.RadioSelectWidget;
-		text: TextInputWidget;
-		multilineText: OO.ui.MultilineTextInputWidget;
-		number: OO.ui.TextInputWidget;
-		checkbox: CheckboxInputWidget;
-		multitag: OO.ui.TagMultiselectWidget;
-		multicheckbox: OO.ui.CheckboxMultiselectWidget;
-		button: OO.ui.ButtonWidget;
-		copyText: OO.ui.TextInputWidget;
-		title: mw.widgets.TitleInputWidget;
+		radio: OO.ui.RadioSelectWidget
+		text: TextInputWidget
+		multilineText: OO.ui.MultilineTextInputWidget
+		number: OO.ui.TextInputWidget
+		checkbox: CheckboxInputWidget
+		multitag: OO.ui.TagMultiselectWidget
+		multicheckbox: OO.ui.CheckboxMultiselectWidget
+		button: OO.ui.ButtonWidget
+		copyText: OO.ui.TextInputWidget
+		title: mw.widgets.TitleInputWidget
 	}
 
 	interface Window {
-		convenientDiscussions: ConvenientDiscussions;
-		cd?: Window['convenientDiscussions'];
+		convenientDiscussions: ConvenientDiscussions
+		cd?: Window['convenientDiscussions']
 
 		// Basically we don't have a situation where getSelection() can return `null`, judging by
 		// https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection.
-		getSelection(): Selection;
+		getSelection(): Selection
 
-		cdOnlyRunByFooterLink?: boolean;
-		cdShowLoadingOverlay?: boolean;
+		cdOnlyRunByFooterLink?: boolean
+		cdShowLoadingOverlay?: boolean
 
 		// https://en.wikipedia.org/wiki/User:Jack_who_built_the_house/getUrlFromInterwikiLink
 		getInterwikiPrefixForHostname:
 			| ((targetHostname: string, originHostname?: string) => Promise<string>)
-			| undefined;
+			| undefined
 		getInterwikiPrefixForHostnameSync:
 			| ((targetHostname: string, originHostname?: string) => string)
-			| undefined;
+			| undefined
 		getUrlFromInterwikiLink:
 			| ((interwikiLink: string, originHostname?: string) => Promise<string>)
-			| undefined;
+			| undefined
 
 		// w-ru.js
-		highlightMessagesAfterLastVisit?: boolean;
-		highlightMessages?: number;
-		messagesHighlightColor?: string;
-		proceedToArchiveRunned?: boolean;
-		Wikify: ((input: HTMLElement) => void) | undefined;
-		urlDecoderRun: ((input: HTMLElement) => void) | undefined;
+		highlightMessagesAfterLastVisit?: boolean
+		highlightMessages?: number
+		messagesHighlightColor?: string
+		proceedToArchiveRunned?: boolean
+		Wikify: ((input: HTMLElement) => void) | undefined
+		urlDecoderRun: ((input: HTMLElement) => void) | undefined
 	}
 
-	var convenientDiscussions: Window['convenientDiscussions'];
+	var convenientDiscussions: Window['convenientDiscussions']
 
 	// https://stackoverflow.com/a/71104272
 	interface String {
@@ -280,55 +294,68 @@ declare global {
 		 *   in the string is zero.
 		 * @param length The number of characters to include in the returned substring.
 		 */
-		substr(from: number, length?: number): string;
+		substr(from: number, length?: number): string
 	}
 
 	interface JQuery {
-		cdRemoveNonElementNodes(): void;
+		cdRemoveNonElementNodes(): void
 		cdScrollTo(
 			alignment?: 'top' | 'center' | 'bottom',
 			smooth?: boolean,
 			callback?: () => void,
-		): this;
-		cdIsInViewport(partially?: boolean): boolean;
-		cdScrollIntoView(alignment?: 'top' | 'center' | 'bottom', smooth?: boolean, callback?: () => void): this;
-		cdGetText(): string;
-		cdAddCloseButton(): this;
-		cdRemoveCloseButton(): this;
+		): this
+		cdIsInViewport(partially?: boolean): boolean
+		cdScrollIntoView(
+			alignment?: 'top' | 'center' | 'bottom',
+			smooth?: boolean,
+			callback?: () => void,
+		): this
+		cdGetText(): string
+		cdAddCloseButton(): this
+		cdRemoveCloseButton(): this
 
-		wikiEditor(funcName: 'addModule' | 'addToToolbar' | 'removeFromToolbar' | 'addDialog' | 'openDialog' | 'closeDialog', data: any): this;
+		wikiEditor(
+			funcName:
+				| 'addModule'
+				| 'addToToolbar'
+				| 'removeFromToolbar'
+				| 'addDialog'
+				| 'openDialog'
+				| 'closeDialog',
+			data: any,
+		): this
 	}
 
 	interface Element {
-		cdStyle?: CSSStyleDeclaration;
-		cdIsTopLayersContainer?: boolean;
+		cdStyle?: CSSStyleDeclaration
+		cdIsTopLayersContainer?: boolean
 		cdCachedLayersContainerOffset?: {
-			top: number;
-			left: number;
-		};
-		cdCouldHaveMoved?: boolean;
+			top: number
+			left: number
+		}
+		cdCouldHaveMoved?: boolean
 		cdMargin?: {
-			top: number;
-			bottom: number;
-			left: number;
-			right: number;
-		};
-		cdInput?: TextInputWidget;
+			top: number
+			bottom: number
+			left: number
+			right: number
+		}
+		cdInput?: TextInputWidget
 	}
 
 	namespace mw {
 		const thanks: {
-			thanked: number[];
-		};
+			thanked: number[]
+		}
 
 		namespace libs {
 			namespace confirmEdit {
-				type CaptchaData = any;
+				type CaptchaData = any
 
 				class CaptchaInputWidget extends OO.ui.TextInputWidget {
-					new(captchaData?: CaptchaData, config?: TextInputWidget.ConfigOptions);
-					getCaptchaId(): string;
-					getCaptchaWord(): string;
+					new(captchaData?: CaptchaData, config?: TextInputWidget.ConfigOptions)
+					getCaptchaId(): string
+					getCaptchaWord(): string
 				}
 			}
 		}
@@ -337,45 +364,45 @@ declare global {
 			function visibleCodePointLimit(
 				textInputWidget: OO.ui.TextInputWidget,
 				limit?: number,
-				filterFunction?: (...args: any) => any
-			): void;
+				filterFunction?: (...args: any) => any,
+			): void
 		}
 	}
 
 	namespace OO.ui {
 		namespace Window {
 			interface Props {
-				$body: JQuery;
+				$body: JQuery
 			}
 		}
 
 		namespace Dialog {
 			interface Props {
-				actions: ActionSet;
+				actions: ActionSet
 			}
 		}
 
 		namespace ProcessDialog {
 			interface Prototype {
-				showErrors(errors: OO.ui.Error[] | OO.ui.Error): void;
-				hideErrors(): void;
+				showErrors(errors: OO.ui.Error[] | OO.ui.Error): void
+				hideErrors(): void
 			}
 
 			interface Props {
-				$errors: JQuery;
-				$errorItems?: JQuery | null;
+				$errors: JQuery
+				$errorItems?: JQuery | null
 			}
 		}
 
 		namespace MessageDialog {
 			interface Props {
-				text: PanelLayout;
-				title: OO.ui.LabelWidget;
+				text: PanelLayout
+				title: OO.ui.LabelWidget
 			}
 		}
 
 		interface Process {
-			next<C = null>(step: Process.StepOverride<C>, context?: C): this;
+			next<C = null>(step: Process.StepOverride<C>, context?: C): this
 		}
 
 		// Add native Promise since it seems to work and we use it
@@ -385,55 +412,55 @@ declare global {
 				| JQuery.Promise<void>
 				| Promise<void>
 				| ((
-					this: C
-				) =>
-					| boolean
-					| number
-					| JQuery.Promise<void>
-					| Promise<void>
-					| Error
-					| [Error]
-					| undefined);
+						this: C,
+				  ) =>
+						| boolean
+						| number
+						| JQuery.Promise<void>
+						| Promise<void>
+						| Error
+						| [Error]
+						| undefined)
 
 			/**
-				 * @param step Number of milliseconds to wait before proceeding,
-				 *   promise that must be resolved before proceeding, or a function to execute.
-				 *   See {@link Process.first first} for more information.
-				 * @param context Execution context of the function. The context is ignored if the step
-				 *   is a number or promise.
-				 */
+			 * @param step Number of milliseconds to wait before proceeding,
+			 *   promise that must be resolved before proceeding, or a function to execute.
+			 *   See {@link Process.first first} for more information.
+			 * @param context Execution context of the function. The context is ignored if the step
+			 *   is a number or promise.
+			 */
 			interface Constructor {
 				// eslint-disable-next-line @typescript-eslint/prefer-function-type
-				new<C = null>(step?: StepOverride<C>, context?: C): Process;
+				new <C = null>(step?: StepOverride<C>, context?: C): Process
 			}
 		}
 
 		namespace PageLayout {
 			interface Props {
-				outlineItem: OutlineOptionWidget | null;
+				outlineItem: OutlineOptionWidget | null
 			}
 
 			interface Prototype {
-				setupOutlineItem(): void;
+				setupOutlineItem(): void
 			}
 		}
 
 		namespace RadioOptionWidget {
 			interface Props {
-				radio: OO.ui.RadioInputWidget;
+				radio: OO.ui.RadioInputWidget
 			}
 		}
 
 		namespace RadioSelectWidget {
 			interface Prototype {
-				findSelectedItem(): OptionWidget | null;
+				findSelectedItem(): OptionWidget | null
 			}
 		}
 	}
 
 	interface JQueryStatic {
-		_data(element: Element, key: string): any;
-		wikiEditor: any;
+		_data(element: Element, key: string): any
+		wikiEditor: any
 	}
 
 	/**
@@ -451,7 +478,7 @@ declare global {
 		 * Whether the target is actionable (can be interacted with, replied to, etc.).
 		 * False for closed discussions, old revisions, or transcluded content.
 		 */
-		isActionable: boolean;
+		isActionable: boolean
 
 		/**
 		 * Get the relevant section for this target.
@@ -461,7 +488,7 @@ declare global {
 		 *
 		 * @returns The relevant section, or undefined if not applicable
 		 */
-		getRelevantSection(): Section | undefined;
+		getRelevantSection(): Section | undefined
 
 		/**
 		 * Get the relevant comment for this target.
@@ -471,7 +498,7 @@ declare global {
 		 *
 		 * @returns The relevant comment, or undefined if not applicable
 		 */
-		getRelevantComment(): Comment | undefined;
+		getRelevantComment(): Comment | undefined
 
 		/**
 		 * Add a comment form to the page DOM at the appropriate location for this target.
@@ -479,14 +506,14 @@ declare global {
 		 * @param mode The mode of the comment form (e.g., 'reply', 'edit', 'addSection')
 		 * @param commentForm The comment form to add
 		 */
-		addCommentFormToPage(mode: CommentFormMode, commentForm: CommentForm): void;
+		addCommentFormToPage(mode: CommentFormMode, commentForm: CommentForm): void
 
 		/**
 		 * Clean up any DOM modifications made when adding a comment form.
 		 *
 		 * @param mode The mode of the comment form being cleaned up
 		 */
-		cleanUpCommentFormTraces(mode: CommentFormMode): void;
+		cleanUpCommentFormTraces(mode: CommentFormMode): void
 
 		/**
 		 * Get the comment that will appear directly above a new comment being added.
@@ -495,7 +522,7 @@ declare global {
 		 * @param commentForm The comment form being used to add a comment
 		 * @returns The comment above, or undefined if adding at the top
 		 */
-		getCommentAboveCommentToBeAdded(commentForm: CommentForm): Comment | undefined;
+		getCommentAboveCommentToBeAdded(commentForm: CommentForm): Comment | undefined
 
 		/**
 		 * Get the method name to call on the target to add a comment form.
@@ -504,7 +531,7 @@ declare global {
 		 * @param mode The mode of the comment form
 		 * @returns The method name to call
 		 */
-		getCommentFormMethodName(mode: CommentFormMode): string;
+		getCommentFormMethodName(mode: CommentFormMode): string
 
 		/**
 		 * Get the placeholder text for the comment form's headline input.
@@ -512,7 +539,7 @@ declare global {
 		 * @param mode The mode of the comment form
 		 * @returns The placeholder text
 		 */
-		getCommentFormHeadlineInputPlaceholder(mode?: CommentFormMode): string;
+		getCommentFormHeadlineInputPlaceholder(mode?: CommentFormMode): string
 
 		/**
 		 * Get the placeholder text for the comment form's comment input.
@@ -521,7 +548,10 @@ declare global {
 		 * @param callback Optional callback for dynamic placeholder generation
 		 * @returns The placeholder text, or undefined if no placeholder should be shown
 		 */
-		getCommentFormCommentInputPlaceholder(mode?: CommentFormMode, callback?: () => void): string | undefined;
+		getCommentFormCommentInputPlaceholder(
+			mode?: CommentFormMode,
+			callback?: () => void,
+		): string | undefined
 
 		/**
 		 * Get the comment that is visually the target of the comment form.
@@ -529,7 +559,7 @@ declare global {
 		 *
 		 * @returns The target comment, or undefined if not applicable
 		 */
-		getCommentFormTargetComment(): Comment | undefined;
+		getCommentFormTargetComment(): Comment | undefined
 
 		/**
 		 * Get data that uniquely identifies this target for restoring comment forms.
@@ -537,7 +567,7 @@ declare global {
 		 *
 		 * @returns Identifying data object, or undefined if not applicable
 		 */
-		getIdentifyingData(): AnyByKey | undefined;
+		getIdentifyingData(): AnyByKey | undefined
 	}
 
 	/**
@@ -563,15 +593,15 @@ declare global {
 		 * @returns Object containing the modified context code and optionally the comment code
 		 */
 		modifyContext(options: {
-			action?: CommentFormMode;
-			commentCode?: string;
-			commentForm?: CommentForm;
-			doDelete?: boolean;
-			contextCode?: string;
+			action?: CommentFormMode
+			commentCode?: string
+			commentForm?: CommentForm
+			doDelete?: boolean
+			contextCode?: string
 		}): {
-			contextCode: string;
-			commentCode?: string;
-		};
+			contextCode: string
+			commentCode?: string
+		}
 	}
 
 	/**
@@ -590,10 +620,10 @@ declare global {
 		 * @returns Object containing this source and its calculated match score
 		 */
 		calculateMatchScore(...args: unknown[]): {
-			source: CommentSource | SectionSource;
-			score: number;
-		};
+			source: CommentSource | SectionSource
+			score: number
+		}
 	}
 }
 
-export {};
+export {}

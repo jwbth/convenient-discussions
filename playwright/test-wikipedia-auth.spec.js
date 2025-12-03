@@ -23,14 +23,14 @@ test.describe('Test Wikipedia Authentication', () => {
 		// Note: Personal tools may be hidden by CSS (visibility: hidden) in Vector skin
 		// but the elements still exist in the DOM when authenticated
 
-		if (await userMenu.count() > 0) {
+		if ((await userMenu.count()) > 0) {
 			console.log('✅ Successfully authenticated - user menu element found')
 			// Check that the element exists in DOM (it may be hidden by CSS)
 			await expect(userMenu).toBeAttached()
 
 			// Try to make the menu visible by hovering over the personal tools area
 			const personalToolsButton = page.locator('#vector-user-links-dropdown')
-			if (await personalToolsButton.count() > 0) {
+			if ((await personalToolsButton.count()) > 0) {
 				await personalToolsButton.hover()
 				// Wait a bit for the menu to appear
 				await page.waitForTimeout(500)
@@ -41,7 +41,7 @@ test.describe('Test Wikipedia Authentication', () => {
 					console.log('ℹ️  User menu exists but remains hidden (normal for Vector skin)')
 				}
 			}
-		} else if (await anonMenu.count() > 0) {
+		} else if ((await anonMenu.count()) > 0) {
 			console.log('ℹ️  Running as anonymous user - anonymous menu found')
 			await expect(anonMenu).toBeAttached()
 		} else {
@@ -51,11 +51,11 @@ test.describe('Test Wikipedia Authentication', () => {
 			const userLinks = page.locator('#pt-userpage, #pt-mytalk, #pt-preferences, #pt-logout')
 			const anonLinks = page.locator('#pt-anonuserpage, #pt-anontalk, #pt-login')
 
-			if (await userLinks.count() > 0) {
+			if ((await userLinks.count()) > 0) {
 				console.log('✅ Found user-specific links - authenticated')
 				// Just verify one of the user links is present in DOM
 				await expect(userLinks.first()).toBeAttached()
-			} else if (await anonLinks.count() > 0) {
+			} else if ((await anonLinks.count()) > 0) {
 				console.log('ℹ️  Found anonymous user links')
 				await expect(anonLinks.first()).toBeAttached()
 			} else {

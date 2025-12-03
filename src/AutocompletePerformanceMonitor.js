@@ -283,7 +283,7 @@ class AutocompletePerformanceMonitor {
 			groups[key].push(item)
 
 			return groups
-		}, /** @type {GroupedObject<T>} */({}))
+		}, /** @type {GroupedObject<T>} */ ({}))
 	}
 
 	/**
@@ -367,7 +367,8 @@ Optimization Recommendations:
 			warnings.push(`Low cache hit rate: ${summary.cacheHitRate.toFixed(1)}%`)
 		}
 
-		if (summary.totalMemoryUsage > 50 * 1024 * 1024) { // 50MB
+		if (summary.totalMemoryUsage > 50 * 1024 * 1024) {
+			// 50MB
 			warnings.push(`High memory usage: ${this.formatBytes(summary.totalMemoryUsage)}`)
 		}
 
@@ -394,21 +395,30 @@ Optimization Recommendations:
 		const recommendations = []
 
 		if (summary.cacheHitRate < 70) {
-			recommendations.push('Consider increasing cache TTL or implementing prefetching for common queries')
+			recommendations.push(
+				'Consider increasing cache TTL or implementing prefetching for common queries',
+			)
 		}
 
 		if (summary.averageResponseTime > 200) {
-			recommendations.push('Consider implementing request debouncing or increasing local search priority')
+			recommendations.push(
+				'Consider implementing request debouncing or increasing local search priority',
+			)
 		}
 
-		if (summary.totalMemoryUsage > 20 * 1024 * 1024) { // 20MB
-			recommendations.push('Consider reducing cache size or implementing more aggressive cache eviction')
+		if (summary.totalMemoryUsage > 20 * 1024 * 1024) {
+			// 20MB
+			recommendations.push(
+				'Consider reducing cache size or implementing more aggressive cache eviction',
+			)
 		}
 
 		// Type-specific recommendations
 		for (const [type, metrics] of Object.entries(summary.byType)) {
 			if (metrics.operationCount > 100 && metrics.cacheHitRate < 50) {
-				recommendations.push(`${type}: Implement better caching strategy for frequently used queries`)
+				recommendations.push(
+					`${type}: Implement better caching strategy for frequently used queries`,
+				)
 			}
 			if (metrics.averageResponseTime > 400) {
 				recommendations.push(`${type}: Consider optimizing API requests or local search algorithms`)
@@ -450,7 +460,7 @@ Optimization Recommendations:
 	 * @returns {PerformanceMetric[]} High memory operations
 	 */
 	getHighMemoryOperations(threshold = 1_048_576) {
-		return this.metrics.filter((m) => (m.memoryAfter - m.memoryBefore) > threshold)
+		return this.metrics.filter((m) => m.memoryAfter - m.memoryBefore > threshold)
 	}
 
 	/**

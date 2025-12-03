@@ -45,10 +45,14 @@ test.describe('Debug CD Initialization', () => {
 			hasConvenientDiscussions: !!window.convenientDiscussions,
 			cdKeys: window.convenientDiscussions ? Object.keys(window.convenientDiscussions) : [],
 			hasComments: window.convenientDiscussions ? !!window.convenientDiscussions.comments : false,
-			commentsLength: window.convenientDiscussions?.comments ? window.convenientDiscussions.comments.length : 0,
+			commentsLength: window.convenientDiscussions?.comments
+				? window.convenientDiscussions.comments.length
+				: 0,
 			hasSettings: window.convenientDiscussions ? !!window.convenientDiscussions.settings : false,
 			hasG: window.convenientDiscussions ? !!window.convenientDiscussions.g : false,
-			currentPage: window.convenientDiscussions?.g ? window.convenientDiscussions.g.CURRENT_PAGE : null,
+			currentPage: window.convenientDiscussions?.g
+				? window.convenientDiscussions.g.CURRENT_PAGE
+				: null,
 			errors: window.console ? [] : 'No console access',
 		}))
 		console.log('CD info after injection:', cdInfo)
@@ -67,8 +71,12 @@ test.describe('Debug CD Initialization', () => {
 		const finalCdInfo = await page.evaluate(() => ({
 			hasConvenientDiscussions: !!window.convenientDiscussions,
 			hasComments: window.convenientDiscussions ? !!window.convenientDiscussions.comments : false,
-			commentsLength: window.convenientDiscussions?.comments ? window.convenientDiscussions.comments.length : 0,
-			isInitialized: window.convenientDiscussions ? window.convenientDiscussions.isInitialized : false,
+			commentsLength: window.convenientDiscussions?.comments
+				? window.convenientDiscussions.comments.length
+				: 0,
+			isInitialized: window.convenientDiscussions
+				? window.convenientDiscussions.isInitialized
+				: false,
 		}))
 		console.log('Final CD info:', finalCdInfo)
 		console.log('JavaScript errors:', errors)

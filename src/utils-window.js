@@ -15,7 +15,15 @@ import controller from './controller'
 import cd from './loader/cd'
 import settings from './settings'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
-import { decodeHtmlEntities, defined, generatePageNamePattern, isInline, parseWikiUrl, removeDirMarks, spacesToUnderlines } from './shared/utils-general'
+import {
+	decodeHtmlEntities,
+	defined,
+	generatePageNamePattern,
+	isInline,
+	parseWikiUrl,
+	removeDirMarks,
+	spacesToUnderlines,
+} from './shared/utils-general'
 import { dateTokenToMessageNames, parseTimestamp } from './shared/utils-timestamp'
 import { maskDistractingCode } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
@@ -98,7 +106,9 @@ export function wrapDiffBody(body) {
 		'diff',
 		mw.user.options.get('editfont') === 'monospace' ? 'diff-editfont-monospace' : undefined,
 		'diff-contentalign-' + (cd.g.contentDirection === 'ltr' ? 'left' : 'right'),
-	].filter(defined).join(' ')
+	]
+		.filter(defined)
+		.join(' ')
 
 	return (
 		`<table class="${className}">` +
@@ -122,9 +132,7 @@ export function transparentize(color) {
 
 	return color.includes('rgba')
 		? color.replace(/\d+(?=\))/, '0')
-		: color
-				.replace('rgb', 'rgba')
-				.replace(')', ', 0)')
+		: color.replace('rgb', 'rgba').replace(')', ', 0)')
 }
 
 /**
@@ -142,7 +150,7 @@ export function isInputFocused() {
 	const $active = $(document.activeElement)
 
 	return Boolean(
-		$active.is(':input') || ('isContentEditable' in $active[0] && $active[0].isContentEditable)
+		$active.is(':input') || ('isContentEditable' in $active[0] && $active[0].isContentEditable),
 	)
 }
 
@@ -184,12 +192,15 @@ export function getExtendedRect(el) {
 	const rect = el.getBoundingClientRect()
 	const visible = isVisible(el)
 
-	return $.extend({
-		outerTop: rect.top - (visible ? el.cdMargin.top : 0),
-		outerBottom: rect.bottom + (visible ? el.cdMargin.bottom : 0),
-		outerLeft: rect.left - (visible ? el.cdMargin.left : 0),
-		outerRight: rect.right + (visible ? el.cdMargin.right : 0),
-	}, rect)
+	return $.extend(
+		{
+			outerTop: rect.top - (visible ? el.cdMargin.top : 0),
+			outerBottom: rect.bottom + (visible ? el.cdMargin.bottom : 0),
+			outerLeft: rect.left - (visible ? el.cdMargin.left : 0),
+			outerRight: rect.right + (visible ? el.cdMargin.right : 0),
+		},
+		rect,
+	)
 }
 
 /**
@@ -267,15 +278,15 @@ export function keyCombination(event, keyCode, modifiers = []) {
 
 			// In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
 			// platform.
-			$.client.profile().platform === 'mac' ? 'meta' : 'ctrl'
+			$.client.profile().platform === 'mac' ? 'meta' : 'ctrl',
 		)
 	}
 
 	return (
-	// eslint-disable-next-line @typescript-eslint/no-deprecated
+		// eslint-disable-next-line @typescript-eslint/no-deprecated
 		event.keyCode === keyCode &&
 		/** @type {typeof modifiers} */ (['ctrl', 'shift', 'alt', 'meta']).every(
-			(mod) => modifiers.includes(mod) === event[/** @type {keyof typeof event} */ (mod + 'Key')]
+			(mod) => modifiers.includes(mod) === event[/** @type {keyof typeof event} */ (mod + 'Key')],
 		)
 	)
 }
@@ -337,10 +348,9 @@ export function getHigherNodeAndOffsetInSelection(selection) {
 		return
 	}
 
-	const isAnchorHigher = (
+	const isAnchorHigher =
 		selection.anchorNode.compareDocumentPosition(/** @type {Node} */ (selection.focusNode)) &
 		Node.DOCUMENT_POSITION_FOLLOWING
-	)
 
 	return {
 		higherNode: isAnchorHigher ? selection.anchorNode : /** @type {Node} */ (selection.focusNode),
@@ -375,10 +385,7 @@ export function getHigherNodeAndOffsetInSelection(selection) {
  */
 export function copyText(text, messages) {
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const $textarea = $('<textarea>')
-		.val(text)
-		.appendTo(document.body)
-		.trigger('select')
+	const $textarea = $('<textarea>').val(text).appendTo(document.body).trigger('select')
 	// eslint-disable-next-line @typescript-eslint/no-deprecated
 	const successful = document.execCommand('copy')
 	$textarea.remove()
@@ -403,10 +410,7 @@ export function copyText(text, messages) {
  */
 export function isHtmlConvertibleToWikitext(html, containerElement) {
 	return isElementConvertibleToWikitext(
-		cleanUpPasteDom(
-			getElementFromPasteHtml(html),
-			containerElement
-		).element
+		cleanUpPasteDom(getElementFromPasteHtml(html), containerElement).element,
 	)
 }
 
@@ -419,12 +423,12 @@ export function isHtmlConvertibleToWikitext(html, containerElement) {
 export function isElementConvertibleToWikitext(element) {
 	return Boolean(
 		element.childElementCount &&
-		!(
-			[...element.querySelectorAll('*')].length === 1 &&
-			element.childNodes.length === 1 &&
-			['P', 'LI', 'DD'].includes(element.children[0].tagName)
-		) &&
-		![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR')
+			!(
+				[...element.querySelectorAll('*')].length === 1 &&
+				element.childNodes.length === 1 &&
+				['P', 'LI', 'DD'].includes(element.children[0].tagName)
+			) &&
+			![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR'),
 	)
 }
 
@@ -447,14 +451,17 @@ export function cleanUpPasteDom(element, containerElement) {
 	// to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
 	// elements themselves in the text/html format), but won't hurt.
 	element.className = 'cd-commentForm-dummyElement'
-	containerElement.append(element);
+	containerElement.append(element)
 
-	/** @type {HTMLElement[]} */ ([...element.querySelectorAll('[style]:not(pre [style])')])
-		.forEach((el) => {
+	/** @type {HTMLElement[]} */ ;([...element.querySelectorAll('[style]:not(pre [style])')]).forEach(
+		(el) => {
 			if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
 				$(el).wrapInner('<u>')
 			}
-			if (el.style.textDecoration === 'line-through' && !['STRIKE', 'S', 'DEL'].includes(el.tagName)) {
+			if (
+				el.style.textDecoration === 'line-through' &&
+				!['STRIKE', 'S', 'DEL'].includes(el.tagName)
+			) {
 				$(el).wrapInner('<s>')
 			}
 			if (el.style.fontStyle === 'italic' && !['I', 'EM'].includes(el.tagName)) {
@@ -464,7 +471,8 @@ export function cleanUpPasteDom(element, containerElement) {
 				$(el).wrapInner('<b>')
 			}
 			el.removeAttribute('style')
-		})
+		},
+	)
 
 	const removeElement = (/** @type {Element} */ el) => {
 		el.remove()
@@ -472,37 +480,33 @@ export function cleanUpPasteDom(element, containerElement) {
 	const replaceWithChildren = (/** @type {Element} */ el) => {
 		if (
 			['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
-			(
-				el.nextElementSibling ||
-
+			(el.nextElementSibling ||
 				// Cases like `<div><div>Quote</div>Text</div>`, e.g. created by
 				// https://ru.wikipedia.org/wiki/Template:Цитата_сообщения
-				el.nextSibling?.textContent.trim()
-			)
+				el.nextSibling?.textContent.trim())
 		) {
 			el.after('\n')
 		}
 		el.replaceWith(...el.childNodes)
-	};
+	}
 
-	[...element.querySelectorAll('*')]
+	;[...element.querySelectorAll('*')]
 		.filter((el) => window.getComputedStyle(el).userSelect === 'none')
-		.forEach(removeElement);
+		.forEach(removeElement)
 
 	// Should run after removing elements with `user-select: none`, to remove their wrappers that
 	// now have no content.
-	[...element.querySelectorAll('*')]
-		.filter((el) => (
-			(!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
-
-			// Need to keep non-breaking spaces.
-			!el.textContent.replace(/[ \n]+/g, ''))
+	;[...element.querySelectorAll('*')]
+		.filter(
+			(el) =>
+				(!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
+				// Need to keep non-breaking spaces.
+				!el.textContent.replace(/[ \n]+/g, ''),
 		)
 
-		.forEach(removeElement);
-
-	[...element.querySelectorAll('style')]
 		.forEach(removeElement)
+
+	;[...element.querySelectorAll('style')].forEach(removeElement)
 
 	const topElements = /** @type {Element[]} */ (
 		controller.getBootProcess().parser.getTopElementsWithText(element, true).nodes
@@ -512,31 +516,28 @@ export function cleanUpPasteDom(element, containerElement) {
 		element.append(...topElements)
 	}
 
-	[...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
+	;[...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
 		// eslint-disable-next-line no-self-assign
 		el.textContent = el.textContent
 	})
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map((el) => (
-		(
-			(el.tagName === 'PRE' ? /** @type {HTMLElement} */ (el.parentElement) : el).className
-				.match('mw-highlight-lang-([0-9a-z_-]+)') ||
-				[]
-		)[1]
-	));
+	const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map(
+		(el) =>
+			((el.tagName === 'PRE' ? /** @type {HTMLElement} */ (el.parentElement) : el).className.match(
+				'mw-highlight-lang-([0-9a-z_-]+)',
+			) || [])[1],
+	)
 
-	[...element.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')]
-		.forEach(replaceWithChildren);
-	[...element.querySelectorAll('p > br')]
-		.forEach((el) => {
-			el.after('\n')
-			el.remove()
-		});
+	;[...element.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren)
+	;[...element.querySelectorAll('p > br')].forEach((el) => {
+		el.after('\n')
+		el.remove()
+	})
 
 	// This will turn links to unexistent pages to actual red links. Should be above the removal of
 	// classes.
-	[...element.querySelectorAll('a')]
+	;[...element.querySelectorAll('a')]
 		.filter((el) => el.classList.contains('new'))
 		.forEach((el) => {
 			const href = el.getAttribute('href')
@@ -548,25 +549,24 @@ export function cleanUpPasteDom(element, containerElement) {
 			}
 		})
 
-	const allowedTags = new Set(cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt'));
-	[...element.querySelectorAll('*')]
-		.forEach((el) => {
-			if (!allowedTags.has(el.tagName.toLowerCase())) {
-				replaceWithChildren(el)
+	const allowedTags = new Set(cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt'))
+	;[...element.querySelectorAll('*')].forEach((el) => {
+		if (!allowedTags.has(el.tagName.toLowerCase())) {
+			replaceWithChildren(el)
 
-				return
-			}
+			return
+		}
 
-			[...el.attributes]
-				.filter((attr) => attr.name === 'class' || attr.name.startsWith('data-'))
-				.forEach((attr) => {
-					el.removeAttribute(attr.name)
-				})
-		});
+		;[...el.attributes]
+			.filter((attr) => attr.name === 'class' || attr.name.startsWith('data-'))
+			.forEach((attr) => {
+				el.removeAttribute(attr.name)
+			})
+	})
 
-	[...element.children]
-	// <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
-	// don't create `*` markup in the API.)
+	;[...element.children]
+		// <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
+		// don't create `*` markup in the API.)
 		.filter((el) => el.tagName === 'DD')
 
 		.forEach(replaceWithChildren)
@@ -621,7 +621,7 @@ export function getRangeContents(start, end, rootElement) {
 	// emerges.
 
 	// Fight infinite loops
-	if (!end || (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING)) {
+	if (!end || start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) {
 		return
 	}
 
@@ -709,14 +709,16 @@ export function getRangeContents(start, end, rootElement) {
  * @returns {JQuery<SVGElement>}
  */
 export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = height) {
-	return $(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
-		.attr('width', width)
-		.attr('height', height)
-		.attr('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
-		.attr('aria-hidden', 'true')
+	return (
+		$(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
+			.attr('width', width)
+			.attr('height', height)
+			.attr('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
+			.attr('aria-hidden', 'true')
 
-	// https://en.wikipedia.org/wiki/Project:Dark_mode_(gadget)
-		.addClass('mw-invert')
+			// https://en.wikipedia.org/wiki/Project:Dark_mode_(gadget)
+			.addClass('mw-invert')
+	)
 }
 
 /**
@@ -833,7 +835,7 @@ export function extractSignatures(code) {
 		commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`)
 	}
 	commentAntipatternsPatternParts.push(
-		...cd.config.commentAntipatterns.map((regexp) => regexp.source)
+		...cd.config.commentAntipatterns.map((regexp) => regexp.source),
 	)
 	const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|')
 
@@ -842,11 +844,10 @@ export function extractSignatures(code) {
 		.replace(
 			cd.g.quoteRegexp,
 			/** @type {ReplaceCallback<4>} */
-			(_, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
+			(_, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending,
 		)
-		.replace(
-			new RegExp(`^.*(?:${commentAntipatternsPattern}).*$`, 'mg'),
-			(s) => ' '.repeat(s.length)
+		.replace(new RegExp(`^.*(?:${commentAntipatternsPattern}).*$`, 'mg'), (s) =>
+			' '.repeat(s.length),
 		)
 
 	const signatureDrafts = extractRegularSignatures(adjustedCode, code)
@@ -871,7 +872,7 @@ export function extractSignatures(code) {
 	}
 
 	if (unsigneds.length || signatureIndex !== -1) {
-		signatureDrafts.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1)
+		signatureDrafts.sort((sig1, sig2) => (sig1.startIndex > sig2.startIndex ? 1 : -1))
 	}
 
 	const signatures = /** @type {SignatureInWikitext[]} */ (
@@ -908,7 +909,7 @@ function extractRegularSignatures(adjustedCode, code) {
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const timestampRegexp = new RegExp(
 		`^((.*?(?:^|[^=]))(${timestampToolsContent.regexp.source})${afterTimestamp}).*${ending}`,
-		'igm'
+		'igm',
 	)
 
 	// After capturing the first signature with `.*?` we make another capture (with authorLinkRegexp)
@@ -928,11 +929,9 @@ function extractRegularSignatures(adjustedCode, code) {
 			5 - sometimes, a slash appears here (inside `cd.g.captureUserNamePattern`)
 			6 - timestamp
 		 */
-		(
-			`^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit - 1}}?[^=])` +
-			`(${timestampToolsContent.regexp.source})${afterTimestamp}.*)${ending}`
-		),
-		'im'
+		`^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit - 1}}?[^=])` +
+			`(${timestampToolsContent.regexp.source})${afterTimestamp}.*)${ending}`,
+		'im',
 	)
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const lastAuthorLinkRegexp = new RegExp(`^.*${cd.g.captureUserNamePattern}`, 'i')
@@ -1086,7 +1085,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
 		// but that would need corresponding code in Parser.js which could be tricky, so for now we just
 		// remove the duplicate. That still allows to reply to the comment.
 		const relevantSignatureIndex = signatures.findIndex(
-			(sig) => sig.nextCommentStartIndex === nextCommentStartIndex
+			(sig) => sig.nextCommentStartIndex === nextCommentStartIndex,
 		)
 		if (relevantSignatureIndex !== -1) {
 			signatures.splice(relevantSignatureIndex, 1)
@@ -1156,7 +1155,8 @@ export function formatDate(date, addTimezone = false) {
 		timestamp = formatDateNative(date, addTimezone)
 	} else if (timestampFormat === 'improved') {
 		timestamp = formatDateImproved(date, addTimezone)
-	} else {  // if (timestampFormat === 'relative')
+	} else {
+		// if (timestampFormat === 'relative')
 		timestamp = formatDateRelative(date)
 	}
 
@@ -1191,9 +1191,8 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
 			timezoneOffset =
 				typeof timestampToolsUser.timezone === 'number'
 					? timestampToolsUser.timezone
-
-				// Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-					: getTimezoneOffset(/** @type {string} */ (timestampToolsUser.timezone), date.getTime()) /
+					: // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
+						getTimezoneOffset(/** @type {string} */ (timestampToolsUser.timezone), date.getTime()) /
 						cd.g.msInMin
 		}
 		date = new Date(date.getTime() + timezoneOffset * cd.g.msInMin)
@@ -1310,12 +1309,12 @@ export function formatDateImproved(date, addTimezone = false) {
 		if (timestampToolsUser.isSameAsLocalTimezone) {
 			timezoneOffset = -date.getTimezoneOffset()
 		} else {
-			timezoneOffset = typeof timestampToolsUser.timezone === 'number'
-				? timestampToolsUser.timezone
-
-			// Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-				: getTimezoneOffset(/** @type {string} */(timestampToolsUser.timezone), now.getTime()) /
-					cd.g.msInMin
+			timezoneOffset =
+				typeof timestampToolsUser.timezone === 'number'
+					? timestampToolsUser.timezone
+					: // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
+						getTimezoneOffset(/** @type {string} */ (timestampToolsUser.timezone), now.getTime()) /
+						cd.g.msInMin
 
 			dayjsDate = dayjsDate.utcOffset(timezoneOffset)
 		}

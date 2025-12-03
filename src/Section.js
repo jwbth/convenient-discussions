@@ -290,11 +290,10 @@ class Section extends SectionSkeleton {
 
 		// Sections may have "#" in the code as a placeholder for a vote. In this case, we must create
 		// the comment form in the <ol> tag.
-		const isVotePlaceholder = (
+		const isVotePlaceholder =
 			lastElement.tagName === 'OL' &&
 			lastElement.childElementCount === 1 &&
 			lastElement.children[0].classList.contains('mw-empty-elt')
-		)
 
 		let tag
 		let createList = false
@@ -303,17 +302,12 @@ class Section extends SectionSkeleton {
 		if (lastElement.classList.contains('cd-commentLevel') || isVotePlaceholder) {
 			if (
 				tagName === 'UL' ||
-				(
-					tagName === 'OL' &&
-
+				(tagName === 'OL' &&
 					// Check if this is indeed a numbered list with replies as list items, not a numbered list
 					// as part of the user's comment that has their signature technically inside the last
 					// item.
-					(
-						isVotePlaceholder ||
-						lastElement !== lastComment?.elements[lastComment.elements.length - 1]
-					)
-				)
+					(isVotePlaceholder ||
+						lastElement !== lastComment?.elements[lastComment.elements.length - 1]))
 			) {
 				tag = 'li'
 			} else if (tagName === 'DL') {
@@ -345,10 +339,10 @@ class Section extends SectionSkeleton {
 		let container
 		if (createList) {
 			container = document.createElement('dl')
-			container.className = 'cd-commentLevel cd-commentLevel-1 cd-section-button-container';
-			/** @type {HTMLElement} */ (lastElement.parentElement).insertBefore(
+			container.className = 'cd-commentLevel cd-commentLevel-1 cd-section-button-container'
+			/** @type {HTMLElement} */ ;(lastElement.parentElement).insertBefore(
 				container,
-				lastElement.nextElementSibling
+				lastElement.nextElementSibling,
 			)
 		} else {
 			container = lastElement
@@ -418,12 +412,12 @@ class Section extends SectionSkeleton {
 		container.className = 'cd-section-button-container cd-addSubsectionButtons-container'
 		container.style.display = 'none'
 		container.append(
-			...[button?.element, baseSection?.addSubsectionButtonLastDescendant?.element].filter(defined)
-		);
+			...[button?.element, baseSection?.addSubsectionButtonLastDescendant?.element].filter(defined),
+		)
 
-		/** @type {HTMLElement} */ (this.lastElementInFirstChunk.parentElement).insertBefore(
+		/** @type {HTMLElement} */ ;(this.lastElementInFirstChunk.parentElement).insertBefore(
 			container,
-			this.lastElementInFirstChunk.nextElementSibling
+			this.lastElementInFirstChunk.nextElementSibling,
 		)
 
 		/**
@@ -461,12 +455,11 @@ class Section extends SectionSkeleton {
 		})
 		button.buttonElement.addEventListener(
 			'mouseenter',
-			buttonsContainerInstance.resetHideAddSubsectionButtonTimeout
-
+			buttonsContainerInstance.resetHideAddSubsectionButtonTimeout,
 		)
 		button.buttonElement.addEventListener(
 			'mouseleave',
-			buttonsContainerInstance.deferAddSubsectionButtonHide
+			buttonsContainerInstance.deferAddSubsectionButtonHide,
 		)
 
 		return button
@@ -510,7 +503,7 @@ class Section extends SectionSkeleton {
 		if (this.hideAddSubsectionButtonTimeout) return
 
 		this.hideAddSubsectionButtonTimeout = setTimeout(() => {
-			/** @type {JQuery} */ (this.$addSubsectionButtonsContainer).hide()
+			/** @type {JQuery} */ ;(this.$addSubsectionButtonsContainer).hide()
 		}, 1000)
 	}
 
@@ -525,7 +518,7 @@ class Section extends SectionSkeleton {
 		if (this.showAddSubsectionButtonTimeout) return
 
 		this.showAddSubsectionButtonTimeout = setTimeout(() => {
-			/** @type {JQuery} */ (this.$addSubsectionButtonsContainer).show()
+			/** @type {JQuery} */ ;(this.$addSubsectionButtonsContainer).show()
 		}, 1000)
 	}
 
@@ -603,10 +596,10 @@ class Section extends SectionSkeleton {
 	canFirstCommentBeEdited() {
 		return Boolean(
 			this.isActionable &&
-			this.commentsInFirstChunk.length &&
-			this.comments[0].isOpeningSection() &&
-			(this.comments[0].canBeEdited()) &&
-			!this.comments[0].isCollapsed
+				this.commentsInFirstChunk.length &&
+				this.comments[0].isOpeningSection() &&
+				this.comments[0].canBeEdited() &&
+				!this.comments[0].isCollapsed,
 		)
 	}
 
@@ -638,23 +631,19 @@ class Section extends SectionSkeleton {
 
 		return (
 			this.isActionable &&
-
 			// Is the first chunk closed
 			!(
 				this.commentsInFirstChunk[0] &&
 				this.commentsInFirstChunk[0].level === 0 &&
 				this.commentsInFirstChunk.every((comment) => !comment.isActionable)
 			) &&
-
 			// Is the first chunk empty and precedes a subsection
 			!(
 				this.lastElementInFirstChunk !== this.lastElement &&
 				this.lastElementInFirstChunk === this.headingElement
 			) &&
-
 			// May mean complex formatting, so we better keep out
 			(!nextSection || nextSection.headingNestingLevel === this.headingNestingLevel) &&
-
 			// Is the section buried in a table.
 			// https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
 			!['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName)
@@ -667,7 +656,8 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeSubsectioned() {
-		const nextSameLevelSection = sectionManager.getAll()
+		const nextSameLevelSection = sectionManager
+			.getAll()
 			.slice(this.index + 1)
 			.find((otherSection) => otherSection.level === this.level)
 
@@ -675,25 +665,20 @@ class Section extends SectionSkeleton {
 			this.isActionable &&
 			this.level >= 2 &&
 			this.level <= 5 &&
-
 			// Is closed
 			!(
 				this.comments[0] &&
 				this.comments[0].level === 0 &&
 				this.comments.every((comment) => !comment.isActionable)
 			) &&
-
-			(
 			// While the "Reply" button is added to the end of the first chunk, the "Add subsection"
 			// button is added to the end of the whole section, so we look the next section of the same
 			// level.
-				!nextSameLevelSection ||
-
+			(!nextSameLevelSection ||
 				// If the next section of the same level has another nesting level (e.g., is inside a <div>
 				// with a specific style), don't add the "Add subsection" button - it would appear in a
 				// wrong place.
-				nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
-			)
+				nextSameLevelSection.headingNestingLevel === this.headingNestingLevel)
 		)
 	}
 
@@ -796,8 +781,8 @@ class Section extends SectionSkeleton {
 		const namePanel = new OO.ui.PanelLayout({
 			$content: wrapInHlist(
 				data
-					.sort((datum1, datum2) => datum2.name > datum1.name ? -1 : 1)
-					.map((datum) => $('<li>').append(datum.$authorLink.clone(true)))
+					.sort((datum1, datum2) => (datum2.name > datum1.name ? -1 : 1))
+					.map((datum) => $('<li>').append(datum.$authorLink.clone(true))),
 			),
 			padded: false,
 			expanded: false,
@@ -806,12 +791,12 @@ class Section extends SectionSkeleton {
 			$content: wrapInHlist(
 				data
 					.sort((datum1, datum2) => datum2.count - datum1.count)
-					.map((datum) => (
+					.map((datum) =>
 						$('<li>').append(
 							datum.$authorLink.clone(),
-							cd.mws('word-separator') + cd.mws('parentheses', datum.count)
-						)
-					))
+							cd.mws('word-separator') + cd.mws('parentheses', datum.count),
+						),
+					),
 			),
 			padded: false,
 			expanded: false,
@@ -822,7 +807,7 @@ class Section extends SectionSkeleton {
 					.sort(
 						(datum1, datum2) =>
 							(datum2.newestCommentDate?.getTime() || 0) -
-							(datum1.newestCommentDate?.getTime() || 0)
+							(datum1.newestCommentDate?.getTime() || 0),
 					)
 					.map((datum) => {
 						/** @type {(Text | string | JQuery)[]} */
@@ -836,18 +821,18 @@ class Section extends SectionSkeleton {
 									.text(formatDate(datum.newestCommentDate))
 									.attr('href', `#${id || ''}`)
 
-								// Without the event handler, there will be a problem jumping to the comment when
-								// the URL already has its ID.
+									// Without the event handler, there will be a problem jumping to the comment when
+									// the URL already has its ID.
 									.on('click', (event) => {
 										event.preventDefault()
 										datum.newestComment.scrollTo({ pushState: true })
 									}),
-								cd.mws('parentheses-end')
+								cd.mws('parentheses-end'),
 							)
 						}
 
 						return $('<li>').append(...contents)
-					})
+					}),
 			),
 			padded: false,
 			expanded: false,
@@ -858,9 +843,7 @@ class Section extends SectionSkeleton {
 		})
 		stack.setItem(getPanelByName(authorsSortSetting))
 
-		return $()
-			.add(sortSelect.$element)
-			.add(stack.$element)
+		return $().add(sortSelect.$element).add(stack.$element)
 	}
 
 	/**
@@ -870,8 +853,8 @@ class Section extends SectionSkeleton {
 	 * @private
 	 */
 	scrollToLatestComment = (event) => {
-		event.preventDefault();
-		/** @type {Comment} */ (this.latestComment).scrollTo({ pushState: true })
+		event.preventDefault()
+		/** @type {Comment} */ ;(this.latestComment).scrollTo({ pushState: true })
 	}
 
 	/**
@@ -895,8 +878,8 @@ class Section extends SectionSkeleton {
 				latestCommentLink.href = `#${id || ''}`
 				latestCommentLink.className = 'cd-clickHandled'
 				latestCommentLink.addEventListener('click', this.scrollToLatestComment)
-				latestCommentLink.textContent = formatDate(latestComment.date);
-				(new LiveTimestamp(latestCommentLink, latestComment.date, false)).init()
+				latestCommentLink.textContent = formatDate(latestComment.date)
+				new LiveTimestamp(latestCommentLink, latestComment.date, false).init()
 
 				latestCommentWrapper = document.createElement('span')
 				latestCommentWrapper.className = 'cd-section-bar-item'
@@ -910,7 +893,7 @@ class Section extends SectionSkeleton {
 				this.comments.length,
 
 				// Author count
-				this.comments.map((comment) => comment.author).filter(unique).length
+				this.comments.map((comment) => comment.author).filter(unique).length,
 			)
 			if (this.comments.length === 1) {
 				commentCountWrapper.querySelector('.cd-section-metadata-authorcount')?.remove()
@@ -930,9 +913,9 @@ class Section extends SectionSkeleton {
 
 				// `role` changes the link color, making it different from the color of neighboring links,
 				// and I think it doesn't really give any benefit.
-				authorCountButton.element.removeAttribute('role');
+				authorCountButton.element.removeAttribute('role')
 
-				/** @type {HTMLElement} */ (span.firstChild).replaceWith(authorCountButton.element)
+				/** @type {HTMLElement} */ ;(span.firstChild).replaceWith(authorCountButton.element)
 			}
 
 			metadataElement = /** @type {HTMLElement} */ (document.createElement('div'))
@@ -1030,32 +1013,32 @@ class Section extends SectionSkeleton {
 				[
 					this.canFirstCommentBeEdited()
 						? new OO.ui.MenuOptionWidget({
-							data: 'editOpeningComment',
-							label: cd.s('sm-editopeningcomment'),
-							title: cd.s('sm-editopeningcomment-tooltip'),
-							icon: 'edit',
-						})
+								data: 'editOpeningComment',
+								label: cd.s('sm-editopeningcomment'),
+								title: cd.s('sm-editopeningcomment-tooltip'),
+								icon: 'edit',
+							})
 						: undefined,
 					this.canBeMoved()
 						? new OO.ui.MenuOptionWidget({
-							data: 'move',
-							label: cd.s('sm-move'),
-							title: cd.s('sm-move-tooltip'),
-							icon: 'arrowNext',
-						})
+								data: 'move',
+								label: cd.s('sm-move'),
+								title: cd.s('sm-move-tooltip'),
+								icon: 'arrowNext',
+							})
 						: undefined,
 					this.canBeSubsectioned()
 						? new OO.ui.MenuOptionWidget({
-							data: 'addSubsection',
-							label: cd.s('sm-addsubsection'),
-							title: cd.s('sm-addsubsection-tooltip'),
-							icon: 'speechBubbleAdd',
-						})
+								data: 'addSubsection',
+								label: cd.s('sm-addsubsection'),
+								title: cd.s('sm-addsubsection-tooltip'),
+								icon: 'speechBubbleAdd',
+							})
 						: undefined,
-				].filter(defined)
+				].filter(defined),
 			)
 			.on('toggle', (visible) => {
-				/** @type {OO.ui.ButtonMenuSelectWidget} */ (this.actions.moreMenuSelect).setFlags({
+				/** @type {OO.ui.ButtonMenuSelectWidget} */ ;(this.actions.moreMenuSelect).setFlags({
 					progressive: visible,
 				})
 			})
@@ -1071,9 +1054,9 @@ class Section extends SectionSkeleton {
 						this.addSubsection()
 						break
 				}
-			});
+			})
 
-		/** @type {Button} */ (this.actions.moreMenuSelectDummy).element.remove()
+		/** @type {Button} */ ;(this.actions.moreMenuSelectDummy).element.remove()
 		this.actionsElement.append(moreMenuSelect.$element[0])
 
 		/**
@@ -1122,8 +1105,8 @@ class Section extends SectionSkeleton {
 	 * @private
 	 */
 	createAndClickMoreMenuSelect() {
-		this.addMoreMenuSelect();
-		/** @type {OO.ui.ButtonMenuSelectWidget} */ (this.actions.moreMenuSelect).focus().emit('click')
+		this.addMoreMenuSelect()
+		/** @type {OO.ui.ButtonMenuSelectWidget} */ ;(this.actions.moreMenuSelect).focus().emit('click')
 	}
 
 	/**
@@ -1164,11 +1147,11 @@ class Section extends SectionSkeleton {
 		actionsElement.className = [
 			'cd-section-actions',
 			this.isTopic() ? 'cd-section-actions-block' : 'cd-section-actions-inline',
-		].filter(defined).join(' ')
+		]
+			.filter(defined)
+			.join(' ')
 		actionsElement.append(
-			...[copyLinkButton, moreMenuSelectDummy]
-				.filter(defined)
-				.map((button) => button.element)
+			...[copyLinkButton, moreMenuSelectDummy].filter(defined).map((button) => button.element),
 		)
 
 		/**
@@ -1218,9 +1201,9 @@ class Section extends SectionSkeleton {
 		if (cd.g.isDtVisualEnhancementsEnabled) {
 			this.headingElement.querySelector('.ext-discussiontools-init-section-bar')?.remove()
 		}
-		/** @type {HTMLElement} */ (this.headingElement.parentElement).insertBefore(
+		/** @type {HTMLElement} */ ;(this.headingElement.parentElement).insertBefore(
 			barElement,
-			this.headingElement.nextElementSibling
+			this.headingElement.nextElementSibling,
 		)
 
 		if (this.lastElement === this.headingElement) {
@@ -1318,11 +1301,11 @@ class Section extends SectionSkeleton {
 
 		const newCommentCountWrapper = document.createElement('span')
 		newCommentCountWrapper.className = 'cd-section-bar-item'
-		newCommentCountWrapper.append(newLink);
+		newCommentCountWrapper.append(newLink)
 
-		/** @type {HTMLElement} */ (this.metadataElement).insertBefore(
+		/** @type {HTMLElement} */ ;(this.metadataElement).insertBefore(
 			newCommentCountWrapper,
-			/** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null
+			/** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null,
 		)
 
 		this.newCommentCountWrapper = newCommentCountWrapper
@@ -1347,12 +1330,13 @@ class Section extends SectionSkeleton {
 
 		if (!this.isTopic()) return
 
-		let subscribeId = controller.getDtSubscribableThreads()
-			?.find((thread) => (
-				thread.id === this.hElement.dataset.mwThreadId ||
-				thread.id === this.headlineElement.dataset.mwThreadId
-			))
-			?.name
+		let subscribeId = controller
+			.getDtSubscribableThreads()
+			?.find(
+				(thread) =>
+					thread.id === this.hElement.dataset.mwThreadId ||
+					thread.id === this.headlineElement.dataset.mwThreadId,
+			)?.name
 
 		if (!subscribeId) {
 			// Older versions of MediaWiki
@@ -1370,7 +1354,7 @@ class Section extends SectionSkeleton {
 			} else {
 				for (let n = this.headingElement.firstChild; n; n = n.nextSibling) {
 					if (n.nodeType === Node.COMMENT_NODE && n.textContent.includes('__DTSUBSCRIBELINK__')) {
-						[, subscribeId] = n.textContent.match('__DTSUBSCRIBELINK__(.+)') || []
+						;[, subscribeId] = n.textContent.match('__DTSUBSCRIBELINK__(.+)') || []
 						break
 					}
 				}
@@ -1394,7 +1378,7 @@ class Section extends SectionSkeleton {
 		if (!this.replyForm) {
 			// Hide the reply button before setupping the comming form so that IME selector is positioned
 			// correctly
-			/** @type {Button} */ (this.replyButton).hide()
+			/** @type {Button} */ ;(this.replyButton).hide()
 
 			/**
 			 * Reply form related to the section.
@@ -1407,7 +1391,7 @@ class Section extends SectionSkeleton {
 					mode: 'replyInSection',
 				},
 				initialState,
-				commentForm
+				commentForm,
 			)
 		}
 
@@ -1449,7 +1433,7 @@ class Section extends SectionSkeleton {
 					mode: 'addSubsection',
 				},
 				initialState,
-				commentForm
+				commentForm,
 			)
 
 			this.addSubsectionButtonLastDescendant?.hide()
@@ -1494,11 +1478,13 @@ class Section extends SectionSkeleton {
 				subsection" forms for a level 4 and then a level 2 section and the user clicks "Add
 				subsection" for a level 3 section, we need to put our form between them.
 				*/
-			$(this.findRealLastElement((el) => (
-				[...el.classList].some((className) => (
-					className.match(new RegExp(`^cd-commentForm-addSubsection-[${this.level}-6]$`))
-				))
-			))).after(commentForm.$element)
+			$(
+				this.findRealLastElement((el) =>
+					[...el.classList].some((className) =>
+						className.match(new RegExp(`^cd-commentForm-addSubsection-[${this.level}-6]$`)),
+					),
+				),
+			).after(commentForm.$element)
 		}
 	}
 
@@ -1586,15 +1572,16 @@ class Section extends SectionSkeleton {
 			}
 		}
 
-		this.subscriptions.subscribe(
-			this.subscribeId,
-			this.id,
-			!!mode,
-			// Unsubscribe from
-			renamedFrom && !sectionManager.getBySubscribeId(renamedFrom).length
-				? renamedFrom
-				: undefined,
-		)
+		this.subscriptions
+			.subscribe(
+				this.subscribeId,
+				this.id,
+				!!mode,
+				// Unsubscribe from
+				renamedFrom && !sectionManager.getBySubscribeId(renamedFrom).length
+					? renamedFrom
+					: undefined,
+			)
 			.then(() => {
 				// TODO: this condition seems a bad idea because when we could update the subscriptions but
 				// couldn't reload the page, the UI becomes unsynchronized. But there is also no UI
@@ -1634,7 +1621,8 @@ class Section extends SectionSkeleton {
 			}
 		}
 
-		this.subscriptions.unsubscribe(this.subscribeId, this.id, !!mode)
+		this.subscriptions
+			.unsubscribe(this.subscribeId, this.id, !!mode)
 			.then(() => {
 				if (mode !== 'silent') {
 					sections.forEach((section) => {
@@ -1686,9 +1674,9 @@ class Section extends SectionSkeleton {
 					oldCommentData.elementHtmls[0].replace(
 						/\u0001(\d+)_\w+\u0002/g,
 						(_, /** @type {string} */ num) =>
-							currentCommentData.hiddenElementsData[Number(num) - 1].html
-					)
-				).html()
+							currentCommentData.hiddenElementsData[Number(num) - 1].html,
+					),
+				).html(),
 			)[0],
 		}
 		this.parseHeadline.call(oldSectionDummy)
@@ -1729,12 +1717,12 @@ class Section extends SectionSkeleton {
 	 */
 	async requestCode() {
 		const { query, curtimestamp: queryTimestamp } =
-		/** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
+			/** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
 				await cd
 					.getApi()
 					.post(
 						/** @type {import('types-mediawiki/api_params').UnknownApiParams} */ (
-						/** @type {import('types-mediawiki/api_params').ApiQueryRevisionsParams} */ ({
+							/** @type {import('types-mediawiki/api_params').ApiQueryRevisionsParams} */ ({
 								action: 'query',
 								titles: this.getSourcePage().name,
 								prop: 'revisions',
@@ -1744,7 +1732,7 @@ class Section extends SectionSkeleton {
 								redirects: !mw.config.get('wgIsRedirect'),
 								curtimestamp: true,
 							})
-						)
+						),
 					)
 					.catch(handleApiReject)
 			)
@@ -1855,7 +1843,7 @@ class Section extends SectionSkeleton {
 
 		const source = this.searchInCode(
 			sectionCode || this.getSourcePage().source.getCode(),
-			Boolean(sectionCode)
+			Boolean(sectionCode),
 		)
 		if (!source) {
 			throw new CdError({
@@ -1954,13 +1942,11 @@ class Section extends SectionSkeleton {
 
 		return this.level <= 2
 			? defaultValue
-			: (
-					sectionManager.getAll()
-						.slice(0, this.index)
-						.reverse()
-						.find((section) => section.level === 2) ||
-						defaultValue
-				)
+			: sectionManager
+					.getAll()
+					.slice(0, this.index)
+					.reverse()
+					.find((section) => section.level === 2) || defaultValue
 	}
 
 	/**
@@ -1974,7 +1960,8 @@ class Section extends SectionSkeleton {
 		/** @type {Section[]} */
 		const children = []
 		let haveMetDirect = false
-		sectionManager.getAll()
+		sectionManager
+			.getAll()
 			.slice(this.index + 1)
 			.some((section) => {
 				if (section.level > this.level) {
@@ -2101,7 +2088,7 @@ class Section extends SectionSkeleton {
 
 		this.subscribeId = sectionManager.generateDtSubscriptionId(
 			cd.user.getName(),
-			this.oldestComment?.date?.toISOString() || editTimestamp
+			this.oldestComment?.date?.toISOString() || editTimestamp,
 		)
 	}
 
@@ -2128,10 +2115,7 @@ class Section extends SectionSkeleton {
 				this.lastElement.nextElementSibling
 			);
 			lastElement instanceof HTMLElement &&
-			(
-				lastElement.matches('.cd-section-button-container') ||
-				(additionalCondition?.(lastElement))
-			);
+			(lastElement.matches('.cd-section-button-container') || additionalCondition?.(lastElement));
 			lastElement = lastElement.nextElementSibling
 		) {
 			realLastElement = lastElement
@@ -2148,11 +2132,9 @@ class Section extends SectionSkeleton {
 	updateVisibility(show) {
 		if (show !== this.isHidden) return
 
-		this.elements ??= /** @type {HTMLElement[]} */ (getRangeContents(
-			this.headingElement,
-			this.findRealLastElement(),
-			controller.rootElement
-		))
+		this.elements ??= /** @type {HTMLElement[]} */ (
+			getRangeContents(this.headingElement, this.findRealLastElement(), controller.rootElement)
+		)
 		this.isHidden = !show
 		this.elements.forEach((el) => {
 			el.classList.toggle('cd-section-hidden', !show)
@@ -2166,18 +2148,19 @@ class Section extends SectionSkeleton {
 	 * @returns {Comment | undefined}
 	 */
 	getCommentAboveCommentToBeAdded(commentForm) {
-		return sectionManager.getAll()
+		return sectionManager
+			.getAll()
 			.slice(
 				0,
 
 				// Section above the reply
-				((commentForm.getMode() === 'addSubsection' && this.getLastDescendant()) || this).index + 1
+				((commentForm.getMode() === 'addSubsection' && this.getLastDescendant()) || this).index + 1,
 			)
 			.reverse()
 			.reduce(
 				(comment, section) =>
 					comment || section.commentsInFirstChunk[section.commentsInFirstChunk.length - 1],
-				/** @type {Comment | undefined} */ (undefined)
+				/** @type {Comment | undefined} */ (undefined),
 			)
 	}
 
@@ -2188,18 +2171,16 @@ class Section extends SectionSkeleton {
 	 * @returns {Section | undefined}
 	 */
 	findNewSelf() {
-		return (
-			sectionManager.search({
-				headline: this.headline,
-				oldestCommentId: this.oldestComment?.id,
-				index: this.index,
-				id: this.id,
+		return sectionManager.search({
+			headline: this.headline,
+			oldestCommentId: this.oldestComment?.id,
+			index: this.index,
+			id: this.id,
 
-				// We cache ancestors when saving the session, so this call will return the right value,
-				// despite the fact that sectionManager.items has already changed.
-				ancestors: this.getAncestors().map((section) => section.headline),
-			})?.section
-		)
+			// We cache ancestors when saving the session, so this call will return the right value,
+			// despite the fact that sectionManager.items has already changed.
+			ancestors: this.getAncestors().map((section) => section.headline),
+		})?.section
 	}
 
 	/**
@@ -2255,12 +2236,10 @@ class Section extends SectionSkeleton {
 	 * @returns {import('./Comment').default | undefined}
 	 */
 	getCommentFormTargetComment() {
-		return (
-			this.commentsInFirstChunk
-				.slice()
-				.reverse()
-				.find((c) => c.level === 0)
-		)
+		return this.commentsInFirstChunk
+			.slice()
+			.reverse()
+			.find((c) => c.level === 0)
 	}
 
 	/**
@@ -2300,7 +2279,7 @@ class Section extends SectionSkeleton {
 				// Add the thread button class as it behaves as a thread button in fact, being positioned
 				// inside a "cd-commentLevel" list.
 				classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
-			}).$element[0]
+			}).$element[0],
 		)
 
 		this.prototypes.add(
@@ -2312,7 +2291,7 @@ class Section extends SectionSkeleton {
 				framed: false,
 				flags: ['progressive'],
 				classes: ['cd-button-ooui', 'cd-section-button'],
-			}).$element[0]
+			}).$element[0],
 		)
 
 		this.prototypes.add(
@@ -2324,7 +2303,7 @@ class Section extends SectionSkeleton {
 				invisibleLabel: true,
 				title: cd.s('sm-copylink-tooltip'),
 				classes: ['cd-section-bar-button'],
-			}).$element[0]
+			}).$element[0],
 		)
 	}
 }

@@ -38,7 +38,7 @@ async function setupAuth(username, password) {
 
 		// Verify we're logged in by checking for user menu
 		const userMenu = await page.locator('#pt-userpage')
-		if (await userMenu.count() === 0) {
+		if ((await userMenu.count()) === 0) {
 			throw new Error('Login failed - user menu not found')
 		}
 
@@ -47,7 +47,6 @@ async function setupAuth(username, password) {
 		// Save authentication state
 		await context.storageState({ path: 'playwright/.auth/user.json' })
 		console.log('💾 Authentication state saved to .auth/user.json')
-
 	} catch (error) {
 		console.error('❌ Authentication setup failed:', error.message)
 		throw error

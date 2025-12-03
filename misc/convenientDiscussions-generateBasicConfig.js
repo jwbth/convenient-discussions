@@ -1,30 +1,76 @@
-console.log(`Collecting data for ${mw.config.get('wgServerName')}…`);
+console.log(`Collecting data for ${mw.config.get('wgServerName')}…`)
 
-mw.loader.using([
-	'mediawiki.util',
-	'mediawiki.ForeignApi',
-	'mediawiki.Title',
-]).then(async () => {
+mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
 	const config = {
 		messages: {},
-	};
-	const api = new mw.Api();
+	}
+	const api = new mw.Api()
 
 	const messageNames = [
-		'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat',
+		'sun',
+		'mon',
+		'tue',
+		'wed',
+		'thu',
+		'fri',
+		'sat',
 
-		'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
+		'sunday',
+		'monday',
+		'tuesday',
+		'wednesday',
+		'thursday',
+		'friday',
+		'saturday',
 
-		'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
+		'jan',
+		'feb',
+		'mar',
+		'apr',
+		'may',
+		'jun',
+		'jul',
+		'aug',
+		'sep',
+		'oct',
+		'nov',
+		'dec',
 
-		'january', 'february', 'march', 'april', 'may_long', 'june', 'july', 'august', 'september',
-		'october', 'november', 'december',
+		'january',
+		'february',
+		'march',
+		'april',
+		'may_long',
+		'june',
+		'july',
+		'august',
+		'september',
+		'october',
+		'november',
+		'december',
 
-		'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen', 'july-gen',
-		'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
+		'january-gen',
+		'february-gen',
+		'march-gen',
+		'april-gen',
+		'may-gen',
+		'june-gen',
+		'july-gen',
+		'august-gen',
+		'september-gen',
+		'october-gen',
+		'november-gen',
+		'december-gen',
 
-		'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-		'colon-separator', 'nextdiff', 'timezone-utc', 'pagetitle',
+		'parentheses',
+		'parentheses-start',
+		'parentheses-end',
+		'word-separator',
+		'comma-separator',
+		'colon-separator',
+		'nextdiff',
+		'timezone-utc',
+		'pagetitle',
 		'discussiontools-topicsubscription-button-subscribe',
 		'discussiontools-topicsubscription-button-subscribe-tooltip',
 		'discussiontools-topicsubscription-button-unsubscribe',
@@ -43,79 +89,85 @@ mw.loader.using([
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body',
 		'thanks-confirmation2',
 		'checkuser-userinfocard-toggle-button-aria-label',
-	];
+	]
 
 	for (let i = 0; i < messageNames.length; i += 50) {
-		const nextNames = messageNames.slice(i, i + 50);
+		const nextNames = messageNames.slice(i, i + 50)
 		const messages = await api.getMessages(nextNames, {
 			amlang: mw.config.get('wgContentLanguage'),
-		});
-		Object.assign(config.messages, messages);
+		})
+		Object.assign(config.messages, messages)
 	}
 
 	const siteInfoResponse = await api.get({
 		action: 'query',
 		meta: 'siteinfo',
 		siprop: ['specialpagealiases', 'general', 'extensions', 'magicwords'],
-	});
+	})
 
-	const specialPageAliases = siteInfoResponse.query.specialpagealiases
-		.filter((obj) => ['Contributions', 'Diff', 'PermanentLink'].includes(obj.realname));
+	const specialPageAliases = siteInfoResponse.query.specialpagealiases.filter((obj) =>
+		['Contributions', 'Diff', 'PermanentLink'].includes(obj.realname),
+	)
 	if (specialPageAliases.length) {
 		config.specialPageAliases = {
 			...specialPageAliases.map((page) => ({
 				[page.realname]: page.aliases.slice(0, page.aliases.indexOf(page.realname) + 1),
-			}))
-		};
+			})),
+		}
 	}
 
 	const substAliases = siteInfoResponse.query.magicwords
 		.find((obj) => obj.name === 'subst')
-		?.aliases
-		.map((alias) => alias.toLowerCase())
-		.filter((alias) => alias !== 'subst:');
+		?.aliases.map((alias) => alias.toLowerCase())
+		.filter((alias) => alias !== 'subst:')
 	if (substAliases.length) {
-		config.substAliases = substAliases;
+		config.substAliases = substAliases
 	}
 
 	const thumbAliases = siteInfoResponse.query.magicwords
 		.find((obj) => obj.name === 'img_thumbnail')
-		?.aliases
-		.map((alias) => alias.toLowerCase())
-		.filter((alias) => alias !== 'thumb' && alias !== 'thumbnail');
+		?.aliases.map((alias) => alias.toLowerCase())
+		.filter((alias) => alias !== 'thumb' && alias !== 'thumbnail')
 	if (thumbAliases.length) {
-		config.thumbAliases = thumbAliases;
+		config.thumbAliases = thumbAliases
 	}
 
-	config.timezone = siteInfoResponse.query.general.timezone;
+	config.timezone = siteInfoResponse.query.general.timezone
 
-	config.useGlobalPreferences = siteInfoResponse.query.extensions
-		.some((ext) => ext.name === 'GlobalPreferences');
+	config.useGlobalPreferences = siteInfoResponse.query.extensions.some(
+		(ext) => ext.name === 'GlobalPreferences',
+	)
 	if (config.useGlobalPreferences) {
 		// Global preferences are used by default. On WMF wikis this would just distract.
-		delete config.useGlobalPreferences;
+		delete config.useGlobalPreferences
 	}
 
-	config.pageWhitelist = [];
-	config.pageBlacklist = [];
-	config.userNamespacesByGender = null;
-	config.genderNeutralUserNamespaceAlias = null;
-	config.archivePaths = [];
-	config.pagesWithoutArchives = [];
-	config.defaultIndentationChar = ':';
-	config.spaceAfterIndentationChars = true;
-	config.indentationCharMode = 'mimic';
+	config.pageWhitelist = []
+	config.pageBlacklist = []
+	config.userNamespacesByGender = null
+	config.genderNeutralUserNamespaceAlias = null
+	config.archivePaths = []
+	config.pagesWithoutArchives = []
+	config.defaultIndentationChar = ':'
+	config.spaceAfterIndentationChars = true
+	config.indentationCharMode = 'mimic'
 
-	const signatureMessage = (await api.getMessages('Signature', {
-		amlang: mw.config.get('wgContentLanguage'),
-		amincludelocal: 1,
-	})).Signature;
-	const parsedSignature = await api.parse(signatureMessage, { disablelimitreport: true });
+	const signatureMessage = (
+		await api.getMessages('Signature', {
+			amlang: mw.config.get('wgContentLanguage'),
+			amincludelocal: 1,
+		})
+	).Signature
+	const parsedSignature = await api.parse(signatureMessage, { disablelimitreport: true })
 	if (!parsedSignature.includes('{{')) {
-		const $signature = $(parsedSignature);
-		const [, signatureEnding] = $signature.text().trim().match(/.*\$\d+(.{2,})$/) || [];
+		const $signature = $(parsedSignature)
+		const [, signatureEnding] =
+			$signature
+				.text()
+				.trim()
+				.match(/.*\$\d+(.{2,})$/) || []
 		if (signatureEnding) {
-			config.signatureEndingRegexp = new RegExp(mw.util.escapeRegExp(signatureEnding));
+			config.signatureEndingRegexp = new RegExp(mw.util.escapeRegExp(signatureEnding))
 		}
 	}
 
@@ -143,25 +195,27 @@ mw.loader.using([
 		Q5411705: 'clear',
 		Q11501008: 'reflistTalk',
 		Q25733334: 'notelistTalk',
-	};
+	}
 
 	const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php', {
-		anonymous: true
-	});
-	const dbName = mw.config.get('wgDBname');
-	const wikidataData = (await foreignApi.get({
-		action: 'wbgetentities',
-		ids: Object.keys(idsToProps),
-		props: 'sitelinks',
-		sitefilter: dbName,
-	})).entities;
+		anonymous: true,
+	})
+	const dbName = mw.config.get('wgDBname')
+	const wikidataData = (
+		await foreignApi.get({
+			action: 'wbgetentities',
+			ids: Object.keys(idsToProps),
+			props: 'sitelinks',
+			sitefilter: dbName,
+		})
+	).entities
 
-	const titles = {};
+	const titles = {}
 	Object.keys(idsToProps)
 		.filter((id) => wikidataData[id].sitelinks[dbName])
 		.forEach((id) => {
-			titles[idsToProps[id]] = [mw.Title.newFromText(wikidataData[id].sitelinks[dbName].title)];
-		});
+			titles[idsToProps[id]] = [mw.Title.newFromText(wikidataData[id].sitelinks[dbName].title)]
+		})
 
 	const redirectsResp = await api.get({
 		action: 'query',
@@ -169,100 +223,88 @@ mw.loader.using([
 		prop: 'redirects',
 		rdlimit: 500,
 		formatversion: 2,
-	});
+	})
 
 	if (redirectsResp.query?.pages) {
 		redirectsResp.query.pages.forEach((page) => {
-			if (!page.redirects) return;
+			if (!page.redirects) return
 
-			const prop = Object.keys(titles)
-				.find((prop) => titles[prop][0].getPrefixedText() === page.title);
+			const prop = Object.keys(titles).find(
+				(prop) => titles[prop][0].getPrefixedText() === page.title,
+			)
 
 			// Should always be the case, logically
 			if (prop) {
-				titles[prop].push(
-					...page.redirects.map((redirect) => mw.Title.newFromText(redirect.title))
-				);
+				titles[prop].push(...page.redirects.map((redirect) => mw.Title.newFromText(redirect.title)))
 			}
-		});
+		})
 	}
 
-	const getTitleText = (title) => title.getMainText();
-	const toLowerCaseFirst = (s) => s.length ? s[0].toLowerCase() + s.slice(1) : '';
+	const getTitleText = (title) => title.getMainText()
+	const toLowerCaseFirst = (s) => (s.length ? s[0].toLowerCase() + s.slice(1) : '')
 
-	config.unsignedTemplates = (
+	config.unsignedTemplates =
 		(titles.unsigned || titles.unsigned2 || titles.unsignedIp || titles.unsignedIp2) &&
 		(titles.unsigned || [])
 			.concat(titles.unsigned2 || [], titles.unsignedIp || [], titles.unsignedIp2 || [])
 			.map(getTitleText)
-	);
 
-	config.pairQuoteTemplates = (
-		(titles.blockquotetop || titles.blockquotebottom) &&
-		[
-			(titles.blockquotetop || []).map(getTitleText),
-			(titles.blockquotebottom || []).map(getTitleText),
-		]
-	);
+	config.pairQuoteTemplates = (titles.blockquotetop || titles.blockquotebottom) && [
+		(titles.blockquotetop || []).map(getTitleText),
+		(titles.blockquotebottom || []).map(getTitleText),
+	]
 
-	config.smallDivTemplates = titles.smallDiv?.map(getTitleText);
+	config.smallDivTemplates = titles.smallDiv?.map(getTitleText)
 	if (config.smallDivTemplates) {
-		config.smallDivTemplates[0] = toLowerCaseFirst(config.smallDivTemplates[0]);
+		config.smallDivTemplates[0] = toLowerCaseFirst(config.smallDivTemplates[0])
 	}
 
 	config.paragraphTemplates = titles.paragraph
 		?.map(getTitleText)
-		.sort((title1, title2) => (title2 === 'Pb') - (title1 === 'Pb'));
+		.sort((title1, title2) => (title2 === 'Pb') - (title1 === 'Pb'))
 	if (config.paragraphTemplates) {
-		config.paragraphTemplates[0] = toLowerCaseFirst(config.paragraphTemplates[0]);
+		config.paragraphTemplates[0] = toLowerCaseFirst(config.paragraphTemplates[0])
 	}
 
-	config.outdentTemplates = titles.outdent?.map(getTitleText);
+	config.outdentTemplates = titles.outdent?.map(getTitleText)
 	if (config.outdentTemplates) {
-		config.outdentTemplates[0] = toLowerCaseFirst(config.outdentTemplates[0]);
+		config.outdentTemplates[0] = toLowerCaseFirst(config.outdentTemplates[0])
 	}
 
-	config.clearTemplates = titles.clear?.map(getTitleText);
+	config.clearTemplates = titles.clear?.map(getTitleText)
 
-	config.reflistTalkTemplates = (
+	config.reflistTalkTemplates =
 		(titles.reflistTalk || titles.notelistTalk) &&
-		(titles.reflistTalk || [])
-			.concat(titles.notelistTalk || [])
-			.map(getTitleText)
-	);
+		(titles.reflistTalk || []).concat(titles.notelistTalk || []).map(getTitleText)
 
-	config.noSignatureClasses = [];
+	config.noSignatureClasses = []
 
-	config.noSignatureTemplates = (
+	config.noSignatureTemplates =
 		(titles.movedFrom || titles.movedTo) &&
-		(titles.movedFrom || [])
-			.concat(titles.movedTo || [])
-			.map(getTitleText)
-	);
+		(titles.movedFrom || []).concat(titles.movedTo || []).map(getTitleText)
 
-	config.commentAntipatterns = [];
-	config.excludeFromHeadlineClasses = [];
+	config.commentAntipatterns = []
+	config.excludeFromHeadlineClasses = []
 
 	const closedTitles = [].concat(
 		titles.closed || [],
 		titles.discussionTop || [],
 		titles.archiveTop || [],
 		titles.hiddenArchiveTop || [],
-		titles.afdTop || []
-	);
+		titles.afdTop || [],
+	)
 	const closedEndTitles = [].concat(
 		titles.closedEnd || [],
 		titles.discussionBottom || [],
 		titles.hiddenArchiveBottom || [],
-		titles.afdBottom || []
-	);
+		titles.afdBottom || [],
+	)
 
-	config.closedDiscussionTemplates = (
-		(closedTitles.length || closedEndTitles.length || undefined) &&
-		[closedTitles.map(getTitleText), closedEndTitles.map(getTitleText),]
-	);
+	config.closedDiscussionTemplates = (closedTitles.length ||
+		closedEndTitles.length ||
+		undefined) && [closedTitles.map(getTitleText), closedEndTitles.map(getTitleText)]
 
-	config.closedDiscussionClasses = [];
+	config.closedDiscussionClasses = []
 
 	let output = JSON.stringify(config, null, '\t')
 		.replace(/\n\t"([a-zA-Z]+)":/g, '\n\t$1:')
@@ -271,8 +313,8 @@ mw.loader.using([
 		.replace(/"/g, "'")
 		.replace(
 			/signatureEndingRegexp: \{\}/,
-			`signatureEndingRegexp: ${config.signatureEndingRegexp}`
-		);
+			`signatureEndingRegexp: ${config.signatureEndingRegexp}`,
+		)
 
 	// When updating this code, update the code in buildConfigs.js as well.
 	output = `/**
@@ -326,7 +368,7 @@ if (!convenientDiscussions.isRunning) {
 }());
 
 // </nowiki>
-`;
+`
 
-	console.log(output);
-});
+	console.log(output)
+})

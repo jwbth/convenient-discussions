@@ -3,51 +3,56 @@
 // uses "MEZ" which is a translated version of "CET"). Also, Convenient Discussions could be used on
 // other wikis than WMF's, where other timezones could be used.
 
-import fs from 'fs';
+import fs from 'fs'
 
-import JSON5 from 'json5';
-import fetch from 'node-fetch';
-import { unique } from './utils.mjs';
+import JSON5 from 'json5'
+import fetch from 'node-fetch'
+import { unique } from './utils.mjs'
 
 async function getZoneToAbbr() {
-	const res = await fetch('https://raw.githubusercontent.com/moment/moment-timezone/develop/data/packed/latest.json');
-	const body = await res.text();
-	const momentTimezoneLatest = JSON.parse(body);
-	const zoneToAbbr = {};
+	const res = await fetch(
+		'https://raw.githubusercontent.com/moment/moment-timezone/develop/data/packed/latest.json',
+	)
+	const body = await res.text()
+	const momentTimezoneLatest = JSON.parse(body)
+	const zoneToAbbr = {}
 	momentTimezoneLatest.zones.forEach((zone) => {
-		const tokens = zone.split('|');
-		zoneToAbbr[tokens[0]] = tokens[1].split(' ');
-	});
-	return zoneToAbbr;
+		const tokens = zone.split('|')
+		zoneToAbbr[tokens[0]] = tokens[1].split(' ')
+	})
+	return zoneToAbbr
 }
 
 async function getUsedZones() {
-	const res = await fetch('https://noc.wikimedia.org/conf/InitialiseSettings.php.txt');
-	const body = await res.text();
-	const startNeedle = "'wgLocaltimezone' => ";
-	const startIndex = body.indexOf(startNeedle) + startNeedle.length;
-	const endNeedle = "],";
-	const length = body.slice(startIndex).indexOf(endNeedle) + 1;
-	const json = body
-		.substr(startIndex, length)
-		.replace(/^.+=>/gm, '');
-	const timezones = JSON5.parse(json).filter(unique);
-	return timezones;
+	const res = await fetch(
+		'https://noc.wikimedia.org/conf/InitialiseSettings.php.txt',
+	)
+	const body = await res.text()
+	const startNeedle = "'wgLocaltimezone' => "
+	const startIndex = body.indexOf(startNeedle) + startNeedle.length
+	const endNeedle = '],'
+	const length = body.slice(startIndex).indexOf(endNeedle) + 1
+	const json = body.substr(startIndex, length).replace(/^.+=>/gm, '')
+	const timezones = JSON5.parse(json).filter(unique)
+	return timezones
 }
 
 async function go() {
-	const zoneToAbbr = await getZoneToAbbr();
-	const timezones = await getUsedZones();
-	const filteredZoneToAbbr = {};
+	const zoneToAbbr = await getZoneToAbbr()
+	const timezones = await getUsedZones()
+	const filteredZoneToAbbr = {}
 	Object.keys(zoneToAbbr)
 		.filter((key) => timezones.includes(key))
 		.forEach((key) => {
-			filteredZoneToAbbr[key] = zoneToAbbr[key];
-		});
-	const timezoneAbbrsText = JSON.stringify(filteredZoneToAbbr, null, '\t') + '\n';
-	fs.mkdirSync('../data', { recursive: true });
-	fs.writeFileSync('../data/timezoneAbbrs.json', timezoneAbbrsText);
-	console.log(`Created data/timezoneAbbrs.json with content:\n\n${timezoneAbbrsText}\nLength: ${timezoneAbbrsText.length}`)
+			filteredZoneToAbbr[key] = zoneToAbbr[key]
+		})
+	const timezoneAbbrsText =
+		JSON.stringify(filteredZoneToAbbr, null, '\t') + '\n'
+	fs.mkdirSync('../data', { recursive: true })
+	fs.writeFileSync('../data/timezoneAbbrs.json', timezoneAbbrsText)
+	console.log(
+		`Created data/timezoneAbbrs.json with content:\n\n${timezoneAbbrsText}\nLength: ${timezoneAbbrsText.length}`,
+	)
 }
 
-go();
+go()

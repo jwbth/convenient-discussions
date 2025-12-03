@@ -15,10 +15,12 @@ global.$ = jest.fn((element) => ({
 }))
 
 // Mock PrototypeRegistry
-jest.mock('../src/PrototypeRegistry', () => jest.fn().mockImplementation(() => ({
-	get: jest.fn(),
-	add: jest.fn(),
-})))
+jest.mock('../src/PrototypeRegistry', () =>
+	jest.fn().mockImplementation(() => ({
+		get: jest.fn(),
+		add: jest.fn(),
+	})),
+)
 
 import CommentLayers from '../src/CommentLayers'
 

@@ -65,9 +65,10 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		// Use selected text if available, otherwise use the default content
-		const defaultContent = 'timestamp' in entry
-			? cd.s('cf-autocomplete-commentlinks-text', entry.authorName, entry.timestamp)
-			: /** @type {string} */ (entry.headline)
+		const defaultContent =
+			'timestamp' in entry
+				? cd.s('cf-autocomplete-commentlinks-text', entry.authorName, entry.timestamp)
+				: /** @type {string} */ (entry.headline)
 
 		return {
 			start: `[[#${entry.urlFragment}|`,
@@ -109,7 +110,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 */
 	validateInput(text) {
 		// Comment links autocomplete rejects input with forbidden characters
-		return !(/[#<>[\]|{}]/.test(text))
+		return !/[#<>[\]|{}]/.test(text)
 	}
 
 	/**
@@ -164,9 +165,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 			const snippetMaxLength = 80
 			if (comment.getText().length > snippetMaxLength) {
 				snippet = comment.getText().slice(0, snippetMaxLength)
-				const spacePos = snippet.lastIndexOf(
-					cd.mws('word-separator', { language: 'content' })
-				)
+				const spacePos = snippet.lastIndexOf(cd.mws('word-separator', { language: 'content' }))
 				if (spacePos !== -1) {
 					snippet = snippet.slice(0, spacePos)
 					if (/[.…,;!?:-—–]/.test(snippet[snippet.length - 1])) {

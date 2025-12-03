@@ -67,7 +67,7 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
 		pageKey = String(pageKey)
 
 		if (
-		// Is pageData not empty
+			// Is pageData not empty
 			Array.isArray(pageData)
 				? pageData.length
 				: $.isPlainObject(pageData)
@@ -79,7 +79,7 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
 				/** @type {EntryTypeWithSaveTime<EntryType, Key>} */ ({
 					[this.key]: pageData,
 					saveTime: Date.now(),
-				})
+				}),
 			)
 		} else {
 			this.remove(pageKey)

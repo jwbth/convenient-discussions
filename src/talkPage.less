@@ -93,7 +93,8 @@ ol > .cd-thread-button-container > .cd-thread-button {
 }
 
 // Override OOUI's default 32px
-.cd-button-ooui.cd-button-ooui.oo-ui-buttonElement > .oo-ui-buttonElement-button {
+.cd-button-ooui.cd-button-ooui.oo-ui-buttonElement
+	> .oo-ui-buttonElement-button {
 	min-height: unset;
 }
 
@@ -117,7 +118,11 @@ ol > .cd-thread-button-container > .cd-thread-button {
 }
 
 // Hotfix Vector's `margin-top: -0.5em;` for `p + ul` etc.
-.mw-body [hidden] + ul, .mw-body [hidden] + ol, .mw-body [hidden] + table, .mw-body [hidden] + dl, .mw-body [hidden] + blockquote {
+.mw-body [hidden] + ul,
+.mw-body [hidden] + ol,
+.mw-body [hidden] + table,
+.mw-body [hidden] + dl,
+.mw-body [hidden] + blockquote {
 	margin-top: 1em;
 }
 
@@ -208,7 +213,8 @@ ol > .cd-thread-button-container > .cd-thread-button {
 }
 
 .cd-button-pending.cd-button-pending,
-.cd-button-pending.cd-button-pending.cd-button-pending .oo-ui-buttonElement-button {
+.cd-button-pending.cd-button-pending.cd-button-pending
+	.oo-ui-buttonElement-button {
 	cursor: wait;
 }
 

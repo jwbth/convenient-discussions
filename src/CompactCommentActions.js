@@ -197,7 +197,9 @@ class CompactCommentActions extends CommentActions {
 			return
 		}
 
-		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction)
+		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(
+			this.onToggleChildThreadsAction,
+		)
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
 			this.comment.maybeOnboardOntoToggleChildThreads()
 		})
@@ -208,7 +210,7 @@ class CompactCommentActions extends CommentActions {
 		if (targetButton && overlayMenu) {
 			overlayMenu[0].insertBefore(
 				this.toggleChildThreadsButton.element,
-				targetButton.element.nextSibling || null
+				targetButton.element.nextSibling || null,
 			)
 		} else {
 			this.prependButton(this.toggleChildThreadsButton)
@@ -244,11 +246,9 @@ class CompactCommentActions extends CommentActions {
 		// Check if reply should be disabled due to outdented comments
 		if (
 			commentManager.getByIndex(this.comment.index + 1)?.isOutdented &&
-			(
-				!this.comment.section ||
+			(!this.comment.section ||
 				// Probably shouldn't add a comment to a numbered list
-				this.comment.elements[0].matches('ol *')
-			)
+				this.comment.elements[0].matches('ol *'))
 		) {
 			this.replyButton.setDisabled(true)
 			this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'))
@@ -285,10 +285,12 @@ class CompactCommentActions extends CommentActions {
 			// TODO: Remove `|| this.comment.dtId === thank.id || this.comment.id === thank.id` part
 			// after migration is complete on January 1, 2026
 			([id, thank]) =>
-				this.comment.dtId === id || this.comment.id === id ||
+				this.comment.dtId === id ||
+				this.comment.id === id ||
 				// This comes from the local storage, the value may be corrupt
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				this.comment.dtId === thank?.id || this.comment.id === thank?.id
+				this.comment.dtId === thank?.id ||
+				this.comment.id === thank?.id,
 		)
 
 		this.thankButton = this.createThankButton(this.onThankAction, isThanked)

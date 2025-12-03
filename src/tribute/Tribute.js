@@ -30,10 +30,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  **/
 
-import TributeEvents from "./TributeEvents";
-import TributeMenuEvents from "./TributeMenuEvents";
-import TributeRange from "./TributeRange";
-import TributeSearch from "./TributeSearch";
+import TributeEvents from './TributeEvents'
+import TributeMenuEvents from './TributeMenuEvents'
+import TributeRange from './TributeRange'
+import TributeSearch from './TributeSearch'
 
 /**
  * Properties that are shared between global config and individual collections. Global config
@@ -146,24 +146,26 @@ import TributeSearch from "./TributeSearch";
  */
 
 class Tribute {
-	constructor(/** @type {TributeConfig} */ {
-		selectClass = "highlight",
-		containerClass = "tribute-container",
-		itemClass = "",
-		trigger = "@",
-		lookup = "key",
-		fillAttr = "value",
-		collection = null,
-		menuContainer = null,
-		noMatchTemplate = null,
-		allowSpaces = false,
-		replaceTextSuffix = null,
-		positionMenu = true,
-		searchOpts = {},
-		menuItemLimit = null,
-		menuShowMinLength = 0,
-		direction = 'ltr'
-	}) {
+	constructor(
+		/** @type {TributeConfig} */ {
+			selectClass = 'highlight',
+			containerClass = 'tribute-container',
+			itemClass = '',
+			trigger = '@',
+			lookup = 'key',
+			fillAttr = 'value',
+			collection = null,
+			menuContainer = null,
+			noMatchTemplate = null,
+			allowSpaces = false,
+			replaceTextSuffix = null,
+			positionMenu = true,
+			searchOpts = {},
+			menuItemLimit = null,
+			menuShowMinLength = 0,
+			direction = 'ltr',
+		},
+	) {
 		this.current = /** @type {{
 			collection: TributeCollection | null,
 			trigger: string | null,
@@ -172,21 +174,21 @@ class Tribute {
 			triggerPos: number | null
 			mentionText: string | null,
 			filteredItems: TributeSearchResults<any>[] | null,
-		}} */ ({});
-		this.inputEvent = false;
-		this.isActive = false;
-		this.menuContainer = menuContainer;
-		this.allowSpaces = allowSpaces;
-		this.replaceTextSuffix = replaceTextSuffix;
-		this.positionMenu = positionMenu;
-		this.hasTrailingSpace = false;
-		this.direction = direction;
+		}} */ ({})
+		this.inputEvent = false
+		this.isActive = false
+		this.menuContainer = menuContainer
+		this.allowSpaces = allowSpaces
+		this.replaceTextSuffix = replaceTextSuffix
+		this.positionMenu = positionMenu
+		this.hasTrailingSpace = false
+		this.direction = direction
 
 		if (!collection) {
-			throw new Error("[Tribute] No collection specified.");
+			throw new Error('[Tribute] No collection specified.')
 		}
 
-		this.collection = collection.map(item => {
+		this.collection = collection.map((item) => {
 			return {
 				trigger: item.trigger || trigger,
 				keepAsEnd: item.keepAsEnd || null,
@@ -194,28 +196,24 @@ class Tribute {
 				selectClass: item.selectClass || selectClass,
 				containerClass: item.containerClass || containerClass,
 				itemClass: item.itemClass || itemClass,
-				selectTemplate: (
-					item.selectTemplate || Tribute.defaultSelectTemplate
-				).bind(this),
-				menuItemTemplate: (
-					item.menuItemTemplate || Tribute.defaultMenuItemTemplate
-				).bind(this),
+				selectTemplate: (item.selectTemplate || Tribute.defaultSelectTemplate).bind(this),
+				menuItemTemplate: (item.menuItemTemplate || Tribute.defaultMenuItemTemplate).bind(this),
 				// function called when menu is empty, disables hiding of menu.
-				noMatchTemplate: (t => {
-					if (typeof t === "string") {
-						if (t.trim() === "") return null;
-						return t;
+				noMatchTemplate: ((t) => {
+					if (typeof t === 'string') {
+						if (t.trim() === '') return null
+						return t
 					}
-					if (typeof t === "function") {
-						return t.bind(this);
+					if (typeof t === 'function') {
+						return t.bind(this)
 					}
 
 					return (
 						noMatchTemplate ||
-						function() {
-							return "<li>No Match Found!</li>";
+						function () {
+							return '<li>No Match Found!</li>'
 						}.bind(this)
-					);
+					)
 				})(noMatchTemplate),
 				lookup: item.lookup || lookup,
 				fillAttr: item.fillAttr || fillAttr,
@@ -225,51 +223,48 @@ class Tribute {
 				menuItemLimit: item.menuItemLimit || menuItemLimit,
 				menuShowMinLength: item.menuShowMinLength || menuShowMinLength,
 				label: item.label,
-			};
-		});
+			}
+		})
 
-		new TributeRange(this);
-		new TributeEvents(this);
-		new TributeMenuEvents(this);
-		new TributeSearch(this);
+		new TributeRange(this)
+		new TributeEvents(this)
+		new TributeMenuEvents(this)
+		new TributeSearch(this)
 	}
 
 	get isActive() {
-		return this._isActive;
+		return this._isActive
 	}
 
 	set isActive(val) {
 		if (this._isActive != val) {
-			this._isActive = val;
+			this._isActive = val
 			if (this.current.element) {
-				let noMatchEvent = new CustomEvent(`tribute-active-${val}`);
-				this.current.element.dispatchEvent(noMatchEvent);
+				let noMatchEvent = new CustomEvent(`tribute-active-${val}`)
+				this.current.element.dispatchEvent(noMatchEvent)
 			}
 		}
 	}
 
 	static defaultSelectTemplate(item) {
-		if (typeof item === "undefined")
-			return `${this.current.collection.trigger}${this.current.mentionText}`;
+		if (typeof item === 'undefined')
+			return `${this.current.collection.trigger}${this.current.mentionText}`
 
-		return (
-			this.current.collection.trigger +
-			item.original[this.current.collection.fillAttr]
-		);
+		return this.current.collection.trigger + item.original[this.current.collection.fillAttr]
 	}
 
 	static defaultMenuItemTemplate(matchItem) {
-		return matchItem.string;
+		return matchItem.string
 	}
 
 	static inputTypes() {
-		return ["TEXTAREA", "INPUT"];
+		return ['TEXTAREA', 'INPUT']
 	}
 
 	triggers() {
-		return this.collection.map(config => {
-			return config.trigger;
-		});
+		return this.collection.map((config) => {
+			return config.trigger
+		})
 	}
 
 	/**
@@ -278,12 +273,12 @@ class Tribute {
 	 */
 	attach(el) {
 		if (!el) {
-			throw new Error("[Tribute] Must pass in a DOM node or NodeList.");
+			throw new Error('[Tribute] Must pass in a DOM node or NodeList.')
 		}
 
 		// Check if it is a jQuery collection
-		if (typeof $ !== "undefined" && el instanceof $) {
-			el = /** @type {JQuery} */ (el).get();
+		if (typeof $ !== 'undefined' && el instanceof $) {
+			el = /** @type {JQuery} */ (el).get()
 		}
 
 		// Is el an Array/Array-like object?
@@ -292,138 +287,136 @@ class Tribute {
 			el.constructor === HTMLCollection ||
 			el.constructor === Array
 		) {
-			let length = el.length;
+			let length = el.length
 			for (var i = 0; i < length; ++i) {
-				this._attach(el[i]);
+				this._attach(el[i])
 			}
 		} else {
-			this._attach(el);
+			this._attach(el)
 		}
 	}
 
 	_attach(el) {
-		if (Object.hasOwn(el.dataset, "tribute")) {
-			console.warn("Tribute was already bound to " + el.nodeName);
+		if (Object.hasOwn(el.dataset, 'tribute')) {
+			console.warn('Tribute was already bound to ' + el.nodeName)
 		}
 
-		this.events.bind(el);
-		el.dataset.tribute = true;
+		this.events.bind(el)
+		el.dataset.tribute = true
 	}
 
 	createMenu(containerClass) {
-		let wrapper = document.createElement("div"),
-			ul = document.createElement("ul");
-		wrapper.className = containerClass;
+		let wrapper = document.createElement('div'),
+			ul = document.createElement('ul')
+		wrapper.className = containerClass
 
 		if (this.direction === 'rtl') {
-			wrapper.className += ' tribute-rtl';
+			wrapper.className += ' tribute-rtl'
 		}
 
-		wrapper.append(ul);
+		wrapper.append(ul)
 
 		if (this.menuContainer) {
-			return this.menuContainer.appendChild(wrapper);
+			return this.menuContainer.appendChild(wrapper)
 		}
 
-		return document.body.appendChild(wrapper);
+		return document.body.appendChild(wrapper)
 	}
 
 	showMenuFor(element, scrollTo) {
-		const processValues = values => {
+		const processValues = (values) => {
 			// Tribute may not be active any more by the time the value callback returns
 			if (!this.isActive) {
-				return;
+				return
 			}
 
 			let items = this.search.filter(this.current.mentionText, values, {
 				// jwbth: Replaced "<span>" and "</span>" as default values with empty strings. Tags are
 				// displayed as plain text currently anyway.
-				pre: this.current.collection.searchOpts.pre || "",
-				post: this.current.collection.searchOpts.post || "",
+				pre: this.current.collection.searchOpts.pre || '',
+				post: this.current.collection.searchOpts.post || '',
 				skip: this.current.collection.searchOpts.skip,
-				extract: el => {
-					if (typeof this.current.collection.lookup === "string") {
-						return el[this.current.collection.lookup];
-					} else if (typeof this.current.collection.lookup === "function") {
-						return this.current.collection.lookup(el, this.current.mentionText);
+				extract: (el) => {
+					if (typeof this.current.collection.lookup === 'string') {
+						return el[this.current.collection.lookup]
+					} else if (typeof this.current.collection.lookup === 'function') {
+						return this.current.collection.lookup(el, this.current.mentionText)
 					} else {
-						throw new TypeError(
-							"Invalid lookup attribute, lookup must be string or function."
-						);
+						throw new TypeError('Invalid lookup attribute, lookup must be string or function.')
 					}
-				}
-			});
+				},
+			})
 
 			if (this.current.collection.menuItemLimit) {
-				items = items.slice(0, this.current.collection.menuItemLimit);
+				items = items.slice(0, this.current.collection.menuItemLimit)
 			}
 
-			this.current.filteredItems = items;
+			this.current.filteredItems = items
 
-			let ul = this.menu.querySelector("ul");
+			let ul = this.menu.querySelector('ul')
 
-			this.range.positionMenuAtCaret(scrollTo);
+			this.range.positionMenuAtCaret(scrollTo)
 
 			if (!items.length) {
-				let noMatchEvent = new CustomEvent("tribute-no-match", {
-					detail: this.menu
-				});
-				this.current.element.dispatchEvent(noMatchEvent);
+				let noMatchEvent = new CustomEvent('tribute-no-match', {
+					detail: this.menu,
+				})
+				this.current.element.dispatchEvent(noMatchEvent)
 				if (
-					(typeof this.current.collection.noMatchTemplate === "function" &&
+					(typeof this.current.collection.noMatchTemplate === 'function' &&
 						!this.current.collection.noMatchTemplate()) ||
 					!this.current.collection.noMatchTemplate
 				) {
-					this.hideMenu();
+					this.hideMenu()
 				} else {
-					typeof this.current.collection.noMatchTemplate === "function"
+					typeof this.current.collection.noMatchTemplate === 'function'
 						? (ul.innerHTML = this.current.collection.noMatchTemplate())
-						: (ul.innerHTML = this.current.collection.noMatchTemplate);
+						: (ul.innerHTML = this.current.collection.noMatchTemplate)
 				}
 
-				return;
+				return
 			}
 
-			ul.innerHTML = "";
-			let fragment = document.createDocumentFragment();
+			ul.innerHTML = ''
+			let fragment = document.createDocumentFragment()
 
 			// jwbth: Added this part.
 			if (this.current.collection.label) {
-				let li = document.createElement("li");
-				li.classList.add('tribute-label');
-				li.textContent = this.current.collection.label;
-				fragment.append(li);
+				let li = document.createElement('li')
+				li.classList.add('tribute-label')
+				li.textContent = this.current.collection.label
+				fragment.append(li)
 			}
 
 			items.forEach((item, index) => {
-				let li = document.createElement("li");
-				li.dataset.index = index;
+				let li = document.createElement('li')
+				li.dataset.index = index
 
 				// jwbth: Replaced this part.
-				li.classList.add('tribute-item');
+				li.classList.add('tribute-item')
 				if (this.current.collection.itemClass) {
-					li.classList.add(this.current.collection.itemClass);
+					li.classList.add(this.current.collection.itemClass)
 				}
 
-				li.addEventListener("mousemove", e => {
-					let [, index] = this._findLiTarget(e.target);
+				li.addEventListener('mousemove', (e) => {
+					let [, index] = this._findLiTarget(e.target)
 					if (e.movementY !== 0) {
-						this.events.setActiveLi(index);
+						this.events.setActiveLi(index)
 					}
-				});
+				})
 				if (this.menuSelected === index) {
-					li.classList.add(this.current.collection.selectClass);
+					li.classList.add(this.current.collection.selectClass)
 				}
 				// jwbth: Replaced innerHTML with textContent to prevent XSS injections.
-				li.textContent = this.current.collection.menuItemTemplate(item);
-				fragment.append(li);
-			});
-			ul.append(fragment);
+				li.textContent = this.current.collection.menuItemTemplate(item)
+				fragment.append(li)
+			})
+			ul.append(fragment)
 
 			// jwbth: Added this line to make the menu redrawn immediately, not wait the setTimeout's
 			// callback.
-			this.range.positionMenuAtCaret(scrollTo);
-		};
+			this.range.positionMenuAtCaret(scrollTo)
+		}
 
 		// jwbth: Only proceed if the menu isn't already shown for the current element & mentionText.
 		// This behavior has issues, see
@@ -436,158 +429,150 @@ class Tribute {
 			this.current.mentionText === this.snapshot.mentionText
 		) {
 			if (this.current.element.selectionStart !== this.snapshot.selectionStart) {
-				processValues([]);
+				processValues([])
 			}
-			return;
+			return
 		}
 		this.snapshot = {
 			mentionText: this.current.mentionText,
 			selectionStart: this.current.element?.selectionStart,
-		};
+		}
 
 		// create the menu if it doesn't exist.
 		if (!this.menu) {
-			this.menu = this.createMenu(this.current.collection.containerClass);
-			element.tributeMenu = this.menu;
-			this.menuEvents.bind(this.menu);
+			this.menu = this.createMenu(this.current.collection.containerClass)
+			element.tributeMenu = this.menu
+			this.menuEvents.bind(this.menu)
 		}
 
-		this.isActive = true;
-		this.menuSelected = 0;
-		this.lastCanceledTriggerChar = null;
-		this.lastCanceledTriggerPos = null;
+		this.isActive = true
+		this.menuSelected = 0
+		this.lastCanceledTriggerChar = null
+		this.lastCanceledTriggerPos = null
 
 		if (!this.current.mentionText) {
-			this.current.mentionText = "";
+			this.current.mentionText = ''
 		}
 
-		if (typeof this.current.collection.values === "function") {
-			this.current.collection.values(this.current.mentionText, processValues);
+		if (typeof this.current.collection.values === 'function') {
+			this.current.collection.values(this.current.mentionText, processValues)
 		} else {
-			processValues(this.current.collection.values);
+			processValues(this.current.collection.values)
 		}
 	}
 
 	_findLiTarget(el) {
-		if (!el) return [];
-		const index = el.dataset.index;
-		return index ? [el, index] : this._findLiTarget(el.parentNode);
+		if (!el) return []
+		const index = el.dataset.index
+		return index ? [el, index] : this._findLiTarget(el.parentNode)
 	}
 
 	showMenuForCollection(element, collectionIndex) {
 		if (element !== document.activeElement) {
-			this.placeCaretAtEnd(element);
+			this.placeCaretAtEnd(element)
 		}
 
-		this.current.collection = this.collection[collectionIndex || 0];
+		this.current.collection = this.collection[collectionIndex || 0]
 
 		// jwbth: Added this to avert a JS error.
-		this.current.trigger = this.current.collection.trigger;
+		this.current.trigger = this.current.collection.trigger
 
-		this.current.externalTrigger = true;
-		this.current.element = element;
+		this.current.externalTrigger = true
+		this.current.element = element
 
 		// jwbth: Added this.
-		this.current.triggerPos = element.selectionStart;
+		this.current.triggerPos = element.selectionStart
 
 		if (!this.insertAtCaret(element, this.current.collection.trigger)) {
-			this.showMenuFor(element);
+			this.showMenuFor(element)
 		}
 	}
 
 	// TODO: make sure this works for inputs/textareas
 	placeCaretAtEnd(el) {
-		el.focus();
-		if (
-			typeof window.getSelection != "undefined" &&
-			typeof document.createRange != "undefined"
-		) {
-			var range = document.createRange();
-			range.selectNodeContents(el);
-			range.collapse(false);
-			var sel = window.getSelection();
-			sel.removeAllRanges();
-			sel.addRange(range);
-		} else if (typeof document.body.createTextRange != "undefined") {
-			var textRange = document.body.createTextRange();
-			textRange.moveToElementText(el);
-			textRange.collapse(false);
-			textRange.select();
+		el.focus()
+		if (typeof window.getSelection != 'undefined' && typeof document.createRange != 'undefined') {
+			var range = document.createRange()
+			range.selectNodeContents(el)
+			range.collapse(false)
+			var sel = window.getSelection()
+			sel.removeAllRanges()
+			sel.addRange(range)
+		} else if (typeof document.body.createTextRange != 'undefined') {
+			var textRange = document.body.createTextRange()
+			textRange.moveToElementText(el)
+			textRange.collapse(false)
+			textRange.select()
 		}
 	}
 
 	insertAtCaret(textarea, text) {
-		var scrollPos = textarea.scrollTop;
-		var caretPos = textarea.selectionStart;
+		var scrollPos = textarea.scrollTop
+		var caretPos = textarea.selectionStart
 
-		textarea.focus();
+		textarea.focus()
 
 		// jwbth: Preserve the undo/redo functionality in browsers that support it.
-		const hasInsertedViaCommand = document.execCommand('insertText', false, text);
+		const hasInsertedViaCommand = document.execCommand('insertText', false, text)
 		if (!hasInsertedViaCommand) {
-			var front = textarea.value.substring(0, caretPos);
-			var back = textarea.value.substring(
-				textarea.selectionEnd,
-				textarea.value.length
-			);
-			textarea.value = front + text + back;
-			caretPos += text.length;
-			textarea.selectionStart = caretPos;
-			textarea.selectionEnd = caretPos;
+			var front = textarea.value.substring(0, caretPos)
+			var back = textarea.value.substring(textarea.selectionEnd, textarea.value.length)
+			textarea.value = front + text + back
+			caretPos += text.length
+			textarea.selectionStart = caretPos
+			textarea.selectionEnd = caretPos
 		}
-		textarea.scrollTop = scrollPos;
+		textarea.scrollTop = scrollPos
 
-		return hasInsertedViaCommand;
+		return hasInsertedViaCommand
 	}
 
 	hideMenu() {
 		if (this.menu) {
-			this.menu.style.cssText = "display: none;";
-			this.isActive = false;
-			this.menuSelected = 0;
-			this.current = {};
+			this.menu.style.cssText = 'display: none;'
+			this.isActive = false
+			this.menuSelected = 0
+			this.current = {}
 		}
 	}
 
 	selectItemAtIndex(index, originalEvent) {
-		index = Number.parseInt(index);
-		if (typeof index !== "number" || isNaN(index)) return;
-		let item = this.current.filteredItems[index];
-		let data = this.current.collection.selectTemplate(item, originalEvent);
-		if (data !== null) this.replaceText(data, originalEvent, item);
+		index = Number.parseInt(index)
+		if (typeof index !== 'number' || isNaN(index)) return
+		let item = this.current.filteredItems[index]
+		let data = this.current.collection.selectTemplate(item, originalEvent)
+		if (data !== null) this.replaceText(data, originalEvent, item)
 	}
 
 	replaceText(data, originalEvent, item) {
-		this.range.replaceTriggerText(data, true, true, originalEvent, item);
+		this.range.replaceTriggerText(data, true, true, originalEvent, item)
 	}
 
 	_append(collection, newValues, replace) {
-		if (typeof collection.values === "function") {
-			throw new TypeError("Unable to append to values, as it is a function.");
+		if (typeof collection.values === 'function') {
+			throw new TypeError('Unable to append to values, as it is a function.')
 		} else if (replace) {
-			collection.values = newValues;
+			collection.values = newValues
 		} else {
-			collection.values = collection.values.concat(newValues);
+			collection.values = collection.values.concat(newValues)
 		}
 	}
 
 	append(collectionIndex, newValues, replace) {
-		let index = Number.parseInt(collectionIndex);
-		if (typeof index !== "number")
-			throw new Error("please provide an index for the collection to update.");
+		let index = Number.parseInt(collectionIndex)
+		if (typeof index !== 'number')
+			throw new Error('please provide an index for the collection to update.')
 
-		let collection = this.collection[index];
+		let collection = this.collection[index]
 
-		this._append(collection, newValues, replace);
+		this._append(collection, newValues, replace)
 	}
 
 	appendCurrent(newValues, replace) {
 		if (this.isActive) {
-			this._append(this.current.collection, newValues, replace);
+			this._append(this.current.collection, newValues, replace)
 		} else {
-			throw new Error(
-				"No active state. Please use append instead and pass an index."
-			);
+			throw new Error('No active state. Please use append instead and pass an index.')
 		}
 	}
 
@@ -597,12 +582,12 @@ class Tribute {
 	 */
 	detach(el) {
 		if (!el) {
-			throw new Error("[Tribute] Must pass in a DOM node or NodeList.");
+			throw new Error('[Tribute] Must pass in a DOM node or NodeList.')
 		}
 
 		// Check if it is a jQuery collection
-		if (typeof $ !== "undefined" && el instanceof $) {
-			el = /** @type {JQuery} */ (el).get();
+		if (typeof $ !== 'undefined' && el instanceof $) {
+			el = /** @type {JQuery} */ (el).get()
 		}
 
 		// Is el an Array/Array-like object?
@@ -611,30 +596,30 @@ class Tribute {
 			el.constructor === HTMLCollection ||
 			el.constructor === Array
 		) {
-			let length = el.length;
+			let length = el.length
 			for (var i = 0; i < length; ++i) {
-				this._detach(el[i]);
+				this._detach(el[i])
 			}
 		} else {
-			this._detach(el);
+			this._detach(el)
 		}
 	}
 
 	_detach(el) {
-		this.events.unbind(el);
+		this.events.unbind(el)
 		if (el.tributeMenu) {
-			this.menuEvents.unbind(el.tributeMenu);
+			this.menuEvents.unbind(el.tributeMenu)
 		}
 
 		setTimeout(() => {
-			delete el.dataset.tribute;
-			this.isActive = false;
+			delete el.dataset.tribute
+			this.isActive = false
 			if (el.tributeMenu) {
-				el.tributeMenu.remove();
+				el.tributeMenu.remove()
 			}
-		});
+		})
 	}
-	menuSelected = 0;
+	menuSelected = 0
 }
 
-export default Tribute;
+export default Tribute

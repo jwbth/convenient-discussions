@@ -3,41 +3,45 @@
  */
 
 // Mock dependencies
-jest.mock('../src/CommentLayers', () => class MockCommentLayers {
-	constructor(comment) {
-		this.comment = comment
-	}
+jest.mock(
+	'../src/CommentLayers',
+	() =>
+		class MockCommentLayers {
+			constructor(comment) {
+				this.comment = comment
+			}
 
-	create() {
-		this.createCalled = true
-		// Mock basic layer creation
-		this.underlay = { tagName: 'DIV' }
-		this.overlay = { tagName: 'DIV' }
-		this.line = { tagName: 'DIV' }
-		this.marker = { tagName: 'DIV' }
-	}
+			create() {
+				this.createCalled = true
+				// Mock basic layer creation
+				this.underlay = { tagName: 'DIV' }
+				this.overlay = { tagName: 'DIV' }
+				this.line = { tagName: 'DIV' }
+				this.marker = { tagName: 'DIV' }
+			}
 
-	updateStyles(wereJustCreated) {
-		this.updateStylesCalled = true
-		this.updateStylesWereJustCreated = wereJustCreated
-	}
+			updateStyles(wereJustCreated) {
+				this.updateStylesCalled = true
+				this.updateStylesWereJustCreated = wereJustCreated
+			}
 
-	destroy() {
-		// Mock destroy method
-	}
+			destroy() {
+				// Mock destroy method
+			}
 
-	hideMenu() {
-		// Mock hideMenu method
-	}
+			hideMenu() {
+				// Mock hideMenu method
+			}
 
-	deferHideMenu() {
-		// Mock deferHideMenu method
-	}
+			deferHideMenu() {
+				// Mock deferHideMenu method
+			}
 
-	dontHideMenu() {
-		// Mock dontHideMenu method
-	}
-})
+			dontHideMenu() {
+				// Mock dontHideMenu method
+			}
+		},
+)
 
 import SpaciousCommentLayers from '../src/SpaciousCommentLayers'
 

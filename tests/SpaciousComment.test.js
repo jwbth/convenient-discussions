@@ -13,13 +13,17 @@ global.OO = {
 	},
 }
 
-jest.mock('../src/EventEmitter.js', () => class EventEmitter {
-	on() {}
+jest.mock(
+	'../src/EventEmitter.js',
+	() =>
+		class EventEmitter {
+			on() {}
 
-	off() {}
+			off() {}
 
-	emit() {}
-})
+			emit() {}
+		},
+)
 
 // Mock dependencies
 jest.mock('../src/Comment', () => ({
@@ -122,7 +126,7 @@ describe('SpaciousComment', () => {
 
 			expect(SpaciousComment.prototypes.add).toHaveBeenCalledWith(
 				'headerWrapperElement',
-				expect.any(HTMLElement)
+				expect.any(HTMLElement),
 			)
 		})
 
@@ -131,19 +135,19 @@ describe('SpaciousComment', () => {
 
 			expect(SpaciousComment.prototypes.add).toHaveBeenCalledWith(
 				'goToParentButtonSvg',
-				expect.any(HTMLElement)
+				expect.any(HTMLElement),
 			)
 			expect(SpaciousComment.prototypes.add).toHaveBeenCalledWith(
 				'goToChildButtonSvg',
-				expect.any(HTMLElement)
+				expect.any(HTMLElement),
 			)
 			expect(SpaciousComment.prototypes.add).toHaveBeenCalledWith(
 				'collapseChildThreadsButtonSvg',
-				expect.any(HTMLElement)
+				expect.any(HTMLElement),
 			)
 			expect(SpaciousComment.prototypes.add).toHaveBeenCalledWith(
 				'expandChildThreadsButtonSvg',
-				expect.any(HTMLElement)
+				expect.any(HTMLElement),
 			)
 		})
 
@@ -151,7 +155,7 @@ describe('SpaciousComment', () => {
 			SpaciousComment.initPrototypes()
 
 			const headerWrapperCall = SpaciousComment.prototypes.add.mock.calls.find(
-				(call) => call[0] === 'headerWrapperElement'
+				(call) => call[0] === 'headerWrapperElement',
 			)
 			const headerWrapper = headerWrapperCall[1]
 
@@ -184,7 +188,7 @@ describe('SpaciousComment', () => {
 			SpaciousComment.initPrototypes()
 
 			const headerWrapperCall = SpaciousComment.prototypes.add.mock.calls.find(
-				(call) => call[0] === 'headerWrapperElement'
+				(call) => call[0] === 'headerWrapperElement',
 			)
 			const headerWrapper = headerWrapperCall[1]
 
@@ -200,7 +204,7 @@ describe('SpaciousComment', () => {
 			SpaciousComment.initPrototypes()
 
 			const headerWrapperCall = SpaciousComment.prototypes.add.mock.calls.find(
-				(call) => call[0] === 'headerWrapperElement'
+				(call) => call[0] === 'headerWrapperElement',
 			)
 			const headerWrapper = headerWrapperCall[1]
 

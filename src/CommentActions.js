@@ -128,7 +128,9 @@ class CommentActions {
 	 * Reusable action for go to child button.
 	 */
 	onGoToChildAction = () => {
-		/** @type {import('./Comment').default} */ (this.comment.targetChild).scrollTo({ pushState: true })
+		/** @type {import('./Comment').default} */ ;(this.comment.targetChild).scrollTo({
+			pushState: true,
+		})
 	}
 
 	/**
@@ -152,11 +154,9 @@ class CommentActions {
 		// Check if reply should be disabled due to outdented comments
 		if (
 			commentManager.getByIndex(this.comment.index + 1)?.isOutdented &&
-			(
-				!this.comment.section ||
+			(!this.comment.section ||
 				// Probably shouldn't add a comment to a numbered list
-				this.comment.elements[0].matches('ol *')
-			)
+				this.comment.elements[0].matches('ol *'))
 		) {
 			this.replyButton.setDisabled(true)
 			this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'))
@@ -193,9 +193,11 @@ class CommentActions {
 			// TODO: Remove `|| this.comment.dtId === thank.id || this.comment.id === thank.id` part
 			// after migration is complete on January 1, 2026
 			([id, thank]) =>
-				this.comment.dtId === id || this.comment.id === id ||
+				this.comment.dtId === id ||
+				this.comment.id === id ||
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				this.comment.dtId === thank?.id || this.comment.id === thank.id
+				this.comment.dtId === thank?.id ||
+				this.comment.id === thank.id,
 		)
 
 		this.thankButton = this.createThankButton(this.onThankAction, isThanked)
@@ -258,7 +260,9 @@ class CommentActions {
 			return
 		}
 
-		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction)
+		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(
+			this.onToggleChildThreadsAction,
+		)
 		this.appendButton(this.toggleChildThreadsButton)
 
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {

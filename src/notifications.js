@@ -35,10 +35,9 @@ export default {
 	 * Initialize the singleton.
 	 */
 	init() {
-		controller
-			.on('beforeReboot', (passedData) => {
-				this.close(passedData.closeNotificationsSmoothly ?? true)
-			})
+		controller.on('beforeReboot', (passedData) => {
+			this.close(passedData.closeNotificationsSmoothly ?? true)
+		})
 	},
 
 	/**

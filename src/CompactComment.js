@@ -165,7 +165,9 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	updateToggleChildThreadsButtonImpl() {
-		this.actions.toggleChildThreadsButton.setIcon(this.areChildThreadsCollapsed() ? 'add' : 'subtract')
+		this.actions.toggleChildThreadsButton.setIcon(
+			this.areChildThreadsCollapsed() ? 'add' : 'subtract',
+		)
 	}
 
 	/**
@@ -181,8 +183,8 @@ class CompactComment extends Comment {
 		this.timestampElement.title = title
 		new LiveTimestamp(
 			this.timestampElement,
-			/** @type {Date} */(this.date),
-			!this.hideTimezone
+			/** @type {Date} */ (this.date),
+			!this.hideTimezone,
 		).init()
 	}
 
@@ -233,7 +235,7 @@ class CompactComment extends Comment {
 			}
 
 			// FIXME: decouple
-			/** @type {import('./commentManager').default<CompactComment>} */ (commentManager)
+			/** @type {import('./commentManager').default<CompactComment>} */ ;(commentManager)
 				.query((comment) => comment.isHovered)
 				.forEach((comment) => {
 					comment.handleUnhover()

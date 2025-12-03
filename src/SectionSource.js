@@ -137,12 +137,11 @@ class SectionSource {
 						// TODO: get rid of "action at a distance" with the use of
 						// commentForm.isSectionSubmitted()
 						const source = lastComment.locateInCode(
-							commentForm.isSectionSubmitted() ? this.section.presumedCode : undefined
+							commentForm.isSectionSubmitted() ? this.section.presumedCode : undefined,
 						)
 
 						if (
 							!source.indentation.startsWith('#') ||
-
 							// For now we use the workaround with commentForm.getContainerListType() to make
 							// sure `#` is a part of comments organized in a numbered list, not of a numbered list
 							// _in_ the target comment.
@@ -228,25 +227,20 @@ class SectionSource {
 		const adjustedCodeFromSection = adjustedContextCode.slice(sectionHeadingMatch.index)
 
 		// Logically, should match since sectionHeadingMatch matched
-		const sectionMatch = (
+		const sectionMatch =
 			adjustedCodeFromSection.match(
 				new RegExp(
 					// Will fail at `===` or the like.
 					'(' +
-					mw.util.escapeRegExp(fullHeadingMatch) +
-					String.raw`[^]*?\n)` +
-					`={1,${sectionHeadingMatch[2].length}}` +
-					String.raw`[^=].*=+[ \t\x01\x02]*\n`
-				)
+						mw.util.escapeRegExp(fullHeadingMatch) +
+						String.raw`[^]*?\n)` +
+						`={1,${sectionHeadingMatch[2].length}}` +
+						String.raw`[^=].*=+[ \t\x01\x02]*\n`,
+				),
 			) ||
 			adjustedCodeFromSection.match(
-				new RegExp(
-					'(' +
-					mw.util.escapeRegExp(fullHeadingMatch) +
-					'[^]*$)'
-				)
+				new RegExp('(' + mw.util.escapeRegExp(fullHeadingMatch) + '[^]*$)'),
 			)
-		)
 
 		// To simplify the workings of the `replyInSection` mode we don't consider terminating line
 		// breaks to be a part of the first chunk of the section (i.e., the section subdivision before
@@ -256,18 +250,15 @@ class SectionSource {
 				new RegExp(
 					// Will fail at "===" or the like.
 					'(' +
-
-					mw.util.escapeRegExp(fullHeadingMatch) +
-					String.raw`[^]*?\n)\n*` +
-
-					// Any next heading.
-					'={1,6}' +
-
-					String.raw`[^=].*=+[ \t\x01\x02]*\n`
-				)
+						mw.util.escapeRegExp(fullHeadingMatch) +
+						String.raw`[^]*?\n)\n*` +
+						// Any next heading.
+						'={1,6}' +
+						String.raw`[^=].*=+[ \t\x01\x02]*\n`,
+				),
 			) ||
 			adjustedCodeFromSection.match(
-				new RegExp('(' + mw.util.escapeRegExp(fullHeadingMatch) + '[^]*$)')
+				new RegExp('(' + mw.util.escapeRegExp(fullHeadingMatch) + '[^]*$)'),
 			)
 		if (!sectionMatch || !firstChunkMatch) {
 			throw new CdError()
@@ -275,11 +266,11 @@ class SectionSource {
 
 		const code = codeFromSection.substr(
 			/** @type {number} */ (sectionMatch.index),
-			sectionMatch[1].length
+			sectionMatch[1].length,
 		)
 		const firstChunkCode = codeFromSection.substr(
 			/** @type {number} */ (firstChunkMatch.index),
-			firstChunkMatch[1].length
+			firstChunkMatch[1].length,
 		)
 
 		const startIndex = /** @type {number} */ (sectionHeadingMatch.index)
@@ -358,10 +349,9 @@ class SectionSource {
 			doesSectionIndexMatch = this.section.index === sectionIndex
 
 			const previousHeadlinesToCheckCount = 3
-			const previousHeadlinesInCode = headlines
-				.slice(-previousHeadlinesToCheckCount)
-				.reverse()
-			doPreviousHeadlinesMatch = sectionManager.getAll()
+			const previousHeadlinesInCode = headlines.slice(-previousHeadlinesToCheckCount).reverse()
+			doPreviousHeadlinesMatch = sectionManager
+				.getAll()
 				.slice(Math.max(0, this.section.index - previousHeadlinesToCheckCount), this.section.index)
 				.reverse()
 				.map((section) => section.headline)
@@ -373,21 +363,18 @@ class SectionSource {
 		const oldestSig = genericGetOldestOrNewestByDateProp(
 			extractSignatures(this.code),
 			'oldest',
-			true
+			true,
 		)
 		const sectionOldestComment = this.section.oldestComment
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const doesOldestCommentMatch = oldestSig
 			? Boolean(
 					sectionOldestComment &&
-					(
 						oldestSig.timestamp === sectionOldestComment.timestamp &&
-						oldestSig.author === sectionOldestComment.author
-					)
+						oldestSig.author === sectionOldestComment.author,
 				)
-
-		// There's no comments neither in the code nor on the page.
-			: !sectionOldestComment
+			: // There's no comments neither in the code nor on the page.
+				!sectionOldestComment
 
 		// Multiply by 0.5 to avoid situations like
 		// https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house&oldid=956309089#Unwanted_pings_on_en.wikipedia,
@@ -401,22 +388,20 @@ class SectionSource {
 			// performed in Comment#adjustCommentBeginning.
 			oldestCommentWordOverlap = calculateWordOverlap(
 				this.section.oldestComment.getText(),
-				removeWikiMarkup(this.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex))
+				removeWikiMarkup(this.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex)),
 			)
 		}
 
 		// If changing this, change the maximal possible score in Section#searchInCode
 		return {
 			source: this,
-			score: (
+			score:
 				Number(doesOldestCommentMatch) * 1 +
 				oldestCommentWordOverlap +
 				Number(doesHeadlineMatch) * 1 +
 				Number(doesSectionIndexMatch) * 0.5 +
-
 				// Shouldn't give too high a weight to this factor as it is true for every first section.
-				Number(doPreviousHeadlinesMatch) * 0.25
-			),
+				Number(doPreviousHeadlinesMatch) * 0.25,
 		}
 	}
 }

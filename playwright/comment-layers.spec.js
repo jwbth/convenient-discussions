@@ -35,8 +35,8 @@ test.describe('Comment Layers - Compact Style', () => {
 		const overlay = page.locator('.cd-comment-overlay').first()
 
 		// Check if the layers exist (they should be created on hover for compact comments)
-		const underlayExists = await underlay.count() > 0
-		const overlayExists = await overlay.count() > 0
+		const underlayExists = (await underlay.count()) > 0
+		const overlayExists = (await overlay.count()) > 0
 
 		console.log('Underlay exists:', underlayExists)
 		console.log('Overlay exists:', overlayExists)
@@ -49,8 +49,8 @@ test.describe('Comment Layers - Compact Style', () => {
 			const overlayMenu = page.locator('.cd-comment-overlay-menu').first()
 			const overlayGradient = page.locator('.cd-comment-overlay-gradient').first()
 
-			const menuExists = await overlayMenu.count() > 0
-			const gradientExists = await overlayGradient.count() > 0
+			const menuExists = (await overlayMenu.count()) > 0
+			const gradientExists = (await overlayGradient.count()) > 0
 
 			console.log('Overlay menu exists:', menuExists)
 			console.log('Overlay gradient exists:', gradientExists)
@@ -79,8 +79,8 @@ test.describe('Comment Layers - Compact Style', () => {
 		const underlay = page.locator('.cd-comment-underlay').first()
 		const overlay = page.locator('.cd-comment-overlay').first()
 
-		const underlayExists = await underlay.count() > 0
-		const overlayExists = await overlay.count() > 0
+		const underlayExists = (await underlay.count()) > 0
+		const overlayExists = (await overlay.count()) > 0
 
 		if (underlayExists && overlayExists) {
 			await expect(underlay).toBeVisible()
@@ -114,8 +114,8 @@ test.describe('Comment Layers - Compact Style', () => {
 		const underlay = page.locator('.cd-comment-underlay').first()
 		const overlay = page.locator('.cd-comment-overlay').first()
 
-		const underlayExists = await underlay.count() > 0
-		const overlayExists = await overlay.count() > 0
+		const underlayExists = (await underlay.count()) > 0
+		const overlayExists = (await overlay.count()) > 0
 
 		if (underlayExists && overlayExists) {
 			// Check initial styles

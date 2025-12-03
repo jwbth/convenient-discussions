@@ -15,11 +15,14 @@ jest.mock('../src/cd', () => ({
 
 		return message
 	}),
-	mws: jest.fn((key) => ({
-		'word-separator': ' ',
-		'comma-separator': ', ',
-		'colon-separator': ': ',
-	}[key] || key)),
+	mws: jest.fn(
+		(key) =>
+			({
+				'word-separator': ' ',
+				'comma-separator': ', ',
+				'colon-separator': ': ',
+			})[key] || key,
+	),
 	g: {
 		msInMin: 60_000,
 	},
@@ -42,9 +45,10 @@ jest.mock('../src/shared/utils-general', () => ({
 	definedAndNotNull: (item) => item !== undefined && item !== null,
 	removeDoubleSpaces: (text) => text.replace(/\s+/g, ' '),
 	unique: (item, index, array) => array.indexOf(item) === index,
-	sleep: (ms) => new Promise((resolve) => {
-		setTimeout(resolve, ms) 
-	}),
+	sleep: (ms) =>
+		new Promise((resolve) => {
+			setTimeout(resolve, ms)
+		}),
 	underlinesToSpaces: (text) => text.replace(/_/g, ' '),
 }))
 
@@ -79,7 +83,8 @@ describe('CommentLinksAutocomplete', () => {
 					getName: () => 'User2',
 				},
 				timestamp: '13:00, 1 January 2024',
-				getText: () => 'This is a very long comment that should be truncated because it exceeds the maximum length allowed for snippets in the autocomplete',
+				getText: () =>
+					'This is a very long comment that should be truncated because it exceeds the maximum length allowed for snippets in the autocomplete',
 			},
 			{
 				getUrlFragment: () => null, // This comment should be filtered out
@@ -172,7 +177,9 @@ describe('CommentLinksAutocomplete', () => {
 			})
 
 			// Check that long comment is truncated
-			expect(data[1].label).toContain('User2, 13:00, 1 January 2024: This is a very long comment that should be truncated')
+			expect(data[1].label).toContain(
+				'User2, 13:00, 1 January 2024: This is a very long comment that should be truncated',
+			)
 			expect(data[1].label).toContain('…')
 
 			// Check section items
@@ -201,7 +208,9 @@ describe('CommentLinksAutocomplete', () => {
 				},
 			]
 
-			expect(autocomplete.generateCommentLinksData()[0].label).toBe('User1: Comment without timestamp')
+			expect(autocomplete.generateCommentLinksData()[0].label).toBe(
+				'User1: Comment without timestamp',
+			)
 		})
 
 		it('should handle empty comments array', () => {
@@ -262,7 +271,7 @@ describe('CommentLinksAutocomplete', () => {
 							authorName: 'User1',
 						}),
 					}),
-				])
+				]),
 			)
 		})
 	})

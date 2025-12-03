@@ -10,7 +10,13 @@ import { initGlobals, initTimestampTools } from './app'
 import commentManager from './commentManager'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
-import { definedAndNotNull, generatePageNamePattern, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general'
+import {
+	definedAndNotNull,
+	generatePageNamePattern,
+	isUndo,
+	removeDirMarks,
+	spacesToUnderlines,
+} from './shared/utils-general'
 import { parseTimestamp } from './shared/utils-timestamp'
 
 /** @type {string | undefined} */
@@ -77,10 +83,10 @@ async function bootstrap() {
 	mw.loader.addStyleTag(`:root {
 		--cd-parentheses-start: '${cd.mws('parentheses-start')}';
 		--cd-parentheses-end: '${cd.mws('parentheses-end')}';
-	}`);
+	}`)
 
-	[moveFromStringStart] = cd.s('es-move-from').match(/^[^[$]+/) || [];
-	[moveToStringStart] = cd.s('es-move-to').match(/^[^[$]+/) || []
+	;[moveFromStringStart] = cd.s('es-move-from').match(/^[^[$]+/) || []
+	;[moveToStringStart] = cd.s('es-move-to').match(/^[^[$]+/) || []
 
 	goToCommentToYou = cd.s('lp-comment-tooltip') + ' '
 	goToCommentToYou += cd.mws('parentheses', cd.s('lp-comment-toyou'))
@@ -100,14 +106,12 @@ async function bootstrap() {
 	prototypes.add('wrapperRegular', $wrapperRegularPrototype[0])
 	prototypes.add(
 		'wrapperRelevant',
-		$wrapperRegularPrototype
-			.clone()
-			.addClass('cd-commentLink-relevant')[0]
+		$wrapperRegularPrototype.clone().addClass('cd-commentLink-relevant')[0],
 	)
 
 	const currentUserNamePattern = generatePageNamePattern(cd.g.userName)
 	currentUserRegexp = new RegExp(
-		`(?:^|[^${cd.g.letterPattern}])${currentUserNamePattern}(?![${cd.g.letterPattern}])`
+		`(?:^|[^${cd.g.letterPattern}])${currentUserNamePattern}(?![${cd.g.letterPattern}])`,
 	)
 }
 
@@ -158,16 +162,17 @@ function processWatchlist($content) {
 		const line = lineOrBareTr.className
 			? lineOrBareTr
 			: /** @type {HTMLElement} */ (
-		/** @type {HTMLElement} */ (lineOrBareTr.parentElement).parentElement
+					/** @type {HTMLElement} */ (lineOrBareTr.parentElement).parentElement
 				)
 		const nsMatch = line.className.match(/mw-changeslist-ns(\d+)/)
 		const nsNumber = nsMatch && Number(nsMatch[1])
 		if (nsNumber === null) return
 
 		const linkElement = /** @type {HTMLAnchorElement | undefined} */ (
-			(line.tagName === 'TR' ? /** @type {HTMLElement} */ (line.parentElement) : line).querySelector(
-				'.mw-changeslist-title'
-			)
+			(line.tagName === 'TR'
+				? /** @type {HTMLElement} */ (line.parentElement)
+				: line
+			).querySelector('.mw-changeslist-title')
 		)
 		if (
 			!linkElement ||
@@ -212,11 +217,11 @@ function processWatchlist($content) {
 		setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`)
 
 		const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks')
-		if (!destination) return;
+		if (!destination) return
 
-		/** @type {HTMLElement} */ (destination.parentElement).insertBefore(
+		/** @type {HTMLElement} */ ;(destination.parentElement).insertBefore(
 			wrapper,
-			destination.nextSibling
+			destination.nextSibling,
 		)
 	})
 }
@@ -229,9 +234,9 @@ function processWatchlist($content) {
  */
 function processContributions($content) {
 	// We need timestamp tools to be able to parse timestamps
-	if (cd.g.timestampTools.user.timezone === undefined) return;
+	if (cd.g.timestampTools.user.timezone === undefined) return
 
-	[
+	;[
 		...$content[0].querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)'),
 	].forEach((line) => {
 		const linkElement = /** @type {HTMLAnchorElement | null} */ (
@@ -285,9 +290,9 @@ function processContributions($content) {
 				destination.nextSibling.textContent = destination.nextSibling.textContent.replace(/^\s/, '')
 			}
 		}
-		/** @type {HTMLElement} */ (destination.parentElement).insertBefore(
+		/** @type {HTMLElement} */ ;(destination.parentElement).insertBefore(
 			wrapper,
-			destination.nextSibling
+			destination.nextSibling,
 		)
 	})
 }
@@ -302,10 +307,11 @@ function processHistory($content) {
 	// We need timestamp tools to be able to parse timestamps
 	if (cd.g.timestampTools.user.timezone === undefined) return
 
-	const link = cd.page.getUrl();
-	[
-		...$content[0]
-			.querySelectorAll('#pagehistory > li, #pagehistory > .mw-contributions-list > li:not(.mw-tag-mw-new-redirect)'),
+	const link = cd.page.getUrl()
+	;[
+		...$content[0].querySelectorAll(
+			'#pagehistory > li, #pagehistory > .mw-contributions-list > li:not(.mw-tag-mw-new-redirect)',
+		),
 	].forEach((line) => {
 		if (line.querySelector('.minoredit')) return
 
@@ -345,11 +351,11 @@ function processHistory($content) {
 		const destination =
 			line.querySelector('.comment') ||
 			[...line.querySelectorAll('.mw-changeslist-separator')].at(-1)
-		if (!destination) return;
+		if (!destination) return
 
-		/** @type {HTMLElement} */ (destination.parentElement).insertBefore(
+		/** @type {HTMLElement} */ ;(destination.parentElement).insertBefore(
 			wrapper,
-			destination.nextSibling
+			destination.nextSibling,
 		)
 	})
 }
@@ -376,8 +382,8 @@ function processDiff($diff) {
 		return
 
 	const $root = $diff || cd.loader.$content
-	const root = $root[0];
-	[root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
+	const root = $root[0]
+	;[root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
 		.filter(definedAndNotNull)
 		.forEach((area) => {
 			if (area.querySelector('.minoredit')) return
@@ -398,7 +404,7 @@ function processDiff($diff) {
 			const dateElement = /** @type {HTMLAnchorElement | null} */ (
 				area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a')
 			)
-			if (!(dateElement)) return
+			if (!dateElement) return
 
 			const { date } = parseTimestamp(dateElement.textContent, true) || {}
 			if (!date) return
@@ -412,7 +418,7 @@ function processDiff($diff) {
 			let comment
 			let page
 			if ($diff) {
-				const title = (new URL(dateElement.href)).searchParams.get('title')
+				const title = new URL(dateElement.href).searchParams.get('title')
 				if (!title) return
 
 				page = pageRegistry.get(title, true)
@@ -430,7 +436,7 @@ function processDiff($diff) {
 				}
 
 				const linkElement = /** @type {HTMLAnchorElement} */ (
-				/** @type {HTMLElement} */ (wrapper.lastChild).lastChild
+					/** @type {HTMLElement} */ (wrapper.lastChild).lastChild
 				)
 				if (page) {
 					linkElement.href = page.getUrl() + '#' + id
@@ -442,8 +448,8 @@ function processDiff($diff) {
 				} else {
 					linkElement.href = '#' + id
 					linkElement.addEventListener('click', (event) => {
-						event.preventDefault();
-						/** @type {NonNullable<typeof comment>} */ (comment).scrollTo({
+						event.preventDefault()
+						/** @type {NonNullable<typeof comment>} */ ;(comment).scrollTo({
 							smooth: false,
 							pushState: true,
 							expandThreads: true,
@@ -478,10 +484,8 @@ function processDiff($diff) {
 function isCommentEdit(summary) {
 	return Boolean(
 		summary &&
-		(
-			summary.includes(`${cd.s('es-edit')} ${cd.s('es-reply-genitive')}`) ||
-			summary.includes(`${cd.s('es-edit')} ${cd.s('es-addition-genitive')}`)
-		)
+			(summary.includes(`${cd.s('es-edit')} ${cd.s('es-reply-genitive')}`) ||
+				summary.includes(`${cd.s('es-edit')} ${cd.s('es-addition-genitive')}`)),
 	)
 }
 
@@ -495,7 +499,7 @@ function isCommentEdit(summary) {
 function isMoved(summary) {
 	return Boolean(
 		(moveFromStringStart && summary.includes(': ' + moveFromStringStart)) ||
-		(moveToStringStart && summary.includes(': ' + moveToStringStart))
+			(moveToStringStart && summary.includes(': ' + moveToStringStart)),
 	)
 }
 
@@ -509,7 +513,7 @@ function isMoved(summary) {
 function isWikidataItem(linkElement) {
 	return Boolean(
 		cd.g.serverName === 'www.wikidata.org' &&
-		linkElement.firstElementChild?.classList.contains('wb-itemlink')
+			linkElement.firstElementChild?.classList.contains('wb-itemlink'),
 	)
 }
 
@@ -546,7 +550,7 @@ function extractAuthor(line) {
 function setWrapperLinkAttr(wrapper, attr, value) {
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const linkElement = /** @type {HTMLAnchorElement} */ (
-	/** @type {HTMLElement} */ (wrapper.lastChild).lastChild
+		/** @type {HTMLElement} */ (wrapper.lastChild).lastChild
 	)
 	linkElement.setAttribute(attr, value)
 }

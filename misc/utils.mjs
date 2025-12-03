@@ -1,4 +1,4 @@
-import config from '../config.mjs';
+import config from '../config.mjs'
 
 /**
  * Encode a URL using MediaWiki's escaping style.
@@ -14,7 +14,7 @@ function wikiUrlencode(string) {
 		.replace(/%24/g, '$')
 		.replace(/%2C/g, ',')
 		.replace(/%2F/g, '/')
-		.replace(/%3A/g, ':');
+		.replace(/%3A/g, ':')
 }
 
 /**
@@ -23,16 +23,16 @@ function wikiUrlencode(string) {
  * @param {{ [x: string]: any }} [params]
  */
 function getUrl(server, page, params = {}) {
-	const base = `${config.protocol}://${server}`;
+	const base = `${config.protocol}://${server}`
 	if (Object.keys(params).length) {
-		params = { title: page, ...params };
-		const url = new URL(base + config.scriptPath + '/index.php');
+		params = { title: page, ...params }
+		const url = new URL(base + config.scriptPath + '/index.php')
 		Object.keys(params).forEach((param) => {
-			url.searchParams.set(param, params[param]);
-		});
-		return url.toString();
+			url.searchParams.set(param, params[param])
+		})
+		return url.toString()
 	} else {
-		return base + config.articlePath.replace('$1', wikiUrlencode(page));
+		return base + config.articlePath.replace('$1', wikiUrlencode(page))
 	}
 }
 
@@ -42,7 +42,7 @@ function getUrl(server, page, params = {}) {
  * @param {string | any[]} arr
  */
 function unique(item, i, arr) {
-	return arr.indexOf(item) === i;
+	return arr.indexOf(item) === i
 }
 
 /**
@@ -53,7 +53,7 @@ function replaceEntitiesInI18n(string) {
 		.replace(/&nbsp;/g, '\xa0')
 		.replace(/&#32;/g, ' ')
 		.replace(/&rlm;/g, '\u200f')
-		.replace(/&lrm;/g, '\u200e');
+		.replace(/&lrm;/g, '\u200e')
 }
 
-export { getUrl, replaceEntitiesInI18n, unique };
+export { getUrl, replaceEntitiesInI18n, unique }

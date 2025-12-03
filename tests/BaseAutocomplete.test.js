@@ -203,7 +203,10 @@ describe('BaseAutocomplete', () => {
 		})
 
 		it('should process array items correctly', () => {
-			const results = testAutocomplete.getOptionsFromEntries([['tag1', 'start', 'end'], ['tag2', 'start2', 'end2']])
+			const results = testAutocomplete.getOptionsFromEntries([
+				['tag1', 'start', 'end'],
+				['tag2', 'start2', 'end2'],
+			])
 
 			expect(results).toHaveLength(2)
 			expect(results[0].label).toBe('tag1')

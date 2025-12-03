@@ -11,62 +11,70 @@ jest.mock('../src/Comment', () => ({
 	},
 }))
 
-jest.mock('../src/CommentActions', () => class MockCommentActions {
-	constructor(comment) {
-		this.comment = comment
-	}
-})
+jest.mock(
+	'../src/CommentActions',
+	() =>
+		class MockCommentActions {
+			constructor(comment) {
+				this.comment = comment
+			}
+		},
+)
 
-jest.mock('../src/CommentButton', () => class MockCommentButton {
-	constructor(config) {
-		this.element = {
-			className: '',
-			classList: { add: jest.fn(), remove: jest.fn() },
-			append: jest.fn((child) => {
-				this.element.children.push(child)
-				this.element.firstChild = this.element.children[0]
-			}),
-			prepend: jest.fn(),
-			insertBefore: jest.fn(),
-			nextSibling: null,
-			children: [],
-			firstChild: null,
-		}
-		this.config = config
-		this.label = config.label
-		this.tooltip = config.tooltip
-		this.classes = config.classes || []
-		this.action = config.action
-		this.href = config.href
+jest.mock(
+	'../src/CommentButton',
+	() =>
+		class MockCommentButton {
+			constructor(config) {
+				this.element = {
+					className: '',
+					classList: { add: jest.fn(), remove: jest.fn() },
+					append: jest.fn((child) => {
+						this.element.children.push(child)
+						this.element.firstChild = this.element.children[0]
+					}),
+					prepend: jest.fn(),
+					insertBefore: jest.fn(),
+					nextSibling: null,
+					children: [],
+					firstChild: null,
+				}
+				this.config = config
+				this.label = config.label
+				this.tooltip = config.tooltip
+				this.classes = config.classes || []
+				this.action = config.action
+				this.href = config.href
 
-		// Apply classes to element
-		if (config.classes) {
-			this.element.className = config.classes.join(' ')
-		}
-	}
+				// Apply classes to element
+				if (config.classes) {
+					this.element.className = config.classes.join(' ')
+				}
+			}
 
-	setDisabled(disabled) {
-		this.disabled = disabled
+			setDisabled(disabled) {
+				this.disabled = disabled
 
-		return this
-	}
+				return this
+			}
 
-	setTooltip(tooltip) {
-		this.tooltip = tooltip
+			setTooltip(tooltip) {
+				this.tooltip = tooltip
 
-		return this
-	}
+				return this
+			}
 
-	setLabel(label) {
-		this.label = label
+			setLabel(label) {
+				this.label = label
 
-		return this
-	}
+				return this
+			}
 
-	isConnected() {
-		return this.element.isConnected
-	}
-})
+			isConnected() {
+				return this.element.isConnected
+			}
+		},
+)
 
 jest.mock('../src/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
@@ -287,10 +295,7 @@ describe('SpaciousCommentActions', () => {
 
 			actions.prependButton(actions.goToChildButton)
 
-			expect(insertBeforeSpy).toHaveBeenCalledWith(
-				actions.goToChildButton.element,
-				mockNextSibling
-			)
+			expect(insertBeforeSpy).toHaveBeenCalledWith(actions.goToChildButton.element, mockNextSibling)
 		})
 
 		it('should prepend other buttons normally', () => {
@@ -336,7 +341,7 @@ describe('SpaciousCommentActions', () => {
 			expect(actions.toggleChildThreadsButton).toBeDefined()
 			expect(insertBeforeSpy).toHaveBeenCalledWith(
 				actions.toggleChildThreadsButton.element,
-				mockComment.$changeNote[0]
+				mockComment.$changeNote[0],
 			)
 		})
 
@@ -366,7 +371,10 @@ describe('SpaciousCommentActions', () => {
 			actions.addToggleChildThreadsButton()
 
 			// The addEventListener spy should have been called during button creation
-			expect(actions.toggleChildThreadsButton.element.addEventListener).toHaveBeenCalledWith('mouseenter', expect.any(Function))
+			expect(actions.toggleChildThreadsButton.element.addEventListener).toHaveBeenCalledWith(
+				'mouseenter',
+				expect.any(Function),
+			)
 		})
 
 		it('should call toggleChildThreads when button action is triggered', () => {
@@ -400,10 +408,7 @@ describe('SpaciousCommentActions', () => {
 
 			actions.addToggleChildThreadsButton()
 
-			expect(insertBeforeSpy).toHaveBeenCalledWith(
-				actions.toggleChildThreadsButton.element,
-				null
-			)
+			expect(insertBeforeSpy).toHaveBeenCalledWith(actions.toggleChildThreadsButton.element, null)
 		})
 	})
 })

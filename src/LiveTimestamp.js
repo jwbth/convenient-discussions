@@ -71,7 +71,7 @@ export const relativeTimeThresholds = [
 class LiveTimestamp extends mixInObject(
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	class {},
-	/** @type {typeof EventEmitter<EventMap>} */ (EventEmitter)
+	/** @type {typeof EventEmitter<EventMap>} */ (EventEmitter),
 ) {
 	/**
 	 * Create a live timestamp.
@@ -146,17 +146,10 @@ class LiveTimestamp extends mixInObject(
 			// Find the relevant time boundary at which the timestamp should be updated.
 			for (
 				let boundary =
-					(
-						threshold.start +
-
-						(
-						// The number of steps to take to get to the time boundary preceding the current time,
-						// e.g. 1 hour for 1 hour and 25 minutes
-							Math.floor(differenceMs / cd.g.msInMin / threshold.step) *
-
-							threshold.step
-						)
-					);
+					threshold.start +
+					// The number of steps to take to get to the time boundary preceding the current time,
+					// e.g. 1 hour for 1 hour and 25 minutes
+					Math.floor(differenceMs / cd.g.msInMin / threshold.step) * threshold.step;
 				boundary <= threshold.range;
 				boundary += threshold.step
 			) {
@@ -211,7 +204,7 @@ class LiveTimestamp extends mixInObject(
 			setTimeout(this.updateImproved, date.add(1, 'day').valueOf() - Date.now()),
 
 			// Day after tomorrow start
-			setTimeout(this.updateImproved, date.add(2, 'day').valueOf() - Date.now())
+			setTimeout(this.updateImproved, date.add(2, 'day').valueOf() - Date.now()),
 		)
 
 		this.improvedTimestampsInited = true

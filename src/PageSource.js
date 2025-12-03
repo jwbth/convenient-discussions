@@ -95,18 +95,17 @@ export default class PageSource {
 	modifyContext({ commentCode, commentForm }) {
 		let contextCode
 		if (commentForm.isNewTopicOnTop()) {
-			this.assertCode('Can\'t modify the context: context (page) code is not set.')
+			this.assertCode("Can't modify the context: context (page) code is not set.")
 
-			const firstSectionStartIndex = maskDistractingCode(this.code)
-				.search(/^(=+).*\1[ \t\u0001\u0002]*$/m)
+			const firstSectionStartIndex = maskDistractingCode(this.code).search(
+				/^(=+).*\1[ \t\u0001\u0002]*$/m,
+			)
 			contextCode =
-				(
-					firstSectionStartIndex === -1
-						? this.code
-							? this.code + '\n'
-							: ''
-						: this.code.slice(0, firstSectionStartIndex)
-				) +
+				(firstSectionStartIndex === -1
+					? this.code
+						? this.code + '\n'
+						: ''
+					: this.code.slice(0, firstSectionStartIndex)) +
 				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 				/** @type {string} */ (commentCode) +
 				'\n' +
@@ -114,7 +113,7 @@ export default class PageSource {
 		} else if (commentForm.isNewSectionApi()) {
 			contextCode = /** @type {string} */ (commentCode)
 		} else {
-			this.assertCode('Can\'t modify the context: context (page) code is not set.')
+			this.assertCode("Can't modify the context: context (page) code is not set.")
 
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			contextCode = (this.code + '\n').trimStart() + /** @type {string} */ (commentCode)
@@ -136,7 +135,7 @@ export default class PageSource {
 	 * @private
 	 */
 	guessNewTopicPlacement() {
-		this.assertCode('Can\'t analyze the placement of new topics: page code is not set.')
+		this.assertCode("Can't analyze the placement of new topics: page code is not set.")
 
 		let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.page.name, this.code)
 
@@ -158,9 +157,10 @@ export default class PageSource {
 					previousDate = date
 				}
 			}
-			areNewTopicsOnTop = difference === 0 && mw.config.get('wgServerName') === 'ru.wikipedia.org'
-				? this.page.namespaceId % 2 === 0
-				: difference > 0
+			areNewTopicsOnTop =
+				difference === 0 && mw.config.get('wgServerName') === 'ru.wikipedia.org'
+					? this.page.namespaceId % 2 === 0
+					: difference > 0
 		}
 
 		return {
@@ -182,7 +182,7 @@ export default class PageSource {
 	 * @throws {CdError}
 	 */
 	findProperPlaceForSection(referenceDate) {
-		this.assertCode('Can\'t find the proper place for a section: page code is not set.')
+		this.assertCode("Can't find the proper place for a section: page code is not set.")
 
 		const { areNewTopicsOnTop, firstSectionStartIndex } = this.guessNewTopicPlacement()
 
@@ -206,12 +206,10 @@ export default class PageSource {
 		}
 
 		return (
-		// Proper place index
+			// Proper place index
 			sections.find(
-				({ date }) => date && (areNewTopicsOnTop ? date < referenceDate : date > referenceDate)
-			)?.index ||
-
-			this.code.length
+				({ date }) => date && (areNewTopicsOnTop ? date < referenceDate : date > referenceDate),
+			)?.index || this.code.length
 		)
 	}
 

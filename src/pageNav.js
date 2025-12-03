@@ -137,18 +137,19 @@ class PageNav {
 		if (!this.isMounted() || !controller.$contentColumn.length) return
 
 		const left =
-		/** @type {JQuery.Coordinates} */ (controller.$contentColumn.offset()).left -
+			/** @type {JQuery.Coordinates} */ (controller.$contentColumn.offset()).left -
 			/** @type {number} */ ($(window).scrollLeft())
 
 		// 18px padding + 1px comment markers / thread lines
-		const deductable = 18 + ((cd.g.commentMarkerWidth - 1) / 2)
+		const deductable = 18 + (cd.g.commentMarkerWidth - 1) / 2
 
-		let width = cd.g.userDirection === 'ltr'
-			? left - deductable
-			: /** @type {number} */ ($(window).width()) -
-				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-				(left + /** @type {number} */ (controller.$contentColumn.outerWidth())) -
-				deductable
+		let width =
+			cd.g.userDirection === 'ltr'
+				? left - deductable
+				: /** @type {number} */ ($(window).width()) -
+					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+					(left + /** @type {number} */ (controller.$contentColumn.outerWidth())) -
+					deductable
 		if (cd.g.skin === 'minerva') {
 			width -= controller.getContentColumnOffsets().startMargin
 		}
@@ -190,7 +191,7 @@ class PageNav {
 
 		const firstSectionTop = sectionManager.getFirstSectionRelativeTopOffset(
 			scrollY,
-			afterLeadOffset
+			afterLeadOffset,
 		)
 		afterLeadOffset ??= firstSectionTop
 
@@ -218,14 +219,14 @@ class PageNav {
 					.attr('id', 'cd-pageNav-topLink')
 					.addClass('cd-pageNav-item')
 					.append(
-						(new Button({
+						new Button({
 							href: '#',
 							classes: ['cd-pageNav-link'],
 							label: cd.s('pagenav-pagetop'),
 							action: () => {
 								this.jump(0, /** @type {JQuery} */ (this.$topLink))
 							},
-						})).element
+						}).element,
 					)
 					.appendTo(this.$linksOnTop)
 			}
@@ -246,10 +247,10 @@ class PageNav {
 							action: () => {
 								this.jump(
 									/** @type {JQuery} */ (toc.$element),
-									/** @type {JQuery} */ (this.$tocLink)
+									/** @type {JQuery} */ (this.$tocLink),
 								)
 							},
-						}).element
+						}).element,
 					)
 					.appendTo(this.$linksOnTop)
 			}
@@ -260,10 +261,8 @@ class PageNav {
 		}
 
 		if (
-			(
-				sectionManager.getCount() &&
-				scrollY + window.innerHeight < document.documentElement.scrollHeight
-			) ||
+			(sectionManager.getCount() &&
+				scrollY + window.innerHeight < document.documentElement.scrollHeight) ||
 			this.backLinkLocation === 'bottom'
 		) {
 			if (!this.$bottomLink) {
@@ -278,10 +277,10 @@ class PageNav {
 							action: () => {
 								this.jump(
 									document.documentElement.scrollHeight - window.innerHeight,
-									/** @type {JQuery} */ (this.$bottomLink)
+									/** @type {JQuery} */ (this.$bottomLink),
 								)
 							},
-						}).element
+						}).element,
 					)
 					.appendTo(/** @type {JQuery} */ (this.$bottomElement))
 			}
@@ -314,10 +313,10 @@ class PageNav {
 		this.currentSection = updatedCurrentSection
 
 		// Keep the data
-		this.$sectionWithBackLink?.detach();
+		this.$sectionWithBackLink?.detach()
 
-		/** @type {JQuery} */ (this.$currentSection).empty();
-		[this.currentSection, ...this.currentSection.getAncestors()]
+		/** @type {JQuery} */ ;(this.$currentSection).empty()
+		;[this.currentSection, ...this.currentSection.getAncestors()]
 			.reverse()
 			.forEach((sectionInTree, level) => {
 				const $item =
@@ -334,7 +333,7 @@ class PageNav {
 										action: () => {
 											this.jump(sectionInTree.$heading, $item)
 										},
-									}).element
+									}).element,
 								)
 				$item.appendTo(/** @type {JQuery} */ (this.$currentSection))
 			})
@@ -373,14 +372,14 @@ class PageNav {
 	reset(part) {
 		if (!part || part === 'top') {
 			// Keep the data
-			this.$sectionWithBackLink?.detach();
+			this.$sectionWithBackLink?.detach()
 
-			/** @type {JQuery} */ (this.$topElement).empty()
+			/** @type {JQuery} */ ;(this.$topElement).empty()
 			this.$linksOnTop = this.$topLink = this.$tocLink = this.$currentSection = undefined
 			this.currentSection = undefined
 		}
 		if (!part || part === 'bottom') {
-			/** @type {JQuery} */ (this.$bottomElement).empty()
+			/** @type {JQuery} */ ;(this.$bottomElement).empty()
 			this.$bottomLink = undefined
 		}
 	}
@@ -391,8 +390,8 @@ class PageNav {
 	 * @private
 	 */
 	resetSections() {
-		this.$sectionWithBackLink?.detach();
-		/** @type {JQuery} */ (this.$currentSection).empty()
+		this.$sectionWithBackLink?.detach()
+		/** @type {JQuery} */ ;(this.$currentSection).empty()
 		this.currentSection = undefined
 	}
 
@@ -405,15 +404,17 @@ class PageNav {
 	 * @private
 	 */
 	jump($elementOrOffset, $item, isBackLink = false) {
-		const offset = typeof $elementOrOffset === 'number'
-			? $elementOrOffset
-			: /** @type {JQuery.Coordinates} */ ($elementOrOffset.offset()).top - this.bodyScrollPaddingTop
+		const offset =
+			typeof $elementOrOffset === 'number'
+				? $elementOrOffset
+				: /** @type {JQuery.Coordinates} */ ($elementOrOffset.offset()).top -
+					this.bodyScrollPaddingTop
 		if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return
 
 		if (this.backLinkLocation) {
-			this.backLinkLocation = undefined;
-			/** @type {JQuery} */ (this.$backLinkContainer).prev().removeClass('cd-pageNav-link-inline');
-			/** @type {JQuery} */ (this.$backLinkContainer).remove()
+			this.backLinkLocation = undefined
+			/** @type {JQuery} */ ;(this.$backLinkContainer).prev().removeClass('cd-pageNav-link-inline')
+			/** @type {JQuery} */ ;(this.$backLinkContainer).remove()
 			this.$backLinkContainer = this.$sectionWithBackLink = undefined
 		}
 		if (!isBackLink) {
@@ -431,7 +432,7 @@ class PageNav {
 
 							this.jump(scrollY, $item, true)
 						},
-					}).element
+					}).element,
 				)
 				.appendTo($item)
 			this.$backLinkContainer.prev().addClass('cd-pageNav-link-inline')

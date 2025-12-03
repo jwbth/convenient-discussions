@@ -44,7 +44,6 @@ const moduleNameRegex = /@module\s+([\w/]+)?/
  */
 const typedefRegex = /@typedef\s*(?:\{[^}]*\})\s*([\w-$]*)/g
 
-
 /**
  * Finds a ts import.
  */
@@ -93,11 +92,12 @@ function getFileInfo(filename, source = null) {
 	const filenameNor = path.normalize(filename)
 	if (fileInfos.has(filenameNor)) return fileInfos.get(filenameNor)
 	const fileInfo = /** @type {FileInfo} */ ({
-		moduleId: null, typedefs: [], filename: filenameNor,
+		moduleId: null,
+		typedefs: [],
+		filename: filenameNor,
 	})
 
-	const s = source || ((fs.existsSync(filenameNor)) ?
-			fs.readFileSync(filenameNor).toString() : '')
+	const s = source || (fs.existsSync(filenameNor) ? fs.readFileSync(filenameNor).toString() : '')
 	s.replace(docCommentsRegex, (comment, nextLine) => {
 		if (!fileInfo.moduleId) {
 			// Searches for @module doc comment
@@ -105,10 +105,10 @@ function getFileInfo(filename, source = null) {
 			if (moduleNameMatch) {
 				if (!moduleNameMatch[1]) {
 					// @module tag with no module name; calculate the implicit module id.
-					const srcDir = absSrcDirs.find((iSrcDir) =>
-						filenameNor.startsWith(iSrcDir))
+					const srcDir = absSrcDirs.find((iSrcDir) => filenameNor.startsWith(iSrcDir))
 					fileInfo.moduleId = noExtension(filenameNor)
-						.slice(srcDir.length + 1).replace(/\\/g, '/')
+						.slice(srcDir.length + 1)
+						.replace(/\\/g, '/')
 				} else {
 					fileInfo.moduleId = moduleNameMatch[1]
 				}
@@ -161,7 +161,6 @@ function getFileInfo(filename, source = null) {
 	return fileInfo
 }
 
-
 /**
  * The beforeParse event is fired before parsing has begun.
  *
@@ -172,30 +171,28 @@ function beforeParse(e) {
 
 	// Find all doc comments (unfortunately needs to be done here and not
 	// in jsDocCommentFound or there will be errors)
-	e.source = e.source.replace(docCommentsRegex,
-		(substring) => {
-			return substring.replace(importRegex,
-				(_substring2, relImportPath, symbolName) => {
-					const moduleId = getModuleId(e.filename, relImportPath)
-					if (symbolName === 'default') {
-						return (moduleId) ?
-							`module:${moduleId}` :
-								path.basename(relImportPath, path.extname(relImportPath))
-					}
+	e.source = e.source.replace(docCommentsRegex, (substring) => {
+		return substring.replace(importRegex, (_substring2, relImportPath, symbolName) => {
+			const moduleId = getModuleId(e.filename, relImportPath)
+			if (symbolName === 'default') {
+				return moduleId
+					? `module:${moduleId}`
+					: path.basename(relImportPath, path.extname(relImportPath))
+			}
 
-					// jwbth: Added nearly the same fragment as in jsdocCommentFound()
-					if (moduleId) {
-						if (symbolName) {
-							const moduleTypeDefsSet = moduleToTypeDefs.get(moduleId)
-							const foundDefInModule = findTypeDef(symbolName, moduleTypeDefsSet)
-							return `module:${moduleId}${!foundDefInModule || foundDefInModule.isInner ? '~' : '.'}${symbolName}`
-						}
-						return `module:${moduleId}`
-					} else {
-						return symbolName
-					}
-				})
+			// jwbth: Added nearly the same fragment as in jsdocCommentFound()
+			if (moduleId) {
+				if (symbolName) {
+					const moduleTypeDefsSet = moduleToTypeDefs.get(moduleId)
+					const foundDefInModule = findTypeDef(symbolName, moduleTypeDefsSet)
+					return `module:${moduleId}${!foundDefInModule || foundDefInModule.isInner ? '~' : '.'}${symbolName}`
+				}
+				return `module:${moduleId}`
+			} else {
+				return symbolName
+			}
 		})
+	})
 }
 
 /**
@@ -225,8 +222,7 @@ function getModuleId(filename, relImportPath) {
  */
 function relPath(root, relative) {
 	if (path.isAbsolute(relative)) return relative
-	return path.normalize(
-		path.join(path.dirname(root), relative))
+	return path.normalize(path.join(path.dirname(root), relative))
 }
 
 /**
@@ -307,16 +303,15 @@ function jsdocCommentFound(e) {
 
 			if (fileInfo.moduleId) {
 				const foundDefInModule = findTypeDef(identifier, moduleTypeDefsSet)
-				return foundDefInModule ?
-					`module:${fileInfo.moduleId}${foundDefInModule.isInner ? '~' : '.'}${identifier}` :
-					identifier
+				return foundDefInModule
+					? `module:${fileInfo.moduleId}${foundDefInModule.isInner ? '~' : '.'}${identifier}`
+					: identifier
 			} else {
 				return identifier
 			}
 		})
 	})
 }
-
 
 exports.handlers = {
 	beforeParse: beforeParse,

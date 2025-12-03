@@ -135,7 +135,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 				this.contentStack.setItem(
 					item === this.anchorOption
 						? this.anchorPanel
-						: /** @type {OO.ui.PanelLayout} */ (this.diffPanel)
+						: /** @type {OO.ui.PanelLayout} */ (this.diffPanel),
 				)
 				this.updateSize()
 			})
@@ -173,12 +173,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	getSetupProcess(data) {
 		return super.getSetupProcess(data).next(() => {
 			this.title.setLabel(cd.s(this.isComment() ? 'cld-title-comment' : 'cld-title-section'))
-			this.message.setLabel(
-				mergeJquery(
-					this.linkTypeSelect?.$element,
-					this.contentStack.$element,
-				)
-			)
+			this.message.setLabel(mergeJquery(this.linkTypeSelect?.$element, this.contentStack.$element))
 			this.size = this.isComment() ? 'larger' : 'large'
 			this.contentStack.setItem(this.anchorPanel)
 		})
@@ -265,7 +260,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 		} catch (error) {
 			if (error instanceof CdError) {
 				errorText = cd.s(
-					error.getType() === 'network' ? 'cld-diff-error-network' : 'cld-diff-error'
+					error.getType() === 'network' ? 'cld-diff-error-network' : 'cld-diff-error',
 				)
 			} else {
 				errorText = cd.s('cld-diff-error-unknown')
@@ -273,8 +268,10 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			}
 		}
 
-		/** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption).setDisabled(Boolean(errorText));
-		/** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption).setTitle(errorText || '')
+		/** @type {NonNullable<typeof this.diffOption>} */ ;(this.diffOption).setDisabled(
+			Boolean(errorText),
+		)
+		/** @type {NonNullable<typeof this.diffOption>} */ ;(this.diffOption).setTitle(errorText || '')
 	}
 
 	/**

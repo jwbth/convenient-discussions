@@ -60,10 +60,10 @@ export default async function processFragment() {
 
 	let comment
 	if (commentId) {
-		({ date, author } = Comment.parseId(commentId) || {})
+		;({ date, author } = Comment.parseId(commentId) || {})
 		comment = commentManager.getById(commentId, true)
 	} else if (decodedValue) {
-		({ comment, date, author } = commentManager.getByDtId(decodedValue, true) || {})
+		;({ comment, date, author } = commentManager.getByDtId(decodedValue, true) || {})
 	}
 
 	if (comment) {
@@ -79,20 +79,20 @@ export default async function processFragment() {
 			history.replaceState(
 				{ ...history.state, cdJumpedToComment: true },
 				'',
-				comment.dtId ? `#${comment.dtId}` : undefined
+				comment.dtId ? `#${comment.dtId}` : undefined,
 			)
 		})
 	}
 
-	if (decodedValue && !cd.page.isArchive() &&
+	if (
+		decodedValue &&
+		!cd.page.isArchive() &&
 		// Try to find the target
 		!(
 			comment ||
 			cd.config.idleFragments.some((regexp) => decodedValue.match(regexp)) ||
-
 			// `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
 			/^\/media\/|^noticeApplied-|^h-/.test(decodedValue) ||
-
 			$(':target').length ||
 			isExistentAnchor(value) ||
 			isExistentAnchor(decodedValue)
@@ -119,24 +119,22 @@ function maybeNotifyNotFound() {
 		const priorComment = commentManager.findPriorComment(date, author)
 		if (priorComment) {
 			guessedCommentText = (' ' + cd.sParse('deadanchor-comment-previous', '#' + priorComment.id))
-			// Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
+				// Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
 				.replace(cd.g.articlePathRegexp, '$1')
 			label += guessedCommentText
 		}
 	} else {
 		sectionName = underlinesToSpaces(decodedValue)
-		label = (
+		label =
 			cd.sParse('deadanchor-section-lead', sectionName) +
 			' ' +
 			cd.sParse('deadanchor-section-reason')
-		)
 		const sectionMatch = sectionManager.findByHeadlineParts(sectionName)
 		if (sectionMatch) {
 			guessedSectionText = (
-				' ' +
-				cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.headline)
+				' ' + cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.headline)
 			)
-			// Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
+				// Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
 				.replace(cd.g.articlePathRegexp, '$1')
 			label += guessedSectionText
 		}
@@ -165,9 +163,7 @@ async function searchForNotFoundItem() {
 
 	if (!date) {
 		try {
-			sectionNameDotDecoded = decodeURIComponent(
-				sectionName.replace(/\.([0-9A-F]{2})/g, '%$1')
-			)
+			sectionNameDotDecoded = decodeURIComponent(sectionName.replace(/\.([0-9A-F]{2})/g, '%$1'))
 		} catch {
 			// Empty
 		}
@@ -184,7 +180,7 @@ async function searchForNotFoundItem() {
 			const adjustedToken = formatDateNative(
 				new Date(date.getTime() - cd.g.msInMin * gap),
 				false,
-				cd.g.timestampTools.content.timezone
+				cd.g.timestampTools.content.timezone,
 			)
 			searchQuery += ` OR "${adjustedToken}"`
 		}
@@ -214,40 +210,37 @@ async function searchForNotFoundItem() {
  * @private
  */
 function notifyAboutSearchResults() {
-	const searchUrl = (
+	const searchUrl =
 		cd.g.server +
 		mw.util.getUrl('Special:Search', {
 			search: searchQuery,
 			sort: 'create_timestamp_desc',
 			cdcomment: date && decodedValue,
 		})
-	)
 
 	if (searchResults.length === 0) {
 		mw.notify(
 			wrapHtml(
 				date
 					? cd.sParse('deadanchor-comment-lead') +
-					' ' +
-					cd.sParse('deadanchor-comment-notfound', searchUrl) +
-					guessedCommentText
+							' ' +
+							cd.sParse('deadanchor-comment-notfound', searchUrl) +
+							guessedCommentText
 					: cd.sParse('deadanchor-section-lead', sectionName) +
-						(
-							guessedSectionText && sectionName.includes('{{')
+							(guessedSectionText && sectionName.includes('{{')
 								? // Use of a template in the section title. In such a case, it's almost always the real
-							// match, so we don't show any fail messages.
-								''
+									// match, so we don't show any fail messages.
+									''
 								: ' ' +
 									cd.sParse('deadanchor-section-notfound', searchUrl) +
 									' ' +
-									cd.sParse('deadanchor-section-reason', searchUrl)
-						) +
-						guessedSectionText
+									cd.sParse('deadanchor-section-reason', searchUrl)) +
+							guessedSectionText,
 			),
 			{
 				type: 'warn',
 				autoHideSeconds: 'long',
-			}
+			},
 		)
 	} else {
 		let exactMatchPageTitle
@@ -258,9 +251,7 @@ function notifyAboutSearchResults() {
 		if (date) {
 			const matches = Object.entries(searchResults)
 				.map(([, result]) => result)
-				.filter((result) => (
-					removeWikiMarkup(result.snippet)?.includes(token)
-				))
+				.filter((result) => removeWikiMarkup(result.snippet)?.includes(token))
 			if (matches.length === 1) {
 				exactMatchPageTitle = matches[0].title
 			}
@@ -269,12 +260,11 @@ function notifyAboutSearchResults() {
 			// This loop iterates over just one item in the vast majority of cases.
 			const exactMatch = Object.entries(searchResults)
 				.map(([, result]) => result)
-				.find((result) => (
-					result.sectiontitle &&
-					[sectionName, sectionNameDotDecoded]
-						.filter(defined)
-						.includes(result.sectiontitle)
-				))
+				.find(
+					(result) =>
+						result.sectiontitle &&
+						[sectionName, sectionNameDotDecoded].filter(defined).includes(result.sectiontitle),
+				)
 			if (exactMatch) {
 				exactMatchPageTitle = exactMatch.title
 				sectionNameFound = underlinesToSpaces(/** @type {string} */ (exactMatch.sectiontitle))
@@ -286,10 +276,7 @@ function notifyAboutSearchResults() {
 			const fragment = date ? decodedValue : sectionNameFound
 			const wikilink = `${exactMatchPageTitle}#${fragment}`
 			label = date
-				? (
-						cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
-						guessedCommentText
-					)
+				? cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) + guessedCommentText
 				: cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl)
 		} else {
 			label = date

@@ -38,7 +38,7 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 						containerId,
 						buttonCount: buttons.length,
 						containerTag: buttons[0].parentElement?.tagName,
-						containerClasses: buttons[0].parentElement?.className
+						containerClasses: buttons[0].parentElement?.className,
 					})
 				}
 			})
@@ -47,7 +47,7 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 				totalButtons: allToggleButtons.length,
 				totalContainers: buttonContainers.size,
 				duplicateContainers,
-				hasDuplicates: duplicateContainers.length > 0
+				hasDuplicates: duplicateContainers.length > 0,
 			}
 		})
 
@@ -86,11 +86,11 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 			const commentInfo = {
 				totalComments: cd.comments ? cd.comments.length : 0,
 				commentsWithActions: 0,
-				commentsWithToggleButtons: 0
+				commentsWithToggleButtons: 0,
 			}
 
 			if (cd.comments) {
-				cd.comments.forEach(comment => {
+				cd.comments.forEach((comment) => {
 					if (comment.actions) {
 						commentInfo.commentsWithActions++
 
@@ -105,7 +105,7 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 			return {
 				success: true,
 				commentInfo,
-				cdLoaded: true
+				cdLoaded: true,
 			}
 		})
 
@@ -117,7 +117,9 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 		console.log('📊 Code Structure Validation:')
 		console.log(`   Total comments: ${codeValidation.commentInfo.totalComments}`)
 		console.log(`   Comments with actions: ${codeValidation.commentInfo.commentsWithActions}`)
-		console.log(`   Comments with toggle buttons: ${codeValidation.commentInfo.commentsWithToggleButtons}`)
+		console.log(
+			`   Comments with toggle buttons: ${codeValidation.commentInfo.commentsWithToggleButtons}`,
+		)
 
 		// Validate that the structure is reasonable
 		expect(codeValidation.success).toBe(true)

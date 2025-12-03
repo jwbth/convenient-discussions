@@ -4,7 +4,8 @@
 export default class CodeMirrorCommentInput
 	extends /** @type {typeof import('./CodeMirrorWikiEditor').default} */ (
 		mw.loader.require('ext.CodeMirror.v6.WikiEditor')
-	) {
+	)
+{
 	/**
 	 *
 	 * @param {import('./MultilineTextInputWidget').default} commentInput
@@ -40,7 +41,7 @@ export default class CodeMirrorCommentInput
 					// @ts-expect-error: the source library uses "@type {Object}"
 					this.preferences.preferences[prefName] = enabled
 				}
-			}
+			},
 		)
 	}
 

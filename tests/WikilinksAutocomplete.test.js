@@ -17,9 +17,10 @@ jest.mock('../src/shared/utils-general', () => ({
 	removeDoubleSpaces: jest.fn((str) => str.replace(/\s+/g, ' ')),
 	definedAndNotNull: (item) => item !== undefined && item !== null,
 	unique: (item, index, array) => array.indexOf(item) === index,
-	sleep: (ms) => new Promise((resolve) => {
-		setTimeout(resolve, ms)
-	}),
+	sleep: (ms) =>
+		new Promise((resolve) => {
+			setTimeout(resolve, ms)
+		}),
 }))
 
 jest.mock('../src/utils-api', () => ({
@@ -162,12 +163,9 @@ describe('WikilinksAutocomplete', () => {
 	describe('makeApiRequest', () => {
 		beforeEach(() => {
 			require('../src/loader/cd').getApi.mockReturnValue({
-				get: jest.fn().mockResolvedValue([
-					'query',
-					['Test page', 'Test article', 'Testing'],
-					[],
-					[],
-				]),
+				get: jest
+					.fn()
+					.mockResolvedValue(['query', ['Test page', 'Test article', 'Testing'], [], []]),
 			})
 		})
 
@@ -230,12 +228,7 @@ describe('WikilinksAutocomplete', () => {
 		})
 
 		it('should handle empty API response', async () => {
-			require('../src/loader/cd').getApi().get.mockResolvedValue([
-				'query',
-				[],
-				[],
-				[],
-			])
+			require('../src/loader/cd').getApi().get.mockResolvedValue(['query', [], [], []])
 
 			const results = await autocomplete.makeApiRequest('test')
 

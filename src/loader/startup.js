@@ -47,11 +47,9 @@ async function bootstrap() {
 		mw.config.get('wgMFMode') ||
 		/[?&]cdenable=(0|false|no|n)(?=&|$)/.test(location.search) ||
 		mw.config.get('wgPageContentModel') !== 'wikitext' ||
-
 		// Liquid Threads; for example,
 		// https://en.wiktionary.org/wiki/MediaWiki_talk:Gadget-NewEntryWizard.js/LQT_Archive
 		$('.lqt-talkpage').length ||
-
 		mw.config.get('wgIsMainPage')
 	) {
 		return
@@ -87,7 +85,7 @@ async function bootstrap() {
 				.replace(/&rlm;/g, '\u200F')
 				.replace(/&lrm;/g, '\u200E')
 
-		cd.i18n = (/** @type {I18n} */ { en })
+		cd.i18n = /** @type {I18n} */ { en }
 		typedKeysOf(cd.i18n.en).forEach((name) => {
 			cd.i18n.en[name] = replaceEntities(cd.i18n.en[name])
 		})
@@ -109,7 +107,7 @@ async function bootstrap() {
 
 	try {
 		await Promise.all([
-			(/** @type {any} */ (cd).config) ? Promise.resolve() : getConfig(),
+			/** @type {any} */ (cd).config ? Promise.resolve() : getConfig(),
 			getStringsPromise(),
 		])
 	} catch (error) {
@@ -149,14 +147,14 @@ function getConfig() {
 			key += '.staging'
 		}
 		const configUrl =
-		/** @type {StringsByKey} */ (configUrls)[key] ||
+			/** @type {StringsByKey} */ (configUrls)[key] ||
 			/** @type {StringsByKey} */ (configUrls)[mw.config.get('wgServerName')]
 		if (configUrl) {
 			const rejectWithMsg = (/** @type {unknown} */ error) => {
 				reject(
 					new Error(`Convenient Discussions can't run: couldn't load the configuration.`, {
 						cause: error,
-					})
+					}),
 				)
 			}
 
@@ -186,15 +184,14 @@ function getConfig() {
  * @returns {Promise<any[] | void>}
  */
 export function getStringsPromise() {
-	return (
-		cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
+	return cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
 		cd.g.contentLanguage === mw.config.get('wgContentLanguage')
-	)
-	// If no language fallbacks are employed, we can do without requesting additional i18ns.
-	// cd.getStringsPromise may be set in the configuration file.
-	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		? (cd.i18n ? Promise.resolve() : cd.getStringsPromise || getStrings())
-
+		? // If no language fallbacks are employed, we can do without requesting additional i18ns.
+			// cd.getStringsPromise may be set in the configuration file.
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			cd.i18n
+			? Promise.resolve()
+			: cd.getStringsPromise || getStrings()
 		: getStrings()
 }
 
@@ -209,15 +206,15 @@ async function getStrings() {
 	return Promise.all(
 		[cd.g.userLanguage, cd.g.contentLanguage]
 			.filter(unique)
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			.filter((lang) => lang !== 'en' && (!cd.i18n || !(lang in cd.i18n)))
 			.map((lang) =>
 				cd.loader.loadPreferablyFromDiskCache({
 					domain: 'commons.wikimedia.org',
 					pageName: `User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js`,
 					ttlInDays: 1,
-				})
-			)
+				}),
+			),
 	).catch(() => {})
 }
 
@@ -280,19 +277,16 @@ async function makeSureStringsAreSet() {
 		return
 
 	// Strings that should be displayed in the site language, not the user language.
-	const contentStrings = [
-		'es-',
-		'cf-autocomplete-commentlinktext',
-		'move-',
-	]
+	const contentStrings = ['es-', 'cf-autocomplete-commentlinktext', 'move-']
 
 	if (!SINGLE_LANG_CODE) {
 		await import('../../dist/convenientDiscussions-i18n/en')
 	}
 	const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
-		const lang = contentStrings.some((contentStringName) =>
-			name === contentStringName ||
-			(contentStringName.endsWith('-') && name.startsWith(contentStringName))
+		const lang = contentStrings.some(
+			(contentStringName) =>
+				name === contentStringName ||
+				(contentStringName.endsWith('-') && name.startsWith(contentStringName)),
 		)
 			? cd.g.contentLanguage
 			: cd.g.userLanguage
@@ -342,9 +336,11 @@ function addFooterSwitcher() {
  */
 function tweakAddTopicButton() {
 	const dtCreatePage =
-		cd.g.isDtNewTopicToolEnabled &&
-		mw.user.options.get('discussiontools-newtopictool-createpage')
-	if (!cd.loader.isArticlePageOfTypeTalk() || (mw.config.get('wgAction') === 'view' && !dtCreatePage))
+		cd.g.isDtNewTopicToolEnabled && mw.user.options.get('discussiontools-newtopictool-createpage')
+	if (
+		!cd.loader.isArticlePageOfTypeTalk() ||
+		(mw.config.get('wgAction') === 'view' && !dtCreatePage)
+	)
 		return
 
 	const $button = $('#ca-addsection a')
@@ -373,31 +369,25 @@ function addCommentLinksIfOnSpecialSearch() {
 
 	const [, commentId] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || []
 	if (commentId) {
-		mw.loader.using('mediawiki.api').then(
-			async () => {
-				await cd.loader.getSiteDataPromise()
-				$('.mw-search-result-heading').each((_, el) => {
-					const originalHref = $(el)
-						.find('a')
-						.first()
-						.attr('href')
-					if (!originalHref) return
+		mw.loader.using('mediawiki.api').then(async () => {
+			await cd.loader.getSiteDataPromise()
+			$('.mw-search-result-heading').each((_, el) => {
+				const originalHref = $(el).find('a').first().attr('href')
+				if (!originalHref) return
 
-					$(el).append(
-						' ',
-						$('<span>')
-							.addClass('cd-searchCommentLink')
-							.append(
-								document.createTextNode(cd.mws('parentheses-start')),
-								$('<a>')
-									.attr('href', `${originalHref}#${commentId}`)
-									.text(cd.s('deadanchor-search-gotocomment')),
-								document.createTextNode(cd.mws('parentheses-end')),
-							)
-					)
-				})
-			},
-			console.error
-		)
+				$(el).append(
+					' ',
+					$('<span>')
+						.addClass('cd-searchCommentLink')
+						.append(
+							document.createTextNode(cd.mws('parentheses-start')),
+							$('<a>')
+								.attr('href', `${originalHref}#${commentId}`)
+								.text(cd.s('deadanchor-search-gotocomment')),
+							document.createTextNode(cd.mws('parentheses-end')),
+						),
+				)
+			})
+		}, console.error)
 	}
 }

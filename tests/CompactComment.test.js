@@ -13,13 +13,17 @@ global.OO = {
 	},
 }
 
-jest.mock('../src/EventEmitter.js', () => class EventEmitter {
-	on() {}
+jest.mock(
+	'../src/EventEmitter.js',
+	() =>
+		class EventEmitter {
+			on() {}
 
-	off() {}
+			off() {}
 
-	emit() {}
-})
+			emit() {}
+		},
+)
 
 // Mock dependencies
 jest.mock('../src/CommentLayers', () => {
@@ -183,17 +187,14 @@ describe('CompactComment', () => {
 			CompactComment.initPrototypes()
 
 			// Should replace the overlay prototype with enhanced version
-			expect(CompactComment.prototypes.add).toHaveBeenCalledWith(
-				'overlay',
-				expect.any(HTMLElement)
-			)
+			expect(CompactComment.prototypes.add).toHaveBeenCalledWith('overlay', expect.any(HTMLElement))
 		})
 
 		it('should create overlay with proper structure', () => {
 			CompactComment.initPrototypes()
 
 			const overlayCall = CompactComment.prototypes.add.mock.calls.find(
-				(call) => call[0] === 'overlay'
+				(call) => call[0] === 'overlay',
 			)
 			const overlay = overlayCall[1]
 
@@ -215,7 +216,7 @@ describe('CompactComment', () => {
 			CompactComment.initPrototypes()
 
 			const overlayCall = CompactComment.prototypes.add.mock.calls.find(
-				(call) => call[0] === 'overlay'
+				(call) => call[0] === 'overlay',
 			)
 			const overlay = overlayCall[1]
 
@@ -227,7 +228,7 @@ describe('CompactComment', () => {
 			CompactComment.initPrototypes()
 
 			const overlayCall = CompactComment.prototypes.add.mock.calls.find(
-				(call) => call[0] === 'overlay'
+				(call) => call[0] === 'overlay',
 			)
 			const overlay = overlayCall[1]
 
@@ -239,7 +240,7 @@ describe('CompactComment', () => {
 			CompactComment.initPrototypes()
 
 			const overlayCall = CompactComment.prototypes.add.mock.calls.find(
-				(call) => call[0] === 'overlay'
+				(call) => call[0] === 'overlay',
 			)
 			const overlay = overlayCall[1]
 

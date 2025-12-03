@@ -34,7 +34,9 @@ test.describe('Authentication Example', () => {
 		])
 
 		// Navigate to Wikipedia
-		await page.goto('https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases')
+		await page.goto(
+			'https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases',
+		)
 
 		// Check if logged in
 		const userMenu = page.locator('#pt-userpage')
@@ -53,6 +55,8 @@ test.describe('Authentication Example', () => {
 		await page.waitForURL(/.*wikipedia\.org.*/)
 
 		// Now navigate to test page
-		await page.goto('https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases')
+		await page.goto(
+			'https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases',
+		)
 	})
 })

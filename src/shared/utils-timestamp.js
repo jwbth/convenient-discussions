@@ -73,10 +73,7 @@ function getDateFromTimestampMatch(match, inUserLanguage = false) {
 			return text
 		}
 
-		return text.replace(
-			new RegExp('[' + digits + ']', 'g'),
-			(m) => String(digits.indexOf(m))
-		)
+		return text.replace(new RegExp('[' + digits + ']', 'g'), (m) => String(digits.indexOf(m)))
 	}
 
 	let year = 0
@@ -136,17 +133,13 @@ function getDateFromTimestampMatch(match, inUserLanguage = false) {
 
 	return new Date(
 		unixTime -
-
-		// Timezone offset
-		(
-			typeof timezone === 'number'
+			// Timezone offset
+			(typeof timezone === 'number'
 				? timezone * cd.g.msInMin
 				: timezone === 'UTC'
 					? 0
-
-				// Using date-fns-tz's getTimezoneOffset() is way faster than day.js's methods.
-					: getTimezoneOffset(timezone, unixTime)
-		)
+					: // Using date-fns-tz's getTimezoneOffset() is way faster than day.js's methods.
+						getTimezoneOffset(timezone, unixTime)),
 	)
 }
 
@@ -169,7 +162,7 @@ export function parseTimestamp(timestamp, inUserLanguage) {
 	// timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518). Replace with a
 	// space to keep offsets.
 	const match = removeDirMarks(timestamp, true).match(
-		cd.g.timestampTools[inUserLanguage ? 'user' : 'content'].parseRegexp
+		cd.g.timestampTools[inUserLanguage ? 'user' : 'content'].parseRegexp,
 	)
 	if (!match) {
 		return

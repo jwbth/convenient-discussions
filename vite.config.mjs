@@ -94,17 +94,32 @@ function licenseExtractionPlugin(buildMode) {
 				if (fileNameStr.includes('worker')) {
 					// For worker files, add source map URL
 					if (cdConfig.sourceMapsBaseUrl) {
-						const sourceMapUrl = cdConfig.sourceMapsBaseUrl + 'convenientDiscussions.worker.js.map'
-						licenseContent = '//# sourceMappingURL=' + sourceMapUrl + '\n\n' + licenseContent
+						const sourceMapUrl =
+							cdConfig.sourceMapsBaseUrl + 'convenientDiscussions.worker.js.map'
+						licenseContent =
+							'//# sourceMappingURL=' + sourceMapUrl + '\n\n' + licenseContent
 					}
 				} else {
 					// For main bundle, add documentation banner
 					let licenseUrl = ''
-					if (cdConfig.main?.server && cdConfig.main.rootPath && cdConfig.protocol) {
-						licenseUrl = cdConfig.protocol + '://' + cdConfig.main.server + cdConfig.main.rootPath + '/' + licenseFileName
+					if (
+						cdConfig.main?.server &&
+						cdConfig.main.rootPath &&
+						cdConfig.protocol
+					) {
+						licenseUrl =
+							cdConfig.protocol +
+							'://' +
+							cdConfig.main.server +
+							cdConfig.main.rootPath +
+							'/' +
+							licenseFileName
 					}
 
-					const customBanner = '\n  * For documentation and feedback, see the script\'s homepage:\n  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions\n  *\n  * For license information, see\n  * ' + licenseUrl + '\n  '
+					const customBanner =
+						"\n  * For documentation and feedback, see the script's homepage:\n  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions\n  *\n  * For license information, see\n  * " +
+						licenseUrl +
+						'\n  '
 					licenseContent = '/*' + customBanner + '*/\n\n' + licenseContent
 				}
 
@@ -178,7 +193,7 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
 						const customUrl = `${baseUrl}${mapFileName}`
 						chunk.code = chunk.code.replace(
 							/\/\/# sourceMappingURL=.*$/m,
-							`//# sourceMappingURL=${customUrl}`
+							`//# sourceMappingURL=${customUrl}`,
 						)
 					}
 				}
@@ -206,9 +221,13 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
  * @returns {BuildMode}
  */
 function determineBuildMode(env, mode) {
-	const isDev = Boolean(env.VITE_DEV || process.env.npm_config_dev || mode === 'development')
+	const isDev = Boolean(
+		env.VITE_DEV || process.env.npm_config_dev || mode === 'development',
+	)
 	const isStaging = Boolean(env.VITE_STAGING || process.env.npm_config_staging)
-	const isSingle = Boolean(env.VITE_SINGLE || process.env.npm_config_single || mode === 'single')
+	const isSingle = Boolean(
+		env.VITE_SINGLE || process.env.npm_config_single || mode === 'single',
+	)
 
 	let filenamePostfix = ''
 	let lang
@@ -244,7 +263,9 @@ export default defineConfig(({ mode, command }) => {
 	const bundleFilename = `convenientDiscussions${buildMode.filenamePostfix}`
 
 	if (!cdConfig.protocol || !cdConfig.main?.rootPath || !cdConfig.articlePath) {
-		throw new Error('No protocol/server/root path/article path found in config.json5.')
+		throw new Error(
+			'No protocol/server/root path/article path found in config.json5.',
+		)
 	}
 
 	// For dev server (serve command), always use dev mode settings
@@ -255,12 +276,14 @@ export default defineConfig(({ mode, command }) => {
 	const defines = {
 		IS_DEV: JSON.stringify(effectiveIsDev),
 		IS_STAGING: JSON.stringify(buildMode.isStaging),
-		SINGLE_CONFIG_FILE_NAME: buildMode.isSingle && buildMode.wiki
-			? JSON.stringify(buildMode.wiki)
-			: 'undefined',
-		SINGLE_LANG_CODE: buildMode.isSingle && buildMode.lang
-			? JSON.stringify(buildMode.lang)
-			: 'undefined',
+		SINGLE_CONFIG_FILE_NAME:
+			buildMode.isSingle && buildMode.wiki
+				? JSON.stringify(buildMode.wiki)
+				: 'undefined',
+		SINGLE_LANG_CODE:
+			buildMode.isSingle && buildMode.lang
+				? JSON.stringify(buildMode.lang)
+				: 'undefined',
 		CACHE_BUSTER: generateRandomId(),
 	}
 
@@ -372,7 +395,11 @@ export default defineConfig(({ mode, command }) => {
 			},
 
 			// Source map configuration based on build mode
-			sourcemap: buildMode.isSingle ? 'inline' : (buildMode.isDev ? 'inline' : true),
+			sourcemap: buildMode.isSingle
+				? 'inline'
+				: buildMode.isDev
+					? 'inline'
+					: true,
 
 			// Entry point and output configuration
 			rollupOptions: {
@@ -432,8 +459,10 @@ export default defineConfig(({ mode, command }) => {
 							// Filter out URLs starting with /w/ (MediaWiki paths)
 							// Note: Vite's CSS processing automatically handles URL filtering
 							// This plugin serves as a placeholder for any custom URL filtering logic
-							if ((decl.prop.includes('url') || decl.value.includes('url(')) &&
-								decl.value.match(/url\(['"]?\/w\/[^'"()]+['"]?\)/)) {
+							if (
+								(decl.prop.includes('url') || decl.value.includes('url(')) &&
+								decl.value.match(/url\(['"]?\/w\/[^'"()]+['"]?\)/)
+							) {
 								// URLs starting with /w/ are MediaWiki paths and should not be processed
 								// Vite will leave them as-is by default
 							}
@@ -461,7 +490,11 @@ export default defineConfig(({ mode, command }) => {
 					entryFileNames: `convenientDiscussions.worker${buildMode.filenamePostfix}.js`,
 
 					// Source maps for workers (when not inlined)
-					sourcemap: buildMode.isSingle ? 'inline' : (buildMode.isDev ? 'inline' : true),
+					sourcemap: buildMode.isSingle
+						? 'inline'
+						: buildMode.isDev
+							? 'inline'
+							: true,
 				},
 			},
 		},

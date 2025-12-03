@@ -79,10 +79,10 @@ class AutocompleteManager {
 		 */
 		this.performanceMonitor = enablePerformanceMonitoring
 			? new AutocompletePerformanceMonitor({
-				enabled: true,
-				maxMetrics: 500,
-				reportInterval: 0, // Disable automatic reporting
-			})
+					enabled: true,
+					maxMetrics: 500,
+					reportInterval: 0, // Disable automatic reporting
+				})
 			: undefined
 
 		/**
@@ -200,16 +200,13 @@ class AutocompleteManager {
 
 		for (const [type, instance] of this.autocompleteInstances) {
 			collections.push(
-				/** @type {import('./tribute/Tribute').TributeCollection<import('./BaseAutocomplete').Option>} */({
+				/** @type {import('./tribute/Tribute').TributeCollection<import('./BaseAutocomplete').Option>} */ ({
 					lookup: 'label',
 					label: instance.getLabel(),
 					trigger: instance.getTrigger(),
 					searchOpts: { skip: true },
 					selectTemplate: this.onOptionChoose,
-					values: async (
-						/** @type {string} */ text,
-						/** @type {ProcessOptions} */ callback
-					) => {
+					values: async (/** @type {string} */ text, /** @type {ProcessOptions} */ callback) => {
 						// Start performance monitoring if enabled
 						const perfContext = this.performanceMonitor?.startOperation('getValues', type, text)
 
@@ -235,7 +232,7 @@ class AutocompleteManager {
 
 					// Add type-specific properties from the instance
 					...instance.getCollectionProperties(),
-				})
+				}),
 			)
 		}
 
@@ -271,29 +268,27 @@ class AutocompleteManager {
 	 * @returns {Promise<void>}
 	 */
 	async insertTemplateData(option, input) {
-		input
-			.setDisabled(true)
-			.pushPending()
+		input.setDisabled(true).pushPending()
 
 		/** @type {APIResponseTemplateData} */
 		let response
 		/** @type {TemplateData | undefined} */
 		let template
 		try {
-			response = await cd.getApi(AutocompleteManager.apiConfig).get({
-				action: 'templatedata',
-				titles: `Template:${option.original.label}`,
-				redirects: true,
-			}).catch(handleApiReject)
+			response = await cd
+				.getApi(AutocompleteManager.apiConfig)
+				.get({
+					action: 'templatedata',
+					titles: `Template:${option.original.label}`,
+					redirects: true,
+				})
+				.catch(handleApiReject)
 			template = Object.values(response.pages).at(0)
 			if (!template) {
 				throw new CdError('Template missing.')
 			}
 		} catch {
-			input
-				.setDisabled(false)
-				.focus()
-				.popPending()
+			input.setDisabled(false).focus().popPending()
 
 			return
 		}
@@ -319,10 +314,10 @@ class AutocompleteManager {
 		input
 			.setDisabled(false)
 
-		// Remove leading `|` with `slice(1)`
+			// Remove leading `|` with `slice(1)`
 			.insertContent((result + (template.format === 'block' && result ? '\n' : '')).slice(1))
 
-		// `input.getRange().to` is the current caret index
+			// `input.getRange().to` is the current caret index
 			.selectRange(/** @type {number} */ (input.getRange().to || 0) + firstValueIndex - 1)
 
 			.popPending()
@@ -391,7 +386,8 @@ class AutocompleteManager {
 				types: Array.from(this.autocompleteInstances.keys()),
 				monitoringEnabled: this.performanceMonitor !== undefined,
 			},
-			instances: (/** @type {TypeByStringKey<import('./BaseAutocomplete').PerformanceMetrics>} */ ({})),
+			instances:
+				/** @type {TypeByStringKey<import('./BaseAutocomplete').PerformanceMetrics>} */ ({}),
 			monitor: undefined,
 		})
 

@@ -32,7 +32,7 @@ class DtSubscriptions extends Subscriptions {
 				.map((section) => section.subscribeId)
 				.filter(definedAndNotNull)
 				.filter(unique)
-				.concat(this.pageSubscribeId || [])
+				.concat(this.pageSubscribeId || []),
 		)
 	}
 
@@ -82,10 +82,15 @@ class DtSubscriptions extends Subscriptions {
 
 		const subscriptions = /** @type {import('./Subscriptions').SubscriptionsData} */ ({})
 		for (const nextIds of splitIntoBatches(ids)) {
-			const response = /** @type {ApiDtSubscriptions} */ (await cd.getApi().post({
-				action: 'discussiontoolsgetsubscriptions',
-				commentname: nextIds,
-			}).catch(handleApiReject))
+			const response = /** @type {ApiDtSubscriptions} */ (
+				await cd
+					.getApi()
+					.post({
+						action: 'discussiontoolsgetsubscriptions',
+						commentname: nextIds,
+					})
+					.catch(handleApiReject)
+			)
 			Object.assign(subscriptions, intValuesToBoolean(response.subscriptions))
 		}
 
@@ -107,7 +112,7 @@ class DtSubscriptions extends Subscriptions {
 				commentname: this.pageSubscribeId,
 			}),
 			'',
-			'ca-cd-page-subscribe'
+			'ca-cd-page-subscribe',
 		)
 		if (!portletLink) return
 
@@ -116,11 +121,9 @@ class DtSubscriptions extends Subscriptions {
 			action: async () => {
 				this.pageSubscribeButton.setPending(true)
 				try {
-					await (
-						this.getState(this.pageSubscribeId)
-							? this.unsubscribe(this.pageSubscribeId)
-							: this.subscribe(this.pageSubscribeId)
-					)
+					await (this.getState(this.pageSubscribeId)
+						? this.unsubscribe(this.pageSubscribeId)
+						: this.subscribe(this.pageSubscribeId))
 					this.updatePageSubscribeButton()
 				} finally {
 					this.pageSubscribeButton.setPending(false)
@@ -141,12 +144,15 @@ class DtSubscriptions extends Subscriptions {
 	 */
 	async changeSubscription(subscribeId, id, subscribe) {
 		try {
-			await cd.getApi().postWithEditToken({
-				action: 'discussiontoolssubscribe',
-				page: cd.page.name + (id ? `#${id}` : ''),
-				commentname: subscribeId,
-				subscribe,
-			}).catch(handleApiReject)
+			await cd
+				.getApi()
+				.postWithEditToken({
+					action: 'discussiontoolssubscribe',
+					page: cd.page.name + (id ? `#${id}` : ''),
+					commentname: subscribeId,
+					subscribe,
+				})
+				.catch(handleApiReject)
 		} catch (error) {
 			mw.notify(cd.s('error-settings-save'), { type: 'error' })
 			throw error
@@ -191,12 +197,12 @@ class DtSubscriptions extends Subscriptions {
 			.setLabel(
 				this.getState(this.pageSubscribeId)
 					? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label')
-					: cd.mws('discussiontools-newtopicssubscription-button-subscribe-label')
+					: cd.mws('discussiontools-newtopicssubscription-button-subscribe-label'),
 			)
 			.setTooltip(
 				this.getState(this.pageSubscribeId)
 					? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip')
-					: cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
+					: cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip'),
 			)
 	}
 }

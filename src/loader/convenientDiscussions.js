@@ -22,9 +22,8 @@ const serverName = mw.config.get('wgServerName')
 const localOptionsPrefix = serverName === 'ru.wikipedia.org' ? 'cd' : 'convenientDiscussions'
 
 // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-const subscriptionsOptionNameEnding = serverName === 'ru.wikipedia.org'
-	? 'watchedTopics'
-	: 'watchedSections'
+const subscriptionsOptionNameEnding =
+	serverName === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections'
 
 let server = mw.config.get('wgServer')
 if (server.startsWith('//')) {
@@ -325,7 +324,7 @@ const globalProperties = {
 		devicePixelRatioToDivisor.reduce(
 			(value, [dpr, divisor]) =>
 				value || (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value),
-			/** @type {number | undefined} */ (undefined)
+			/** @type {number | undefined} */ (undefined),
 		)
 	),
 
@@ -353,7 +352,43 @@ const globalProperties = {
 	 * @type {string[]}
 	 * @memberof convenientDiscussions.g
 	 */
-	popularNotInlineElements: ['BLOCKQUOTE', 'CAPTION', 'CENTER', 'DD', 'DIV', 'DL', 'DT', 'FIGURE', 'FIGCAPTION', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT', 'LI', 'LINK', 'META', 'OL', 'P', 'PRE', 'SECTION', 'STYLE', 'TABLE', 'TBODY', 'TD', 'TEXTAREA', 'TFOOT', 'TH', 'THEAD', 'TR', 'UL'],
+	popularNotInlineElements: [
+		'BLOCKQUOTE',
+		'CAPTION',
+		'CENTER',
+		'DD',
+		'DIV',
+		'DL',
+		'DT',
+		'FIGURE',
+		'FIGCAPTION',
+		'FORM',
+		'H1',
+		'H2',
+		'H3',
+		'H4',
+		'H5',
+		'H6',
+		'HR',
+		'INPUT',
+		'LI',
+		'LINK',
+		'META',
+		'OL',
+		'P',
+		'PRE',
+		'SECTION',
+		'STYLE',
+		'TABLE',
+		'TBODY',
+		'TD',
+		'TEXTAREA',
+		'TFOOT',
+		'TH',
+		'THEAD',
+		'TR',
+		'UL',
+	],
 
 	/**
 	 * Popular elements that can be met in page content and do have the `display: inline` property in
@@ -362,7 +397,42 @@ const globalProperties = {
 	 * @type {string[]}
 	 * @memberof convenientDiscussions.g
 	 */
-	popularInlineElements: ['A', 'ABBR', 'B', 'BDI', 'BIG', 'BR', 'BUTTON', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS', 'KBD', 'MARK', 'MW:DT-TIMESTAMPLINK', 'Q', 'RT', 'RP', 'RUBY', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR'],
+	popularInlineElements: [
+		'A',
+		'ABBR',
+		'B',
+		'BDI',
+		'BIG',
+		'BR',
+		'BUTTON',
+		'CITE',
+		'CODE',
+		'DEL',
+		'EM',
+		'FONT',
+		'I',
+		'IMG',
+		'INS',
+		'KBD',
+		'MARK',
+		'MW:DT-TIMESTAMPLINK',
+		'Q',
+		'RT',
+		'RP',
+		'RUBY',
+		'S',
+		'SAMP',
+		'SMALL',
+		'SPAN',
+		'STRIKE',
+		'STRONG',
+		'SUB',
+		'SUP',
+		'TIME',
+		'TT',
+		'U',
+		'VAR',
+	],
 
 	/**
 	 * @typedef {typeof import('../../config/default').default} DefaultConfig
@@ -567,7 +637,9 @@ const globalProperties = {
 	settingsOptionName: /** @type {const} */ ('userjs-convenientDiscussions-settings'),
 	localSettingsOptionName: /** @type {const} */ (`userjs-${localOptionsPrefix}-localSettings`),
 	visitsOptionName: /** @type {const} */ (`userjs-${localOptionsPrefix}-visits`),
-	subscriptionsOptionName: /** @type {const} */ (`userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`),
+	subscriptionsOptionName: /** @type {const} */ (
+		`userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`
+	),
 	server,
 	serverName,
 	pageName: underlinesToSpaces(mw.config.get('wgPageName')),
@@ -598,16 +670,18 @@ const globalProperties = {
 	isDtInstalled: Boolean(mw.loader.getState('ext.discussionTools.init')),
 	isDtReplyToolEnabled: bodyClassList.contains('ext-discussiontools-replytool-enabled'),
 	isDtNewTopicToolEnabled: bodyClassList.contains('ext-discussiontools-newtopictool-enabled'),
-	isDtTopicSubscriptionEnabled: bodyClassList
-		.contains('ext-discussiontools-topicsubscription-enabled'),
-	isDtVisualEnhancementsEnabled: bodyClassList
-		.contains('ext-discussiontools-visualenhancements-enabled'),
+	isDtTopicSubscriptionEnabled: bodyClassList.contains(
+		'ext-discussiontools-topicsubscription-enabled',
+	),
+	isDtVisualEnhancementsEnabled: bodyClassList.contains(
+		'ext-discussiontools-visualenhancements-enabled',
+	),
 	isCodeMirror6Installed: Boolean(mw.loader.getState('ext.CodeMirror.v6.WikiEditor')),
 
 	isParsoidUsed: $('#mw-content-text > .mw-parser-output')
 		.contents()
 		.get()
-	// NB: not _our_ Comment, the global one
+		// NB: not _our_ Comment, the global one
 		.filter((node) => node instanceof window.Comment)
 		.some((c) => c.textContent.startsWith('Parsoid')),
 

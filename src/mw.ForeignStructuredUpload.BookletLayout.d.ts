@@ -8,59 +8,59 @@ declare global {
 			 * @param {mw.Upload.BookletLayout.ConfigOptions} [config] Configuration options.
 			 */
 			class BookletLayout extends mw.Upload.BookletLayout {
-				constructor(config?: mw.Upload.BookletLayout.ConfigOptions);
+				constructor(config?: mw.Upload.BookletLayout.ConfigOptions)
 
 				/**
 				 * Used to choose the target repository.
 				 */
-				target?: string;
+				target?: string
 
 				/* Additional properties set up by this subclass */
 
 				/**
 				 * A jQuery object representing the "own work" message element.
 				 */
-				$ownWorkMessage: JQuery;
+				$ownWorkMessage: JQuery
 				/**
 				 * A jQuery object representing the "not own work" message element.
 				 */
-				$notOwnWorkMessage: JQuery;
+				$notOwnWorkMessage: JQuery
 				/**
 				 * A jQuery object representing the "not own work (local)" message element.
 				 */
-				$notOwnWorkLocal: JQuery;
+				$notOwnWorkLocal: JQuery
 				/**
 				 * A label widget for displaying messages.
 				 */
-				messageLabel: OO.ui.LabelWidget;
+				messageLabel: OO.ui.LabelWidget
 				/**
 				 * A checkbox widget for selecting whether the work is owned.
 				 */
-				ownWorkCheckbox: OO.ui.CheckboxInputWidget;
+				ownWorkCheckbox: OO.ui.CheckboxInputWidget
 				/**
 				 * A widget for selecting categories.
 				 */
-				categoriesWidget: mw.widgets.CategoryMultiselectWidget;
+				categoriesWidget: mw.widgets.CategoryMultiselectWidget
 				/**
 				 * A date input widget.
 				 */
-				dateWidget: mw.widgets.DateInputWidget;
+				dateWidget: mw.widgets.DateInputWidget
 				/**
 				 * A field layout wrapping the filename input widget.
 				 */
-				filenameField: OO.ui.FieldLayout;
+				filenameField: OO.ui.FieldLayout
 				/**
 				 * A field layout wrapping the description input widget.
 				 */
-				descriptionField: OO.ui.FieldLayout;
+				descriptionField: OO.ui.FieldLayout
 				/**
 				 * A field layout wrapping the categories widget.
 				 */
-				categoriesField: OO.ui.FieldLayout;
+				categoriesField: OO.ui.FieldLayout
 				/**
 				 * A field layout wrapping the date widget.
 				 */
-				dateField: OO.ui.FieldLayout;
+				dateField: OO.ui.FieldLayout
 
 				/* Methods */
 
@@ -74,14 +74,14 @@ declare global {
 				 * @inheritdoc
 				 * @returns {JQuery.Promise<any>} A promise resolved when initialization is complete.
 				 */
-				initialize(): JQuery.Promise<any>;
+				initialize(): JQuery.Promise<any>
 
 				/**
 				 * Returns a {@link mw.ForeignStructuredUpload} instance with the target specified in config.
 				 *
 				 * @returns {mw.Upload} The upload model.
 				 */
-				protected createUpload(): mw.Upload;
+				protected createUpload(): mw.Upload
 
 				/**
 				 * Renders and returns the upload form.
@@ -91,7 +91,7 @@ declare global {
 				 * @inheritdoc
 				 * @returns {OO.ui.FormLayout} The upload form layout.
 				 */
-				protected renderUploadForm(): OO.ui.FormLayout;
+				protected renderUploadForm(): OO.ui.FormLayout
 
 				/**
 				 * Handles change events on the upload form.
@@ -101,7 +101,7 @@ declare global {
 				 *
 				 * @inheritdoc
 				 */
-				protected onUploadFormChange(): void;
+				protected onUploadFormChange(): void
 
 				/**
 				 * Renders and returns the information form for collecting metadata.
@@ -111,7 +111,7 @@ declare global {
 				 * @inheritdoc
 				 * @returns {OO.ui.FormLayout} The information form layout.
 				 */
-				protected renderInfoForm(): OO.ui.FormLayout;
+				protected renderInfoForm(): OO.ui.FormLayout
 
 				/**
 				 * Handles change events on the information form.
@@ -120,7 +120,7 @@ declare global {
 				 *
 				 * @inheritdoc
 				 */
-				protected onInfoFormChange(): void;
+				protected onInfoFormChange(): void
 
 				/**
 				 * Validates the given filename by checking if a file page already exists.
@@ -128,7 +128,7 @@ declare global {
 				 * @param {mw.Title} filename The title object representing the filename.
 				 * @returns {JQuery.Promise<any>} A promise that resolves on success or rejects with an OO.ui.Error.
 				 */
-				protected validateFilename(filename: mw.Title): JQuery.Promise<any>;
+				protected validateFilename(filename: mw.Title): JQuery.Promise<any>
 
 				/**
 				 * Saves the file.
@@ -138,7 +138,7 @@ declare global {
 				 * @inheritdoc
 				 * @returns {JQuery.Promise<any>} A promise that resolves if the file is saved successfully.
 				 */
-				protected saveFile(): JQuery.Promise<any>;
+				protected saveFile(): JQuery.Promise<any>
 
 				/**
 				 * Gets the wikitext for the file page.
@@ -149,7 +149,7 @@ declare global {
 				 * @inheritdoc
 				 * @returns {string} The wikitext for the file page.
 				 */
-				protected getText(): string;
+				protected getText(): string
 
 				/**
 				 * Extracts the original date from EXIF data of the given file.
@@ -157,7 +157,7 @@ declare global {
 				 * @param {File} file The file from which to extract EXIF data.
 				 * @returns {JQuery.Promise<string>} A promise resolved with the date string in 'YYYY-MM-DD' format.
 				 */
-				protected getDateFromExif(file: File): JQuery.Promise<string>;
+				protected getDateFromExif(file: File): JQuery.Promise<string>
 
 				/**
 				 * Gets the last modified date from the file.
@@ -165,7 +165,7 @@ declare global {
 				 * @param {File} file The file from which to retrieve the last modified date.
 				 * @returns {string | undefined} The formatted date string in 'YYYY-MM-DD' format, or undefined.
 				 */
-				protected getDateFromLastModified(file: File): string | undefined;
+				protected getDateFromLastModified(file: File): string | undefined
 
 				/**
 				 * Clears all fields in the booklet layout.
@@ -175,7 +175,7 @@ declare global {
 				 *
 				 * @inheritdoc
 				 */
-				protected clear(): void;
+				protected clear(): void
 			}
 
 			namespace BookletLayout {
@@ -190,11 +190,11 @@ declare global {
 					 * Used to choose the target repository.
 					 * If nothing is passed, the default target from mw.ForeignUpload is used.
 					 */
-					target?: string;
+					target?: string
 				}
 			}
 		}
 	}
 }
 
-export {};
+export {}

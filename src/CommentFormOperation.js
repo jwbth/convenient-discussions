@@ -46,7 +46,7 @@ export default class CommentFormOperation {
 			}
 			this.commentForm.pushPending(
 				['load', 'submit'].includes(this.type),
-				this.options.affectsHeadline
+				this.options.affectsHeadline,
 			)
 		}
 	}
@@ -62,7 +62,7 @@ export default class CommentFormOperation {
 		if (!(this.type === 'preview' && this.options.isAuto)) {
 			this.commentForm.popPending(
 				['load', 'submit'].includes(this.type),
-				this.options.affectsHeadline
+				this.options.affectsHeadline,
 			)
 		}
 
@@ -112,14 +112,14 @@ export default class CommentFormOperation {
 		}
 
 		if (
-			this.registry.query((op) =>
-				op.isOpen() &&
-				['preview', 'viewChanges'].includes(op.getType()) &&
-				op.date > this.date &&
-
-				// If we delete this line, then, with autopreview enabled, the preview will be updated only
-				// when the user stops typing.
-				!op.isDelayed()
+			this.registry.query(
+				(op) =>
+					op.isOpen() &&
+					['preview', 'viewChanges'].includes(op.getType()) &&
+					op.date > this.date &&
+					// If we delete this line, then, with autopreview enabled, the preview will be updated only
+					// when the user stops typing.
+					!op.isDelayed(),
 			).length
 		) {
 			this.close()

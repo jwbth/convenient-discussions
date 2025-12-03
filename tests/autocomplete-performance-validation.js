@@ -3,8 +3,11 @@
  * This validates that the performance optimizations are working correctly.
  */
 
-const AutocompleteCache = require('../src/AutocompleteCache.js').default || require('../src/AutocompleteCache.js')
-const AutocompletePerformanceMonitor = require('../src/AutocompletePerformanceMonitor.js').default || require('../src/AutocompletePerformanceMonitor.js')
+const AutocompleteCache =
+	require('../src/AutocompleteCache.js').default || require('../src/AutocompleteCache.js')
+const AutocompletePerformanceMonitor =
+	require('../src/AutocompletePerformanceMonitor.js').default ||
+	require('../src/AutocompletePerformanceMonitor.js')
 
 // Mock global dependencies
 global.performance = {
@@ -48,7 +51,9 @@ async function testCachePerformance() {
 	const stats = cache.getStats()
 
 	console.log(`  ✅ Cache operations completed in ${duration.toFixed(2)}ms`)
-	console.log(`  📊 Cache stats: ${stats.hits} hits, ${stats.misses} misses, ${stats.hitRate.toFixed(1)}% hit rate`)
+	console.log(
+		`  📊 Cache stats: ${stats.hits} hits, ${stats.misses} misses, ${stats.hitRate.toFixed(1)}% hit rate`,
+	)
 	console.log(`  💾 Memory usage: ${(stats.memoryUsage / 1024).toFixed(2)}KB`)
 
 	// Validate performance thresholds
@@ -247,13 +252,15 @@ async function runAllTests() {
 
 // Run tests if this file is executed directly
 if (require.main === module) {
-	runAllTests().then(() => {
-		console.log('\n🎉 Performance validation completed successfully!')
-		process.exit(0)
-	}).catch((error) => {
-		console.error('💥 Performance validation failed:', error)
-		process.exit(1)
-	})
+	runAllTests()
+		.then(() => {
+			console.log('\n🎉 Performance validation completed successfully!')
+			process.exit(0)
+		})
+		.catch((error) => {
+			console.error('💥 Performance validation failed:', error)
+			process.exit(1)
+		})
 }
 
 module.exports = { runAllTests }

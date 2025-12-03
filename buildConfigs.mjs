@@ -8,12 +8,13 @@ const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
 // node buildConfigs --test
 // npm run <command running this script> --test
-const testSuffix = (argv.test || process.env.npm_config_test) ? '.test' : ''
+const testSuffix = argv.test || process.env.npm_config_test ? '.test' : ''
 
 fs.readdirSync('./config/').forEach((filename) => {
 	const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || []
 	if (!name || name === 'default') return
-	let content = fs.readFileSync(`config/${filename}`, 'utf8')
+	let content = fs
+		.readFileSync(`config/${filename}`, 'utf8')
 		.trim()
 		.replace(/[^]*?export default .*(?=\{\n(?: {2}|\t))/, '')
 
@@ -74,12 +75,15 @@ if (!convenientDiscussions.isRunning) {
 // </nowiki>
 `
 	fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true })
-	fs.writeFileSync(`dist/convenientDiscussions-config/${name}${testSuffix}.js`, content)
+	fs.writeFileSync(
+		`dist/convenientDiscussions-config/${name}${testSuffix}.js`,
+		content,
+	)
 })
 
 fs.copyFileSync(
 	`misc/convenientDiscussions-generateBasicConfig.js`,
-	`dist/convenientDiscussions-generateBasicConfig.js`
+	`dist/convenientDiscussions-generateBasicConfig.js`,
 )
 
 console.log('Project configs have been built successfully.')

@@ -10,10 +10,14 @@
  * @param {import('@playwright/test').Page} page
  */
 async function waitForConvenientDiscussions(page) {
-	await page.waitForFunction(() => window.convenientDiscussions.comments &&
-		window.convenientDiscussions.comments.length > 0 &&
-		window.convenientDiscussions.settings &&
-		window.convenientDiscussions.g.CURRENT_PAGE, { timeout: 15_000 })
+	await page.waitForFunction(
+		() =>
+			window.convenientDiscussions.comments &&
+			window.convenientDiscussions.comments.length > 0 &&
+			window.convenientDiscussions.settings &&
+			window.convenientDiscussions.g.CURRENT_PAGE,
+		{ timeout: 15_000 },
+	)
 }
 
 /**
@@ -21,7 +25,8 @@ async function waitForConvenientDiscussions(page) {
  */
 const TEST_PAGES = {
 	MAIN_PAGE: 'https://en.wikipedia.org/wiki/Talk:Main_Page',
-	CD_TEST_CASES: 'https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases',
+	CD_TEST_CASES:
+		'https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases',
 	VILLAGE_PUMP: 'https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)',
 	SANDBOX: 'https://en.wikipedia.org/wiki/Wikipedia_talk:Sandbox',
 	// Compact test page with few comments for quick testing
@@ -81,9 +86,13 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 	console.log('💉 Convenient Discussions script injected')
 
 	// Wait for Convenient Discussions to initialize
-	await page.waitForFunction(() => window.convenientDiscussions &&
-		window.convenientDiscussions.comments !== undefined &&
-		window.convenientDiscussions.settings, { timeout: 15_000 })
+	await page.waitForFunction(
+		() =>
+			window.convenientDiscussions &&
+			window.convenientDiscussions.comments !== undefined &&
+			window.convenientDiscussions.settings,
+		{ timeout: 15_000 },
+	)
 	console.log('🎯 Convenient Discussions initialized')
 
 	// Additional wait for comments to be fully processed
@@ -169,11 +178,14 @@ async function toggleSpaciousComments(page, enabled) {
  * @param {boolean} spacious
  */
 async function createTestComment(page, content = 'Test comment content', spacious = false) {
-	await page.evaluate(({ content, spacious }) => {
-		// This would need to be implemented based on your test setup
-		// For now, this is a placeholder
-		console.log('Creating test comment:', content, spacious)
-	}, { content, spacious })
+	await page.evaluate(
+		({ content, spacious }) => {
+			// This would need to be implemented based on your test setup
+			// For now, this is a placeholder
+			console.log('Creating test comment:', content, spacious)
+		},
+		{ content, spacious },
+	)
 }
 
 /**

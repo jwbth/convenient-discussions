@@ -106,14 +106,16 @@ jest.mock('../src/cd.js', () => ({
 	}),
 }))
 
-jest.mock('../src/TextInputWidget.js', () => jest.fn().mockImplementation(() => ({
-	setDisabled: jest.fn().mockReturnThis(),
-	pushPending: jest.fn().mockReturnThis(),
-	popPending: jest.fn().mockReturnThis(),
-	focus: jest.fn().mockReturnThis(),
-	getValue: jest.fn(() => ''),
-	setValue: jest.fn().mockReturnThis(),
-})))
+jest.mock('../src/TextInputWidget.js', () =>
+	jest.fn().mockImplementation(() => ({
+		setDisabled: jest.fn().mockReturnThis(),
+		pushPending: jest.fn().mockReturnThis(),
+		popPending: jest.fn().mockReturnThis(),
+		focus: jest.fn().mockReturnThis(),
+		getValue: jest.fn(() => ''),
+		setValue: jest.fn().mockReturnThis(),
+	})),
+)
 
 jest.mock('../src/settings.js', () => ({
 	get: jest.fn((key) => {
@@ -139,13 +141,17 @@ jest.mock('../src/commentRegistry.js', () => ({
 jest.mock('../src/sectionRegistry.js', () => ({
 	getAll: jest.fn(() => []),
 }))
-jest.mock('../src/EventEmitter.js', () => class EventEmitter {
-	on() {}
+jest.mock(
+	'../src/EventEmitter.js',
+	() =>
+		class EventEmitter {
+			on() {}
 
-	off() {}
+			off() {}
 
-	emit() {}
-})
+			emit() {}
+		},
+)
 
 describe('Autocomplete Behavior Validation', () => {
 	let mockInput
@@ -220,7 +226,9 @@ describe('Autocomplete Behavior Validation', () => {
 
 			// Test user name with unicode
 			const unicodeUser = results.find((r) => r.key === 'TestUserWithUnicode测试')
-			expect(unicodeUser.transform()).toBe('[[User:TestUserWithUnicode测试|TestUserWithUnicode测试]]')
+			expect(unicodeUser.transform()).toBe(
+				'[[User:TestUserWithUnicode测试|TestUserWithUnicode测试]]',
+			)
 		})
 
 		test('should handle mention validation exactly like original', async () => {

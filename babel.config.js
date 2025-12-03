@@ -1,10 +1,13 @@
 // babel.config.js
 module.exports = {
 	presets: [
-		['@babel/preset-env', {
-			bugfixes: true,
-			// Don't use useBuiltIns since we're manually importing specific polyfills
-		}],
+		[
+			'@babel/preset-env',
+			{
+				bugfixes: true,
+				// Don't use useBuiltIns since we're manually importing specific polyfills
+			},
+		],
 	],
 	plugins: [
 		'@babel/plugin-transform-numeric-separator',

@@ -17,7 +17,14 @@ import sectionManager from './sectionManager'
 import settings from './settings'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
 import Parser from './shared/Parser'
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './shared/utils-general'
+import {
+	defined,
+	definedAndNotNull,
+	getLastArrayElementOrSelf,
+	isHeadingNode,
+	isInline,
+	sleep,
+} from './shared/utils-general'
 import toc from './toc'
 import updateChecker from './updateChecker'
 import { getUserInfo } from './utils-api'
@@ -261,9 +268,11 @@ class Controller extends EventEmitter {
 		this.$root.addClass('cd-parse-started')
 
 		this.commentLayersOptionalBackgroundHighlightingCss ??= mw.util.addCSS(
-			commentLayersOptionalBackgroundHighlightingCss
+			commentLayersOptionalBackgroundHighlightingCss,
 		)
-		this.commentLayersOptionalBackgroundHighlightingCss.disabled = settings.get('useBackgroundHighlighting')
+		this.commentLayersOptionalBackgroundHighlightingCss.disabled = settings.get(
+			'useBackgroundHighlighting',
+		)
 	}
 
 	/**
@@ -288,10 +297,10 @@ class Controller extends EventEmitter {
 			let startMargin = Math.max(
 				Number.parseFloat(
 					this.$contentColumn.css(
-						cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right'
-					)
+						cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right',
+					),
 				),
-				cd.g.contentFontSize
+				cd.g.contentFontSize,
 			)
 
 			// The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
@@ -318,9 +327,7 @@ class Controller extends EventEmitter {
 	 * @returns {JQuery}
 	 */
 	getPopupOverlay() {
-		this.$popupOverlay ??= $('<div>')
-			.addClass('cd-popupOverlay')
-			.appendTo(document.body)
+		this.$popupOverlay ??= $('<div>').addClass('cd-popupOverlay').appendTo(document.body)
 
 		return this.$popupOverlay
 	}
@@ -347,9 +354,8 @@ class Controller extends EventEmitter {
 			this.scrollData.element = undefined
 			this.scrollData.elementTop = undefined
 			this.scrollData.touchesBottom = false
-			this.scrollData.offsetBottom = (
+			this.scrollData.offsetBottom =
 				document.documentElement.scrollHeight - (scrollY + window.innerHeight)
-			)
 
 			// The number 100 accounts for various content moves by scripts running on the page (like
 			// HotCat that may add an empty category list).
@@ -417,15 +423,15 @@ class Controller extends EventEmitter {
 			window.scrollTo(
 				0,
 				document.documentElement.scrollHeight -
-				window.innerHeight -
-				/** @type {number} */ (this.scrollData.offsetBottom)
+					window.innerHeight -
+					/** @type {number} */ (this.scrollData.offsetBottom),
 			)
 		} else if (this.scrollData.element) {
 			const rect = this.scrollData.element.getBoundingClientRect()
 			if (getVisibilityByRects(rect)) {
 				window.scrollTo(
 					0,
-					window.scrollY + rect.top - /** @type {number} */ (this.scrollData.elementTop)
+					window.scrollY + rect.top - /** @type {number} */ (this.scrollData.elementTop),
 				)
 			} else {
 				// In a collapsed thread?
@@ -433,15 +439,15 @@ class Controller extends EventEmitter {
 					this.scrollData.element.closest('[hidden]')
 				)
 				if (closestHidden) {
-					commentManager.getAll()
+					commentManager
+						.getAll()
 						.map((comment) => comment.thread)
 						.filter(defined)
 						.filter((thread) => thread.isCollapsed)
 						.find((thread) =>
-						/** @type {HTMLElement[]} */ (thread.collapsedRange).includes(closestHidden)
+							/** @type {HTMLElement[]} */ (thread.collapsedRange).includes(closestHidden),
 						)
-						?.$expandNote
-						?.cdScrollTo('top', false)
+						?.$expandNote?.cdScrollTo('top', false)
 				}
 			}
 		}
@@ -475,7 +481,6 @@ class Controller extends EventEmitter {
 			toc.isPresent() &&
 			!toc.isFloating() &&
 			window.scrollY !== 0 &&
-
 			// There is some content below the TOC in the viewport.
 			/** @type {number} */ (toc.getBottomOffset()) < window.scrollY + window.innerHeight
 				? toc.$element.outerHeight()
@@ -493,7 +498,7 @@ class Controller extends EventEmitter {
 
 		if (this.scrollData.tocHeight) {
 			this.scrollData.offset +=
-				(/** @type {JQuery} */ (toc.$element).outerHeight() || 0) - this.scrollData.tocHeight
+				/** @type {JQuery} */ ((toc.$element).outerHeight() || 0) - this.scrollData.tocHeight
 		}
 		window.scrollTo(0, this.scrollData.offset)
 
@@ -514,7 +519,7 @@ class Controller extends EventEmitter {
 				cd.config.closedDiscussionClasses
 					.concat('mw-archivedtalk')
 					.map((name) => `.${name}`)
-					.join(', ')
+					.join(', '),
 			)
 			.get()
 
@@ -528,9 +533,7 @@ class Controller extends EventEmitter {
 	 * @returns {boolean}
 	 */
 	areThereOutdents = () => {
-		this.content.areThereOutdents ??= Boolean(
-			this.$root.find('.' + cd.config.outdentClass).length
-		)
+		this.content.areThereOutdents ??= Boolean(this.$root.find('.' + cd.config.outdentClass).length)
 
 		return this.content.areThereOutdents
 	}
@@ -566,7 +569,7 @@ class Controller extends EventEmitter {
 			// from the collection.
 			this.content.floatingElements = /** @type {HTMLElement[]} */ (
 				[...this.rootElement.querySelectorAll(floatingElementSelector)].filter(
-					(el) => !el.classList.contains('cd-ignoreFloating')
+					(el) => !el.classList.contains('cd-ignoreFloating'),
 				)
 			)
 		}
@@ -636,20 +639,20 @@ class Controller extends EventEmitter {
 					hidden.push(rule.selectorText)
 				}
 			} else if (rule instanceof CSSMediaRule) {
-				[...rule.cssRules].forEach(extractSelectors)
+				;[...rule.cssRules].forEach(extractSelectors)
 			}
-		};
-		[...document.styleSheets]
+		}
+		;[...document.styleSheets]
 			.filter((sheet) => sheet.href?.includes('site.styles'))
 			.forEach((el) => {
 				try {
-					[...el.cssRules].forEach(extractSelectors)
+					;[...el.cssRules].forEach(extractSelectors)
 				} catch {
 					// CSS rules on other domains can be inaccessible
 				}
-			});
-		[...this.rootElement.querySelectorAll('style')].forEach((el) => {
-			[...(el.sheet?.cssRules || [])].forEach(extractSelectors)
+			})
+		;[...this.rootElement.querySelectorAll('style')].forEach((el) => {
+			;[...(el.sheet?.cssRules || [])].forEach(extractSelectors)
 		})
 
 		this.content.tsSelectorsFloating = floating
@@ -663,7 +666,7 @@ class Controller extends EventEmitter {
 	 */
 	areThereLtrRtlMixes() {
 		this.content.areThereLtrRtlMixes ??= Boolean(
-			document.querySelector('.mw-content-ltr .mw-content-rtl, .mw-content-rtl .mw-content-ltr')
+			document.querySelector('.mw-content-ltr .mw-content-rtl, .mw-content-rtl .mw-content-ltr'),
 		)
 
 		return this.content.areThereLtrRtlMixes
@@ -711,18 +714,17 @@ class Controller extends EventEmitter {
 					...document.body.querySelectorAll('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
 					$(document.body).children('dialog')[0],
 					this.stickyHeader,
-					sectionManager.getAll()
+					sectionManager
+						.getAll()
 						.map((section) => section.actions.moreMenuSelect?.getMenu())
-						.find((menu) => menu?.isVisible())
-						?.$element[0],
+						.find((menu) => menu?.isVisible())?.$element[0],
 					this.tocButton,
 					this.tocContent,
 				]
 					.filter(definedAndNotNull)
 					.some((el) => el.matches(':hover')) ||
-
-				// WikiEditor dialog
-					$(document.body).children('.ui-dialog').not('[style*="display: none"]').length
+					// WikiEditor dialog
+					$(document.body).children('.ui-dialog').not('[style*="display: none"]').length,
 			)
 		}, 100)()
 
@@ -857,7 +859,10 @@ class Controller extends EventEmitter {
 				commentTemplate: getLastArrayElementOrSelf(searchParams.getAll('preload')),
 				headline: getLastArrayElementOrSelf(searchParams.getAll('preloadtitle')),
 				params: searchParams.getAll('preloadparams[]'),
-				summary: getLastArrayElementOrSelf(searchParams.getAll('summary'))?.replace(/^.+?\*\/ */, ''),
+				summary: getLastArrayElementOrSelf(searchParams.getAll('summary'))?.replace(
+					/^.+?\*\/ */,
+					'',
+				),
 				noHeadline: Boolean(getLastArrayElementOrSelf(searchParams.getAll('nosummary'))),
 				omitSignature: Boolean(searchParams.get('cdomitsignature')),
 			}
@@ -911,10 +916,7 @@ class Controller extends EventEmitter {
 
 		// Should be above mw.hook('wikipage.content').fire so that it runs for the whole page content
 		// as opposed to $('.cd-comment-author-wrapper').
-		mw.hook('wikipage.content').add(
-			this.connectToCommentLinks,
-			this.highlightMentions
-		)
+		mw.hook('wikipage.content').add(this.connectToCommentLinks, this.highlightMentions)
 		mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks)
 
 		// Mutation observer doesn't follow all possible comment position changes (for example,
@@ -933,8 +935,7 @@ class Controller extends EventEmitter {
 			})
 			.on('commentsUpdate', this.updateAddedComments)
 
-		Thread
-			.on('toggle', this.handleScroll)
+		Thread.on('toggle', this.handleScroll)
 	}
 
 	/**
@@ -953,7 +954,7 @@ class Controller extends EventEmitter {
 
 		const goToCommentUrl = mw.util.getUrl('Special:GoToComment/')
 		const extractCommentId = (/** @type {HTMLElement} */ el) =>
-		/** @type {string} */ ($(el).attr('href'))
+			/** @type {string} */ ($(el).attr('href'))
 				.replace(mw.util.escapeRegExp(goToCommentUrl), '#')
 				.slice(1)
 		$content
@@ -961,17 +962,15 @@ class Controller extends EventEmitter {
 			.filter((_, el) =>
 				Boolean(
 					!el.classList.contains('cd-clickHandled') &&
-					commentManager.getByAnyId(extractCommentId(el), true)
-				)
+						commentManager.getByAnyId(extractCommentId(el), true),
+				),
 			)
 			.on('click', function onCommentLinkClick(event) {
 				event.preventDefault()
-				commentManager
-					.getByAnyId(extractCommentId(this), true)
-					?.scrollTo({
-						expandThreads: true,
-						pushState: true,
-					})
+				commentManager.getByAnyId(extractCommentId(this), true)?.scrollTo({
+					expandThreads: true,
+					pushState: true,
+				})
 			})
 	}
 
@@ -986,9 +985,7 @@ class Controller extends EventEmitter {
 
 		const currentUserName = cd.user.getName()
 		const excludeSelector = [
-			settings.get('commentDisplay') === 'spacious'
-				? 'cd-comment-author'
-				: 'cd-signature',
+			settings.get('commentDisplay') === 'spacious' ? 'cd-comment-author' : 'cd-signature',
 		]
 			.concat(cd.config.noSignatureClasses)
 			.map((name) => `.${name}`)
@@ -997,7 +994,7 @@ class Controller extends EventEmitter {
 			.find(
 				$content.hasClass('cd-comment-part')
 					? `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]`
-					: `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`
+					: `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`,
 			)
 			.filter(function filterMentions() {
 				return (
@@ -1092,9 +1089,7 @@ class Controller extends EventEmitter {
 		const relevantMark = this.areRelevantCommentsAdded ? '*' : ''
 		document.title = title.replace(
 			/^(?:\(\d+\*?\) )?/,
-			this.addedCommentCount
-				? `(${this.addedCommentCount}${relevantMark}) `
-				: ''
+			this.addedCommentCount ? `(${this.addedCommentCount}${relevantMark}) ` : '',
 		)
 	}
 
@@ -1125,14 +1120,12 @@ class Controller extends EventEmitter {
 		const permalinkSpecialPagePrefix =
 			mw.config.get('wgFormattedNamespaces')[-1] +
 			':' +
-			(
-				object instanceof Comment
-					? 'GoToComment/'
-					: cd.g.specialPageAliases.PermanentLink[0] +
-						'/' +
-						String(mw.config.get('wgRevisionId')) +
-						'#'
-			)
+			(object instanceof Comment
+				? 'GoToComment/'
+				: cd.g.specialPageAliases.PermanentLink[0] +
+					'/' +
+					String(mw.config.get('wgRevisionId')) +
+					'#')
 
 		/** @type {import('./CopyLinkDialog').CopyLinkDialogContent} */
 		const content = {
@@ -1149,24 +1142,30 @@ class Controller extends EventEmitter {
 			// therefore an ID. In that case Comment#getUrl() returns a string.
 			link: /** @type {string} */ (object.getUrl()),
 
-			permanentLink: object instanceof Comment
-				? /** @type {import('./Page').default} */ (pageRegistry.get(
-						mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment
-					)).getDecodedUrlWithFragment()
-				: object.getUrl(true),
-			jsCall: object instanceof Comment
-				? `let c = convenientDiscussions.api.getCommentById('${object.id || ''}');`
-				: `let s = convenientDiscussions.api.getSectionById('${object.id || ''}');`,
+			permanentLink:
+				object instanceof Comment
+					? /** @type {import('./Page').default} */ (
+							pageRegistry.get(
+								mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment,
+							)
+						).getDecodedUrlWithFragment()
+					: object.getUrl(true),
+			jsCall:
+				object instanceof Comment
+					? `let c = convenientDiscussions.api.getCommentById('${object.id || ''}');`
+					: `let s = convenientDiscussions.api.getSectionById('${object.id || ''}');`,
 			jsBreakpoint: `this.id === '${object.id || ''}'`,
-			jsBreakpointTimestamp: object instanceof Comment
-				? `timestamp.element.textContent === '${object.timestampText || ''}'`
-				: undefined,
+			jsBreakpointTimestamp:
+				object instanceof Comment
+					? `timestamp.element.textContent === '${object.timestampText || ''}'`
+					: undefined,
 		}
 
 		// Undocumented feature allowing to copy a link of a default type without opening a dialog.
-		const relevantSetting = object instanceof Comment
-			? settings.get('defaultCommentLinkType')
-			: settings.get('defaultSectionLinkType')
+		const relevantSetting =
+			object instanceof Comment
+				? settings.get('defaultCommentLinkType')
+				: settings.get('defaultSectionLinkType')
 		if (!event.shiftKey && relevantSetting) {
 			switch (relevantSetting) {
 				case 'wikilink':
@@ -1201,12 +1200,15 @@ class Controller extends EventEmitter {
 		}
 
 		if (smooth) {
-			$('body, html').animate({ scrollTop: y }, {
-				complete() {
-					if (this !== document.documentElement) return
-					onComplete()
+			$('body, html').animate(
+				{ scrollTop: y },
+				{
+					complete() {
+						if (this !== document.documentElement) return
+						onComplete()
+					},
 				},
-			})
+			)
 		} else {
 			window.scrollTo(window.scrollX, y)
 			onComplete()
@@ -1250,16 +1252,11 @@ class Controller extends EventEmitter {
 				records.every(
 					(record) =>
 						record.target instanceof HTMLElement &&
-						(
-							/^cd-comment(-underlay|-overlay|Layers)/.test(record.target.className) ||
-
+						(/^cd-comment(-underlay|-overlay|Layers)/.test(record.target.className) ||
 							// Fight infinite loop caused by `el.style.overflow = 'hidden';` in
 							// Comment#getAdjustedRects()
-							(
-								record.target.className.startsWith('cd-comment-part') &&
-								record.attributeName === 'style'
-							)
-						)
+							(record.target.className.startsWith('cd-comment-part') &&
+								record.attributeName === 'style')),
 				)
 			)
 				return
@@ -1292,7 +1289,8 @@ class Controller extends EventEmitter {
 			// Combine with content of notifications that were displayed but are still open (i.e., the
 			// user most likely didn't see them because the tab is in the background). In the past there
 			// could be more than one notification, now there can be only one.
-			const openNotification = notifications.get()
+			const openNotification = notifications
+				.get()
 				.find((data) => data.comments && data.notification.isOpen)
 			if (openNotification) {
 				filteredComments.push(...openNotification.comments)
@@ -1305,44 +1303,38 @@ class Controller extends EventEmitter {
 			let html
 			const rebootHtml = cd.sParse(
 				'notification-reload',
-				commentFormManager.maybeGetFormDataWontBeLostString()
+				commentFormManager.maybeGetFormDataWontBeLostString(),
 			)
 			if (filteredComments.length === 1) {
 				const comment = filteredComments[0]
 				html = comment.isToMe
 					? cd.sParse(
-						'notification-toyou',
-						comment.author.getName(),
-						comment.author,
+							'notification-toyou',
+							comment.author.getName(),
+							comment.author,
 
-						(
 							wordSeparator +
-
-							// Where the comment is
-							(
-								comment.sectionSubscribedTo
+								// Where the comment is
+								(comment.sectionSubscribedTo
 									? cd.s('notification-part-insection', comment.sectionSubscribedTo.headline)
-									: cd.s('notification-part-onthispage')
-							)
-						)
-					) +
-					wordSeparator +
-					rebootHtml
+									: cd.s('notification-part-onthispage')),
+						) +
+						wordSeparator +
+						rebootHtml
 					: cd.sParse(
-						'notification-insection',
-						comment.author.getName(),
-						comment.author,
-						/** @type {import('./Section').default} */ (comment.sectionSubscribedTo).headline
-					) +
-					wordSeparator +
-					rebootHtml
+							'notification-insection',
+							comment.author.getName(),
+							comment.author,
+							/** @type {import('./Section').default} */ (comment.sectionSubscribedTo).headline,
+						) +
+						wordSeparator +
+						rebootHtml
 			} else {
 				const section =
-				// Is there a common section?
+					// Is there a common section?
 					filteredComments.every(
-						(comment) => comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
+						(comment) => comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo,
 					)
-
 						? filteredComments[0].sectionSubscribedTo
 						: undefined
 
@@ -1357,16 +1349,14 @@ class Controller extends EventEmitter {
 						filteredComments.length,
 
 						wordSeparator +
-						(
-						// Where the comments are
-							section
+							// Where the comments are
+							(section
 								? cd.s('notification-part-insection', section.headline)
-								: cd.s('notification-part-onthispage')
-						),
+								: cd.s('notification-part-onthispage')),
 
 						// "that may be relevant to you" text is not needed when the section is watched and the
 						// user can clearly understand why they are notified.
-						section ? '' : mayBeRelevantString
+						section ? '' : mayBeRelevantString,
 					) +
 					wordSeparator +
 					rebootHtml
@@ -1376,7 +1366,7 @@ class Controller extends EventEmitter {
 			const notification = notifications.add(
 				wrapHtml(html),
 				{ tag: 'cd-newComments' },
-				{ comments: filteredComments }
+				{ comments: filteredComments },
 			)
 			notification.$notification.on('click', () => {
 				this.rebootPage({ commentIds: filteredComments.map((comment) => comment.id) })
@@ -1425,22 +1415,22 @@ class Controller extends EventEmitter {
 							? wordSeparator + cd.s('notification-part-insection', comment.section.headline)
 							: '',
 
-						currentPageName
+						currentPageName,
 					)
 				: cd.s(
 						'notification-insection-desktop',
 						comment.author.getName(),
 						comment.author,
-						/** @type {import('./updateChecker').SectionWorkerMatched} */ (comment.section).headline,
-						currentPageName
+						/** @type {import('./updateChecker').SectionWorkerMatched} */ (comment.section)
+							.headline,
+						currentPageName,
 					)
 		} else {
 			const section =
-			// Is there a common section?
+				// Is there a common section?
 				filteredComments.every(
-					(c) => c.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
+					(c) => c.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo,
 				)
-
 					? filteredComments[0].sectionSubscribedTo
 					: undefined
 
@@ -1454,15 +1444,13 @@ class Controller extends EventEmitter {
 				String(filteredComments.length),
 
 				// Where the comments are
-				section
-					? wordSeparator + cd.s('notification-part-insection', section.headline)
-					: '',
+				section ? wordSeparator + cd.s('notification-part-insection', section.headline) : '',
 
 				currentPageName,
 
 				// "that may be relevant to you" text is not needed when the section is watched and the user
 				// can clearly understand why they are notified.
-				section ? '' : mayBeRelevantString
+				section ? '' : mayBeRelevantString,
 			)
 		}
 
@@ -1506,8 +1494,9 @@ class Controller extends EventEmitter {
 
 		this.updatePageTitle()
 
-		const commentsToNotifyAbout = relevant
-			.filter((comment) => !this.commentsNotifiedAbout.some((cna) => cna.id === comment.id))
+		const commentsToNotifyAbout = relevant.filter(
+			(comment) => !this.commentsNotifiedAbout.some((cna) => cna.id === comment.id),
+		)
 		this.showRegularNotification(commentsToNotifyAbout)
 		this.showDesktopNotification(commentsToNotifyAbout)
 		this.commentsNotifiedAbout.push(...commentsToNotifyAbout)
@@ -1565,75 +1554,80 @@ class Controller extends EventEmitter {
 				'.createbox input[type="submit"]',
 			]
 				.concat(cd.config.addTopicButtonSelectors)
-				.join(', ')
-		)
-			.filter((_, el) => {
-				const $button = $(el)
+				.join(', '),
+		).filter((_, el) => {
+			const $button = $(el)
 
-				// When DT's new topic tool is enabled
-				if (
-					mw.util.getParamValue('section') === 'new' &&
-					$button.parent().attr('id') !== 'ca-addsection' &&
-					!$button.closest(this.$root).length
-				) {
-					return false
-				}
+			// When DT's new topic tool is enabled
+			if (
+				mw.util.getParamValue('section') === 'new' &&
+				$button.parent().attr('id') !== 'ca-addsection' &&
+				!$button.closest(this.$root).length
+			) {
+				return false
+			}
 
-				let pageName
-				/** @type {URL | undefined} */
-				let url
-				if ($button.is('a')) {
-					url = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href)
-					pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))
-						?.replace(/^Special:NewSection\//i, '')
-				} else if ($button.is('input')) {
-					pageName = /** @type {string} */ ($button
-						.closest('form')
-						.find('input[name="title"][type="hidden"]')
-						.val())
-				}
-				if (!pageName) {
-					return false
-				}
+			let pageName
+			/** @type {URL | undefined} */
+			let url
+			if ($button.is('a')) {
+				url = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href)
+				pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))?.replace(
+					/^Special:NewSection\//i,
+					'',
+				)
+			} else if ($button.is('input')) {
+				pageName = /** @type {string} */ (
+					$button.closest('form').find('input[name="title"][type="hidden"]').val()
+				)
+			}
+			if (!pageName) {
+				return false
+			}
 
-				const page = pageRegistry.get(pageName)
-				if (!page || page !== cd.page) {
-					return false
-				}
+			const page = pageRegistry.get(pageName)
+			if (!page || page !== cd.page) {
+				return false
+			}
 
-				if (url) {
-					url.searchParams.set('dtenable', '0')
-					$button.attr('href', url.toString())
-				}
+			if (url) {
+				url.searchParams.set('dtenable', '0')
+				$button.attr('href', url.toString())
+			}
 
-				return true
-			})
+			return true
+		})
 
 		if (!$('#ca-addsection a').length && this.$addTopicButtons.length === 1) {
-			this.$emulatedAddTopicButton = $(/** @type {HTMLLIElement} */ (mw.util.addPortletLink(
-				'p-views',
-				this.$addTopicButtons.attr('href') || '#',
-				cd.s('addtopic'),
-				'ca-addsection',
-				cd.s('addtopicbutton-tooltip'),
-				'+',
-				'#ca-history'
-			)))
+			this.$emulatedAddTopicButton = $(
+				/** @type {HTMLLIElement} */ (
+					mw.util.addPortletLink(
+						'p-views',
+						this.$addTopicButtons.attr('href') || '#',
+						cd.s('addtopic'),
+						'ca-addsection',
+						cd.s('addtopicbutton-tooltip'),
+						'+',
+						'#ca-history',
+					)
+				),
+			)
 			this.$addTopicButtons = this.$addTopicButtons.add(
-				/** @type {JQuery} */ (this.$emulatedAddTopicButton).children()
+				/** @type {JQuery} */ (this.$emulatedAddTopicButton).children(),
 			)
 		}
 
 		this.$addTopicButtons
-		// DT may add its handler (as adds to a "Start new discussion" button on 404 pages). DT's "Add
-		// topic" button click handler is trickier, see below.
+			// DT may add its handler (as adds to a "Start new discussion" button on 404 pages). DT's "Add
+			// topic" button click handler is trickier, see below.
 			.off('click')
 
 			.on('click.cd', this.handleAddTopicButtonClick)
-			.filter((_, el) => (
-				!cd.g.isDtNewTopicToolEnabled &&
-				!($(el).is('a') && Number(mw.util.getParamValue('cdaddtopic', $(el).attr('href'))))
-			))
+			.filter(
+				(_, el) =>
+					!cd.g.isDtNewTopicToolEnabled &&
+					!($(el).is('a') && Number(mw.util.getParamValue('cdaddtopic', $(el).attr('href')))),
+			)
 			.attr('title', cd.s('addtopicbutton-tooltip'))
 
 		$('#ca-addsection a').updateTooltipAccessKeys()
@@ -1641,7 +1635,7 @@ class Controller extends EventEmitter {
 		// In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
 		const dtHandler = $._data(document.body, 'events').click?.find(
 			(/** @type {JQuery.HandleObject<EventTarget, any>} */ event) =>
-				event.selector?.includes('data-mw-comment')
+				event.selector?.includes('data-mw-comment'),
 		)?.handler
 		if (dtHandler) {
 			$(document.body).off('click', dtHandler)
@@ -1660,9 +1654,7 @@ class Controller extends EventEmitter {
 		)
 		this.dtSubscribableThreads ??= threads
 			?.concat(
-				threads
-					.filter((thread) => thread.headingLevel === 1)
-					.flatMap((thread) => thread.replies)
+				threads.filter((thread) => thread.headingLevel === 1).flatMap((thread) => thread.replies),
 			)
 			.filter((thread) => 'headingLevel' in thread && thread.headingLevel === 2)
 
@@ -1677,8 +1669,7 @@ class Controller extends EventEmitter {
 	 */
 	isSubscribingDisabled() {
 		return (
-			cd.page.isOwnTalkPage() &&
-			!['all', 'toMe'].includes(settings.get('desktopNotifications'))
+			cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'))
 		)
 	}
 
@@ -1802,9 +1793,9 @@ class Controller extends EventEmitter {
 	debugLog() {
 		cd.debug.stopTimer('total time')
 
-		const timePerComment = (
-		// @ts-ignore
+		const timePerComment = // @ts-ignore
 		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+		(
 			(cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')) /
 			commentManager.getCount()
 		).toFixed(2)
@@ -1864,8 +1855,9 @@ class Controller extends EventEmitter {
 		mw.loader.load(bootProcess.passedData.parseData.modulestyles)
 		mw.config.set(bootProcess.passedData.parseData.jsconfigvars)
 
-		bootProcess.passedData.unseenComments = commentManager
-			.query((comment) => comment.isSeen === false)
+		bootProcess.passedData.unseenComments = commentManager.query(
+			(comment) => comment.isSeen === false,
+		)
 
 		this.bootProcess = bootProcess
 
@@ -1923,7 +1915,9 @@ class Controller extends EventEmitter {
 		if (!searchParams.has('diff') && !searchParams.has('oldid')) return
 
 		cd.loader.$content
-			.children('.mw-revslider-container, .mw-diff-table-prefix, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+			.children(
+				'.mw-revslider-container, .mw-diff-table-prefix, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title',
+			)
 			.remove()
 
 		$('.mw-revision').remove()

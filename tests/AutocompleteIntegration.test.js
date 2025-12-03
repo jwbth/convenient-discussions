@@ -116,14 +116,16 @@ jest.mock('../src/cd.js', () => ({
 	}),
 }))
 
-jest.mock('../src/TextInputWidget.js', () => jest.fn().mockImplementation(() => ({
-	setDisabled: jest.fn().mockReturnThis(),
-	pushPending: jest.fn().mockReturnThis(),
-	popPending: jest.fn().mockReturnThis(),
-	focus: jest.fn().mockReturnThis(),
-	getValue: jest.fn(() => ''),
-	setValue: jest.fn().mockReturnThis(),
-})))
+jest.mock('../src/TextInputWidget.js', () =>
+	jest.fn().mockImplementation(() => ({
+		setDisabled: jest.fn().mockReturnThis(),
+		pushPending: jest.fn().mockReturnThis(),
+		popPending: jest.fn().mockReturnThis(),
+		focus: jest.fn().mockReturnThis(),
+		getValue: jest.fn(() => ''),
+		setValue: jest.fn().mockReturnThis(),
+	})),
+)
 
 jest.mock('../src/settings.js', () => ({
 	get: jest.fn((key) => {
@@ -179,13 +181,17 @@ jest.mock('../src/sectionRegistry.js', () => ({
 	]),
 }))
 
-jest.mock('../src/EventEmitter.js', () => class EventEmitter {
-	on() {}
+jest.mock(
+	'../src/EventEmitter.js',
+	() =>
+		class EventEmitter {
+			on() {}
 
-	off() {}
+			off() {}
 
-	emit() {}
-})
+			emit() {}
+		},
+)
 
 describe('Autocomplete Integration Tests', () => {
 	let mockInput
@@ -236,11 +242,7 @@ describe('Autocomplete Integration Tests', () => {
 			// Mock API response for user search
 			mockApi.get.mockResolvedValue({
 				query: {
-					allusers: [
-						{ name: 'TestUser1' },
-						{ name: 'TestUser2' },
-						{ name: 'TestUserMatch' },
-					],
+					allusers: [{ name: 'TestUser1' }, { name: 'TestUser2' }, { name: 'TestUserMatch' }],
 				},
 			})
 
@@ -667,7 +669,7 @@ describe('Autocomplete Integration Tests', () => {
 
 			// Fire all requests rapidly
 			const promises = inputs.map((input, index) =>
-				mentionsInstance.getValues(input, callbacks[index])
+				mentionsInstance.getValues(input, callbacks[index]),
 			)
 
 			await Promise.all(promises)

@@ -27,28 +27,29 @@ declare global {
 			 * } );
 			 * ```
 			 */
-			class Dialog<C extends typeof BookletLayout = typeof BookletLayout> extends OO.ui.ProcessDialog {
+			class Dialog<C extends typeof BookletLayout = typeof BookletLayout> extends OO.ui
+				.ProcessDialog {
 				/**
 				 *
 				 * @param {Dialog.Config<C>} [config] Configuration options.
 				 */
-				constructor(config?: Dialog.Config<C>);
+				constructor(config?: Dialog.Config<C>)
 
 				/** The booklet class to be used for the upload steps. */
-				bookletClass: typeof BookletLayout;
+				bookletClass: typeof BookletLayout
 				/** The configuration for the booklet. */
-				bookletConfig: any;
+				bookletConfig: any
 				/** The upload booklet instance. */
-				uploadBooklet: InstanceType<C>;
+				uploadBooklet: InstanceType<C>
 				/** The upload result (if any). */
-				upload: any;
+				upload: any
 
 				/**
 				 * Initialize the dialog.
 				 *
 				 * @inheritdoc
 				 */
-				initialize(): this;
+				initialize(): this
 
 				/**
 				 * Create an upload booklet.
@@ -56,14 +57,14 @@ declare global {
 				 * @protected
 				 * @returns {mw.Upload.BookletLayout} An upload booklet
 				 */
-				createUploadBooklet(): BookletLayout;
+				createUploadBooklet(): BookletLayout
 
 				/**
 				 * Get the height of the dialog body.
 				 *
 				 * @returns {number}
 				 */
-				getBodyHeight(): number;
+				getBodyHeight(): number
 
 				/**
 				 * Handle panelNameSet events from the upload booklet.
@@ -71,7 +72,7 @@ declare global {
 				 * @protected
 				 * @param {OO.ui.PageLayout} page Current page
 				 */
-				onUploadBookletSet(page: OO.ui.PageLayout): void;
+				onUploadBookletSet(page: OO.ui.PageLayout): void
 
 				/**
 				 * Handle uploadValid events.
@@ -79,7 +80,7 @@ declare global {
 				 * @protected
 				 * @param {boolean} isValid The panel is complete and valid
 				 */
-				onUploadValid(isValid: boolean): void;
+				onUploadValid(isValid: boolean): void
 
 				/**
 				 * Handle infoValid events.
@@ -87,7 +88,7 @@ declare global {
 				 * @protected
 				 * @param {boolean} isValid The panel is complete and valid
 				 */
-				onInfoValid(isValid: boolean): void;
+				onInfoValid(isValid: boolean): void
 
 				/**
 				 * Get the setup process for the dialog.
@@ -96,7 +97,7 @@ declare global {
 				 * @param {any} data
 				 * @returns {OO.ui.Process}
 				 */
-				getSetupProcess(data: any): OO.ui.Process;
+				getSetupProcess(data: any): OO.ui.Process
 
 				/**
 				 * Get the action process for the dialog.
@@ -105,7 +106,7 @@ declare global {
 				 * @param {string} action
 				 * @returns {OO.ui.Process}
 				 */
-				getActionProcess(action: string): OO.ui.Process;
+				getActionProcess(action: string): OO.ui.Process
 
 				/**
 				 * Get the teardown process for the dialog.
@@ -114,7 +115,7 @@ declare global {
 				 * @param {any} data
 				 * @returns {OO.ui.Process}
 				 */
-				getTeardownProcess(data: any): OO.ui.Process;
+				getTeardownProcess(data: any): OO.ui.Process
 
 				/** Static properties */
 
@@ -122,38 +123,39 @@ declare global {
 				 * @inheritdoc
 				 * @property {string} name
 				 */
-				static name: string;
+				static name: string
 				/**
 				 * @inheritdoc
 				 * @property {(() => string)|string} title
 				 */
-				static title: string | (() => string);
+				static title: string | (() => string)
 				/**
 				 * @inheritdoc
 				 * @property {Object[]} actions
 				 */
 				static actions: {
-					flags: string | string[];
-					action: string;
-					label: string;
-					modes: string | string[];
-				}[];
+					flags: string | string[]
+					action: string
+					label: string
+					modes: string | string[]
+				}[]
 			}
 
 			namespace Dialog {
-				interface Config<C extends typeof BookletLayout = typeof BookletLayout> extends OO.ui.ProcessDialog.ConfigOptions {
+				interface Config<C extends typeof BookletLayout = typeof BookletLayout>
+					extends OO.ui.ProcessDialog.ConfigOptions {
 					/**
 					 * Booklet class to be used for the steps.
 					 *
 					 * Defaults to {@link mw.Upload.BookletLayout}.
 					 */
-					bookletClass?: C;
+					bookletClass?: C
 					/** Booklet constructor configuration. */
-					booklet?: any;
+					booklet?: any
 				}
 			}
 		}
 	}
 }
 
-export {};
+export {}

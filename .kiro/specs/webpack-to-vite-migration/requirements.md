@@ -77,6 +77,7 @@ This document outlines the requirements for migrating the Convenient Discussions
 3. THE Build_System SHALL handle single-build mode with embedded configuration and localization
 4. THE Build_System SHALL maintain different Source_Maps strategies per build mode
 5. THE Build_System SHOULD preserve all existing optimization settings per build mode
+
 ### Requirement 6
 
 **User Story:** As a developer, I want to use Vite's native ecosystem tools, so that I can benefit from better performance and modern tooling.

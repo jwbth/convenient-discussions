@@ -31,14 +31,16 @@ function getAuthStatePath() {
  */
 async function setupAuthenticatedContext(context) {
 	if (!hasAuthState()) {
-		console.warn('⚠️  No authentication state found. Run auth setup first or tests will run as anonymous user.')
+		console.warn(
+			'⚠️  No authentication state found. Run auth setup first or tests will run as anonymous user.',
+		)
 		return
 	}
 
 	// The context should already be created with storageState, but we can verify
 	const cookies = await context.cookies('https://test.wikipedia.org')
-	const hasSessionCookie = cookies.some(cookie =>
-		cookie.name.includes('session') || cookie.name.includes('UserID')
+	const hasSessionCookie = cookies.some(
+		(cookie) => cookie.name.includes('session') || cookie.name.includes('UserID'),
 	)
 
 	if (hasSessionCookie) {

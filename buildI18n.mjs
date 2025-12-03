@@ -61,7 +61,9 @@ function buildDayjsLocales(i18nWithFallbacks) {
 
 	// Add temporary language files to that folder that import respective locales if they exist.
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const dayjsLocales = JSON.parse(fs.readFileSync('./node_modules/dayjs/locale.json', 'utf8'))
+	const dayjsLocales = JSON.parse(
+		fs.readFileSync('./node_modules/dayjs/locale.json', 'utf8'),
+	)
 	const locales = new Set(dayjsLocales.map((locale) => locale.key))
 	/** @type {string[]} */
 	const langsHavingLocale = []
@@ -78,7 +80,7 @@ function buildDayjsLocales(i18nWithFallbacks) {
 				`${DAYJS_LOCALES_TEMP_DIR_NAME}/${lang}.js`,
 				`import dayjsLocale from 'dayjs/locale/${localLangName}';
 convenientDiscussions.i18n['${lang}'].dayjsLocale = dayjsLocale;
-`
+`,
 			)
 		}
 	})
@@ -109,9 +111,12 @@ export default defineConfig({
 		},
 	},
 });
-`
+`,
 			)
-			execSync(`node ./node_modules/vite/bin/vite.js build --config "${DAYJS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`, { stdio: 'inherit' })
+			execSync(
+				`node ./node_modules/vite/bin/vite.js build --config "${DAYJS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`,
+				{ stdio: 'inherit' },
+			)
 		})
 	}
 
@@ -135,14 +140,19 @@ function buildDateFnsLocales(i18nWithFallbacks) {
 	})
 
 	for (const [, names] of Object.entries(langNames)) {
-		if (fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)) {
+		if (
+			fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)
+		) {
 			// We only need data for the formatDistance function.
 			let indexJsText = fs.readFileSync(
 				`node_modules/date-fns/esm/locale/${names.dirName}/index.js`,
-				'utf8'
+				'utf8',
 			)
 			indexJsText = indexJsText.replace(/\n\s+formatLong:[^}]+\}/g, '')
-			fs.writeFileSync(`node_modules/date-fns/esm/locale/${names.dirName}/index.js`, indexJsText)
+			fs.writeFileSync(
+				`node_modules/date-fns/esm/locale/${names.dirName}/index.js`,
+				indexJsText,
+			)
 		}
 	}
 
@@ -151,14 +161,17 @@ function buildDateFnsLocales(i18nWithFallbacks) {
 	const langsHavingLocale = []
 	for (const [lang, names] of Object.entries(langNames)) {
 		// The English locale is built-in.
-		if (lang !== 'en' && fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)) {
+		if (
+			lang !== 'en' &&
+			fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)
+		) {
 			langsHavingLocale.push(lang)
 
 			fs.writeFileSync(
 				`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/${lang}.js`,
 				`import { ${names.localeName} } from 'date-fns/locale/${names.dirName}';
 convenientDiscussions.i18n['${lang}'].dateFnsLocale = ${names.localeName};
-`
+`,
 			)
 		}
 	}
@@ -189,9 +202,12 @@ export default defineConfig({
 		},
 	},
 });
-`
+`,
 			)
-			execSync(`node ./node_modules/vite/bin/vite.js build --config "${DATE_FNS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`, { stdio: 'inherit' })
+			execSync(
+				`node ./node_modules/vite/bin/vite.js build --config "${DATE_FNS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`,
+				{ stdio: 'inherit' },
+			)
 		})
 	}
 
@@ -204,21 +220,37 @@ DOMPurify.addHook('uponSanitizeElement', (currentNode, data, config) => {
 		!['body', '#comment'].includes(data.tagName)
 	) {
 		// `< /li>` qualifies as `#comment` and has content available under `currentNode.textContent`.
-		warning(`Disallowed tag found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(currentNode.outerHTML || currentNode.textContent)}. See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`)
-		console.log(currentNode.outerHTML, currentNode.textContent, currentNode.tagName)
+		warning(
+			`Disallowed tag found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(currentNode.outerHTML || currentNode.textContent)}. See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`,
+		)
+		console.log(
+			currentNode.outerHTML,
+			currentNode.textContent,
+			currentNode.tagName,
+		)
 	}
 })
 
-DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => {
-	if (!Object.keys(hookEvent.allowedAttributes).includes(hookEvent.attrName)) {
-		warning(`Disallowed attribute found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`)
-	}
-});
+DOMPurify.addHook(
+	'uponSanitizeAttribute',
+	(_currentNode, hookEvent, config) => {
+		if (
+			!Object.keys(hookEvent.allowedAttributes).includes(hookEvent.attrName)
+		) {
+			warning(
+				`Disallowed attribute found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`,
+			)
+		}
+	},
+)
 
-(async () => {
+;(async () => {
 	const i18n = {}
 	fs.readdirSync('./i18n/')
-		.filter((filename) => path.extname(filename) === '.json' && filename !== 'qqq.json')
+		.filter(
+			(filename) =>
+				path.extname(filename) === '.json' && filename !== 'qqq.json',
+		)
 		.forEach((filename) => {
 			const [, lang] = path.basename(filename).match(/^(.+)\.json$/) || []
 			const strings = JSON.parse(fs.readFileSync(`./i18n/${filename}`, 'utf8'))
@@ -229,17 +261,12 @@ DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => 
 					let sanitized = hideText(
 						strings[stringName],
 						/<nowiki(?: [\w ]+(?:=[^<>]+?)?| *)>([^]*?)<\/nowiki *>/g,
-						hidden
+						hidden,
 					)
 
 					sanitized = DOMPurify.sanitize(sanitized, {
 						ALLOWED_TAGS,
-						ALLOWED_ATTR: [
-							'class',
-							'dir',
-							'href',
-							'target',
-						],
+						ALLOWED_ATTR: ['class', 'dir', 'href', 'target'],
 						ALLOW_DATA_ATTR: false,
 						filename,
 						stringName,
@@ -252,7 +279,9 @@ DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => 
 					// just manually check that only allowed tags are present.
 					for (const [, tagName] of sanitized.matchAll(/<(\w+)/g)) {
 						if (!ALLOWED_TAGS.includes(tagName.toLowerCase())) {
-							warning(`Disallowed tag ${code(tagName)} found in ${keyword(filename)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`)
+							warning(
+								`Disallowed tag ${code(tagName)} found in ${keyword(filename)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`,
+							)
 							delete strings[stringName]
 
 							return
@@ -267,8 +296,8 @@ DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => 
 					) {
 						warning(
 							`Suspicious code found in ${keyword(filename)} at the late stage: ${keyword(
-								sanitized
-							)}. The string has been removed altogether.`
+								sanitized,
+							)}. The string has been removed altogether.`,
 						)
 						delete strings[stringName]
 
@@ -287,11 +316,17 @@ DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => 
 		// Use language fallbacks data to fill missing messages. When the fallbacks need to be updated,
 		// they can be collected using
 		// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
-		const fallbackData = JSON.parse(fs.readFileSync('./data/languageFallbacks.json', 'utf8'))
+		const fallbackData = JSON.parse(
+			fs.readFileSync('./data/languageFallbacks.json', 'utf8'),
+		)
 		Object.keys(i18n).forEach((lang) => {
 			const fallbacks = fallbackData[lang]
 			i18nWithFallbacks[lang] = fallbacks
-				? Object.assign({}, ...fallbacks.map((fbLang) => i18n[fbLang]).reverse(), i18n[lang])
+				? Object.assign(
+						{},
+						...fallbacks.map((fbLang) => i18n[fbLang]).reverse(),
+						i18n[lang],
+					)
 				: i18n[lang]
 		})
 
@@ -306,7 +341,10 @@ DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => 
 
 			if (lang === 'en') {
 				// Prevent creating "</nowiki>" character sequences when building the main script file.
-				jsonText = jsonText.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>')
+				jsonText = jsonText.replace(
+					/<\/nowiki>/g,
+					'</" + String("") + "nowiki>',
+				)
 			}
 
 			let text = `window.convenientDiscussions = /** @type {import('../../src/loader/cd').ConvenientDiscussions} */ (window.convenientDiscussions || {});
@@ -316,7 +354,10 @@ convenientDiscussions.i18n['${lang}'] = ${jsonText};
 
 			let dayjsLocaleText
 			if (langsHavingDayjsLocale.includes(lang)) {
-				dayjsLocaleText = fs.readFileSync(`./${DAYJS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`, 'utf8')
+				dayjsLocaleText = fs.readFileSync(
+					`./${DAYJS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`,
+					'utf8',
+				)
 				text += `
 // This assigns a day.js locale object to \`convenientDiscussions.i18n['${lang}'].dayjsLocale\`.
 ${dayjsLocaleText}
@@ -327,7 +368,7 @@ ${dayjsLocaleText}
 			if (langsHavingDateFnsLocale.includes(lang)) {
 				dateFnsLocaleText = fs.readFileSync(
 					`./${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`,
-					'utf8'
+					'utf8',
 				)
 				text += `
 // This assigns a date-fns locale object to \`convenientDiscussions.i18n['${lang}'].dateFnsLocale\`.
@@ -344,7 +385,10 @@ ${dateFnsLocaleText}
 	}
 
 	fs.mkdirSync('data', { recursive: true })
-	fs.writeFileSync('data/i18nList.json', JSON.stringify(Object.keys(i18n), null, '\t') + '\n')
+	fs.writeFileSync(
+		'data/i18nList.json',
+		JSON.stringify(Object.keys(i18n), null, '\t') + '\n',
+	)
 
 	console.log('Internationalization files have been built successfully.')
 })()

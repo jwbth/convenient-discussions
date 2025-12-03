@@ -1,6 +1,10 @@
 import { convertHtmlToWikitext } from './utils-api'
 import { es6ClassToOoJsClass } from './utils-oojs'
-import { cleanUpPasteDom, getElementFromPasteHtml, isElementConvertibleToWikitext } from './utils-window'
+import {
+	cleanUpPasteDom,
+	getElementFromPasteHtml,
+	isElementConvertibleToWikitext,
+} from './utils-window'
 
 /**
  * Mixin that is intended to be used on classes that extend
@@ -73,7 +77,7 @@ class TextInputWidgetMixin {
 		if (!document.execCommand('insertText', false, content)) {
 			Object.getPrototypeOf(Object.getPrototypeOf(this.constructor)).prototype.insertContent.call(
 				this,
-				content
+				content,
 			)
 		}
 
@@ -107,7 +111,7 @@ class TextInputWidgetMixin {
 	 */
 	getWikitextFromPaste(html) {
 		return this.maybeConvertElementToWikitext(
-			cleanUpPasteDom(getElementFromPasteHtml(html), this.$element[0])
+			cleanUpPasteDom(getElementFromPasteHtml(html), this.$element[0]),
 		)
 	}
 
@@ -146,9 +150,10 @@ class TextInputWidgetMixin {
 		const end = element.selectionEnd
 
 		// Only capture selection if there's actually selected text
-		this.selectedTextForAutocomplete = (start !== end && start !== null && end !== null)
-			? element.value.substring(start, end)
-			: undefined
+		this.selectedTextForAutocomplete =
+			start !== end && start !== null && end !== null
+				? element.value.substring(start, end)
+				: undefined
 	}
 
 	/**
@@ -179,7 +184,7 @@ class TextInputWidgetMixin {
 	destroy() {
 		document.removeEventListener(
 			'selectionchange',
-			/** @type {NonNullable<typeof this.handleSelectionChange>} */ (this.handleSelectionChange)
+			/** @type {NonNullable<typeof this.handleSelectionChange>} */ (this.handleSelectionChange),
 		)
 	}
 }

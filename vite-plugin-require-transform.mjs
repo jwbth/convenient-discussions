@@ -61,7 +61,10 @@ export function requireTransformPlugin() {
 			transformed = transformed.replace(cssRequirePattern, (match, cssPath) => {
 				// Skip mw.loader.require
 				const matchIndex = transformed.indexOf(match)
-				const beforeMatch = transformed.substring(Math.max(0, matchIndex - 15), matchIndex)
+				const beforeMatch = transformed.substring(
+					Math.max(0, matchIndex - 15),
+					matchIndex,
+				)
 				if (beforeMatch.includes('mw.loader.')) {
 					return match
 				}
@@ -83,7 +86,10 @@ export function requireTransformPlugin() {
 				const modulePath = match[1]
 
 				// Skip mw.loader.require
-				const beforeMatch = code.substring(Math.max(0, match.index - 15), match.index)
+				const beforeMatch = code.substring(
+					Math.max(0, match.index - 15),
+					match.index,
+				)
 				if (beforeMatch.includes('mw.loader.')) {
 					continue
 				}
@@ -104,14 +110,18 @@ export function requireTransformPlugin() {
 
 			// Pattern 3: Destructuring imports
 			// const { foo, bar } = require('./Module') -> import * as _require_0 from './Module.js'
-			const destructuringPattern = /const\s*{\s*([^}]+)\s*}\s*=\s*require\(['"]([^'"]+)['"]\)/g
+			const destructuringPattern =
+				/const\s*{\s*([^}]+)\s*}\s*=\s*require\(['"]([^'"]+)['"]\)/g
 			while ((match = destructuringPattern.exec(code)) !== null) {
 				const fullMatch = match[0]
 				const destructuredNames = match[1]
 				const modulePath = match[2]
 
 				// Skip mw.loader.require
-				const beforeMatch = code.substring(Math.max(0, match.index - 15), match.index)
+				const beforeMatch = code.substring(
+					Math.max(0, match.index - 15),
+					match.index,
+				)
 				if (beforeMatch.includes('mw.loader.')) {
 					continue
 				}
@@ -138,13 +148,17 @@ export function requireTransformPlugin() {
 
 			// Pattern 4: Simple module imports without .default (whole module)
 			// require('./Module') -> _require_Module
-			const simpleRequirePattern = /require\(['"]([^'"]+(?<!\.less)(?<!\.css))['"]\)(?!\.default)/g
+			const simpleRequirePattern =
+				/require\(['"]([^'"]+(?<!\.less)(?<!\.css))['"]\)(?!\.default)/g
 			while ((match = simpleRequirePattern.exec(code)) !== null) {
 				const fullMatch = match[0]
 				const modulePath = match[1]
 
 				// Skip mw.loader.require
-				const beforeMatch = code.substring(Math.max(0, match.index - 15), match.index)
+				const beforeMatch = code.substring(
+					Math.max(0, match.index - 15),
+					match.index,
+				)
 				if (beforeMatch.includes('mw.loader.')) {
 					continue
 				}
@@ -155,7 +169,10 @@ export function requireTransformPlugin() {
 				}
 
 				// Skip if it's part of a destructuring pattern (already handled)
-				const beforeRequire = code.substring(Math.max(0, match.index - 30), match.index)
+				const beforeRequire = code.substring(
+					Math.max(0, match.index - 30),
+					match.index,
+				)
 				if (beforeRequire.match(/const\s*{\s*[^}]*\s*}\s*=\s*$/)) {
 					continue
 				}
@@ -186,11 +203,15 @@ export function requireTransformPlugin() {
 					importStatements.push(`import '${modulePath}';`)
 				} else {
 					// Check if this import is used in a destructuring pattern
-					const isDestructured = transformed.includes(`const { `) && transformed.includes(`} = ${importName}`)
+					const isDestructured =
+						transformed.includes(`const { `) &&
+						transformed.includes(`} = ${importName}`)
 
 					if (isDestructured) {
 						// Namespace import for destructuring
-						importStatements.push(`import * as ${importName} from '${modulePath}';`)
+						importStatements.push(
+							`import * as ${importName} from '${modulePath}';`,
+						)
 					} else {
 						// Default import
 						importStatements.push(`import ${importName} from '${modulePath}';`)
@@ -199,7 +220,9 @@ export function requireTransformPlugin() {
 			}
 
 			// Find where to insert imports (after existing imports or at the top)
-			const existingImportMatch = transformed.match(/^((?:import\s+.*?;\s*\n)*)/)
+			const existingImportMatch = transformed.match(
+				/^((?:import\s+.*?;\s*\n)*)/,
+			)
 			const insertPos = existingImportMatch ? existingImportMatch[0].length : 0
 
 			// Insert the new imports

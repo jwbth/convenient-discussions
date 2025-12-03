@@ -62,10 +62,9 @@ class Debug {
 		this.counters =
 			typeof Proxy === 'undefined'
 				? {}
-				: new Proxy(
-					/** @type {AnyByKey} */({}),
-					{ get: (obj, prop) => isKeyOf(prop, obj) ? obj[prop] : 0 }
-				)
+				: new Proxy(/** @type {AnyByKey} */ ({}), {
+						get: (obj, prop) => (isKeyOf(prop, obj) ? obj[prop] : 0),
+					})
 	}
 
 	/**
@@ -212,6 +211,6 @@ class Debug {
 	incrementCounter(label) {
 		this.counters[label]++
 	}
-};
+}
 
 export default new Debug()

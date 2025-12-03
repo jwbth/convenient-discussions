@@ -114,7 +114,7 @@ class BaseAutocomplete {
 		this.cache = new AutocompleteCache({
 			maxSize: config.cacheMaxSize || 500,
 			ttl: config.cacheTtl || 5 * 60_000,
-			maxMemory: config.cacheMaxMemory || 5 * 1024 * 1024,  // 5MB
+			maxMemory: config.cacheMaxMemory || 5 * 1024 * 1024, // 5MB
 		})
 	}
 
@@ -334,11 +334,14 @@ class BaseAutocomplete {
 		return entries
 			.filter(definedAndNotNull)
 			.filter(unique)
-			.map((entry) => /** @type {Option} */ ({
-				label: this.getLabelFromEntry(entry),
-				entry,
-				autocomplete: this,
-			}))
+			.map(
+				(entry) =>
+					/** @type {Option} */ ({
+						label: this.getLabelFromEntry(entry),
+						entry,
+						autocomplete: this,
+					}),
+			)
 	}
 
 	/**
@@ -367,7 +370,8 @@ class BaseAutocomplete {
 
 		throw new CdError({
 			type: 'internal',
-			message: 'Entry types other than string or labeled objects are not supported. searchLocal() must be implemented by subclass',
+			message:
+				'Entry types other than string or labeled objects are not supported. searchLocal() must be implemented by subclass',
 		})
 	}
 
@@ -387,7 +391,7 @@ class BaseAutocomplete {
 			.filter((entry) => containsRegexp.test(entry))
 			.sort(
 				(entry1, entry2) =>
-					Number(startsWithRegexp.test(entry2)) - Number(startsWithRegexp.test(entry1))
+					Number(startsWithRegexp.test(entry2)) - Number(startsWithRegexp.test(entry1)),
 			)
 	}
 
@@ -498,14 +502,16 @@ class BaseAutocomplete {
 	 */
 	static async makeOpenSearchRequest(params) {
 		return this.createDelayedPromise(async (resolve) => {
-			const response = /** @type {import('./AutocompleteManager').OpenSearchResults} */ (await cd
-				.getApi(this.apiConfig)
-				.get({
-					action: 'opensearch',
-					limit: 10,
-					...params,
-				})
-				.catch(handleApiReject))
+			const response = /** @type {import('./AutocompleteManager').OpenSearchResults} */ (
+				await cd
+					.getApi(this.apiConfig)
+					.get({
+						action: 'opensearch',
+						limit: 10,
+						...params,
+					})
+					.catch(handleApiReject)
+			)
 
 			if (this.currentPromise) {
 				this.promiseIsNotSuperseded(this.currentPromise)

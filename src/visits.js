@@ -44,7 +44,7 @@ class Visits extends EventEmitter {
 			// which can be critical for determining subscriptions.
 			this.unpack(await getUserInfo(reuse).then(({ visits }) => visits))
 		} catch (error) {
-			console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', error)
+			console.warn("Convenient Discussions: Couldn't load the settings from the server.", error)
 
 			return
 		}
@@ -116,12 +116,10 @@ class Visits extends EventEmitter {
 		for (let i = this.currentPageData.length - 1; i >= 0; i--) {
 			if (
 				Number(this.currentPageData[i]) < currentTime - 60 * settings.get('highlightNewInterval') ||
-
 				// Add this condition for rare cases when the time of the previous visit is later than the
 				// current time (see timeConflict). In that case, when highlightNewInterval is set to 0,
 				// the user shouldn't get comments highlighted again all of a sudden.
 				!settings.get('highlightNewInterval') ||
-
 				markAsReadRequested
 			) {
 				// Remove visits _before_ the found one.
@@ -145,7 +143,7 @@ class Visits extends EventEmitter {
 			typedKeysOf(this.data)
 				.map((key) => `${key},${this.data[key].join(',')}\n`)
 				.join('')
-				.trim()
+				.trim(),
 		)
 	}
 
@@ -176,7 +174,7 @@ class Visits extends EventEmitter {
 	async save() {
 		let compressed = this.pack()
 		if (compressed.length > 20_480) {
-			this.cleanUp(((compressed.length - 20_480) / compressed.length) + 0.05)
+			this.cleanUp((compressed.length - 20_480) / compressed.length + 0.05)
 			compressed = this.pack()
 		}
 

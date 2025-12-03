@@ -46,13 +46,13 @@ test('Settings system has commentDisplay -> reformatComments alias', () => {
 test('Settings system has commentDisplay in control types', () => {
 	const settingsSource = readFile('src/settings.js')
 
-	return settingsSource.includes('commentDisplay: \'radio\'')
+	return settingsSource.includes("commentDisplay: 'radio'")
 })
 
 test('Settings system has commentDisplay in default values', () => {
 	const settingsSource = readFile('src/settings.js')
 
-	return settingsSource.includes('\'commentDisplay\': \'spacious\'')
+	return settingsSource.includes("'commentDisplay': 'spacious'")
 })
 
 // Test 2: Class Structure (Essential for functionality)
@@ -83,17 +83,21 @@ test('SpaciousComment extends Comment', () => {
 test('Comment class maintains core properties', () => {
 	const commentSource = readFile('src/Comment.js')
 
-	return commentSource.includes('layers;') &&
+	return (
+		commentSource.includes('layers;') &&
 		commentSource.includes('actions;') &&
 		commentSource.includes('spacious;')
+	)
 })
 
 test('Comment class maintains essential methods', () => {
 	const commentSource = readFile('src/Comment.js')
 
-	return commentSource.includes('configureLayers()') &&
+	return (
+		commentSource.includes('configureLayers()') &&
 		commentSource.includes('updateTimestampElements') &&
 		commentSource.includes('formatTimestamp')
+	)
 })
 
 test('CompactCommentActions no longer needs hasClassicUnderlay checks', () => {
@@ -101,24 +105,30 @@ test('CompactCommentActions no longer needs hasClassicUnderlay checks', () => {
 
 	// The hasClassicUnderlay method has been removed since the presence of layers
 	// is guaranteed by the class structure when CompactCommentActions is instantiated
-	return !compactActionsSource.includes('hasClassicUnderlay()') &&
+	return (
+		!compactActionsSource.includes('hasClassicUnderlay()') &&
 		compactActionsSource.includes('addReplyButton') &&
 		compactActionsSource.includes('addEditButton')
+	)
 })
 
 // Test 6: BootProcess Integration (Critical for class selection)
 test('BootProcess imports correct comment classes', () => {
 	const bootProcessSource = readFile('src/BootProcess.js')
 
-	return bootProcessSource.includes('import CompactComment') &&
+	return (
+		bootProcessSource.includes('import CompactComment') &&
 		bootProcessSource.includes('import SpaciousComment')
+	)
 })
 
 test('BootProcess uses commentDisplay setting for class selection', () => {
 	const bootProcessSource = readFile('src/TalkPageBootProcess.js')
 
-	return bootProcessSource.includes("settings.get('commentDisplay') === 'spacious'") &&
+	return (
+		bootProcessSource.includes("settings.get('commentDisplay') === 'spacious'") &&
 		bootProcessSource.includes('? SpaciousComment : CompactComment')
+	)
 })
 
 // Test 7: Composition Pattern (Essential for new architecture)
@@ -127,56 +137,64 @@ test('Comment no longer imports composition classes directly', () => {
 
 	// Comment base class no longer imports composition classes directly
 	// They are imported by the specific subclasses (CompactComment, SpaciousComment)
-	return !commentSource.includes("import CommentLayers from './CommentLayers'") &&
+	return (
+		!commentSource.includes("import CommentLayers from './CommentLayers'") &&
 		!commentSource.includes("import CommentActions from './CommentActions'")
+	)
 })
 
 test('CommentLayers has expected methods', () => {
 	const layersSource = readFile('src/CommentLayers.js')
 
-	return layersSource.includes('create()') &&
+	return (
+		layersSource.includes('create()') &&
 		layersSource.includes('destroy()') &&
 		layersSource.includes('updateStyles(')
+	)
 })
 
 test('CommentActions has expected methods', () => {
 	const actionsSource = readFile('src/CommentActions.js')
 
-	return actionsSource.includes('addReplyButton()') &&
+	return (
+		actionsSource.includes('addReplyButton()') &&
 		actionsSource.includes('addEditButton()') &&
 		actionsSource.includes('addThankButton()')
+	)
 })
 
 // Test 8: Property Renaming (Critical for consistency)
 test('Comment uses spacious property instead of reformatted', () => {
 	const commentSource = readFile('src/Comment.js')
 
-	return commentSource.includes('spacious;') &&
-		!commentSource.includes('reformatted;')
+	return commentSource.includes('spacious;') && !commentSource.includes('reformatted;')
 })
 
 // Test 9: Visual Compatibility (Essential for UI)
 test('Layer elements maintain expected CSS classes', () => {
 	const layersSource = readFile('src/CommentLayers.js')
 
-	return layersSource.includes('cd-comment-underlay') &&
-		layersSource.includes('cd-comment-overlay')
+	return layersSource.includes('cd-comment-underlay') && layersSource.includes('cd-comment-overlay')
 })
 
 // Test 10: No Unnecessary Backward Compatibility Cruft
 test('Comment class does not have deprecated getters', () => {
 	const commentSource = readFile('src/Comment.js')
 
-	return !commentSource.includes('@deprecated Use layers.') &&
+	return (
+		!commentSource.includes('@deprecated Use layers.') &&
 		!commentSource.includes('@deprecated Use actions.')
+	)
 })
 
 test('Comment class does not have unused add button methods', () => {
 	const commentSource = readFile('src/Comment.js')
 
-	return !commentSource.includes('addReplyButton() {') &&
+	return (
+		!commentSource.includes('addReplyButton() {') &&
 		!commentSource.includes('addEditButton() {') &&
 		!commentSource.includes('addThankButton() {')
+	)
 })
 
 // Summary

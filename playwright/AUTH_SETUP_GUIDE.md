@@ -61,6 +61,7 @@ playwright/
 ### Playwright Config
 
 The `playwright.config.js` is configured to:
+
 - Use `https://test.wikipedia.org` as base URL
 - Automatically load authentication state if available
 - Run setup project before main tests
@@ -68,57 +69,59 @@ The `playwright.config.js` is configured to:
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `WIKIPEDIA_USERNAME` | No | Your test.wikipedia.org username |
-| `WIKIPEDIA_PASSWORD` | No | Your test.wikipedia.org password |
-| `CLEAR_AUTH_STATE` | No | Set to `true` to clear auth after tests |
+| Variable             | Required | Description                             |
+| -------------------- | -------- | --------------------------------------- |
+| `WIKIPEDIA_USERNAME` | No       | Your test.wikipedia.org username        |
+| `WIKIPEDIA_PASSWORD` | No       | Your test.wikipedia.org password        |
+| `CLEAR_AUTH_STATE`   | No       | Set to `true` to clear auth after tests |
 
 ## Usage in Tests
 
 ### Basic Usage
 
 ```javascript
-const { test, expect } = require('@playwright/test');
-const { setupAuthenticatedContext } = require('./auth-helper');
+const { test, expect } = require('@playwright/test')
+const { setupAuthenticatedContext } = require('./auth-helper')
 
 test.describe('My Tests', () => {
   test.beforeEach(async ({ context }) => {
-    await setupAuthenticatedContext(context);
-  });
+    await setupAuthenticatedContext(context)
+  })
 
   test('my test', async ({ page }) => {
-    await page.goto('/wiki/Talk:Main_Page');
+    await page.goto('/wiki/Talk:Main_Page')
     // Test runs with authentication if available
-  });
-});
+  })
+})
 ```
 
 ### Checking Authentication Status
 
 ```javascript
 test('check if logged in', async ({ page }) => {
-  await page.goto('/wiki/Main_Page');
+  await page.goto('/wiki/Main_Page')
 
-  const userMenu = page.locator('#pt-userpage');
-  const anonMenu = page.locator('#pt-anonuserpage');
+  const userMenu = page.locator('#pt-userpage')
+  const anonMenu = page.locator('#pt-anonuserpage')
 
-  if (await userMenu.count() > 0) {
-    console.log('Running as authenticated user');
+  if ((await userMenu.count()) > 0) {
+    console.log('Running as authenticated user')
   } else {
-    console.log('Running as anonymous user');
+    console.log('Running as anonymous user')
   }
-});
+})
 ```
 
 ## Anonymous vs Authenticated Testing
 
 ### Anonymous Mode (Default)
+
 - No credentials needed
 - Tests basic functionality that works for all users
 - Cannot test features requiring login (editing, preferences, etc.)
 
 ### Authenticated Mode
+
 - Requires test.wikipedia.org account
 - Can test all user features
 - Recommended for comprehensive testing
@@ -126,12 +129,14 @@ test('check if logged in', async ({ page }) => {
 ## Security Best Practices
 
 ### Credentials Management
+
 - **Never commit credentials to git**
 - Use environment variables or secure credential storage
 - Consider using test-specific accounts
 - Rotate passwords regularly
 
 ### Test Account Setup
+
 1. Create a dedicated account on test.wikipedia.org
 2. Use a strong, unique password
 3. Don't use your personal Wikipedia account
@@ -142,28 +147,37 @@ test('check if logged in', async ({ page }) => {
 ### Common Issues
 
 #### Authentication Fails
+
 ```
 ❌ Authentication setup failed: Login failed - user menu not found
 ```
+
 **Solutions:**
+
 - Verify credentials are correct
 - Check if account exists on test.wikipedia.org (not en.wikipedia.org)
 - Ensure account is not blocked or restricted
 
 #### No Auth State Found
+
 ```
 ⚠️ No authentication state found. Run auth setup first
 ```
+
 **Solutions:**
+
 - Set environment variables correctly
 - Run tests once to generate auth state
 - Check if `auth-state.json` was created
 
 #### Tests Run as Anonymous
+
 ```
 ℹ️ Running as anonymous user
 ```
+
 **This is normal if:**
+
 - No credentials provided (tests still work)
 - Credentials are invalid
 - Auth state expired
@@ -185,15 +199,15 @@ npx playwright test --project=setup
 ### Manual Auth State Management
 
 ```javascript
-const { clearAuthState, hasAuthState } = require('./auth-helper');
+const { clearAuthState, hasAuthState } = require('./auth-helper')
 
 // Check if authenticated
 if (hasAuthState()) {
-  console.log('Auth state exists');
+  console.log('Auth state exists')
 }
 
 // Clear auth state
-clearAuthState();
+clearAuthState()
 ```
 
 ## CI/CD Integration
@@ -229,10 +243,10 @@ test('admin features', async ({ page }) => {
   // Override default auth for admin testing
   await page.context().addCookies([
     // Admin-specific cookies
-  ]);
+  ])
 
-  await page.goto('/wiki/Special:AdminPage');
-});
+  await page.goto('/wiki/Special:AdminPage')
+})
 ```
 
 ### Multiple User Testing
@@ -241,15 +255,15 @@ test('admin features', async ({ page }) => {
 // Test with different user roles
 const users = {
   admin: { username: 'AdminUser', password: 'AdminPass' },
-  regular: { username: 'RegularUser', password: 'RegularPass' }
-};
+  regular: { username: 'RegularUser', password: 'RegularPass' },
+}
 
 test.describe('Multi-user tests', () => {
   for (const [role, credentials] of Object.entries(users)) {
     test(`test as ${role}`, async ({ browser }) => {
-      const context = await browser.newContext();
+      const context = await browser.newContext()
       // Setup specific user auth...
-    });
+    })
   }
-});
+})
 ```

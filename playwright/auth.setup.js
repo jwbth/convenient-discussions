@@ -12,7 +12,9 @@ setup('authenticate', async ({ page }) => {
 
 	if (!username || !password) {
 		console.log('⚠️  No Wikipedia credentials provided. Skipping authentication setup.')
-		console.log('   Set WIKIPEDIA_USERNAME and WIKIPEDIA_PASSWORD environment variables to enable authentication.')
+		console.log(
+			'   Set WIKIPEDIA_USERNAME and WIKIPEDIA_PASSWORD environment variables to enable authentication.',
+		)
 
 		return
 	}
@@ -37,7 +39,7 @@ setup('authenticate', async ({ page }) => {
 
 	// Check for captcha first
 	const captcha = page.locator('.fancycaptcha-image, .captcha, #wpCaptchaWord')
-	if (await captcha.count() > 0) {
+	if ((await captcha.count()) > 0) {
 		console.log('🤖 CAPTCHA detected! Please solve it manually in the browser window.')
 		console.log('   The test will wait for you to complete the captcha and login.')
 
@@ -51,7 +53,7 @@ setup('authenticate', async ({ page }) => {
 
 	// Check for login errors
 	const errorBox = page.locator('.errorbox')
-	if (await errorBox.count() > 0) {
+	if ((await errorBox.count()) > 0) {
 		const errorText = await errorBox.textContent()
 		// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 		throw new Error(`Login failed: ${errorText}`)
@@ -61,9 +63,9 @@ setup('authenticate', async ({ page }) => {
 	const userMenu = page.locator('#pt-userpage')
 	const anonMenu = page.locator('#pt-anonuserpage')
 
-	if (await userMenu.count() > 0) {
+	if ((await userMenu.count()) > 0) {
 		console.log('✅ Successfully logged in - user menu found')
-	} else if (await anonMenu.count() > 0) {
+	} else if ((await anonMenu.count()) > 0) {
 		throw new Error('Login failed - still showing as anonymous user')
 	} else {
 		throw new Error('Login status unclear - neither user nor anonymous menu found')

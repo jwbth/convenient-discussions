@@ -58,27 +58,24 @@ class Toc {
 			this.resolveUpdateTocSectionsPromise?.()
 		})
 
-		visits
-			.on('process', () => {
-				// If all the comments on the page are unseen, don't add them to the TOC - the user would
-				// definitely prefer to read the names of the topics easily. (But still consider them new -
-				// otherwise the user can be confused, especially if there are few topics on an unpopular
-				// page.)
-				if (
-					commentManager.query((c) => c.isSeen === false || !c.date).length !==
-					commentManager.getCount()
-				) {
-					this.addNewComments(
-						Comment.groupBySection(commentManager.query((c) => c.isSeen === false)),
-						controller.getBootProcess()
-					)
-				}
-				this.addCommentCount()
-			})
-		subscriptions
-			.on('process', this.markSubscriptions)
-		controller
-			.on('reboot', this.maybeHide)
+		visits.on('process', () => {
+			// If all the comments on the page are unseen, don't add them to the TOC - the user would
+			// definitely prefer to read the names of the topics easily. (But still consider them new -
+			// otherwise the user can be confused, especially if there are few topics on an unpopular
+			// page.)
+			if (
+				commentManager.query((c) => c.isSeen === false || !c.date).length !==
+				commentManager.getCount()
+			) {
+				this.addNewComments(
+					Comment.groupBySection(commentManager.query((c) => c.isSeen === false)),
+					controller.getBootProcess(),
+				)
+			}
+			this.addCommentCount()
+		})
+		subscriptions.on('process', this.markSubscriptions)
+		controller.on('reboot', this.maybeHide)
 		updateChecker
 			.on('commentsUpdate', ({ bySection }) => {
 				this.addNewComments(bySection)
@@ -97,7 +94,7 @@ class Toc {
 		if (this.isInSidebar() || !this.isPresent()) return
 
 		if (mw.cookie.get('hidetoc') === '1') {
-			/** @type {HTMLInputElement} */ (this.$element.find('.toctogglecheckbox')[0]).checked = true
+			/** @type {HTMLInputElement} */ ;(this.$element.find('.toctogglecheckbox')[0]).checked = true
 		}
 	}
 
@@ -203,7 +200,7 @@ class Toc {
 				bdi.textContent = cd.s(
 					usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
 					String(count),
-					String(unseenCount)
+					String(unseenCount),
 				)
 			} else {
 				bdi.textContent = usedFullForm
@@ -250,8 +247,7 @@ class Toc {
 		// collapsed subsections with their help tend to zero, I believe, although this may
 		// change.
 		const button = document.createElement('button')
-		button.className =
-			'cdx-button cdx-button--weight-quiet cdx-button--icon-only vector-toc-toggle'
+		button.className = 'cdx-button cdx-button--weight-quiet cdx-button--icon-only vector-toc-toggle'
 		button.setAttribute('ariaExpanded', 'true')
 		button.setAttribute('ariaControls', ul.id)
 
@@ -348,7 +344,7 @@ class Toc {
 					this.addToggleToSidebarToc(
 						ul,
 						upperLevelMatch,
-						/** @type {string[]} */ (newSectionTocIds)
+						/** @type {string[]} */ (newSectionTocIds),
 					)
 				}
 
@@ -429,16 +425,16 @@ class Toc {
 					section,
 					true,
 					/** @type {import('./shared/SectionSkeleton').default[]} */ (
-					/** @type {unknown} */ (sections)
-					)
+						/** @type {unknown} */ (sections)
+					),
 				)
 			)
 		})
 		sections.forEach((section) => {
 			section.tocLevel = section.parent
 				? /** @type {number} */ (
-					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-					/** @type {import('./updateChecker').SectionWorkerMatched} */ (section.parent).tocLevel
+						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+						/** @type {import('./updateChecker').SectionWorkerMatched} */ (section.parent).tocLevel
 					) + 1
 				: 1
 		})
@@ -476,7 +472,7 @@ class Toc {
 			} else {
 				const id = CSS.escape(section.id)
 				$sectionLink = /** @type {JQuery} */ (this.$element).find(
-					`.cd-toc-addedSection a[href="#${id}"]`
+					`.cd-toc-addedSection a[href="#${id}"]`,
 				)
 			}
 
@@ -565,16 +561,12 @@ class Toc {
 
 			const dateIfNative = settings.get('timestampFormat') === 'default' ? date : ''
 			const text =
-			// Names
-				(
-					parent?.author && comment.level > 1
-						? cd.s('navpanel-newcomments-names', comment.author.getName(), parent.author.getName())
-						: comment.author.getName()
-				) +
-
+				// Names
+				(parent?.author && comment.level > 1
+					? cd.s('navpanel-newcomments-names', comment.author.getName(), parent.author.getName())
+					: comment.author.getName()) +
 				// RTL mark if needed
 				(cd.g.contentDirection === 'rtl' ? '\u200F' : '') +
-
 				cd.mws('comma-separator') +
 				dateIfNative
 
@@ -643,7 +635,7 @@ class Toc {
 			ul.append(li)
 		}
 
-		/** @type {HTMLElement} */ (target.parentElement).insertBefore(ul, target.nextSibling)
+		/** @type {HTMLElement} */ ;(target.parentElement).insertBefore(ul, target.nextSibling)
 	}
 
 	/**
@@ -665,13 +657,11 @@ class Toc {
 					// When unrendered (in gray) comments are added. (Boot process is also not specified at
 					// those times.)
 					!bootProcess ||
-
-					bootProcess.isFirstRun() ||
-
-					// When the comment or section is opened by a link from the TOC
-					bootProcess.passedData.commentIds ||
-					bootProcess.passedData.sectionId
-				)
+						bootProcess.isFirstRun() ||
+						// When the comment or section is opened by a link from the TOC
+						bootProcess.passedData.commentIds ||
+						bootProcess.passedData.sectionId,
+				),
 			)
 		}
 
@@ -706,8 +696,8 @@ class Toc {
 		if (this.floating === undefined) {
 			this.floating = Boolean(
 				!this.isInSidebar() &&
-				this.isPresent() &&
-				this.$element.closest($(controller.getFloatingElements())).length
+					this.isPresent() &&
+					this.$element.closest($(controller.getFloatingElements())).length,
 			)
 		}
 
@@ -732,7 +722,7 @@ class Toc {
 		if (!this.isPresent()) return
 
 		return (
-		/** @type {JQuery.Coordinates} */ (this.$element.offset()).top +
+			/** @type {JQuery.Coordinates} */ (this.$element.offset()).top +
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			/** @type {number} */ (this.$element.outerHeight())
 		)

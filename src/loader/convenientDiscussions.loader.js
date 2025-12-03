@@ -9,7 +9,14 @@ import addCommentLinksCss from '../addCommentLinks.less'
 import globalCss from '../global.less'
 import navPanelCss from '../navPanel.less'
 import pageNavCss from '../pageNav.less'
-import { defined, getQueryParamBooleanValue, isKeyOf, mergeRegexps, sleep, unique } from '../shared/utils-general'
+import {
+	defined,
+	getQueryParamBooleanValue,
+	isKeyOf,
+	mergeRegexps,
+	sleep,
+	unique,
+} from '../shared/utils-general'
 import { dateTokenToMessageNames } from '../shared/utils-timestamp'
 import skinsCss from '../skins.less'
 import talkPageCss from '../talkPage.less'
@@ -212,24 +219,19 @@ class Loader {
 		this.pageTypes ??= /** @type {PageTypes} */ ({})
 		this.pageTypes.talkStrict = Boolean(
 			this.queryIsTalkPage ||
-
-			// .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-			// the list of supported namespaces and page white/black list in the configuration. With this
-			// method, there won't be "comment" links for edits on pages that list revisions such as the
-			// watchlist.
-			this.$content.find('.cd-talkPage').length ||
-
-			(
-				($('#ca-addsection').length || this.pageWhitelistRegexp?.test(cd.g.pageName)) &&
-				!this.pageBlacklistRegexp?.test(cd.g.pageName)
-			)
+				// .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+				// the list of supported namespaces and page white/black list in the configuration. With this
+				// method, there won't be "comment" links for edits on pages that list revisions such as the
+				// watchlist.
+				this.$content.find('.cd-talkPage').length ||
+				(($('#ca-addsection').length || this.pageWhitelistRegexp?.test(cd.g.pageName)) &&
+					!this.pageBlacklistRegexp?.test(cd.g.pageName)),
 		)
 
 		this.articlePageOfTypeTalk =
 			(!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
 			!this.$content.find('.cd-notTalkPage').length &&
 			(this.pageTypes.talkStrict || this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
-
 			// Undocumented setting
 			!window.cdOnlyRunByFooterLink
 
@@ -297,11 +299,9 @@ class Loader {
 	 */
 	isProbablyTalkPage(pageName, namespaceNumber) {
 		return (
-			(
-				namespaceNumber % 2 === 1 ||
+			(namespaceNumber % 2 === 1 ||
 				this.pageWhitelistRegexp?.test(pageName) ||
-				(!this.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))
-			) &&
+				(!this.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))) &&
 			!this.pageBlacklistRegexp?.test(pageName)
 		)
 	}
@@ -325,8 +325,8 @@ class Loader {
 			this.pageTypes.watchlist ||
 			this.pageTypes.contributions ||
 			this.pageTypes.history ||
-			(this.pageTypes.diff || this.articlePageOfTypeTalk) ||
-
+			this.pageTypes.diff ||
+			this.articlePageOfTypeTalk ||
 			// Instant Diffs script can be called on talk pages as well
 			this.pageTypes.talk
 		) {
@@ -355,7 +355,9 @@ class Loader {
 			// the background, this request is made and the execution stops at mw.loader.using, which
 			// results in overriding the renewed visits setting of one tab by another tab (the visits are
 			// loaded by one tab, then another tab, then written by one tab, then by another tab).
-			mw.loader.getState('mediawiki.api') === 'ready' ? this.getSiteDataPromise() : Promise.resolve(),
+			mw.loader.getState('mediawiki.api') === 'ready'
+				? this.getSiteDataPromise()
+				: Promise.resolve(),
 
 			// We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
 			// if several pages are opened simultaneously. In this situation, visits could be requested
@@ -369,7 +371,7 @@ class Loader {
 				mw.notify(cd.s('error-loaddata'), { type: 'error' })
 				console.error(error)
 				this.hideBootingOverlay()
-			}
+			},
 		)
 
 		this.showBootingOverlay()
@@ -435,8 +437,8 @@ class Loader {
 		].concat(
 			// Message names for date tokens in content language
 			...this.getUsedDateTokens(cd.g.timestampTools.content.dateFormat).map(
-				(pattern) => dateTokenToMessageNames[pattern]
-			)
+				(pattern) => dateTokenToMessageNames[pattern],
+			),
 		)
 
 		const userLanguageMessageNames = [
@@ -472,13 +474,13 @@ class Loader {
 							'thanks-confirmation2',
 							'checkuser-userinfocard-toggle-button-aria-label',
 						]
-					: []
+					: [],
 			)
 			.concat(
 				// Message names for date tokens in UI language
 				...this.getUsedDateTokens(cd.g.timestampTools.user.dateFormat).map(
-					(pattern) => dateTokenToMessageNames[pattern]
-				)
+					(pattern) => dateTokenToMessageNames[pattern],
+				),
 			)
 
 		const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage')
@@ -494,13 +496,15 @@ class Loader {
 
 		const requestUserLanguageMessages = () =>
 			splitIntoBatches(userLanguageMessageNames).map((nextNames) =>
-				cd.getApi().loadMessagesIfMissing(nextNames)
+				cd.getApi().loadMessagesIfMissing(nextNames),
 			)
 
 		// We need this object to pass it to the web worker.
 		cd.g.contentLanguageMessages = {}
 
-		const setContentLanguageMessages = (/** @type {{ [key: string]: string | undefined }} */ messages) => {
+		const setContentLanguageMessages = (
+			/** @type {{ [key: string]: string | undefined }} */ messages,
+		) => {
 			Object.keys(messages).forEach((name) => {
 				if (messages[name] !== undefined) {
 					mw.messages.set('(content)' + name, messages[name])
@@ -526,7 +530,7 @@ class Loader {
 
 				return acc
 			},
-			/** @type {import('../../config/default').default['specialPageAliases']} */ ({})
+			/** @type {import('../../config/default').default['specialPageAliases']} */ ({}),
 		)
 
 		const content = cd.g.timestampTools.content
@@ -543,23 +547,23 @@ class Loader {
 					onlyUserLanguageMessages
 						? requestUserLanguageMessages()
 						: areLanguagesEqual
-						// We use splitIntoBatches() to request in parallel (see the note above), even though
-						// .loadMessages() splits into batches automatically (but requests in sequence).
-							? splitIntoBatches(
-									contentLanguageMessageNames.concat(userLanguageMessageNames).filter(unique)
+							? // We use splitIntoBatches() to request in parallel (see the note above), even though
+								// .loadMessages() splits into batches automatically (but requests in sequence).
+								splitIntoBatches(
+									contentLanguageMessageNames.concat(userLanguageMessageNames).filter(unique),
 								).map((nextNames) =>
 									cd
 										.getApi()
 										.loadMessagesIfMissing(nextNames)
 										.then(() => {
 											filterAndSetContentLanguageMessages(mw.messages.get())
-										})
+										}),
 								)
 							: [
 									...splitIntoBatches(
 										contentLanguageMessageNames.filter(
-											(name) => !cd.g.contentLanguageMessages[name]
-										)
+											(name) => !cd.g.contentLanguageMessages[name],
+										),
 									).map((nextNames) =>
 										cd
 											.getApi()
@@ -568,20 +572,17 @@ class Loader {
 												// startup.js where it is declared.
 												amlang: mw.config.get('wgContentLanguage'),
 											})
-											.then(setContentLanguageMessages)
+											.then(setContentLanguageMessages),
 									),
 									...requestUserLanguageMessages(),
-								]
+								],
 				)
 				.concat(
 					onlyUserLanguageMessages ||
-					(
-						specialPages.every(
-							(page) =>
-								page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length
+						(specialPages.every(
+							(page) => page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length,
 						) &&
-						content.timezone
-					)
+							content.timezone)
 						? []
 						: cd
 								.getApi()
@@ -591,20 +592,20 @@ class Loader {
 									siprop: ['specialpagealiases', 'general'],
 								})
 								.then((response) => {
-									/** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+									/** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ ;(
 										response.query.specialpagealiases
 									)
 										.filter((page) => specialPages.includes(page.realname))
 										.forEach((page) => {
 											cd.g.specialPageAliases[page.realname] = page.aliases.slice(
 												0,
-												page.aliases.indexOf(page.realname) + 1
+												page.aliases.indexOf(page.realname) + 1,
 											)
 										})
 
 									content.timezone = response.query.general.timezone
-								})
-				)
+								}),
+				),
 		)
 	}
 
@@ -618,7 +619,7 @@ class Loader {
 			convenientDiscussionsUtil.getValidLanguageOrFallback(
 				lang,
 				(/** @type {string} */ l) => isKeyOf(l, dateFormats),
-				languageFallbacks
+				languageFallbacks,
 			)
 
 		const contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'))
@@ -655,7 +656,7 @@ class Loader {
 			}
 
 			if (['xg', 'D', 'l', 'F', 'M'].includes(code)) {
-				tokens.push(/** @type {'xg' | 'D' | 'l' | 'F' | 'M'} */(code))
+				tokens.push(/** @type {'xg' | 'D' | 'l' | 'F' | 'M'} */ (code))
 			} else if (code === '\\' && p < format.length - 1) {
 				++p
 			}
@@ -696,14 +697,18 @@ class Loader {
 	 * @returns {Promise<void>}
 	 */
 	async loadPreferablyFromDiskCache({
-		domain, pageName, ttlInDays, ctype, addCacheBuster = false,
+		domain,
+		pageName,
+		ttlInDays,
+		ctype,
+		addCacheBuster = false,
 	}) {
 		const ttlInMs = ttlInDays * cd.g.msInDay
 		const pageEncoded = encodeURIComponent(pageName)
 		const cacheBusterOrNot = addCacheBuster ? '&' + CACHE_BUSTER : ''
 
 		const apiResponse = await $.get(
-			`https://${domain}/w/api.php?titles=${pageEncoded}&origin=*&format=json&formatversion=2&uselang=content&maxage=${ttlInMs}&smaxage=${ttlInMs}&action=query&prop=revisions|info&rvprop=content&rvlimit=1${cacheBusterOrNot}`
+			`https://${domain}/w/api.php?titles=${pageEncoded}&origin=*&format=json&formatversion=2&uselang=content&maxage=${ttlInMs}&smaxage=${ttlInMs}&action=query&prop=revisions|info&rvprop=content&rvlimit=1${cacheBusterOrNot}`,
 		)
 
 		const apiPage = apiResponse.query.pages[0]
@@ -748,7 +753,7 @@ class Loader {
 			'default': 'body',
 		}).css('background-color')
 		const metadataFontSize = Number.parseFloat(
-			(cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7)
+			(cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7),
 		)
 		const sidebarTransparentColor = transparentize(sidebarColor)
 
@@ -852,7 +857,7 @@ class Loader {
 			(/** @type {unknown} */ error) => {
 				mw.notify(cd.s('error-loaddata'), { type: 'error' })
 				console.error(error)
-			}
+			},
 		)
 	}
 
@@ -864,7 +869,7 @@ class Loader {
 	 */
 	isWatchlistPage() {
 		return ['Recentchanges', 'Watchlist'].includes(
-			mw.config.get('wgCanonicalSpecialPageName') || ''
+			mw.config.get('wgCanonicalSpecialPageName') || '',
 		)
 	}
 
@@ -903,9 +908,9 @@ class Loader {
 					.append(
 						$('<div>').addClass('cd-bootingOverlay-logo-partBackground'),
 						createSvg(55, 55, 50, 50).html(
-							`<path fill-rule="evenodd" clip-rule="evenodd" d="M42.5 10H45C46.3261 10 47.5979 10.5268 48.5355 11.4645C49.4732 12.4021 50 13.6739 50 15V50L40 40H15C13.6739 40 12.4021 39.4732 11.4645 38.5355C10.5268 37.5979 10 36.3261 10 35V32.5H37.5C38.8261 32.5 40.0979 31.9732 41.0355 31.0355C41.9732 30.0979 42.5 28.8261 42.5 27.5V10ZM5 3.05176e-05H35C36.3261 3.05176e-05 37.5979 0.526815 38.5355 1.4645C39.4732 2.40218 40 3.67395 40 5.00003V25C40 26.3261 39.4732 27.5979 38.5355 28.5355C37.5979 29.4732 36.3261 30 35 30H10L0 40V5.00003C0 3.67395 0.526784 2.40218 1.46447 1.4645C2.40215 0.526815 3.67392 3.05176e-05 5 3.05176e-05ZM19.8 23C14.58 23 10.14 21.66 8.5 17H31.1C29.46 21.66 25.02 23 19.8 23ZM13.4667 7.50561C12.9734 7.17597 12.3933 7.00002 11.8 7.00002C11.0043 7.00002 10.2413 7.31609 9.6787 7.8787C9.11607 8.44131 8.8 9.20437 8.8 10C8.8 10.5934 8.97595 11.1734 9.30559 11.6667C9.6352 12.1601 10.1038 12.5446 10.6519 12.7717C11.2001 12.9987 11.8033 13.0581 12.3853 12.9424C12.9672 12.8266 13.5018 12.5409 13.9213 12.1213C14.3409 11.7018 14.6266 11.1672 14.7424 10.5853C14.8581 10.0033 14.7987 9.40015 14.5716 8.85197C14.3446 8.30379 13.9601 7.83526 13.4667 7.50561ZM27.8 7.00002C28.3933 7.00002 28.9734 7.17597 29.4667 7.50561C29.9601 7.83526 30.3446 8.30379 30.5716 8.85197C30.7987 9.40015 30.8581 10.0033 30.7424 10.5853C30.6266 11.1672 30.3409 11.7018 29.9213 12.1213C29.5018 12.5409 28.9672 12.8266 28.3853 12.9424C27.8033 13.0581 27.2001 12.9987 26.6519 12.7717C26.1038 12.5446 25.6352 12.1601 25.3056 11.6667C24.9759 11.1734 24.8 10.5934 24.8 10C24.8 9.20437 25.1161 8.44131 25.6787 7.8787C26.2413 7.31609 27.0043 7.00002 27.8 7.00002Z" />`
-						)
-					)
+							`<path fill-rule="evenodd" clip-rule="evenodd" d="M42.5 10H45C46.3261 10 47.5979 10.5268 48.5355 11.4645C49.4732 12.4021 50 13.6739 50 15V50L40 40H15C13.6739 40 12.4021 39.4732 11.4645 38.5355C10.5268 37.5979 10 36.3261 10 35V32.5H37.5C38.8261 32.5 40.0979 31.9732 41.0355 31.0355C41.9732 30.0979 42.5 28.8261 42.5 27.5V10ZM5 3.05176e-05H35C36.3261 3.05176e-05 37.5979 0.526815 38.5355 1.4645C39.4732 2.40218 40 3.67395 40 5.00003V25C40 26.3261 39.4732 27.5979 38.5355 28.5355C37.5979 29.4732 36.3261 30 35 30H10L0 40V5.00003C0 3.67395 0.526784 2.40218 1.46447 1.4645C2.40215 0.526815 3.67392 3.05176e-05 5 3.05176e-05ZM19.8 23C14.58 23 10.14 21.66 8.5 17H31.1C29.46 21.66 25.02 23 19.8 23ZM13.4667 7.50561C12.9734 7.17597 12.3933 7.00002 11.8 7.00002C11.0043 7.00002 10.2413 7.31609 9.6787 7.8787C9.11607 8.44131 8.8 9.20437 8.8 10C8.8 10.5934 8.97595 11.1734 9.30559 11.6667C9.6352 12.1601 10.1038 12.5446 10.6519 12.7717C11.2001 12.9987 11.8033 13.0581 12.3853 12.9424C12.9672 12.8266 13.5018 12.5409 13.9213 12.1213C14.3409 11.7018 14.6266 11.1672 14.7424 10.5853C14.8581 10.0033 14.7987 9.40015 14.5716 8.85197C14.3446 8.30379 13.9601 7.83526 13.4667 7.50561ZM27.8 7.00002C28.3933 7.00002 28.9734 7.17597 29.4667 7.50561C29.9601 7.83526 30.3446 8.30379 30.5716 8.85197C30.7987 9.40015 30.8581 10.0033 30.7424 10.5853C30.6266 11.1672 30.3409 11.7018 29.9213 12.1213C29.5018 12.5409 28.9672 12.8266 28.3853 12.9424C27.8033 13.0581 27.2001 12.9987 26.6519 12.7717C26.1038 12.5446 25.6352 12.1601 25.3056 11.6667C24.9759 11.1734 24.8 10.5934 24.8 10C24.8 9.20437 25.1161 8.44131 25.6787 7.8787C26.2413 7.31609 27.0043 7.00002 27.8 7.00002Z" />`,
+						),
+					),
 			)
 			.appendTo(document.body)
 

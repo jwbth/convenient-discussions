@@ -4,48 +4,48 @@ declare global {
 			namespace TitleWidget {
 				interface ConfigOptions extends OO.ui.Widget.ConfigOptions {
 					/** Number of results to show (default: 10) */
-					limit?: number;
+					limit?: number
 					/** Namespace to prepend to queries */
-					namespace?: number;
+					namespace?: number
 					/** Maximum query length (default: 255) */
-					maxLength?: number;
+					maxLength?: number
 					/** If a namespace is set, display titles relative to it (default: true) */
-					relative?: boolean;
+					relative?: boolean
 					/** Display search suggestions (default: true) */
-					suggestions?: boolean;
+					suggestions?: boolean
 					/** Show the targets of redirects (default: true) */
-					showRedirectTargets?: boolean;
+					showRedirectTargets?: boolean
 					/** Show page images (default: false) */
-					showImages?: boolean;
+					showImages?: boolean
 					/** Show page descriptions (default: false) */
-					showDescriptions?: boolean;
+					showDescriptions?: boolean
 					/** Show disambiguation pages as the last results (default: false) */
-					showDisambigsLast?: boolean;
+					showDisambigsLast?: boolean
 					/**
 					 * Show the user's input as a missing page when a page with this exact name doesn't exist.
 					 * Disabled by default when the namespace option is used, otherwise enabled by default.
 					 */
-					showMissing?: boolean;
+					showMissing?: boolean
 					/** Show pages with a valid interwiki prefix (default: false) */
-					showInterwikis?: boolean;
+					showInterwikis?: boolean
 					/** Search for hash fragments on a specific page when typed (default: false) */
-					searchFragments?: boolean;
+					searchFragments?: boolean
 					/** Add exact user's input query to results (default: true) */
-					addQueryInput?: boolean;
+					addQueryInput?: boolean
 					/** Exclude the current page from suggestions (default: false) */
-					excludeCurrentPage?: boolean;
+					excludeCurrentPage?: boolean
 					/** Exclude pages whose namespace is negative (default: false) */
-					excludeDynamicNamespaces?: boolean;
+					excludeDynamicNamespaces?: boolean
 					/** Whether the input must be a valid title (default: true) */
-					validateTitle?: boolean;
+					validateTitle?: boolean
 					/** Whether the input must not be empty (default: false) */
-					required?: boolean;
+					required?: boolean
 					/** Highlight the partial query the user used for this title (default: true) */
-					highlightSearchQuery?: boolean;
+					highlightSearchQuery?: boolean
 					/** Result cache which implements a 'set' method */
-					cache?: any;
+					cache?: any
 					/** API object to use; creates a default mw.Api instance if not specified */
-					api?: mw.Api;
+					api?: mw.Api
 				}
 
 				interface EventMap extends OO.ui.TextInputWidget.EventMap {}
@@ -55,49 +55,67 @@ declare global {
 				// #region EventEmitter overloads
 				on<K extends keyof TitleWidget.EventMap, A extends OO.ArgTuple = [], C = null>(
 					event: K,
-					method: OO.EventHandler<C, (this: C, ...args: [...A, ...TitleWidget.EventMap[K]]) => void>,
+					method: OO.EventHandler<
+						C,
+						(this: C, ...args: [...A, ...TitleWidget.EventMap[K]]) => void
+					>,
 					args?: A,
 					context?: C,
-				): this;
+				): this
 				on<K extends string, C = null>(
 					event: K extends keyof TitleWidget.EventMap ? never : K,
 					method: OO.EventHandler<C>,
 					args?: any[],
 					context?: C,
-				): this;
+				): this
 
-				once<K extends keyof TitleWidget.EventMap>(event: K, listener: (this: null, ...args: TitleWidget.EventMap[K]) => void): this;
+				once<K extends keyof TitleWidget.EventMap>(
+					event: K,
+					listener: (this: null, ...args: TitleWidget.EventMap[K]) => void,
+				): this
 				once<K extends string>(
 					event: K extends keyof TitleWidget.EventMap ? never : K,
 					listener: (this: null, ...args: any[]) => void,
-				): this;
+				): this
 
 				off<K extends keyof TitleWidget.EventMap, C = null>(
 					event: K,
 					method?: OO.EventHandler<C, (this: C, ...args: TitleWidget.EventMap[K]) => void>,
 					context?: C,
-				): this;
+				): this
 				off<K extends string, C = null>(
 					event: K extends keyof TitleWidget.EventMap ? never : K,
 					method?: OO.EventHandler<C>,
 					context?: C,
-				): this;
+				): this
 
-				emit<K extends keyof TitleWidget.EventMap>(event: K, ...args: TitleWidget.EventMap[K]): boolean;
-				emit<K extends string>(event: K extends keyof TitleWidget.EventMap ? never : K, ...args: any[]): boolean;
+				emit<K extends keyof TitleWidget.EventMap>(
+					event: K,
+					...args: TitleWidget.EventMap[K]
+				): boolean
+				emit<K extends string>(
+					event: K extends keyof TitleWidget.EventMap ? never : K,
+					...args: any[]
+				): boolean
 
-				emitThrow<K extends keyof TitleWidget.EventMap>(event: K, ...args: TitleWidget.EventMap[K]): boolean;
-				emitThrow<K extends string>(event: K extends keyof TitleWidget.EventMap ? never : K, ...args: any[]): boolean;
+				emitThrow<K extends keyof TitleWidget.EventMap>(
+					event: K,
+					...args: TitleWidget.EventMap[K]
+				): boolean
+				emitThrow<K extends string>(
+					event: K extends keyof TitleWidget.EventMap ? never : K,
+					...args: any[]
+				): boolean
 
 				connect<T extends Partial<Record<keyof TitleWidget.EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
 					context: C,
 					methods: OO.EventConnectionMap<T, C, TitleWidget.EventMap>,
-				): this;
+				): this
 
 				disconnect<T extends Partial<Record<keyof TitleWidget.EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
 					context: C,
 					methods?: OO.EventConnectionMap<T, C, TitleWidget.EventMap>,
-				): this;
+				): this
 				// #endregion
 			}
 
@@ -109,69 +127,69 @@ declare global {
 				 * Create an instance of mw.widgets.TitleWidget.
 				 * @param config Configuration options
 				 */
-				constructor(config?: TitleWidget.ConfigOptions);
+				constructor(config?: TitleWidget.ConfigOptions)
 
 				/** Number of results to show */
-				limit: number;
+				limit: number
 				/** Maximum query length */
-				maxLength: number;
+				maxLength: number
 				/** Namespace to prepend to queries, or null */
-				namespace: number | null;
+				namespace: number | null
 				/** If a namespace is set, display titles relative to it */
-				relative: boolean;
+				relative: boolean
 				/** Display search suggestions */
-				suggestions: boolean;
+				suggestions: boolean
 				/** Show the targets of redirects */
-				showRedirectTargets: boolean;
+				showRedirectTargets: boolean
 				/** Show page images */
-				showImages: boolean;
+				showImages: boolean
 				/** Show page descriptions */
-				showDescriptions: boolean;
+				showDescriptions: boolean
 				/** Show disambiguation pages as the last results */
-				showDisambigsLast: boolean;
+				showDisambigsLast: boolean
 				/** Show the user's input as a missing page when a page with this exact name doesn't exist */
-				showMissing: boolean;
+				showMissing: boolean
 				/** Show pages with a valid interwiki prefix */
-				showInterwikis: boolean;
+				showInterwikis: boolean
 				/** Search for hash fragments on a specific page when typed */
-				searchFragments: boolean;
+				searchFragments: boolean
 				/** Add exact user's input query to results */
-				addQueryInput: boolean;
+				addQueryInput: boolean
 				/** Exclude the current page from suggestions */
-				excludeCurrentPage: boolean;
+				excludeCurrentPage: boolean
 				/** Exclude pages whose namespace is negative */
-				excludeDynamicNamespaces: boolean;
+				excludeDynamicNamespaces: boolean
 				/** Whether the input must be a valid title */
-				validateTitle: boolean;
+				validateTitle: boolean
 				/** Whether the input must not be empty */
-				required: boolean;
+				required: boolean
 				/** Highlight the partial query the user used for this title */
-				highlightSearchQuery: boolean;
+				highlightSearchQuery: boolean
 				/** Result cache */
-				cache: any;
+				cache: any
 				/** API object for title requests */
-				api: mw.Api;
+				api: mw.Api
 				/** Function for comparing two strings */
-				compare: (a: string, b: string) => number;
+				compare: (a: string, b: string) => number
 				/** Cache for section suggestions */
-				sectionsCache: { [key: string]: JQuery.Promise<any> };
+				sectionsCache: { [key: string]: JQuery.Promise<any> }
 
 				/** Static cache for interwiki prefixes promises */
-				static interwikiPrefixesPromiseCache: { [key: string]: JQuery.Promise<string[]> };
+				static interwikiPrefixesPromiseCache: { [key: string]: JQuery.Promise<string[]> }
 
 				/**
 				 * Get the current value of the search query.
 				 *
 				 * @return {string} Search query
 				 */
-				abstract getQueryValue(): string;
+				abstract getQueryValue(): string
 
 				/**
 				 * Get the namespace to prepend to titles in suggestions, if any.
 				 *
 				 * @return {number | null}
 				 */
-				getNamespace(): number | null;
+				getNamespace(): number | null
 
 				/**
 				 * Set the namespace to prepend to titles in suggestions, if any.
@@ -179,14 +197,14 @@ declare global {
 				 * @param namespace {number | null} Namespace number
 				 * @return {void}
 				 */
-				setNamespace(namespace: number | null): void;
+				setNamespace(namespace: number | null): void
 
 				/**
 				 * Get interwiki prefixes promise.
 				 *
 				 * @return {JQuery.Promise<string[]>} Promise resolving with an array of interwiki prefixes.
 				 */
-				getInterwikiPrefixesPromise(): JQuery.Promise<string[]>;
+				getInterwikiPrefixesPromise(): JQuery.Promise<string[]>
 
 				/**
 				 * Suggest link fragments from the sections API.
@@ -195,14 +213,17 @@ declare global {
 				 * @param fragmentQuery {string} Partial link fragment, from the user input
 				 * @return {JQuery.Promise<{ query: { pages: any[] } }>} Suggestions promise
 				 */
-				getSectionSuggestions(title: string, fragmentQuery: string): JQuery.Promise<{ query: { pages: any[] } }>;
+				getSectionSuggestions(
+					title: string,
+					fragmentQuery: string,
+				): JQuery.Promise<{ query: { pages: any[] } }>
 
 				/**
 				 * Get a promise which resolves with an API response for suggested links for the current query.
 				 *
 				 * @return {JQuery.Promise<any> & { abort(): void }} Suggestions promise
 				 */
-				getSuggestionsPromise(): JQuery.Promise<any> & { abort(): void };
+				getSuggestionsPromise(): JQuery.Promise<any> & { abort(): void }
 
 				/**
 				 * Check for the existence of a given title in an API result set.
@@ -211,7 +232,7 @@ declare global {
 				 * @param title {string} The page title to search for.
 				 * @return {boolean}
 				 */
-				responseContainsNonExistingTitle(apiResponse: object, title: string): boolean;
+				responseContainsNonExistingTitle(apiResponse: object, title: string): boolean
 
 				/**
 				 * Get API params for a given query.
@@ -219,14 +240,14 @@ declare global {
 				 * @param query {string} User query
 				 * @return {object} API params
 				 */
-				getApiParams(query: string): object;
+				getApiParams(query: string): object
 
 				/**
 				 * Get the API object for title requests.
 				 *
 				 * @return {mw.Api} MediaWiki API
 				 */
-				getApi(): mw.Api;
+				getApi(): mw.Api
 
 				/**
 				 * Get option widgets from the server response.
@@ -234,7 +255,7 @@ declare global {
 				 * @param data {object} Query result
 				 * @return {OO.ui.OptionWidget[]} Menu items
 				 */
-				getOptionsFromData(data: object): OO.ui.OptionWidget[];
+				getOptionsFromData(data: object): OO.ui.OptionWidget[]
 
 				/**
 				 * Create a menu option widget with specified data.
@@ -242,7 +263,7 @@ declare global {
 				 * @param data {object} Data for option widget
 				 * @return {OO.ui.MenuOptionWidget} Menu option widget
 				 */
-				createOptionWidget(data: object): OO.ui.MenuOptionWidget;
+				createOptionWidget(data: object): OO.ui.MenuOptionWidget
 
 				/**
 				 * Get menu option widget data from the title and page data.
@@ -251,7 +272,7 @@ declare global {
 				 * @param data {object} Page data
 				 * @return {object} Data for option widget
 				 */
-				getOptionWidgetData(title: string, data: object): object;
+				getOptionWidgetData(title: string, data: object): object
 
 				/**
 				 * Get title object corresponding to given value, or getQueryValue if not given.
@@ -259,17 +280,17 @@ declare global {
 				 * @param value {string} [Optional] Value to get a title for
 				 * @return {mw.Title | null} Title object, or null if value is invalid
 				 */
-				getMWTitle(value?: string): mw.Title | null;
+				getMWTitle(value?: string): mw.Title | null
 
 				/**
 				 * Check if the query is valid.
 				 *
 				 * @return {boolean} The query is valid
 				 */
-				isQueryValid(): boolean;
+				isQueryValid(): boolean
 			}
 		}
 	}
 }
 
-export {};
+export {}

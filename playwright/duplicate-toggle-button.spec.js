@@ -19,7 +19,9 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
 	})
 
-	test('should not have duplicate toggleChildThreadsButton elements in compact comments', async ({ page }) => {
+	test('should not have duplicate toggleChildThreadsButton elements in compact comments', async ({
+		page,
+	}) => {
 		// Wait for comments to be fully processed
 		await page.waitForTimeout(2000)
 
@@ -40,17 +42,20 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 				console.log(`Comment ${i + 1}: Found ${buttonCount} toggle button(s)`)
 
 				// Check if this comment actually has child threads
-				const hasChildThreads = await page.evaluate((commentElement) => {
-					// Check if this comment has children with threads
-					const cdComment = commentElement._cdComment
-					if (cdComment?.getChildren) {
-						const children = cdComment.getChildren()
+				const hasChildThreads = await page.evaluate(
+					(commentElement) => {
+						// Check if this comment has children with threads
+						const cdComment = commentElement._cdComment
+						if (cdComment?.getChildren) {
+							const children = cdComment.getChildren()
 
-						return children.some((child) => child.thread)
-					}
+							return children.some((child) => child.thread)
+						}
 
-					return false
-				}, await comment.elementHandle())
+						return false
+					},
+					await comment.elementHandle(),
+				)
 
 				if (hasChildThreads) {
 					// Comments with child threads should have exactly 1 toggle button
@@ -71,7 +76,9 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 			}
 		}
 
-		console.log(`✅ Checked ${comments.length} comments, found ${commentsWithToggleButtons} with toggle buttons`)
+		console.log(
+			`✅ Checked ${comments.length} comments, found ${commentsWithToggleButtons} with toggle buttons`,
+		)
 
 		// The main assertion: no duplicates should be found
 		expect(duplicatesFound).toBe(0)
@@ -79,15 +86,20 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 
 	test('should verify toggle button functionality works correctly', async ({ page }) => {
 		// Find a comment with child threads and a toggle button
-		const commentWithToggle = page.locator('.cd-comment').filter({
-			has: page.locator('.cd-comment-button-toggleChildThreads'),
-		}).first()
+		const commentWithToggle = page
+			.locator('.cd-comment')
+			.filter({
+				has: page.locator('.cd-comment-button-toggleChildThreads'),
+			})
+			.first()
 
-		if (await commentWithToggle.count() > 0) {
+		if ((await commentWithToggle.count()) > 0) {
 			console.log('Found comment with toggle button, testing functionality')
 
 			// Get the toggle button
-			const toggleButton = commentWithToggle.locator('.cd-comment-button-toggleChildThreads').first()
+			const toggleButton = commentWithToggle
+				.locator('.cd-comment-button-toggleChildThreads')
+				.first()
 
 			// Verify button is visible and clickable
 			await expect(toggleButton).toBeVisible()
@@ -113,11 +125,14 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 
 	test('should check for proper button positioning in overlay menu', async ({ page }) => {
 		// Find a compact comment with toggle button
-		const compactComment = page.locator('.cd-comment:not(.cd-comment-reformatted)').filter({
-			has: page.locator('.cd-comment-button-toggleChildThreads'),
-		}).first()
+		const compactComment = page
+			.locator('.cd-comment:not(.cd-comment-reformatted)')
+			.filter({
+				has: page.locator('.cd-comment-button-toggleChildThreads'),
+			})
+			.first()
 
-		if (await compactComment.count() > 0) {
+		if ((await compactComment.count()) > 0) {
 			console.log('Testing toggle button positioning in compact comment overlay')
 
 			// Hover over the comment to show overlay menu
@@ -127,7 +142,7 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 			// Check if overlay menu exists
 			const overlayMenu = compactComment.locator('.cd-comment-overlay-menu')
 
-			if (await overlayMenu.count() > 0) {
+			if ((await overlayMenu.count()) > 0) {
 				// Verify toggle button is in the overlay menu
 				const toggleInOverlay = overlayMenu.locator('.cd-comment-button-toggleChildThreads')
 				const toggleCount = await toggleInOverlay.count()
@@ -162,7 +177,8 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 				totalButtons++
 				const parentComment = button.closest('.cd-comment')
 				if (parentComment) {
-					const commentId = parentComment.id || `comment-${Array.from(allComments).indexOf(parentComment)}`
+					const commentId =
+						parentComment.id || `comment-${Array.from(allComments).indexOf(parentComment)}`
 					buttonsByComment[commentId] = (buttonsByComment[commentId] || 0) + 1
 				}
 			})
@@ -189,7 +205,9 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 				allToggleButtons.forEach((button) => {
 					const parentPart = button.closest('.cd-comment-part')
 					if (parentPart) {
-						const partId = parentPart.id || `part-${Array.from(document.querySelectorAll('.cd-comment-part')).indexOf(parentPart)}`
+						const partId =
+							parentPart.id ||
+							`part-${Array.from(document.querySelectorAll('.cd-comment-part')).indexOf(parentPart)}`
 						buttonsByPart[partId] = (buttonsByPart[partId] || 0) + 1
 					}
 				})

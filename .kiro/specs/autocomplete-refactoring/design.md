@@ -34,23 +34,23 @@ BaseAutocomplete (abstract base class)
 ```typescript
 abstract class BaseAutocomplete {
   // Shared properties
-  cache = {};
-  lastResults = [];
-  lastQuery = '';
+  cache = {}
+  lastResults = []
+  lastQuery = ''
 
   // Abstract methods (must be implemented by subclasses)
-  abstract getLabel(): string;
-  abstract getTrigger(): string;
-  abstract transformItemToInsertData(item: any): InsertData;
-  abstract validateInput(text: string): boolean;
-  abstract makeApiRequest(text: string): Promise<string[]>;
+  abstract getLabel(): string
+  abstract getTrigger(): string
+  abstract transformItemToInsertData(item: any): InsertData
+  abstract validateInput(text: string): boolean
+  abstract makeApiRequest(text: string): Promise<string[]>
 
   // Shared methods
-  async getValues(text: string, callback: Function): Promise<void>;
-  processResults(items: any[], config: AutocompleteConfigShared): Value[];
-  searchLocal(text: string, list: string[]): string[];
-  handleCache(text: string): string[] | null;
-  updateCache(text: string, results: string[]): void;
+  async getValues(text: string, callback: Function): Promise<void>
+  processResults(items: any[], config: AutocompleteConfigShared): Value[]
+  searchLocal(text: string, list: string[]): string[]
+  handleCache(text: string): string[] | null
+  updateCache(text: string, results: string[]): void
 }
 ```
 
@@ -90,15 +90,15 @@ abstract class BaseAutocomplete {
 
 ```typescript
 class AutocompleteManager {
-  private autocompleteInstances: Map<AutocompleteType, BaseAutocomplete>;
-  private tribute: Tribute;
-  private inputs: TextInputWidget[];
+  private autocompleteInstances: Map<AutocompleteType, BaseAutocomplete>
+  private tribute: Tribute
+  private inputs: TextInputWidget[]
 
-  constructor(options: AutocompleteOptions);
-  init(): void;
-  terminate(): void;
-  private createAutocompleteInstances(types: AutocompleteType[]): void;
-  private getCollections(): TributeCollection[];
+  constructor(options: AutocompleteOptions)
+  init(): void
+  terminate(): void
+  private createAutocompleteInstances(types: AutocompleteType[]): void
+  private getCollections(): TributeCollection[]
 }
 ```
 
@@ -108,12 +108,18 @@ class AutocompleteManager {
 class AutocompleteFactory {
   static create(type: AutocompleteType, options: any): BaseAutocomplete {
     switch (type) {
-      case 'mentions': return new MentionsAutocomplete(options);
-      case 'wikilinks': return new WikilinksAutocomplete(options);
-      case 'templates': return new TemplatesAutocomplete(options);
-      case 'tags': return new TagsAutocomplete(options);
-      case 'commentLinks': return new CommentLinksAutocomplete(options);
-      default: throw new CdError(`Unknown autocomplete type: ${type}`);
+      case 'mentions':
+        return new MentionsAutocomplete(options)
+      case 'wikilinks':
+        return new WikilinksAutocomplete(options)
+      case 'templates':
+        return new TemplatesAutocomplete(options)
+      case 'tags':
+        return new TagsAutocomplete(options)
+      case 'commentLinks':
+        return new CommentLinksAutocomplete(options)
+      default:
+        throw new CdError(`Unknown autocomplete type: ${type}`)
     }
   }
 }
@@ -125,10 +131,10 @@ class AutocompleteFactory {
 
 ```typescript
 interface AutocompleteOptions {
-  types: AutocompleteType[];
-  inputs: TextInputWidget[];
-  comments?: Comment[];
-  defaultUserNames?: string[];
+  types: AutocompleteType[]
+  inputs: TextInputWidget[]
+  comments?: Comment[]
+  defaultUserNames?: string[]
 }
 ```
 
@@ -136,9 +142,9 @@ interface AutocompleteOptions {
 
 ```typescript
 interface Value<T = any> {
-  key: string;
-  item: T;
-  transformItemToInsertData?: () => InsertData;
+  key: string
+  item: T
+  transformItemToInsertData?: () => InsertData
 }
 ```
 
@@ -146,13 +152,13 @@ interface Value<T = any> {
 
 ```typescript
 interface AutocompleteConfig {
-  cache: StringArraysByKey;
-  lastResults: string[];
-  lastQuery: string;
-  default?: any[];
-  defaultLazy?: () => any[];
-  transformItemToInsertData?: (this: Value) => InsertData;
-  data?: AnyByKey;
+  cache: StringArraysByKey
+  lastResults: string[]
+  lastQuery: string
+  default?: any[]
+  defaultLazy?: () => any[]
+  transformItemToInsertData?: (this: Value) => InsertData
+  data?: AnyByKey
 }
 ```
 

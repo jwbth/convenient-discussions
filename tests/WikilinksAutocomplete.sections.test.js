@@ -183,7 +183,9 @@ describe('WikilinksAutocomplete - Section Autocomplete', () => {
 
 		test('replaces underscores with spaces', () => {
 			expect(autocomplete.normalizeSectionName('Section_Name')).toBe('section name')
-			expect(autocomplete.normalizeSectionName('Multiple_Under_Scores')).toBe('multiple under scores')
+			expect(autocomplete.normalizeSectionName('Multiple_Under_Scores')).toBe(
+				'multiple under scores',
+			)
 		})
 
 		test('handles mixed case and underscores', () => {
@@ -211,10 +213,7 @@ describe('WikilinksAutocomplete - Section Autocomplete', () => {
 				prop: 'sections',
 			})
 
-			expect(results).toEqual([
-				'Wikipedia#History',
-				'Wikipedia#Historical events',
-			])
+			expect(results).toEqual(['Wikipedia#History', 'Wikipedia#Historical events'])
 		})
 
 		test('prioritizes prefix matches over contains matches', async () => {
@@ -247,19 +246,13 @@ describe('WikilinksAutocomplete - Section Autocomplete', () => {
 
 			const results = await autocomplete.getSectionSuggestions('Wikipedia', '')
 
-			expect(results).toEqual([
-				'Wikipedia#Section 1',
-				'Wikipedia#Section 2',
-				'Wikipedia#Section 3',
-			])
+			expect(results).toEqual(['Wikipedia#Section 1', 'Wikipedia#Section 2', 'Wikipedia#Section 3'])
 		})
 
 		test('caches section results', async () => {
 			mockApi.get.mockResolvedValue({
 				parse: {
-					sections: [
-						{ linkAnchor: 'History', line: 'History' },
-					],
+					sections: [{ linkAnchor: 'History', line: 'History' }],
 				},
 			})
 
@@ -292,9 +285,7 @@ describe('WikilinksAutocomplete - Section Autocomplete', () => {
 		test('normalizes underscores in section anchors', async () => {
 			mockApi.get.mockResolvedValue({
 				parse: {
-					sections: [
-						{ linkAnchor: 'Section_with_underscores', line: 'Section with underscores' },
-					],
+					sections: [{ linkAnchor: 'Section_with_underscores', line: 'Section with underscores' }],
 				},
 			})
 
@@ -308,9 +299,7 @@ describe('WikilinksAutocomplete - Section Autocomplete', () => {
 		test('routes to getSectionSuggestions when # is present', async () => {
 			mockApi.get.mockResolvedValue({
 				parse: {
-					sections: [
-						{ linkAnchor: 'History', line: 'History' },
-					],
+					sections: [{ linkAnchor: 'History', line: 'History' }],
 				},
 			})
 
@@ -327,7 +316,9 @@ describe('WikilinksAutocomplete - Section Autocomplete', () => {
 
 		test('routes to getPageSuggestions when no # is present', async () => {
 			// Spy on getPageSuggestions to verify it's called
-			const getPageSuggestionsSpy = jest.spyOn(autocomplete, 'getPageSuggestions').mockResolvedValue(['Wikipedia', 'Wikidata'])
+			const getPageSuggestionsSpy = jest
+				.spyOn(autocomplete, 'getPageSuggestions')
+				.mockResolvedValue(['Wikipedia', 'Wikidata'])
 
 			const results = await autocomplete.makeApiRequest('wiki')
 

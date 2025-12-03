@@ -298,7 +298,7 @@ export default class Page {
 			})
 			.catch(handleApiReject)
 		const { query, curtimestamp: queryTimestamp } =
-		/** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request)
+			/** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request)
 
 		const page = query?.pages?.[0]
 		const revision = page?.revisions?.[0]
@@ -480,7 +480,7 @@ export default class Page {
 					{
 						// Beneficial when sending long unicode texts, which is what we do here.
 						contentType: 'multipart/form-data',
-					}
+					},
 				)
 				.catch(handleApiReject)
 			response = await request
@@ -608,45 +608,38 @@ export default class Page {
 
 		return new Map(
 			pages
-				.map((page) =>
-				/** @type {[Page, StringsByKey]} */ ([
-						page,
-						Object.fromEntries(
-							$templates
-							// Find the first <template> with a <title> child equal to the name
-								.filter(
-									(_, template) =>
-										pageRegistry.get(
-											$(template)
-												.children('title')
-												.text()
-												.trim()
-										) === page
-								)
-								.first()
-								.find('comment')
-								.remove()
-								.end()
+				.map(
+					(page) =>
+						/** @type {[Page, StringsByKey]} */ ([
+							page,
+							Object.fromEntries(
+								$templates
+									// Find the first <template> with a <title> child equal to the name
+									.filter(
+										(_, template) =>
+											pageRegistry.get($(template).children('title').text().trim()) === page,
+									)
+									.first()
+									.find('comment')
+									.remove()
+									.end()
 
-							// Process all <part> children to extract <name> and <value>
-								.children('part')
-								.get()
-								.map((part) => {
-									const $name = $(part).children('name')
+									// Process all <part> children to extract <name> and <value>
+									.children('part')
+									.get()
+									.map((part) => {
+										const $name = $(part).children('name')
 
-									// Key, value
-									return [
-										$name.text().trim() || $name.attr('index'),
-										$(part)
-											.children('value')
-											.text()
-											.trim(),
-									]
-								})
-						),
-					])
+										// Key, value
+										return [
+											$name.text().trim() || $name.attr('index'),
+											$(part).children('value').text().trim(),
+										]
+									}),
+							),
+						]),
 				)
-				.filter(defined)
+				.filter(defined),
 		)
 	}
 
@@ -745,7 +738,7 @@ export default class Page {
 		const pathToRegexp = (
 			/** @type {string} */ path,
 			/** @type {RegExp[]|undefined} */ replacements,
-			/** @type {boolean} */ isArchivePath
+			/** @type {boolean} */ isArchivePath,
 		) =>
 			new RegExp(
 				new TextMasker(path)
@@ -764,7 +757,7 @@ export default class Page {
 						return pattern
 					})
 					.unmask()
-					.getText()
+					.getText(),
 			)
 		cd.config.archivePaths.forEach((entry) => {
 			if (entry instanceof RegExp) {

@@ -1,8 +1,19 @@
 import ForeignStructuredUpload from './ForeignStructuredUpload'
 import Pseudolink from './Pseudolink'
 import cd from './loader/cd'
-import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname } from './shared/utils-general'
-import { createCheckboxControl, createRadioControl, createTextControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs'
+import {
+	canonicalUrlToPageName,
+	defined,
+	generateFixedPosTimestamp,
+	getDbnameForHostname,
+} from './shared/utils-general'
+import {
+	createCheckboxControl,
+	createRadioControl,
+	createTextControl,
+	createTitleControl,
+	es6ClassToOoJsClass,
+} from './utils-oojs'
 import { mergeJquery, wrapHtml } from './utils-window'
 
 // TODO: Make it work on third-party wikis (where the target host is not Wikimedia Commons)
@@ -74,11 +85,10 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 			this.setFile(file)
 		}
 		this.enProjectName = enProjectName
-		this
-			.on('fileSaved', () => {
-				// Pretend that the page hasn't changed to 'insert'
-				this.setPage('info')
-			})
+		this.on('fileSaved', () => {
+			// Pretend that the page hasn't changed to 'insert'
+			this.setPage('info')
+		})
 		this.onPresetChange()
 	}
 
@@ -91,10 +101,10 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		// We hide that checkbox, replacing it with a radio select
 		this.ownWorkCheckbox.setSelected(true)
 
-		const fieldset = /** @type {OO.ui.FieldsetLayout} */ (this.uploadForm.getItems()[0]);
+		const fieldset = /** @type {OO.ui.FieldsetLayout} */ (this.uploadForm.getItems()[0])
 
 		// Hide everything related to the "own work" checkbox
-		/** @type {OO.ui.FieldLayout[]} */ (fieldset.getItems()).slice(1).forEach((layout) => {
+		/** @type {OO.ui.FieldLayout[]} */ ;(fieldset.getItems()).slice(1).forEach((layout) => {
 			layout.toggle(false)
 		})
 
@@ -106,7 +116,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 					data: 'projectScreenshot',
 					label: cd.s(
 						'ud-preset-projectscreenshot',
-						cd.mws('project-localized-name-' + mw.config.get('wgDBname'))
+						cd.mws('project-localized-name-' + mw.config.get('wgDBname')),
 					),
 					help: cd.s('ud-preset-projectscreenshot-help'),
 					selected: true,
@@ -151,7 +161,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 				this.insertTalkPageButton
 					? $('<div>').append(this.insertTalkPageButton.element)
 					: undefined,
-				$('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help'))
+				$('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help')),
 			),
 			classes: ['cd-uploadDialog-fieldLayout-internal'],
 		})
@@ -169,14 +179,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		})
 		fieldset.addItems([this.controls.preset.field, this.controls.configure.field])
 
-		this.controls.preset.input
-			.on('select', (item) => {
-				this.onPresetChange(/** @type {OO.ui.RadioOptionWidget} */ (item))
-			})
-		projectScreenshotItem.radio.$input
-			.on('focus', () => {
-				this.controls.title.input.focus()
-			})
+		this.controls.preset.input.on('select', (item) => {
+			this.onPresetChange(/** @type {OO.ui.RadioOptionWidget} */ (item))
+		})
+		projectScreenshotItem.radio.$input.on('focus', () => {
+			this.controls.title.input.focus()
+		})
 		this.configureManuallySelected = false
 		this.controls.configure.input
 			.on('change', this.onPresetChange)
@@ -257,7 +265,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 */
 	areAddedInputsDisabled() {
 		return (
-		/** @type {import('./RadioOptionWidget').default} */ (
+			/** @type {import('./RadioOptionWidget').default} */ (
 				this.controls.preset.input.findSelectedItem()
 			)?.getData() === 'ownWork' && !this.controls.configure.input.isSelected()
 		)
@@ -283,20 +291,19 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 			classes: ['cd-input-monospace'],
 			help: wrapHtml(
 				cd.mws('mwe-upwiz-license-custom-explain', null, cd.mws('mwe-upwiz-license-custom-url')),
-				{ targetBlank: true }
+				{ targetBlank: true },
 			),
 		})
 
 		this.controls.source.input.on('change', this.onInfoFormChange)
 		this.controls.author.input.on('change', this.onInfoFormChange)
-		this.controls.license.input.on('change', this.onInfoFormChange);
+		this.controls.license.input.on('change', this.onInfoFormChange)
 
 		// Add items to the fieldset
-		/** @type {OO.ui.FieldsetLayout} */ (this.infoForm.getItems()[1]).addItems([
-			this.controls.source.field,
-			this.controls.author.field,
-			this.controls.license.field,
-		], 2)
+		/** @type {OO.ui.FieldsetLayout} */ ;(this.infoForm.getItems()[1]).addItems(
+			[this.controls.source.field, this.controls.author.field, this.controls.license.field],
+			2,
+		)
 	}
 
 	/**
@@ -319,7 +326,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 				this.controls?.author.input.getValidity(),
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				this.controls?.license.input.getValidity(),
-			].filter(defined)
+			].filter(defined),
 		).catch(() => {
 			valid = false
 		})
@@ -352,7 +359,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 */
 	uploadFile() {
 		const preset = /** @type {string | undefined} */ (
-		/** @type {import('./RadioOptionWidget').default} */ (
+			/** @type {import('./RadioOptionWidget').default} */ (
 				this.controls.preset.input.findSelectedItem()
 			)?.getData()
 		)
@@ -380,7 +387,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 			case 'mediawikiScreenshot': {
 				/** @type {string} */
 				const filenameDate =
-					this.getExactDateFromLastModified(/** @type {File} */(this.getFile())) ||
+					this.getExactDateFromLastModified(/** @type {File} */ (this.getFile())) ||
 					date.format('YYYY-MM-DD HH-mm-ss')
 
 				const title = this.controls.title.input.getMWTitle()
@@ -420,7 +427,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 					if (!hasIwPrefix && pageName && window.getInterwikiPrefixForHostnameSync) {
 						const prefix = window.getInterwikiPrefixForHostnameSync(
 							cd.g.serverName,
-							'commons.wikimedia.org'
+							'commons.wikimedia.org',
 						)
 						pageNameOrProjectName = `[[:${prefix}${pageName}]]`
 					} else {
@@ -434,7 +441,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 					this.controls.license.input.setValue(
 						hasIwPrefix
 							? '{{Wikimedia-screenshot}}'
-							: this.constructor.getTemplateForHostname(cd.g.serverName)
+							: this.constructor.getTemplateForHostname(cd.g.serverName),
 					)
 
 					// Load the English project name for the file name if we can
@@ -450,24 +457,23 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 								() => window.getUrlFromInterwikiLink?.(pageName),
 								(/** @type {unknown} */ error) => {
 									throw new Error('badUpload', { cause: error })
-								}
+								},
 							)
-							.then(
-								(url) => {
-									if (!url) {
-										throw new Error('noUrl')
-									}
+							.then((url) => {
+								if (!url) {
+									throw new Error('noUrl')
+								}
 
-									hostname = new URL(url, cd.g.server).hostname
-									this.controls.license.input.setValue(
-										this.constructor.getTemplateForHostname(hostname)
-									)
-									const dbname = getDbnameForHostname(hostname)
-									unprefixedPageName = canonicalUrlToPageName(url)
-									messageName = `project-localized-name-${dbname}`
+								hostname = new URL(url, cd.g.server).hostname
+								this.controls.license.input.setValue(
+									this.constructor.getTemplateForHostname(hostname),
+								)
+								const dbname = getDbnameForHostname(hostname)
+								unprefixedPageName = canonicalUrlToPageName(url)
+								messageName = `project-localized-name-${dbname}`
 
-									return cd.getApi().getMessages(messageName, { amlang: 'en' })
-								})
+								return cd.getApi().getMessages(messageName, { amlang: 'en' })
+							})
 							.then(
 								(messages) => {
 									const newProjectName = messages[messageName]
@@ -475,9 +481,11 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
 									const newHistoryText = this.constructor.generateHistoryText(
 										hostname,
-										unprefixedPageName
+										unprefixedPageName,
 									)
-									this.filenameWidget.setValue(`${newProjectName} ${unprefixedPageName} ${filenameDate}`)
+									this.filenameWidget.setValue(
+										`${newProjectName} ${unprefixedPageName} ${filenameDate}`,
+									)
 									this.controls.author.input.setValue(`${newProjectName} authors${newHistoryText}`)
 								},
 								(/** @type {unknown} */ error) => {
@@ -486,10 +494,11 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 									if (error instanceof Error && error.message === 'badUpload') {
 										throw error.cause
 									}
-								}
+								},
 							)
 					}
-				} else {  // this.preset === 'mediawikiScreenshot'
+				} else {
+					// this.preset === 'mediawikiScreenshot'
 					this.filenameWidget.setValue(`MediaWiki ${filenameDate}`)
 					this.descriptionWidget.setValue(`Screenshot of MediaWiki`)
 					this.controls.source.input.setValue('Screenshot')
@@ -659,7 +668,6 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	static generateHistoryText(hostname, pageName) {
 		if (
 			!pageName ||
-
 			// Don't link the history page for Special pages
 			(hostname === location.hostname && mw.Title.newFromText(pageName)?.getNamespaceId() === -1)
 		) {
@@ -669,7 +677,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 			action: 'history',
 			offset: generateFixedPosTimestamp(
 				new Date(),
-				String(new Date().getUTCSeconds()).padStart(2, '0')
+				String(new Date().getUTCSeconds()).padStart(2, '0'),
 			),
 		})
 		const link = `https://${hostname}${path}`
@@ -684,26 +692,28 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	 * @returns {string}
 	 */
 	static getTemplateForHostname(hostname) {
-		return (/** @type {[RegExp, string][]} */ ([
-			[/^(.+)\.wikipedia.org$/, `{{Wikipedia-screenshot%s}}`],
+		return (
+			/** @type {[RegExp, string][]} */ ([
+				[/^(.+)\.wikipedia.org$/, `{{Wikipedia-screenshot%s}}`],
 
-			// Language codes aren't supported on most templates, but they may become supported at some
-			// point
-			[/^(.+)\.wiktionary.org$/, `{{Wiktionary-screenshot%s}}`],
-			[/^(.+)\.wikiquote.org$/, `{{Wikiquote-screenshot%s}}`],
-			[/^(.+)\.wikiversity.org$/, `{{Wikiversity-screenshot%s}}`],
+				// Language codes aren't supported on most templates, but they may become supported at some
+				// point
+				[/^(.+)\.wiktionary.org$/, `{{Wiktionary-screenshot%s}}`],
+				[/^(.+)\.wikiquote.org$/, `{{Wikiquote-screenshot%s}}`],
+				[/^(.+)\.wikiversity.org$/, `{{Wikiversity-screenshot%s}}`],
 
-			// https://wikisource.org/ exists, so the subdomain is not necessary
-			[/^(?:(.+)\.)?wikisource.org$/, `{{Wikisource-screenshot%s}}`],
+				// https://wikisource.org/ exists, so the subdomain is not necessary
+				[/^(?:(.+)\.)?wikisource.org$/, `{{Wikisource-screenshot%s}}`],
 
-			[/^(.+)\.wikivoyage.org$/, `{{Wikivoyage-screenshot%s}}`],
-		])).reduce((result, [regexp, format]) => {
-			if (result) return result
+				[/^(.+)\.wikivoyage.org$/, `{{Wikivoyage-screenshot%s}}`],
+			]).reduce((result, [regexp, format]) => {
+				if (result) return result
 
-			const match = hostname.match(regexp)
+				const match = hostname.match(regexp)
 
-			return match ? format.replace('%s', match[1] ? '|' + match[1] : '') : undefined
-		}, /** @type {string  | undefined} */ (undefined)) || '{{Wikimedia-screenshot}}'
+				return match ? format.replace('%s', match[1] ? '|' + match[1] : '') : undefined
+			}, /** @type {string  | undefined} */ (undefined)) || '{{Wikimedia-screenshot}}'
+		)
 	}
 }
 

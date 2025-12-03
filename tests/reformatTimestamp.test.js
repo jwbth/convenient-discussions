@@ -49,9 +49,10 @@ cd.g = {
 	uiDateFormat: 'H:i, j F Y',
 	msInMin: 1000 * 60,
 }
-cd.mws = (/** @type {string} */ name) => ({
-	'timezone-utc': 'UTC',
-}[name])
+cd.mws = (/** @type {string} */ name) =>
+	({
+		'timezone-utc': 'UTC',
+	})[name]
 cd.i18n = { en }
 cd.s = (/** @type {string} */ name) => cd.i18n.en[name]
 settings.save = async () => {}
@@ -126,72 +127,73 @@ function testWithSettings({
 		(useUiTime ? ', UI time' : '') +
 		(hideTimezone ? ', hide timezone' : '')
 
-	test((
+	test(
 		spacePad(conditions, 60) +
-		' ' +
-		(reformattedTimestamp ? `"${reformattedTimestamp}"` : reformattedTimestamp)
-	), () => {
-		/** @type {{ [x: string]: any }} */
-		const comment = {
-			timestampElement: document.createElement('span'),
-			extraSignatures: [],
-			timestampFormat,
-			useUiTime,
-			hideTimezone,
-		}
-
-		const adaptedReformatTimestamp = (/** @type {Timestamp} */ d) => {
-			comment.date = new Date(d)
-			comment.formatTimestamp = Comment.prototype.formatTimestamp
-			comment.updateTimestampElements = Comment.prototype.updateTimestampElements
-			comment.updateMainTimestampElement = Comment.prototype.updateMainTimestampElement
-			comment.updateExtraSignatureTimestamps = Comment.prototype.updateExtraSignatureTimestamps
-			Comment.prototype.reformatTimestamp.call(comment)
-
-			return {
-				reformattedTimestamp: comment.reformattedTimestamp,
-				timestampTitle: comment.timestampTitle,
+			' ' +
+			(reformattedTimestamp ? `"${reformattedTimestamp}"` : reformattedTimestamp),
+		() => {
+			/** @type {{ [x: string]: any }} */
+			const comment = {
+				timestampElement: document.createElement('span'),
+				extraSignatures: [],
+				timestampFormat,
+				useUiTime,
+				hideTimezone,
 			}
-		}
 
-		const dateObj = new Date(date)
-		cd.g.uiTimezone = timezone || 'UTC'
-		cd.g.uiTimezoneOffset = getTimezoneOffset(String(timezone), dateObj.getTime()) / cd.g.msInMin
-		settings.set('timestampFormat', timestampFormat)
-		settings.set('useUiTime', useUiTime)
-		settings.set('hideTimezone', hideTimezone)
-		cd.g.areTimestampsDefault = !(
-			(settings.get('useUiTime') && 'UTC' !== cd.g.uiTimezone) ||
-			settings.get('timestampFormat') !== 'default' ||
-			mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||
-			settings.get('hideTimezone')
-		)
+			const adaptedReformatTimestamp = (/** @type {Timestamp} */ d) => {
+				comment.date = new Date(d)
+				comment.formatTimestamp = Comment.prototype.formatTimestamp
+				comment.updateTimestampElements = Comment.prototype.updateTimestampElements
+				comment.updateMainTimestampElement = Comment.prototype.updateMainTimestampElement
+				comment.updateExtraSignatureTimestamps = Comment.prototype.updateExtraSignatureTimestamps
+				Comment.prototype.reformatTimestamp.call(comment)
 
-		if (contentLanguage) {
-			mw.config.set('wgUserLanguage', contentLanguage)
-		}
-		comment.timestampElement.textContent = formatDateNative(dateObj, true, 'UTC')
-		if (contentLanguage) {
-			mw.config.set('wgUserLanguage', 'en')
-		}
+				return {
+					reformattedTimestamp: comment.reformattedTimestamp,
+					timestampTitle: comment.timestampTitle,
+				}
+			}
 
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const originalDate = new Date()
-		if (nowTimestamp) {
-			jest.useFakeTimers()
-			jest.setSystemTime(new Date(nowTimestamp))
-		}
-		try {
-			expect(adaptedReformatTimestamp(date)).toEqual({
-				reformattedTimestamp,
-				timestampTitle,
-			})
-		} finally {
+			const dateObj = new Date(date)
+			cd.g.uiTimezone = timezone || 'UTC'
+			cd.g.uiTimezoneOffset = getTimezoneOffset(String(timezone), dateObj.getTime()) / cd.g.msInMin
+			settings.set('timestampFormat', timestampFormat)
+			settings.set('useUiTime', useUiTime)
+			settings.set('hideTimezone', hideTimezone)
+			cd.g.areTimestampsDefault = !(
+				(settings.get('useUiTime') && 'UTC' !== cd.g.uiTimezone) ||
+				settings.get('timestampFormat') !== 'default' ||
+				mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||
+				settings.get('hideTimezone')
+			)
+
+			if (contentLanguage) {
+				mw.config.set('wgUserLanguage', contentLanguage)
+			}
+			comment.timestampElement.textContent = formatDateNative(dateObj, true, 'UTC')
+			if (contentLanguage) {
+				mw.config.set('wgUserLanguage', 'en')
+			}
+
+			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+			const originalDate = new Date()
 			if (nowTimestamp) {
-				jest.setSystemTime(originalDate)
+				jest.useFakeTimers()
+				jest.setSystemTime(new Date(nowTimestamp))
 			}
-		}
-	})
+			try {
+				expect(adaptedReformatTimestamp(date)).toEqual({
+					reformattedTimestamp,
+					timestampTitle,
+				})
+			} finally {
+				if (nowTimestamp) {
+					jest.setSystemTime(originalDate)
+				}
+			}
+		},
+	)
 }
 
 initDayjs()

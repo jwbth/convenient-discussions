@@ -26,7 +26,7 @@ test.describe('Comment Actions - Compact Style', () => {
 
 		// Check if layers and overlay menu were created
 		const overlayMenu = page.locator('.cd-comment-overlay-menu').first()
-		const menuExists = await overlayMenu.count() > 0
+		const menuExists = (await overlayMenu.count()) > 0
 
 		if (menuExists) {
 			// Keep the mouse over the comment to ensure overlay stays visible
@@ -35,7 +35,7 @@ test.describe('Comment Actions - Compact Style', () => {
 
 			// Check for action buttons in overlay - look for Reply button by text content
 			const replyButton = overlayMenu.locator('text=Reply').first()
-			const buttonExists = await replyButton.count() > 0
+			const buttonExists = (await replyButton.count()) > 0
 
 			if (buttonExists) {
 				await expect(replyButton).toBeVisible()
@@ -59,7 +59,7 @@ test.describe('Comment Actions - Compact Style', () => {
 		// Find and click reply button - look for Reply button by text content within the overlay menu
 		const overlayMenu = page.locator('.cd-comment-overlay-menu').first()
 		const replyButton = overlayMenu.locator('text=Reply').first()
-		const buttonExists = await replyButton.count() > 0
+		const buttonExists = (await replyButton.count()) > 0
 
 		if (buttonExists) {
 			// Ensure the overlay menu is visible before clicking

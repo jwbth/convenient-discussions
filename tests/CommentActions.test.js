@@ -13,13 +13,17 @@ global.OO = {
 	},
 }
 
-jest.mock('../src/EventEmitter.js', () => class EventEmitter {
-	on() {}
+jest.mock(
+	'../src/EventEmitter.js',
+	() =>
+		class EventEmitter {
+			on() {}
 
-	off() {}
+			off() {}
 
-	emit() {}
-})
+			emit() {}
+		},
+)
 
 // Mock dependencies
 jest.mock('../src/cd', () => ({
@@ -214,7 +218,9 @@ describe('CommentActions', () => {
 			actions.addReplyButton()
 
 			expect(actions.replyButton.setDisabled).toHaveBeenCalledWith(true)
-			expect(actions.replyButton.setTooltip).toHaveBeenCalledWith('mocked-cm-reply-outdented-tooltip')
+			expect(actions.replyButton.setTooltip).toHaveBeenCalledWith(
+				'mocked-cm-reply-outdented-tooltip',
+			)
 		})
 
 		it('should call reply method when button action is triggered', () => {
@@ -469,39 +475,57 @@ describe('CommentActions', () => {
 		})
 
 		it('should throw error for createReplyButton', () => {
-			expect(() => baseActions.createReplyButton(() => {})).toThrow('createReplyButton must be implemented by subclasses')
+			expect(() => baseActions.createReplyButton(() => {})).toThrow(
+				'createReplyButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for createEditButton', () => {
-			expect(() => baseActions.createEditButton(() => {})).toThrow('createEditButton must be implemented by subclasses')
+			expect(() => baseActions.createEditButton(() => {})).toThrow(
+				'createEditButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for createThankButton', () => {
-			expect(() => baseActions.createThankButton(() => {}, false)).toThrow('createThankButton must be implemented by subclasses')
+			expect(() => baseActions.createThankButton(() => {}, false)).toThrow(
+				'createThankButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for createCopyLinkButton', () => {
-			expect(() => baseActions.createCopyLinkButton(() => {})).toThrow('createCopyLinkButton must be implemented by subclasses')
+			expect(() => baseActions.createCopyLinkButton(() => {})).toThrow(
+				'createCopyLinkButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for createGoToParentButton', () => {
-			expect(() => baseActions.createGoToParentButton(() => {})).toThrow('createGoToParentButton must be implemented by subclasses')
+			expect(() => baseActions.createGoToParentButton(() => {})).toThrow(
+				'createGoToParentButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for createGoToChildButton', () => {
-			expect(() => baseActions.createGoToChildButton(() => {})).toThrow('createGoToChildButton must be implemented by subclasses')
+			expect(() => baseActions.createGoToChildButton(() => {})).toThrow(
+				'createGoToChildButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for createToggleChildThreadsButton', () => {
-			expect(() => baseActions.createToggleChildThreadsButton(() => {})).toThrow('createToggleChildThreadsButton must be implemented by subclasses')
+			expect(() => baseActions.createToggleChildThreadsButton(() => {})).toThrow(
+				'createToggleChildThreadsButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for appendButton', () => {
-			expect(() => baseActions.appendButton({})).toThrow('appendButton must be implemented by subclasses')
+			expect(() => baseActions.appendButton({})).toThrow(
+				'appendButton must be implemented by subclasses',
+			)
 		})
 
 		it('should throw error for prependButton', () => {
-			expect(() => baseActions.prependButton({})).toThrow('prependButton must be implemented by subclasses')
+			expect(() => baseActions.prependButton({})).toThrow(
+				'prependButton must be implemented by subclasses',
+			)
 		})
 	})
 })

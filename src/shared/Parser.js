@@ -24,7 +24,7 @@ import {
 	parseWikiUrl,
 	ucFirst,
 	underlinesToSpaces,
-	unique
+	unique,
 } from './utils-general'
 import { parseTimestamp } from './utils-timestamp'
 
@@ -164,22 +164,19 @@ class Parser {
 						(el) =>
 							el.hasAttribute('data-mw-comment-start') ||
 							el.hasAttribute('data-mw-comment-end') ||
-
 							// This, in fact, targets the one span at the top of the page, out of sections which makes
 							// comments taller (example:
 							// https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=876639400).
 							// Check for classes and content because in older DT versions, `data-mw-thread-id` was on
 							// the .mw-headline element.
-							(
-								el.tagName === 'SPAN' &&
+							(el.tagName === 'SPAN' &&
 								el.hasAttribute('data-mw-thread-id') &&
 								!el.classList.length &&
-								!el.textContent
-							)
+								!el.textContent),
 					)
 					.concat([...this.getElementsByClassName('ext-discussiontools-init-replylink-buttons')])
 					.filter(unique)
-			)
+			),
 		)
 		this.context.removeDtButtonHtmlComments()
 	}
@@ -195,16 +192,12 @@ class Parser {
 	handleFactotumOutdents(text, node) {
 		if (
 			!/^┌─*┘$/.test(text) ||
-			(
-				node.parentElement &&
+			(node.parentElement &&
 				Parser.contains(node.parentElement, node) &&
-				node.parentElement.classList.contains(cd.config.outdentClass)
-			) ||
-			(
-				node.parentElement?.parentElement &&
+				node.parentElement.classList.contains(cd.config.outdentClass)) ||
+			(node.parentElement?.parentElement &&
 				Parser.contains(node.parentElement.parentElement, node) &&
-				node.parentElement.parentElement.classList.contains(cd.config.outdentClass)
-			)
+				node.parentElement.parentElement.classList.contains(cd.config.outdentClass))
 		) {
 			return
 		}
@@ -256,7 +249,7 @@ class Parser {
 		Parser.appendChild(element, Parser.createTextNode(match[2]))
 		const remainedText = node.textContent.slice(
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-			/** @type {number} */ (match.index) + match[0].length
+			/** @type {number} */ (match.index) + match[0].length,
 		)
 		const afterNode = remainedText ? document.createTextNode(remainedText) : undefined
 		node.textContent = match[1]
@@ -308,10 +301,8 @@ class Parser {
 		const elementsTreeWalker = new ElementsTreeWalker(this.context.rootElement, timestamp.element)
 		while (
 			elementsTreeWalker.previousNode() &&
-			(
-				isInline(elementsTreeWalker.currentNode) !== false ||
-				isMetadataNode(elementsTreeWalker.currentNode)
-			)
+			(isInline(elementsTreeWalker.currentNode) !== false ||
+				isMetadataNode(elementsTreeWalker.currentNode))
 		) {
 			if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
 				isExtraSignature = true
@@ -375,14 +366,11 @@ class Parser {
 			node &&
 			isInline(node, true) !== false &&
 			!(
-				(
-					authorData.name &&
-					(
+				(authorData.name &&
 					// Users may cross out the text ended with their signature and sign again
 					// (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be
 					// considered a part of the signature then.
-						(isElement(node) && ['S', 'STRIKE', 'DEL'].includes(node.tagName)) ||
-
+					((isElement(node) && ['S', 'STRIKE', 'DEL'].includes(node.tagName)) ||
 						// Cases with a talk page link at the end of comment's text like
 						// https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Obersachse_3#c-Obersachse-2012-03-11T08:03:00.000Z-Итог
 						// Note that this is currently unsupported by our wikitext parser. When edited, such a
@@ -391,35 +379,20 @@ class Parser {
 						// cost of us not relying on a DOM -> wikitext correspondence and processing these parts
 						// separately.
 						(!isElement(node) && Parser.punctuationRegexp.test(node.textContent)) ||
-
-						(
-							isElement(node) &&
-
-							(
+						(isElement(node) &&
 							// Invisible pings, like
 							// https://he.wikipedia.org/w/index.php?title=שיחה:שפת_אמת&oldid=38365117#c-אייל-20240205174400-אייל-20240205172600
-								/display: *none/.test(node.getAttribute('style') || '') ||
-
-								this.noSignatureElements.includes(node)
-							)
-						)
-					)
-				) ||
-				(
-					isElement(node) &&
-					(
-						node.classList.contains('cd-timestamp') ||
+							(/display: *none/.test(node.getAttribute('style') || '') ||
+								this.noSignatureElements.includes(node))))) ||
+				(isElement(node) &&
+					(node.classList.contains('cd-timestamp') ||
 						node.classList.contains('cd-signature') ||
-
 						// Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should be
 						// extremely rare).
 						(['S', 'STRIKE', 'DEL'].includes(node.tagName) && node.textContent.length >= 30) ||
-
 						// Cases like
 						// https://ru.wikipedia.org/?diff=141883529#c-Супер-Вики-Патруль-20241204140000-Stjn-20241204123400
-						node.textContent.length >= cd.config.signatureScanLimit
-					)
-				)
+						node.textContent.length >= cd.config.signatureScanLimit))
 			)
 		)
 
@@ -468,8 +441,8 @@ class Parser {
 		}
 
 		/** @type {Partial<SignatureTarget<N>>[]} */
-		const unsigneds = [];
-		/** @type {HTMLElementFor<N>[]} */ ([
+		const unsigneds = []
+		/** @type {HTMLElementFor<N>[]} */ ;([
 			...this.context.rootElement.getElementsByClassName(cd.config.unsignedClass),
 		])
 			.filter((element) => {
@@ -492,30 +465,32 @@ class Parser {
 				return true
 			})
 			.forEach((element) => {
-				/** @type {HTMLElementFor<N>[]} */ ([...element.getElementsByTagName('a')]).some((link) => {
-					const { userName: authorName, linkType } = Parser.processLink(link) || {}
-					if (authorName) {
-						let authorLink
-						let authorTalkLink
-						if (linkType === 'user') {
-							authorLink = /** @type {HTMLElementFor<N>} */ (link)
-						} else if (linkType === 'userTalk') {
-							authorTalkLink = /** @type {HTMLElementFor<N>} */ (link)
+				/** @type {HTMLElementFor<N>[]} */ ;([...element.getElementsByTagName('a')]).some(
+					(link) => {
+						const { userName: authorName, linkType } = Parser.processLink(link) || {}
+						if (authorName) {
+							let authorLink
+							let authorTalkLink
+							if (linkType === 'user') {
+								authorLink = /** @type {HTMLElementFor<N>} */ (link)
+							} else if (linkType === 'userTalk') {
+								authorTalkLink = /** @type {HTMLElementFor<N>} */ (link)
+							}
+							element.classList.add('cd-signature')
+							unsigneds.push({
+								element,
+								authorName,
+								isUnsigned: true,
+								authorLink,
+								authorTalkLink,
+							})
+
+							return true
 						}
-						element.classList.add('cd-signature')
-						unsigneds.push({
-							element,
-							authorName,
-							isUnsigned: true,
-							authorLink,
-							authorTalkLink,
-						})
 
-						return true
-					}
-
-					return false
-				})
+						return false
+					},
+				)
 			})
 
 		return unsigneds
@@ -533,26 +508,28 @@ class Parser {
 		// array which then assign to a relevant signature (the one which goes first).
 		let extraSignatures = /** @type {SignatureTarget<N>[]} */ ([])
 
-		return /** @type {SignatureTarget<N>[]} */ (this.context
-			.getAllTextNodes()
-			.map((node) => this.findTimestamp(node))
-			.filter(defined)
-			.map((node) => this.getSignatureFromTimestamp(node))
-			.filter(defined)
-			.concat(this.findRemainingUnsigneds())
-			.slice()
-			.reverse()
-			.map((sig) => {
-				if (sig.isExtraSignature) {
-					extraSignatures.push(/** @type {SignatureTarget<N>} */ (sig))
-				} else {
-					sig.extraSignatures = extraSignatures
-					extraSignatures = []
-				}
+		return /** @type {SignatureTarget<N>[]} */ (
+			this.context
+				.getAllTextNodes()
+				.map((node) => this.findTimestamp(node))
+				.filter(defined)
+				.map((node) => this.getSignatureFromTimestamp(node))
+				.filter(defined)
+				.concat(this.findRemainingUnsigneds())
+				.slice()
+				.reverse()
+				.map((sig) => {
+					if (sig.isExtraSignature) {
+						extraSignatures.push(/** @type {SignatureTarget<N>} */ (sig))
+					} else {
+						sig.extraSignatures = extraSignatures
+						extraSignatures = []
+					}
 
-				return { ...sig, type: /** @type {const} */ ('signature') }
-			})
-			.filter((sig) => !sig.isExtraSignature))
+					return { ...sig, type: /** @type {const} */ ('signature') }
+				})
+				.filter((sig) => !sig.isExtraSignature)
+		)
 	}
 
 	/**
@@ -598,28 +575,27 @@ class Parser {
 			nodes = children
 			children = nodes.reduce(
 				(arr, el) => arr.concat([...this.getChildElements(el)]),
-				/** @type {ElementLike[]} */ ([])
+				/** @type {ElementLike[]} */ ([]),
 			)
 			if (['DL', 'UL', 'OL'].includes(nodes[0].tagName)) {
 				levelsPassed++
 			}
 		} while (
 			children.length &&
-			children.every((child) => (
-				(
-					['DL', 'UL', 'OL', 'DD', 'LI'].includes(child.tagName) &&
-					(
-						!onlyChildrenWithoutCommentLevel ||
-						['DD', 'LI'].includes(child.tagName) ||
-						child.classList.contains('cd-commentLevel')
-					)
-				) ||
-
-				// An inline (e.g., <small>) tag wrapped around block tags can give that (due to some errors
-				// in the markup).
-				(!child.textContent.trim() && isInline(child))
-			)) &&
-			children.map((child) => child.textContent).join('').replace(/\s+/g, '') === partTextNoSpaces
+			children.every(
+				(child) =>
+					(['DL', 'UL', 'OL', 'DD', 'LI'].includes(child.tagName) &&
+						(!onlyChildrenWithoutCommentLevel ||
+							['DD', 'LI'].includes(child.tagName) ||
+							child.classList.contains('cd-commentLevel'))) ||
+					// An inline (e.g., <small>) tag wrapped around block tags can give that (due to some errors
+					// in the markup).
+					(!child.textContent.trim() && isInline(child)),
+			) &&
+			children
+				.map((child) => child.textContent)
+				.join('')
+				.replace(/\s+/g, '') === partTextNoSpaces
 		)
 
 		return { nodes, levelsPassed }
@@ -650,7 +626,7 @@ class Parser {
 			.filter(
 				(element) =>
 					element.getAttribute('id') !== 'mw-toc-heading' &&
-					!this.noSignatureElements.some((noSigEl) => Parser.contains(noSigEl, element))
+					!this.noSignatureElements.some((noSigEl) => Parser.contains(noSigEl, element)),
 			)
 			.map((element) => ({
 				type: 'heading',
@@ -812,9 +788,7 @@ class Parser {
 	 * @returns {ElementLike[]}
 	 */
 	getElementsByTagName(name) {
-		return /** @type {ElementLike[]} */ ([
-			...this.context.rootElement.getElementsByTagName(name),
-		])
+		return /** @type {ElementLike[]} */ ([...this.context.rootElement.getElementsByTagName(name)])
 	}
 
 	/**
@@ -824,9 +798,7 @@ class Parser {
 	 * @returns {ElementLike[]}
 	 */
 	getElementsByClassName(name) {
-		return /** @type {ElementLike[]} */ ([
-			...this.context.rootElement.getElementsByClassName(name),
-		])
+		return /** @type {ElementLike[]} */ ([...this.context.rootElement.getElementsByClassName(name)])
 	}
 
 	/**
@@ -969,7 +941,7 @@ class Parser {
 	 * @returns {void}
 	 */
 	static remove(node) {
-		/** @type {any} */ (node).remove()
+		/** @type {any} */ ;(node).remove()
 	}
 
 	/**
@@ -980,7 +952,9 @@ class Parser {
 		// https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=138050961#c-Lesless-20240526055500-Deinocheirus-20240525165500
 		// Non-Latin punctuation is collected manually from https://en.wikipedia.org/wiki/Full_stop and
 		// other sources.
-		this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[)\\]]*(?:[.!?…।։။۔]+ |[。！？]+)`)
+		this.punctuationRegexp = new RegExp(
+			`(?:^|[${cd.g.letterPattern}])[)\\]]*(?:[.!?…।։။۔]+ |[。！？]+)`,
+		)
 	}
 }
 

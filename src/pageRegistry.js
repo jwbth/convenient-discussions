@@ -41,18 +41,18 @@ const pageRegistry = {
 	 * @returns {import('./Page').default | undefined}
 	 */
 	get(nameOrMwTitle, isGendered = false) {
-		const title = nameOrMwTitle instanceof mw.Title
-			? nameOrMwTitle
-			: mw.Title.newFromText(nameOrMwTitle)
+		const title =
+			nameOrMwTitle instanceof mw.Title ? nameOrMwTitle : mw.Title.newFromText(nameOrMwTitle)
 		if (!title) {
 			return
 		}
 
 		const name = title.getPrefixedText()
 		if (!(name in this.items)) {
-			this.items[name] = new (
-				nameOrMwTitle === cd.g.pageName ? CurrentPage : Page
-			)(title, isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined)
+			this.items[name] = new (nameOrMwTitle === cd.g.pageName ? CurrentPage : Page)(
+				title,
+				isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined,
+			)
 		} else if (isGendered) {
 			// Set the gendered name which could be missing for the page.
 			this.items[name].name = /** @type {string} */ (nameOrMwTitle)

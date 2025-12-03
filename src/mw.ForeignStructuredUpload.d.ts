@@ -16,18 +16,18 @@ declare global {
 		 * @param {object} [apiconfig]
 		 */
 		class ForeignStructuredUpload extends ForeignUpload {
-			constructor(target?: string, apiconfig?: any);
+			constructor(target?: string, apiconfig?: any)
 
 			/** The creation date for the upload. */
-			date?: Date;
+			date?: Date
 			/** Array of description objects. Each has a language code and text. */
-			descriptions: { language: string; text: string }[];
+			descriptions: { language: string; text: string }[]
 			/** Array of category names for the upload. */
-			categories: string[];
+			categories: string[]
 			/** Configuration for uploads (loaded from config.json or via loadConfig). */
-			config: any;
+			config: any
 			/** Promise that resolves with the configuration object. */
-			configPromise?: JQuery.Promise<any>;
+			configPromise?: JQuery.Promise<any>
 
 			/**
 			 * Get the configuration for the form and filepage from the foreign wiki, if any, and use it for
@@ -35,19 +35,19 @@ declare global {
 			 *
 			 * @returns {JQuery.Promise<any>} Promise returning config object.
 			 */
-			loadConfig(): JQuery.Promise<any>;
+			loadConfig(): JQuery.Promise<any>
 
 			/**
 			 * Add categories to the upload.
 			 *
 			 * @param {string[]} categories Array of categories to which this upload will be added.
 			 */
-			addCategories(categories: string[]): void;
+			addCategories(categories: string[]): void
 
 			/**
 			 * Empty the list of categories for the upload.
 			 */
-			clearCategories(): void;
+			clearCategories(): void
 
 			/**
 			 * Add a description to the upload.
@@ -55,19 +55,19 @@ declare global {
 			 * @param {string} language The language code for the description's language. Must have a template on the target wiki.
 			 * @param {string} description The description of the file.
 			 */
-			addDescription(language: string, description: string): void;
+			addDescription(language: string, description: string): void
 
 			/**
 			 * Empty the list of descriptions for the upload.
 			 */
-			clearDescriptions(): void;
+			clearDescriptions(): void
 
 			/**
 			 * Set the date of creation for the upload.
 			 *
 			 * @param {Date} date
 			 */
-			setDate(date: Date): void;
+			setDate(date: Date): void
 
 			/**
 			 * Get the text of the file page, to be created on upload. Brings together
@@ -75,12 +75,12 @@ declare global {
 			 *
 			 * @returns {string}
 			 */
-			getText(): string;
+			getText(): string
 
 			/**
 			 * @inheritdoc
 			 */
-			getComment(): string;
+			getComment(): string
 
 			/**
 			 * Gets the wikitext for the creation date of this upload.
@@ -88,7 +88,7 @@ declare global {
 			 * @private
 			 * @returns {string}
 			 */
-			getDate(): string;
+			getDate(): string
 
 			/**
 			 * Fetches the wikitext for any descriptions that have been added to the upload.
@@ -96,7 +96,7 @@ declare global {
 			 * @private
 			 * @returns {string}
 			 */
-			getDescriptions(): string;
+			getDescriptions(): string
 
 			/**
 			 * Fetches the wikitext for the categories to which the upload will be added.
@@ -104,7 +104,7 @@ declare global {
 			 * @private
 			 * @returns {string}
 			 */
-			getCategories(): string;
+			getCategories(): string
 
 			/**
 			 * Gets the wikitext for the license of the upload.
@@ -112,7 +112,7 @@ declare global {
 			 * @private
 			 * @returns {string}
 			 */
-			getLicense(): string;
+			getLicense(): string
 
 			/**
 			 * Get the source. This should be some sort of localized text for "Own work".
@@ -120,7 +120,7 @@ declare global {
 			 * @private
 			 * @returns {string}
 			 */
-			getSource(): string;
+			getSource(): string
 
 			/**
 			 * Get the username.
@@ -128,9 +128,9 @@ declare global {
 			 * @private
 			 * @returns {string}
 			 */
-			getUser(): string;
+			getUser(): string
 		}
 	}
 }
 
-export {};
+export {}

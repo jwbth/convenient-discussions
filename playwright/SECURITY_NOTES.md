@@ -7,6 +7,7 @@
 **Risk**: Developers could accidentally commit credentials to public repositories.
 
 **Fix Applied**:
+
 - Removed `.env` file recommendation
 - Added `.env` to `.gitignore` as a safety measure
 - Implemented Playwright's recommended authentication pattern using `playwright/.auth/` directory

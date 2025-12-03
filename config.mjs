@@ -55,7 +55,10 @@ export default {
 			server: 'ru.wikipedia.org',
 			default: {
 				source: 'w-ru.js',
-				targets: ['MediaWiki:Gadget-convenientDiscussions.js', 'User:Jack who built the house/convenientDiscussions.js'],
+				targets: [
+					'MediaWiki:Gadget-convenientDiscussions.js',
+					'User:Jack who built the house/convenientDiscussions.js',
+				],
 				editGadgetsDefinition: true,
 				modules: [
 					'ext.confirmEdit.CaptchaInputWidget',
@@ -88,7 +91,9 @@ export default {
 			},
 			test: {
 				source: 'w-ru.test.js',
-				targets: ['User:Jack who built the house/convenientDiscussions.test.js'],
+				targets: [
+					'User:Jack who built the house/convenientDiscussions.test.js',
+				],
 			},
 		},
 		{
@@ -109,7 +114,9 @@ export default {
 			server: 'commons.wikimedia.org',
 			default: {
 				source: 'commons.js',
-				targets: ['User:Jack who built the house/convenientDiscussions-commonsConfig.js'],
+				targets: [
+					'User:Jack who built the house/convenientDiscussions-commonsConfig.js',
+				],
 			},
 		},
 		{
@@ -123,10 +130,13 @@ export default {
 			server: 'www.mediawiki.org',
 			default: {
 				source: 'mw.js',
-				targets: ['User:Jack who built the house/convenientDiscussions-mwConfig.js'],
+				targets: [
+					'User:Jack who built the house/convenientDiscussions-mwConfig.js',
+				],
 			},
 		},
 	]),
 
-	sourceMapsBaseUrl: 'https://tools-static.wmflabs.org/convenient-discussions/source-maps/',
+	sourceMapsBaseUrl:
+		'https://tools-static.wmflabs.org/convenient-discussions/source-maps/',
 }

@@ -7,6 +7,7 @@ This directory contains Playwright browser tests for Convenient Discussions, spe
 ### Prerequisites
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -19,21 +20,25 @@ This directory contains Playwright browser tests for Convenient Discussions, spe
 ### Running Tests
 
 #### All Browser Tests
+
 ```bash
 npm run test:browser
 ```
 
 #### Specific Test File
+
 ```bash
 npx playwright test comment-layers.spec.js
 ```
 
 #### Debug Mode
+
 ```bash
 npx playwright test --debug
 ```
 
 #### Headed Mode (See Browser)
+
 ```bash
 npx playwright test --headed
 ```
@@ -55,19 +60,23 @@ npx playwright test --headed
 These tests validate the requirements from the Comment class refactoring spec:
 
 ### Requirement 1: Class Hierarchy Restructuring
+
 - Tests that SpaciousComment and CompactComment are created correctly
 - Validates polymorphic behavior in browser environment
 
 ### Requirement 2: Layers Composition Pattern
+
 - Tests layer creation, positioning, and destruction
 - Validates hover behaviors for CompactComment overlay menus
 - Tests layer style updates and responsiveness
 
 ### Requirement 6: Backward Compatibility
+
 - Visual regression testing to ensure comments look identical
 - Interaction testing to ensure all behaviors work as expected
 
 ### Requirement 8: Testing Coverage
+
 - Browser-specific testing for UI functionality
 - Visual validation that unit tests cannot provide
 
@@ -94,7 +103,7 @@ The tests run against live Wikipedia pages with your Convenient Discussions scri
 
 All test preparation is handled by a single function in `helpers/test-utils.js`:
 
-```javascript
+````javascript
 const { setupConvenientDiscussions, TEST_PAGES } = require('./helpers/test-utils');
 
 test.beforeEach(async ({ page }) => {
@@ -132,7 +141,7 @@ Use the "Debug Playwright Tests" launch configuration in VS Code to debug tests 
 Run with `--debug` flag to use Playwright's built-in inspector:
 ```bash
 npx playwright test --debug comment-layers.spec.js
-```
+````
 
 ### Screenshots and Videos
 
@@ -141,6 +150,7 @@ Playwright automatically captures screenshots on failure. Enable video recording
 ## CI/CD Integration
 
 The tests are configured to:
+
 - Run in headless mode on CI
 - Retry failed tests automatically
 - Generate HTML reports

@@ -8,7 +8,11 @@ import cd from './loader/cd'
 import sectionManager from './sectionManager'
 import settings from './settings'
 import CdError from './shared/CdError'
-import { calculateWordOverlap, keepClonableValues, subtractDaysFromNow } from './shared/utils-general'
+import {
+	calculateWordOverlap,
+	keepClonableValues,
+	subtractDaysFromNow,
+} from './shared/utils-general'
 import userRegistry from './userRegistry'
 import { loadUserGenders } from './utils-api'
 import visits from './visits'
@@ -170,10 +174,12 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	setAlarmViaWorker(interval) {
-		this.worker.postMessage(/** @type {MessageFromWindowSetAlarm} */ ({
-			task: 'setAlarm',
-			interval,
-		}))
+		this.worker.postMessage(
+			/** @type {MessageFromWindowSetAlarm} */ ({
+				task: 'setAlarm',
+				interval,
+			}),
+		)
 	}
 
 	/**
@@ -182,9 +188,11 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	removeAlarmViaWorker() {
-		this.worker.postMessage(/** @type {MessageFromWindowRemoveAlarm} */ ({
-			task: 'removeAlarm',
-		}))
+		this.worker.postMessage(
+			/** @type {MessageFromWindowRemoveAlarm} */ ({
+				task: 'removeAlarm',
+			}),
+		)
 	}
 
 	/**
@@ -217,13 +225,15 @@ class UpdateChecker extends EventEmitter {
 		const { text, revid: revisionId } = await cd.page.parse({ oldid: revisionToParseId }, true)
 
 		const message = /** @type {MessageFromWorkerParse} */ (
-			await this.runWorkerTask(/** @type {MessageFromWindowParse} */ ({
-				task: 'parse',
-				revisionId,
-				text,
-				g: keepClonableValues(cd.g, ['isIPv6Address']),
-				config: keepClonableValues(cd.config, ['rejectNode']),
-			}))
+			await this.runWorkerTask(
+				/** @type {MessageFromWindowParse} */ ({
+					task: 'parse',
+					revisionId,
+					text,
+					g: keepClonableValues(cd.g, ['isIPv6Address']),
+					config: keepClonableValues(cd.config, ['rejectNode']),
+				}),
+			)
 		)
 
 		if (!this.revisionData.has(message.revisionId)) {
@@ -258,11 +268,14 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	async maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId) {
-		const revisions = await cd.page.getRevisions({
-			rvprop: ['ids'],
-			rvstart: new Date(previousVisitTime * 1000).toISOString(),
-			rvlimit: 1,
-		}, true)
+		const revisions = await cd.page.getRevisions(
+			{
+				rvprop: ['ids'],
+				rvstart: new Date(previousVisitTime * 1000).toISOString(),
+				rvlimit: 1,
+			},
+			true,
+		)
 		this.previousVisitRevisionId = revisions[0]?.revid
 		const currentRevisionId = mw.config.get('wgRevisionId')
 
@@ -273,12 +286,9 @@ class UpdateChecker extends EventEmitter {
 		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		this.checkForChangesSincePreviousVisit(
-			this.mapWorkerCommentsToWorkerComments(
-				currentComments,
-				oldComments
-			),
+			this.mapWorkerCommentsToWorkerComments(currentComments, oldComments),
 			this.previousVisitRevisionId,
-			submittedCommentId
+			submittedCommentId,
 		)
 	}
 
@@ -306,13 +316,13 @@ class UpdateChecker extends EventEmitter {
 			const match = sectionManager.search(workerSection)
 			if (match) {
 				const { section, score } = match
-				if ((section.matchScore === undefined || match.score > section.matchScore)) {
+				if (section.matchScore === undefined || match.score > section.matchScore) {
 					if (section.match) {
 						delete section.match.match
 					}
 					section.match = workerSection
-					section.matchScore = score;
-					/** @type {SectionWorkerMatched} */ (workerSection).match = section
+					section.matchScore = score
+					/** @type {SectionWorkerMatched} */ ;(workerSection).match = section
 				}
 			}
 		})
@@ -361,17 +371,14 @@ class UpdateChecker extends EventEmitter {
 				const doesIndexMatch = candidate.index === target.index && isTotalCountEqual
 
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const partsMatchedCount = candidate.elementHtmls
-					.filter((html, i) => html === target.elementHtmls[i])
-					.length
-				const partsMatchedProportion = (
-					partsMatchedCount /
-					Math.max(candidate.elementHtmls.length, target.elementHtmls.length)
-				)
+				const partsMatchedCount = candidate.elementHtmls.filter(
+					(html, i) => html === target.elementHtmls[i],
+				).length
+				const partsMatchedProportion =
+					partsMatchedCount / Math.max(candidate.elementHtmls.length, target.elementHtmls.length)
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const overlap = partsMatchedProportion === 1
-					? 1
-					: calculateWordOverlap(candidate.text, target.text)
+				const overlap =
+					partsMatchedProportion === 1 ? 1 : calculateWordOverlap(candidate.text, target.text)
 
 				return {
 					comment: candidate,
@@ -412,7 +419,7 @@ class UpdateChecker extends EventEmitter {
 		//    visit revision in otherComments (that doesn't concern us here).
 		//
 		// but that doesn't seem to affect anything meaningfully.
-		/** @type {CommentWorkerMatched[]} */ (currentComments).forEach((comment) => {
+		/** @type {CommentWorkerMatched[]} */ ;(currentComments).forEach((comment) => {
 			delete comment.match
 			delete comment.matchScore
 			delete comment.hasPoorMatch
@@ -421,21 +428,23 @@ class UpdateChecker extends EventEmitter {
 		// We choose to traverse "other" (newer/older) comments in the top cycle, and current comments
 		// in the bottom cycle, not vice versa.
 		otherComments.forEach((otherComment) => {
-			const ccFiltered = /** @type {CommentWorkerMatched[]} */ (currentComments.filter(
-				(currentComment) =>
-					currentComment.authorName === otherComment.authorName &&
-					currentComment.date &&
-					otherComment.date &&
-					currentComment.date.getTime() === otherComment.date.getTime()
-			))
+			const ccFiltered = /** @type {CommentWorkerMatched[]} */ (
+				currentComments.filter(
+					(currentComment) =>
+						currentComment.authorName === otherComment.authorName &&
+						currentComment.date &&
+						otherComment.date &&
+						currentComment.date.getTime() === otherComment.date.getTime(),
+				)
+			)
 			const isTotalCountEqual = currentComments.length === otherComments.length
 			if (ccFiltered.length === 1) {
 				ccFiltered[0].match = ccFiltered[0].match
 					? this.sortCommentsByMatchScore(
-						[ccFiltered[0].match, otherComment],
-						ccFiltered[0],
-						isTotalCountEqual
-					)[0].comment
+							[ccFiltered[0].match, otherComment],
+							ccFiltered[0],
+							isTotalCountEqual,
+						)[0].comment
 					: otherComment
 			} else if (ccFiltered.length > 1) {
 				/** @type {boolean} */
@@ -453,7 +462,7 @@ class UpdateChecker extends EventEmitter {
 							// There is a poor match for a current comment.
 							match.comment.hasPoorMatch = true
 						}
-					}
+					},
 				)
 			}
 		})
@@ -484,7 +493,7 @@ class UpdateChecker extends EventEmitter {
 
 			this.scheduleCheck(
 				Math.abs(this.backgroundUpdateCheckInterval - this.updateCheckInterval),
-				true
+				true,
 			)
 
 			return
@@ -541,10 +550,13 @@ class UpdateChecker extends EventEmitter {
 	 * update the navigation panel, and
 	 */
 	async performCheck() {
-		const revisions = await cd.page.getRevisions({
-			rvprop: ['ids'],
-			rvlimit: 1,
-		}, true)
+		const revisions = await cd.page.getRevisions(
+			{
+				rvprop: ['ids'],
+				rvlimit: 1,
+			},
+			true,
+		)
 
 		const currentRevisionId = mw.config.get('wgRevisionId')
 		if (
@@ -570,7 +582,7 @@ class UpdateChecker extends EventEmitter {
 		const matchedSections = this.mapWorkerSectionsToSections(sections, revisionId)
 		const matchedCurrentComments = this.mapWorkerCommentsToWorkerComments(
 			currentComments,
-			newComments
+			newComments,
 		)
 
 		this.emit('sectionsUpdate', matchedSections)
@@ -595,10 +607,8 @@ class UpdateChecker extends EventEmitter {
 	hasCommentChanged(olderComment, newerComment) {
 		return Boolean(
 			newerComment.textHtmlToCompare !== olderComment.textHtmlToCompare ||
-			(
-				newerComment.headingHtmlToCompare &&
-				newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare
-			)
+				(newerComment.headingHtmlToCompare &&
+					newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare),
 		)
 	}
 
@@ -611,11 +621,13 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	checkForChangesSincePreviousVisit(currentComments, previousVisitRevisionId, submittedCommentId) {
-		const seenStorageItem = /** @type {import('./StorageItemWithKeys').default} */ (new StorageItemWithKeys('seenRenderedChanges'))
-			.cleanUp((entry) =>
+		const seenStorageItem = /** @type {import('./StorageItemWithKeys').default} */ (
+			new StorageItemWithKeys('seenRenderedChanges')
+		).cleanUp(
+			(entry) =>
 				(Math.min(...Object.values(entry).map((data) => data.seenTime)) || 0) <
-					subtractDaysFromNow(60)
-			)
+				subtractDaysFromNow(60),
+		)
 		const seen = seenStorageItem.get(mw.config.get('wgArticleId'))
 
 		const changeList = /** @type {ChangesList} */ ([])
@@ -627,12 +639,9 @@ class UpdateChecker extends EventEmitter {
 			if (
 				oldComment &&
 				this.hasCommentChanged(oldComment, currentComment) &&
-
 				// Seen the comment in this edition?
-				(
-					!currentComment.id ||
-					seen?.[currentComment.id]?.htmlToCompare !== currentComment.htmlToCompare
-				)
+				(!currentComment.id ||
+					seen?.[currentComment.id]?.htmlToCompare !== currentComment.htmlToCompare)
 			) {
 				const comment = commentManager.getById(currentComment.id)
 				if (!comment) return
@@ -664,7 +673,7 @@ class UpdateChecker extends EventEmitter {
 			'changedSince',
 			markAsChangedData,
 			previousVisitRevisionId,
-			mw.config.get('wgRevisionId')
+			mw.config.get('wgRevisionId'),
 		)
 
 		if (changeList.length) {
@@ -678,9 +687,7 @@ class UpdateChecker extends EventEmitter {
 			mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList)
 		}
 
-		seenStorageItem
-			.remove(mw.config.get('wgArticleId'))
-			.save()
+		seenStorageItem.remove(mw.config.get('wgArticleId')).save()
 	}
 
 	/**
@@ -748,7 +755,7 @@ class UpdateChecker extends EventEmitter {
 			'changed',
 			markAsChangedData,
 			mw.config.get('wgRevisionId'),
-			lastCheckedRevisionId
+			lastCheckedRevisionId,
 		)
 
 		if (changeList.length) {
@@ -858,7 +865,7 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	async processComments(newComments, currentComments, currentRevisionId) {
-		/** @type {CommentWorkerNew[]} */ (newComments).forEach((comment) => {
+		/** @type {CommentWorkerNew[]} */ ;(newComments).forEach((comment) => {
 			comment.author = userRegistry.get(comment.authorName)
 			if (comment.parent?.authorName) {
 				comment.parent.author = userRegistry.get(comment.parent.authorName)
@@ -867,7 +874,7 @@ class UpdateChecker extends EventEmitter {
 
 		const all = /** @type {CommentWorkerNew[]} */ (newComments)
 			.filter((comment) => comment.id && !currentComments.some((mcc) => mcc.match === comment))
-		// Detach comments in the newComments object from those in the `comments` object.
+			// Detach comments in the newComments object from those in the `comments` object.
 			.map((comment) => {
 				const newComment = { ...comment }
 				if (comment.parent) {
@@ -881,14 +888,17 @@ class UpdateChecker extends EventEmitter {
 			})
 
 		if (cd.g.genderAffectsUserString) {
-			await loadUserGenders(all.map((comment) => comment.author), true)
+			await loadUserGenders(
+				all.map((comment) => comment.author),
+				true,
+			)
 		}
 		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		this.emit('commentsUpdate', {
 			all,
-			relevant: /** @type {CommentWorkerNew[]} */ (all
-				.filter((comment) => {
+			relevant: /** @type {CommentWorkerNew[]} */ (
+				all.filter((comment) => {
 					if (!settings.get('notifyCollapsedThreads') && comment.logicalLevel !== 0) {
 						let parentMatch
 						for (
@@ -922,7 +932,8 @@ class UpdateChecker extends EventEmitter {
 					}
 
 					return false
-				})),
+				})
+			),
 			bySection: Comment.groupBySection(all),
 		})
 	}
@@ -952,22 +963,16 @@ class UpdateChecker extends EventEmitter {
 	init(worker) {
 		this.worker = worker
 
-		visits
-			.on('process', (/** @type {string[]} */ currentPageData) => {
-				const bootProcess = controller.getBootProcess()
-				const previousVisitTime = currentPageData.at(-2)
-				this.setup(
-					previousVisitTime ? Number(previousVisitTime) : undefined,
-					(
-						(
-							bootProcess.passedData.submittedCommentForm &&
-							bootProcess.passedData.commentIds?.[0]
-						) ||
-						undefined
-					)
-				)
-				this.initted = true
-			})
+		visits.on('process', (/** @type {string[]} */ currentPageData) => {
+			const bootProcess = controller.getBootProcess()
+			const previousVisitTime = currentPageData.at(-2)
+			this.setup(
+				previousVisitTime ? Number(previousVisitTime) : undefined,
+				(bootProcess.passedData.submittedCommentForm && bootProcess.passedData.commentIds?.[0]) ||
+					undefined,
+			)
+			this.initted = true
+		})
 	}
 
 	/**

@@ -2,8 +2,18 @@ import TextMasker from './TextMasker'
 import cd from './loader/cd'
 import settings from './settings'
 import CdError from './shared/CdError'
-import { calculateWordOverlap, countOccurrences, defined, generatePageNamePattern } from './shared/utils-general'
-import { brsToNewlines, maskDistractingCode, normalizeCode, removeWikiMarkup } from './shared/utils-wikitext'
+import {
+	calculateWordOverlap,
+	countOccurrences,
+	defined,
+	generatePageNamePattern,
+} from './shared/utils-general'
+import {
+	brsToNewlines,
+	maskDistractingCode,
+	normalizeCode,
+	removeWikiMarkup,
+} from './shared/utils-wikitext'
 import { extractSignatures } from './utils-window'
 
 /**
@@ -61,12 +71,12 @@ class CommentSource {
 		this.lineStartIndex = this.startIndex
 
 		// Ignore heading markup inside <nowiki>, <syntaxhighlight>, etc.
-		this.code = (new TextMasker(this.code))
+		this.code = new TextMasker(this.code)
 			.maskSensitiveCode()
 			.withText((text, textMasker) => {
 				this.headingMatch = text.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\u0001\u0002]*\n)/)
 				this.headingMatch?.forEach((group, i) => {
-					/** @type {RegExpMatchArray} */ (this.headingMatch)[i] = textMasker.unmaskText(group)
+					/** @type {RegExpMatchArray} */ ;(this.headingMatch)[i] = textMasker.unmaskText(group)
 				})
 
 				return text
@@ -110,7 +120,7 @@ class CommentSource {
 			// condition together with cd.g.badCommentBeginnings check to allow to apply to cases like
 			// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Start_of_section,_comment_with_timestamp_but_without_author,_newline_inside_comment,_HTML_comments_before_reply,
 			// but this can create problems with removing stuff from the opening comment.
-			[
+			;[
 				cd.g.signatureEndingRegexp,
 
 				// Dirty workaround to tell if there are foreign timestamps inside the comment
@@ -119,7 +129,6 @@ class CommentSource {
 
 					return timestamp && !timestamp.closest('.cd-signature')
 				})
-
 					? undefined
 					: cd.g.timestampTools.content.timezoneRegexp,
 			]
@@ -135,7 +144,7 @@ class CommentSource {
 						if (
 							regexp.test(
 								// Line
-								lineMatch[1].replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
+								lineMatch[1].replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1'),
 							)
 						) {
 							const testIndent = lineMatch.index + lineMatch[0].length
@@ -158,7 +167,9 @@ class CommentSource {
 			// doesn't catch the comment because of a newline inside the `syntaxhighlight` element).
 			cd.g.badCommentBeginnings.forEach((regexp) => {
 				if (!regexp.source.startsWith('^')) {
-					console.debug('Regexps in cd.config.badCommentBeginnings should have "^" as the first character.')
+					console.debug(
+						'Regexps in cd.config.badCommentBeginnings should have "^" as the first character.',
+					)
 				}
 				let match
 				while ((match = this.code.match(regexp))) {
@@ -249,7 +260,7 @@ class CommentSource {
 		if (this.indentation === '') {
 			this.code = this.code.replace(
 				new RegExp(`(^[^]*?\\n)${indentationPattern}(?![^]*\\n[^:*#])`),
-				replaceIndentation
+				replaceIndentation,
 			)
 		}
 
@@ -257,7 +268,7 @@ class CommentSource {
 		if (this.indentation.length < this.comment.level && countOccurrences(this.code, /\n/g)) {
 			this.code = this.code.replace(
 				new RegExp(`^([^]+?\\n)([:*#]{${this.comment.level}})( *)`),
-				replaceIndentation
+				replaceIndentation,
 			)
 		}
 	}
@@ -284,29 +295,33 @@ class CommentSource {
 
 		// Why signaturePrefixRegexp three times? Well, the test case here is MusikAnimal's signature
 		// here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
-		movePartsToSignature([
-			this.comment.isOwn ? cd.g.userSignaturePrefixRegexp : undefined,
-			/'+$/,
-			cd.config.signaturePrefixRegexp || undefined,
-			tagRegexp,
-			cd.config.signaturePrefixRegexp || undefined,
-			tagRegexp,
-			/\s+'+$/,  // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Acroterion-20240423134900-History_indexing
-			new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
-			/<!-- *Template:Unsigned.*$/,
-			cd.config.signaturePrefixRegexp || undefined,
-		].filter(defined))
+		movePartsToSignature(
+			[
+				this.comment.isOwn ? cd.g.userSignaturePrefixRegexp : undefined,
+				/'+$/,
+				cd.config.signaturePrefixRegexp || undefined,
+				tagRegexp,
+				cd.config.signaturePrefixRegexp || undefined,
+				tagRegexp,
+				/\s+'+$/, // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Acroterion-20240423134900-History_indexing
+				new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
+				/<!-- *Template:Unsigned.*$/,
+				cd.config.signaturePrefixRegexp || undefined,
+			].filter(defined),
+		)
 
 		// Exclude <small></small> and template wrappers from the strings
-		const smallWrappers = [{
-			start: /^<small>/,
-			end: /<\/small>[ \u00A0\t]*$/,
-		}]
+		const smallWrappers = [
+			{
+				start: /^<small>/,
+				end: /<\/small>[ \u00A0\t]*$/,
+			},
+		]
 		if (cd.config.smallDivTemplates.length) {
 			smallWrappers.push({
 				start: new RegExp(
 					`^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,
-					'i'
+					'i',
 				),
 				end: /\}\}[ \u00A0\t]*$/,
 			})
@@ -353,8 +368,10 @@ class CommentSource {
 						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 						/** @type {string} */ (this.indentationSpacing)
 					this.code = prefix + this.code
-					this.indentation = this.originalIndentation = this.originalIndentation
-						.slice(0, replyIndentation.length)
+					this.indentation = this.originalIndentation = this.originalIndentation.slice(
+						0,
+						replyIndentation.length,
+					)
 					this.startIndex -= prefix.length
 				}
 			}
@@ -396,20 +413,16 @@ class CommentSource {
 				if (!signature) break
 
 				// At least one coincided comment is enough if the second is unavailable.
-				doesPreviousCommentsDataMatch = (
+				doesPreviousCommentsDataMatch =
 					signature.timestamp === commentData.previousComments[i].timestamp &&
-
 					// Previous comment object may come from the worker, where it has only the authorName
 					// property.
 					signature.author.getName() === commentData.previousComments[i].authorName
-				)
 
 				// Many consecutive comments with the same author and timestamp.
 				if (isPreviousCommentsDataEqual !== false) {
-					isPreviousCommentsDataEqual = (
-						this.timestamp === signature.timestamp &&
-						this.author === signature.author
-					)
+					isPreviousCommentsDataEqual =
+						this.timestamp === signature.timestamp && this.author === signature.author
 				}
 				if (!doesPreviousCommentsDataMatch) break
 			}
@@ -433,30 +446,29 @@ class CommentSource {
 
 		return {
 			source: this,
-			score: (
-			// This condition _must_ be true.
+			score:
+				// This condition _must_ be true.
 				Number(
 					sources.length === 1 ||
-					wordOverlap > 0.5 ||
-
-					// There are always problems with first comments as there are no previous comments to
-					// compare the signatures of and it's harder to tell the match, so we use a bit ugly
-					// solution here, although it should be quite reliable: the comment's firstness, matching
-					// author, date, and headline. A false negative will take place when the comment is no
-					// longer first. Another option is to look for next comments, not for previous.
-					(commentData.index === 0 && doesPreviousCommentsDataMatch && doesHeadlineMatch) ||
-
-					// The reserve method, if for some reason the text is not overlapping: by this and
-					// previous two dates and authors. If all dates and authors are the same, that shouldn't
-					// count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
-					(commentData.index !== 0 && doesPreviousCommentsDataMatch && !isPreviousCommentsDataEqual)
-				) * 2 +
-
+						wordOverlap > 0.5 ||
+						// There are always problems with first comments as there are no previous comments to
+						// compare the signatures of and it's harder to tell the match, so we use a bit ugly
+						// solution here, although it should be quite reliable: the comment's firstness, matching
+						// author, date, and headline. A false negative will take place when the comment is no
+						// longer first. Another option is to look for next comments, not for previous.
+						(commentData.index === 0 && doesPreviousCommentsDataMatch && doesHeadlineMatch) ||
+						// The reserve method, if for some reason the text is not overlapping: by this and
+						// previous two dates and authors. If all dates and authors are the same, that shouldn't
+						// count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
+						(commentData.index !== 0 &&
+							doesPreviousCommentsDataMatch &&
+							!isPreviousCommentsDataEqual),
+				) *
+					2 +
 				wordOverlap +
 				Number(doesHeadlineMatch) * 1 +
 				Number(doesPreviousCommentsDataMatch) * 0.5 +
-				Number(doesIndexMatch) * 0.0001
-			),
+				Number(doesIndexMatch) * 0.0001,
 		}
 	}
 
@@ -483,56 +495,51 @@ class CommentSource {
 					const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i')
 					const currentLineEndingRegexp = new RegExp(
 						`(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$`,
-						'i'
+						'i',
 					)
 					const nextLineBeginningRegexp = new RegExp(
 						`^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}|\\||!)`,
-						'i'
+						'i',
 					)
 					const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/
 					code = code.replace(
 						/^((?![:*#; ]).+)\n(?![\n:*#; \u0003])(?=(.*))/gm,
 						/** @type {ReplaceCallback} */ (_s, currentLine, nextLine) =>
 							currentLine +
-
 							// Newline or space
-							(
-								(
-									entireLineRegexp.test(currentLine) ||
-									entireLineRegexp.test(nextLine) ||
-									fileRegexp.test(currentLine) ||
-									fileRegexp.test(nextLine) ||
-									entireLineFromStartRegexp.test(currentLine) ||
-									entireLineFromStartRegexp.test(nextLine) ||
-									currentLineEndingRegexp.test(currentLine) ||
-									nextLineBeginningRegexp.test(nextLine)
-								)
-									? '\n'
-									: ' '
-							)
+							(entireLineRegexp.test(currentLine) ||
+							entireLineRegexp.test(nextLine) ||
+							fileRegexp.test(currentLine) ||
+							fileRegexp.test(nextLine) ||
+							entireLineFromStartRegexp.test(currentLine) ||
+							entireLineFromStartRegexp.test(nextLine) ||
+							currentLineEndingRegexp.test(currentLine) ||
+							nextLineBeginningRegexp.test(nextLine)
+								? '\n'
+								: ' '),
 					)
 				}
 
 				code = brsToNewlines(code, '\u0001\n')
-				// Templates occupying a whole line with <br> at the end get a special treatment.
+					// Templates occupying a whole line with <br> at the end get a special treatment.
 					.replace(
 						/^((?:\u0001\d+_template.*\u0002) *)\u0001$/gm,
-						/** @type {ReplaceCallback} */ (_s, m1) => m1 + '<br>'
+						/** @type {ReplaceCallback} */ (_s, m1) => m1 + '<br>',
 					)
 
-				// Two templates in a row is likely a paragraph template + other template. This is a
-				// workaround; may need to look specifically for paragraph templates and mark them as
-				// such.
+					// Two templates in a row is likely a paragraph template + other template. This is a
+					// workaround; may need to look specifically for paragraph templates and mark them as
+					// such.
 					.replace(
 						/((?:\u0001\d+_template.*\u0002){2} *)\u0001/g,
 						/** @type {ReplaceCallback} */ (s, m1) =>
-							cd.config.paragraphTemplates.length ? m1 + '<br>' : s
+							cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
 					)
 
-				// Replace the temporary marker.
+					// Replace the temporary marker.
 					.replace(/\u0001\n/g, '\n')
 
-				// Remove indentation characters
+					// Remove indentation characters
 					.replace(
 						/\n([:*#]*)([ \t]*)/g,
 						/** @type {ReplaceCallback} */ (_s, chars, spacing) => {
@@ -547,7 +554,7 @@ class CommentSource {
 							}
 
 							return '\n' + newChars
-						}
+						},
 					)
 
 				if (cd.config.paragraphTemplates.length) {
@@ -560,7 +567,7 @@ class CommentSource {
 						// Line regexp
 						new RegExp(`^(?![:*#]).*${pattern}`, 'gm'),
 
-						(s) => s.replace(regexp, '\n\n')
+						(s) => s.replace(regexp, '\n\n'),
 					)
 				}
 
@@ -588,7 +595,7 @@ class CommentSource {
 	 * @private
 	 */
 	matchProperPlaceRegexps(adjustedChunkCodeAfter) {
-		const anySignaturePattern = (
+		const anySignaturePattern =
 			'^(' +
 			(this.comment.isTableComment ? String.raw`[^]*?(?:(?:\s*\n\|\})+|</table>).*\n` : '') +
 			'[^]*?(?:' +
@@ -597,21 +604,17 @@ class CommentSource {
 			cd.g.timestampTools.content.regexp.source +
 			'.*' +
 			(cd.g.unsignedTemplatesPattern ? `|${cd.g.unsignedTemplatesPattern}.*` : '') +
-
 			// \x01 is from hiding closed discussions and HTML comments. TODO: Line can start with a
 			// HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
 			// need to change wikitext.maskDistractingCode.
 			String.raw`|(?:^|\n)\x01.+)\n)\n*`
-		)
 		const maxIndentationLength = this.replyIndentation.length - 1
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const endOfThreadPattern = (
+		const endOfThreadPattern =
 			'(' +
-
 			// \n is here to prevent putting the reply on a casual empty line. \x01 is from hiding closed
 			// discussions.
 			String.raw`(?![:*#\x01\n])` +
-
 			/*
 				This excludes cases where:
 				1. `#` is starting a numbered list inside a comment (reply put in a wrong place:
@@ -622,7 +625,6 @@ class CommentSource {
 			 */
 			(maxIndentationLength > 0 ? `|[:*#\\x01]{1,${maxIndentationLength}}(?![:*\\x01])` : '') +
 			')'
-		)
 
 		const properPlaceMatch =
 			adjustedChunkCodeAfter.match(new RegExp(anySignaturePattern + endOfThreadPattern)) || []
@@ -637,7 +639,7 @@ class CommentSource {
 				.join('|')
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const outdentTemplatesRegexp = new RegExp(
-				`^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`
+				`^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`,
 			)
 
 			/*
@@ -645,8 +647,9 @@ class CommentSource {
 				- If the outdent template is right next to the comment replied to, we throw an error.
 				- If not, we insert the reply on the next line after the target comment.
 			 */
-			const outdentIndentationMatch =
-				adjustedChunkCodeAfter.slice(adjustedCodeBetween.length).match(outdentTemplatesRegexp)
+			const outdentIndentationMatch = adjustedChunkCodeAfter
+				.slice(adjustedCodeBetween.length)
+				.match(outdentTemplatesRegexp)
 			if (outdentIndentationMatch) {
 				const outdentIndentation = outdentIndentationMatch[1]
 				if (isNextLine) {
@@ -658,7 +661,7 @@ class CommentSource {
 				} else if (outdentIndentation.length <= this.replyIndentation.length) {
 					// Matches code up to the next newline, to insert the reply in violation of chronological
 					// order. If there was a properPlaceMatch, there should be a match here too.
-					[, adjustedCodeBetween] =
+					;[, adjustedCodeBetween] =
 						adjustedChunkCodeAfter.match(new RegExp(anySignaturePattern)) || []
 				}
 			}
@@ -679,7 +682,7 @@ class CommentSource {
 
 		const adjustedChunkCodeAfter = CommentSource.getAdjustedChunkCodeAfter(
 			currentIndex,
-			contextCode
+			contextCode,
 		)
 		if (/^ +\u0002/.test(adjustedChunkCodeAfter)) {
 			throw new CdError({
@@ -688,9 +691,8 @@ class CommentSource {
 			})
 		}
 
-		const { adjustedCodeBetween, indentationAfter, isNextLine } = this.matchProperPlaceRegexps(
-			adjustedChunkCodeAfter
-		)
+		const { adjustedCodeBetween, indentationAfter, isNextLine } =
+			this.matchProperPlaceRegexps(adjustedChunkCodeAfter)
 
 		if (
 			cd.config.outdentTemplates.length &&
@@ -713,8 +715,9 @@ class CommentSource {
 				? ''
 				: '[:*#]{2,}|'
 		const firstChar = cd.config.indentationCharMode === 'mimic' ? '[#*:]' : '#'
-		const changedIndentationMatch =
-			adjustedCodeBetween.match(new RegExp(`\\n(${manyCharsPart}${firstChar}[:*#]*).*\\n$`))
+		const changedIndentationMatch = adjustedCodeBetween.match(
+			new RegExp(`\\n(${manyCharsPart}${firstChar}[:*#]*).*\\n$`),
+		)
 		if (changedIndentationMatch) {
 			// Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
 			// possible here when we used `.slice(0, this.indentation.length + 1)` (due to `**` as
@@ -722,8 +725,8 @@ class CommentSource {
 			this.replyIndentation = changedIndentationMatch[1]
 				.slice(0, this.replyIndentation.length)
 
-			// Don't replace `*` with `:`, as a comment indented with `:` after one indented with `*`
-			// may misleadingly look like a continuation of the previous comment.
+				// Don't replace `*` with `:`, as a comment indented with `:` after one indented with `*`
+				// may misleadingly look like a continuation of the previous comment.
 				.replace(/:$/, cd.config.defaultIndentationChar)
 		}
 
@@ -825,7 +828,7 @@ class CommentSource {
 				const currentIndex = this.findProperPlaceForReply(originalContextCode)
 
 				commentCode ??= /** @type {import('./CommentForm').default} */ (commentForm).inputToCode(
-					/** @type {import('./CommentForm').CommentFormAction} */ (commentFormAction)
+					/** @type {import('./CommentForm').CommentFormAction} */ (commentFormAction),
 				)
 				contextCode =
 					originalContextCode.slice(0, currentIndex) +
@@ -852,7 +855,7 @@ class CommentSource {
 						} else {
 							// Deleting the whole section is safer as we don't want to leave any content in the
 							// end anyway.
-							({ startIndex, contentEndIndex: endIndex } = source)
+							;({ startIndex, contentEndIndex: endIndex } = source)
 						}
 					} else {
 						endIndex = this.signatureEndIndex + 1
@@ -871,8 +874,7 @@ class CommentSource {
 					}
 
 					contextCode =
-						originalContextCode.slice(0, startIndex) +
-						originalContextCode.slice(endIndex)
+						originalContextCode.slice(0, startIndex) + originalContextCode.slice(endIndex)
 				} else {
 					contextCode =
 						originalContextCode.slice(0, this.lineStartIndex) +
@@ -908,31 +910,30 @@ class CommentSource {
 				.join('|')
 			if (closedDiscussionEndingsPattern) {
 				closedDiscussionPairRegexp = new RegExp(
-					(
-						`\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
-						`\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`
-					),
-					'g'
+					`\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
+						`\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`,
+					'g',
 				)
 			}
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const closedDiscussionSingleRegexp = new RegExp(
 				`\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
-				'g'
+				'g',
 			)
 
 			// \x01 are later used in CommentSource#matchProperPlaceRegexps. \x02 is not used, it's
 			// just for consistency
 			const makeIndentationMarkers = (
 				/** @type {number} */ indentationLength,
-				/** @type {number} */ totalLength
+				/** @type {number} */ totalLength,
 			) =>
-				'\u0001'.repeat(indentationLength) + ' '.repeat(totalLength - indentationLength - 1) + '\u0002'
+				'\u0001'.repeat(indentationLength) +
+				' '.repeat(totalLength - indentationLength - 1) +
+				'\u0002'
 
 			if (closedDiscussionPairRegexp) {
-				adjustedCode = adjustedCode.replace(
-					closedDiscussionPairRegexp,
-					(s, indentation) => makeIndentationMarkers(indentation.length, s.length)
+				adjustedCode = adjustedCode.replace(closedDiscussionPairRegexp, (s, indentation) =>
+					makeIndentationMarkers(indentation.length, s.length),
 				)
 			}
 
@@ -952,9 +953,9 @@ class CommentSource {
 								(_m, n) =>
 									makeIndentationMarkers(
 										/** @type {RegExpMatchArray} */ (match)[1].length,
-										n.length
-									)
-							)
+										n.length,
+									),
+							),
 						)
 						.unmask()
 						.getText()
@@ -963,16 +964,14 @@ class CommentSource {
 
 		let chunkCodeAfterEndIndex =
 			currentIndex +
-
 			// Get the index of the next section heading. Logically, there should always be a match.
 			/** @type {number} */ (
-			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-			/** @type {RegExpMatchArray} */ (
-				// Match the code after
+				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+				/** @type {RegExpMatchArray} */ (
+					// Match the code after
 					adjustedCode.slice(currentIndex).match(/\n+(=+).*\1[ \t\u0001\u0002]*\n|$/)
 				).index
 			) +
-
 			1
 		const chunkCodeAfter = contextCode.slice(currentIndex, chunkCodeAfterEndIndex)
 		cd.g.keepInSectionEnding.forEach((regexp) => {

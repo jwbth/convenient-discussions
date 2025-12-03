@@ -70,7 +70,9 @@ const config = (/** @type {Environment} */ env) => {
 	const bundleFilename = `convenientDiscussions${filenamePostfix}.js`
 
 	if (!cdConfig.protocol || !cdConfig.main?.rootPath || !cdConfig.articlePath) {
-		throw new Error('No protocol/server/root path/article path found in config.json5.')
+		throw new Error(
+			'No protocol/server/root path/article path found in config.json5.',
+		)
 	}
 
 	let devtool
@@ -99,43 +101,54 @@ const config = (/** @type {Environment} */ env) => {
 
 	if (!isSingle) {
 		// Top banner
-		plugins.push(new webpack.BannerPlugin({
-			banner: '<nowiki>',
+		plugins.push(
+			new webpack.BannerPlugin({
+				banner: '<nowiki>',
 
-			// Don't add the banner to the inline worker, otherwise the source maps for it won't work (I
-			// think).
-			test: bundleFilename,
-		}),
+				// Don't add the banner to the inline worker, otherwise the source maps for it won't work (I
+				// think).
+				test: bundleFilename,
+			}),
 
-		// Bottom banner. Use a custom plugin to append the closing nowiki tag
-		{
-			apply(compiler) {
-				compiler.hooks.compilation.tap('AppendBannerPlugin', (compilation) => {
-					compilation.hooks.processAssets.tap(
-						{
-							name: 'AppendBannerPlugin',
-							stage: compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+			// Bottom banner. Use a custom plugin to append the closing nowiki tag
+			{
+				apply(compiler) {
+					compiler.hooks.compilation.tap(
+						'AppendBannerPlugin',
+						(compilation) => {
+							compilation.hooks.processAssets.tap(
+								{
+									name: 'AppendBannerPlugin',
+									stage: compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+								},
+								(assets) => {
+									Object.keys(assets).forEach((filename) => {
+										if (
+											filename === filename.replace('.map.json', '') &&
+											filename.endsWith('.js')
+										) {
+											assets[filename] = new compiler.webpack.sources.RawSource(
+												assets[filename].source().toString() +
+													'\n/*! </nowiki> */',
+											)
+										}
+									})
+								},
+							)
 						},
-						(assets) => {
-							Object.keys(assets).forEach((filename) => {
-								if (filename === filename.replace('.map.json', '') && filename.endsWith('.js')) {
-									assets[filename] = new compiler.webpack.sources.RawSource(
-										assets[filename].source().toString() + '\n/*! </nowiki> */'
-									)
-								}
-							})
-						}
 					)
-				})
+				},
 			},
-		})
+		)
 	}
 
 	if (!isDev && cdConfig.sourceMapsBaseUrl) {
-		plugins.push(new webpack.SourceMapDevToolPlugin({
-			filename: '[file].map.json',
-			append: `\n//# sourceMappingURL=${cdConfig.sourceMapsBaseUrl}[url]`,
-		}))
+		plugins.push(
+			new webpack.SourceMapDevToolPlugin({
+				filename: '[file].map.json',
+				append: `\n//# sourceMappingURL=${cdConfig.sourceMapsBaseUrl}[url]`,
+			}),
+		)
 	}
 
 	if (process.env.CI) {
@@ -231,15 +244,14 @@ const config = (/** @type {Environment} */ env) => {
 						banner: (licenseFile) => {
 							const licenseUrl = getUrl(
 								nonNullableConfig.main.server,
-								nonNullableConfig.main.rootPath + '/' + licenseFile
+								nonNullableConfig.main.rootPath + '/' + licenseFile,
 							)
 
 							return licenseFile.includes('worker')
-							// A really messed up hack to include source maps for a web worker (works with
-							// .map.json extension for webpack.SourceMapDevToolPlugin's `filename` property,
-							// doesn't work with .map for some reason).
-								? `//# sourceMappingURL=${nonNullableConfig.sourceMapsBaseUrl}convenientDiscussions.worker.js.map.json`
-
+								? // A really messed up hack to include source maps for a web worker (works with
+									// .map.json extension for webpack.SourceMapDevToolPlugin's `filename` property,
+									// doesn't work with .map for some reason).
+									`//# sourceMappingURL=${nonNullableConfig.sourceMapsBaseUrl}convenientDiscussions.worker.js.map.json`
 								: `
 	* For documentation and feedback, see the script's homepage:
 	* https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
@@ -266,8 +278,10 @@ const config = (/** @type {Environment} */ env) => {
 
 			headers: {
 				'Access-Control-Allow-Origin': '*',
-				'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-				'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+				'Access-Control-Allow-Methods':
+					'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+				'Access-Control-Allow-Headers':
+					'X-Requested-With, content-type, Authorization',
 			},
 
 			// Fixes "GET https://localhost:9000/sockjs-node/info?t=... net::ERR_SSL_PROTOCOL_ERROR".

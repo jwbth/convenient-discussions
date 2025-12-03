@@ -54,7 +54,9 @@ class TextMasker {
 	 */
 	mask(regexp, type, useGroups = false) {
 		if (type && !type.match(/^\w+$/)) {
-			console.warn('TextMasker.mask: the `type` argument should match `^\\w+$/`. Proceeding nevertheless.')
+			console.warn(
+				'TextMasker.mask: the `type` argument should match `^\\w+$/`. Proceeding nevertheless.',
+			)
 		}
 
 		this.text = this.text.replace(
@@ -73,7 +75,7 @@ class TextMasker {
 					(type ? '_' + type : '') +
 					(type === 'table' ? '\u0004' : '\u0002')
 				)
-			}
+			},
 		)
 
 		return this
@@ -165,17 +167,14 @@ class TextMasker {
 					'\u0001' +
 					String(this.maskedTexts.push(template)) +
 					'_template' +
-
 					// Length if needed
-					(
-						addLengths
-							? '_' +
+					(addLengths
+						? '_' +
 							String(
-								template.replace(/\u0001\d+_template_(\d+)\u0002/g, (_m, n) => ' '.repeat(n)).length
+								template.replace(/\u0001\d+_template_(\d+)\u0002/g, (_m, n) => ' '.repeat(n))
+									.length,
 							)
-							: ''
-					) +
-
+						: '') +
 					'\u0002' +
 					this.text.slice(right)
 
@@ -205,15 +204,16 @@ class TextMasker {
 	 * @returns {this}
 	 */
 	maskSensitiveCode(templateHandler) {
-		return this
-			.maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
-			.maskTags(['gallery', 'poem'], 'gallery')
-			.maskTags(['nowiki'], 'inline')
-			.maskTemplatesRecursively(templateHandler)
-			.mask(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true)
+		return (
+			this.maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
+				.maskTags(['gallery', 'poem'], 'gallery')
+				.maskTags(['nowiki'], 'inline')
+				.maskTemplatesRecursively(templateHandler)
+				.mask(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true)
 
-		// Tables with a signature inside that are clipped on comment editing.
-			.mask(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true)
+				// Tables with a signature inside that are clipped on comment editing.
+				.mask(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true)
+		)
 	}
 
 	/**

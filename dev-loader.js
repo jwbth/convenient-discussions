@@ -13,7 +13,7 @@
  * javascript:(function(){document.head.appendChild(Object.assign(document.createElement('script'),{type:'module',src:'http://localhost:9000/src/app.js'}));})();
  */
 
-(function loadConvenientDiscussionsDev() {
+;(function loadConvenientDiscussionsDev() {
 	// Check if already loaded
 	if (window.convenientDiscussions) {
 		console.log('[CD Dev] Already loaded. Reload the page to load a fresh version.')

@@ -55,9 +55,8 @@ class CommentFormManager extends EventEmitter {
 			.on('startReboot', this.detach)
 			.on('keyDown', (event) => {
 				if (
-				// Ctrl+Alt+Q
+					// Ctrl+Alt+Q
 					keyCombination(event, 81, ['cmd', 'alt']) ||
-
 					// Q
 					(keyCombination(event, 81) && !isInputFocused())
 				) {
@@ -118,8 +117,7 @@ class CommentFormManager extends EventEmitter {
 			target.addCommentFormToPage(config.mode, cf)
 			cf.setup(initialState)
 			this.items.push(cf)
-			cf
-				.on('change', this.saveSession)
+			cf.on('change', this.saveSession)
 				.on('unregister', () => {
 					this.remove(cf)
 				})
@@ -216,12 +214,7 @@ class CommentFormManager extends EventEmitter {
 	 * @returns {?CommentForm}
 	 */
 	getLastActive() {
-		return (
-			this.items
-				.slice()
-				.sort(this.lastFocused)[0] ||
-				null
-		)
+		return this.items.slice().sort(this.lastFocused)[0] || null
 	}
 
 	/**
@@ -235,8 +228,7 @@ class CommentFormManager extends EventEmitter {
 			this.items
 				.slice()
 				.sort(this.lastFocused)
-				.find((commentForm) => commentForm.isAltered()) ||
-				null
+				.find((commentForm) => commentForm.isAltered()) || null
 		)
 	}
 
@@ -278,12 +270,12 @@ class CommentFormManager extends EventEmitter {
 	 * @private
 	 */
 	actuallySaveSession = () => {
-		(new StorageItemWithKeysAndSaveTime('commentForms'))
+		new StorageItemWithKeysAndSaveTime('commentForms')
 			.setWithTime(
 				mw.config.get('wgPageName'),
 				this.items
 					.filter((commentForm) => commentForm.isAltered())
-					.map((commentForm) => commentForm.getData())
+					.map((commentForm) => commentForm.getData()),
 			)
 			.save()
 	}
@@ -303,7 +295,7 @@ class CommentFormManager extends EventEmitter {
 			// Don't save more often than once per 5 seconds.
 			this.throttledSaveSession ??= OO.ui.throttle(
 				/** @type {() => void} */ (this.actuallySaveSession),
-				500
+				500,
 			)
 			this.throttledSaveSession()
 		}
@@ -326,16 +318,15 @@ class CommentFormManager extends EventEmitter {
 			 *   'commentForms'
 			 * >}
 			 */ (new StorageItemWithKeysAndSaveTime('commentForms'))
-			// This comes from the local storage, the value may be corrupt
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				// This comes from the local storage, the value may be corrupt
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				.cleanUp((entry) => !entry.commentForms?.length || entry.saveTime < subtractDaysFromNow(60))
 				.save()
 				.get(mw.config.get('wgPageName'))
-				?.commentForms
-				.filter((data) => {
+				?.commentForms.filter((data) => {
 					const target = this.getTargetByData(data.targetData)
 					if (data.targetWithOutdentedRepliesData) {
-						/** @type {import('./CommentForm').CommentFormInitialState} */ (
+						/** @type {import('./CommentForm').CommentFormInitialState} */ ;(
 							data
 						).targetWithOutdentedReplies = /** @type {import('./Comment').default|undefined} */ (
 							this.getTargetByData(data.targetWithOutdentedRepliesData)
@@ -345,14 +336,12 @@ class CommentFormManager extends EventEmitter {
 						target?.isActionable &&
 						(!('canBeReplied' in target) || target.canBeReplied()) &&
 						// Check if there is another form already
-						!target[
-							CommentForm.getPropertyNameOnTarget(target, data.mode)
-						]
+						!target[CommentForm.getPropertyNameOnTarget(target, data.mode)]
 					) {
 						try {
-							/** @type {import('./CommentForm').CommentFormAddingMethod} */ (
+							/** @type {import('./CommentForm').CommentFormAddingMethod} */ ;(
 								target[
-								/** @type {keyof typeof target} */ (target.getCommentFormMethodName(data.mode))
+									/** @type {keyof typeof target} */ (target.getCommentFormMethodName(data.mode))
 								]
 							)(data, undefined, data.preloadConfig, data.newTopicOnTop)
 							haveRestored = true
@@ -366,15 +355,17 @@ class CommentFormManager extends EventEmitter {
 					}
 
 					return false
-				})
+				}),
 		)
 
 		if (haveRestored) {
-			mw.notification.notify(cd.s('restore-restored-text'), {
-				title: cd.s('restore-restored-title'),
-			}).$notification.on('click', () => {
-				this.items[0].goTo()
-			})
+			mw.notification
+				.notify(cd.s('restore-restored-text'), {
+					title: cd.s('restore-restored-title'),
+				})
+				.$notification.on('click', () => {
+					this.items[0].goTo()
+				})
 		}
 	}
 
@@ -399,7 +390,7 @@ class CommentFormManager extends EventEmitter {
 		} else if (targetData?.id) {
 			// Comment
 			return commentManager.getById(targetData.id)
-		}   // `data.mode === 'addSection'` or `targetData === undefined`
+		} // `data.mode === 'addSection'` or `targetData === undefined`
 
 		// Page
 		return cd.page
@@ -412,9 +403,7 @@ class CommentFormManager extends EventEmitter {
 	 */
 	restoreSessionDirectly() {
 		this.maybeShowRescueDialog(
-			this.items
-				.map((commentForm) => commentForm.restore())
-				.filter(defined)
+			this.items.map((commentForm) => commentForm.restore()).filter(defined),
 		)
 	}
 
@@ -439,9 +428,12 @@ class CommentFormManager extends EventEmitter {
 			message: new OO.ui.FieldLayout(
 				new OO.ui.MultilineTextInputWidget({
 					value: content
-						.map((data) =>
-							(data.headline === undefined ? '' : `${cd.s('rd-headline')}: ${data.headline}\n\n`) +
-							`${cd.s('rd-comment')}: ${data.comment}\n\n${cd.s('rd-summary')}: ${data.summary}`
+						.map(
+							(data) =>
+								(data.headline === undefined
+									? ''
+									: `${cd.s('rd-headline')}: ${data.headline}\n\n`) +
+								`${cd.s('rd-comment')}: ${data.comment}\n\n${cd.s('rd-summary')}: ${data.summary}`,
 						)
 						.join('\n\n----\n'),
 					rows: 20,
@@ -449,7 +441,7 @@ class CommentFormManager extends EventEmitter {
 				{
 					align: 'top',
 					label: cd.s('rd-intro'),
-				}
+				},
 			).$element,
 			actions: [
 				{
@@ -498,16 +490,10 @@ class CommentFormManager extends EventEmitter {
 
 			return (
 				mw.user.options.get('useeditwarning') &&
-				(
-					this.getLastActiveAltered() ||
-					(
-						(
-							mw.user.options.get('editondblclick') ||
-							mw.user.options.get('editsectiononrightclick')
-						) &&
-						this.getCount()
-					)
-				)
+				(this.getLastActiveAltered() ||
+					((mw.user.options.get('editondblclick') ||
+						mw.user.options.get('editsectiononrightclick')) &&
+						this.getCount()))
 			)
 		})
 	}
@@ -530,8 +516,7 @@ class CommentFormManager extends EventEmitter {
 	 * @param {boolean} [inSight]
 	 */
 	goToNextCommentForm(inSight) {
-		this
-			.query((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
+		this.query((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
 			.map((commentForm) => {
 				let top = commentForm.$element[0].getBoundingClientRect().top
 				if (top < 0) {

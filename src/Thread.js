@@ -8,11 +8,23 @@ import cd from './loader/cd'
 import settings from './settings'
 import CdError from './shared/CdError'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
-import { isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } from './shared/utils-general'
+import {
+	isHeadingNode,
+	removeFromArrayIfPresent,
+	subtractDaysFromNow,
+	unique,
+} from './shared/utils-general'
 import updateChecker from './updateChecker'
 import { loadUserGenders } from './utils-api'
 import { mixInObject } from './utils-oojs'
-import { getCommonGender, getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed, isVisible } from './utils-window'
+import {
+	getCommonGender,
+	getExtendedRect,
+	getRangeContents,
+	getVisibilityByRects,
+	isCmdModifierPressed,
+	isVisible,
+} from './utils-window'
 
 /**
  * @typedef {object} EventMap
@@ -26,7 +38,7 @@ import { getCommonGender, getExtendedRect, getRangeContents, getVisibilityByRect
 class Thread extends mixInObject(
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	class {},
-	/** @type {typeof EventEmitter<EventMap>} */(EventEmitter)
+	/** @type {typeof EventEmitter<EventMap>} */ (EventEmitter),
 ) {
 	/**
 	 * Click area of the thread line.
@@ -171,10 +183,8 @@ class Thread extends mixInObject(
 		 * @type {boolean}
 		 * @private
 		 */
-		this.hasOutdents = (
-			controller.areThereOutdents() &&
-			this.comments.slice(1).some((comment) => comment.isOutdented)
-		)
+		this.hasOutdents =
+			controller.areThereOutdents() && this.comments.slice(1).some((comment) => comment.isOutdented)
 
 		/**
 		 * Last comment of the thread _visually_, not logically (differs from {@link Thread#lastComment}
@@ -196,10 +206,9 @@ class Thread extends mixInObject(
 		 * @private
 		 */
 		this.visualLastCommentFallback = this.hasOutdents
-		// `|| rootComment` part for a very weird case when an outdented comment is at the same level
-		// as its parent.
-			? rootComment.getChildren(true, true, false).at(-1) || rootComment
-
+			? // `|| rootComment` part for a very weird case when an outdented comment is at the same level
+				// as its parent.
+				rootComment.getChildren(true, true, false).at(-1) || rootComment
 			: this.lastComment
 
 		this.initBoundingElements()
@@ -225,8 +234,8 @@ class Thread extends mixInObject(
 		// Check if the event target is within this thread's collapsed range
 		if (this.isCollapsed && this.collapsedRange) {
 			const target = /** @type {HTMLElement} */ (event.target)
-			const isInCollapsedRange = this.collapsedRange.some((element) =>
-				element === target || element.contains(target)
+			const isInCollapsedRange = this.collapsedRange.some(
+				(element) => element === target || element.contains(target),
 			)
 
 			if (isInCollapsedRange) {
@@ -248,9 +257,9 @@ class Thread extends mixInObject(
 		let endElement
 		let visualEndElement
 		let visualEndElementFallback
-		const firstNotHeadingElement = /** @type {HTMLElement} */ (this.rootComment.elements.find(
-			(el) => !isHeadingNode(el)
-		))
+		const firstNotHeadingElement = /** @type {HTMLElement} */ (
+			this.rootComment.elements.find((el) => !isHeadingNode(el))
+		)
 		const highlightables = this.lastComment.highlightables
 		const visualHighlightables = this.visualLastComment.highlightables
 		const visualHighlightablesFallback = this.visualLastCommentFallback.highlightables
@@ -261,15 +270,16 @@ class Thread extends mixInObject(
 			visualEndElement = Thread.findEndElementOfZeroLevelThread(
 				startElement,
 				visualHighlightables,
-				nextForeignElement
+				nextForeignElement,
 			)
-			visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback
-				? visualEndElement
-				: Thread.findEndElementOfZeroLevelThread(
-						startElement,
-						visualHighlightablesFallback,
-						nextForeignElement
-					)
+			visualEndElementFallback =
+				this.visualLastComment === this.visualLastCommentFallback
+					? visualEndElement
+					: Thread.findEndElementOfZeroLevelThread(
+							startElement,
+							visualHighlightablesFallback,
+							nextForeignElement,
+						)
 			endElement = this.hasOutdents
 				? Thread.findEndElementOfZeroLevelThread(startElement, highlightables, nextForeignElement)
 				: visualEndElement
@@ -279,58 +289,52 @@ class Thread extends mixInObject(
 			// element. But then we need to fix areTopAndBottomAligned() (calculate the last comment's
 			// margins instead of using the first comment's) and utilsWindow.getRangeContents() (come up
 			// with a treatment for the situation when the end element includes the start element).
-			startElement = (
+			startElement =
 				Thread.findItemElement(
 					firstNotHeadingElement,
 					this.rootComment.level,
-					nextForeignElement
-				) ||
-				firstNotHeadingElement
-			)
+					nextForeignElement,
+				) || firstNotHeadingElement
 			const lastHighlightable = highlightables[highlightables.length - 1]
 
-			const lastOutdentedComment = (
+			const lastOutdentedComment =
 				this.hasOutdents &&
 				commentManager
 					.getAll()
 					.slice(0, this.lastComment.index + 1)
 					.reverse()
 					.find((comment) => comment.isOutdented)
-			)
 			if (lastOutdentedComment) {
-				endElement = lastOutdentedComment.level === 0
-					? Thread.findEndElementOfZeroLevelThread(
-							startElement,
-							highlightables,
-							nextForeignElement
-						)
-					: Thread.findItemElement(
-							lastHighlightable,
-							Math.min(lastOutdentedComment.level, this.rootComment.level),
-							nextForeignElement
-						)
+				endElement =
+					lastOutdentedComment.level === 0
+						? Thread.findEndElementOfZeroLevelThread(
+								startElement,
+								highlightables,
+								nextForeignElement,
+							)
+						: Thread.findItemElement(
+								lastHighlightable,
+								Math.min(lastOutdentedComment.level, this.rootComment.level),
+								nextForeignElement,
+							)
 
 				visualEndElement = Thread.findItemElement(
 					visualHighlightables[visualHighlightables.length - 1],
 					this.rootComment.level,
-					nextForeignElement
+					nextForeignElement,
 				)
-				visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback
-					? visualEndElement
-					: Thread.findItemElement(
-							visualHighlightablesFallback[visualHighlightablesFallback.length - 1],
-							this.rootComment.level,
-							nextForeignElement
-						)
+				visualEndElementFallback =
+					this.visualLastComment === this.visualLastCommentFallback
+						? visualEndElement
+						: Thread.findItemElement(
+								visualHighlightablesFallback[visualHighlightablesFallback.length - 1],
+								this.rootComment.level,
+								nextForeignElement,
+							)
 			} else {
-				endElement = (
-					Thread.findItemElement(
-						lastHighlightable,
-						this.rootComment.level,
-						nextForeignElement
-					) ||
+				endElement =
+					Thread.findItemElement(lastHighlightable, this.rootComment.level, nextForeignElement) ||
 					lastHighlightable
-				)
 
 				visualEndElementFallback = visualEndElement = endElement
 			}
@@ -476,8 +480,7 @@ class Thread extends mixInObject(
 		$(document)
 			.on('mousemove.cd', this.handleDocumentMouseMove)
 			.one('mouseup.cd mousedown.cd', this.quitNavMode)
-		$(window)
-			.one('blur.cd', this.quitNavMode)
+		$(window).one('blur.cd', this.quitNavMode)
 		$(document.body).addClass('cd-thread-navMode-updown')
 	}
 
@@ -495,9 +498,9 @@ class Thread extends mixInObject(
 			if (this.hasMouseMoved(event)) {
 				$(document).off('mousemove.cd', this.handleDocumentMouseMove)
 				this.enterNavMode(
-					/** @type {number} */(this.navFromX),
-					/** @type {number} */(this.navFromY),
-					true
+					/** @type {number} */ (this.navFromX),
+					/** @type {number} */ (this.navFromY),
+					true,
 				)
 			}
 
@@ -594,7 +597,7 @@ class Thread extends mixInObject(
 		const steps =
 			direction *
 			Math[
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-unary-minus
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-unary-minus
 				direction === -(/** @type {number} */ (this.navCurrentThreadEscapeDirection))
 					? 'ceil'
 					: 'floor'
@@ -608,14 +611,12 @@ class Thread extends mixInObject(
 		) {
 			const comment = comments[i]
 			if (
-			// We need to check the logical level too, because there can be comments with no parents on
-			// logical levels other than 0.
+				// We need to check the logical level too, because there can be comments with no parents on
+				// logical levels other than 0.
 				this.rootComment.logicalLevel === comment.logicalLevel &&
 				this.rootComment.getParent() === comment.getParent() &&
-				(
-					comment.logicalLevel === 0 ||
-					this.rootComment.section?.getBase() === comment.section?.getBase()
-				)
+				(comment.logicalLevel === 0 ||
+					this.rootComment.section?.getBase() === comment.section?.getBase())
 			) {
 				target = comment
 				step += direction
@@ -646,7 +647,9 @@ class Thread extends mixInObject(
 		$(document)
 			.off('mousemove.cd', this.handleDocumentMouseMove)
 			.off('mouseup.cd mousedown.cd', this.quitNavMode)
-		$(document.body).removeClass('cd-thread-navMode-updown cd-thread-navMode-up cd-thread-navMode-down')
+		$(document.body).removeClass(
+			'cd-thread-navMode-updown cd-thread-navMode-up cd-thread-navMode-down',
+		)
 	}
 
 	/**
@@ -662,11 +665,16 @@ class Thread extends mixInObject(
 			return
 		}
 
-		[...new Map([['a', 'b']])].sort()
+		;[...new Map([['a', 'b']])].sort()
 
-		if (!/** @type {HTMLElement} */ (
-			this.clickArea
-		).classList.contains('cd-thread-clickArea-hovered')) return
+		if (
+			!(
+				/** @type {HTMLElement} */ (this.clickArea).classList.contains(
+					'cd-thread-clickArea-hovered',
+				)
+			)
+		)
+			return
 
 		this.onToggleClick(event)
 	}
@@ -759,23 +767,15 @@ class Thread extends mixInObject(
 			endElement = this.endElement
 		}
 
-		const $lastSubitem = (
-			(
-				(
-					this.rootComment.level >= 1 ||
-
-					// Catch special cases when a section has no "Reply in section" and "There are new comments
-					// in this thread" button or the thread isn't the last thread starting with a 0-level
-					// comment in the section.
-					!endElement.classList.contains('cd-section-button-container')
-				) &&
-				(
-					this.rootComment.subitemList.get('newCommentsNote') ||
-					(this.rootComment === lastComment && this.rootComment.subitemList.get('replyForm'))
-				)
-			) ||
+		const $lastSubitem =
+			((this.rootComment.level >= 1 ||
+				// Catch special cases when a section has no "Reply in section" and "There are new comments
+				// in this thread" button or the thread isn't the last thread starting with a 0-level
+				// comment in the section.
+				!endElement.classList.contains('cd-section-button-container')) &&
+				(this.rootComment.subitemList.get('newCommentsNote') ||
+					(this.rootComment === lastComment && this.rootComment.subitemList.get('replyForm')))) ||
 			undefined
-		)
 
 		return $lastSubitem?.is(':visible')
 			? Thread.findItemElement($lastSubitem[0], this.rootComment.level)
@@ -828,9 +828,7 @@ class Thread extends mixInObject(
 			labelElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-labelElement-label')),
 		})
 		const usersInThread = this.getUsers()
-		const userList = usersInThread
-			.map((author) => author.getName())
-			.join(cd.mws('comma-separator'))
+		const userList = usersInThread.map((author) => author.getName()).join(cd.mws('comma-separator'))
 		const setLabel = (/** @type {boolean} */ genderless) => {
 			button.setLabel(
 				cd.s(
@@ -838,20 +836,20 @@ class Thread extends mixInObject(
 					String(this.commentCount),
 					String(usersInThread.length),
 					userList,
-					getCommonGender(usersInThread)
-				)
+					getCommonGender(usersInThread),
+				),
 			)
 			button.element.classList.remove('cd-thread-button-invisible')
 		}
 		if (cd.g.genderAffectsUserString) {
-			(loadUserGendersPromise || loadUserGenders(usersInThread)).then(
+			;(loadUserGendersPromise || loadUserGenders(usersInThread)).then(
 				() => {
 					setLabel(false)
 				},
 				() => {
 					// Couldn't get the gender, use the genderless version.
 					setLabel(true)
-				}
+				},
 			)
 		} else {
 			setLabel(false)
@@ -859,7 +857,7 @@ class Thread extends mixInObject(
 
 		const firstElement = /** @type {HTMLElement[]} */ (this.collapsedRange)[0]
 		const expandNote = document.createElement(
-			['LI', 'DD'].includes(firstElement.tagName) ? firstElement.tagName : 'DIV'
+			['LI', 'DD'].includes(firstElement.tagName) ? firstElement.tagName : 'DIV',
 		)
 		expandNote.className = 'cd-thread-button-container cd-thread-expandNote'
 		if (firstElement.classList.contains('cd-connectToPreviousItem')) {
@@ -928,7 +926,7 @@ class Thread extends mixInObject(
 		Thread.emit('toggle')
 		this.rootComment.getParent()?.updateToggleChildThreadsButton()
 		if (clickedThread && !wasCollapsed) {
-			/** @type {JQuery} */ (this.$expandNote).cdScrollIntoView()
+			/** @type {JQuery} */ ;(this.$expandNote).cdScrollIntoView()
 		}
 	}
 
@@ -963,7 +961,7 @@ class Thread extends mixInObject(
 		this.collapsedRange = getRangeContents(
 			this.getAdjustedStartElement(),
 			this.getAdjustedEndElement() || null,
-			controller.rootElement
+			controller.rootElement,
 		)
 		if (!this.collapsedRange) return
 
@@ -976,20 +974,20 @@ class Thread extends mixInObject(
 
 		for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
 			i =
-			/** @type {import('./Comment').default} */ (commentManager.getByIndex(i)).collapse(this) ??
+				/** @type {import('./Comment').default} */ (commentManager.getByIndex(i)).collapse(this) ??
 				i
 		}
 
 		this.addExpandNote(loadUserGendersPromise)
 
 		if (!isBatchOperation) {
-			/** @type {JQuery} */ (this.$expandNote).cdScrollIntoView()
+			/** @type {JQuery} */ ;(this.$expandNote).cdScrollIntoView()
 			this.rootComment.getParent()?.updateToggleChildThreadsButton()
 		}
 
 		if (this.rootComment.isOpeningSection()) {
-			/** @type {OO.ui.MenuOptionWidget} */ (
-			/** @type {import('./Section').default} */ (this.rootComment.section).actions.moreMenuSelect
+			/** @type {OO.ui.MenuOptionWidget} */ ;(
+				/** @type {import('./Section').default} */ (this.rootComment.section).actions.moreMenuSelect
 					?.getMenu()
 					.findItemFromData('editOpeningComment')
 			)?.setDisabled(true)
@@ -1024,20 +1022,20 @@ class Thread extends mixInObject(
 	 *   scrolling or updating the parent comment's "Toggle child threads" button look).
 	 */
 	expand(auto = false, isBatchOperation = auto) {
-		if (!this.isCollapsed) return;
+		if (!this.isCollapsed) return
 
-		/** @type {HTMLElement[]} */ (this.collapsedRange).forEach((element) => {
+		/** @type {HTMLElement[]} */ ;(this.collapsedRange).forEach((element) => {
 			this.maybeUnhideElement(element)
-		});
+		})
 
-		/** @type {HTMLElement} */ (this.expandNote).remove()
+		/** @type {HTMLElement} */ ;(this.expandNote).remove()
 		this.expandNote = undefined
 		this.$expandNote = undefined
 		this.expandNoteContainer?.remove()
 		this.expandNoteContainer = undefined
 
 		if (this.rootComment.isOpeningSection()) {
-			/** @type {OO.ui.MenuOptionWidget} */ (
+			/** @type {OO.ui.MenuOptionWidget} */ ;(
 				this.rootComment.section.actions.moreMenuSelect
 					?.getMenu()
 					.findItemFromData('editOpeningComment')
@@ -1118,7 +1116,7 @@ class Thread extends mixInObject(
 			element.removeAttribute('hidden')
 			element.removeEventListener('beforematch', this.handleBeforeMatch)
 		}
-	};
+	}
 
 	/**
 	 * Update the collapsed range, taking into account closed discussions. (We can't do it before,
@@ -1139,35 +1137,31 @@ class Thread extends mixInObject(
 		const isFinalChild = (parent, child) =>
 			Boolean(
 				parent &&
-				child &&
-				(
-					parent.lastElementChild === child ||
-					(
-						parent.lastElementChild === child.nextElementSibling &&
-						/** @type {HTMLElement} */ (child.nextElementSibling).classList.contains('mw-notalk'))
-				)
+					child &&
+					(parent.lastElementChild === child ||
+						(parent.lastElementChild === child.nextElementSibling &&
+							/** @type {HTMLElement} */ (child.nextElementSibling).classList.contains(
+								'mw-notalk',
+							))),
 			)
 		/** @type {(el: HTMLElement | undefined) => HTMLElement | undefined} */
 		const getParentIfItsFinalChild = (el) =>
 			el &&
 			isFinalChild(
-				/** @type {HTMLElement | undefined} */(el.parentNode?.parentNode),
-				/** @type {HTMLElement | undefined} */(el.parentNode)
+				/** @type {HTMLElement | undefined} */ (el.parentNode?.parentNode),
+				/** @type {HTMLElement | undefined} */ (el.parentNode),
 			)
 				? /** @type {HTMLElement} */ (el.parentNode)
 				: undefined
 		/** @type {(ancestor: HTMLElement, descendant: HTMLElement | undefined, maxDepth: number) => boolean} */
 		const isFinalDescendant = (ancestor, descendant, maxDepth) =>
 			maxDepth > 0 &&
-			(
-				isFinalChild(ancestor, descendant) ||
-				isFinalDescendant(ancestor, getParentIfItsFinalChild(descendant), maxDepth - 1)
-			)
+			(isFinalChild(ancestor, descendant) ||
+				isFinalDescendant(ancestor, getParentIfItsFinalChild(descendant), maxDepth - 1))
 
 		if (
 			discussion &&
 			!discussion.contains(collapsedRange[0]) &&
-
 			// Catch cases like the closed discussion template at the end of this thread:
 			// https://ru.wikipedia.org/wiki/Служебная:GoToComment/c-Stjn-20241201145700-Oleg_Yunakov-20241201143800
 			// Caution: innerText causes a reflow. We do it because this part of code is rarely reached.
@@ -1209,16 +1203,14 @@ class Thread extends mixInObject(
 			const needCalculateMargins =
 				comment.level === 0 ||
 				comment.containerListType === 'ol' ||
-
 				// Occurs when part of a comment that is not in the thread is next to the start element, for
 				// example
 				// https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Архив/2021/04#202104081533_Macuser
 				// - the next comment is not in the thread.
 				this.startElement.tagName === 'DIV'
 
-			const elTop = this.isCollapsed || !needCalculateMargins
-				? this.getAdjustedStartElement()
-				: undefined
+			const elTop =
+				this.isCollapsed || !needCalculateMargins ? this.getAdjustedStartElement() : undefined
 			const elBottom = this.isCollapsed ? elTop : this.getAdjustedEndElement(true)
 
 			let offsetTop
@@ -1417,7 +1409,7 @@ class Thread extends mixInObject(
 					'cd-thread-button-invisible',
 					'cd-icon',
 				],
-			}).$element[0]
+			}).$element[0],
 		)
 
 		const threadClickArea = document.createElement('div')
@@ -1437,28 +1429,22 @@ class Thread extends mixInObject(
 	static reset = (autocollapse = true) => {
 		this.enabled = settings.get('enableThreads')
 		if (!this.enabled) {
-			(new StorageItemWithKeysAndSaveTime('collapsedThreads')).removeItem()
+			new StorageItemWithKeysAndSaveTime('collapsedThreads').removeItem()
 
 			return
 		}
 
 		if (!this.isInited) {
-			this
-				.on('toggle', this.updateLines)
-			controller
-				.on('resize', this.updateLines)
-				.on('mutate', () => {
-					// Update only on mouse move to prevent short freezings of a page when there is a comment
-					// form in the beginning of a very long page and the input is changed so that everything
-					// below the form shifts vertically.
-					$(document)
-						.off('mousemove.cd', this.updateLines)
-						.one('mousemove.cd', this.updateLines)
-				})
-			$(document)
-				.on('visibilitychange', this.updateLines)
+			this.on('toggle', this.updateLines)
+			controller.on('resize', this.updateLines).on('mutate', () => {
+				// Update only on mouse move to prevent short freezings of a page when there is a comment
+				// form in the beginning of a very long page and the input is changed so that everything
+				// below the form shifts vertically.
+				$(document).off('mousemove.cd', this.updateLines).one('mousemove.cd', this.updateLines)
+			})
+			$(document).on('visibilitychange', this.updateLines)
 			updateChecker
-			// Start and end elements of threads may be replaced, so we need to restart threads.
+				// Start and end elements of threads may be replaced, so we need to restart threads.
 				.on('newChanges', () => {
 					this.reset()
 				})
@@ -1512,14 +1498,14 @@ class Thread extends mixInObject(
 		 */
 
 		const collapsedThreadsStorageItem =
-		/** @type {StorageItemWithKeysAndSaveTime<CollapsedThreadsStorageItem[], 'collapsedThreads'>} */ (
+			/** @type {StorageItemWithKeysAndSaveTime<CollapsedThreadsStorageItem[], 'collapsedThreads'>} */ (
 				new StorageItemWithKeysAndSaveTime('collapsedThreads').cleanUp(
-					(entry) => !entry.collapsedThreads.length || entry.saveTime < subtractDaysFromNow(60)
+					(entry) => !entry.collapsedThreads.length || entry.saveTime < subtractDaysFromNow(60),
 				)
 			)
 
 		const collapsedThreads = collapsedThreadsStorageItem.get(
-			mw.config.get('wgArticleId')
+			mw.config.get('wgArticleId'),
 		)?.collapsedThreads
 
 		/** @type {Thread[]} */
@@ -1576,9 +1562,7 @@ class Thread extends mixInObject(
 		this.emit('toggle')
 
 		if (cd.util.isCurrentRevision() && collapsedThreads) {
-			collapsedThreadsStorageItem
-				.setWithTime(mw.config.get('wgArticleId'), collapsedThreads)
-				.save()
+			collapsedThreadsStorageItem.setWithTime(mw.config.get('wgArticleId'), collapsedThreads).save()
 		}
 	}
 
@@ -1600,7 +1584,7 @@ class Thread extends mixInObject(
 			const currentNode = this.treeWalker.currentNode
 			if (currentNode.classList.contains('cd-commentLevel')) {
 				const match = /** @type {string} */ (currentNode.getAttribute('class')).match(
-					/cd-commentLevel-(\d+)/
+					/cd-commentLevel-(\d+)/,
 				)
 				if (match && Number(match[1]) === (level || 1)) {
 					// If the level is 0 (outdented comment or subitem of a 0-level comment), we need the list
@@ -1674,7 +1658,8 @@ class Thread extends mixInObject(
 		const scrollY = window.scrollY
 
 		const floatingRects = controller.getFloatingElements().map(getExtendedRect)
-		commentManager.getAll()
+		commentManager
+			.getAll()
 			.slice()
 			.reverse()
 			.some((comment) =>
@@ -1684,7 +1669,7 @@ class Thread extends mixInObject(
 					scrollX,
 					scrollY,
 					floatingRects,
-				})
+				}),
 			)
 
 		// Faster to update/add all elements in one batch.
@@ -1693,7 +1678,7 @@ class Thread extends mixInObject(
 		})
 
 		if (elementsToAdd.length) {
-			/** @type {HTMLDivElement} */ (this.threadLinesContainer).append(...elementsToAdd)
+			/** @type {HTMLDivElement} */ ;(this.threadLinesContainer).append(...elementsToAdd)
 		}
 	}
 
@@ -1703,20 +1688,21 @@ class Thread extends mixInObject(
 	 * @private
 	 */
 	static saveCollapsedThreads() {
-		if (!cd.util.isCurrentRevision()) return;
+		if (!cd.util.isCurrentRevision()) return
 
-		(new StorageItemWithKeysAndSaveTime('collapsedThreads'))
+		new StorageItemWithKeysAndSaveTime('collapsedThreads')
 			.setWithTime(
 				mw.config.get('wgArticleId'),
 				commentManager
-					.query((comment) => Boolean(
-						comment.thread &&
-						comment.thread.isCollapsed !== comment.thread.isAutocollapseTarget
-					))
+					.query((comment) =>
+						Boolean(
+							comment.thread && comment.thread.isCollapsed !== comment.thread.isAutocollapseTarget,
+						),
+					)
 					.map((comment) => ({
 						id: comment.id,
 						collapsed: /** @type {Thread} */ (comment.thread).isCollapsed,
-					}))
+					})),
 			)
 			.save()
 	}

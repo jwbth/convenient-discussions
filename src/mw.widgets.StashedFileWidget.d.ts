@@ -17,34 +17,32 @@ declare global {
 			 * widget.getValue(); // '12r9epfbnskk.knfiy7.1.jpg'
 			 * ```
 			 */
-			class StashedFileWidget extends OO.ui.Widget
-				implements
-					OO.ui.mixin.IconElement,
-					OO.ui.mixin.LabelElement,
-					OO.ui.mixin.PendingElement
+			class StashedFileWidget
+				extends OO.ui.Widget
+				implements OO.ui.mixin.IconElement, OO.ui.mixin.LabelElement, OO.ui.mixin.PendingElement
 			{
-				constructor(config?: StashedFileWidget.ConfigOptions);
+				constructor(config?: StashedFileWidget.ConfigOptions)
 
 				/**
 				 * API to use for thumbnail retrieval.
 				 */
-				api: mw.Api;
+				api: mw.Api
 				/**
 				 * The filekey of the stashed file.
 				 */
-				filekey: string | null;
+				filekey: string | null
 				/**
 				 * A jQuery element holding additional information.
 				 */
-				$info: JQuery;
+				$info: JQuery
 				/**
 				 * The jQuery element used as the thumbnail container.
 				 */
-				$thumbnail: JQuery;
+				$thumbnail: JQuery
 				/**
 				 * The jQuery element that wraps the thumbnail and info.
 				 */
-				$thumbContain: JQuery;
+				$thumbContain: JQuery
 
 				// Mixin properties from IconElement, LabelElement, and PendingElement are assumed to be present,
 				// for example: $icon, $label, etc.
@@ -54,19 +52,19 @@ declare global {
 				 *
 				 * @return {string|null} The filekey.
 				 */
-				getValue(): string | null;
+				getValue(): string | null
 
 				/**
 				 * Sets the filekey and updates the UI.
 				 *
 				 * @param {string|null} filekey The filekey to set.
 				 */
-				setValue(filekey: string | null): void;
+				setValue(filekey: string | null): void
 
 				/**
 				 * Updates the user interface based on the current filekey.
 				 */
-				updateUI(): void;
+				updateUI(): void
 
 				/**
 				 * Loads and returns the thumbnail URL and MIME type for the stashed file.
@@ -77,37 +75,36 @@ declare global {
 				 *
 				 * @return {JQuery.Promise<[thumbUrl: string, mime?: string]>} A promise that resolves with the thumbnail URL and MIME type.
 				 */
-				loadAndGetImageUrl(): JQuery.Promise<[string, string?]>;
+				loadAndGetImageUrl(): JQuery.Promise<[string, string?]>
 			}
 
 			interface StashedFileWidget
-				extends
-					OO.ui.Widget,
+				extends OO.ui.Widget,
 					OO.ui.mixin.IconElement,
 					OO.ui.mixin.LabelElement,
-					OO.ui.mixin.PendingElement
-			{}
+					OO.ui.mixin.PendingElement {}
 
 			namespace StashedFileWidget {
 				/**
 				 * Configuration options for {@link mw.widgets.StashedFileWidget}.
 				 */
-				interface ConfigOptions extends OO.ui.Widget.ConfigOptions,
-					OO.ui.mixin.IconElement.ConfigOptions,
-					OO.ui.mixin.LabelElement.ConfigOptions,
-					OO.ui.mixin.PendingElement.ConfigOptions {
+				interface ConfigOptions
+					extends OO.ui.Widget.ConfigOptions,
+						OO.ui.mixin.IconElement.ConfigOptions,
+						OO.ui.mixin.LabelElement.ConfigOptions,
+						OO.ui.mixin.PendingElement.ConfigOptions {
 					/**
 					 * The filekey of the stashed file.
 					 */
-					filekey?: string;
+					filekey?: string
 					/**
 					 * API to use for thumbnails.
 					 */
-					api?: mw.Api;
+					api?: mw.Api
 				}
 			}
 		}
 	}
 }
 
-export {};
+export {}

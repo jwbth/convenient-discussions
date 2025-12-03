@@ -32,7 +32,6 @@ async function main() {
 				console.log('\n✅ All performance thresholds met!')
 			}
 		}
-
 	} catch (error) {
 		console.error('❌ Benchmark failed:', error)
 		process.exit(1)

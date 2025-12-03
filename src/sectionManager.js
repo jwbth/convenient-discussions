@@ -1,7 +1,12 @@
 import controller from './controller'
 import cd from './loader/cd'
 import settings from './settings'
-import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './shared/utils-general'
+import {
+	areObjectsEqual,
+	calculateWordOverlap,
+	generateFixedPosTimestamp,
+	spacesToUnderlines,
+} from './shared/utils-general'
 import { getExtendedRect, getVisibilityByRects } from './utils-window'
 import visits from './visits'
 
@@ -34,18 +39,13 @@ class SectionManager {
 	init(subscriptions) {
 		this.improvePerformance = settings.get('improvePerformance')
 
-		controller
-			.on('scroll', this.maybeUpdateVisibility)
-		subscriptions
-			.on('process', this.addSubscribeButtons)
-		visits
-			.on('process', this.updateNewCommentsData)
+		controller.on('scroll', this.maybeUpdateVisibility)
+		subscriptions.on('process', this.addSubscribeButtons)
+		visits.on('process', this.updateNewCommentsData)
 
 		if (this.improvePerformance) {
 			// Unhide when the user opens a search box to allow searching the full page.
-			$(window)
-				.on('focus', this.maybeUpdateVisibility)
-				.on('blur', this.maybeUnhideAll)
+			$(window).on('focus', this.maybeUpdateVisibility).on('blur', this.maybeUnhideAll)
 		}
 	}
 
@@ -168,7 +168,7 @@ class SectionManager {
 	 */
 	findByHeadlineParts(sectionName) {
 		return (
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			this.items
 				.map((section) => ({
 					section,
@@ -204,18 +204,20 @@ class SectionManager {
 			const doesIdMatch = section.id === id
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const doAncestorsMatch = ancestors
-				? areObjectsEqual(section.getAncestors().map((sect) => sect.headline), ancestors)
+				? areObjectsEqual(
+						section.getAncestors().map((sect) => sect.headline),
+						ancestors,
+					)
 				: false
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const doesOldestCommentMatch = section.oldestComment?.id === oldestCommentId
 
-			const score = (
+			const score =
 				Number(doesHeadlineMatch) * 1 +
 				Number(doAncestorsMatch) * 1 +
 				Number(doesOldestCommentMatch) * 1 +
 				Number(doesIdMatch) * 0.5 +
 				Number(doesIndexMatch) * 0.001
-			)
 			if (score >= 2) {
 				matches.push({ section, score })
 			}
@@ -230,7 +232,7 @@ class SectionManager {
 		return (
 			matches.reduce(
 				(best, match) => (!best || match.score > best.score ? match : best),
-				/** @type {SectionMatch|undefined} */ (undefined)
+				/** @type {SectionMatch|undefined} */ (undefined),
 			) || null
 		)
 	}
@@ -317,8 +319,7 @@ class SectionManager {
 		const firstSectionTop = this.getFirstSectionRelativeTopOffset()
 
 		return (
-			(
-				firstSectionTop !== undefined &&
+			(firstSectionTop !== undefined &&
 				firstSectionTop < controller.getBodyScrollPaddingTop() + 1 &&
 				this.items
 					.slice()
@@ -330,8 +331,7 @@ class SectionManager {
 							getVisibilityByRects(extendedRect) &&
 							extendedRect.outerTop < controller.getBodyScrollPaddingTop() + 1
 						)
-					})
-			) ||
+					})) ||
 			null
 		)
 	}
@@ -347,7 +347,6 @@ class SectionManager {
 			!this.improvePerformance ||
 			!this.items.length ||
 			!controller.isLongPage() ||
-
 			// When the document has no focus, all sections are visible (see .maybeUnhideAll()).
 			!document.hasFocus()
 		) {
@@ -372,15 +371,12 @@ class SectionManager {
 					return (
 						getVisibilityByRects(rect) &&
 						rect.top >= threeScreens &&
-
 						// Is in a different `blockSize`-pixel block than the viewport top. (threeScreens is
 						// subtracted from its position to reduce the frequency of CSS manipulations, so in
 						// practice the blocks are positioned somewhat like this: 0 - 12500, 12500 - 22500,
 						// 22500 - 32500, etc.)
-						(
-							Math.floor(viewportTop / blockSize) !==
+						Math.floor(viewportTop / blockSize) !==
 							Math.floor((viewportTop + rect.top - threeScreens) / blockSize)
-						)
 					)
 				})
 		}
@@ -388,28 +384,22 @@ class SectionManager {
 		/** @type {import('./Section').default[]} */
 		const subsectionsToHide = []
 		if (firstSectionToHide) {
-			this.items
-				.slice(firstSectionToHide.index)
-				.some((section) => {
-					if (section.level === 2) {
-						return true
-					}
+			this.items.slice(firstSectionToHide.index).some((section) => {
+				if (section.level === 2) {
+					return true
+				}
 
-					subsectionsToHide.push(section)
+				subsectionsToHide.push(section)
 
-					return false
-				})
+				return false
+			})
 		}
 		this.items
-			.filter((section) =>
-				section.level === 2 ||
-				section.isHidden ||
-				subsectionsToHide.includes(section)
+			.filter(
+				(section) => section.level === 2 || section.isHidden || subsectionsToHide.includes(section),
 			)
 			.forEach((section) => {
-				section.updateVisibility(
-					!(firstSectionToHide && section.index >= firstSectionToHide.index)
-				)
+				section.updateVisibility(!(firstSectionToHide && section.index >= firstSectionToHide.index))
 			})
 	}
 

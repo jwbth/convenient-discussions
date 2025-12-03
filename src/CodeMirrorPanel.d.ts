@@ -1,7 +1,7 @@
-import type { Extension } from '@codemirror/state';
-import type { EditorView, Panel } from '@codemirror/view';
+import type { Extension } from '@codemirror/state'
+import type { EditorView, Panel } from '@codemirror/view'
 
-import CodeMirrorCodex from './CodeMirrorCodex';
+import CodeMirrorCodex from './CodeMirrorCodex'
 
 /**
  * Abstract class for a panel that can be used with CodeMirror.
@@ -13,12 +13,12 @@ export default abstract class CodeMirrorPanel extends CodeMirrorCodex {
 	/**
 	 * The current EditorView instance.
 	 */
-	view: EditorView;
+	view: EditorView
 
 	/**
 	 * @class
 	 */
-	constructor();
+	constructor()
 
 	/**
 	 * Get the panel and any associated keymaps as an Extension.
@@ -26,12 +26,12 @@ export default abstract class CodeMirrorPanel extends CodeMirrorCodex {
 	 *
 	 * @abstract
 	 */
-	abstract get extension(): Extension;
+	abstract get extension(): Extension
 
 	/**
 	 * Get the Panel object.
 	 *
 	 * @abstract
 	 */
-	abstract get panel(): Panel;
+	abstract get panel(): Panel
 }

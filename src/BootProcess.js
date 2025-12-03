@@ -19,7 +19,14 @@ import processFragment from './processFragment'
 import sectionManager from './sectionManager'
 import settings from './settings'
 import Parser from './shared/Parser'
-import { defined, definedAndNotNull, generatePageNamePattern, isElement, sleep, unique } from './shared/utils-general'
+import {
+	defined,
+	definedAndNotNull,
+	generatePageNamePattern,
+	isElement,
+	sleep,
+	unique,
+} from './shared/utils-general'
 import toc from './toc'
 import updateChecker from './updateChecker'
 import userRegistry from './userRegistry'
@@ -34,10 +41,7 @@ import visits from './visits'
  */
 function removeDtButtonHtmlComments() {
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const treeWalker = document.createNodeIterator(
-		controller.rootElement,
-		NodeFilter.SHOW_COMMENT
-	)
+	const treeWalker = document.createNodeIterator(controller.rootElement, NodeFilter.SHOW_COMMENT)
 	let node
 	while ((node = /** @type {globalThis.Comment | null} */ (treeWalker.nextNode()))) {
 		if (node.textContent.startsWith('__DTREPLYBUTTONS__')) {
@@ -57,7 +61,6 @@ function processAndRemoveDtElements(elements) {
 	// Tool doesn't seem to make difference for our purposes here.
 	const moveNotRemove =
 		cd.g.isDtTopicSubscriptionEnabled ||
-
 		// DT enabled by default. Don't know how to capture that another way.
 		!['registered', null].includes(mw.loader.getState('ext.discussionTools.init'))
 
@@ -76,7 +79,7 @@ function processAndRemoveDtElements(elements) {
 		}
 	}
 
-	/** @type {HTMLElement[]} */ (
+	/** @type {HTMLElement[]} */ ;(
 		elements.concat([
 			...controller.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
 		])
@@ -88,19 +91,19 @@ function processAndRemoveDtElements(elements) {
 			// DT gets the DOM offset of each of these elements upon initialization which can take a lot
 			// of time if the elements aren't put into containers with less children.
 			if (i % 10 === 0) {
-				/** @type {HTMLSpanElement} */ (dtMarkupHavenElement).append(
-					document.createElement('span')
+				/** @type {HTMLSpanElement} */ ;(dtMarkupHavenElement).append(
+					document.createElement('span'),
 				)
 			}
-			/** @type {HTMLSpanElement} */ (
-			/** @type {HTMLSpanElement} */ (dtMarkupHavenElement).lastChild
+			/** @type {HTMLSpanElement} */ ;(
+				/** @type {HTMLSpanElement} */ (dtMarkupHavenElement).lastChild
 			).append(el)
 		} else {
 			el.remove()
 		}
 	})
 	if (!moveNotRemove) {
-		[
+		;[
 			.../** @type {NodeListOf<HTMLSpanElement>} */ (
 				controller.rootElement.querySelectorAll('span[data-mw-comment]')
 			),
@@ -228,11 +231,7 @@ class BootProcess {
 			cd.debug.stopTimer('process comments')
 		}
 
-		if (
-			this.firstRun &&
-			!cd.loader.isPageOfType('talkStrict') &&
-			!commentManager.getCount()
-		) {
+		if (this.firstRun && !cd.loader.isPageOfType('talkStrict') && !commentManager.getCount()) {
 			this.retractTalkPageType()
 
 			return
@@ -282,7 +281,7 @@ class BootProcess {
 			// (when editing a comment), it can't be restored properly, but this is relatively minor
 			// detail.
 			commentFormManager.restoreSession(
-				Boolean(this.firstRun || this.passedData.isPageReloadedExternally)
+				Boolean(this.firstRun || this.passedData.isPageReloadedExternally),
 			)
 
 			cd.page.autoAddSection(this.hideDtNewTopicForm())
@@ -300,14 +299,14 @@ class BootProcess {
 
 			// Should better be below the comment form restoration to avoid repositioning of layers
 			// after the addition of comment forms.
-			commentManager.configureAndAddLayers((c) => (
-				c.isOwn ||
-
-				// Need to generate a gray line to close the gaps between adjacent list item elements. Do it
-				// here, not after processing comments, to group all operations requiring reflow
-				// together for performance reasons.
-				c.isLineGapped
-			))
+			commentManager.configureAndAddLayers(
+				(c) =>
+					c.isOwn ||
+					// Need to generate a gray line to close the gaps between adjacent list item elements. Do it
+					// here, not after processing comments, to group all operations requiring reflow
+					// together for performance reasons.
+					c.isLineGapped,
+			)
 
 			// Should be below Thread.init() as these functions may want to scroll to a comment in a
 			// collapsed thread.
@@ -331,7 +330,11 @@ class BootProcess {
 			// (e.g. RevisionSlider replaces it).
 			controller.setupMutationObserver()
 
-			if (settings.get('commentDisplay') === 'spacious' && commentManager.getCount() && this.isFirstRun()) {
+			if (
+				settings.get('commentDisplay') === 'spacious' &&
+				commentManager.getCount() &&
+				this.isFirstRun()
+			) {
 				// Using the wikipage.content hook could theoretically disrupt code that needs to process
 				// the whole page content (#mw-content-text), if it runs later than CD which would override
 				// the hook's argument below. But typically CD runs relatively late.
@@ -469,7 +472,7 @@ class BootProcess {
 
 		const signatureContent = mw.user.options.get('nickname')
 		const authorInSignatureMatch = signatureContent.match(
-			new RegExp(cd.g.captureUserNamePattern, 'i')
+			new RegExp(cd.g.captureUserNamePattern, 'i'),
 		)
 		/*
 			Extract signature contents before the user name - in order to cut it out from comment
@@ -484,10 +487,10 @@ class BootProcess {
 		*/
 		cd.g.userSignaturePrefixRegexp = authorInSignatureMatch
 			? new RegExp(
-				(signaturePrefix === ' ' ? '' : mw.util.escapeRegExp(signaturePrefix)) +
-				mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
-				'$'
-			)
+					(signaturePrefix === ' ' ? '' : mw.util.escapeRegExp(signaturePrefix)) +
+						mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
+						'$',
+				)
 			: undefined
 	}
 
@@ -498,29 +501,29 @@ class BootProcess {
 		const signatureEndingRegexp = cd.config.signatureEndingRegexp
 		cd.g.signatureEndingRegexp = signatureEndingRegexp
 			? new RegExp(
-				signatureEndingRegexp.source + (signatureEndingRegexp.source.endsWith('$') ? '' : '$'),
-				signatureEndingRegexp.flags
-			)
+					signatureEndingRegexp.source + (signatureEndingRegexp.source.endsWith('$') ? '' : '$'),
+					signatureEndingRegexp.flags,
+				)
 			: undefined
 
 		const nss = mw.config.get('wgFormattedNamespaces')
 		const nsIds = mw.config.get('wgNamespaceIds')
 
-		const anySpace = (/** @type {string} */ s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*')
-		const joinNsNames = (/** @type {number[]} */ ...ids) => (
+		const anySpace = (/** @type {string} */ s) =>
+			s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*')
+		const joinNsNames = (/** @type {number[]} */ ...ids) =>
 			Object.keys(nsIds)
 				.filter((key) => ids.includes(nsIds[key]))
 
-			// Sometimes wgNamespaceIds has a string that doesn't transform into one of the keys of
-			// wgFormattedNamespaces when converting the first letter to uppercase, like in Azerbaijani
-			// Wikipedia (compare Object.keys(mw.config.get('wgNamespaceIds'))[4] = 'i̇stifadəçi' with
-			// mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
-			// wgFormattedNamespaces name separately.
+				// Sometimes wgNamespaceIds has a string that doesn't transform into one of the keys of
+				// wgFormattedNamespaces when converting the first letter to uppercase, like in Azerbaijani
+				// Wikipedia (compare Object.keys(mw.config.get('wgNamespaceIds'))[4] = 'i̇stifadəçi' with
+				// mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
+				// wgFormattedNamespaces name separately.
 				.concat(ids.map((id) => nss[id]))
 
 				.map(anySpace)
 				.join('|')
-		)
 
 		const userNssAliasesPattern = joinNsNames(2, 3)
 		cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i')
@@ -533,8 +536,7 @@ class BootProcess {
 		cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i')
 		cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i')
 
-		cd.g.contribsPages = cd.g.specialPageAliases.Contributions
-			.concat('Contributions')
+		cd.g.contribsPages = cd.g.specialPageAliases.Contributions.concat('Contributions')
 			.filter(unique)
 			.map((alias) => `${nss[-1]}:${alias}`)
 
@@ -542,16 +544,15 @@ class BootProcess {
 		cd.g.contribsPageLinkRegexp = new RegExp(`^(?:${contribsPagesLinkPattern})/`)
 
 		const contribsPagesPattern = anySpace(contribsPagesLinkPattern)
-		cd.g.captureUserNamePattern = (
+		cd.g.captureUserNamePattern =
 			`\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
 			`(?:${contribsPagesPattern})\\/[ _]*)([^|\\]/]+)(/)?`
-		)
 
 		cd.g.isThumbRegexp = new RegExp(
 			['thumb', 'thumbnail']
 				.concat(cd.config.thumbAliases)
 				.map((alias) => `\\| *${alias} *[|\\]]`)
-				.join('|')
+				.join('|'),
 		)
 
 		const unsignedTemplatesPattern = cd.config.unsignedTemplates
@@ -583,19 +584,15 @@ class BootProcess {
 		cd.g.pniePattern = `(?:${pnieJoined})`
 
 		cd.g.articlePathRegexp = new RegExp(
-			'^' +
-			mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace(String.raw`\$1`, '(.*)')
+			'^' + mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace(String.raw`\$1`, '(.*)'),
 		)
 		cd.g.startsWithScriptTitleRegexp = new RegExp(
-			'^' +
-			mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
+			'^' + mw.util.escapeRegExp(mw.config.get('wgScript') + '?title='),
 		)
 		const editActionpath = mw.config.get('wgActionPaths').edit
 		if (editActionpath) {
 			cd.g.startsWithEditActionPathRegexp = new RegExp(
-				'^' +
-				mw.util.escapeRegExp(editActionpath).replace(String.raw`\$1`, '(.*)') +
-				'.*'
+				'^' + mw.util.escapeRegExp(editActionpath).replace(String.raw`\$1`, '(.*)') + '.*',
 			)
 		}
 
@@ -610,7 +607,7 @@ class BootProcess {
 			.join('|')
 		cd.g.quoteRegexp = new RegExp(
 			`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
-			'ig'
+			'ig',
 		)
 
 		cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses)
@@ -634,8 +631,8 @@ class BootProcess {
 		cd.g.pipeTrickRegexp = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g
 
 		cd.g.isProbablyWmfSulWiki =
-		// Isn't true on diff, editing, history, and special pages, see
-		// https://github.com/wikimedia/mediawiki-extensions-CentralNotice/blob/6100a9e9ef290fffe1edd0ccdb6f044440d41511/includes/CentralNoticeHooks.php#L398
+			// Isn't true on diff, editing, history, and special pages, see
+			// https://github.com/wikimedia/mediawiki-extensions-CentralNotice/blob/6100a9e9ef290fffe1edd0ccdb6f044440d41511/includes/CentralNoticeHooks.php#L398
 			$('link[rel="dns-prefetch"]').attr('href') === '//meta.wikimedia.org' ||
 			// Sites like wikitech.wikimedia.org, which is not a SUL wiki, will be included as well
 			[
@@ -651,12 +648,7 @@ class BootProcess {
 				'wikiversity.org',
 				'wikivoyage.org',
 				'wiktionary.org',
-			].includes(
-				mw.config.get('wgServerName')
-					.split('.')
-					.slice(-2)
-					.join('.')
-			)
+			].includes(mw.config.get('wgServerName').split('.').slice(-2).join('.'))
 	}
 
 	/**
@@ -703,7 +695,7 @@ class BootProcess {
 			this.parser.findHeadings()
 		)
 			.concat(this.parser.findSignatures())
-			.sort((t1, t2) => this.parser.context.follows(t1.element, t2.element) ? 1 : -1)
+			.sort((t1, t2) => (this.parser.context.follows(t1.element, t2.element) ? 1 : -1))
 	}
 
 	/**
@@ -751,7 +743,7 @@ class BootProcess {
 
 		const $disableLink = $('#footer-togglecd a')
 		$disableLink
-			.attr('href', /** @type {string} */($disableLink.attr('href')).replace(/0$/, '1'))
+			.attr('href', /** @type {string} */ ($disableLink.attr('href')).replace(/0$/, '1'))
 			.text(cd.s('footer-runcd'))
 	}
 
@@ -808,9 +800,10 @@ class BootProcess {
 	 */
 	deactivateDtHighlight() {
 		const deactivate = () => {
-			const highlighter = mw.loader.getState('ext.discussionTools.init') === 'ready'
-				? mw.loader.moduleRegistry['ext.discussionTools.init'].packageExports['highlighter.js']
-				: undefined
+			const highlighter =
+				mw.loader.getState('ext.discussionTools.init') === 'ready'
+					? mw.loader.moduleRegistry['ext.discussionTools.init'].packageExports['highlighter.js']
+					: undefined
 			if (highlighter) {
 				// Fake return value
 				highlighter.highlightTargetComment = () => ({
@@ -842,8 +835,9 @@ class BootProcess {
 		const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic:visible')
 		if (!$dtNewTopicForm.length) return
 
-		const $headline = $dtNewTopicForm
-			.find('.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]')
+		const $headline = $dtNewTopicForm.find(
+			'.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]',
+		)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const headline = /** @type {string} */ ($headline.val())
 		$headline.val('')
@@ -864,7 +858,7 @@ class BootProcess {
 				const isReplyWidgetAdded = (/** @type {MutationRecord} */ record) =>
 					[...record.addedNodes].some(
 						(node) =>
-							isElement(node) && node.classList.contains('ext-discussiontools-ui-replyWidget')
+							isElement(node) && node.classList.contains('ext-discussiontools-ui-replyWidget'),
 					)
 				if (records.some(isReplyWidgetAdded)) {
 					$('#wpTextbox1').remove()
@@ -900,9 +894,7 @@ class BootProcess {
 	processPassedTargets() {
 		const commentIds = this.passedData.commentIds
 		if (commentIds) {
-			const comments = commentIds
-				.map((id) => commentManager.getById(id))
-				.filter(definedAndNotNull)
+			const comments = commentIds.map((id) => commentManager.getById(id)).filter(definedAndNotNull)
 			if (comments.length) {
 				// sleep() for Firefox, as above
 				sleep().then(() => {
@@ -963,7 +955,7 @@ class BootProcess {
 						this.disableDt(true, button, notification)
 					},
 				},
-			}
+			},
 		)
 		if (!cd.config.useGlobalPreferences) {
 			$message.find('.cd-notification-disableDtGlobally-wrapper').remove()
@@ -995,10 +987,7 @@ class BootProcess {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const request = globally
 				? saveOptions(options, true).catch(handleApiReject)
-				: cd
-						.getApi()
-						.saveOptions(options)
-						.catch(handleApiReject)
+				: cd.getApi().saveOptions(options).catch(handleApiReject)
 			await request
 		} catch {
 			mw.notify(wrapHtml(cd.sParse('error-settings-save')))
@@ -1015,7 +1004,7 @@ class BootProcess {
 						location.reload()
 					},
 				},
-			})
+			}),
 		)
 	}
 

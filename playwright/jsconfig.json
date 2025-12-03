@@ -2,6 +2,6 @@
 	"extends": "../jsconfig-base.json",
 	"compilerOptions": {
 		"lib": ["ESNext"],
-		"useUnknownInCatchVariables": false,
-	},
+		"useUnknownInCatchVariables": false
+	}
 }

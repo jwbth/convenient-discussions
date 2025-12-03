@@ -44,11 +44,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 			['references', '<references />'],
 			['section', '<section />'],
 			['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
-			[
-				'syntaxhighlight inline lang=""',
-				'<syntaxhighlight inline lang="',
-				'"></syntaxhighlight>',
-			],
+			['syntaxhighlight inline lang=""', '<syntaxhighlight inline lang="', '"></syntaxhighlight>'],
 			['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
 			['templatestyles', '<templatestyles src="', '" />'],
 		]
@@ -56,7 +52,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 		return /** @type {Array<TagEntry>} */ (cd.g.allowedTags)
 			.filter((tagString) => !tagAdditions.some((tagArray) => tagArray[0] === tagString))
 			.concat(tagAdditions)
-			.sort((item1, item2) => ensureArray(item1)[0] > ensureArray(item2)[0] ? 1 : -1)
+			.sort((item1, item2) => (ensureArray(item1)[0] > ensureArray(item2)[0] ? 1 : -1))
 	}
 
 	/**

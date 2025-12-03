@@ -46,16 +46,16 @@ The Vite configuration will use a modular plugin approach:
 ```javascript
 // vite.config.mjs
 export default defineConfig(({ mode, command }) => {
-  const buildMode = determineBuildMode(process.env, mode);
+  const buildMode = determineBuildMode(process.env, mode)
 
   return {
     // Base configuration
     build: getBuildConfig(buildMode),
     plugins: getPlugins(buildMode),
     server: getDevServerConfig(buildMode),
-    define: getEnvironmentVariables(buildMode)
-  };
-});
+    define: getEnvironmentVariables(buildMode),
+  }
+})
 ```
 
 ### 2. Build Mode Detection
@@ -77,11 +77,13 @@ function determineBuildMode(env: NodeJS.ProcessEnv, mode: string): BuildMode
 ### 3. Plugin System
 
 #### Core Plugins
+
 - `@vitejs/plugin-legacy` (if needed for browser compatibility)
 - Built-in CSS processing
 - Built-in worker handling
 
 #### Custom Plugins
+
 - `vite-plugin-banner` - For nowiki tags and license banners
 - `vite-plugin-worker-inline` - For inline worker bundling
 - Custom filename plugin - For mode-specific postfixes
@@ -90,6 +92,7 @@ function determineBuildMode(env: NodeJS.ProcessEnv, mode: string): BuildMode
 ### 4. Asset Processing Pipeline
 
 #### Less Processing
+
 ```javascript
 // Native Vite CSS processing with Less
 css: {
@@ -105,6 +108,7 @@ css: {
 ```
 
 #### Worker Processing
+
 ```javascript
 // Vite's native worker support with customization
 worker: {
@@ -121,17 +125,17 @@ worker: {
 
 ```typescript
 interface ViteConfigOptions {
-  buildMode: BuildMode;
-  sourceMapsBaseUrl?: string;
-  outputDir: string;
-  entryPoint: string;
+  buildMode: BuildMode
+  sourceMapsBaseUrl?: string
+  outputDir: string
+  entryPoint: string
 }
 
 interface BuildOutput {
-  mainBundle: string;
-  workerBundle?: string;
-  sourceMap?: string;
-  licenseFile?: string;
+  mainBundle: string
+  workerBundle?: string
+  sourceMap?: string
+  licenseFile?: string
 }
 ```
 
@@ -139,10 +143,10 @@ interface BuildOutput {
 
 ```typescript
 interface EnvironmentDefines {
-  IS_STAGING: boolean;
-  IS_DEV: boolean;
-  SINGLE_CONFIG_FILE_NAME?: string;
-  SINGLE_LANG_CODE?: string;
+  IS_STAGING: boolean
+  IS_DEV: boolean
+  SINGLE_CONFIG_FILE_NAME?: string
+  SINGLE_LANG_CODE?: string
 }
 ```
 
@@ -183,21 +187,25 @@ interface EnvironmentDefines {
 ## Implementation Details
 
 ### Phase 1: Basic Vite Setup
+
 - Install Vite and core dependencies
 - Create basic vite.config.mjs
 - Migrate simple build modes (dev, production)
 
 ### Phase 2: Advanced Features
+
 - Implement custom plugins for banners and workers
 - Add source map customization
 - Implement staging and single build modes
 
 ### Phase 3: Optimization
+
 - Fine-tune minification settings
 - Optimize development server performance
 - Add build notifications
 
 ### Phase 4: Testing and Validation
+
 - Comprehensive testing of all build modes
 - Performance comparison with Webpack
 - MediaWiki compatibility verification
@@ -207,6 +215,7 @@ interface EnvironmentDefines {
 ### Dependency Changes
 
 **Remove:**
+
 - webpack
 - webpack-cli
 - webpack-dev-server
@@ -219,6 +228,7 @@ interface EnvironmentDefines {
 - webpack-build-notifier
 
 **Add:**
+
 - vite
 - @vitejs/plugin-legacy (if needed)
 - vite-plugin-banner
@@ -247,31 +257,37 @@ interface EnvironmentDefines {
 ## Performance Considerations
 
 ### Development Performance
+
 - esbuild's fast transformation should improve dev build times
 - Vite's dependency pre-bundling should reduce initial load time
 - Native ES modules in development should enable faster HMR
 
 ### Production Performance
+
 - Rollup's tree-shaking should maintain or improve bundle size
 - esbuild minification should be faster than Terser
 - Better source map generation performance
 
 ### Memory Usage
+
 - Vite's more efficient dependency handling should reduce memory usage
 - Better garbage collection during builds
 
 ## Compatibility Considerations
 
 ### Browser Compatibility
+
 - Maintain existing browserslist configuration
 - Use @vitejs/plugin-legacy if needed for older browsers
 - Ensure MediaWiki environment compatibility
 
 ### Node.js Compatibility
+
 - Vite requires Node.js 14.18+ (project already uses 20+)
 - ESM-first approach aligns with project's .mjs files
 
 ### MediaWiki Compatibility
+
 - Preserve all custom banners and formatting
 - Maintain source map structure for debugging
 - Ensure global variable handling works correctly

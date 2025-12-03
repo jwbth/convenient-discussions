@@ -99,7 +99,7 @@ export function handleApiReject(codeOrArr, response) {
 	// Native promises support only one parameter when `reject()`ing, so when we throw it while
 	// rethrowing MediaWiki API's error, we pass it as a 2-tuple.
 	if (Array.isArray(codeOrArr)) {
-		[code, response] = codeOrArr
+		;[code, response] = codeOrArr
 	} else {
 		code = codeOrArr
 	}
@@ -150,11 +150,10 @@ export function splitIntoBatches(arr) {
 	const limit = (
 		currentUserRights
 			? currentUserRights.includes('apihighlimits')
-
-		// No idea why wgUserGroups is said to be `null` for non-logged-in users on
-		// https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#mw.config. I see it always
-		// containing ['*'].
-			: (mw.config.get('wgUserGroups') || []).includes('sysop')
+			: // No idea why wgUserGroups is said to be `null` for non-logged-in users on
+				// https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#mw.config. I see it always
+				// containing ['*'].
+				(mw.config.get('wgUserGroups') || []).includes('sysop')
 	)
 		? 500
 		: 50
@@ -260,12 +259,14 @@ export function getUserInfo(reuse = false) {
 		return cachedUserInfoRequest
 	}
 
-	cachedUserInfoRequest = cd.getApi().post({
-		action: 'query',
-		meta: 'userinfo',
-		uiprop: ['options', 'rights'],
-	}).then(
-		(resp) => {
+	cachedUserInfoRequest = cd
+		.getApi()
+		.post({
+			action: 'query',
+			meta: 'userinfo',
+			uiprop: ['options', 'rights'],
+		})
+		.then((resp) => {
 			const { options, rights } = resp.query.userinfo
 			try {
 				cd.user.setRights(rights)
@@ -279,9 +280,7 @@ export function getUserInfo(reuse = false) {
 				visits: options[cd.g.visitsOptionName],
 				subscriptions: options[cd.g.subscriptionsOptionName],
 			}
-		},
-		handleApiReject
-	)
+		}, handleApiReject)
 
 	return cachedUserInfoRequest
 }
@@ -309,7 +308,7 @@ export async function getPageTitles(pageIds) {
 				})
 				.catch(handleApiReject)
 		)
-		pages.push(...response.query?.pages || [])
+		pages.push(...(response.query?.pages || []))
 	}
 
 	return pages
@@ -346,9 +345,9 @@ export async function getPageIds(titles) {
 		)
 		if (!query) break
 
-		normalized.push(...query.normalized || [])
-		redirects.push(...query.redirects || [])
-		pages.push(...query.pages || [])
+		normalized.push(...(query.normalized || []))
+		redirects.push(...(query.redirects || []))
+		pages.push(...(query.pages || []))
 	}
 
 	return { normalized, redirects, pages }
@@ -375,14 +374,13 @@ export async function saveOptions(options, isGlobal = false) {
 	const response = await requestInBackground(
 		cd.getApi().assertCurrentUser({
 			action,
-			change: (
+			change:
 				'\u001F' +
 				Object.entries(options)
 					.map(([name, value]) => name + (value === null ? '' : '=' + value))
-					.join('\u001F')
-			),
+					.join('\u001F'),
 		}),
-		'postWithEditToken'
+		'postWithEditToken',
 	).catch(handleApiReject)
 
 	if (response[action] !== 'success') {
@@ -504,8 +502,8 @@ export async function getPagesExistence(titles) {
 		const query = response.query
 		if (!query) break
 
-		normalized.push(...query.normalized || [])
-		pages.push(...query.pages || [])
+		normalized.push(...(query.normalized || []))
+		pages.push(...(query.pages || []))
 	}
 
 	const normalizedToOriginal = /** @type {StringsByKey} */ ({})
@@ -553,29 +551,26 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
 			}
 			wikitext = await callTransformApi('/api/rest_v1/transform/html/to/wikitext', html)
 		} catch {
-			wikitext = await callTransformApi('https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext', html)
+			wikitext = await callTransformApi(
+				'https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext',
+				html,
+			)
 		}
 		wikitext = wikitext
-			.replace(
-				/(?:^ .*(?:\n|$))+|<code dir="(?:ltr|rtl)">([^]*?)<\/code>/gm,
-				(s, inlineCode) => {
-					const lang = syntaxHighlightLanguages.shift() || 'wikitext'
-					const code = (
-						typeof inlineCode === 'string'
-							? inlineCode
-							: '\n' +
-								s
-									.replace(/^ /gm, '')
-									.replace(/[^\n]$/, '$0\n')
-					).replace(/<nowiki>([^]*?)<\/nowiki>/g, '$1')
-					const inlineOrNot = inlineCode === undefined ? '' : ' inline'
+			.replace(/(?:^ .*(?:\n|$))+|<code dir="(?:ltr|rtl)">([^]*?)<\/code>/gm, (s, inlineCode) => {
+				const lang = syntaxHighlightLanguages.shift() || 'wikitext'
+				const code = (
+					typeof inlineCode === 'string'
+						? inlineCode
+						: '\n' + s.replace(/^ /gm, '').replace(/[^\n]$/, '$0\n')
+				).replace(/<nowiki>([^]*?)<\/nowiki>/g, '$1')
+				const inlineOrNot = inlineCode === undefined ? '' : ' inline'
 
-					return `<syntaxhighlight lang="${lang}"${inlineOrNot}>${code}</syntaxhighlight>`
-				}
-			)
+				return `<syntaxhighlight lang="${lang}"${inlineOrNot}>${code}</syntaxhighlight>`
+			})
 			.replace(/<br \/>/g, '<br>')
 			.trim()
-		wikitext = (new TextMasker(wikitext))
+		wikitext = new TextMasker(wikitext)
 			.maskSensitiveCode()
 			.withText((text) => brsToNewlines(text))
 			.unmask()

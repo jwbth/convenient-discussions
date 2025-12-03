@@ -79,8 +79,8 @@ class CdError extends Error {
 		data.details ??= {}
 		super(
 			data.type +
-			(data.code ? '/' + data.code : '') +
-			(typeof data.message === 'string' ? ': ' + data.message : '')
+				(data.code ? '/' + data.code : '') +
+				(typeof data.message === 'string' ? ': ' + data.message : ''),
 		)
 
 		this.name = 'CdError'

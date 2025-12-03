@@ -7,7 +7,13 @@ import controller from './controller'
 import cd from './loader/cd'
 import settings from './settings'
 import TreeWalker from './shared/TreeWalker'
-import { definedAndNotNull, reorderArray, sleep, subtractDaysFromNow, unique } from './shared/utils-general'
+import {
+	definedAndNotNull,
+	reorderArray,
+	sleep,
+	subtractDaysFromNow,
+	unique,
+} from './shared/utils-general'
 import updateChecker from './updateChecker'
 import { getPagesExistence } from './utils-api'
 import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window'
@@ -93,10 +99,8 @@ export class CommentManager extends EventEmitter {
 	 */
 	init() {
 		this.areTimestampsDefault =
-			(
-				!settings.get('useUiTime') ||
-				cd.g.timestampTools.content.timezone === cd.g.timestampTools.user.timezone
-			) &&
+			(!settings.get('useUiTime') ||
+				cd.g.timestampTools.content.timezone === cd.g.timestampTools.user.timezone) &&
 			settings.get('timestampFormat') === 'default' &&
 			mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
 			!settings.get('hideTimezone')
@@ -137,26 +141,24 @@ export class CommentManager extends EventEmitter {
 			.on('desktopNotificationClick', () => {
 				this.maybeRedrawLayers(true)
 			})
-		visits
-			.on('process', this.registerSeen)
-			.on('process', async () => {
-				// A workaround to fight the bug in Chromium where comments layers are misplaced after page
-				// load. I couldn't establish the cause of it - comment positions are rechecked on events
-				// and also periodically, and if a comment is moved, it's layers are redrawn. But then these
-				// positions are cached, and if nothing seems to be changed, we don't recheck _all_ comment
-				// positions every time. Probably there is some misalignment between how the browser renders
-				// the positions and how it reports the changes (e.g. it updates the positions of elements
-				// at the top and bottom of the page separately). UPDATE: the cause could be just below: the
-				// event handler of updateChecker's newChanges event ran earlier than the handler attached
-				// in Thread.init(). So, threads were being collapsed just after comment layers were
-				// redrawn.
-				await sleep(2000)
-				this.maybeRedrawLayers(true)
-			})
+		visits.on('process', this.registerSeen).on('process', async () => {
+			// A workaround to fight the bug in Chromium where comments layers are misplaced after page
+			// load. I couldn't establish the cause of it - comment positions are rechecked on events
+			// and also periodically, and if a comment is moved, it's layers are redrawn. But then these
+			// positions are cached, and if nothing seems to be changed, we don't recheck _all_ comment
+			// positions every time. Probably there is some misalignment between how the browser renders
+			// the positions and how it reports the changes (e.g. it updates the positions of elements
+			// at the top and bottom of the page separately). UPDATE: the cause could be just below: the
+			// event handler of updateChecker's newChanges event ran earlier than the handler attached
+			// in Thread.init(). So, threads were being collapsed just after comment layers were
+			// redrawn.
+			await sleep(2000)
+			this.maybeRedrawLayers(true)
+		})
 		updateChecker
-		// If the layers of deleted comments have been configured in Comment#unmarkAsChanged(), they
-		// will prevent layers before them from being updated due to the "stop at the first three
-		// unmoved comments" optimization in .maybeRedrawLayers(). So we just do the whole job here.
+			// If the layers of deleted comments have been configured in Comment#unmarkAsChanged(), they
+			// will prevent layers before them from being updated due to the "stop at the first three
+			// unmoved comments" optimization in .maybeRedrawLayers(). So we just do the whole job here.
 			.on('newChanges', async () => {
 				// This should run after Thread.init() that also reacts to the newChanges event.
 				await sleep()
@@ -166,10 +168,8 @@ export class CommentManager extends EventEmitter {
 			.on('commentsUpdate', ({ all }) => {
 				this.addNewCommentsNotes(all)
 			})
-		commentFormManager
-			.on('teardown', this.registerSeen)
-		Thread
-			.on('init', this.addToggleChildThreadsButtons)
+		commentFormManager.on('teardown', this.registerSeen)
+		Thread.on('init', this.addToggleChildThreadsButtons)
 	}
 
 	/**
@@ -265,7 +265,7 @@ export class CommentManager extends EventEmitter {
 			const commentTimeConflict = comment.initNewAndSeen(
 				currentPageData,
 				currentTime,
-				markAsReadRequested ? undefined : unseenComments?.find((c) => c.id === comment.id)
+				markAsReadRequested ? undefined : unseenComments?.find((c) => c.id === comment.id),
 			)
 
 			timeConflict ||= commentTimeConflict
@@ -324,58 +324,57 @@ export class CommentManager extends EventEmitter {
 		// quirky reason for this is that the mouse could be over some comment making its underlay to be
 		// repositioned immediately and therefore not appearing as misplaced to this procedure. Three
 		// comments threshold should be more reliable.
-		this.items.slice().reverse().some((comment) => {
-			const shouldBeHighlighted =
-				!comment.isCollapsed &&
-				(
-					comment.isNew ||
-					comment.isOwn ||
-					comment.isTarget ||
-					('isHovered' in comment && comment.isHovered) ||
-					comment.isDeleted ||
+		this.items
+			.slice()
+			.reverse()
+			.some((comment) => {
+				const shouldBeHighlighted =
+					!comment.isCollapsed &&
+					(comment.isNew ||
+						comment.isOwn ||
+						comment.isTarget ||
+						('isHovered' in comment && comment.isHovered) ||
+						comment.isDeleted ||
+						// Need to generate a gray line to close the gaps between adjacent list item elements.
+						comment.isLineGapped)
 
-					// Need to generate a gray line to close the gaps between adjacent list item elements.
-					comment.isLineGapped
-				)
-
-			if (
-				comment.layers &&
-				!shouldBeHighlighted &&
-
-				// Layers that ended up under the bottom of the page content and could be moving the page
-				// bottom down.
-				comment.offset &&
-				comment.offset.bottom > rootBottom
-			) {
-				comment.removeLayers()
-			} else if (shouldBeHighlighted) {
-				floatingRects ??= controller.getFloatingElements().map(getExtendedRect)
-				const isMoved = comment.configureLayers({
-					// If a comment was hidden, then became visible, we need to add the layers.
-					add: true,
-
-					update: false,
-					floatingRects,
-				})
-				if (isMoved || redrawAll) {
-					notMovedCount = 0
-					comments.push(comment)
-				} else if (isMoved === undefined) {
+				if (
+					comment.layers &&
+					!shouldBeHighlighted &&
+					// Layers that ended up under the bottom of the page content and could be moving the page
+					// bottom down.
+					comment.offset &&
+					comment.offset.bottom > rootBottom
+				) {
 					comment.removeLayers()
+				} else if (shouldBeHighlighted) {
+					floatingRects ??= controller.getFloatingElements().map(getExtendedRect)
+					const isMoved = comment.configureLayers({
+						// If a comment was hidden, then became visible, we need to add the layers.
+						add: true,
 
-					// Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
-					// layers preceding them.
-				} else if (comment.layers?.getContainer().cdIsTopLayersContainer) {
-					// isMoved === false
-					notMovedCount++
-					if (notMovedCount === 2) {
-						return true
+						update: false,
+						floatingRects,
+					})
+					if (isMoved || redrawAll) {
+						notMovedCount = 0
+						comments.push(comment)
+					} else if (isMoved === undefined) {
+						comment.removeLayers()
+
+						// Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
+						// layers preceding them.
+					} else if (comment.layers?.getContainer().cdIsTopLayersContainer) {
+						// isMoved === false
+						notMovedCount++
+						if (notMovedCount === 2) {
+							return true
+						}
 					}
 				}
-			}
 
-			return false
-		})
+				return false
+			})
 
 		// It's faster to update the offsets separately in one sequence.
 		comments.forEach((comment) => {
@@ -417,15 +416,10 @@ export class CommentManager extends EventEmitter {
 		}
 
 		// Back
-		this.items
-			.slice(0, commentInViewport.index)
-			.reverse()
-			.some(registerIfInViewport)
+		this.items.slice(0, commentInViewport.index).reverse().some(registerIfInViewport)
 
 		// Forward
-		this.items
-			.slice(commentInViewport.index)
-			.some(registerIfInViewport)
+		this.items.slice(commentInViewport.index).some(registerIfInViewport)
 
 		this.emit('registerSeen')
 	}
@@ -456,14 +450,14 @@ export class CommentManager extends EventEmitter {
 		const findVisible = (
 			/** @type {'forward' | 'backward'} */ direction,
 			startIndex = 0,
-			/** @type {number | undefined} */ endIndex = undefined
+			/** @type {number | undefined} */ endIndex = undefined,
 		) => {
 			let comments = reorderArray(this.items, startIndex, direction === 'backward')
 			if (endIndex !== undefined) {
 				comments = comments.filter((comment) =>
 					direction === 'forward'
 						? comment.index >= startIndex && comment.index < endIndex
-						: comment.index <= startIndex && comment.index > endIndex
+						: comment.index <= startIndex && comment.index > endIndex,
 				)
 			}
 
@@ -486,13 +480,13 @@ export class CommentManager extends EventEmitter {
 		const findClosest = (
 			/** @type {'forward' | 'backward' | undefined} */ direction,
 			/** @type {typeof searchArea} */ currentSearchArea,
-			reverse = false
+			reverse = false,
 		) =>
 			direction
 				? findVisible(
 						direction,
 						currentSearchArea[(direction === 'forward' ? reverse : !reverse) ? 'top' : 'bottom']
-							.index
+							.index,
 					)
 				: undefined
 
@@ -508,10 +502,9 @@ export class CommentManager extends EventEmitter {
 				comment.getOffset({ set: true })
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				if (!comment.roughOffset) {
-					const commentCandidate = (
+					const commentCandidate =
 						findVisible('forward', comment.index, searchArea.bottom.index) ||
 						findVisible('backward', comment.index, searchArea.top.index)
-					)
 					if (commentCandidate) {
 						comment = commentCandidate
 					} else {
@@ -528,17 +521,11 @@ export class CommentManager extends EventEmitter {
 
 			if (
 				comment.roughOffset &&
-
-				(
 				// The bottom edge of the viewport is above the first comment.
-					(
-						comment === firstVisibleComment &&
-						viewportBottom < comment.roughOffset.bottomForVisibility
-					) ||
-
+				((comment === firstVisibleComment &&
+					viewportBottom < comment.roughOffset.bottomForVisibility) ||
 					// The top edge of the viewport is below the last comment.
-					(comment === lastVisibleComment && viewportTop > comment.roughOffset.top)
-				)
+					(comment === lastVisibleComment && viewportTop > comment.roughOffset.top))
 			) {
 				foundComment = findClosest(findClosestDirection, searchArea, true)
 				break
@@ -574,24 +561,25 @@ export class CommentManager extends EventEmitter {
 				const lowerBottom = /** @type {import('./Comment').CommentOffset} */ (
 					searchArea.bottom.roughOffset
 				).bottomForVisibility
-				const proportion = (
-					(viewportTop - higherTop) /
-					((lowerBottom - viewportBottom) + (viewportTop - higherTop))
-				)
+				const proportion =
+					(viewportTop - higherTop) / (lowerBottom - viewportBottom + (viewportTop - higherTop))
 				if (proportion < 0 || proportion >= 1) {
 					console.warn(
-						'The proportion shouldn\'t be less than 0 or greater or equal to 1.',
-						'proportion', proportion,
-						'searchArea', searchArea
+						"The proportion shouldn't be less than 0 or greater or equal to 1.",
+						'proportion',
+						proportion,
+						'searchArea',
+						searchArea,
 					)
 				}
-				comment = this.items[
-					Math.round(
-						(searchArea.bottom.index - searchArea.top.index - 1) * proportion +
-						searchArea.top.index +
-						0.5
-					)
-				]
+				comment =
+					this.items[
+						Math.round(
+							(searchArea.bottom.index - searchArea.top.index - 1) * proportion +
+								searchArea.top.index +
+								0.5,
+						)
+					]
 			}
 		}
 
@@ -608,10 +596,10 @@ export class CommentManager extends EventEmitter {
 	maybeHighlightHovered = (event) => {
 		if (!this.isCompactCommentManager()) return
 
-		const isObstructingElementHovered = controller.isObstructingElementHovered();
+		const isObstructingElementHovered = controller.isObstructingElementHovered()
 
 		// Since we've confirmed this is a CompactCommentManager, we know items are CompactComment[]
-		/** @type {import('./CompactComment').default[]} */ (this.items)
+		/** @type {import('./CompactComment').default[]} */ ;(this.items)
 			.filter((comment) => Boolean(comment.layers))
 			.forEach((comment) => {
 				comment.updateHoverState(event, isObstructingElementHovered)
@@ -641,7 +629,7 @@ export class CommentManager extends EventEmitter {
 			if (date) {
 				for (let gap = 1; !comment && gap <= 3; gap++) {
 					comment = findById(
-						Comment.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author)
+						Comment.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author),
 					)
 				}
 			}
@@ -671,21 +659,23 @@ export class CommentManager extends EventEmitter {
 			return
 		}
 
-		let comments = this.items.filter((comment) => (
-			comment.date &&
-			comment.date.getTime() === data.date.getTime() &&
-			comment.author.getName() === data.author
-		))
+		let comments = this.items.filter(
+			(comment) =>
+				comment.date &&
+				comment.date.getTime() === data.date.getTime() &&
+				comment.author.getName() === data.author,
+		)
 
 		let comment
 		if (comments.length === 1) {
 			comment = comments[0]
 		} else if (comments.length > 1) {
-			comments = comments.filter((c) => (
-				c.getParent()?.date?.getTime() === data.parentDate?.getTime() &&
-				c.getParent()?.author.getName() === data.parentAuthor &&
-				(!data.sectionIdBeginning || c.section?.id.startsWith(data.sectionIdBeginning))
-			))
+			comments = comments.filter(
+				(c) =>
+					c.getParent()?.date?.getTime() === data.parentDate?.getTime() &&
+					c.getParent()?.author.getName() === data.parentAuthor &&
+					(!data.sectionIdBeginning || c.section?.id.startsWith(data.sectionIdBeginning)),
+			)
 			comment = comments.length === 1 ? comments[0] : comments[data.index || 0]
 		}
 
@@ -694,7 +684,7 @@ export class CommentManager extends EventEmitter {
 		 */
 
 		if (returnComponents) {
-			/** @type {DtIdComponents} */ (data).comment = comment
+			/** @type {DtIdComponents} */ ;(data).comment = comment
 
 			return /** @type {DtIdComponentsOrComment} */ (data)
 		}
@@ -753,7 +743,7 @@ export class CommentManager extends EventEmitter {
 					.filter((comment) => comment.logicalLevel === 0)
 					.reduce(
 						(arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
-						/** @type {import('./updateChecker').CommentWorkerNew[]} */ ([])
+						/** @type {import('./updateChecker').CommentWorkerNew[]} */ ([]),
 					)
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 				const threadComments = comments.filter((comment) => !sectionComments.includes(comment))
@@ -779,23 +769,22 @@ export class CommentManager extends EventEmitter {
 	addNewCommentsNote(parent, childComments, type, newCommentIndexes) {
 		if (!childComments.length) return
 
-		const descendantComments = parent instanceof Comment
-			? childComments.reduce(
-					(arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
-					/** @type {import('./updateChecker').CommentWorkerNew[]} */ ([])
-				)
-			: childComments
+		const descendantComments =
+			parent instanceof Comment
+				? childComments.reduce(
+						(arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
+						/** @type {import('./updateChecker').CommentWorkerNew[]} */ ([]),
+					)
+				: childComments
 
-		const authors = descendantComments
-			.map((comment) => comment.author)
-			.filter(unique)
+		const authors = descendantComments.map((comment) => comment.author).filter(unique)
 		const button = new OO.ui.ButtonWidget({
 			label: cd.s(
 				type === 'thread' ? 'thread-newcomments' : 'section-newcomments',
 				String(descendantComments.length),
 				String(authors.length),
 				authors.map((author) => author.getName()).join(cd.mws('comma-separator')),
-				getCommonGender(authors)
+				getCommonGender(authors),
 			),
 			framed: false,
 			flags: ['progressive'],
@@ -825,7 +814,7 @@ export class CommentManager extends EventEmitter {
 		} else if (type === 'thread' && parent.$replyButtonWrapper) {
 			button.$element.addClass('cd-thread-button')
 			const tagName =
-			/** @type {JQuery} */ (parent.$replyButtonContainer)[0].tagName === 'DL' ? 'dd' : 'li'
+				/** @type {JQuery} */ (parent.$replyButtonContainer)[0].tagName === 'DL' ? 'dd' : 'li'
 			$classed = $buttoned = $(`<${tagName}>`).insertBefore(parent.$replyButtonWrapper)
 		} else {
 			button.$element.addClass('cd-section-button')
@@ -839,7 +828,7 @@ export class CommentManager extends EventEmitter {
 			$classed.insertAfter(
 				parent.$addSubsectionButtonsContainer && !parent.getChildren().length
 					? parent.$addSubsectionButtonsContainer
-					: parent.$replyButtonContainer || parent.lastElementInFirstChunk
+					: parent.$replyButtonContainer || parent.lastElementInFirstChunk,
 			)
 		}
 		$buttoned.append(button.$element)
@@ -859,7 +848,7 @@ export class CommentManager extends EventEmitter {
 		const pagesToCheckExistence = this.items.reduce((acc, comment) => {
 			// Only call reformatting methods on SpaciousComment instances
 			const spaciousComment = /** @type {import('./SpaciousComment').default} */ (
-			/** @type {unknown} */ (comment)
+				/** @type {unknown} */ (comment)
 			)
 			acc.push(...spaciousComment.replaceSignatureWithHeader())
 			spaciousComment.addMenu()
@@ -928,7 +917,7 @@ export class CommentManager extends EventEmitter {
 		let comment
 		if (selection.toString().trim()) {
 			const { higherNode } =
-			/** @type {import('./utils-window').HigherNodeAndOffsetInSelection} */ (
+				/** @type {import('./utils-window').HigherNodeAndOffsetInSelection} */ (
 					getHigherNodeAndOffsetInSelection(selection)
 				)
 			const treeWalker = new TreeWalker(controller.rootElement, undefined, false, higherNode)
@@ -970,10 +959,11 @@ export class CommentManager extends EventEmitter {
 	findPriorComment(date, author) {
 		return this.items
 			.filter((comment) => comment.hasDate())
-			.filter((comment) =>
-				comment.author.getName() === author &&
-				comment.date < date &&
-				comment.date.getTime() > date.getTime() - cd.g.msInDay
+			.filter(
+				(comment) =>
+					comment.author.getName() === author &&
+					comment.date < date &&
+					comment.date.getTime() > date.getTime() - cd.g.msInDay,
 			)
 			.sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
 			.at(-1)
@@ -1000,7 +990,9 @@ export class CommentManager extends EventEmitter {
 	findAndUpdateTableComments() {
 		// Faster than doing it for every individual comment.
 		controller.rootElement
-			.querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
+			.querySelectorAll(
+				'table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature',
+			)
 			.forEach((signature) => {
 				const index = /** @type {HTMLElement} */ (signature.closest('.cd-comment-part')).dataset
 					.cdCommentIndex
@@ -1070,17 +1062,17 @@ export class CommentManager extends EventEmitter {
 	mergeAdjacentCommentLevels() {
 		/** @type {NodeListOf<HTMLElement>} */
 		const levels = controller.rootElement.querySelectorAll(
-			'.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'
+			'.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)',
 		)
 		if (!levels.length) return
 
 		const isOrHasCommentLevel = (/** @type {HTMLElement} */ el) =>
 			Boolean(
 				(el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
-				el.querySelector('.cd-commentLevel:not(ol)')
-			);
+					el.querySelector('.cd-commentLevel:not(ol)'),
+			)
 
-		[...levels].forEach((bottomElement) => {
+		;[...levels].forEach((bottomElement) => {
 			const topElement = /** @type {HTMLElement | null} */ (bottomElement.previousElementSibling)
 
 			// If the previous element was removed in this cycle
@@ -1092,10 +1084,9 @@ export class CommentManager extends EventEmitter {
 					firstMoved;
 				currentTopElement && currentBottomElement && isOrHasCommentLevel(currentBottomElement);
 				currentBottomElement = firstMoved,
-				currentTopElement =
-				/** @type {HTMLElement | null} */ (firstMoved?.previousElementSibling) ||
-					undefined,
-				firstMoved = undefined
+					currentTopElement =
+						/** @type {HTMLElement | null} */ (firstMoved?.previousElementSibling) || undefined,
+					firstMoved = undefined
 			) {
 				const topTag = currentTopElement.tagName
 				const bottomInnerTags = /** @type {Record<'DD' | 'LI', 'DD' | 'LI'>} */ ({})
@@ -1107,7 +1098,6 @@ export class CommentManager extends EventEmitter {
 
 				if (
 					isOrHasCommentLevel(currentTopElement) &&
-
 					/*
 					 * Avoid collapsing adjacent <li>s and <dd>s if we deal with a structure like this:
 					 *
@@ -1121,7 +1111,7 @@ export class CommentManager extends EventEmitter {
 					 *   </li>
 					 */
 					['DL', 'DD', 'UL', 'LI'].includes(
-						/** @type {HTMLElement} */ (currentBottomElement.firstElementChild).tagName
+						/** @type {HTMLElement} */ (currentBottomElement.firstElementChild).tagName,
 					)
 				) {
 					while (currentBottomElement.childNodes.length) {
@@ -1130,7 +1120,7 @@ export class CommentManager extends EventEmitter {
 							if (child.tagName in bottomInnerTags) {
 								child = this.changeElementType(
 									child,
-									bottomInnerTags[/** @type {keyof typeof bottomInnerTags} */ (child.tagName)]
+									bottomInnerTags[/** @type {keyof typeof bottomInnerTags} */ (child.tagName)],
 								)
 							}
 							firstMoved ??= /** @type {HTMLElement} */ (child)
@@ -1171,14 +1161,14 @@ export class CommentManager extends EventEmitter {
 		while (element.firstChild) {
 			newElement.append(element.firstChild)
 		}
-		[...element.attributes].forEach((attribute) => {
+		;[...element.attributes].forEach((attribute) => {
 			newElement.setAttribute(attribute.name, attribute.value)
 		})
 
 		// If this element is a part of a comment, replace it in the Comment object instance.
 		const commentIndex = element.dataset.cdCommentIndex
 		if (commentIndex === undefined) {
-			/** @type {HTMLElement} */ (element.parentElement).replaceChild(newElement, element)
+			/** @type {HTMLElement} */ ;(element.parentElement).replaceChild(newElement, element)
 		} else {
 			this.items[Number(commentIndex)].replaceElement(element, newElement)
 		}
@@ -1206,7 +1196,9 @@ export class CommentManager extends EventEmitter {
 
 		// When editing https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_212#c-PrimeHunter-20240509091500-2605:A601:AAF7:3700:A1D7:26C1:E273:28CF-20240509055600
 		controller.rootElement
-			.querySelectorAll('dd.cd-comment-part:not(.cd-comment-part-last) + dd > .cd-comment-part:first-child, li.cd-comment-part:not(.cd-comment-part-last) + li > .cd-comment-part:first-child')
+			.querySelectorAll(
+				'dd.cd-comment-part:not(.cd-comment-part-last) + dd > .cd-comment-part:first-child, li.cd-comment-part:not(.cd-comment-part-last) + li > .cd-comment-part:first-child',
+			)
 			.forEach((el) => {
 				items.push(/** @type {HTMLElement} */ (el.parentElement))
 			})
@@ -1233,12 +1225,16 @@ export class CommentManager extends EventEmitter {
 			// template and the whole <li> of the parent is considered a comment part, then we can't do
 			// that.
 			controller.rootElement
-				.querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
+				.querySelectorAll(
+					`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`,
+				)
 				.forEach((el) => {
 					items.push(/** @type {HTMLElement} */ (el.parentElement))
 				})
 			controller.rootElement
-				.querySelectorAll(`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`)
+				.querySelectorAll(
+					`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`,
+				)
 				.forEach((el) => {
 					items.push(el)
 				})
@@ -1289,10 +1285,9 @@ export class CommentManager extends EventEmitter {
 			.forEach((comment) => {
 				comment.thread?.collapse(undefined, true)
 			})
-		this.items
-			.forEach((comment) => {
-				comment.updateToggleChildThreadsButton()
-			})
+		this.items.forEach((comment) => {
+			comment.updateToggleChildThreadsButton()
+		})
 	}
 
 	/**
@@ -1311,7 +1306,7 @@ export class CommentManager extends EventEmitter {
 		const candidates = reorderArray(
 			this.getAll(),
 			commentInViewport.index,
-			direction === 'backward'
+			direction === 'backward',
 		).filter((comment) => comment.isNew && !comment.isInViewport())
 		const comment = candidates.find((c) => c.isInViewport() === false) || candidates.at(0)
 		if (comment) {

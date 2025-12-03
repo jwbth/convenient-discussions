@@ -16,9 +16,7 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
 	constructor(config) {
 		super(config)
 
-		this.$help = config.help
-			? this.createHelpElement(config.help)
-			: $()
+		this.$help = config.help ? this.createHelpElement(config.help) : $()
 		this.$label.append(this.$help)
 	}
 

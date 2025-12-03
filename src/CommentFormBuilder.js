@@ -30,14 +30,13 @@ class CommentFormBuilder {
 	 */
 	buildTextInputs(initialState) {
 		if (
-			(
-				(this.form.isMode('addSection') || this.form.isMode('addSubsection')) &&
-				!this.form.preloadConfig.noHeadline
-			) ||
+			((this.form.isMode('addSection') || this.form.isMode('addSubsection')) &&
+				!this.form.preloadConfig.noHeadline) ||
 			this.form.isSectionOpeningCommentEdited()
 		) {
-			this.form.headlineInputPlaceholder =
-				this.form.target.getCommentFormHeadlineInputPlaceholder(this.form.mode)
+			this.form.headlineInputPlaceholder = this.form.target.getCommentFormHeadlineInputPlaceholder(
+				this.form.mode,
+			)
 			this.form.headlineInput = new TextInputWidget({
 				value: initialState.headline ?? '',
 				placeholder: this.form.headlineInputPlaceholder,
@@ -52,15 +51,14 @@ class CommentFormBuilder {
 
 		this.form.commentInput = new MultilineTextInputWidget({
 			value: initialState.comment ?? '',
-			placeholder:
-				this.form.target.getCommentFormCommentInputPlaceholder(this.form.mode, () => {
-					const target = /** @type {import('./Comment').default} */ (this.form.target)
-					this.form.updateCommentInputPlaceholder(
-						removeDoubleSpaces(
-							cd.s('cf-comment-placeholder-replytocomment', target.author.getName(), target.author)
-						)
-					)
-				}),
+			placeholder: this.form.target.getCommentFormCommentInputPlaceholder(this.form.mode, () => {
+				const target = /** @type {import('./Comment').default} */ (this.form.target)
+				this.form.updateCommentInputPlaceholder(
+					removeDoubleSpaces(
+						cd.s('cf-comment-placeholder-replytocomment', target.author.getName(), target.author),
+					),
+				)
+			}),
 			rows: this.form.headlineInput ? NUM_ROWS_SECTION : NUM_ROWS_COMMENT,
 			autosize: true,
 			maxRows: 9999,
@@ -89,7 +87,7 @@ class CommentFormBuilder {
 	buildCheckboxes(initialState) {
 		if (cd.user.isRegistered()) {
 			if (this.form.isMode('edit')) {
-				({ field: this.form.minorField, input: this.form.minorCheckbox } = createCheckboxControl({
+				;({ field: this.form.minorField, input: this.form.minorCheckbox } = createCheckboxControl({
 					value: 'minor',
 					selected: initialState.minor ?? true,
 					label: cd.s('cf-minor'),
@@ -97,15 +95,13 @@ class CommentFormBuilder {
 				}))
 			}
 
-			({ field: this.form.watchField, input: this.form.watchCheckbox } = createCheckboxControl({
+			;({ field: this.form.watchField, input: this.form.watchCheckbox } = createCheckboxControl({
 				value: 'watch',
 				selected:
 					initialState.watch ??
-					(
-						(settings.get('watchOnReply') && !this.form.isMode('edit')) ||
+					((settings.get('watchOnReply') && !this.form.isMode('edit')) ||
 						$('.mw-watchlink a[href*="action=unwatch"]').length ||
-						mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')
-					),
+						mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')),
 				label: cd.s('cf-watch'),
 				tabIndex: this.form.getTabIndex(21),
 			}))
@@ -117,35 +113,37 @@ class CommentFormBuilder {
 				(subscribableSection?.subscribeId || this.form.isMode('addSection')) &&
 				(!controller.isSubscribingDisabled() || subscribableSection?.subscriptionState)
 			) {
-				({ field: this.form.subscribeField, input: this.form.subscribeCheckbox } = createCheckboxControl({
-					value: 'subscribe',
-					selected: Boolean(
-						initialState.subscribe ??
-						(
-							(settings.get('subscribeOnReply') && !this.form.isMode('edit')) ||
-							subscribableSection?.subscriptionState
-						)
-					),
-					label: cd.s(
-						this.form.useTopicSubscription ||
-						this.form.isMode('addSection') ||
-						(!this.form.isMode('addSubsection') && this.form.targetSection && this.form.targetSection.level <= 2)
-							? 'cf-watchsection-topic'
-							: 'cf-watchsection-subsection'
-					),
-					tabIndex: this.form.getTabIndex(22),
-					title: cd.s('cf-watchsection-tooltip'),
-				}))
+				;({ field: this.form.subscribeField, input: this.form.subscribeCheckbox } =
+					createCheckboxControl({
+						value: 'subscribe',
+						selected: Boolean(
+							initialState.subscribe ??
+								((settings.get('subscribeOnReply') && !this.form.isMode('edit')) ||
+									subscribableSection?.subscriptionState),
+						),
+						label: cd.s(
+							this.form.useTopicSubscription ||
+								this.form.isMode('addSection') ||
+								(!this.form.isMode('addSubsection') &&
+									this.form.targetSection &&
+									this.form.targetSection.level <= 2)
+								? 'cf-watchsection-topic'
+								: 'cf-watchsection-subsection',
+						),
+						tabIndex: this.form.getTabIndex(22),
+						title: cd.s('cf-watchsection-tooltip'),
+					}))
 			}
 		}
 
-		({ field: this.form.omitSignatureField, input: this.form.omitSignatureCheckbox } = createCheckboxControl({
-			value: 'omitSignature',
-			selected: initialState.omitSignature ?? false,
-			label: cd.s('cf-omitsignature'),
-			title: cd.s('cf-omitsignature-tooltip'),
-			tabIndex: this.form.getTabIndex(25),
-		}))
+		;({ field: this.form.omitSignatureField, input: this.form.omitSignatureCheckbox } =
+			createCheckboxControl({
+				value: 'omitSignature',
+				selected: initialState.omitSignature ?? false,
+				label: cd.s('cf-omitsignature'),
+				title: cd.s('cf-omitsignature-tooltip'),
+				tabIndex: this.form.getTabIndex(25),
+			}))
 		if (!this.form.isMode('addSection') && !this.form.isMode('addSubsection')) {
 			// The checkbox works (for cases like https://en.wikipedia.org/wiki/Template:3ORshort) but is
 			// hidden.
@@ -153,7 +151,7 @@ class CommentFormBuilder {
 		}
 
 		if (this.form.isMode('edit') && this.form.target.isDeletable()) {
-			({ field: this.form.deleteField, input: this.form.deleteCheckbox } = createCheckboxControl({
+			;({ field: this.form.deleteField, input: this.form.deleteCheckbox } = createCheckboxControl({
 				value: 'delete',
 				selected: initialState.delete ?? false,
 				label: cd.s('cf-delete'),
@@ -205,12 +203,12 @@ class CommentFormBuilder {
 							'cf-help-content',
 							cd.config.mentionCharacter,
 							cd.g.cmdModifier,
-							cd.s('dot-separator')
+							cd.s('dot-separator'),
 						),
 						{
 							tagName: 'div',
 							targetBlank: true,
-						}
+						},
 					).contents()
 				),
 				padded: true,
@@ -278,7 +276,7 @@ class CommentFormBuilder {
 			this.form.containerListType = this.form.target.containerListType
 		} else if (this.form.isMode('replyInSection')) {
 			this.form.containerListType = /** @type {ListType} */ (
-			/** @type {JQuery} */ (this.form.target.$replyButtonContainer)[0].tagName.toLowerCase()
+				/** @type {JQuery} */ (this.form.target.$replyButtonContainer)[0].tagName.toLowerCase()
 			)
 		}
 
@@ -292,7 +290,7 @@ class CommentFormBuilder {
 				this.form.isSectionTarget() && this.form.isMode('addSubsection')
 					? `cd-commentForm-addSubsection-${this.form.target.level}`
 					: undefined,
-			].filter(defined)
+			].filter(defined),
 		)
 
 		this.form.$messageArea = $('<div>').addClass('cd-commentForm-messageArea')
@@ -304,7 +302,7 @@ class CommentFormBuilder {
 			.append(
 				this.form.summaryInput.$element,
 				this.form.$summaryPreview,
-				this.form.checkboxesLayout.$element
+				this.form.checkboxesLayout.$element,
 			)
 
 		this.form.$buttonsStart = $('<div>')
@@ -314,7 +312,7 @@ class CommentFormBuilder {
 					this.form.advancedButton.$element,
 					this.form.helpPopupButton.$element,
 					this.form.settingsButton?.$element,
-				].filter(defined)
+				].filter(defined),
 			)
 
 		this.form.$buttonsEnd = $('<div>')
@@ -323,7 +321,7 @@ class CommentFormBuilder {
 				this.form.cancelButton.$element,
 				this.form.viewChangesButton.$element,
 				this.form.previewButton.$element,
-				this.form.submitButton.$element
+				this.form.submitButton.$element,
 			)
 
 		this.form.$buttons = $('<div>')
@@ -337,7 +335,7 @@ class CommentFormBuilder {
 				this.form.commentInput.$element,
 				this.form.$advanced,
 				this.form.$buttons,
-			].filter(defined)
+			].filter(defined),
 		)
 
 		if (!this.form.isMode('edit') && !settings.get('alwaysExpandAdvanced')) {
@@ -385,11 +383,9 @@ class CommentFormBuilder {
 		await Promise.all([
 			mw.loader.using([
 				'ext.wikiEditor',
-				...(
-					cd.g.isCodeMirror6Installed
-						? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
-						: []
-				),
+				...(cd.g.isCodeMirror6Installed
+					? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
+					: []),
 			]),
 			customModulesPromise,
 		])
@@ -461,9 +457,9 @@ class CommentFormBuilder {
 		const unescape = (/** @type {string} */ s) => s.replace(/\\([+;\\])/g, '$1')
 		pre = unescape(textMasker.unmaskText(pre))
 		post = unescape(textMasker.unmaskText(post))
-		label = label ? unescape(label) : pre + post;
+		label = label ? unescape(label) : pre + post
 
-		/** @type {JQuery} */ (this.form.$insertButtons).append(
+		/** @type {JQuery} */ ;(this.form.$insertButtons).append(
 			new Button({
 				label,
 				classes: ['cd-insertButtons-button'],
@@ -471,7 +467,7 @@ class CommentFormBuilder {
 					this.form.encapsulateSelection({ pre, post })
 				},
 			}).element,
-			' '
+			' ',
 		)
 	}
 

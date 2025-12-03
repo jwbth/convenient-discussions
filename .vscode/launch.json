@@ -34,7 +34,7 @@
 			"program": "${workspaceFolder}/node_modules/@playwright/test/cli.js",
 			"args": ["test", "--debug"],
 			"console": "integratedTerminal",
-			"internalConsoleOptions": "neverOpen",
+			"internalConsoleOptions": "neverOpen"
 		},
 		{
 			"type": "node",
@@ -43,7 +43,7 @@
 			"program": "${workspaceFolder}/node_modules/@playwright/test/cli.js",
 			"args": ["test", "test-wikipedia-auth.spec.js", "--debug"],
 			"console": "integratedTerminal",
-			"internalConsoleOptions": "neverOpen",
-		},
-	],
+			"internalConsoleOptions": "neverOpen"
+		}
+	]
 }

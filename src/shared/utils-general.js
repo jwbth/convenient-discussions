@@ -44,7 +44,6 @@ export function isInline(node, considerTextNodesAsInline = false) {
 
 	if (
 		cd.g.popularInlineElements.includes(node.tagName) ||
-
 		// `<meta property="mw:PageProp/toc">` is currently present in place of the TOC in Vector 2022.
 		(node.tagName === 'META' && node.getAttribute('property') === 'mw:PageProp/toc')
 	) {
@@ -54,17 +53,14 @@ export function isInline(node, considerTextNodesAsInline = false) {
 	}
 
 	if (
-	// Don't have `window` in web worker.
+		// Don't have `window` in web worker.
 		isNativeElement(node) &&
-
 		typeof node.cdIsInline !== 'boolean' &&
 		node.isConnected
 	) {
 		// This is very expensive. Avoid by any means.
 		console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node)
-		node.cdIsInline = window
-			.getComputedStyle(node)
-			.display.startsWith('inline')
+		node.cdIsInline = window.getComputedStyle(node).display.startsWith('inline')
 	}
 
 	return node.cdIsInline
@@ -91,9 +87,10 @@ export function generatePageNamePattern(string) {
 	// mb_strtoupper and JavaScript's String#toUpperCase, see ucFirst() and
 	// https://phabricator.wikimedia.org/T141723#2513800.
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const firstCharPattern = firstCharUpperCase === firstCharLowerCase
-		? mw.util.escapeRegExp(firstChar)
-		: '[' + firstCharUpperCase + firstCharLowerCase + ']'
+	const firstCharPattern =
+		firstCharUpperCase === firstCharLowerCase
+			? mw.util.escapeRegExp(firstChar)
+			: '[' + firstCharUpperCase + firstCharLowerCase + ']'
 
 	return firstCharPattern + mw.util.escapeRegExp(string.slice(1)).replace(/[ _]+/g, '[ _]+')
 }
@@ -151,9 +148,7 @@ export function reorderArray(arr, startIndex, reverse = false) {
 				.slice(startIndex + 1)
 				.concat(arr.slice(0, startIndex + 1))
 				.reverse()
-		: arr
-				.slice(startIndex)
-				.concat(arr.slice(0, startIndex))
+		: arr.slice(startIndex).concat(arr.slice(0, startIndex))
 }
 
 /**
@@ -260,7 +255,7 @@ export function getContentLanguageMessages(messages) {
 export function mergeRegexps(arr) {
 	const pattern = (arr || [])
 		.map((regexpOrString) =>
-			regexpOrString instanceof RegExp ? regexpOrString.source : regexpOrString
+			regexpOrString instanceof RegExp ? regexpOrString.source : regexpOrString,
 		)
 		.join('|')
 
@@ -281,8 +276,8 @@ export async function getNativePromiseState(promise) {
 
 	// eslint-disable-next-line @typescript-eslint/await-thenable
 	return Promise.race([promise, obj]).then(
-		(value) => value === obj ? 'pending' : 'resolved',
-		() => 'rejected'
+		(value) => (value === obj ? 'pending' : 'resolved'),
+		() => 'rejected',
 	)
 }
 
@@ -296,14 +291,11 @@ function isConvertibleToPrimitiveValue(val) {
 	return (
 		val === null ||
 		typeof val !== 'object' ||
-		(
-			val instanceof RegExp ||
-			val instanceof Date ||
-
-			// This can be used in the worker context, where Node is an object and Worker is undefined.
-			(typeof Node === 'function' && val instanceof Node) ||
-			(typeof Worker === 'function' && val instanceof Worker)
-		)
+		val instanceof RegExp ||
+		val instanceof Date ||
+		// This can be used in the worker context, where Node is an object and Worker is undefined.
+		(typeof Node === 'function' && val instanceof Node) ||
+		(typeof Worker === 'function' && val instanceof Worker)
 	)
 }
 
@@ -336,15 +328,14 @@ export function areObjectsEqual(object1, object2) {
 	const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined)
 
 	return (
-	// To avoid results where {} is equal to `new Map(['a', 1])`
+		// To avoid results where {} is equal to `new Map(['a', 1])`
 		object1.constructor === object2.constructor &&
-
 		keys1.length === keys2.length &&
 		keys1.every((key) =>
 			areObjectsEqual(
 				/** @type {UnknownsByKey} */ (object1[key]),
-				/** @type {UnknownsByKey} */ (object2[key])
-			)
+				/** @type {UnknownsByKey} */ (object2[key]),
+			),
 		)
 	)
 }
@@ -507,10 +498,8 @@ export function ensureArray(value) {
 export function isHeadingNode(node, onlyHElements = false) {
 	return (
 		isElement(node) &&
-		(
-			(!onlyHElements && node.classList.contains('mw-heading')) ||
-			['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName)
-		)
+		((!onlyHElements && node.classList.contains('mw-heading')) ||
+			['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName))
 	)
 }
 
@@ -525,13 +514,8 @@ export function isHeadingNode(node, onlyHElements = false) {
 export function getHeadingLevel(node) {
 	return (
 		Number(
-			(
-				node.tagName.match(/^H([1-6])$/) ||
-				node.className.match(/\bmw-heading([1-6])\b/) ||
-				[]
-			)[1]
-		) ||
-		undefined
+			(node.tagName.match(/^H([1-6])$/) || node.className.match(/\bmw-heading([1-6])\b/) || [])[1],
+		) || undefined
 	)
 }
 
@@ -649,7 +633,7 @@ export function decodeHtmlEntities(string) {
 		// eslint-disable-next-line unicorn/prefer-code-point
 		result = result.replace(
 			/&#(\d+);/g,
-			/** @type {ReplaceCallback<1>} */ (_s, code) => String.fromCodePoint(Number(code))
+			/** @type {ReplaceCallback<1>} */ (_s, code) => String.fromCodePoint(Number(code)),
 		)
 	}
 	// eslint-disable-next-line unicorn/prefer-includes
@@ -766,9 +750,11 @@ export function getDbnameForHostname(hostname) {
 		'www.wikifunctions.org': 'wikifunctionswiki',
 	})
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const languagedProjectsRegexp = /^([^.]+)\.(wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wiktionary|wikimedia|wikipedia)\./
+	const languagedProjectsRegexp =
+		/^([^.]+)\.(wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wiktionary|wikimedia|wikipedia)\./
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const wikimediaNonChaptersRegexp = /^(advisory|commons|donate|foundation|incubator|login|meta|outreach|quality|species|strategy|usability|vote)$|^wikimania/
+	const wikimediaNonChaptersRegexp =
+		/^(advisory|commons|donate|foundation|incubator|login|meta|outreach|quality|species|strategy|usability|vote)$|^wikimania/
 
 	if (hostname in specialCases) {
 		return specialCases[hostname]
@@ -804,23 +790,29 @@ export function parseWikiUrl(url) {
 	let hostname = cd.g.serverName
 	let fragment
 	let pageName = url
-		.replace(/^(?:https?:)?\/\/([^/]+)/, /** @type {ReplaceCallback<1>} */ (_s, m1) => {
-			hostname = m1
+		.replace(
+			/^(?:https?:)?\/\/([^/]+)/,
+			/** @type {ReplaceCallback<1>} */ (_s, m1) => {
+				hostname = m1
 
-			return ''
-		})
+				return ''
+			},
+		)
 
-	// Could we just get by with `[&?]action=edit` (see below)?
-	// .replace(cd.g.startsWithEditActionPathRegexp || '', '$1')
-	//
+		// Could we just get by with `[&?]action=edit` (see below)?
+		// .replace(cd.g.startsWithEditActionPathRegexp || '', '$1')
+		//
 		.replace(cd.g.articlePathRegexp, '$1')
 		.replace(cd.g.startsWithScriptTitleRegexp, '')
 		.replace(/[&?]action=edit.*/, '')
-		.replace(/#(.*)/, /** @type {ReplaceCallback<1>} */ (_s, m1) => {
-			fragment = m1
+		.replace(
+			/#(.*)/,
+			/** @type {ReplaceCallback<1>} */ (_s, m1) => {
+				fragment = m1
 
-			return ''
-		})
+				return ''
+			},
+		)
 		.replace(/_/g, ' ')
 	try {
 		pageName = decodeURIComponent(pageName)
@@ -887,23 +879,19 @@ export function mergeMaps(maps) {
  * @returns {(T & (AD extends false ? { date: Date } : {})) | undefined}
  */
 export function genericGetOldestOrNewestByDateProp(items, which, allowDateless) {
-	return /** @type {T & (AD extends false ? { date: Date } : {}) | undefined} */ (items.reduce(
-		(candidate, item) =>
-			(
+	return /** @type {T & (AD extends false ? { date: Date } : {}) | undefined} */ (
+		items.reduce(
+			(candidate, item) =>
 				((item.date || allowDateless) && !candidate) ||
-				(
-					candidate &&
+				(candidate &&
 					item.date &&
-					(
-						!candidate.date ||
-						(which === 'oldest' ? item.date < candidate.date : item.date > candidate.date)
-					)
-				)
-			)
-				? item
-				: candidate,
-		/** @type {T | undefined} */ (undefined)
-	))
+					(!candidate.date ||
+						(which === 'oldest' ? item.date < candidate.date : item.date > candidate.date)))
+					? item
+					: candidate,
+			/** @type {T | undefined} */ (undefined),
+		)
+	)
 }
 
 /**

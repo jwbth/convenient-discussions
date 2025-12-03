@@ -80,25 +80,23 @@ export default class CommentWorker extends CommentSkeleton {
 	 */
 	filterCommentContent() {
 		this.hiddenElementsData = []
-		this.elementHtmls = this.elements
-			.map((/** @type {import('domhandler').Element} */ element) => {
-				if (isHeadingNode(element)) {
-					// Keep only the headline, as other elements contain dynamic identifiers.
-					this.processHeadingElement(element)
-				}
+		this.elementHtmls = this.elements.map((/** @type {import('domhandler').Element} */ element) => {
+			if (isHeadingNode(element)) {
+				// Keep only the headline, as other elements contain dynamic identifiers.
+				this.processHeadingElement(element)
+			}
 
-				// Data attributes may include dynamic components, for example
-				// https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
-				this.processElementAttributes(element)
+			// Data attributes may include dynamic components, for example
+			// https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
+			this.processElementAttributes(element)
 
-				if (element.classList.contains('references') || isMetadataNode(element)) {
-					return /** @type {import('domhandler').Element} */ (this.hideElement(element))
-						.textContent
-				}
-				this.processReferenceElements(element)
+			if (element.classList.contains('references') || isMetadataNode(element)) {
+				return /** @type {import('domhandler').Element} */ (this.hideElement(element)).textContent
+			}
+			this.processReferenceElements(element)
 
-				return element.outerHTML
-			})
+			return element.outerHTML
+		})
 	}
 
 	/**
@@ -145,14 +143,14 @@ export default class CommentWorker extends CommentSkeleton {
 		}
 		if (headlineElement) {
 			// Was removed in 2021, see T284921. Keep this for some time.
-			headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
+			headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove()
 
 			// Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
 			// or moved, indexes will change.
-			[...element.childNodes].forEach((el) => {
+			;[...element.childNodes].forEach((el) => {
 				el.remove()
-			});
-			[...headlineElement.childNodes].forEach(element.appendChild.bind(element))
+			})
+			;[...headlineElement.childNodes].forEach(element.appendChild.bind(element))
 		}
 	}
 
@@ -170,7 +168,8 @@ export default class CommentWorker extends CommentSkeleton {
 			.forEach(CommentWorker.removeDataAndParsoidAttributes)
 
 		// Empty comment anchors, in most cases added by the script.
-		element.querySelectorAll('span')
+		element
+			.querySelectorAll('span')
 			.filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
 			.forEach((el) => {
 				el.remove()
@@ -191,14 +190,14 @@ export default class CommentWorker extends CommentSkeleton {
 	 * @private
 	 */
 	processReferenceElements(element) {
-		/** @type {import('domhandler').Element[]} */ (
+		/** @type {import('domhandler').Element[]} */ ;(
 			element.filterRecursively(
 				(node) =>
 					isElement(node) &&
 					(['autonumber', 'reference', 'references'].some((name) =>
-						node.classList.contains(name)
+						node.classList.contains(name),
 					) ||
-					isMetadataNode(node))
+						isMetadataNode(node)),
 			)
 		).forEach((el) => {
 			this.hideElement(el)
@@ -261,10 +260,7 @@ export default class CommentWorker extends CommentSkeleton {
 			if (!element.getAttribute('class')) {
 				element.removeAttribute('class')
 			}
-			if (
-				Object.keys(element.attribs).length &&
-				element.className !== 'cd-comment-replacedPart'
-			) {
+			if (Object.keys(element.attribs).length && element.className !== 'cd-comment-replacedPart') {
 				if (element.lastChild && isText(element.lastChild) && element.lastChild.data === '\n') {
 					element.lastChild.remove()
 				}
@@ -306,7 +302,10 @@ export default class CommentWorker extends CommentSkeleton {
 
 		this.signatureElement.remove()
 
-		this.text = this.elements.map((el) => el.textContent).join('\n').trim()
+		this.text = this.elements
+			.map((el) => el.textContent)
+			.join('\n')
+			.trim()
 
 		this.elementNames = this.elements.map((el) => el.tagName)
 		this.elementClassNames = this.elements.map((el) => el.className)
@@ -382,9 +381,7 @@ export default class CommentWorker extends CommentSkeleton {
 				reply.isToMe = comment.isOwn
 			})
 
-			comment.previousComments = comments
-				.slice(Math.max(0, i - 2), i)
-				.reverse()
+			comment.previousComments = comments.slice(Math.max(0, i - 2), i).reverse()
 
 			keepSafeKeys(comment, [
 				'authorLink',

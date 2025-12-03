@@ -24,7 +24,7 @@ class UploadDialog extends mixInClass(
 	/** @type {typeof mw.Upload.Dialog<typeof ForeignStructuredUploadBookletLayout>} */ (
 		mw.Upload.Dialog
 	),
-	ProcessDialogMixin
+	ProcessDialogMixin,
 ) {
 	/**
 	 * Create an upload dialog.
@@ -40,7 +40,7 @@ class UploadDialog extends mixInClass(
 				},
 				classes: ['cd-uploadDialog'],
 				...config,
-			})
+			}),
 		)
 	}
 
@@ -66,7 +66,7 @@ class UploadDialog extends mixInClass(
 		// names and prefixes. With it, `wikt:fr:` will translate into `French Wiktionary` and
 		// `fr.wiktionary.org` will translate into `wikt:fr:`.
 		mw.loader.load(
-			'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript'
+			'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
 		)
 
 		const projectNameMsgName = 'project-localized-name-' + mw.config.get('wgDBname')

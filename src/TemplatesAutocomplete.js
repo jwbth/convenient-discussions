@@ -50,10 +50,9 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			text &&
 			text.length <= 255 &&
 			!/[#<>[\]|{}]/.test(text) &&
-
 			// 10 spaces in a page name seems too many.
-			(text.match(new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')) || []).length <= 9 &&
-
+			(text.match(new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')) || [])
+				.length <= 9 &&
 			// Don't allow nested templates
 			!text.includes('{{')
 		)
@@ -72,11 +71,11 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 
 		return response[1]
 			.filter((name) => !/(\/doc(?:umentation)?|\.css)$/.test(name))
-			.map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
+			.map((name) => (text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1)))
 			.map((name) =>
 				mw.config.get('wgCaseSensitiveNamespaces').includes(10)
 					? name
-					: this.useOriginalFirstCharCase(name, text)
+					: this.useOriginalFirstCharCase(name, text),
 			)
 	}
 
@@ -127,7 +126,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				// Handle special template data insertion for templates
 				if (this.manager?.useTemplateData && event.shiftKey && !event.altKey) {
 					const input = /** @type {import('./TextInputWidget').default} */ (
-					/** @type {HTMLElement} */ (this.manager.tribute.current.element).cdInput
+						/** @type {HTMLElement} */ (this.manager.tribute.current.element).cdInput
 					)
 					setTimeout(() => this.insertTemplateData(option, input))
 				}
@@ -135,7 +134,10 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				// Get selected text from the input widget if available
 				const element = this.manager?.tribute?.current.element
 				let selectedText
-				if (element?.cdInput && typeof element.cdInput.getSelectedTextForAutocomplete === 'function') {
+				if (
+					element?.cdInput &&
+					typeof element.cdInput.getSelectedTextForAutocomplete === 'function'
+				) {
 					selectedText = element.cdInput.getSelectedTextForAutocomplete()
 				}
 
@@ -167,9 +169,9 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				// First character pattern
 				'^' + firstCharUpperCase === firstChar
 					? mw.util.escapeRegExp(firstChar)
-					: '[' + firstCharUpperCase + firstChar + ']'
+					: '[' + firstCharUpperCase + firstChar + ']',
 			),
-			firstChar
+			firstChar,
 		)
 	}
 
@@ -182,26 +184,24 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 * @returns {Promise<void>}
 	 */
 	async insertTemplateData(option, input) {
-		input
-			.setDisabled(true)
-			.pushPending()
+		input.setDisabled(true).pushPending()
 
 		/** @type {APIResponseTemplateData} */
 		let response
 		try {
-			response = await cd.getApi(BaseAutocomplete.apiConfig).get({
-				action: 'templatedata',
-				titles: `Template:${option.original.label}`,
-				redirects: true,
-			}).catch(handleApiReject)
+			response = await cd
+				.getApi(BaseAutocomplete.apiConfig)
+				.get({
+					action: 'templatedata',
+					titles: `Template:${option.original.label}`,
+					redirects: true,
+				})
+				.catch(handleApiReject)
 			if (!Object.keys(response.pages).length) {
 				throw new CdError('Template missing.')
 			}
 		} catch {
-			input
-				.setDisabled(false)
-				.focus()
-				.popPending()
+			input.setDisabled(false).focus().popPending()
 
 			return
 		}
@@ -211,10 +211,10 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 		let firstValueIndex = 0
 		Object.keys(pages).forEach((key) => {
 			const template = pages[key]
-			const params = template.params || {};
+			const params = template.params || {}
 
 			// Parameter names
-			(template.paramOrder || Object.keys(params))
+			;(template.paramOrder || Object.keys(params))
 				.filter((param) => params[param].required || params[param].suggested)
 				.forEach((param) => {
 					if (template.format === 'block') {
@@ -238,7 +238,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			.setDisabled(false)
 			.insertContent(paramsString)
 
-		// `input.getRange().to` is the current caret index
+			// `input.getRange().to` is the current caret index
 			.selectRange(/** @type {number} */ (input.getRange().to || 0) + firstValueIndex - 1)
 
 			.popPending()

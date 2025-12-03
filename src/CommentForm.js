@@ -18,10 +18,24 @@ import settings from './settings'
 import CdError from './shared/CdError'
 import Parser from './shared/Parser'
 import { defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './shared/utils-general'
-import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './shared/utils-wikitext'
+import {
+	escapePipesOutsideLinks,
+	generateTagsRegexp,
+	removeWikiMarkup,
+} from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
 import { handleApiReject, parseCode } from './utils-api'
-import { buildEditSummary, isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window'
+import {
+	buildEditSummary,
+	isCmdModifierPressed,
+	isExistentAnchor,
+	isHtmlConvertibleToWikitext,
+	isInputFocused,
+	keyCombination,
+	mergeJquery,
+	wrapDiffBody,
+	wrapHtml,
+} from './utils-window'
 
 /**
  * @typedef {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} CommentFormMode
@@ -649,7 +663,7 @@ class CommentForm extends EventEmitter {
 		await mw.loader.using(
 			cd.config.customCommentFormModules
 				.filter((module) => !module.checkFunc || module.checkFunc())
-				.map((module_1) => module_1.name)
+				.map((module_1) => module_1.name),
 		)
 
 		/**
@@ -719,14 +733,14 @@ class CommentForm extends EventEmitter {
 				wrapHtml(
 					cd.sParse(
 						'cf-notice-outdent',
-						new mw.Title(cd.config.outdentTemplates[0], 10).toString()
+						new mw.Title(cd.config.outdentTemplates[0], 10).toString(),
 					),
-					{ targetBlank: true }
+					{ targetBlank: true },
 				),
 				{
 					type: 'notice',
 					name: 'outdent',
-				}
+				},
 			)
 		}
 
@@ -737,7 +751,7 @@ class CommentForm extends EventEmitter {
 		if (!initialState.originalComment && initialState.focus !== false) {
 			this.$element.cdScrollIntoView('center', true, () => {
 				if (!this.isMode('edit')) {
-					(this.headlineInput || this.commentInput).focus()
+					;(this.headlineInput || this.commentInput).focus()
 				}
 			})
 		}
@@ -842,7 +856,7 @@ class CommentForm extends EventEmitter {
 				quote: {
 					label: `${cd.s('cf-quote-tooltip')} ${cd.mws(
 						'parentheses',
-						`Q${cd.mws('comma-separator')}${cd.g.cmdModifier}+Alt+Q`
+						`Q${cd.mws('comma-separator')}${cd.g.cmdModifier}+Alt+Q`,
 					)}`,
 					type: 'button',
 					// icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
@@ -869,9 +883,10 @@ class CommentForm extends EventEmitter {
 				commentLink: {
 					label: cd.s('cf-commentlink-tooltip'),
 					type: 'button',
-					icon: cd.g.userDirection === 'ltr'
-						? `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M3 2C2.46957 2 1.96086 2.21071 1.58579 2.58579C1.21071 2.96086 1 3.46957 1 4V20L5 16H17C17.5304 16 18.0391 15.7893 18.4142 15.4142C18.7893 15.0391 19 14.5304 19 14V4C19 3.46957 18.7893 2.96086 18.4142 2.58579C18.0391 2.21071 17.5304 2 17 2H3Z" /%3E%3C/svg%3E'`
-						: `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M17 2C17.5304 2 18.0391 2.21071 18.4142 2.58579C18.7893 2.96086 19 3.46957 19 4V20L15 16H3C2.46957 16 1.96086 15.7893 1.58579 15.4142C1.21071 15.0391 1 14.5304 1 14V4C1 3.46957 1.21071 2.96086 1.58579 2.58579C1.96086 2.21071 2.46957 2 3 2H17Z" /%3E%3C/svg%3E'`,
+					icon:
+						cd.g.userDirection === 'ltr'
+							? `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M3 2C2.46957 2 1.96086 2.21071 1.58579 2.58579C1.21071 2.96086 1 3.46957 1 4V20L5 16H17C17.5304 16 18.0391 15.7893 18.4142 15.4142C18.7893 15.0391 19 14.5304 19 14V4C19 3.46957 18.7893 2.96086 18.4142 2.58579C18.0391 2.21071 17.5304 2 17 2H3Z" /%3E%3C/svg%3E'`
+							: `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M17 2C17.5304 2 18.0391 2.21071 18.4142 2.58579C18.7893 2.96086 19 3.46957 19 4V20L15 16H3C2.46957 16 1.96086 15.7893 1.58579 15.4142C1.21071 15.0391 1 14.5304 1 14V4C1 3.46957 1.21071 2.96086 1.58579 2.58579C1.96086 2.21071 2.46957 2 3 2H17Z" /%3E%3C/svg%3E'`,
 					action: {
 						type: 'callback',
 						execute: () => {
@@ -889,7 +904,7 @@ class CommentForm extends EventEmitter {
 				code: {
 					label: `${cd.s('cf-code-tooltip')} ${cd.mws(
 						'parentheses',
-						`${cd.g.cmdModifier}+Shift+6`
+						`${cd.g.cmdModifier}+Shift+6`,
 					)}`,
 					type: 'button',
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
@@ -914,7 +929,7 @@ class CommentForm extends EventEmitter {
 				underline: {
 					label: `${cd.s('cf-underline-tooltip')} ${cd.mws(
 						'parentheses',
-						`${cd.g.cmdModifier}+U`
+						`${cd.g.cmdModifier}+U`,
 					)}`,
 					type: 'button',
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
@@ -926,7 +941,7 @@ class CommentForm extends EventEmitter {
 				strikethrough: {
 					label: `${cd.s('cf-strikethrough-tooltip')} ${cd.mws(
 						'parentheses',
-						`${cd.g.cmdModifier}+Shift+5`
+						`${cd.g.cmdModifier}+Shift+5`,
 					)}`,
 					type: 'button',
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
@@ -944,8 +959,8 @@ class CommentForm extends EventEmitter {
 				'title',
 				`${mw.msg('wikieditor-toolbar-tool-bold')} ${cd.mws(
 					'parentheses',
-					`${cd.g.cmdModifier}+B`
-				)}`
+					`${cd.g.cmdModifier}+B`,
+				)}`,
 			)
 
 		this.$element
@@ -954,8 +969,8 @@ class CommentForm extends EventEmitter {
 				'title',
 				`${mw.msg('wikieditor-toolbar-tool-italic')} ${cd.mws(
 					'parentheses',
-					`${cd.g.cmdModifier}+I`
-				)}`
+					`${cd.g.cmdModifier}+I`,
+				)}`,
 			)
 
 		this.$element
@@ -964,8 +979,8 @@ class CommentForm extends EventEmitter {
 				'title',
 				`${mw.msg('wikieditor-toolbar-tool-link')} ${cd.mws(
 					'parentheses',
-					`${cd.g.cmdModifier}+K`
-				)}`
+					`${cd.g.cmdModifier}+K`,
+				)}`,
 			)
 
 		this.$element
@@ -974,8 +989,8 @@ class CommentForm extends EventEmitter {
 				'title',
 				`${mw.msg('wikieditor-toolbar-tool-ulist')} ${cd.mws(
 					'parentheses',
-					`${cd.g.cmdModifier}+Shift+8`
-				)}`
+					`${cd.g.cmdModifier}+Shift+8`,
+				)}`,
 			)
 
 		this.$element.find('.tool[rel="link"] a, .tool[rel="file"] a').on('click', (event) => {
@@ -997,7 +1012,9 @@ class CommentForm extends EventEmitter {
 		})
 
 		// Reuse .tool-button for correct background on hover. In case of problems replace with styles for .cd-tool-button-wrapper
-		this.$element.find('.tool[rel="quote"]').wrap($('<span>').addClass('tool-button cd-tool-button-wrapper'))
+		this.$element
+			.find('.tool[rel="quote"]')
+			.wrap($('<span>').addClass('tool-button cd-tool-button-wrapper'))
 	}
 
 	/**
@@ -1033,7 +1050,7 @@ class CommentForm extends EventEmitter {
 	removeToolbarElements() {
 		this.commentInput.$element
 			.find(
-				'.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]'
+				'.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]',
 			)
 			.remove()
 		if (!this.isMode('addSection') && !this.isMode('addSubsection')) {
@@ -1095,7 +1112,7 @@ class CommentForm extends EventEmitter {
 		this.codeMirror = new CodeMirrorCommentInput(this.commentInput)
 		this.codeMirror.initialize(
 			undefined,
-			/** @type {string} */ (this.commentInput.$input.attr('placeholder'))
+			/** @type {string} */ (this.commentInput.$input.attr('placeholder')),
 		)
 	}
 
@@ -1181,7 +1198,7 @@ class CommentForm extends EventEmitter {
 					: '') +
 					`<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}}}</div>` +
 					`<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}-${title}}}</div>`,
-				{ title: cd.page.name }
+				{ title: cd.page.name },
 			)
 		} catch {
 			// TODO: Some error message? (But in most cases there are no edit notices anyway, and if the
@@ -1226,7 +1243,7 @@ class CommentForm extends EventEmitter {
 		const operation = this.operations.add('load', { affectsHeadline: false })
 		const preloadPage = pageRegistry.get(
 			/** @type {string} */ (this.preloadConfig.commentTemplate),
-			true
+			true,
 		)
 		if (!preloadPage) return
 
@@ -1251,12 +1268,12 @@ class CommentForm extends EventEmitter {
 				.replace(generateTagsRegexp(['includeonly']), '$3')
 				.replace(generateTagsRegexp(['noinclude']), '')
 				.replace(/\$(\d+)/g, (m, s) =>
-					this.preloadConfig.params === undefined ? m : this.preloadConfig.params[s - 1] ?? m
+					this.preloadConfig.params === undefined ? m : (this.preloadConfig.params[s - 1] ?? m),
 				)
 			code = code.trim()
 
 			if (code.includes(cd.g.signCode) || this.preloadConfig.omitSignature) {
-				/** @type {import('./CheckboxInputWidget').default} */ (
+				/** @type {import('./CheckboxInputWidget').default} */ ;(
 					this.omitSignatureCheckbox
 				).setSelected(true)
 				this.omitSignatureCheckboxAltered = true
@@ -1265,9 +1282,9 @@ class CommentForm extends EventEmitter {
 			this.commentInput.setValue(code)
 			this.originalComment = code
 
-			operation.close();
+			operation.close()
 
-			(this.headlineInput || this.commentInput).focus()
+			;(this.headlineInput || this.commentInput).focus()
 			this.preview()
 		} catch (error) {
 			this.handleError({
@@ -1435,7 +1452,7 @@ class CommentForm extends EventEmitter {
 		 */
 
 		this.uploadDialog.uploadBooklet.on('fileSaved', (/** @type {ImageInfo} */ imageInfo) => {
-			/** @type {import('./UploadDialog').default} */ (this.uploadDialog).close()
+			/** @type {import('./UploadDialog').default} */ ;(this.uploadDialog).close()
 			win.closed.then(() => {
 				if (openInsertFileDialogAfterwards) {
 					$.wikiEditor.modules.dialogs.api.openDialog(this, 'insert-file')
@@ -1516,14 +1533,11 @@ class CommentForm extends EventEmitter {
 				// Esc
 				if (
 					keyCombination(event, 27) &&
-
 					// When there is a search panel, CodeMirror closes it on Esc even when the caret is in the
 					// main text box. With the preferences panel, it is so only when the panel itself is
 					// focused.
-					(
-						!this.codeMirror?.isActive ||
-						!this.$element.find('.cm-panels :focus, .cm-mw-panel--search-panel').length
-					)
+					(!this.codeMirror?.isActive ||
+						!this.$element.find('.cm-panels :focus, .cm-mw-panel--search-panel').length)
 				) {
 					this.cancel()
 				}
@@ -1581,7 +1595,7 @@ class CommentForm extends EventEmitter {
 					event.preventDefault()
 				}
 			},
-			{ capture: true }
+			{ capture: true },
 		)
 
 		// "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
@@ -1639,7 +1653,7 @@ class CommentForm extends EventEmitter {
 				message: cd.sParse(
 					'cf-reaction-pre',
 					'<code><nowiki><pre></'.concat('nowiki></code>'),
-					'<code><nowiki><syntaxhighlight lang="wikitext"></'.concat('nowiki></code>')
+					'<code><nowiki><syntaxhighlight lang="wikitext"></'.concat('nowiki></code>'),
 				),
 				name: 'dontUsePre',
 				type: 'warning',
@@ -1714,7 +1728,7 @@ class CommentForm extends EventEmitter {
 			.on('paste', this.handlePasteDrop)
 			.on('tribute-replaced', (event) => {
 				if (
-				/** @type {CustomEvent<TributeReplacedEvent>} */ (event.originalEvent).detail.instance
+					/** @type {CustomEvent<TributeReplacedEvent>} */ (event.originalEvent).detail.instance
 						.trigger === cd.config.mentionCharacter
 				) {
 					if (this.isMode('edit')) {
@@ -1723,7 +1737,7 @@ class CommentForm extends EventEmitter {
 							{
 								type: 'notice',
 								name: 'mentionEdit',
-							}
+							},
 						)
 					}
 					if (
@@ -1737,7 +1751,7 @@ class CommentForm extends EventEmitter {
 							{
 								type: 'notice',
 								name: 'mentionNoSignature',
-							}
+							},
 						)
 					}
 				}
@@ -1802,7 +1816,7 @@ class CommentForm extends EventEmitter {
 		this.lastKeyPresses.splice(0, this.lastKeyPresses.length - keypressCount)
 		if (
 			this.lastKeyPresses[keypressCount - 1] - this.lastKeyPresses[0] <
-				keypressCount * rateLimit
+			keypressCount * rateLimit
 		) {
 			mw.notify(
 				wrapHtml(cd.sParse('warning-performance'), {
@@ -1816,7 +1830,7 @@ class CommentForm extends EventEmitter {
 					title: cd.s('warning-performance-title'),
 					type: 'warn',
 					autoHideSeconds: 'long',
-				}
+				},
 			)
 			settings.saveSettingOnTheFly('improvePerformance-lastSuggested', getDayTimestamp())
 		}
@@ -1910,20 +1924,22 @@ class CommentForm extends EventEmitter {
 							(_, /** @type {HTMLAnchorElement} */ el) =>
 								cd.g.userLinkRegexp.test(el.title) &&
 								!el.closest(
-									settings.get('commentDisplay') === 'spacious' ? '.cd-comment-author' : '.cd-signature'
-								)
+									settings.get('commentDisplay') === 'spacious'
+										? '.cd-comment-author'
+										: '.cd-signature',
+								),
 						)
 						.get()
 						.map((/** @type {HTMLAnchorElement} */ el) => Parser.processLink(el)?.userName)
 						.filter(defined)
-						.map((/** @type {string} */ userName) => userRegistry.get(userName))
-				)
+						.map((/** @type {string} */ userName) => userRegistry.get(userName)),
+				),
 			)
 			.concat(pageOwner || [])
 			.filter(defined)
 			.sort(
 				(u1, u2) =>
-					Number(u2.isRegistered()) - Number(u1.isRegistered()) || (u2.name > u1.name ? -1 : 1)
+					Number(u2.isRegistered()) - Number(u1.isRegistered()) || (u2.name > u1.name ? -1 : 1),
 			)
 			.filter((u) => u !== cd.user)
 			.map((u) => u.name)
@@ -2142,12 +2158,12 @@ class CommentForm extends EventEmitter {
 			.append(
 				framed
 					? new OO.ui.MessageWidget({
-						type,
-						inline: true,
-						label: typeof htmlOrJquery === 'string' ? wrapHtml(htmlOrJquery) : htmlOrJquery,
-						classes: ['cd-message', name ? `cd-message-${name}` : undefined].filter(defined),
-					}).$element
-					: htmlOrJquery
+							type,
+							inline: true,
+							label: typeof htmlOrJquery === 'string' ? wrapHtml(htmlOrJquery) : htmlOrJquery,
+							classes: ['cd-message', name ? `cd-message-${name}` : undefined].filter(defined),
+						}).$element
+					: htmlOrJquery,
 			)
 			.cdAddCloseButton()
 			.cdScrollIntoView('top')
@@ -2182,14 +2198,7 @@ class CommentForm extends EventEmitter {
 	 *   undergoing.
 	 * @private
 	 */
-	abort({
-		$message,
-		messageType = 'error',
-		framed = true,
-		errorToLog,
-		cancel = false,
-		operation,
-	}) {
+	abort({ $message, messageType = 'error', framed = true, errorToLog, cancel = false, operation }) {
 		operation?.close()
 
 		if (this.torndown) return
@@ -2237,20 +2246,13 @@ class CommentForm extends EventEmitter {
 	 *
 	 * @param {HandleErrorOptions} options
 	 */
-	handleError({
-		error,
-		message,
-		$message,
-		messageType = 'error',
-		cancel = false,
-		operation,
-	}) {
-		const cdError = error instanceof CdError
-		// Without the type casting, in VS Code `error` becomes CdError<any> instead of
-		// CdError<ErrorType>
-			? /** @type {CdError} */ (error)
-
-			: CdError.generateCdErrorFromJsErrorOrMessage(error || message)
+	handleError({ error, message, $message, messageType = 'error', cancel = false, operation }) {
+		const cdError =
+			error instanceof CdError
+				? // Without the type casting, in VS Code `error` becomes CdError<any> instead of
+					// CdError<ErrorType>
+					/** @type {CdError} */ (error)
+				: CdError.generateCdErrorFromJsErrorOrMessage(error || message)
 
 		message = cdError.getMessage() || ''
 		/** @type {CdError | undefined} */
@@ -2288,7 +2290,7 @@ class CommentForm extends EventEmitter {
 					case 'commentLinks-commentNotFound':
 						message = cd.sParse(
 							'cf-error-commentlinks-commentnotfound',
-							/** @type {{ id: string }} */ (cdError.getDetails()).id
+							/** @type {{ id: string }} */ (cdError.getDetails()).id,
 						)
 						break
 				}
@@ -2327,9 +2329,7 @@ class CommentForm extends EventEmitter {
 
 			case 'network':
 			case 'javascript': {
-				message = typeof message === 'string'
-					? message + ' ' + cd.sParse(`error-${type}`)
-					: message
+				message = typeof message === 'string' ? message + ' ' + cd.sParse(`error-${type}`) : message
 				errorToLog ??= cdError
 				break
 			}
@@ -2415,12 +2415,12 @@ class CommentForm extends EventEmitter {
 
 				const commentCodePart = CommentFormInputTransformer.prependIndentationToLine(
 					commentSource.indentation,
-					commentSource.code
+					commentSource.code,
 				)
 				const commentTextIndex = /** @type {RegExpMatchArray} */ (
 					commentCodePart.match(/^[:*#]* */)
-				)[0].length;
-				({ contextCode } = commentSource.modifyContext({
+				)[0].length
+				;({ contextCode } = commentSource.modifyContext({
 					action: 'edit',
 					commentCode:
 						(commentSource.headingCode || '') +
@@ -2463,10 +2463,10 @@ class CommentForm extends EventEmitter {
 		this.setNewSectionApi(
 			Boolean(
 				this.isMode('addSection') &&
-				!this.newTopicOnTop &&
-				this.headlineInput?.getValue().trim() &&
-				!commentIds.length
-			)
+					!this.newTopicOnTop &&
+					this.headlineInput?.getValue().trim() &&
+					!commentIds.length,
+			),
 		)
 
 		if (!this.isNewSectionApi()) {
@@ -2487,7 +2487,7 @@ class CommentForm extends EventEmitter {
 		let contextCode
 		let commentCode
 		try {
-			({ contextCode, commentCode } = /** @type {Source} */ (this.target.source).modifyContext({
+			;({ contextCode, commentCode } = /** @type {Source} */ (this.target.source).modifyContext({
 				// Ugly solution to avoid overcomplication of code: for replies, we need to get
 				// CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
 				// So let CommentSource#modifyContext() compute it. In the rest of cases just get the
@@ -2537,7 +2537,7 @@ class CommentForm extends EventEmitter {
 		this.$previewArea
 			.html(html)
 			.prepend(
-				$('<div>').addClass('cd-commentForm-previewArea-label').text(cd.s('cf-block-preview'))
+				$('<div>').addClass('cd-commentForm-previewArea-label').text(cd.s('cf-block-preview')),
 			)
 			.cdAddCloseButton()
 			.toggleClass('cd-commentForm-previewArea-indentedComment', this.willCommentBeIndented)
@@ -2589,7 +2589,7 @@ class CommentForm extends EventEmitter {
 								this.previewTimeout = undefined
 								this.preview(true, operation)
 							},
-							isTooEarly ? 1000 - (Date.now() - lastPreviewTimestamp) : 100
+							isTooEarly ? 1000 - (Date.now() - lastPreviewTimestamp) : 100,
 						)
 					}
 
@@ -2621,7 +2621,7 @@ class CommentForm extends EventEmitter {
 		let html
 		let parsedSummary
 		try {
-			({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
+			;({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
 				title: this.targetPage.name,
 				summary: buildEditSummary({ text: this.summaryInput.getValue() }),
 			}))
@@ -2639,14 +2639,12 @@ class CommentForm extends EventEmitter {
 
 		if (html) {
 			if (
-				(
-					isAuto &&
+				(isAuto &&
 					// In case of an empty comment input, we in fact make this request for the sake of parsing
 					// the summary if there is a need. Alternatively, the user could click the "Preview"
 					// button.
 					!commentInputValue.trim() &&
-					!this.headlineInput?.getValue().trim()
-				) ||
+					!this.headlineInput?.getValue().trim()) ||
 				this.deleteCheckbox?.isSelected()
 			) {
 				this.$previewArea.empty()
@@ -2677,7 +2675,7 @@ class CommentForm extends EventEmitter {
 				this.$summaryPreview.append(
 					document.createTextNode(cd.sParse('cf-summary-preview')),
 					document.createTextNode(cd.mws('colon-separator')),
-					$('<span>').addClass('comment').html(parsedSummary)
+					$('<span>').addClass('comment').html(parsedSummary),
 				)
 			}
 		}
@@ -2753,7 +2751,9 @@ class CommentForm extends EventEmitter {
 			this.$previewArea
 				.html(wrapDiffBody(html))
 				.prepend(
-					$('<div>').addClass('cd-commentForm-previewArea-label').text(cd.s('cf-block-viewchanges'))
+					$('<div>')
+						.addClass('cd-commentForm-previewArea-label')
+						.text(cd.s('cf-block-viewchanges')),
 				)
 				.cdAddCloseButton()
 		} else {
@@ -2831,7 +2831,7 @@ class CommentForm extends EventEmitter {
 						this.headlineInputPlaceholder === cd.s('cf-headline-topic') ? 'topic' : 'subsection'
 
 					return confirm(
-						cd.s(`cf-confirm-noheadline-${ending}`) + ' ' + cd.s('cf-confirm-noheadline-question')
+						cd.s(`cf-confirm-noheadline-${ending}`) + ' ' + cd.s('cf-confirm-noheadline-question'),
 					)
 				},
 			},
@@ -2926,14 +2926,14 @@ class CommentForm extends EventEmitter {
 				if (errorCode === 'editconflict') {
 					error.setMessage(
 						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-						/** @type {string} */ (message) + ' ' + cd.sParse('cf-notice-editconflict-retrying')
+						/** @type {string} */ (message) + ' ' + cd.sParse('cf-notice-editconflict-retrying'),
 					)
 					messageType = 'notice'
 				} else if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
 					this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(
 						/** @type {{ edit: mw.libs.confirmEdit.CaptchaData }} */ (
 							error.getApiResponse()
-						).edit.captcha
+						).edit.captcha,
 					)
 					this.captchaInput.on('enter', () => {
 						this.submit()
@@ -2982,18 +2982,15 @@ class CommentForm extends EventEmitter {
 			// Add the created section to the subscription list or change the headline for legacy
 			// subscriptions.
 			if (
-			// FIXME: fix behavior for sections added with no headline (that are, in fact, comments
-			// added to the preceding section)
+				// FIXME: fix behavior for sections added with no headline (that are, in fact, comments
+				// added to the preceding section)
 				this.isMode('addSection') ||
-
-				(
-					!this.useTopicSubscription &&
-					(this.isMode('addSubsection') || this.isSectionOpeningCommentEdited())
-				)
+				(!this.useTopicSubscription &&
+					(this.isMode('addSubsection') || this.isSectionOpeningCommentEdited()))
 			) {
 				let rawHeadline = this.headlineInput?.getValue().trim()
 				if (!rawHeadline && !this.isSectionOpeningCommentEdited()) {
-					[, rawHeadline] = /** @type {string} */ (commentCode).match(/^==(.*?)==[ \t]*$/m) || []
+					;[, rawHeadline] = /** @type {string} */ (commentCode).match(/^==(.*?)==[ \t]*$/m) || []
 				}
 				const headline = rawHeadline && removeWikiMarkup(rawHeadline)
 
@@ -3056,10 +3053,10 @@ class CommentForm extends EventEmitter {
 							.slice(0, commentAboveCommentToBeAddedIndex + 1)
 							.filter(
 								(comment) =>
-									comment.author === cd.user && comment.date?.getTime() === date.getTime()
+									comment.author === cd.user && comment.date?.getTime() === date.getTime(),
 							)
 							.map((comment) => /** @type {string} */ (comment.id))
-					: undefined
+					: undefined,
 			)
 		)
 	}
@@ -3224,16 +3221,12 @@ class CommentForm extends EventEmitter {
 		// In case of the comment being edited some properties would be undefined if its code was not
 		// located in the source.
 		return Boolean(
-			(
-				this.originalComment !== undefined &&
-				this.originalComment !== this.commentInput.getValue()
-			) ||
-			this.autoSummary !== this.summaryInput.getValue() ||
-			(
-				this.headlineInput &&
-				this.originalHeadline !== undefined &&
-				this.originalHeadline !== this.headlineInput.getValue()
-			)
+			(this.originalComment !== undefined &&
+				this.originalComment !== this.commentInput.getValue()) ||
+				this.autoSummary !== this.summaryInput.getValue() ||
+				(this.headlineInput &&
+					this.originalHeadline !== undefined &&
+					this.originalHeadline !== this.headlineInput.getValue()),
 		)
 	}
 
@@ -3273,12 +3266,12 @@ class CommentForm extends EventEmitter {
 				.trim()
 				.replace(/\s+/g, ' ')
 
-			// Pipe trick
+				// Pipe trick
 				.replace(cd.g.pipeTrickRegexp, '$1$2$3')
 
-			// Remove user links to prevent sending a double notification.
+				// Remove user links to prevent sending a double notification.
 				.replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) =>
-					cd.g.userLinkRegexp.test(wikilink) ? text : s
+					cd.g.userLinkRegexp.test(wikilink) ? text : s,
 				)
 			if (commentText && commentText.length <= cd.config.commentToSummaryLengthLimit) {
 				optionalText = `: ${commentText} (-)`
@@ -3295,7 +3288,6 @@ class CommentForm extends EventEmitter {
 			section:
 				this.headlineInput && !this.isMode('addSubsection')
 					? removeWikiMarkup(this.headlineInput.getValue())
-
 					: this.target.getRelevantSection()?.headline,
 			optionalText,
 			addPostfix: false,
@@ -3362,8 +3354,8 @@ class CommentForm extends EventEmitter {
 						subject === 'comment-by' && realTarget.author.isRegistered()
 							? `[[${realTarget.author.getNamespaceAlias()}:${authorName}|${authorName}]]`
 							: authorName,
-						realTarget.author
-					)
+						realTarget.author,
+					),
 				)
 			}
 
@@ -3401,7 +3393,7 @@ class CommentForm extends EventEmitter {
 				.setLabel(
 					this.$element.hasClass('cd-commentForm-short')
 						? this.submitButtonLabelStandard
-						: this.submitButtonLabelShort
+						: this.submitButtonLabelShort,
 				)
 		} else {
 			this.minorCheckbox?.setSelected(/** @type {boolean} */ (this.initialMinorCheckboxSelected))
@@ -3419,7 +3411,7 @@ class CommentForm extends EventEmitter {
 				.setLabel(
 					this.$element.hasClass('cd-commentForm-short')
 						? this.submitButtonLabelStandard
-						: this.submitButtonLabelShort
+						: this.submitButtonLabelShort,
 				)
 		}
 	}
@@ -3437,18 +3429,18 @@ class CommentForm extends EventEmitter {
 
 		if (mentionAddressee && this.parentComment) {
 			const data = MentionsAutocomplete.prototype.getInsertionFromEntry(
-				this.parentComment.author.getName()
+				this.parentComment.author.getName(),
 			)
 			if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
 				data.content = ''
 			}
-			/** @type {NonNullable<typeof data.cmdModify>} */ (data.cmdModify)()
+			/** @type {NonNullable<typeof data.cmdModify>} */ ;(data.cmdModify)()
 			const text = data.start + (data.content || '') + (data.end || '')
 			this.commentInput
 				.selectRange(0)
 				.insertContent(text)
 
-			// Restore the selection
+				// Restore the selection
 				.selectRange(range.from + text.length, range.to + text.length)
 
 			return
@@ -3457,9 +3449,10 @@ class CommentForm extends EventEmitter {
 		const selection = this.commentInput.getValue().substring(range.from, range.to)
 		if (
 			selection &&
-
 			// Valid username
-			(mw.Title.newFromText(selection) && !selection.includes('/') && selection.length <= 85)
+			mw.Title.newFromText(selection) &&
+			!selection.includes('/') &&
+			selection.length <= 85
 		) {
 			const data = MentionsAutocomplete.prototype.getInsertionFromEntry(selection)
 			if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
@@ -3501,7 +3494,7 @@ class CommentForm extends EventEmitter {
 				if (selectionStart !== null) {
 					selection = activeElement.value.substring(
 						selectionStart,
-						/** @type {number} */ (activeElement.selectionEnd)
+						/** @type {number} */ (activeElement.selectionEnd),
 					)
 				}
 			} else {
@@ -3539,8 +3532,10 @@ class CommentForm extends EventEmitter {
 										dtId: comment.dtId,
 									}
 								: {
-										mentionSource: Boolean(selection.match(new RegExp(`<${cd.g.pniePattern}\\b|(^|\n)[:*#;]`, 'i'))),
-									}
+										mentionSource: Boolean(
+											selection.match(new RegExp(`<${cd.g.pniePattern}\\b|(^|\n)[:*#;]`, 'i')),
+										),
+									},
 						)
 					: cd.config.quoteFormatting
 
@@ -3633,7 +3628,9 @@ class CommentForm extends EventEmitter {
 				: ''
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const trailingNewline =
-			ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n') ? '\n' : ''
+			ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n')
+				? '\n'
+				: ''
 		let periStartIndex
 		if (!selection && !replace) {
 			periStartIndex = selectionStartIndex + leadingNewline.length + pre.length
@@ -3649,12 +3646,12 @@ class CommentForm extends EventEmitter {
 
 		this.commentInput.insertContent(
 			leadingNewline +
-			leadingSpace +
-			pre +
-			middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
-			post +
-			trailingSpace +
-			trailingNewline
+				leadingSpace +
+				pre +
+				middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
+				post +
+				trailingSpace +
+				trailingNewline,
 		)
 		if (periStartIndex !== undefined) {
 			this.commentInput.selectRange(periStartIndex, periStartIndex + peri.length)
@@ -3843,7 +3840,7 @@ class CommentForm extends EventEmitter {
 		const newSelf = this.target.findNewSelf()
 		if (newSelf?.isActionable) {
 			try {
-				/** @type {CommentFormAddingMethod} */ (
+				/** @type {CommentFormAddingMethod} */ ;(
 					newSelf[/** @type {keyof typeof newSelf} */ (newSelf.getCommentFormMethodName(this.mode))]
 				)(undefined, this)
 			} catch (error) {
@@ -3912,14 +3909,14 @@ class CommentForm extends EventEmitter {
 			flags: ['progressive', 'primary'],
 		})
 		button.on('click', () => {
-			/** @type {OO.ui.PopupWidget} */ (this.manyFormsPopup).toggle(false)
+			/** @type {OO.ui.PopupWidget} */ ;(this.manyFormsPopup).toggle(false)
 		})
 		this.manyFormsPopup = new OO.ui.PopupWidget({
 			icon: 'lightbulb',
 			label: cd.s('popup-manyForms-title'),
 			$content: mergeJquery(
 				$('<p>').text(cd.s('popup-manyForms-text')),
-				$('<p>').append(button.$element)
+				$('<p>').append(button.$element),
 			),
 			head: true,
 			$floatableContainer: this.commentInput.$element,
@@ -3963,14 +3960,14 @@ class CommentForm extends EventEmitter {
 			flags: ['progressive', 'primary'],
 		})
 		button.on('click', () => {
-			/** @type {OO.ui.PopupWidget} */ (this.uploadPopup).toggle(false)
+			/** @type {OO.ui.PopupWidget} */ ;(this.uploadPopup).toggle(false)
 		})
 		this.uploadPopup = new OO.ui.PopupWidget({
 			icon: 'lightbulb',
 			label: cd.s('popup-upload-title'),
 			$content: mergeJquery(
 				$('<p>').text(cd.s('popup-upload-text')),
-				$('<p>').append(button.$element)
+				$('<p>').append(button.$element),
 			),
 			head: true,
 			$floatableContainer: this.commentInput.$element,

@@ -74,7 +74,9 @@ describe('TagsAutocomplete', () => {
 		})
 
 		it('should transform complex array tags correctly', () => {
-			expect(tagsAutocomplete.getInsertionFromEntry(['gallery', '<gallery>\n', '\n</gallery>'])).toEqual({
+			expect(
+				tagsAutocomplete.getInsertionFromEntry(['gallery', '<gallery>\n', '\n</gallery>']),
+			).toEqual({
 				start: '<gallery>\n',
 				end: '\n</gallery>',
 				selectContent: true,
@@ -172,7 +174,9 @@ describe('TagsAutocomplete', () => {
 		})
 
 		it('should sort tags alphabetically', () => {
-			const tagNames = tagsAutocomplete.defaultLazy().map((tag) => (Array.isArray(tag) ? tag[0] : tag))
+			const tagNames = tagsAutocomplete
+				.defaultLazy()
+				.map((tag) => (Array.isArray(tag) ? tag[0] : tag))
 
 			// Check that tags are sorted
 			expect(tagNames).toEqual([...tagNames].sort())
@@ -183,7 +187,10 @@ describe('TagsAutocomplete', () => {
 			cd.g.allowedTags.push('br')
 
 			// Count occurrences of 'br'
-			const brCount = tagsAutocomplete.defaultLazy().map((tag) => (Array.isArray(tag) ? tag[0] : tag)).filter((name) => name === 'br').length
+			const brCount = tagsAutocomplete
+				.defaultLazy()
+				.map((tag) => (Array.isArray(tag) ? tag[0] : tag))
+				.filter((name) => name === 'br').length
 			expect(brCount).toBe(1)
 
 			// Clean up

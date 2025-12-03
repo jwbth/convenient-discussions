@@ -27,9 +27,10 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 			// Check each comment's actions
 			cd.comments.forEach((comment, index) => {
 				// Focus on compact comments (non-reformatted)
-				if (comment.constructor.name === 'CompactComment' ||
-						(comment.elements && !comment.elements[0]?.classList.contains('cd-comment-reformatted'))) {
-
+				if (
+					comment.constructor.name === 'CompactComment' ||
+					(comment.elements && !comment.elements[0]?.classList.contains('cd-comment-reformatted'))
+				) {
 					compactCommentsChecked++
 
 					// Check if actions exist and are properly structured
@@ -39,21 +40,24 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 						// Verify that toggleChildThreadsButton is either undefined or a single instance
 						if (actions.toggleChildThreadsButton) {
 							// Check if it's a proper button object
-							if (typeof actions.toggleChildThreadsButton === 'object' &&
-									actions.toggleChildThreadsButton.element) {
+							if (
+								typeof actions.toggleChildThreadsButton === 'object' &&
+								actions.toggleChildThreadsButton.element
+							) {
 								// This is good - single button instance
 							} else {
 								issuesFound.push({
 									commentIndex: index,
 									issue: 'toggleChildThreadsButton is not a proper button object',
-									value: typeof actions.toggleChildThreadsButton
+									value: typeof actions.toggleChildThreadsButton,
 								})
 							}
 						}
 
 						// Check if the create method was called properly (no duplicates)
 						// We can't directly test method calls, but we can check the result
-						const hasChildren = comment.getChildren && comment.getChildren().some(child => child.thread)
+						const hasChildren =
+							comment.getChildren && comment.getChildren().some((child) => child.thread)
 						const hasToggleButton = !!actions.toggleChildThreadsButton
 
 						if (hasChildren && !hasToggleButton) {
@@ -61,7 +65,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 								commentIndex: index,
 								issue: 'Comment has children with threads but no toggle button',
 								hasChildren,
-								hasToggleButton
+								hasToggleButton,
 							})
 						}
 					}
@@ -72,7 +76,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 				success: true,
 				compactCommentsChecked,
 				issuesFound,
-				totalComments: cd.comments.length
+				totalComments: cd.comments.length,
 			}
 		})
 
@@ -114,17 +118,20 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 			let compactCommentsWithToggleButtons = 0
 			let totalToggleButtonElements = 0
 
-			cd.comments.forEach(comment => {
-				if (comment.constructor.name === 'CompactComment' ||
-						(comment.elements && !comment.elements[0]?.classList.contains('cd-comment-reformatted'))) {
-
+			cd.comments.forEach((comment) => {
+				if (
+					comment.constructor.name === 'CompactComment' ||
+					(comment.elements && !comment.elements[0]?.classList.contains('cd-comment-reformatted'))
+				) {
 					if (comment.actions && comment.actions.toggleChildThreadsButton) {
 						compactCommentsWithToggleButtons++
 
 						// Count actual DOM elements with the toggle button class within this comment's context
 						const commentElement = comment.elements[0]
 						if (commentElement) {
-							const toggleButtons = commentElement.querySelectorAll('.cd-comment-button-toggleChildThreads')
+							const toggleButtons = commentElement.querySelectorAll(
+								'.cd-comment-button-toggleChildThreads',
+							)
 							totalToggleButtonElements += toggleButtons.length
 
 							// Before our fix, this would be > 1 for comments with children
@@ -132,7 +139,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 								return {
 									error: `Duplicate buttons found in comment - fix failed!`,
 									duplicateCount: toggleButtons.length,
-									commentId: comment.id
+									commentId: comment.id,
 								}
 							}
 						}
@@ -144,8 +151,10 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 				success: true,
 				compactCommentsWithToggleButtons,
 				totalToggleButtonElements,
-				averageButtonsPerComment: compactCommentsWithToggleButtons > 0 ?
-					totalToggleButtonElements / compactCommentsWithToggleButtons : 0
+				averageButtonsPerComment:
+					compactCommentsWithToggleButtons > 0
+						? totalToggleButtonElements / compactCommentsWithToggleButtons
+						: 0,
 			}
 		})
 
@@ -156,9 +165,13 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 		}
 
 		console.log('🔍 Duplicate Issue Resolution Check:')
-		console.log(`   Compact comments with toggle buttons: ${simulationResult.compactCommentsWithToggleButtons}`)
+		console.log(
+			`   Compact comments with toggle buttons: ${simulationResult.compactCommentsWithToggleButtons}`,
+		)
 		console.log(`   Total toggle button elements: ${simulationResult.totalToggleButtonElements}`)
-		console.log(`   Average buttons per comment: ${simulationResult.averageButtonsPerComment.toFixed(2)}`)
+		console.log(
+			`   Average buttons per comment: ${simulationResult.averageButtonsPerComment.toFixed(2)}`,
+		)
 
 		// The key assertion: average should be 1.0 (exactly one button per comment)
 		if (simulationResult.compactCommentsWithToggleButtons > 0) {

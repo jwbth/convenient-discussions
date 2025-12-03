@@ -2,7 +2,17 @@ import CdError from './CdError'
 import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker'
 import ElementsTreeWalker from './ElementsTreeWalker'
 import cd from './cd'
-import { generateFixedPosTimestamp, genericGetOldestOrNewestByDateProp, isElement, isHeadingNode, isInline, isMetadataNode, isText, spacesToUnderlines, unique } from './utils-general'
+import {
+	generateFixedPosTimestamp,
+	genericGetOldestOrNewestByDateProp,
+	isElement,
+	isHeadingNode,
+	isInline,
+	isMetadataNode,
+	isText,
+	spacesToUnderlines,
+	unique,
+} from './utils-general'
 
 /**
  * Class containing the main properties of a comment and building it from a signature (we should
@@ -237,7 +247,7 @@ class CommentSkeleton {
 		this.authorTalkLink = signature.authorTalkLink
 		this.isOwn = this.authorName === cd.g.userName
 		this.isUnsigned = signature.isUnsigned
-		this.elements = this.parts.map((part) => /** @type {ElementFor<N>} */(part.node))
+		this.elements = this.parts.map((part) => /** @type {ElementFor<N>} */ (part.node))
 
 		this.updateHighlightables()
 		this.updateLevels()
@@ -304,13 +314,11 @@ class CommentSkeleton {
 		let firstForeignComponentAfter
 		while (!firstForeignComponentAfter) {
 			while (
-				(
-					!treeWalker.currentNode.nextSibling ||
+				(!treeWalker.currentNode.nextSibling ||
 					!(
 						isElement(treeWalker.currentNode.nextSibling) ||
 						isText(treeWalker.currentNode.nextSibling)
-					)
-				) &&
+					)) &&
 				treeWalker.parentNode()
 			);
 			if (!treeWalker.nextSibling()) break
@@ -326,24 +334,19 @@ class CommentSkeleton {
 		const parts = []
 		const fiaParentElement = /** @type {ElementLike} */ (farthestInlineAncestor.parentElement)
 		if (
-			(
-				firstForeignComponentAfter &&
-				this.parser.constructor.contains(fiaParentElement, firstForeignComponentAfter)
-			) ||
-
+			(firstForeignComponentAfter &&
+				this.parser.constructor.contains(fiaParentElement, firstForeignComponentAfter)) ||
 			// Cases when the comment has no wrapper that contains only that comment (for example,
 			// https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
 			// The second parameter of .getElementsByClassName() is an optimization for the worker
 			// context.
 			fiaParentElement.getElementsByClassName('cd-signature', 2).length > 1 ||
-
 			!this.isElementEligible(fiaParentElement, treeWalker, 'start') ||
-
 			// Outdent templates in the same item element. TODO: add a test for this case (e.g.
 			// https://ru.wikipedia.org/wiki/Википедия:Голосования/Срочное_включение_нового_Vector#c-Iniquity-20240204205500-AndyVolykhov-20240204201000)
-			[...this.parser.getChildElements(fiaParentElement)].some((child) => (
-				this.parser.rejectClasses.some((name) => child.classList.contains(name))
-			))
+			[...this.parser.getChildElements(fiaParentElement)].some((child) =>
+				this.parser.rejectClasses.some((name) => child.classList.contains(name)),
+			)
 		) {
 			// Collect inline parts after the signature
 			treeWalker.currentNode = farthestInlineAncestor
@@ -416,36 +419,24 @@ class CommentSkeleton {
 	isElementEligible(element, treeWalker, step) {
 		return !(
 			element === treeWalker.root ||
-			(
-				step !== 'up' &&
-				(
-					this.parser.rejectClasses.some((name) => element.classList.contains(name)) ||
-
+			(step !== 'up' &&
+				(this.parser.rejectClasses.some((name) => element.classList.contains(name)) ||
 					// Talk page message box
-					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox'))
-				)
-			) ||
-
+					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox')))) ||
 			(element.tagName === 'META' && element.getAttribute('property') === 'mw:PageProp/toc') ||
 			element.getAttribute('id') === 'toc' ||
-
 			// Seems to be the best option given pages like
 			// https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop. DLs with a
 			// single DT that are not parts of comments are filtered out in CommentSkeleton#filterParts().
 			element.tagName === 'DT' ||
-
 			this.isCellOfMultiCommentTable(element) ||
-
 			// Horizontal lines sometimes separate different section blocks.
-			(
-				element.tagName === 'HR' &&
+			(element.tagName === 'HR' &&
 				element.previousElementSibling &&
 				this.parser.context.getElementByClassName(
 					/** @type {ElementFor<N>} */ (element.previousElementSibling),
-					'cd-signature'
-				)
-			) ||
-
+					'cd-signature',
+				)) ||
 			cd.config.rejectNode?.(element, this.parser.context)
 		)
 	}
@@ -461,7 +452,6 @@ class CommentSkeleton {
 	isOtherKindOfList(element) {
 		return (
 			element.tagName === 'UL' &&
-
 			// Portal boxes of https://en.wikipedia.org/wiki/Template:Portal have role="navigation"
 			(element.classList.contains('gallery') || element.getAttribute('role') === 'navigation')
 		)
@@ -486,34 +476,27 @@ class CommentSkeleton {
 		const previousElement = element.previousElementSibling
 		const nextElement = element.nextElementSibling
 		let result =
-			(
-				tagName === 'DL' &&
+			(tagName === 'DL' &&
 				element.firstElementChild &&
-				element.firstElementChild.tagName === 'DT'
-			) ||
-
+				element.firstElementChild.tagName === 'DT') ||
 			// Cases like the first comment at
 			// https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Форум/Кандидаты#Abiyoyo.
 			// But don't affect cases like the first comment at
 			// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#List_inside_a_comment.
 			//
-			(
-				['DL', 'UL'].includes(tagName) &&
+			(['DL', 'UL'].includes(tagName) &&
 				previousElement &&
 				isHeadingNode(previousElement) &&
 				nextElement &&
 				!['DL', 'OL'].includes(nextElement.tagName) &&
-
 				// Helps at https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Общий/2019/11#201911201924_Vcohen
 				!this.isPartOfList(lastPartNode, true) &&
-
 				// Helps at
 				// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061810_Example
 				!this.parser.context.getElementByClassName(
-				/** @type {ElementFor<N>} */ (element),
-					'cd-signature'
-				)
-			) ||
+					/** @type {ElementFor<N>} */ (element),
+					'cd-signature',
+				)) ||
 			this.isOtherKindOfList(element)
 
 		// "tagName !== 'OL'" helps in cases like
@@ -525,17 +508,13 @@ class CommentSkeleton {
 			// SPECIFICO's comment.)
 			const elementLevelsPassed = this.parser.getTopElementsWithText(element).levelsPassed
 			const nextElementLevelsPassed = this.parser.getTopElementsWithText(nextElement).levelsPassed
-			result = (
+			result =
 				nextElementLevelsPassed > elementLevelsPassed ||
-
 				// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Joint_statements
-				(
-					elementLevelsPassed === 1 &&
+				(elementLevelsPassed === 1 &&
 					nextElementLevelsPassed === elementLevelsPassed &&
 					this.parser.getChildElements(element).length > 1 &&
-					tagName !== nextElement.tagName
-				)
-			)
+					tagName !== nextElement.tagName)
 		}
 
 		return result
@@ -566,10 +545,8 @@ class CommentSkeleton {
 
 		return Boolean(
 			isElement(node) &&
-			(
-				tagNames.includes(node.tagName) ||
-				(node.parentElement && tagNames.includes(node.parentElement.tagName))
-			)
+				(tagNames.includes(node.tagName) ||
+					(node.parentElement && tagNames.includes(node.parentElement.tagName))),
 		)
 	}
 
@@ -604,20 +581,16 @@ class CommentSkeleton {
 		return (
 			step === 'back' &&
 			(!previousPart || previousPart.step === 'up') &&
-			(
-				!['DD', 'LI'].includes(/** @type {ElementLike} */ (node.parentElement).tagName) ||
-
+			(!['DD', 'LI'].includes(/** @type {ElementLike} */ (node.parentElement).tagName) ||
 				// Cases like
 				// https://en.wikipedia.org/w/index.php?title=Wikipedia:Arbitration/Requests/Case/SmallCat_dispute/Proposed_decision&oldid=1172525361#c-Wugapodes-20230822205500-Purpose_of_Wikipedia
-				(
-					isElement(nextNode) &&
+				(isElement(nextNode) &&
 					nextNode.tagName === 'OL' &&
-					this.parser.constructor.contains(this.parser.getChildElements(nextNode)[0], this.signatureElement)
-				)
-			) &&
-			(
-				(isElement(nextNode) && ['UL', 'OL'].includes(nextNode.tagName)) ||
-
+					this.parser.constructor.contains(
+						this.parser.getChildElements(nextNode)[0],
+						this.signatureElement,
+					))) &&
+			((isElement(nextNode) && ['UL', 'OL'].includes(nextNode.tagName)) ||
 				/*
 					Including DLs at stage 1 is dangerous because comments like this may be broken:
 
@@ -630,45 +603,34 @@ class CommentSkeleton {
 					somebody responds in the middle of someone's comment, which is a not so uncommon
 					pattern.
 				 */
-				(
-					isElement(nextNode) &&
+				(isElement(nextNode) &&
 					nextNode.tagName === 'DL' &&
-					(
-						stage === 2 ||
-						(
-							nextNode.parentElement !== this.parser.context.rootElement &&
+					(stage === 2 ||
+						(nextNode.parentElement !== this.parser.context.rootElement &&
 							/** @type {ElementFor<N>} */ (nextNode.parentElement).parentElement !==
-							this.parser.context.rootElement
-						)
-					)
-				)
-			) &&
-
+								this.parser.context.rootElement)))) &&
 			// Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602#202002071806_G2ii2g.
 			// Supplying `true` as the second parameter to this.isIntroList() at stage 1 is costly so we
 			// do it only at stage 2.
 			!(
-				(
-					isElement(node) &&
+				(isElement(node) &&
 					['DL', 'UL', 'OL'].includes(node.tagName) &&
-					!this.isIntroList(node, stage === 2, lastPartNode)
-				) ||
-				(
+					!this.isIntroList(node, stage === 2, lastPartNode)) ||
 				// Note: Text nodes are filtered out as of stage 2.
-					node.nodeType === Node.TEXT_NODE &&
-
+				(node.nodeType === Node.TEXT_NODE &&
 					isElement(node.previousSibling) &&
 					['DL', 'UL', 'OL'].includes(node.previousSibling.tagName) &&
-					!this.isIntroList(node.previousSibling, false, lastPartNode)
-				) ||
+					!this.isIntroList(node.previousSibling, false, lastPartNode)) ||
 				(lastPartNode && !this.isPartOfList(lastPartNode, false))
 			) &&
-
 			// Don't confuse the comment with a list at the end of the comment.
 			!(
 				['UL', 'OL'].includes(nextNode.tagName) &&
 				this.parser.getChildElements(nextNode).length > 1 &&
-				!this.parser.constructor.contains(this.parser.getChildElements(nextNode)[0], this.signatureElement)
+				!this.parser.constructor.contains(
+					this.parser.getChildElements(nextNode)[0],
+					this.signatureElement,
+				)
 			)
 		)
 	}
@@ -685,7 +647,6 @@ class CommentSkeleton {
 		if (
 			part.step !== 'back' ||
 			part.node.tagName !== 'LI' ||
-
 			// Here we, in fact, hardcode PHP's wgDiscussionToolsReplyIndentation = 'bullet' for ruwiki.
 			cd.g.serverName === 'ru.wikipedia.org'
 		) {
@@ -695,7 +656,6 @@ class CommentSkeleton {
 		const link = /** @type {ElementLike | undefined} */ (part.node.querySelectorAll('a')[0])
 		if (
 			!link ||
-
 			// False positives like the first part in
 			// https://en.wikipedia.org/w/index.php?title=Project:Village_pump_(policy)&diff=prev&oldid=1226668615
 			part.node.querySelectorAll('ul, ol, dl').length
@@ -756,7 +716,6 @@ class CommentSkeleton {
 					);
 					if (
 						isInline(treeWalker.currentNode, true) ||
-
 						// Cases like
 						// https://en.wikipedia.org/w/index.php?title=User_talk:MBHbot&oldid=1228999533#c-1AmNobody24-20240614071000-June_2024
 						/** @type {ElementFor<N>} */ (previousPart.node)
@@ -818,36 +777,26 @@ class CommentSkeleton {
 					// https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=125481598#c-Oleg_Yunakov-20220830173400-Iniquity-20220830171400
 					// will be left out of the comment.
 					!isInline(node) &&
-
-					(
-						(
-						// Signature count. The second parameter of .getElementsByClassName() is an
+						(// Signature count. The second parameter of .getElementsByClassName() is an
 						// optimization for the worker context.
-							node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length -
-
-							Number(hasCurrentSignature)
-						) > 0 ||
-						(
-							firstForeignComponentAfter &&
-							this.parser.constructor.contains(node, firstForeignComponentAfter) &&
-
-							!(
-							// Cases like the table added at https://ru.wikipedia.org/?diff=115822931
-								node.tagName === 'TABLE' ||
-
-								// Cases like the welcome template at https://en.wikipedia.org/wiki/User_talk:Carver1889
-								node.getAttribute('style')?.includes('background-')
-							)
-						) ||
-
-						// A heading can be wrapped into an element, like at
-						// https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
-						(
-							precedingHeadingElement &&
-							node !== precedingHeadingElement &&
-							this.parser.constructor.contains(node, precedingHeadingElement)
-						)
-					)
+						node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length -
+							Number(hasCurrentSignature) >
+							0 ||
+							(firstForeignComponentAfter &&
+								this.parser.constructor.contains(node, firstForeignComponentAfter) &&
+								!(
+									// Cases like the table added at https://ru.wikipedia.org/?diff=115822931
+									(
+										node.tagName === 'TABLE' ||
+										// Cases like the welcome template at https://en.wikipedia.org/wiki/User_talk:Carver1889
+										node.getAttribute('style')?.includes('background-')
+									)
+								)) ||
+							// A heading can be wrapped into an element, like at
+							// https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
+							(precedingHeadingElement &&
+								node !== precedingHeadingElement &&
+								this.parser.constructor.contains(node, precedingHeadingElement))),
 				)
 
 				// A trace from ~~~ at the end of a line most likely means an incorrectly signed comment.
@@ -893,12 +842,7 @@ class CommentSkeleton {
 			this.signatureElement,
 		)
 		let [parts, firstForeignComponentAfter] = this.getStartNodes(treeWalker)
-		parts = this.traverseDom(
-			parts,
-			treeWalker,
-			firstForeignComponentAfter,
-			precedingHeadingElement
-		)
+		parts = this.traverseDom(parts, treeWalker, firstForeignComponentAfter, precedingHeadingElement)
 
 		this.parts = parts
 	}
@@ -938,7 +882,7 @@ class CommentSkeleton {
 		for (let i = 0; i <= this.parts.length - 1; i++) {
 			const part = this.parts[i]
 			if (
-				(start === undefined || (['back', 'start'].includes(part.step))) &&
+				(start === undefined || ['back', 'start'].includes(part.step)) &&
 				!part.hasForeignComponents &&
 				!part.isHeading
 			) {
@@ -1015,33 +959,25 @@ class CommentSkeleton {
 		for (let i = this.parts.length - 1; i >= 1; i--) {
 			const node = /** @type {ElementFor<N>} */ (this.parts[i].node)
 			if (
-				(
-					node.tagName === 'P' &&
+				(node.tagName === 'P' &&
 					!node.textContent.trim() &&
-					[...this.parser.getChildElements(node)].every((child) => child.tagName === 'BR')
-				) ||
+					[...this.parser.getChildElements(node)].every((child) => child.tagName === 'BR')) ||
 				node.tagName === 'HR' ||
 				isMetadataNode(node) ||
 				Array.from(node.classList).some((name) => ['references', 'reflist-talk'].includes(name)) ||
-
 				// Ad hoc for cases like
 				// https://ru.wikipedia.org/w/index.php?title=Википедия:Форум_администраторов&oldid=129874608#c-Lesless-20230416204100-Pessimist2006-20230416203500
-				(
-					node.tagName === 'DL' &&
+				(node.tagName === 'DL' &&
 					this.parts[i - 1] &&
-					node.nextElementSibling?.firstElementChild?.firstElementChild === this.parts[i - 1].node
-				) ||
-
+					node.nextElementSibling?.firstElementChild?.firstElementChild ===
+						this.parts[i - 1].node) ||
 				// E.g. `mw-notalk` elements at the beginning of the comment (example:
 				// https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Wikisaurus#c-Khidistavi-20240209164000-Против)
 				this.parser.noSignatureElements.some((el) => this.parser.constructor.contains(el, node)) ||
-
 				// In most cases outdent template will be filtered by this.parser.rejectClasses
-				(
-					this.parts[i].step !== 'up' &&
+				(this.parts[i].step !== 'up' &&
 					this.parser.context.areThereOutdents() &&
-					this.parser.context.getElementByClassName(node, cd.config.outdentClass)
-				)
+					this.parser.context.getElementByClassName(node, cd.config.outdentClass))
 			) {
 				this.parts.splice(i, 1)
 			} else {
@@ -1059,7 +995,7 @@ class CommentSkeleton {
 			this.parser.constructor.insertBefore(
 				/** @type {ElementFor<N>} */ (firstNode.parentElement),
 				/** @type {AnyNode} */ (firstNode.firstChild),
-				firstNode
+				firstNode,
 			)
 		}
 
@@ -1112,19 +1048,16 @@ class CommentSkeleton {
 		const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
 
 		return (
-		// 'DD', 'LI' are in this list too for this kind of structures:
-		// https://ru.wikipedia.org/w/index.php?diff=103584477.
+			// 'DD', 'LI' are in this list too for this kind of structures:
+			// https://ru.wikipedia.org/w/index.php?diff=103584477.
 			['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
-
 			!this.isOtherKindOfList(part.node) &&
-
 			// Exclude lists that are parts of the comment, like at
 			// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list
 			// (this has an effect on 18:20 and 18:30 comments).
 			!(
 				part.step === 'up' &&
 				this.parts[i + 1] &&
-
 				// Watch these cases that are similar in DOM but should behave differently ("→" means the
 				// next part):
 				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:20:00.000Z-Example-2021-10-13T18:00:00.000Z
@@ -1157,32 +1090,19 @@ class CommentSkeleton {
 				// * https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_191#c-Snævar-2021-07-15T16:19:00.000Z-Klein_Muçi-2021-07-15T12:15:00.000Z
 				// ** dl "up" → li "replaced"
 				// ** The condition should be false.
-				(
-					(
-						part.node.tagName !== 'UL' &&
-						(
-							this.isPartOfList(this.parts[i + 1].node, false) &&
-							this.parts[i + 1].step !== 'replaced'
-						)
-					) ||
-					this.parser.getChildElements(part.node).length > 1
-				) &&
-
+				((part.node.tagName !== 'UL' &&
+					this.isPartOfList(this.parts[i + 1].node, false) &&
+					this.parts[i + 1].step !== 'replaced') ||
+					this.parser.getChildElements(part.node).length > 1) &&
 				this.isPartOfList(lastPartNode, true)
 			) &&
-
-			(
 			// Exclude lists that are parts of the comment.
-				(part.step === 'up' && (!this.parts[i - 1] || this.parts[i - 1].step !== 'back')) ||
-
-				(
-					this.isPartOfList(lastPartNode, true) &&
-
+			((part.step === 'up' && (!this.parts[i - 1] || this.parts[i - 1].step !== 'back')) ||
+				(this.isPartOfList(lastPartNode, true) &&
 					// Cases like
 					// https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
 					// (the whole thread).
 					!(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName)) &&
-
 					// Cases like
 					// https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel,
 					//
@@ -1191,17 +1111,12 @@ class CommentSkeleton {
 						['UL', 'OL'].includes(part.node.tagName) &&
 						part.node.previousElementSibling &&
 						['DL', 'UL'].includes(part.node.previousElementSibling.tagName)
-					)
-				) ||
-
+					)) ||
 				// Cases like
 				// https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061830_Example
-				(
-					part.node.tagName === 'UL' &&
+				(part.node.tagName === 'UL' &&
 					this.parser.getChildElements(part.node).length === 1 &&
-					this.isPartOfList(lastPartNode, false)
-				)
-			)
+					this.isPartOfList(lastPartNode, false)))
 		)
 	}
 
@@ -1212,20 +1127,28 @@ class CommentSkeleton {
 	 */
 	replaceListsWithItems() {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const lastPartNode = /** @type {CommentPart<ElementLike>} */ (this.parts[this.parts.length - 1]).node
+		const lastPartNode = /** @type {CommentPart<ElementLike>} */ (this.parts[this.parts.length - 1])
+			.node
 		for (let i = this.parts.length - 1; i >= 0; i--) {
 			const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
 			if (this.isCommentLevel(i, lastPartNode)) {
 				const commentElements = this.parser.getTopElementsWithText(part.node).nodes
 				if (commentElements.length > 1) {
-					this.parts.splice(i, 1, ...commentElements.map((el) => /** @type {CommentPart} */ ({
-						node: el,
-						isTextNode: false,
-						isHeading: false,
-						hasCurrentSignature: this.parser.constructor.contains(el, this.signatureElement),
-						hasForeignComponents: false,
-						step: 'replaced',
-					})))
+					this.parts.splice(
+						i,
+						1,
+						...commentElements.map(
+							(el) =>
+								/** @type {CommentPart} */ ({
+									node: el,
+									isTextNode: false,
+									isHeading: false,
+									hasCurrentSignature: this.parser.constructor.contains(el, this.signatureElement),
+									hasForeignComponents: false,
+									step: 'replaced',
+								}),
+						),
+					)
 				} else if (commentElements[0] !== part.node) {
 					Object.assign(part, {
 						node: commentElements[0],
@@ -1248,15 +1171,12 @@ class CommentSkeleton {
 
 			if (
 				firstNodeParent.tagName === 'OL' &&
-
 				// A foreign signature can be found with just .cd-signature search; example:
 				// https://commons.wikimedia.org/?diff=566673258.
-				(
-					firstNodeParent.getElementsByClassName('cd-signature').length -
-
+				firstNodeParent.getElementsByClassName('cd-signature').length -
 					// Current signature count, 0 or 1
-					Number(this.parser.constructor.contains(firstNodeParent, this.signatureElement))
-				) === 0
+					Number(this.parser.constructor.contains(firstNodeParent, this.signatureElement)) ===
+					0
 			) {
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 				const listItems = this.parts.filter((part) => part.node.parentElement === firstNodeParent)
@@ -1276,8 +1196,8 @@ class CommentSkeleton {
 							part.node.parentElement !== firstNodeParent &&
 							this.parser.constructor.contains(
 								/** @type {ElementLike} */ (part.node.parentElement),
-								firstNodeParent
-							)
+								firstNodeParent,
+							),
 					)
 				) {
 					innerWrapper = this.parser.constructor.createElement('div')
@@ -1317,7 +1237,6 @@ class CommentSkeleton {
 				el.tagName === 'FIGURE' &&
 				/\b(mw:File\/(Thumb|Frame))/.test(el.getAttribute('typeof') || '')
 			) &&
-
 			// Can't access stylesheets from the worker context, so we do it only in
 			// Comment#reviewHighlightables, and here we look at the style attribute only.
 			!/float: *(?:left|right)|display: *none/.test(el.getAttribute('style') || '')
@@ -1341,37 +1260,34 @@ class CommentSkeleton {
 	 * @private
 	 */
 	wrapHighlightables() {
-		[this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
+		;[this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
 			.filter(unique)
-			.filter((el) => (
-				cd.g.badHighlightableElements.includes(el.tagName) ||
-
-				// Cases such as https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
-				// semantic correctness of the markup.
-				(
-					this.highlightables.length > 1 &&
-					el.tagName === 'LI' &&
-					el.parentElement?.tagName === 'OL'
-				) ||
-
-				// This can run a second time from .updateLevels() → .reviewDives() →
-				// .updateHighlightables(), so the might have added the wrapper already.
-				(el.className && el.className !== 'cd-comment-replacedPart') ||
-				(el.getAttribute('style') && el.tagName !== 'LI')
-			))
+			.filter(
+				(el) =>
+					cd.g.badHighlightableElements.includes(el.tagName) ||
+					// Cases such as https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
+					// semantic correctness of the markup.
+					(this.highlightables.length > 1 &&
+						el.tagName === 'LI' &&
+						el.parentElement?.tagName === 'OL') ||
+					// This can run a second time from .updateLevels() → .reviewDives() →
+					// .updateHighlightables(), so the might have added the wrapper already.
+					(el.className && el.className !== 'cd-comment-replacedPart') ||
+					(el.getAttribute('style') && el.tagName !== 'LI'),
+			)
 			.forEach((el) => {
 				const wrapper = this.parser.constructor.createElement('div')
 				wrapper.className = 'cd-comment-replacedPart'
 				this.parser.constructor.insertBefore(
 					/** @type {ElementLike} */ (el.parentElement),
 					wrapper,
-					el
+					el,
 				)
 				this.elements.splice(this.elements.indexOf(el), 1, /** @type {ElementFor<N>} */ (wrapper))
 				this.highlightables.splice(
 					this.highlightables.indexOf(el),
 					1,
-					/** @type {ElementFor<N>} */ (wrapper)
+					/** @type {ElementFor<N>} */ (wrapper),
 				)
 				this.parser.constructor.appendChild(wrapper, el)
 			})
@@ -1407,7 +1323,7 @@ class CommentSkeleton {
 			if (['DL', 'UL', 'OL'].includes(el.tagName)) {
 				if (el.classList.contains('cd-commentLevel')) {
 					const match = /** @type {string} */ (el.getAttribute('class')).match(
-						/cd-commentLevel-(\d+)/
+						/cd-commentLevel-(\d+)/,
 					)
 					if (match) {
 						const elementsToAdd = Array.from({ length: Number(match[1]) })
@@ -1448,8 +1364,8 @@ class CommentSkeleton {
 				const firstWrongElementIndex = allLevelElements
 					.slice(0, -1)
 
-				// Can't be -1 - will return at least 0 since `allLevelElements[0].length >
-				// lastAncestors.length`
+					// Can't be -1 - will return at least 0 since `allLevelElements[0].length >
+					// lastAncestors.length`
 					.findLastIndex((ancestors) => ancestors.length > lastAncestors.length)
 
 				/*
@@ -1472,7 +1388,6 @@ class CommentSkeleton {
 				*/
 				if (
 					lastAncestors.length > 0 ||
-
 					// Check the last lower level element
 					this.elements[firstWrongElementIndex].lastElementChild?.classList.contains('cd-timestamp')
 				) {
@@ -1509,7 +1424,7 @@ class CommentSkeleton {
 		allLevelElements
 			.slice(1, -1)
 
-		// Group indexes
+			// Group indexes
 			.reduce((acc, ancestors, i) => {
 				if (!ancestors.length) {
 					const lastGroup = acc.at(-1)
@@ -1530,7 +1445,7 @@ class CommentSkeleton {
 					?.at(-1)
 				if (levelElement) {
 					const itemElement = this.parser.constructor.createElement(
-						levelElement.tagName === 'DL' ? 'dd' : 'li'
+						levelElement.tagName === 'DL' ? 'dd' : 'li',
 					)
 					indexes.forEach((index) => {
 						this.parser.constructor.appendChild(itemElement, this.elements[index])
@@ -1580,7 +1495,7 @@ class CommentSkeleton {
 			this.elements.splice(
 				firstItemIndex,
 				this.elements.length - firstItemIndex,
-				closestLevelElement
+				closestLevelElement,
 			)
 			this.updateHighlightables()
 		}
@@ -1670,52 +1585,40 @@ class CommentSkeleton {
 		const children = []
 		const prop = visual ? 'level' : 'logicalLevel'
 		const comments = /** @type {this[]} */ (/** @type {unknown} */ (cd.comments))
-		comments
-			.slice(this.index + 1)
-			.some((comment) => {
-				if (
-					comment.section === this.section &&
-					(
-						comment[prop] > this[prop] ||
+		comments.slice(this.index + 1).some((comment) => {
+			if (
+				comment.section === this.section &&
+				(comment[prop] > this[prop] ||
+					// This comment is visually a child, although it's of the same level as the parent.
+					(prop === 'level' &&
+						allowSiblings &&
+						comment[prop] === this[prop] &&
+						comment.isOutdented))
+			) {
+				// `comment.getParent() === this` to allow comments mistakenly indented with more than one
+				// level.
+				if (comment[prop] === this[prop] + 1 || indirect || comment.getParent() === this) {
+					children.push(comment)
+				}
 
-						// This comment is visually a child, although it's of the same level as the parent.
-						(
-							prop === 'level' &&
-							allowSiblings &&
-							comment[prop] === this[prop] &&
-							comment.isOutdented
-						)
-					)
-				) {
-					// `comment.getParent() === this` to allow comments mistakenly indented with more than one
-					// level.
-					if (comment[prop] === this[prop] + 1 || indirect || comment.getParent() === this) {
-						children.push(comment)
+				return false
+			}
+			if (prop === 'logicalLevel' && this.parser.context.areThereOutdents()) {
+				// Outdented comments that are separated from their parents by interjected comments of
+				// higher level than the parent.
+				comments.slice(comment.index + 1).some((c) => {
+					if (/** @type {CommentSkeleton<N> | null} */ (c.cachedParent.logicalLevel) === this) {
+						children.push(c)
+
+						return true
 					}
 
-					return false
-				}
-				if (prop === 'logicalLevel' && this.parser.context.areThereOutdents()) {
-					// Outdented comments that are separated from their parents by interjected comments of
-					// higher level than the parent.
-					comments
-						.slice(comment.index + 1)
-						.some((c) => {
-							if (
-							/** @type {CommentSkeleton<N> | null} */ (c.cachedParent.logicalLevel) ===
-							this
-							) {
-								children.push(c)
+					return c.section !== this.section
+				})
+			}
 
-								return true
-							}
-
-							return c.section !== this.section
-						})
-				}
-
-				return true
-			})
+			return true
+		})
 
 		return children
 	}
@@ -1810,9 +1713,9 @@ class CommentSkeleton {
 	 * @param {import('./Parser').default} parser
 	 */
 	static updateOutdentStyle(element, parser) {
-		if (cd.isWorker()) return;
+		if (cd.isWorker()) return
 
-		[...element.childNodes].forEach((child) => {
+		;[...element.childNodes].forEach((child) => {
 			if (!(child instanceof HTMLElement)) return
 
 			const width = child.style.width
@@ -1823,13 +1726,14 @@ class CommentSkeleton {
 					const unit = match[2]
 
 					// 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
-					child.style.width = `calc(${number * 1.25}${unit} + ${number * 1.25 / 2}px)`
+					child.style.width = `calc(${number * 1.25}${unit} + ${(number * 1.25) / 2}px)`
 
 					child.style.borderColor = `var(--border-color-subtle, #c8ccd1)`
 				}
 			} else if (!parser.getChildElements(child).length && child.textContent.includes('─')) {
-				child.textContent = child.textContent
-					.replace(/─+/, (s) => '─'.repeat(Math.round(s.length * 1.25)))
+				child.textContent = child.textContent.replace(/─+/, (s) =>
+					'─'.repeat(Math.round(s.length * 1.25)),
+				)
 			}
 		})
 	}
@@ -1841,9 +1745,9 @@ class CommentSkeleton {
 	 * @param {import('./Parser').default} parser
 	 */
 	static processOutdents(parser) {
-		if (!parser.context.areThereOutdents()) return;
+		if (!parser.context.areThereOutdents()) return
 
-		[...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
+		;[...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
 			.reverse()
 			.forEach((element) => {
 				/** @type {CommentSkeleton | undefined} */
@@ -1893,16 +1797,15 @@ class CommentSkeleton {
 						if (
 							comment.section !== narrowedParrentComment.section ||
 							comment.logicalLevel < narrowedChildComment.level ||
-							(comment !== narrowedChildComment && comment.logicalLevel === narrowedChildComment.level) ||
+							(comment !== narrowedChildComment &&
+								comment.logicalLevel === narrowedChildComment.level) ||
 							(comment.date && comment.date < /** @type {Date} */ (narrowedChildComment.date))
 						) {
 							return true
 						}
 
-						comment.logicalLevel = (
-							(narrowedParrentComment.level + 1) +
-							(comment.logicalLevel - narrowedChildComment.level)
-						)
+						comment.logicalLevel =
+							narrowedParrentComment.level + 1 + (comment.logicalLevel - narrowedChildComment.level)
 
 						return false
 					})

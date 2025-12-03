@@ -9,7 +9,8 @@ window.mw = {
 		get: (/** @type {string} */ name) => mw.config.values[name],
 	},
 	util: {
-		escapeRegExp: (/** @type {string} */ s) => s.replace(/([\\{}()|.?*+\-^$[\]])/g, String.raw`\$1`),
+		escapeRegExp: (/** @type {string} */ s) =>
+			s.replace(/([\\{}()|.?*+\-^$[\]])/g, String.raw`\$1`),
 	},
 }
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -30,7 +31,8 @@ Object.assign(cd, {
 	g: {
 		filePrefixPattern: '(?:file|image):',
 		quoteRegexp: /(<blockquote|<q)([^]*?)(<\/blockquote>|<\/q>)/gi,
-		pniePattern: '(?:BLOCKQUOTE|DD|DIV|DL|DT|FORM|H1|H2|H3|H4|H5|H6|HR|INPUT|LI|LINK|OL|P|PRE|STYLE|TABLE|TBODY|TR|TH|TD|UL)',
+		pniePattern:
+			'(?:BLOCKQUOTE|DD|DIV|DL|DT|FORM|H1|H2|H3|H4|H5|H6|HR|INPUT|LI|LINK|OL|P|PRE|STYLE|TABLE|TBODY|TR|TH|TD|UL)',
 		userSignature: ' ~~~~',
 	},
 	config: defaultConfig,
@@ -56,12 +58,11 @@ function testWithData({ label, code, expected, commentForm, action = 'submit', c
 			isNewSectionApi: () => commentForm.newSectionApi,
 		})
 		Object.assign(commentForm.target, {
-			TYPE:
-				['addSection', 'addSubsection'].includes(commentForm.mode)
-					? 'section'
-					: ['reply', 'edit'].includes(commentForm.mode)
-							? 'comment'
-							: 'page',
+			TYPE: ['addSection', 'addSubsection'].includes(commentForm.mode)
+				? 'section'
+				: ['reply', 'edit'].includes(commentForm.mode)
+					? 'comment'
+					: 'page',
 			source: commentForm.target.source,
 			isOpeningSection: () => commentForm.target.openingSection,
 		})
@@ -78,7 +79,7 @@ function testWithData({ label, code, expected, commentForm, action = 'submit', c
 				}).toThrow(expected)
 			} else {
 				expect(transformer.transform())[typeof expected === 'string' ? 'toEqual' : 'toMatch'](
-					expected
+					expected,
 				)
 			}
 		} finally {
@@ -418,7 +419,8 @@ describe('Tricky markup', () => {
 	testWithData({
 		label: 'List in a vote',
 		code: 'List:\n* Item 1.\n** Subitem 1.\n* Item 2.\nEnd.',
-		expected: '# List:<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>End. ~~~~\n',
+		expected:
+			'# List:<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>End. ~~~~\n',
 		commentForm: voteForm,
 	})
 })
@@ -493,31 +495,36 @@ describe('Tags and templates', () => {
 	testWithData({
 		label: 'List in a tag',
 		code: 'Quoted list:\n<blockquote>\n* Item 1.\n** Subitem 1.\n* Item 2.\n</blockquote>\nEnd.',
-		expected: ': Quoted list:<blockquote><ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul></blockquote>End. ~~~~\n',
+		expected:
+			': Quoted list:<blockquote><ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul></blockquote>End. ~~~~\n',
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
 		label: 'Definition list in a tag',
 		code: 'Quoted list:\n<blockquote>\n: Item 1.\n:: Subitem 1.\n: Item 2.\n</blockquote>\nEnd.',
-		expected: ': Quoted list:<blockquote><dl><dd>Item 1.<dl><dd>Subitem 1.</dd></dl></dd><dd>Item 2.</dd></dl></blockquote>End. ~~~~\n',
+		expected:
+			': Quoted list:<blockquote><dl><dd>Item 1.<dl><dd>Subitem 1.</dd></dl></dd><dd>Item 2.</dd></dl></blockquote>End. ~~~~\n',
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
 		label: 'List in a template',
 		code: 'Quoted list:\n{{quote|1=\n* Item 1.\n** Subitem 1.\n* Item 2.\n}}\nEnd.',
-		expected: ': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
+		expected:
+			': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
-		label: 'List in a template without a newline before a named parameter\'s content',
+		label: "List in a template without a newline before a named parameter's content",
 		code: 'Quoted list:\n{{quote|1=* Item 1.\n** Subitem 1.\n* Item 2.\n}}\nEnd.',
-		expected: ': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
+		expected:
+			': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
-		label: 'List in a template without a newline before a unnamed parameter\'s content',
+		label: "List in a template without a newline before a unnamed parameter's content",
 		code: 'Quoted list:\n{{quote|1=* Item 1.\n** Subitem 1.\n* Item 2.\n}}\nEnd.',
-		expected: ': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
+		expected:
+			': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
@@ -535,13 +542,15 @@ describe('Tags and templates', () => {
 	testWithData({
 		label: '<syntaxhighlight>',
 		code: 'Text.\n<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight>',
-		expected: ': Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight> ~~~~\n',
+		expected:
+			': Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight> ~~~~\n',
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
 		label: '<syntaxhighlight> at the end of a line with a newline after (common when editing)',
 		code: 'Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight>\nEnd.',
-		expected: ': Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight>End. ~~~~\n',
+		expected:
+			': Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight>End. ~~~~\n',
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
@@ -570,7 +579,8 @@ describe('Alternative config', () => {
 	testWithData({
 		label: 'Paragraph (no template, various tricky markup)',
 		code: 'Start.\nNew line\n\nEnd.\n\nList:\n* Item 1.\n* Item 2.\n* Item 3.\nContinuation.\n\n\nThree newlines.\nQuote 1:\n\n{{quote|Text.}}\n\nQuote 2:\n{{quote|Text.}}\nEnd',
-		expected: ': Start.<br> New line\n: End.\n: List:\n:* Item 1.\n:* Item 2.\n:* Item 3.\n: Continuation.\n: Three newlines.<br> Quote 1:\n: {{quote|Text.}}\n: Quote 2:{{quote|Text.}}End ~~~~\n',
+		expected:
+			': Start.<br> New line\n: End.\n: List:\n:* Item 1.\n:* Item 2.\n:* Item 3.\n: Continuation.\n: Three newlines.<br> Quote 1:\n: {{quote|Text.}}\n: Quote 2:{{quote|Text.}}End ~~~~\n',
 		commentForm: firstCommentReplyForm,
 		config: { paragraphTemplates: [] },
 	})

@@ -6,7 +6,16 @@ import cd from './loader/cd'
 import settings from './settings'
 import { areObjectsEqual } from './shared/utils-general'
 import { saveGlobalOption, saveLocalOption } from './utils-api'
-import { createButtonControl, createCheckboxControl, createMulticheckboxControl, createMultitagControl, createNumberControl, createRadioControl, createTextControl, es6ClassToOoJsClass } from './utils-oojs'
+import {
+	createButtonControl,
+	createCheckboxControl,
+	createMulticheckboxControl,
+	createMultitagControl,
+	createNumberControl,
+	createRadioControl,
+	createTextControl,
+	es6ClassToOoJsClass,
+} from './utils-oojs'
 
 /**
  * Class used to create a settings dialog.
@@ -71,7 +80,7 @@ class SettingsDialog extends ProcessDialog {
 	bookletLayout
 
 	controls =
-	/** @type {Expand<ControlTypesByName<import('./settings').default['scheme']['controlTypes']>>} */ ({})
+		/** @type {Expand<ControlTypesByName<import('./settings').default['scheme']['controlTypes']>>} */ ({})
 
 	/** @type {Partial<import('./settings').SettingsValues>} */
 	loadedSettings
@@ -132,7 +141,7 @@ class SettingsDialog extends ProcessDialog {
 			expanded: false,
 		})
 		this.reloadPanel.$element.append(
-			$('<p>').text(cd.s('sd-saved', commentFormManager.maybeGetFormDataWontBeLostString()))
+			$('<p>').text(cd.s('sd-saved', commentFormManager.maybeGetFormDataWontBeLostString())),
 		)
 
 		this.dataDeletedPanel = new OO.ui.PanelLayout({
@@ -253,7 +262,7 @@ class SettingsDialog extends ProcessDialog {
 					if (confirm(cd.s('sd-reset-confirm'))) {
 						this.renderControls(settings.scheme.default)
 						this.bookletLayout.setPage(
-							/** @type {string} */ (this.bookletLayout.getCurrentPageName())
+							/** @type {string} */ (this.bookletLayout.getCurrentPageName()),
 						)
 					}
 				})
@@ -279,7 +288,7 @@ class SettingsDialog extends ProcessDialog {
 				const name = data.name
 				switch (data.type) {
 					case 'checkbox':
-						/** @type {CheckboxControl} */ (this.controls[name]) = createCheckboxControl({
+						/** @type {CheckboxControl} */ ;(this.controls[name]) = createCheckboxControl({
 							.../** @type {import('./utils-oojs').CheckboxControlOptions} */ (data),
 							selected: /** @type {boolean} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
@@ -289,7 +298,7 @@ class SettingsDialog extends ProcessDialog {
 						break
 
 					case 'radio':
-						/** @type {RadioControl} */ (this.controls[name]) = createRadioControl({
+						/** @type {RadioControl} */ ;(this.controls[name]) = createRadioControl({
 							.../** @type {import('./utils-oojs').RadioControlOptions} */ (data),
 							selected: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
@@ -299,7 +308,7 @@ class SettingsDialog extends ProcessDialog {
 						break
 
 					case 'text':
-						/** @type {TextControl} */ (this.controls[name]) = createTextControl({
+						/** @type {TextControl} */ ;(this.controls[name]) = createTextControl({
 							.../** @type {import('./utils-oojs').TextControlOptions} */ (data),
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
@@ -309,7 +318,7 @@ class SettingsDialog extends ProcessDialog {
 						break
 
 					case 'number':
-						/** @type {NumberControl} */ (this.controls[name]) = createNumberControl({
+						/** @type {NumberControl} */ ;(this.controls[name]) = createNumberControl({
 							.../** @type {import('./utils-oojs').NumberControlOptions} */ (data),
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
@@ -319,17 +328,19 @@ class SettingsDialog extends ProcessDialog {
 						break
 
 					case 'multicheckbox':
-						/** @type {MulticheckboxControl} */ (this.controls[name]) = createMulticheckboxControl({
-							.../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
-							selected: /** @type {string[]} */ (
-								settingValues[/** @type {import('./settings').SettingName} */ (name)]
-							),
-						})
+						/** @type {MulticheckboxControl} */ ;(this.controls[name]) = createMulticheckboxControl(
+							{
+								.../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
+								selected: /** @type {string[]} */ (
+									settingValues[/** @type {import('./settings').SettingName} */ (name)]
+								),
+							},
+						)
 						this.controls[name].input.on('select', this.updateAbilities)
 						break
 
 					case 'multitag':
-						/** @type {MultitagControl} */ (this.controls[name]) = createMultitagControl({
+						/** @type {MultitagControl} */ ;(this.controls[name]) = createMultitagControl({
 							.../** @type {import('./utils-oojs').MultitagControlOptions} */ (data),
 							selected: /** @type {string[]} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
@@ -339,7 +350,7 @@ class SettingsDialog extends ProcessDialog {
 						break
 
 					case 'button':
-						/** @type {ButtonControl} */ (this.controls[name]) = createButtonControl({
+						/** @type {ButtonControl} */ ;(this.controls[name]) = createButtonControl({
 							.../** @type {import('./utils-oojs').ButtonControlOptions} */ (data),
 						})
 						break
@@ -364,9 +375,9 @@ class SettingsDialog extends ProcessDialog {
 					 * @override
 					 */
 					setupOutlineItem() {
-						/** @type {OO.ui.OutlineOptionWidget} */ (this.outlineItem).setLabel(pageData.label)
+						/** @type {OO.ui.OutlineOptionWidget} */ ;(this.outlineItem).setLabel(pageData.label)
 					}
-				}
+				},
 			))()
 		})
 
@@ -405,7 +416,7 @@ class SettingsDialog extends ProcessDialog {
 	 */
 	getStateSettings() {
 		return settings.scheme.states.reduce((obj, state) => {
-			/** @type {(typeof this.loadedSettings)[state]} */ (obj[state]) = this.loadedSettings[state]
+			/** @type {(typeof this.loadedSettings)[state]} */ ;(obj[state]) = this.loadedSettings[state]
 
 			return obj
 		}, /** @type {Partial<import('./settings').SettingsValues>} */ ({}))
@@ -427,28 +438,28 @@ class SettingsDialog extends ProcessDialog {
 
 				switch (control.type) {
 					case 'checkbox':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.isSelected()
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.isSelected()
 						break
 					case 'radio':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) =
-						/** @type {string | undefined} */ (control.input.findSelectedItem()?.getData()) ||
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) =
+							/** @type {string | undefined} */ (control.input.findSelectedItem()?.getData()) ||
 							settings.scheme.default[n]
 						break
 					case 'text':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.getValue()
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.getValue()
 						break
 					case 'number':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) = Number(
-							control.input.getValue()
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = Number(
+							control.input.getValue(),
 						)
 						break
 					case 'multicheckbox':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) = /** @type {string[]} */ (
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = /** @type {string[]} */ (
 							control.input.findSelectedItemsData()
 						)
 						break
 					case 'multitag':
-						/** @type {RelevantSettingType} */ (settingsValues[n]) = (
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = (
 							control.uiToData || ((val) => val)
 						).call(null, /** @type {string[]} */ (control.input.getValue()))
 						break
@@ -456,7 +467,7 @@ class SettingsDialog extends ProcessDialog {
 
 				return settingsValues
 			},
-			/** @type {Partial<import('./settings').SettingsValues>} */ ({})
+			/** @type {Partial<import('./settings').SettingsValues>} */ ({}),
 		)
 
 		return {
@@ -478,32 +489,32 @@ class SettingsDialog extends ProcessDialog {
 		const threadsEnabled = this.controls.enableThreads.input.isSelected()
 		this.controls.collapseThreads.input.setDisabled(!threadsEnabled)
 		this.controls.collapseThreadsLevel.input.setDisabled(
-			!threadsEnabled || !this.controls.collapseThreads.input.isSelected()
+			!threadsEnabled || !this.controls.collapseThreads.input.isSelected(),
 		)
 		this.controls.hideTimezone.input.setDisabled(
-			this.controls.timestampFormat.input.findSelectedItem()?.getData() === 'relative'
+			this.controls.timestampFormat.input.findSelectedItem()?.getData() === 'relative',
 		)
 		this.controls.notifyCollapsedThreads.input.setDisabled(
 			this.controls.desktopNotifications.input.findSelectedItem()?.getData() === 'none' &&
-			this.controls.notifications.input.findSelectedItem()?.getData() === 'none'
+				this.controls.notifications.input.findSelectedItem()?.getData() === 'none',
 		)
 		this.controls.outdentLevel.input.setDisabled(!this.controls.outdent.input.isSelected())
 		this.controls.showContribsLink.input.setDisabled(
-			this.controls.commentDisplay.input.findSelectedItem()?.getData() !== 'spacious'
+			this.controls.commentDisplay.input.findSelectedItem()?.getData() !== 'spacious',
 		)
 		this.controls.useTemplateData.input.setDisabled(
 			!(
-			/** @type {import('./RadioOptionWidget').default} */ (
+				/** @type {import('./RadioOptionWidget').default} */ (
 					this.controls.autocompleteTypes.input.findItemFromData('templates')
 				).isSelected()
-			)
+			),
 		)
 
 		let valid = true
 		await Promise.all(
 			Object.values(this.controls)
 				.filter((control) => control.type === 'number')
-				.map((control) => control.input.getValidity())
+				.map((control) => control.input.getValidity()),
 		).catch(() => {
 			valid = false
 		})
@@ -514,11 +525,10 @@ class SettingsDialog extends ProcessDialog {
 			reset: !areObjectsEqual(
 				{ ...collectedSettings },
 				{
-
 					...settings.scheme.default,
 					...settings.scheme.resetsTo,
 					...this.getStateSettings(),
-				}
+				},
 			),
 		})
 	}

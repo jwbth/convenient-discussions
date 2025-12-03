@@ -111,14 +111,16 @@ jest.mock('../src/cd.js', () => ({
 	}),
 }))
 
-jest.mock('../src/TextInputWidget.js', () => jest.fn().mockImplementation(() => ({
-	setDisabled: jest.fn().mockReturnThis(),
-	pushPending: jest.fn().mockReturnThis(),
-	popPending: jest.fn().mockReturnThis(),
-	focus: jest.fn().mockReturnThis(),
-	getValue: jest.fn(() => ''),
-	setValue: jest.fn().mockReturnThis(),
-})))
+jest.mock('../src/TextInputWidget.js', () =>
+	jest.fn().mockImplementation(() => ({
+		setDisabled: jest.fn().mockReturnThis(),
+		pushPending: jest.fn().mockReturnThis(),
+		popPending: jest.fn().mockReturnThis(),
+		focus: jest.fn().mockReturnThis(),
+		getValue: jest.fn(() => ''),
+		setValue: jest.fn().mockReturnThis(),
+	})),
+)
 
 jest.mock('../src/settings.js', () => ({
 	get: jest.fn((key) => {
@@ -152,7 +154,7 @@ jest.mock('../src/commentRegistry.js', () => ({
 		{
 			id: 'comment2',
 			headline: 'Response to feature discussion',
-			snippet: 'That\'s a great idea, but we need to consider...',
+			snippet: "That's a great idea, but we need to consider...",
 			author: { name: 'AnotherUser' },
 			date: new Date('2023-01-02'),
 		},
@@ -174,13 +176,17 @@ jest.mock('../src/sectionRegistry.js', () => ({
 	]),
 }))
 
-jest.mock('../src/EventEmitter.js', () => class EventEmitter {
-	on() {}
+jest.mock(
+	'../src/EventEmitter.js',
+	() =>
+		class EventEmitter {
+			on() {}
 
-	off() {}
+			off() {}
 
-	emit() {}
-})
+			emit() {}
+		},
+)
 
 describe('Autocomplete End-to-End Workflows', () => {
 	let mockInput
@@ -231,11 +237,7 @@ describe('Autocomplete End-to-End Workflows', () => {
 			// Mock realistic API response
 			mockApi.get.mockResolvedValue({
 				query: {
-					allusers: [
-						{ name: 'John Doe' },
-						{ name: 'John Smith' },
-						{ name: 'Johnny Walker' },
-					],
+					allusers: [{ name: 'John Doe' }, { name: 'John Smith' }, { name: 'Johnny Walker' }],
 				},
 			})
 
@@ -315,7 +317,11 @@ describe('Autocomplete End-to-End Workflows', () => {
 						'cite web',
 						['Template:Cite web', 'Template:Cite website', 'Template:Cite webarchive'],
 						['Citation template', 'Website citation', 'Archive citation'],
-						['/wiki/Template:Cite_web', '/wiki/Template:Cite_website', '/wiki/Template:Cite_webarchive'],
+						[
+							'/wiki/Template:Cite_web',
+							'/wiki/Template:Cite_website',
+							'/wiki/Template:Cite_webarchive',
+						],
 					],
 				},
 			})
@@ -463,17 +469,23 @@ describe('Autocomplete End-to-End Workflows', () => {
 
 			// Test mentions
 			const mentionsCallback = jest.fn()
-			await autocompleteManager.autocompleteInstances.get('mentions').getValues('test', mentionsCallback)
+			await autocompleteManager.autocompleteInstances
+				.get('mentions')
+				.getValues('test', mentionsCallback)
 			expect(mentionsCallback).toHaveBeenCalled()
 
 			// Test wikilinks
 			const wikilinksCallback = jest.fn()
-			await autocompleteManager.autocompleteInstances.get('wikilinks').getValues('test', wikilinksCallback)
+			await autocompleteManager.autocompleteInstances
+				.get('wikilinks')
+				.getValues('test', wikilinksCallback)
 			expect(wikilinksCallback).toHaveBeenCalled()
 
 			// Test templates
 			const templatesCallback = jest.fn()
-			await autocompleteManager.autocompleteInstances.get('templates').getValues('test', templatesCallback)
+			await autocompleteManager.autocompleteInstances
+				.get('templates')
+				.getValues('test', templatesCallback)
 			expect(templatesCallback).toHaveBeenCalled()
 
 			// All should have been called with appropriate results
@@ -608,16 +620,17 @@ describe('Autocomplete End-to-End Workflows', () => {
 			const mentionsInstance = autocompleteManager.autocompleteInstances.get('mentions')
 
 			// Mock API with realistic delay
-			mockApi.get.mockImplementation((params) =>
-				new Promise((resolve) => {
-					setTimeout(() => {
-						resolve({
-							query: {
-								allusers: [{ name: `${params.auprefix}User` }],
-							},
-						})
-					}, 50)
-				})
+			mockApi.get.mockImplementation(
+				(params) =>
+					new Promise((resolve) => {
+						setTimeout(() => {
+							resolve({
+								query: {
+									allusers: [{ name: `${params.auprefix}User` }],
+								},
+							})
+						}, 50)
+					}),
 			)
 
 			jest.spyOn(mentionsInstance, 'getApi').mockReturnValue(mockApi)
@@ -630,7 +643,7 @@ describe('Autocomplete End-to-End Workflows', () => {
 
 			// Fire all requests
 			const promises = inputs.map((input, index) =>
-				mentionsInstance.getValues(input, callbacks[index])
+				mentionsInstance.getValues(input, callbacks[index]),
 			)
 
 			await Promise.all(promises)
@@ -662,7 +675,7 @@ describe('Autocomplete End-to-End Workflows', () => {
 					query: {
 						allusers: [{ name: `${params.auprefix}User` }],
 					},
-				})
+				}),
 			)
 
 			jest.spyOn(mentionsInstance, 'getApi').mockReturnValue(mockApi)
@@ -704,14 +717,24 @@ describe('Autocomplete End-to-End Workflows', () => {
 				} else if (params.namespace === '10') {
 					return Promise.resolve({
 						query: {
-							opensearch: ['reflist', ['Template:Reflist'], ['Reference list'], ['/wiki/Template:Reflist']],
+							opensearch: [
+								'reflist',
+								['Template:Reflist'],
+								['Reference list'],
+								['/wiki/Template:Reflist'],
+							],
 						},
 					})
 				}
 
 				return Promise.resolve({
 					query: {
-						opensearch: ['JavaScript', ['JavaScript'], ['Programming language'], ['/wiki/JavaScript']],
+						opensearch: [
+							'JavaScript',
+							['JavaScript'],
+							['Programming language'],
+							['/wiki/JavaScript'],
+						],
 					},
 				})
 			})
@@ -723,21 +746,27 @@ describe('Autocomplete End-to-End Workflows', () => {
 
 			// Step 1: User mentions an expert
 			const mentionsCallback = jest.fn()
-			await autocompleteManager.autocompleteInstances.get('mentions').getValues('Expert', mentionsCallback)
+			await autocompleteManager.autocompleteInstances
+				.get('mentions')
+				.getValues('Expert', mentionsCallback)
 			expect(mentionsCallback).toHaveBeenCalled()
 			const mentionResult = mentionsCallback.mock.calls[0][0][0]
 			expect(mentionResult.transform()).toBe('[[User:ExpertUser|ExpertUser]]')
 
 			// Step 2: User links to an article
 			const wikilinksCallback = jest.fn()
-			await autocompleteManager.autocompleteInstances.get('wikilinks').getValues('JavaScript', wikilinksCallback)
+			await autocompleteManager.autocompleteInstances
+				.get('wikilinks')
+				.getValues('JavaScript', wikilinksCallback)
 			expect(wikilinksCallback).toHaveBeenCalled()
 			const linkResult = wikilinksCallback.mock.calls[0][0][0]
 			expect(linkResult.transform()).toBe('JavaScript')
 
 			// Step 3: User adds a template
 			const templatesCallback = jest.fn()
-			await autocompleteManager.autocompleteInstances.get('templates').getValues('reflist', templatesCallback)
+			await autocompleteManager.autocompleteInstances
+				.get('templates')
+				.getValues('reflist', templatesCallback)
 			expect(templatesCallback).toHaveBeenCalled()
 			const templateResult = templatesCallback.mock.calls[0][0][0]
 			expect(templateResult.transform()).toBe('Reflist')

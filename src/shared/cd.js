@@ -25,8 +25,7 @@ const convenientDiscussionsShared = {
 	 */
 	isWorker() {
 		return (
-			'WorkerGlobalScope' in self &&
-			self instanceof /** @type {any} */ (self.WorkerGlobalScope)
+			'WorkerGlobalScope' in self && self instanceof /** @type {any} */ (self.WorkerGlobalScope)
 		)
 	},
 }

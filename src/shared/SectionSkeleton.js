@@ -112,11 +112,10 @@ class SectionSkeleton {
 		 */
 		this.hElement = /** @type {ElementFor<N>} */ (
 			returnSelfIfHElement(this.headingElement) ||
-			returnSelfIfHElement(this.headingElement.firstElementChild) ||
-
-			// Russian Wikivoyage and anything with .mw-h2section (not to be confused with .mw-heading2).
-			// Also, a precaution in case something in MediaWiki changes.
-			this.headingElement.querySelectorAll('h1, h2, h3, h4, h5, h6')[0]
+				returnSelfIfHElement(this.headingElement.firstElementChild) ||
+				// Russian Wikivoyage and anything with .mw-h2section (not to be confused with .mw-heading2).
+				// Also, a precaution in case something in MediaWiki changes.
+				this.headingElement.querySelectorAll('h1, h2, h3, h4, h5, h6')[0]
 		)
 
 		/**
@@ -126,12 +125,11 @@ class SectionSkeleton {
 		 */
 		this.headlineElement = cd.g.isParsoidUsed
 			? this.hElement
-
-		// Presence of .mw-heading doesn't guarantee we have the new HTML for headings
-		// (https://www.mediawiki.org/wiki/Heading_HTML_changes). We should test for the existence of
-		// .mw-headline to make sure it's not there. (Could also check that .mw-editsection follows
-		// hN.)
-			: this.parser.context.getElementByClassName(this.hElement, 'mw-headline') || this.hElement
+			: // Presence of .mw-heading doesn't guarantee we have the new HTML for headings
+				// (https://www.mediawiki.org/wiki/Heading_HTML_changes). We should test for the existence of
+				// .mw-headline to make sure it's not there. (Could also check that .mw-editsection follows
+				// hN.)
+				this.parser.context.getElementByClassName(this.hElement, 'mw-headline') || this.hElement
 
 		/**
 		 * Section id.
@@ -149,21 +147,19 @@ class SectionSkeleton {
 		 * @type {number}
 		 */
 		this.level = Number(
-			/** @type {RegExpMatchArray} */ (this.hElement.tagName.match(/^H([1-6])$/))[1]
+			/** @type {RegExpMatchArray} */ (this.hElement.tagName.match(/^H([1-6])$/))[1],
 		)
 
 		const editLink = [
-			...(
-			// Get menu links. Use two calls because our improvised .querySelectorAll() in
+			...// Get menu links. Use two calls because our improvised .querySelectorAll() in
 			// htmlparser2Extended doesn't support composite selectors.
-				this.parser.context.getElementByClassName(this.headingElement, 'mw-editsection')
-					?.getElementsByTagName('a') ||
-					[]
-			),
+			(this.parser.context
+				.getElementByClassName(this.headingElement, 'mw-editsection')
+				?.getElementsByTagName('a') || []),
 		]
-		// &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
-		// user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
-		// there's probably no harm in that.
+			// &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
+			// user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
+			// there's probably no harm in that.
 			.find((link) => link.getAttribute('href')?.includes('action=edit'))
 
 		if (editLink) {
@@ -215,8 +211,9 @@ class SectionSkeleton {
 		// Find the next heading element
 		const headingIndex = targets.indexOf(heading)
 		/** @type {number | undefined} */
-		let nextHeadingIndex = targets
-			.findIndex((target, i) => i > headingIndex && target.type === 'heading')
+		let nextHeadingIndex = targets.findIndex(
+			(target, i) => i > headingIndex && target.type === 'heading',
+		)
 		let nextHeadingElement
 		if (nextHeadingIndex === -1) {
 			nextHeadingIndex = undefined
@@ -226,11 +223,12 @@ class SectionSkeleton {
 
 		// Find the next heading element whose section is not a descendant of this section
 		/** @type {number | undefined} */
-		let nndheIndex = targets.findIndex((target, i) => (
-			i > headingIndex &&
-			target.type === 'heading' &&
-			/** @type {import('./Parser').HeadingTarget<N>} */ (target).level <= this.level
-		))
+		let nndheIndex = targets.findIndex(
+			(target, i) =>
+				i > headingIndex &&
+				target.type === 'heading' &&
+				/** @type {import('./Parser').HeadingTarget<N>} */ (target).level <= this.level,
+		)
 		let nextNotDescendantHeadingElement
 		if (nndheIndex === -1) {
 			nndheIndex = undefined
@@ -243,17 +241,18 @@ class SectionSkeleton {
 			this.parser.context.rootElement,
 			/** @type {(node: NodeLike) => node is TreeWalkerAcceptedNode} */ (node) =>
 				!isMetadataNode(node) &&
-				!/** @type {ElementLike} */ (node).classList.contains('cd-section-button-container'),
-			true
+				!(/** @type {ElementLike} */ (node).classList.contains('cd-section-button-container')),
+			true,
 		)
 
 		this.lastElement = /** @type {ElementFor<N>} */ (
 			this.getLastElement(nextNotDescendantHeadingElement, treeWalker)
 		)
 
-		this.lastElementInFirstChunk = nextHeadingElement === nextNotDescendantHeadingElement
-			? this.lastElement
-			: /** @type {ElementFor<N>} */ (this.getLastElement(nextHeadingElement, treeWalker))
+		this.lastElementInFirstChunk =
+			nextHeadingElement === nextNotDescendantHeadingElement
+				? this.lastElement
+				: /** @type {ElementFor<N>} */ (this.getLastElement(nextHeadingElement, treeWalker))
 
 		const targetsToComments = (/** @type {import('./Parser').Target<N>[]} */ targetsRange) =>
 			targetsRange
@@ -338,13 +337,14 @@ class SectionSkeleton {
 		]
 
 		this.headline = [...this.headlineElement.childNodes]
-			.filter((node) => (
-				isText(node) ||
-				(
-					isElement(node) &&
-					!(isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name)))
-				)
-			))
+			.filter(
+				(node) =>
+					isText(node) ||
+					(isElement(node) &&
+						!(
+							isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name))
+						)),
+			)
 			.map((node) => node.textContent)
 			.join('')
 			.trim()
@@ -363,12 +363,10 @@ class SectionSkeleton {
 			return
 		}
 
-		return (
-			sections
-				.slice(0, this.index)
-				.reverse()
-				.find((section) => section.level < this.level)
-		)
+		return sections
+			.slice(0, this.index)
+			.reverse()
+			.find((section) => section.level < this.level)
 	}
 
 	/**

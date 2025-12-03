@@ -58,8 +58,8 @@ function setAlarm(interval) {
  * @private
  */
 function getAllTextNodes() {
-	const nodes = /** @type {import('domhandler').Text[]} */ ([]);
-	/** @type {import('domhandler').Element} */ (rootElement).traverseSubtree(
+	const nodes = /** @type {import('domhandler').Text[]} */ ([])
+	/** @type {import('domhandler').Element} */ ;(rootElement).traverseSubtree(
 		(/** @type {import('domhandler').Node} */ node) => {
 			if (isText(node)) {
 				nodes.push(node)
@@ -71,7 +71,7 @@ function getAllTextNodes() {
 			}
 
 			return false
-		}
+		},
 	)
 
 	return nodes
@@ -97,9 +97,11 @@ function findTargets(parser) {
 	parser.init()
 	parser.processAndRemoveDtMarkup()
 
-	return /** @type {import('../shared/Parser').Target<import('domhandler').Node>[]} */ (parser.findHeadings())
+	return /** @type {import('../shared/Parser').Target<import('domhandler').Node>[]} */ (
+		parser.findHeadings()
+	)
 		.concat(parser.findSignatures())
-		.sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1)
+		.sort((t1, t2) => (parser.context.follows(t1.element, t2.element) ? 1 : -1))
 }
 
 /**
@@ -193,7 +195,7 @@ function parse() {
 		follows: (el1, el2) => el1.follows(el2),
 		getAllTextNodes,
 		getElementByClassName: (el, className) =>
-		/** @type {import('domhandler').Element} */ (el).getElementsByClassName(className, 1)[0] ||
+			/** @type {import('domhandler').Element} */ (el).getElementsByClassName(className, 1)[0] ||
 			null,
 		// eslint-disable-next-line object-shorthand
 		rootElement: /** @type {NonNullable<typeof rootElement>} */ (rootElement),
@@ -203,8 +205,8 @@ function parse() {
 				areThereOutdents = Boolean(
 					/** @type {NonNullable<typeof rootElement>} */ (rootElement).getElementsByClassName(
 						cd.config.outdentClass,
-						1
-					).length
+						1,
+					).length,
 				)
 			}
 
@@ -269,7 +271,9 @@ function onMessageFromWindow(event) {
 	const message = event.data
 
 	if (isFirstRun) {
-		console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.')
+		console.debug(
+			"Convenient Discussions' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.",
+		)
 		isFirstRun = false
 	}
 
@@ -291,9 +295,9 @@ function onMessageFromWindow(event) {
 		cd.config.rejectNode = /** @type {(typeof cd)['config']['rejectNode']} */ (
 			restoreFunc(cd.config.rejectNode?.toString())
 		)
-		cd.g.isIPv6Address = /** @type {(typeof mw)['util']['isIPv6Address']} */ (restoreFunc(
-			cd.g.isIPv6Address?.toString()
-		))
+		cd.g.isIPv6Address = /** @type {(typeof mw)['util']['isIPv6Address']} */ (
+			restoreFunc(cd.g.isIPv6Address?.toString())
+		)
 
 		self.document = parseDocument(message.text, {
 			withStartIndices: true,
@@ -304,13 +308,15 @@ function onMessageFromWindow(event) {
 
 		parse()
 
-		postMessage(/** @type {MessageFromWorkerParse} */ ({
-			task: message.task,
-			revisionId: message.revisionId,
-			resolverId: message.resolverId,
-			comments: cd.comments,
-			sections: cd.sections,
-		}))
+		postMessage(
+			/** @type {MessageFromWorkerParse} */ ({
+				task: message.task,
+				revisionId: message.revisionId,
+				resolverId: message.resolverId,
+				comments: cd.comments,
+				sections: cd.sections,
+			}),
+		)
 
 		debug.stopTimer(timerLabel)
 		debug.logAndResetEverything()

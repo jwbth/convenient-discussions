@@ -217,10 +217,8 @@ class Button {
 	maybeExecuteAction(action, event) {
 		if (
 			!this.isDisabled() &&
-			(
-				(!isCmdModifierPressed(event) && !event.shiftKey) ||
-				!(this.buttonElement instanceof HTMLAnchorElement && this.buttonElement.href)
-			)
+			((!isCmdModifierPressed(event) && !event.shiftKey) ||
+				!(this.buttonElement instanceof HTMLAnchorElement && this.buttonElement.href))
 		) {
 			event.preventDefault()
 			event.stopPropagation()
@@ -332,9 +330,9 @@ class Button {
 	 */
 	setIcon(icon) {
 		const iconElement = this.iconElement
-		if (!iconElement) return;
+		if (!iconElement) return
 
-		[...iconElement.classList]
+		;[...iconElement.classList]
 			.filter((className) => className.startsWith('oo-ui-icon-'))
 			.forEach((className) => {
 				iconElement.classList.remove(className)

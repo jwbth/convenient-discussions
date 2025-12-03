@@ -16,7 +16,7 @@ import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
  */
 class MultilineTextInputWidget extends mixInClass(
 	OO.ui.MultilineTextInputWidget,
-	TextInputWidgetMixin
+	TextInputWidgetMixin,
 ) {
 	/** @type {boolean} */
 	codeMirrorEnabled
@@ -34,7 +34,7 @@ class MultilineTextInputWidget extends mixInClass(
 		this.$input.textSelection('setSelection', { start, end })
 
 		return this
-	};
+	}
 
 	/**
 	 * Get an object describing the current selection range in a directional manner.

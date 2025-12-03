@@ -65,8 +65,7 @@ class TreeWalker {
 
 		this.root = root
 		let currentNode =
-			startNode ||
-			(elementsOnly && isElement(root) && this.acceptNode(root) ? root : null)
+			startNode || (elementsOnly && isElement(root) && this.acceptNode(root) ? root : null)
 		if (!currentNode) {
 			currentNode = this.nextNode(root)
 		}
@@ -201,7 +200,9 @@ class TreeWalker {
 		}
 
 		do {
-			let test = /** @type {NodeLike | null} */ (node[/** @type {keyof node} */ (this.previousSiblingProp)])
+			let test = /** @type {NodeLike | null} */ (
+				node[/** @type {keyof node} */ (this.previousSiblingProp)]
+			)
 			if (test) {
 				node = test
 				while ((test = node[/** @type {keyof node} */ (this.lastChildProp)])) {

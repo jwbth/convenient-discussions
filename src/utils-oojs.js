@@ -281,18 +281,11 @@ export async function showConfirmDialog(message, options = {}) {
  * @param {TextControlOptions} options
  * @returns {TextControl}
  */
-export function createTextControl({
-	value,
-	maxLength,
-	required,
-	classes,
-	label,
-	help,
-}) {
+export function createTextControl({ value, maxLength, required, classes, label, help }) {
 	return createGenericControl(
 		'text',
 		new TextInputWidget({ value, maxLength, required, classes }),
-		{ label, help }
+		{ label, help },
 	)
 }
 
@@ -302,29 +295,25 @@ export function createTextControl({
  * @param {NumberControlOptions} options
  * @returns {NumberControl}
  */
-export function createNumberControl({
-	value,
-	label,
-	min,
-	max,
-	buttonStep = 1,
-	help,
-	classes,
-}) {
+export function createNumberControl({ value, label, min, max, buttonStep = 1, help, classes }) {
 	return createGenericControl(
 		'number',
 
 		// See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
 		// why we need type casting here.
-		/** @type {OO.ui.TextInputWidget} */ (/** @type {unknown} */ (new OO.ui.NumberInputWidget({
-			input: { value },
-			step: 1,
-			buttonStep,
-			min,
-			max,
-			classes: ['cd-numberInput'],
-		}))),
-		{ label, help, classes }
+		/** @type {OO.ui.TextInputWidget} */ (
+			/** @type {unknown} */ (
+				new OO.ui.NumberInputWidget({
+					input: { value },
+					step: 1,
+					buttonStep,
+					min,
+					max,
+					classes: ['cd-numberInput'],
+				})
+			)
+		),
+		{ label, help, classes },
 	)
 }
 
@@ -358,7 +347,7 @@ export function createCheckboxControl({
 			help,
 			classes,
 			align: 'inline',
-		}
+		},
 	)
 }
 
@@ -368,12 +357,7 @@ export function createCheckboxControl({
  * @param {RadioControlOptions} options
  * @returns {RadioControl}
  */
-export function createRadioControl({
-	label,
-	selected,
-	help,
-	options,
-}) {
+export function createRadioControl({ label, selected, help, options }) {
 	const input = new OO.ui.RadioSelectWidget({
 		items: options.map((config) => new RadioOptionWidget(config)),
 	})
@@ -395,13 +379,7 @@ export function createRadioControl({
  * @param {CopyTextControlOptions} options
  * @returns {CopyTextControl}
  */
-export function createCopyTextControl({
-	label,
-	value,
-	disabled = false,
-	help,
-	copyCallback,
-}) {
+export function createCopyTextControl({ label, value, disabled = false, help, copyCallback }) {
 	if ('CopyTextLayout' in OO.ui) {
 		const field = new OO.ui.CopyTextLayout({
 			align: 'top',
@@ -448,12 +426,7 @@ export function createCopyTextControl({
  * @param {MulticheckboxControlOptions} options
  * @returns {MulticheckboxControl}
  */
-export function createMulticheckboxControl({
-	label,
-	options,
-	selected,
-	classes,
-}) {
+export function createMulticheckboxControl({ label, options, selected, classes }) {
 	return createGenericControl(
 		'multicheckbox',
 		new OO.ui.CheckboxMultiselectWidget({
@@ -463,11 +436,11 @@ export function createMulticheckboxControl({
 						data: option.data,
 						selected: selected ? selected.includes(option.data) : option.selected,
 						label: option.label,
-					})
+					}),
 			),
 			classes,
 		}),
-		{ label }
+		{ label },
 	)
 }
 
@@ -506,17 +479,11 @@ export function createMultitagControl({
  * @param {ButtonControlOptions} options
  * @returns {ButtonControl}
  */
-export function createButtonControl({
-	label,
-	flags,
-	buttonLabel,
-	help,
-}) {
-	return createGenericControl(
-		'button',
-		new OO.ui.ButtonWidget({ label: buttonLabel, flags }),
-		{ label, help }
-	)
+export function createButtonControl({ label, flags, buttonLabel, help }) {
+	return createGenericControl('button', new OO.ui.ButtonWidget({ label: buttonLabel, flags }), {
+		label,
+		help,
+	})
 }
 
 /**
@@ -529,11 +496,11 @@ export function createButtonControl({
 export function createTitleControl(options) {
 	const { label, help, classes, ...titleInputOptions } = options
 
-	return createGenericControl(
-		'title',
-		new mw.widgets.TitleInputWidget(titleInputOptions),
-		{ label, help, classes }
-	)
+	return createGenericControl('title', new mw.widgets.TitleInputWidget(titleInputOptions), {
+		label,
+		help,
+		classes,
+	})
 }
 
 /**
@@ -608,7 +575,7 @@ export function es6ClassToOoJsClass(TargetClass) {
 					name,
 					/** @type {PropertyDescriptor} */ (
 						Object.getOwnPropertyDescriptor(OriginClass.prototype, name)
-					)
+					),
 				)
 			})
 	}
@@ -618,7 +585,7 @@ export function es6ClassToOoJsClass(TargetClass) {
 	Object.keys(TargetClass)
 		.filter((key) => !['parent', 'super', 'static'].includes(key))
 		.forEach((key) => {
-			/** @type {AnyByKey} */ (TargetClass.static)[key] = TargetClass[key]
+			/** @type {AnyByKey} */ ;(TargetClass.static)[key] = TargetClass[key]
 		})
 
 	return TargetClass
@@ -658,7 +625,7 @@ export function mixInClass(Base, Mixin) {
 			Object.defineProperty(
 				Class.prototype,
 				name,
-				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
+				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name)),
 			)
 		})
 
@@ -685,7 +652,7 @@ export function mixInObject(obj, Mixin) {
 			Object.defineProperty(
 				obj,
 				name,
-				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
+				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name)),
 			)
 		})
 

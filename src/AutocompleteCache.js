@@ -38,7 +38,7 @@ class AutocompleteCache {
 	constructor(options = {}) {
 		this.maxSize = options.maxSize || 1000
 		this.ttl = options.ttl || 5 * cd.g.msInMin
-		this.maxMemory = options.maxMemory || 10 * 1024 * 1024  // 10MB
+		this.maxMemory = options.maxMemory || 10 * 1024 * 1024 // 10MB
 		this.enableStats = options.enableStats !== false
 
 		/** @type {Map<string, CacheEntry>} */

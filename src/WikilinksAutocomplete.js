@@ -99,13 +99,11 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			text &&
 			text !== ':' &&
 			text.length <= 255 &&
-
 			// 10 spaces in a page name seems too many.
-			(text.match(new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')) || []).length <= 9 &&
-
+			(text.match(new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')) || [])
+				.length <= 9 &&
 			// Forbidden characters
 			!/[#<>[\]|{}]/.test(text) &&
-
 			// Interwikis
 			!(
 				(text.startsWith(':') || /^[a-z-]\w*:/.test(text)) &&
@@ -211,11 +209,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			try {
 				// Fetch sections from API
 				const response = await BaseAutocomplete.createDelayedPromise(async (resolve) => {
-					const apiResponse = await cd.getApi(BaseAutocomplete.apiConfig).get({
-						action: 'parse',
-						page: normalizedPageName,
-						prop: 'sections',
-					}).catch(handleApiReject)
+					const apiResponse = await cd
+						.getApi(BaseAutocomplete.apiConfig)
+						.get({
+							action: 'parse',
+							page: normalizedPageName,
+							prop: 'sections',
+						})
+						.catch(handleApiReject)
 
 					if (BaseAutocomplete.currentPromise) {
 						BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
@@ -223,10 +224,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 					resolve(apiResponse)
 				})
 
-				const parsedSections = (response?.parse?.sections || []).map((/** @type {any} */ section) => ({
-					anchor: section.linkAnchor.replace(/_/g, ' '),
-					line: section.line,
-				}))
+				const parsedSections = (response?.parse?.sections || []).map(
+					(/** @type {any} */ section) => ({
+						anchor: section.linkAnchor.replace(/_/g, ' '),
+						line: section.line,
+					}),
+				)
 
 				sections = parsedSections
 
@@ -246,9 +249,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		// Filter and format results
 		const normalizedQuery = this.normalizeSectionName(fragmentQuery)
 		let results = sections
-			.filter((section) =>
-				this.normalizeSectionName(section.line).includes(normalizedQuery)
-			)
+			.filter((section) => this.normalizeSectionName(section.line).includes(normalizedQuery))
 			.sort((a, b) => {
 				// Prioritize prefix matches
 				const aStarts = this.normalizeSectionName(a.line).startsWith(normalizedQuery)
@@ -260,9 +261,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 		// If no matches or empty query, show all sections (up to limit)
 		if (results.length === 0 && fragmentQuery === '') {
-			results = sections
-				.slice(0, 10)
-				.map((section) => `${pageName}#${section.anchor}`)
+			results = sections.slice(0, 10).map((section) => `${pageName}#${section.anchor}`)
 		}
 
 		return results
@@ -345,11 +344,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		return result.replace(
 			new RegExp(
 				// First character pattern
-				'^' + (firstCharUpperCase === firstChar
-					? mw.util.escapeRegExp(firstChar)
-					: '[' + firstCharUpperCase + firstChar + ']')
+				'^' +
+					(firstCharUpperCase === firstChar
+						? mw.util.escapeRegExp(firstChar)
+						: '[' + firstCharUpperCase + firstChar + ']'),
 			),
-			firstChar
+			firstChar,
 		)
 	}
 }

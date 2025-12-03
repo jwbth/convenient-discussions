@@ -3,10 +3,24 @@ import SettingsDialog from './SettingsDialog'
 import TextMasker from './TextMasker'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
-import { areObjectsEqual, defined, definedAndNotNull, subtractDaysFromNow, typedKeysOf, ucFirst } from './shared/utils-general'
+import {
+	areObjectsEqual,
+	defined,
+	definedAndNotNull,
+	subtractDaysFromNow,
+	typedKeysOf,
+	ucFirst,
+} from './shared/utils-general'
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
 import { showConfirmDialog } from './utils-oojs'
-import { createSvg, formatDateImproved, formatDateNative, formatDateRelative, getFooter, wrapHtml } from './utils-window'
+import {
+	createSvg,
+	formatDateImproved,
+	formatDateNative,
+	formatDateRelative,
+	getFooter,
+	wrapHtml,
+} from './utils-window'
 
 /**
  * @typedef {object} SettingsValues
@@ -305,10 +319,8 @@ class Settings extends EventEmitter {
 	initUi() {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const outdentTemplateUrl =
-			(
-				cd.config.outdentTemplates.length &&
-				pageRegistry.get(`Template:${cd.config.outdentTemplates[0]}`)?.getUrl()
-			) ||
+			(cd.config.outdentTemplates.length &&
+				pageRegistry.get(`Template:${cd.config.outdentTemplates[0]}`)?.getUrl()) ||
 			'https://en.wikipedia.org/wiki/Template:Outdent'
 
 		const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43)
@@ -517,7 +529,7 @@ class Settings extends EventEmitter {
 						maxLength: 100,
 						label: cd.s('sd-signatureprefix'),
 						help: wrapHtml(
-							cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')
+							cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting'),
 						),
 					},
 				],
@@ -531,7 +543,7 @@ class Settings extends EventEmitter {
 						type: this.scheme.controlTypes.useUiTime,
 						label: wrapHtml(
 							cd.sParse('sd-useuitime', 'Special:Preferences#mw-prefsection-rendering-timeoffset'),
-							{ targetBlank: true }
+							{ targetBlank: true },
 						),
 					},
 					{
@@ -553,7 +565,7 @@ class Settings extends EventEmitter {
 								label: cd.s(
 									'sd-timestampformat-radio-improved',
 									exampleImproved1,
-									exampleImproved2
+									exampleImproved2,
 								),
 							},
 							{
@@ -561,7 +573,7 @@ class Settings extends EventEmitter {
 								label: cd.s(
 									'sd-timestampformat-radio-relative',
 									exampleRelative1,
-									exampleRelative2
+									exampleRelative2,
 								),
 							},
 						],
@@ -680,8 +692,10 @@ class Settings extends EventEmitter {
 
 		// If the user has never changed the insert buttons configuration, it should change with the
 		// default configuration change.
-		if (!this.values['insertButtons-altered'] &&
-			JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)) {
+		if (
+			!this.values['insertButtons-altered'] &&
+			JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
+		) {
 			this.values.insertButtons = cd.config.defaultInsertButtons
 		}
 
@@ -700,15 +714,15 @@ class Settings extends EventEmitter {
 
 		// Migrate users from the old commentDisplay boolean setting to the new commentDisplay string
 		// union setting
-		if (/** @type {any} */(remoteSettings).reformatComments === true) {
+		if (/** @type {any} */ (remoteSettings).reformatComments === true) {
 			this.values.commentDisplay = 'spacious'
-		} else if (/** @type {any} */(remoteSettings).reformatComments === false) {
+		} else if (/** @type {any} */ (remoteSettings).reformatComments === false) {
 			this.values.commentDisplay = 'compact'
 		}
 
 		if (!areObjectsEqual(this.values, remoteSettings)) {
 			this.save().catch((/** @type {unknown} */ error) => {
-				console.warn('Couldn\'t save the settings to the server.', error)
+				console.warn("Couldn't save the settings to the server.", error)
 			})
 		}
 
@@ -734,13 +748,9 @@ class Settings extends EventEmitter {
 	 *   request.
 	 * @returns {Promise.<Partial<SettingsValues>>}
 	 */
-	async load({
-		options,
-		omitLocal = false,
-		reuse = false,
-	} = {}) {
+	async load({ options, omitLocal = false, reuse = false } = {}) {
 		if (!options?.[cd.g.settingsOptionName]) {
-			({ options } = await getUserInfo(reuse))
+			;({ options } = await getUserInfo(reuse))
 		}
 
 		let globalSettings
@@ -776,16 +786,15 @@ class Settings extends EventEmitter {
 	 */
 	getSettingPropertiesOfObject(source, prefix, defaults = this.scheme.default) {
 		return typedKeysOf(defaults).reduce((target, name) => {
-			(this.scheme.aliases[name] || [])
+			;(this.scheme.aliases[name] || [])
 				.concat(name)
-				.map((alias) => prefix ? prefix + ucFirst(alias) : alias)
-				.filter((prop) =>
-					source[prop] !== undefined &&
-					(
-						typeof source[prop] === typeof defaults[name] ||
-						defaults[name] === null ||
-						this.scheme.allowNoTypeMatch.includes(name)
-					)
+				.map((alias) => (prefix ? prefix + ucFirst(alias) : alias))
+				.filter(
+					(prop) =>
+						source[prop] !== undefined &&
+						(typeof source[prop] === typeof defaults[name] ||
+							defaults[name] === null ||
+							this.scheme.allowNoTypeMatch.includes(name)),
 				)
 				.forEach((prop) => {
 					target[name] = source[prop]
@@ -825,7 +834,7 @@ class Settings extends EventEmitter {
 	set(nameOrValues, value) {
 		Object.assign(
 			this.values,
-			typeof nameOrValues === 'string' ? { [nameOrValues]: value } : nameOrValues
+			typeof nameOrValues === 'string' ? { [nameOrValues]: value } : nameOrValues,
 		)
 		this.emit('set', this)
 	}
@@ -873,9 +882,9 @@ class Settings extends EventEmitter {
 			const localSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({})
 			typedKeysOf(settings).forEach((key) => {
 				if (this.scheme.local.includes(key)) {
-					/** @type {(typeof settings)[key]} */ (localSettings[key]) = settings[key]
+					/** @type {(typeof settings)[key]} */ ;(localSettings[key]) = settings[key]
 				} else {
-					/** @type {(typeof settings)[key]} */ (globalSettings[key]) = settings[key]
+					/** @type {(typeof settings)[key]} */ ;(globalSettings[key]) = settings[key]
 				}
 			})
 
@@ -915,13 +924,11 @@ class Settings extends EventEmitter {
 	async showDialog(initalPageName, focusSelector) {
 		if (this.dialogPromise) return
 
-		this.dialogPromise = Promise.all([
-			this.load({ omitLocal: true }),
-		])
+		this.dialogPromise = Promise.all([this.load({ omitLocal: true })])
 
 		let loadedSettings
 		try {
-			[loadedSettings] = await this.dialogPromise
+			;[loadedSettings] = await this.dialogPromise
 		} catch {
 			mw.notify(cd.s('error-settings-load'), { type: 'error' })
 
@@ -956,19 +963,25 @@ class Settings extends EventEmitter {
 					$('<img>')
 						.attr('width', 626)
 						.attr('height', 67)
-						.attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
+						.attr(
+							'src',
+							'//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png',
+						)
 						.addClass('cd-rcnotice-img'),
 					$('<div>')
 						.addClass('cd-rcnotice-img cd-rcnotice-arrow cd-icon')
 						.append(
 							createSvg(30, 30, 20, 20).html(
-								`<path d="M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z" />`
-							)
+								`<path d="M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z" />`,
+							),
 						),
 					$('<img>')
 						.attr('width', 626)
 						.attr('height', 118)
-						.attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
+						.attr(
+							'src',
+							'//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png',
+						)
 						.addClass('cd-rcnotice-img'),
 					$('<div>')
 						.addClass('cd-rcnotice-text')
@@ -982,7 +995,7 @@ class Settings extends EventEmitter {
 										this.showDialog('talkPage', '.cd-setting-commentDisplay')
 									},
 								},
-							}).children()
+							}).children(),
 						),
 				)
 				.children(),
@@ -1083,8 +1096,8 @@ class Settings extends EventEmitter {
 					.text(cd.s('footer-settings'))
 					.on('click', () => {
 						this.showDialog()
-					})
-			)
+					}),
+			),
 		)
 	}
 }

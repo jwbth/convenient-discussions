@@ -30,13 +30,15 @@ jest.mock('../src/settings', () => ({
 	}),
 }))
 
-jest.mock('../src/tribute/Tribute', () => jest.fn().mockImplementation((config) => ({
-	config,
-	attach: jest.fn(),
-	detach: jest.fn(),
-	menu: null, // Will be set in tests
-	current: { element: null },
-})))
+jest.mock('../src/tribute/Tribute', () =>
+	jest.fn().mockImplementation((config) => ({
+		config,
+		attach: jest.fn(),
+		detach: jest.fn(),
+		menu: null, // Will be set in tests
+		current: { element: null },
+	})),
+)
 
 jest.mock('../src/utils-api', () => ({
 	handleApiReject: jest.fn((error) => Promise.reject(error)),
@@ -66,7 +68,8 @@ global.OO = {
 }
 
 describe('AutocompleteManager', () => {
-	let mockInput1; let mockInput2
+	let mockInput1
+	let mockInput2
 	let mockAutocompleteInstance
 
 	beforeEach(() => {
@@ -232,18 +235,22 @@ describe('AutocompleteManager', () => {
 				return null
 			})
 
-			expect(new AutocompleteManager({
-				types: ['mentions', 'wikilinks', 'templates'],
-				inputs: [mockInput1],
-			}).autocompleteInstances.size).toBe(3)
+			expect(
+				new AutocompleteManager({
+					types: ['mentions', 'wikilinks', 'templates'],
+					inputs: [mockInput1],
+				}).autocompleteInstances.size,
+			).toBe(3)
 			expect(AutocompleteFactory.create).toHaveBeenCalledTimes(3)
 		})
 
 		it('should handle empty types array', () => {
-			expect(new AutocompleteManager({
-				types: [],
-				inputs: [mockInput1],
-			}).autocompleteInstances.size).toBe(0)
+			expect(
+				new AutocompleteManager({
+					types: [],
+					inputs: [mockInput1],
+				}).autocompleteInstances.size,
+			).toBe(0)
 			expect(AutocompleteFactory.create).not.toHaveBeenCalled()
 		})
 	})

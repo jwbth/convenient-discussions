@@ -125,7 +125,7 @@ class CommentLayers {
 		this.overlay = this.getOverlayPrototype()
 		this.line = /** @type {HTMLElement} */ (this.overlay.firstChild)
 		this.marker = /** @type {HTMLElement} */ (
-		/** @type {HTMLElement} */ (this.overlay.firstChild).nextSibling
+			/** @type {HTMLElement} */ (this.overlay.firstChild).nextSibling
 		)
 
 		this.updateStyles(true)
@@ -165,17 +165,17 @@ class CommentLayers {
 	 */
 	destroy() {
 		this.underlay.remove()
-		this.overlay.remove();
+		this.overlay.remove()
 
 		// Note: Properties are set to undefined for cleanup, but TypeScript expects them to always exist
 		// This is acceptable since destroy() should only be called when the comment is being removed
-		/** @type {any} */ (this).underlay = undefined;
-		/** @type {any} */ (this).overlay = undefined;
-		/** @type {any} */ (this).line = undefined;
-		/** @type {any} */ (this).marker = undefined;
-		/** @type {any} */ (this).$underlay = undefined;
-		/** @type {any} */ (this).$overlay = undefined;
-		/** @type {any} */ (this).$marker = undefined
+		/** @type {any} */ ;(this).underlay = undefined
+		/** @type {any} */ ;(this).overlay = undefined
+		/** @type {any} */ ;(this).line = undefined
+		/** @type {any} */ ;(this).marker = undefined
+		/** @type {any} */ ;(this).$underlay = undefined
+		/** @type {any} */ ;(this).$overlay = undefined
+		/** @type {any} */ ;(this).$marker = undefined
 	}
 
 	/**
@@ -214,7 +214,7 @@ class CommentLayers {
 		}
 
 		if (flag === 'hovered' && !add && /** @type {any} */ (this).overlayInnerWrapper) {
-			/** @type {any} */ (this).overlayInnerWrapper.style.display = ''
+			/** @type {any} */ ;(this).overlayInnerWrapper.style.display = ''
 		}
 	}
 
@@ -294,7 +294,8 @@ class CommentLayers {
 			this.offset = {
 				top: this.comment.offset.top - containerOffset.top,
 				left: this.comment.offset.left - margins.left - containerOffset.left,
-				width: this.comment.offset.right + margins.right - (this.comment.offset.left - margins.left),
+				width:
+					this.comment.offset.right + margins.right - (this.comment.offset.left - margins.left),
 				height: this.comment.offset.bottom - this.comment.offset.top,
 			}
 		} else {
@@ -340,9 +341,7 @@ class CommentLayers {
 
 			callback?.()
 			// Check if this is a CompactCommentLayers instance by checking for $overlayGradient property
-			$background.add(
-				/** @type {any} */ (layers).$overlayGradient || $()
-			).css(propertyDefaults)
+			$background.add(/** @type {any} */ (layers).$overlayGradient || $()).css(propertyDefaults)
 		})
 	}
 
@@ -383,13 +382,13 @@ class CommentLayers {
 		this.$marker.css({
 			backgroundColor: initialMarkerColor,
 			opacity: 1,
-		});
-		/** @type {JQuery} */ (this.$animatedBackground).css({
+		})
+		/** @type {JQuery} */ ;(this.$animatedBackground).css({
 			backgroundColor: initialBackgroundColor,
 		})
 		// Check if this is a CompactCommentLayers instance by checking for $overlayGradient property
 		if (/** @type {any} */ (this).$overlayGradient) {
-			/** @type {any} */ (this).$overlayGradient.css({ backgroundImage: 'none' })
+			/** @type {any} */ ;(this).$overlayGradient.css({ backgroundImage: 'none' })
 		}
 
 		this.animateToColors(finalMarkerColor, finalBackgroundColor, callback)
@@ -417,9 +416,7 @@ class CommentLayers {
 		 * @type {JQuery|undefined}
 		 */
 		// Check if this is a CompactCommentLayers instance by checking for $overlayMenu property
-		this.$animatedBackground = this.$underlay.add(
-			/** @type {any} */ (this).$overlayMenu || $()
-		)
+		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
 
 		// Reset animations and colors
 		this.$animatedBackground.add(this.$marker).stop(true, true)
@@ -494,9 +491,11 @@ class CommentLayers {
 				// anything here.
 				this.comment.elements.length === 1 ||
 				this.comment.parser.getNestingLevel(this.comment.elements[0]) <=
-				this.comment.parser.getNestingLevel(this.comment.elements[this.comment.elements.length - 1])
+					this.comment.parser.getNestingLevel(
+						this.comment.elements[this.comment.elements.length - 1],
+					)
 					? this.comment.elements[0]
-					: this.comment.elements[this.comment.elements.length - 1]
+					: this.comment.elements[this.comment.elements.length - 1],
 			)
 
 			while (treeWalker.parentNode()) {
@@ -514,10 +513,8 @@ class CommentLayers {
 				const classList = new Set(Array.from(node.classList))
 				if (
 					['absolute', 'relative'].includes(style.position) ||
-					(
-						node !== bootManager.$content[0] &&
-						(classList.has('mw-content-ltr') || classList.has('mw-content-rtl'))
-					)
+					(node !== bootManager.$content[0] &&
+						(classList.has('mw-content-ltr') || classList.has('mw-content-rtl')))
 				) {
 					offsetParent = node
 				}
@@ -539,7 +536,7 @@ class CommentLayers {
 				offsetParent.insertBefore(container, offsetParent.firstChild)
 
 				container.cdIsTopLayersContainer = !container.parentElement?.parentElement?.closest(
-					'.cd-commentLayersContainer-parent'
+					'.cd-commentLayersContainer-parent',
 				)
 			}
 			this.container = container

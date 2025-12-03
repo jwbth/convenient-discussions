@@ -31,14 +31,12 @@ export default {
 			name = name.slice(0, name.indexOf('#'))
 		}
 		name = (
-			mw.util.isIPv6Address(name)
-				? name.toUpperCase()
-				: underlinesToSpaces(ucFirst(name))
+			mw.util.isIPv6Address(name) ? name.toUpperCase() : underlinesToSpaces(ucFirst(name))
 		).trim()
 		if (!(name in this.items)) {
 			this.items[name] = new User(
 				name,
-				name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {}
+				name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {},
 			)
 		}
 
@@ -73,11 +71,10 @@ export default {
 		const mutedUsersStorage = /** @type {StorageItem<MutedUsers>} */ (new StorageItem('mutedUsers'))
 		const mutedUsers = mutedUsersStorage.getData()
 		if (
-		// This comes from the local storage, the value may be corrupt
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			// This comes from the local storage, the value may be corrupt
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			!mutedUsers.users ||
 			userIds.some((id) => !(id in mutedUsers.users)) ||
-
 			// Users can be renamed, so we can cache for a week max.
 			mutedUsers.saveTime < subtractDaysFromNow(7)
 		) {
@@ -88,9 +85,17 @@ export default {
 					})
 					mutedUsersStorage
 						.setData({
-							users: /** @type {StringsByKey} */ (Object.assign({}, ...users.map((user) => ({
-								[/** @type {number} */ (user.getGlobalId())]: user.getName(),
-							}), {}))),
+							users: /** @type {StringsByKey} */ (
+								Object.assign(
+									{},
+									...users.map(
+										(user) => ({
+											[/** @type {number} */ (user.getGlobalId())]: user.getName(),
+										}),
+										{},
+									),
+								)
+							),
 							saveTime: Date.now(),
 						})
 						.save()
@@ -105,8 +110,8 @@ export default {
 					mw.hook('convenientDiscussions.mutedUsers').fire(users)
 				},
 				(/** @type {unknown} */ error) => {
-					console.error('Couldn\'t load the names of the muted users.', error)
-				}
+					console.error("Couldn't load the names of the muted users.", error)
+				},
 			)
 		} else {
 			const users = Object.entries(mutedUsers.users).map(([, name]) => this.get(name))
@@ -134,8 +139,8 @@ export default {
 							meta: 'globaluserinfo',
 							guiid: id,
 						})
-						.catch(handleApiReject)
-				)
+						.catch(handleApiReject),
+				),
 			)
 		)
 

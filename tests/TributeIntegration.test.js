@@ -61,12 +61,14 @@ jest.mock('../src/cd.js', () => ({
 	}),
 }))
 
-jest.mock('../src/TextInputWidget.js', () => jest.fn().mockImplementation(() => ({
-	setDisabled: jest.fn().mockReturnThis(),
-	pushPending: jest.fn().mockReturnThis(),
-	popPending: jest.fn().mockReturnThis(),
-	focus: jest.fn().mockReturnThis(),
-})))
+jest.mock('../src/TextInputWidget.js', () =>
+	jest.fn().mockImplementation(() => ({
+		setDisabled: jest.fn().mockReturnThis(),
+		pushPending: jest.fn().mockReturnThis(),
+		popPending: jest.fn().mockReturnThis(),
+		focus: jest.fn().mockReturnThis(),
+	})),
+)
 
 jest.mock('../src/settings.js', () => ({
 	get: jest.fn((key) => {
@@ -87,13 +89,17 @@ jest.mock('../src/Comment.js', () => ({}))
 jest.mock('../src/LiveTimestamp.js', () => ({}))
 jest.mock('../src/commentRegistry.js', () => ({}))
 jest.mock('../src/sectionRegistry.js', () => ({}))
-jest.mock('../src/EventEmitter.js', () => class EventEmitter {
-	on() {}
+jest.mock(
+	'../src/EventEmitter.js',
+	() =>
+		class EventEmitter {
+			on() {}
 
-	off() {}
+			off() {}
 
-	emit() {}
-})
+			emit() {}
+		},
+)
 
 describe('Tribute Integration Compatibility', () => {
 	let mockInput
