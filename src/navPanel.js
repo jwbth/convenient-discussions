@@ -204,7 +204,8 @@ class NavPanel {
 		if (!this.isMounted()) return
 
 		this.$element.remove()
-		/** @type {{ $element: undefined }} */ ;(this).$element = undefined
+		// prettier-ignore
+		{ /** @type {{ $element: undefined }} */ (this).$element = undefined }
 	}
 
 	/**

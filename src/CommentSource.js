@@ -76,7 +76,8 @@ class CommentSource {
 			.withText((text, textMasker) => {
 				this.headingMatch = text.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\u0001\u0002]*\n)/)
 				this.headingMatch?.forEach((group, i) => {
-					/** @type {RegExpMatchArray} */ ;(this.headingMatch)[i] = textMasker.unmaskText(group)
+					// prettier-ignore
+					{ /** @type {RegExpMatchArray} */ (this.headingMatch)[i] = textMasker.unmaskText(group) }
 				})
 
 				return text

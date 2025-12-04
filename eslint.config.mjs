@@ -160,7 +160,6 @@ const config = defineConfig(
 			'no-else-return': 'error',
 			'prefer-regex-literals': 'error',
 			'eqeqeq': 'error',
-			'no-lone-blocks': 'error',
 			'prefer-object-spread': 'error',
 
 			// Limits on sizes
