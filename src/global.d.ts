@@ -40,6 +40,13 @@ declare global {
 		reject: (reason?: any) => void,
 	) => Promise<void>
 
+	/**
+	 * Picks only keys from T whose value is V.
+	 */
+	type OnlyKeysWithValue<T, V extends string> = {
+		[K in keyof T]: T[K] extends V ? K : never
+	}[keyof T]
+
 	interface ApiResponseQueryPage {
 		title: string
 		pageid: number | undefined

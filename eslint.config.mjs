@@ -539,6 +539,12 @@ const config = defineConfig(
 			'unicorn/require-module-specifiers': 'off',
 			'@stylistic/operator-linebreak': 'off',
 
+			// Messes with `new <...>(...)`
+			'@stylistic/type-generic-spacing': 'off',
+
+			// Prettier adds some, e.g. to src\global.d.ts
+			'@stylistic/no-mixed-spaces-and-tabs': 'off',
+
 			'@typescript-eslint/adjacent-overload-signatures': 'error',
 			'@typescript-eslint/consistent-type-imports': 'error',
 			'@typescript-eslint/no-empty-interface': 'error',

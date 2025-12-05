@@ -276,7 +276,7 @@ class SettingsDialog extends ProcessDialog {
 	/**
 	 * Create widget fields with states of controls set according to setting values.
 	 *
-	 * @param {Expand<Partial<import('./settings').SettingsValues>>} settingValues Values of settings
+	 * @param {Partial<import('./settings').SettingsValues>} settingValues Values of settings
 	 *   according to which to set the states of controls.
 	 * @returns {OO.ui.PageLayout[]}
 	 * @protected
@@ -287,36 +287,21 @@ class SettingsDialog extends ProcessDialog {
 			const $fields = pageData.controls.map((data) => {
 				const name = data.name
 
-				/**
-				 * Picks only keys from T whose value is V.
-				 *
-				 * @template T
-				 * @template {string} V
-				 * @typedef {(
-				 *   { [K in keyof T]: T[K] extends V ? K : never }[keyof T]
-				 * )} OnlyKeysWithValue
-				 */
-
-				/**
-				 * @template {string} T
-				 * @typedef {OnlyKeysWithValue<typeof settings.scheme.controlTypes, T>} OnlySettingsOfType
-				 */
-
 				switch (data.type) {
 					case 'checkbox': {
-						const nameTyped = /** @type {OnlySettingsOfType<'checkbox'>} */ (name)
+						const nameTyped = /** @type {import('./settings').OnlySettingsOfType<'checkbox'>} */ (
+							name
+						)
 						this.controls[nameTyped] = createCheckboxControl({
 							.../** @type {import('./utils-oojs').CheckboxControlOptions} */ (data),
-							selected: /** @type {boolean} */ (
-								settingValues[nameTyped]
-							),
+							selected: /** @type {boolean} */ (settingValues[nameTyped]),
 						})
 						this.controls[nameTyped].input.on('change', this.updateAbilities)
 						break
 					}
 
 					case 'radio': {
-						const nameTyped = /** @type {OnlySettingsOfType<'radio'>} */ (name)
+						const nameTyped = /** @type {import('./settings').OnlySettingsOfType<'radio'>} */ (name)
 						this.controls[nameTyped] = createRadioControl({
 							.../** @type {import('./utils-oojs').RadioControlOptions} */ (data),
 							selected: /** @type {string} */ (settingValues[nameTyped]),
@@ -326,19 +311,19 @@ class SettingsDialog extends ProcessDialog {
 					}
 
 					case 'text': {
-						const nameTyped = /** @type {OnlySettingsOfType<'text'>} */ (name)
+						const nameTyped = /** @type {import('./settings').OnlySettingsOfType<'text'>} */ (name)
 						this.controls[nameTyped] = createTextControl({
 							.../** @type {import('./utils-oojs').TextControlOptions} */ (data),
-							value: /** @type {string} */ (
-								settingValues[nameTyped]
-							),
+							value: /** @type {string} */ (settingValues[nameTyped]),
 						})
 						this.controls[nameTyped].input.on('change', this.updateAbilities)
 						break
 					}
 
 					case 'number': {
-						const nameTyped = /** @type {OnlySettingsOfType<'number'>} */ (name)
+						const nameTyped = /** @type {import('./settings').OnlySettingsOfType<'number'>} */ (
+							name
+						)
 						this.controls[nameTyped] = createNumberControl({
 							.../** @type {import('./utils-oojs').NumberControlOptions} */ (data),
 							value: /** @type {string} */ (/** @type {unknown} */ (settingValues[nameTyped])),
@@ -348,19 +333,20 @@ class SettingsDialog extends ProcessDialog {
 					}
 
 					case 'multicheckbox': {
-						const nameTyped = /** @type {OnlySettingsOfType<'multicheckbox'>} */ (name)
-						this.controls[nameTyped] = createMulticheckboxControl(
-							{
-								.../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
-								selected: /** @type {string[]} */ (settingValues[nameTyped]),
-							},
-						)
+						const nameTyped =
+							/** @type {import('./settings').OnlySettingsOfType<'multicheckbox'>} */ (name)
+						this.controls[nameTyped] = createMulticheckboxControl({
+							.../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
+							selected: /** @type {string[]} */ (settingValues[nameTyped]),
+						})
 						this.controls[nameTyped].input.on('select', this.updateAbilities)
 						break
 					}
 
 					case 'multitag': {
-						const nameTyped = /** @type {OnlySettingsOfType<'multitag'>} */ (name)
+						const nameTyped = /** @type {import('./settings').OnlySettingsOfType<'multitag'>} */ (
+							name
+						)
 						this.controls[nameTyped] = createMultitagControl({
 							.../** @type {import('./utils-oojs').MultitagControlOptions} */ (data),
 							selected: /** @type {string[]} */ (settingValues[nameTyped]),
@@ -370,7 +356,9 @@ class SettingsDialog extends ProcessDialog {
 					}
 
 					case 'button': {
-						const nameTyped = /** @type {OnlySettingsOfType<'button'>} */ (name)
+						const nameTyped = /** @type {import('./settings').OnlySettingsOfType<'button'>} */ (
+							name
+						)
 						this.controls[nameTyped] = createButtonControl({
 							.../** @type {import('./utils-oojs').ButtonControlOptions} */ (data),
 						})
@@ -397,7 +385,8 @@ class SettingsDialog extends ProcessDialog {
 					 * @override
 					 */
 					setupOutlineItem() {
-						/** @type {OO.ui.OutlineOptionWidget} */ ;(this.outlineItem).setLabel(pageData.label)
+						const outlineItem = /** @type {OO.ui.OutlineOptionWidget} */ (this.outlineItem)
+						outlineItem.setLabel(pageData.label)
 					}
 				},
 			))()
@@ -438,7 +427,7 @@ class SettingsDialog extends ProcessDialog {
 	 */
 	getStateSettings() {
 		return settings.scheme.states.reduce((obj, state) => {
-			/** @type {(typeof this.loadedSettings)[state]} */ ;(obj[state]) = this.loadedSettings[state]
+			obj[state] = /** @type {any} */ (this.loadedSettings[state])
 
 			return obj
 		}, /** @type {Partial<import('./settings').SettingsValues>} */ ({}))
@@ -459,32 +448,48 @@ class SettingsDialog extends ProcessDialog {
 				 */
 
 				switch (control.type) {
-					case 'checkbox':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.isSelected()
+					case 'checkbox': {
+						const nTyped = /** @type {import('./settings').OnlySettingsOfType<'checkbox'>} */ (n)
+						settingsValues[nTyped] = control.input.isSelected()
 						break
-					case 'radio':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) =
-							/** @type {string | undefined} */ (control.input.findSelectedItem()?.getData()) ||
-							settings.scheme.default[n]
-						break
-					case 'text':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.getValue()
-						break
-					case 'number':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = Number(
-							control.input.getValue(),
+					}
+
+					case 'radio': {
+						const nTyped = /** @type {import('./settings').OnlySettingsOfType<'radio'>} */ (n)
+						settingsValues[nTyped] = /** @type {any} */ (
+							control.input.findSelectedItem()?.getData() || settings.scheme.default[nTyped]
 						)
 						break
-					case 'multicheckbox':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = /** @type {string[]} */ (
-							control.input.findSelectedItemsData()
+					}
+
+					case 'text': {
+						const nTyped = /** @type {import('./settings').OnlySettingsOfType<'text'>} */ (n)
+						settingsValues[nTyped] = control.input.getValue()
+						break
+					}
+
+					case 'number': {
+						const nTyped = /** @type {import('./settings').OnlySettingsOfType<'number'>} */ (n)
+						settingsValues[nTyped] = Number(control.input.getValue())
+						break
+					}
+
+					case 'multicheckbox': {
+						const nTyped = /** @type {import('./settings').OnlySettingsOfType<'multicheckbox'>} */ (
+							n
+						)
+						settingsValues[nTyped] = /** @type {any} */ (control.input.findSelectedItemsData())
+						break
+					}
+
+					case 'multitag': {
+						const nTyped = /** @type {import('./settings').OnlySettingsOfType<'multitag'>} */ (n)
+						settingsValues[nTyped] = (control.uiToData || ((val) => val)).call(
+							null,
+							/** @type {string[]} */ (control.input.getValue()),
 						)
 						break
-					case 'multitag':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = (
-							control.uiToData || ((val) => val)
-						).call(null, /** @type {string[]} */ (control.input.getValue()))
-						break
+					}
 				}
 
 				return settingsValues

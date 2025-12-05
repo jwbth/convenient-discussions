@@ -98,6 +98,11 @@ import {
  */
 
 /**
+ * @template {string} T
+ * @typedef {OnlyKeysWithValue<Settings['scheme']['controlTypes'], T>} OnlySettingsOfType
+ */
+
+/**
  * Singleton for settings-related methods and data.
  *
  * @augments EventEmitter<EventMap>
@@ -882,9 +887,9 @@ class Settings extends EventEmitter {
 			const localSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({})
 			typedKeysOf(settings).forEach((key) => {
 				if (this.scheme.local.includes(key)) {
-					/** @type {(typeof settings)[key]} */ ;(localSettings[key]) = settings[key]
+					localSettings[key] = /** @type {any} */ (settings[key])
 				} else {
-					/** @type {(typeof settings)[key]} */ ;(globalSettings[key]) = settings[key]
+					globalSettings[key] = /** @type {any} */ (settings[key])
 				}
 			})
 
