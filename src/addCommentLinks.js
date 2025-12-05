@@ -219,10 +219,8 @@ function processWatchlist($content) {
 		const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks')
 		if (!destination) return
 
-		/** @type {HTMLElement} */ ;(destination.parentElement).insertBefore(
-			wrapper,
-			destination.nextSibling,
-		)
+		const destinationParent = /** @type {HTMLElement} */ (destination.parentElement)
+		destinationParent.insertBefore(wrapper, destination.nextSibling)
 	})
 }
 
@@ -290,10 +288,8 @@ function processContributions($content) {
 				destination.nextSibling.textContent = destination.nextSibling.textContent.replace(/^\s/, '')
 			}
 		}
-		/** @type {HTMLElement} */ ;(destination.parentElement).insertBefore(
-			wrapper,
-			destination.nextSibling,
-		)
+		const destinationParent = /** @type {HTMLElement} */ (destination.parentElement)
+		destinationParent.insertBefore(wrapper, destination.nextSibling)
 	})
 }
 
@@ -353,10 +349,8 @@ function processHistory($content) {
 			[...line.querySelectorAll('.mw-changeslist-separator')].at(-1)
 		if (!destination) return
 
-		/** @type {HTMLElement} */ ;(destination.parentElement).insertBefore(
-			wrapper,
-			destination.nextSibling,
-		)
+		const destinationParent = /** @type {HTMLElement} */ (destination.parentElement)
+		destinationParent.insertBefore(wrapper, destination.nextSibling)
 	})
 }
 
@@ -449,7 +443,8 @@ function processDiff($diff) {
 					linkElement.href = '#' + id
 					linkElement.addEventListener('click', (event) => {
 						event.preventDefault()
-						/** @type {NonNullable<typeof comment>} */ ;(comment).scrollTo({
+						const commentTyped = /** @type {NonNullable<typeof comment>} */ (comment)
+						commentTyped.scrollTo({
 							smooth: false,
 							pushState: true,
 							expandThreads: true,

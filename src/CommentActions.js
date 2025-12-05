@@ -1,5 +1,5 @@
-import cd from './loader/cd'
 import commentManager from './commentManager'
+import cd from './loader/cd'
 
 /**
  * @typedef {import('./CommentButton').default} CommentButton
@@ -128,7 +128,8 @@ class CommentActions {
 	 * Reusable action for go to child button.
 	 */
 	onGoToChildAction = () => {
-		/** @type {import('./Comment').default} */ ;(this.comment.targetChild).scrollTo({
+		const targetChild = /** @type {import('./Comment').default} */ (this.comment.targetChild)
+		targetChild.scrollTo({
 			pushState: true,
 		})
 	}

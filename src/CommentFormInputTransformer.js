@@ -441,7 +441,8 @@ class CommentFormInputTransformer extends TextMasker {
 				this.isTargetOpeningSection() &&
 				this.target.source.code.startsWith('\n'))
 		) {
-			/** @type {this} */ ;(this).text = '\n' + /** @type {this} */ (this).text
+			const thisTyped = /** @type {this} */ (this)
+			thisTyped.text = '\n' + thisTyped.text
 		}
 		this.text = `${equalSigns} ${headline} ${equalSigns}\n${this.text}`
 

@@ -268,10 +268,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			}
 		}
 
-		/** @type {NonNullable<typeof this.diffOption>} */ ;(this.diffOption).setDisabled(
-			Boolean(errorText),
-		)
-		/** @type {NonNullable<typeof this.diffOption>} */ ;(this.diffOption).setTitle(errorText || '')
+		const diffOptionTyped = /** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption)
+		diffOptionTyped.setDisabled(Boolean(errorText))
+		diffOptionTyped.setTitle(errorText || '')
 	}
 
 	/**

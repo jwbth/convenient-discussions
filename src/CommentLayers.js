@@ -169,13 +169,14 @@ class CommentLayers {
 
 		// Note: Properties are set to undefined for cleanup, but TypeScript expects them to always exist
 		// This is acceptable since destroy() should only be called when the comment is being removed
-		/** @type {any} */ ;(this).underlay = undefined
-		/** @type {any} */ ;(this).overlay = undefined
-		/** @type {any} */ ;(this).line = undefined
-		/** @type {any} */ ;(this).marker = undefined
-		/** @type {any} */ ;(this).$underlay = undefined
-		/** @type {any} */ ;(this).$overlay = undefined
-		/** @type {any} */ ;(this).$marker = undefined
+		const thisTyped = /** @type {any} */ (this)
+		thisTyped.underlay = undefined
+		thisTyped.overlay = undefined
+		thisTyped.line = undefined
+		thisTyped.marker = undefined
+		thisTyped.$underlay = undefined
+		thisTyped.$overlay = undefined
+		thisTyped.$marker = undefined
 	}
 
 	/**
@@ -214,7 +215,8 @@ class CommentLayers {
 		}
 
 		if (flag === 'hovered' && !add && /** @type {any} */ (this).overlayInnerWrapper) {
-			/** @type {any} */ ;(this).overlayInnerWrapper.style.display = ''
+			const thisTyped = /** @type {any} */ (this)
+			thisTyped.overlayInnerWrapper.style.display = ''
 		}
 	}
 
@@ -383,12 +385,14 @@ class CommentLayers {
 			backgroundColor: initialMarkerColor,
 			opacity: 1,
 		})
-		/** @type {JQuery} */ ;(this.$animatedBackground).css({
+		const animatedBackgroundTyped = /** @type {JQuery} */ (this.$animatedBackground)
+		animatedBackgroundTyped.css({
 			backgroundColor: initialBackgroundColor,
 		})
 		// Check if this is a CompactCommentLayers instance by checking for $overlayGradient property
 		if (/** @type {any} */ (this).$overlayGradient) {
-			/** @type {any} */ ;(this).$overlayGradient.css({ backgroundImage: 'none' })
+			const thisTyped = /** @type {any} */ (this)
+			thisTyped.$overlayGradient.css({ backgroundImage: 'none' })
 		}
 
 		this.animateToColors(finalMarkerColor, finalBackgroundColor, callback)

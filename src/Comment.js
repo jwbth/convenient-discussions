@@ -661,7 +661,10 @@ class Comment extends CommentSkeleton {
 			flags: ['progressive', 'primary'],
 		})
 		button.on('click', () => {
-			/** @type {OO.ui.PopupWidget} */ ;(this.toggleChildThreadsPopup).toggle(false)
+			const toggleChildThreadsPopupTyped = /** @type {OO.ui.PopupWidget} */ (
+				this.toggleChildThreadsPopup
+			)
+			toggleChildThreadsPopupTyped.toggle(false)
 		})
 		this.toggleChildThreadsPopup = new OO.ui.PopupWidget({
 			icon: 'newspaper',

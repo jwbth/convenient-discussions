@@ -459,7 +459,8 @@ class CommentFormBuilder {
 		post = unescape(textMasker.unmaskText(post))
 		label = label ? unescape(label) : pre + post
 
-		/** @type {JQuery} */ ;(this.form.$insertButtons).append(
+		const insertButtonsTyped = /** @type {JQuery} */ (this.form.$insertButtons)
+		insertButtonsTyped.append(
 			new Button({
 				label,
 				classes: ['cd-insertButtons-button'],

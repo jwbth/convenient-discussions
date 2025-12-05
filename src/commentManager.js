@@ -599,11 +599,10 @@ export class CommentManager extends EventEmitter {
 		const isObstructingElementHovered = controller.isObstructingElementHovered()
 
 		// Since we've confirmed this is a CompactCommentManager, we know items are CompactComment[]
-		/** @type {import('./CompactComment').default[]} */ ;(this.items)
-			.filter((comment) => Boolean(comment.layers))
-			.forEach((comment) => {
-				comment.updateHoverState(event, isObstructingElementHovered)
-			})
+		const itemsTyped = /** @type {import('./CompactComment').default[]} */ (this.items)
+		itemsTyped.filter((comment) => Boolean(comment.layers)).forEach((comment) => {
+			comment.updateHoverState(event, isObstructingElementHovered)
+		})
 	}
 
 	/**
@@ -684,7 +683,8 @@ export class CommentManager extends EventEmitter {
 		 */
 
 		if (returnComponents) {
-			/** @type {DtIdComponents} */ ;(data).comment = comment
+			const dataTyped = /** @type {DtIdComponents} */ (data)
+			dataTyped.comment = comment
 
 			return /** @type {DtIdComponentsOrComment} */ (data)
 		}
@@ -1168,7 +1168,8 @@ export class CommentManager extends EventEmitter {
 		// If this element is a part of a comment, replace it in the Comment object instance.
 		const commentIndex = element.dataset.cdCommentIndex
 		if (commentIndex === undefined) {
-			/** @type {HTMLElement} */ ;(element.parentElement).replaceChild(newElement, element)
+			const elementParent = /** @type {HTMLElement} */ (element.parentElement)
+			element.replaceWith(newElement)
 		} else {
 			this.items[Number(commentIndex)].replaceElement(element, newElement)
 		}

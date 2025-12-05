@@ -326,9 +326,8 @@ class CommentFormManager extends EventEmitter {
 				?.commentForms.filter((data) => {
 					const target = this.getTargetByData(data.targetData)
 					if (data.targetWithOutdentedRepliesData) {
-						/** @type {import('./CommentForm').CommentFormInitialState} */ ;(
-							data
-						).targetWithOutdentedReplies = /** @type {import('./Comment').default|undefined} */ (
+						const dataTyped = /** @type {import('./CommentForm').CommentFormInitialState} */ (data)
+						dataTyped.targetWithOutdentedReplies = /** @type {import('./Comment').default|undefined} */ (
 							this.getTargetByData(data.targetWithOutdentedRepliesData)
 						)
 					}
@@ -339,11 +338,12 @@ class CommentFormManager extends EventEmitter {
 						!target[CommentForm.getPropertyNameOnTarget(target, data.mode)]
 					) {
 						try {
-							/** @type {import('./CommentForm').CommentFormAddingMethod} */ ;(
+							const targetMethod = /** @type {import('./CommentForm').CommentFormAddingMethod} */ (
 								target[
 									/** @type {keyof typeof target} */ (target.getCommentFormMethodName(data.mode))
 								]
-							)(data, undefined, data.preloadConfig, data.newTopicOnTop)
+							)
+							targetMethod(data, undefined, data.preloadConfig, data.newTopicOnTop)
 							haveRestored = true
 						} catch (error) {
 							console.warn(error)
