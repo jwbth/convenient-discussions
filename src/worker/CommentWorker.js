@@ -190,7 +190,7 @@ export default class CommentWorker extends CommentSkeleton {
 	 * @private
 	 */
 	processReferenceElements(element) {
-		/** @type {import('domhandler').Element[]} */ ;(
+		const filteredElements = /** @type {import('domhandler').Element[]} */ (
 			element.filterRecursively(
 				(node) =>
 					isElement(node) &&
@@ -199,7 +199,8 @@ export default class CommentWorker extends CommentSkeleton {
 					) ||
 						isMetadataNode(node)),
 			)
-		).forEach((el) => {
+		)
+		filteredElements.forEach((el) => {
 			this.hideElement(el)
 		})
 	}

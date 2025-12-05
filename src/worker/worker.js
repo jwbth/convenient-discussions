@@ -59,20 +59,19 @@ function setAlarm(interval) {
  */
 function getAllTextNodes() {
 	const nodes = /** @type {import('domhandler').Text[]} */ ([])
-	/** @type {import('domhandler').Element} */ ;(rootElement).traverseSubtree(
-		(/** @type {import('domhandler').Node} */ node) => {
-			if (isText(node)) {
-				nodes.push(node)
-			}
+	const rootElementTyped = /** @type {import('domhandler').Element} */ (rootElement)
+	rootElementTyped.traverseSubtree((/** @type {import('domhandler').Node} */ node) => {
+		if (isText(node)) {
+			nodes.push(node)
+		}
 
-			// Remove DT reply button html comments as well to optimize.
-			if (isComment(node) && node.data.startsWith('__DTREPLYBUTTONS__')) {
-				node.remove()
-			}
+		// Remove DT reply button html comments as well to optimize.
+		if (isComment(node) && node.data.startsWith('__DTREPLYBUTTONS__')) {
+			node.remove()
+		}
 
-			return false
-		},
-	)
+		return false
+	})
 
 	return nodes
 }

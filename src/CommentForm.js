@@ -1273,9 +1273,10 @@ class CommentForm extends EventEmitter {
 			code = code.trim()
 
 			if (code.includes(cd.g.signCode) || this.preloadConfig.omitSignature) {
-				/** @type {import('./CheckboxInputWidget').default} */ ;(
+				const omitSignatureCheckboxTyped = /** @type {import('./CheckboxInputWidget').default} */ (
 					this.omitSignatureCheckbox
-				).setSelected(true)
+				)
+				omitSignatureCheckboxTyped.setSelected(true)
 				this.omitSignatureCheckboxAltered = true
 			}
 
@@ -1452,7 +1453,8 @@ class CommentForm extends EventEmitter {
 		 */
 
 		this.uploadDialog.uploadBooklet.on('fileSaved', (/** @type {ImageInfo} */ imageInfo) => {
-			/** @type {import('./UploadDialog').default} */ ;(this.uploadDialog).close()
+			const uploadDialogTyped = /** @type {import('./UploadDialog').default} */ (this.uploadDialog)
+			uploadDialogTyped.close()
 			win.closed.then(() => {
 				if (openInsertFileDialogAfterwards) {
 					$.wikiEditor.modules.dialogs.api.openDialog(this, 'insert-file')
@@ -3434,7 +3436,8 @@ class CommentForm extends EventEmitter {
 			if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
 				data.content = ''
 			}
-			/** @type {NonNullable<typeof data.cmdModify>} */ ;(data.cmdModify)()
+			const cmdModifyTyped = /** @type {NonNullable<typeof data.cmdModify>} */ (data.cmdModify)
+			cmdModifyTyped()
 			const text = data.start + (data.content || '') + (data.end || '')
 			this.commentInput
 				.selectRange(0)
@@ -3840,9 +3843,10 @@ class CommentForm extends EventEmitter {
 		const newSelf = this.target.findNewSelf()
 		if (newSelf?.isActionable) {
 			try {
-				/** @type {CommentFormAddingMethod} */ ;(
+				const addingMethod = /** @type {CommentFormAddingMethod} */ (
 					newSelf[/** @type {keyof typeof newSelf} */ (newSelf.getCommentFormMethodName(this.mode))]
-				)(undefined, this)
+				)
+				addingMethod(undefined, this)
 			} catch (error) {
 				console.warn(error)
 
@@ -3909,7 +3913,8 @@ class CommentForm extends EventEmitter {
 			flags: ['progressive', 'primary'],
 		})
 		button.on('click', () => {
-			/** @type {OO.ui.PopupWidget} */ ;(this.manyFormsPopup).toggle(false)
+			const manyFormsPopupTyped = /** @type {OO.ui.PopupWidget} */ (this.manyFormsPopup)
+			manyFormsPopupTyped.toggle(false)
 		})
 		this.manyFormsPopup = new OO.ui.PopupWidget({
 			icon: 'lightbulb',
@@ -3960,7 +3965,8 @@ class CommentForm extends EventEmitter {
 			flags: ['progressive', 'primary'],
 		})
 		button.on('click', () => {
-			/** @type {OO.ui.PopupWidget} */ ;(this.uploadPopup).toggle(false)
+			const uploadPopupTyped = /** @type {OO.ui.PopupWidget} */ (this.uploadPopup)
+			uploadPopupTyped.toggle(false)
 		})
 		this.uploadPopup = new OO.ui.PopupWidget({
 			icon: 'lightbulb',

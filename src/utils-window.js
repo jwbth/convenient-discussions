@@ -453,8 +453,10 @@ export function cleanUpPasteDom(element, containerElement) {
 	element.className = 'cd-commentForm-dummyElement'
 	containerElement.append(element)
 
-	/** @type {HTMLElement[]} */ ;([...element.querySelectorAll('[style]:not(pre [style])')]).forEach(
-		(el) => {
+	const styledElements = /** @type {HTMLElement[]} */ ([
+		...element.querySelectorAll('[style]:not(pre [style])'),
+	])
+	styledElements.forEach((el) => {
 			if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
 				$(el).wrapInner('<u>')
 			}

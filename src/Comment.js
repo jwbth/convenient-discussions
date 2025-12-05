@@ -1353,7 +1353,8 @@ class Comment extends CommentSkeleton {
 		removeFromArrayIfPresent(commentManager.underlays, this.layers.underlay)
 
 		this.layers.destroy()
-		/** @type {any} */ ;(this).layers = undefined
+		const thisTyped = /** @type {any} */ (this)
+		thisTyped.layers = undefined
 	}
 
 	/**
@@ -1635,7 +1636,8 @@ class Comment extends CommentSkeleton {
 				? new Button({
 						label: cd.s('comment-diff'),
 						action: async () => {
-							/** @type {Button} */ ;(diffLink).setPending(true)
+							const diffLinkTyped = /** @type {Button} */ (diffLink)
+							diffLinkTyped.setPending(true)
 							try {
 								await this.showDiff(
 									/** @type {number} */ (
@@ -1661,7 +1663,8 @@ class Comment extends CommentSkeleton {
 								}
 								mw.notify(wrapHtml(text), { type: code === 'emptyDiff' ? 'info' : 'error' })
 							}
-							/** @type {Button} */ ;(diffLink).setPending(false)
+							const diffLinkTyped = /** @type {Button} */ (diffLink)
+							diffLinkTyped.setPending(false)
 						},
 					})
 				: undefined
@@ -1888,11 +1891,8 @@ class Comment extends CommentSkeleton {
 		}
 
 		if (this.isCollapsed) {
-			/** @type {JQuery} */ ;(this.getVisibleExpandNote()).cdScrollIntoView(
-				alignment || 'top',
-				smooth,
-				callback,
-			)
+			const visibleExpandNote = /** @type {JQuery} */ (this.getVisibleExpandNote())
+			visibleExpandNote.cdScrollIntoView(alignment || 'top', smooth, callback)
 			const $message = wrapHtml(cd.sParse('navpanel-firstunseen-hidden', '$1'), {
 				callbacks: {
 					'cd-notification-expandThread': () => {
@@ -1906,11 +1906,10 @@ class Comment extends CommentSkeleton {
 						notification.close()
 					},
 					'cd-notification-markThreadAsRead': () => {
-						/** @type {import('./Thread').default} */ ;(this.thread)
-							.getComments()
-							.forEach((comment) => {
-								comment.isSeen = true
-							})
+						const threadTyped = /** @type {import('./Thread').default} */ (this.thread)
+						threadTyped.getComments().forEach((comment) => {
+							comment.isSeen = true
+						})
 						commentManager.emit('registerSeen')
 						commentManager.goToFirstUnseenComment()
 						notification.close()
@@ -2242,7 +2241,10 @@ class Comment extends CommentSkeleton {
 		}
 
 		mw.notify(wrapHtml(text, { targetBlank: true }), { type: 'error' })
-		/** @type {import('./CommentButton').default} */ ;(this.actions?.thankButton)?.setPending(false)
+		const thankButtonTyped = /** @type {import('./CommentButton').default} */ (
+			this.actions?.thankButton
+		)
+		thankButtonTyped?.setPending(false)
 	}
 
 	/**
@@ -2759,10 +2761,8 @@ class Comment extends CommentSkeleton {
 			newElement = /** @type {HTMLElement} */ (parentElement.children[index])
 		} else {
 			newElement = newElementOrHtml
-			/** @type {HTMLElement} */ ;(nativeElement.parentElement).replaceChild(
-				newElement,
-				/** @type {HTMLElement} */ (element),
-			)
+			const nativeElementParent = /** @type {HTMLElement} */ (nativeElement.parentElement)
+			element.replaceWith(newElement)
 		}
 
 		// When we set .$elements, the setter automatically sets .elements. But not vice versa except
@@ -3120,7 +3120,8 @@ class Comment extends CommentSkeleton {
 				$outerWrapper.addClass('cd-connectToPreviousItem')
 			}
 
-			/** @type {JQuery} */ ;($wrappingList).appendTo($outerWrapper)
+			const wrappingListTyped = /** @type {JQuery} */ ($wrappingList)
+			wrappingListTyped.appendTo($outerWrapper)
 		}
 
 		if ($outerWrapper) {
@@ -3710,9 +3711,10 @@ class Comment extends CommentSkeleton {
 			if (!map.has(comment.section)) {
 				map.set(comment.section, [])
 			}
-			/** @type {import('./shared/CommentSkeleton').CommentBase[]} */ ;(
+			const sectionComments = /** @type {import('./shared/CommentSkeleton').CommentBase[]} */ (
 				map.get(comment.section)
-			).push(comment)
+			)
+			sectionComments.push(comment)
 		}
 
 		return map
@@ -3754,9 +3756,10 @@ class Comment extends CommentSkeleton {
 			if (!commentsByParent.get(key)) {
 				commentsByParent.set(key, [])
 			}
-			/** @type {import('./updateChecker').CommentWorkerNew[]} */ ;(commentsByParent.get(key)).push(
-				comment,
+			const parentComments = /** @type {import('./updateChecker').CommentWorkerNew[]} */ (
+				commentsByParent.get(key)
 			)
+			parentComments.push(comment)
 		})
 
 		return commentsByParent

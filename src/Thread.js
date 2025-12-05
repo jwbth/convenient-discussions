@@ -926,7 +926,8 @@ class Thread extends mixInObject(
 		Thread.emit('toggle')
 		this.rootComment.getParent()?.updateToggleChildThreadsButton()
 		if (clickedThread && !wasCollapsed) {
-			/** @type {JQuery} */ ;(this.$expandNote).cdScrollIntoView()
+			const expandNoteTyped = /** @type {JQuery} */ (this.$expandNote)
+			expandNoteTyped.cdScrollIntoView()
 		}
 	}
 
@@ -981,16 +982,18 @@ class Thread extends mixInObject(
 		this.addExpandNote(loadUserGendersPromise)
 
 		if (!isBatchOperation) {
-			/** @type {JQuery} */ ;(this.$expandNote).cdScrollIntoView()
+			const expandNoteTyped = /** @type {JQuery} */ (this.$expandNote)
+			expandNoteTyped.cdScrollIntoView()
 			this.rootComment.getParent()?.updateToggleChildThreadsButton()
 		}
 
 		if (this.rootComment.isOpeningSection()) {
-			/** @type {OO.ui.MenuOptionWidget} */ ;(
+			const editOpeningCommentItem = /** @type {OO.ui.MenuOptionWidget} */ (
 				/** @type {import('./Section').default} */ (this.rootComment.section).actions.moreMenuSelect
 					?.getMenu()
 					.findItemFromData('editOpeningComment')
-			)?.setDisabled(true)
+			)
+			editOpeningCommentItem?.setDisabled(true)
 		}
 
 		if (this.endElement !== this.visualEndElement) {
@@ -1024,22 +1027,25 @@ class Thread extends mixInObject(
 	expand(auto = false, isBatchOperation = auto) {
 		if (!this.isCollapsed) return
 
-		/** @type {HTMLElement[]} */ ;(this.collapsedRange).forEach((element) => {
+		const collapsedRangeTyped = /** @type {HTMLElement[]} */ (this.collapsedRange)
+		collapsedRangeTyped.forEach((element) => {
 			this.maybeUnhideElement(element)
 		})
 
-		/** @type {HTMLElement} */ ;(this.expandNote).remove()
+		const expandNoteTyped = /** @type {HTMLElement} */ (this.expandNote)
+		expandNoteTyped.remove()
 		this.expandNote = undefined
 		this.$expandNote = undefined
 		this.expandNoteContainer?.remove()
 		this.expandNoteContainer = undefined
 
 		if (this.rootComment.isOpeningSection()) {
-			/** @type {OO.ui.MenuOptionWidget} */ ;(
+			const editOpeningCommentItem = /** @type {OO.ui.MenuOptionWidget} */ (
 				this.rootComment.section.actions.moreMenuSelect
 					?.getMenu()
 					.findItemFromData('editOpeningComment')
-			)?.setDisabled(false)
+			)
+			editOpeningCommentItem.setDisabled(false)
 		}
 
 		this.isCollapsed = false
@@ -1678,7 +1684,8 @@ class Thread extends mixInObject(
 		})
 
 		if (elementsToAdd.length) {
-			/** @type {HTMLDivElement} */ ;(this.threadLinesContainer).append(...elementsToAdd)
+			const threadLinesContainerTyped = /** @type {HTMLDivElement} */ (this.threadLinesContainer)
+			threadLinesContainerTyped.append(...elementsToAdd)
 		}
 	}
 

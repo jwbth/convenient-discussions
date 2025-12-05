@@ -191,7 +191,8 @@ class SpaciousComment extends Comment {
 		if (this.showContribsLink) {
 			contribsLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.lastElementChild)
 			if (!this.author.isRegistered()) {
-				/** @type {HTMLElement} */ ;(contribsLink.previousSibling).remove()
+				const contribsLinkPreviousSibling = /** @type {HTMLElement} */ (contribsLink.previousSibling)
+				contribsLinkPreviousSibling.remove()
 				contribsLink.remove()
 			}
 		}

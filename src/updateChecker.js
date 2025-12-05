@@ -322,7 +322,8 @@ class UpdateChecker extends EventEmitter {
 					}
 					section.match = workerSection
 					section.matchScore = score
-					/** @type {SectionWorkerMatched} */ ;(workerSection).match = section
+					const workerSectionTyped = /** @type {SectionWorkerMatched} */ (workerSection)
+					workerSectionTyped.match = section
 				}
 			}
 		})
@@ -419,7 +420,8 @@ class UpdateChecker extends EventEmitter {
 		//    visit revision in otherComments (that doesn't concern us here).
 		//
 		// but that doesn't seem to affect anything meaningfully.
-		/** @type {CommentWorkerMatched[]} */ ;(currentComments).forEach((comment) => {
+		const currentCommentsTyped = /** @type {CommentWorkerMatched[]} */ (currentComments)
+		currentCommentsTyped.forEach((comment) => {
 			delete comment.match
 			delete comment.matchScore
 			delete comment.hasPoorMatch
@@ -865,7 +867,8 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	async processComments(newComments, currentComments, currentRevisionId) {
-		/** @type {CommentWorkerNew[]} */ ;(newComments).forEach((comment) => {
+		const newCommentsTyped = /** @type {CommentWorkerNew[]} */ (newComments)
+		newCommentsTyped.forEach((comment) => {
 			comment.author = userRegistry.get(comment.authorName)
 			if (comment.parent?.authorName) {
 				comment.parent.author = userRegistry.get(comment.parent.authorName)

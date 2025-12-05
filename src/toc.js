@@ -94,7 +94,10 @@ class Toc {
 		if (this.isInSidebar() || !this.isPresent()) return
 
 		if (mw.cookie.get('hidetoc') === '1') {
-			/** @type {HTMLInputElement} */ ;(this.$element.find('.toctogglecheckbox')[0]).checked = true
+			const tocToggleCheckbox = /** @type {HTMLInputElement} */ (
+				this.$element.find('.toctogglecheckbox')[0]
+			)
+			tocToggleCheckbox.checked = true
 		}
 	}
 
@@ -635,7 +638,8 @@ class Toc {
 			ul.append(li)
 		}
 
-		/** @type {HTMLElement} */ ;(target.parentElement).insertBefore(ul, target.nextSibling)
+		const targetParent = /** @type {HTMLElement} */ (target.parentElement)
+		targetParent.insertBefore(ul, target.nextSibling)
 	}
 
 	/**

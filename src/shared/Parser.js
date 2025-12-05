@@ -442,10 +442,10 @@ class Parser {
 
 		/** @type {Partial<SignatureTarget<N>>[]} */
 		const unsigneds = []
-		/** @type {HTMLElementFor<N>[]} */ ;([
+		const unsignedElements = /** @type {HTMLElementFor<N>[]} */ ([
 			...this.context.rootElement.getElementsByClassName(cd.config.unsignedClass),
 		])
-			.filter((element) => {
+		unsignedElements.filter((element) => {
 				// Only templates with no timestamp interest us.
 				if (this.context.getElementByClassName(element, 'cd-timestamp')) {
 					return false
@@ -465,8 +465,10 @@ class Parser {
 				return true
 			})
 			.forEach((element) => {
-				/** @type {HTMLElementFor<N>[]} */ ;([...element.getElementsByTagName('a')]).some(
-					(link) => {
+				const elementLinks = /** @type {HTMLElementFor<N>[]} */ ([
+					...element.getElementsByTagName('a'),
+				])
+				elementLinks.some((link) => {
 						const { userName: authorName, linkType } = Parser.processLink(link) || {}
 						if (authorName) {
 							let authorLink
@@ -941,7 +943,8 @@ class Parser {
 	 * @returns {void}
 	 */
 	static remove(node) {
-		/** @type {any} */ ;(node).remove()
+		const nodeTyped = /** @type {any} */ (node)
+		nodeTyped.remove()
 	}
 
 	/**
