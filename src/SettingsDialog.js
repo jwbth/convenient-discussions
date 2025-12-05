@@ -286,74 +286,96 @@ class SettingsDialog extends ProcessDialog {
 		const pages = settings.scheme.ui.map((pageData) => {
 			const $fields = pageData.controls.map((data) => {
 				const name = data.name
+
+				/**
+				 * Picks only keys from T whose value is V.
+				 *
+				 * @template T
+				 * @template {string} V
+				 * @typedef {(
+				 *   { [K in keyof T]: T[K] extends V ? K : never }[keyof T]
+				 * )} OnlyKeysWithValue
+				 */
+
+				/**
+				 * @template {string} T
+				 * @typedef {OnlyKeysWithValue<typeof settings.scheme.controlTypes, T>} OnlySettingsOfType
+				 */
+
 				switch (data.type) {
-					case 'checkbox':
-						/** @type {CheckboxControl} */ ;(this.controls[name]) = createCheckboxControl({
+					case 'checkbox': {
+						const nameTyped = /** @type {OnlySettingsOfType<'checkbox'>} */ (name)
+						this.controls[nameTyped] = createCheckboxControl({
 							.../** @type {import('./utils-oojs').CheckboxControlOptions} */ (data),
 							selected: /** @type {boolean} */ (
-								settingValues[/** @type {import('./settings').SettingName} */ (name)]
+								settingValues[nameTyped]
 							),
 						})
-						this.controls[name].input.on('change', this.updateAbilities)
+						this.controls[nameTyped].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'radio':
-						/** @type {RadioControl} */ ;(this.controls[name]) = createRadioControl({
+					case 'radio': {
+						const nameTyped = /** @type {OnlySettingsOfType<'radio'>} */ (name)
+						this.controls[nameTyped] = createRadioControl({
 							.../** @type {import('./utils-oojs').RadioControlOptions} */ (data),
-							selected: /** @type {string} */ (
-								settingValues[/** @type {import('./settings').SettingName} */ (name)]
-							),
+							selected: /** @type {string} */ (settingValues[nameTyped]),
 						})
-						this.controls[name].input.on('select', this.updateAbilities)
+						this.controls[nameTyped].input.on('select', this.updateAbilities)
 						break
+					}
 
-					case 'text':
-						/** @type {TextControl} */ ;(this.controls[name]) = createTextControl({
+					case 'text': {
+						const nameTyped = /** @type {OnlySettingsOfType<'text'>} */ (name)
+						this.controls[nameTyped] = createTextControl({
 							.../** @type {import('./utils-oojs').TextControlOptions} */ (data),
 							value: /** @type {string} */ (
-								settingValues[/** @type {import('./settings').SettingName} */ (name)]
+								settingValues[nameTyped]
 							),
 						})
-						this.controls[name].input.on('change', this.updateAbilities)
+						this.controls[nameTyped].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'number':
-						/** @type {NumberControl} */ ;(this.controls[name]) = createNumberControl({
+					case 'number': {
+						const nameTyped = /** @type {OnlySettingsOfType<'number'>} */ (name)
+						this.controls[nameTyped] = createNumberControl({
 							.../** @type {import('./utils-oojs').NumberControlOptions} */ (data),
-							value: /** @type {string} */ (
-								settingValues[/** @type {import('./settings').SettingName} */ (name)]
-							),
+							value: /** @type {string} */ (/** @type {unknown} */ (settingValues[nameTyped])),
 						})
-						this.controls[name].input.on('change', this.updateAbilities)
+						this.controls[nameTyped].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'multicheckbox':
-						/** @type {MulticheckboxControl} */ ;(this.controls[name]) = createMulticheckboxControl(
+					case 'multicheckbox': {
+						const nameTyped = /** @type {OnlySettingsOfType<'multicheckbox'>} */ (name)
+						this.controls[nameTyped] = createMulticheckboxControl(
 							{
 								.../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
-								selected: /** @type {string[]} */ (
-									settingValues[/** @type {import('./settings').SettingName} */ (name)]
-								),
+								selected: /** @type {string[]} */ (settingValues[nameTyped]),
 							},
 						)
-						this.controls[name].input.on('select', this.updateAbilities)
+						this.controls[nameTyped].input.on('select', this.updateAbilities)
 						break
+					}
 
-					case 'multitag':
-						/** @type {MultitagControl} */ ;(this.controls[name]) = createMultitagControl({
+					case 'multitag': {
+						const nameTyped = /** @type {OnlySettingsOfType<'multitag'>} */ (name)
+						this.controls[nameTyped] = createMultitagControl({
 							.../** @type {import('./utils-oojs').MultitagControlOptions} */ (data),
-							selected: /** @type {string[]} */ (
-								settingValues[/** @type {import('./settings').SettingName} */ (name)]
-							),
+							selected: /** @type {string[]} */ (settingValues[nameTyped]),
 						})
-						this.controls[name].input.on('change', this.updateAbilities)
+						this.controls[nameTyped].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'button':
-						/** @type {ButtonControl} */ ;(this.controls[name]) = createButtonControl({
+					case 'button': {
+						const nameTyped = /** @type {OnlySettingsOfType<'button'>} */ (name)
+						this.controls[nameTyped] = createButtonControl({
 							.../** @type {import('./utils-oojs').ButtonControlOptions} */ (data),
 						})
 						break
+					}
 				}
 
 				return this.controls[name].field.$element
