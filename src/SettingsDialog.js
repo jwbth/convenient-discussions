@@ -288,78 +288,71 @@ class SettingsDialog extends ProcessDialog {
 				const name = data.name
 				switch (data.type) {
 					case 'checkbox':
-						// prettier-ignore
-						{ /** @type {CheckboxControl} */ (this.controls[name]) = createCheckboxControl({
+						/** @type {CheckboxControl} */ ;(this.controls[name]) = createCheckboxControl({
 							.../** @type {import('./utils-oojs').CheckboxControlOptions} */ (data),
 							selected: /** @type {boolean} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						}) }
+						})
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
 
 					case 'radio':
-						// prettier-ignore
-						{ /** @type {RadioControl} */ (this.controls[name]) = createRadioControl({
+						/** @type {RadioControl} */ ;(this.controls[name]) = createRadioControl({
 							.../** @type {import('./utils-oojs').RadioControlOptions} */ (data),
 							selected: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						}) }
+						})
 						this.controls[name].input.on('select', this.updateAbilities)
 						break
 
 					case 'text':
-						// prettier-ignore
-						{ /** @type {TextControl} */ (this.controls[name]) = createTextControl({
+						/** @type {TextControl} */ ;(this.controls[name]) = createTextControl({
 							.../** @type {import('./utils-oojs').TextControlOptions} */ (data),
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						}) }
+						})
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
 
 					case 'number':
-						// prettier-ignore
-						{ /** @type {NumberControl} */ (this.controls[name]) = createNumberControl({
+						/** @type {NumberControl} */ ;(this.controls[name]) = createNumberControl({
 							.../** @type {import('./utils-oojs').NumberControlOptions} */ (data),
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						}) }
+						})
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
 
 					case 'multicheckbox':
-						// prettier-ignore
-						{ /** @type {MulticheckboxControl} */ (this.controls[name]) = createMulticheckboxControl(
+						/** @type {MulticheckboxControl} */ ;(this.controls[name]) = createMulticheckboxControl(
 							{
 								.../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
 								selected: /** @type {string[]} */ (
 									settingValues[/** @type {import('./settings').SettingName} */ (name)]
 								),
 							},
-						) }
+						)
 						this.controls[name].input.on('select', this.updateAbilities)
 						break
 
 					case 'multitag':
-						// prettier-ignore
-						{ /** @type {MultitagControl} */ (this.controls[name]) = createMultitagControl({
+						/** @type {MultitagControl} */ ;(this.controls[name]) = createMultitagControl({
 							.../** @type {import('./utils-oojs').MultitagControlOptions} */ (data),
 							selected: /** @type {string[]} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						}) }
+						})
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
 
 					case 'button':
-						// prettier-ignore
-						{ /** @type {ButtonControl} */ (this.controls[name]) = createButtonControl({
+						/** @type {ButtonControl} */ ;(this.controls[name]) = createButtonControl({
 							.../** @type {import('./utils-oojs').ButtonControlOptions} */ (data),
-						}) }
+						})
 						break
 				}
 
@@ -423,8 +416,7 @@ class SettingsDialog extends ProcessDialog {
 	 */
 	getStateSettings() {
 		return settings.scheme.states.reduce((obj, state) => {
-			// prettier-ignore
-			{ /** @type {(typeof this.loadedSettings)[state]} */ (obj[state]) = this.loadedSettings[state] }
+			/** @type {(typeof this.loadedSettings)[state]} */ ;(obj[state]) = this.loadedSettings[state]
 
 			return obj
 		}, /** @type {Partial<import('./settings').SettingsValues>} */ ({}))
@@ -446,36 +438,30 @@ class SettingsDialog extends ProcessDialog {
 
 				switch (control.type) {
 					case 'checkbox':
-						// prettier-ignore
-						{ /** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.isSelected() }
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.isSelected()
 						break
 					case 'radio':
-						// prettier-ignore
-						{ /** @type {RelevantSettingType} */ (settingsValues[n]) =
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) =
 							/** @type {string | undefined} */ (control.input.findSelectedItem()?.getData()) ||
-							settings.scheme.default[n] }
+							settings.scheme.default[n]
 						break
 					case 'text':
-						// prettier-ignore
-						{ /** @type {RelevantSettingType} */ (settingsValues[n]) = control.input.getValue() }
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.getValue()
 						break
 					case 'number':
-						// prettier-ignore
-						{ /** @type {RelevantSettingType} */ (settingsValues[n]) = Number(
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = Number(
 							control.input.getValue(),
-						) }
+						)
 						break
 					case 'multicheckbox':
-						// prettier-ignore
-						{ /** @type {RelevantSettingType} */ (settingsValues[n]) = /** @type {string[]} */ (
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = /** @type {string[]} */ (
 							control.input.findSelectedItemsData()
-						) }
+						)
 						break
 					case 'multitag':
-						// prettier-ignore
-						{ /** @type {RelevantSettingType} */ (settingsValues[n]) = (
+						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = (
 							control.uiToData || ((val) => val)
-						).call(null, /** @type {string[]} */ (control.input.getValue())) }
+						).call(null, /** @type {string[]} */ (control.input.getValue()))
 						break
 				}
 

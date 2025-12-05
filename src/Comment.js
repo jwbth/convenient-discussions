@@ -1350,8 +1350,7 @@ class Comment extends CommentSkeleton {
 		removeFromArrayIfPresent(commentManager.underlays, this.layers.underlay)
 
 		this.layers.destroy()
-		// prettier-ignore
-		{ /** @type {any} */ (this).layers = undefined }
+		/** @type {any} */ ;(this).layers = undefined
 	}
 
 	/**

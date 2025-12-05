@@ -585,8 +585,7 @@ export function es6ClassToOoJsClass(TargetClass) {
 	Object.keys(TargetClass)
 		.filter((key) => !['parent', 'super', 'static'].includes(key))
 		.forEach((key) => {
-			// prettier-ignore
-			{ /** @type {AnyByKey} */ (TargetClass.static)[key] = TargetClass[key] }
+			/** @type {AnyByKey} */ ;(TargetClass.static)[key] = TargetClass[key]
 		})
 
 	return TargetClass

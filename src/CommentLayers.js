@@ -169,20 +169,13 @@ class CommentLayers {
 
 		// Note: Properties are set to undefined for cleanup, but TypeScript expects them to always exist
 		// This is acceptable since destroy() should only be called when the comment is being removed
-		// prettier-ignore
-		{ /** @type {any} */ (this).underlay = undefined }
-		// prettier-ignore
-		{ /** @type {any} */ (this).overlay = undefined }
-		// prettier-ignore
-		{ /** @type {any} */ (this).line = undefined }
-		// prettier-ignore
-		{ /** @type {any} */ (this).marker = undefined }
-		// prettier-ignore
-		{ /** @type {any} */ (this).$underlay = undefined }
-		// prettier-ignore
-		{ /** @type {any} */ (this).$overlay = undefined }
-		// prettier-ignore
-		{ /** @type {any} */ (this).$marker = undefined }
+		/** @type {any} */ ;(this).underlay = undefined
+		/** @type {any} */ ;(this).overlay = undefined
+		/** @type {any} */ ;(this).line = undefined
+		/** @type {any} */ ;(this).marker = undefined
+		/** @type {any} */ ;(this).$underlay = undefined
+		/** @type {any} */ ;(this).$overlay = undefined
+		/** @type {any} */ ;(this).$marker = undefined
 	}
 
 	/**
@@ -221,8 +214,7 @@ class CommentLayers {
 		}
 
 		if (flag === 'hovered' && !add && /** @type {any} */ (this).overlayInnerWrapper) {
-			// prettier-ignore
-			{ /** @type {any} */ (this).overlayInnerWrapper.style.display = '' }
+			/** @type {any} */ ;(this).overlayInnerWrapper.style.display = ''
 		}
 	}
 

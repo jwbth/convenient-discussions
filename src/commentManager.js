@@ -684,8 +684,7 @@ export class CommentManager extends EventEmitter {
 		 */
 
 		if (returnComponents) {
-			// prettier-ignore
-			{ /** @type {DtIdComponents} */ (data).comment = comment }
+			/** @type {DtIdComponents} */ ;(data).comment = comment
 
 			return /** @type {DtIdComponentsOrComment} */ (data)
 		}

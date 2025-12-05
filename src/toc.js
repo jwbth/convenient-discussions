@@ -94,8 +94,7 @@ class Toc {
 		if (this.isInSidebar() || !this.isPresent()) return
 
 		if (mw.cookie.get('hidetoc') === '1') {
-			// prettier-ignore
-			{ /** @type {HTMLInputElement} */ (this.$element.find('.toctogglecheckbox')[0]).checked = true }
+			/** @type {HTMLInputElement} */ ;(this.$element.find('.toctogglecheckbox')[0]).checked = true
 		}
 	}
 

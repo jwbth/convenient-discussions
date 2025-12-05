@@ -441,8 +441,7 @@ class CommentFormInputTransformer extends TextMasker {
 				this.isTargetOpeningSection() &&
 				this.target.source.code.startsWith('\n'))
 		) {
-			// prettier-ignore
-			{ /** @type {this} */ (this).text = '\n' + /** @type {this} */ (this).text }
+			/** @type {this} */ ;(this).text = '\n' + /** @type {this} */ (this).text
 		}
 		this.text = `${equalSigns} ${headline} ${equalSigns}\n${this.text}`
 

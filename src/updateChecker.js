@@ -322,8 +322,7 @@ class UpdateChecker extends EventEmitter {
 					}
 					section.match = workerSection
 					section.matchScore = score
-					// prettier-ignore
-					{ /** @type {SectionWorkerMatched} */ (workerSection).match = section }
+					/** @type {SectionWorkerMatched} */ ;(workerSection).match = section
 				}
 			}
 		})
