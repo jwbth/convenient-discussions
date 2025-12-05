@@ -79,11 +79,12 @@ function processAndRemoveDtElements(elements) {
 		}
 	}
 
-	/** @type {HTMLElement[]} */ ;(
+	const elementsToProcess = /** @type {HTMLElement[]} */ (
 		elements.concat([
 			...controller.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
 		])
-	).forEach((el, i) => {
+	)
+	elementsToProcess.forEach((el, i) => {
 		if (Object.hasOwn(el.dataset, 'mwCommentStart') && Comment.isDtId(el.id)) {
 			controller.getBootProcess().addDtCommentId(el.id)
 		}
@@ -91,13 +92,15 @@ function processAndRemoveDtElements(elements) {
 			// DT gets the DOM offset of each of these elements upon initialization which can take a lot
 			// of time if the elements aren't put into containers with less children.
 			if (i % 10 === 0) {
-				/** @type {HTMLSpanElement} */ ;(dtMarkupHavenElement).append(
+				const dtMarkupHavenElementTyped = /** @type {HTMLSpanElement} */ (dtMarkupHavenElement)
+				dtMarkupHavenElementTyped.append(
 					document.createElement('span'),
 				)
 			}
-			/** @type {HTMLSpanElement} */ ;(
+			const dtMarkupHavenElementLastChild = /** @type {HTMLSpanElement} */ (
 				/** @type {HTMLSpanElement} */ (dtMarkupHavenElement).lastChild
-			).append(el)
+			)
+			dtMarkupHavenElementLastChild.append(el)
 		} else {
 			el.remove()
 		}

@@ -882,9 +882,11 @@ class Settings extends EventEmitter {
 			const localSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({})
 			typedKeysOf(settings).forEach((key) => {
 				if (this.scheme.local.includes(key)) {
-					/** @type {(typeof settings)[key]} */ ;(localSettings[key]) = settings[key]
+					const localSettingsTyped = /** @type {(typeof settings)[key]} */ (localSettings[key])
+					localSettingsTyped = settings[key]
 				} else {
-					/** @type {(typeof settings)[key]} */ ;(globalSettings[key]) = settings[key]
+					const globalSettingsTyped = /** @type {(typeof settings)[key]} */ (globalSettings[key])
+					globalSettingsTyped = settings[key]
 				}
 			})
 

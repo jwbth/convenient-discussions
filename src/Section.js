@@ -340,7 +340,8 @@ class Section extends SectionSkeleton {
 		if (createList) {
 			container = document.createElement('dl')
 			container.className = 'cd-commentLevel cd-commentLevel-1 cd-section-button-container'
-			/** @type {HTMLElement} */ ;(lastElement.parentElement).insertBefore(
+			const lastElementParent = /** @type {HTMLElement} */ (lastElement.parentElement)
+			lastElementParent.insertBefore(
 				container,
 				lastElement.nextElementSibling,
 			)
@@ -415,7 +416,8 @@ class Section extends SectionSkeleton {
 			...[button?.element, baseSection?.addSubsectionButtonLastDescendant?.element].filter(defined),
 		)
 
-		/** @type {HTMLElement} */ ;(this.lastElementInFirstChunk.parentElement).insertBefore(
+		const lastElementInFirstChunkParent = /** @type {HTMLElement} */ (this.lastElementInFirstChunk.parentElement)
+		lastElementInFirstChunkParent.insertBefore(
 			container,
 			this.lastElementInFirstChunk.nextElementSibling,
 		)
@@ -503,7 +505,8 @@ class Section extends SectionSkeleton {
 		if (this.hideAddSubsectionButtonTimeout) return
 
 		this.hideAddSubsectionButtonTimeout = setTimeout(() => {
-			/** @type {JQuery} */ ;(this.$addSubsectionButtonsContainer).hide()
+			const addSubsectionButtonsContainerTyped = /** @type {JQuery} */ (this.$addSubsectionButtonsContainer)
+			addSubsectionButtonsContainerTyped.hide()
 		}, 1000)
 	}
 
@@ -518,7 +521,8 @@ class Section extends SectionSkeleton {
 		if (this.showAddSubsectionButtonTimeout) return
 
 		this.showAddSubsectionButtonTimeout = setTimeout(() => {
-			/** @type {JQuery} */ ;(this.$addSubsectionButtonsContainer).show()
+			const addSubsectionButtonsContainerTyped = /** @type {JQuery} */ (this.$addSubsectionButtonsContainer)
+			addSubsectionButtonsContainerTyped.show()
 		}, 1000)
 	}
 
@@ -854,7 +858,8 @@ class Section extends SectionSkeleton {
 	 */
 	scrollToLatestComment = (event) => {
 		event.preventDefault()
-		/** @type {Comment} */ ;(this.latestComment).scrollTo({ pushState: true })
+		const latestCommentTyped = /** @type {Comment} */ (this.latestComment)
+		latestCommentTyped.scrollTo({ pushState: true })
 	}
 
 	/**
@@ -915,7 +920,8 @@ class Section extends SectionSkeleton {
 				// and I think it doesn't really give any benefit.
 				authorCountButton.element.removeAttribute('role')
 
-				/** @type {HTMLElement} */ ;(span.firstChild).replaceWith(authorCountButton.element)
+				const spanFirstChild = /** @type {HTMLElement} */ (span.firstChild)
+				spanFirstChild.replaceWith(authorCountButton.element)
 			}
 
 			metadataElement = /** @type {HTMLElement} */ (document.createElement('div'))
@@ -1038,7 +1044,8 @@ class Section extends SectionSkeleton {
 				].filter(defined),
 			)
 			.on('toggle', (visible) => {
-				/** @type {OO.ui.ButtonMenuSelectWidget} */ ;(this.actions.moreMenuSelect).setFlags({
+				const moreMenuSelectTyped = /** @type {OO.ui.ButtonMenuSelectWidget} */ (this.actions.moreMenuSelect)
+				moreMenuSelectTyped.setFlags({
 					progressive: visible,
 				})
 			})
@@ -1056,7 +1063,8 @@ class Section extends SectionSkeleton {
 				}
 			})
 
-		/** @type {Button} */ ;(this.actions.moreMenuSelectDummy).element.remove()
+		const moreMenuSelectDummyTyped = /** @type {Button} */ (this.actions.moreMenuSelectDummy)
+		moreMenuSelectDummyTyped.element.remove()
 		this.actionsElement.append(moreMenuSelect.$element[0])
 
 		/**
@@ -1106,7 +1114,8 @@ class Section extends SectionSkeleton {
 	 */
 	createAndClickMoreMenuSelect() {
 		this.addMoreMenuSelect()
-		/** @type {OO.ui.ButtonMenuSelectWidget} */ ;(this.actions.moreMenuSelect).focus().emit('click')
+		const moreMenuSelectTyped = /** @type {OO.ui.ButtonMenuSelectWidget} */ (this.actions.moreMenuSelect)
+		moreMenuSelectTyped.focus().emit('click')
 	}
 
 	/**
@@ -1201,7 +1210,8 @@ class Section extends SectionSkeleton {
 		if (cd.g.isDtVisualEnhancementsEnabled) {
 			this.headingElement.querySelector('.ext-discussiontools-init-section-bar')?.remove()
 		}
-		/** @type {HTMLElement} */ ;(this.headingElement.parentElement).insertBefore(
+		const headingElementParent = /** @type {HTMLElement} */ (this.headingElement.parentElement)
+		headingElementParent.insertBefore(
 			barElement,
 			this.headingElement.nextElementSibling,
 		)
@@ -1303,7 +1313,8 @@ class Section extends SectionSkeleton {
 		newCommentCountWrapper.className = 'cd-section-bar-item'
 		newCommentCountWrapper.append(newLink)
 
-		/** @type {HTMLElement} */ ;(this.metadataElement).insertBefore(
+		const metadataElementTyped = /** @type {HTMLElement} */ (this.metadataElement)
+		metadataElementTyped.insertBefore(
 			newCommentCountWrapper,
 			/** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null,
 		)
@@ -1378,7 +1389,8 @@ class Section extends SectionSkeleton {
 		if (!this.replyForm) {
 			// Hide the reply button before setupping the comming form so that IME selector is positioned
 			// correctly
-			/** @type {Button} */ ;(this.replyButton).hide()
+			const replyButtonTyped = /** @type {Button} */ (this.replyButton)
+			replyButtonTyped.hide()
 
 			/**
 			 * Reply form related to the section.

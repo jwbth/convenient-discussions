@@ -204,7 +204,8 @@ class NavPanel {
 		if (!this.isMounted()) return
 
 		this.$element.remove()
-		/** @type {{ $element: undefined }} */ ;(this).$element = undefined
+		const thisTyped = /** @type {{ $element: undefined }} */ (this)
+		thisTyped.$element = undefined
 	}
 
 	/**

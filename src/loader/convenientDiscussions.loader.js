@@ -591,10 +591,11 @@ class Loader {
 									meta: 'siteinfo',
 									siprop: ['specialpagealiases', 'general'],
 								})
-								.then((response) => {
-									/** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ ;(
-										response.query.specialpagealiases
-									)
+							.then((response) => {
+								const specialPageAliases = /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+									response.query.specialpagealiases
+								)
+								specialPageAliases
 										.filter((page) => specialPages.includes(page.realname))
 										.forEach((page) => {
 											cd.g.specialPageAliases[page.realname] = page.aliases.slice(

@@ -287,73 +287,87 @@ class SettingsDialog extends ProcessDialog {
 			const $fields = pageData.controls.map((data) => {
 				const name = data.name
 				switch (data.type) {
-					case 'checkbox':
-						/** @type {CheckboxControl} */ ;(this.controls[name]) = createCheckboxControl({
+					case 'checkbox': {
+						const checkboxControlTyped = /** @type {CheckboxControl} */ (createCheckboxControl({
 							.../** @type {import('./utils-oojs').CheckboxControlOptions} */ (data),
 							selected: /** @type {boolean} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						})
+						}))
+						this.controls[name] = checkboxControlTyped
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'radio':
-						/** @type {RadioControl} */ ;(this.controls[name]) = createRadioControl({
+					case 'radio': {
+						const radioControlTyped = /** @type {RadioControl} */ (createRadioControl({
 							.../** @type {import('./utils-oojs').RadioControlOptions} */ (data),
 							selected: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						})
+						}))
+						this.controls[name] = radioControlTyped
 						this.controls[name].input.on('select', this.updateAbilities)
 						break
+					}
 
-					case 'text':
-						/** @type {TextControl} */ ;(this.controls[name]) = createTextControl({
+					case 'text': {
+						const textControlTyped = /** @type {TextControl} */ (createTextControl({
 							.../** @type {import('./utils-oojs').TextControlOptions} */ (data),
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						})
+						}))
+						this.controls[name] = textControlTyped
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'number':
-						/** @type {NumberControl} */ ;(this.controls[name]) = createNumberControl({
+					case 'number': {
+						const numberControlTyped = /** @type {NumberControl} */ (createNumberControl({
 							.../** @type {import('./utils-oojs').NumberControlOptions} */ (data),
 							value: /** @type {string} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						})
+						}))
+						this.controls[name] = numberControlTyped
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'multicheckbox':
-						/** @type {MulticheckboxControl} */ ;(this.controls[name]) = createMulticheckboxControl(
+					case 'multicheckbox': {
+						const multicheckboxControlTyped = /** @type {MulticheckboxControl} */ (createMulticheckboxControl(
 							{
 								.../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
 								selected: /** @type {string[]} */ (
 									settingValues[/** @type {import('./settings').SettingName} */ (name)]
 								),
 							},
-						)
+						))
+						this.controls[name] = multicheckboxControlTyped
 						this.controls[name].input.on('select', this.updateAbilities)
 						break
+					}
 
-					case 'multitag':
-						/** @type {MultitagControl} */ ;(this.controls[name]) = createMultitagControl({
+					case 'multitag': {
+						const multitagControlTyped = /** @type {MultitagControl} */ (createMultitagControl({
 							.../** @type {import('./utils-oojs').MultitagControlOptions} */ (data),
 							selected: /** @type {string[]} */ (
 								settingValues[/** @type {import('./settings').SettingName} */ (name)]
 							),
-						})
+						}))
+						this.controls[name] = multitagControlTyped
 						this.controls[name].input.on('change', this.updateAbilities)
 						break
+					}
 
-					case 'button':
-						/** @type {ButtonControl} */ ;(this.controls[name]) = createButtonControl({
+					case 'button': {
+						const buttonControlTyped = /** @type {ButtonControl} */ (createButtonControl({
 							.../** @type {import('./utils-oojs').ButtonControlOptions} */ (data),
-						})
+						}))
+						this.controls[name] = buttonControlTyped
 						break
+					}
 				}
 
 				return this.controls[name].field.$element
@@ -375,7 +389,8 @@ class SettingsDialog extends ProcessDialog {
 					 * @override
 					 */
 					setupOutlineItem() {
-						/** @type {OO.ui.OutlineOptionWidget} */ ;(this.outlineItem).setLabel(pageData.label)
+						const outlineItemTyped = /** @type {OO.ui.OutlineOptionWidget} */ (this.outlineItem)
+					outlineItemTyped.setLabel(pageData.label)
 					}
 				},
 			))()
@@ -415,10 +430,9 @@ class SettingsDialog extends ProcessDialog {
 	 * @protected
 	 */
 	getStateSettings() {
-		return settings.scheme.states.reduce((obj, state) => {
-			/** @type {(typeof this.loadedSettings)[state]} */ ;(obj[state]) = this.loadedSettings[state]
-
-			return obj
+	return settings.scheme.states.reduce((obj, state) => {
+		const objStateTyped = /** @type {(typeof this.loadedSettings)[state]} */ (obj[state])
+		objStateTyped = this.loadedSettings[state]			return obj
 		}, /** @type {Partial<import('./settings').SettingsValues>} */ ({}))
 	}
 
@@ -437,31 +451,38 @@ class SettingsDialog extends ProcessDialog {
 				 */
 
 				switch (control.type) {
-					case 'checkbox':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.isSelected()
+				case 'checkbox':
+					const checkboxSettingsValuesTyped = /** @type {RelevantSettingType} */ (control.input.isSelected())
+					settingsValues[n] = checkboxSettingsValuesTyped
 						break
-					case 'radio':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) =
-							/** @type {string | undefined} */ (control.input.findSelectedItem()?.getData()) ||
-							settings.scheme.default[n]
+				case 'radio':
+					const radioSettingsValuesTyped = /** @type {RelevantSettingType} */ (
+						/** @type {string | undefined} */ (control.input.findSelectedItem()?.getData()) ||
+						settings.scheme.default[n]
+					)
+					settingsValues[n] = radioSettingsValuesTyped
 						break
-					case 'text':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = control.input.getValue()
+				case 'text':
+					const textSettingsValuesTyped = /** @type {RelevantSettingType} */ (control.input.getValue())
+					settingsValues[n] = textSettingsValuesTyped
 						break
 					case 'number':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = Number(
+						const numberSettingsValuesTyped = /** @type {RelevantSettingType} */ (Number(
 							control.input.getValue(),
-						)
+						))
+						settingsValues[n] = numberSettingsValuesTyped
 						break
 					case 'multicheckbox':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = /** @type {string[]} */ (
+						const multicheckboxSettingsValuesTyped = /** @type {RelevantSettingType} */ (/** @type {string[]} */ (
 							control.input.findSelectedItemsData()
-						)
+						))
+						settingsValues[n] = multicheckboxSettingsValuesTyped
 						break
-					case 'multitag':
-						/** @type {RelevantSettingType} */ ;(settingsValues[n]) = (
-							control.uiToData || ((val) => val)
-						).call(null, /** @type {string[]} */ (control.input.getValue()))
+				case 'multitag':
+					const multitagSettingsValuesTyped = /** @type {RelevantSettingType} */ (
+						(control.uiToData || ((val) => val))
+					).call(null, /** @type {string[]} */ (control.input.getValue()))
+					settingsValues[n] = multitagSettingsValuesTyped
 						break
 				}
 

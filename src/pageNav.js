@@ -315,7 +315,8 @@ class PageNav {
 		// Keep the data
 		this.$sectionWithBackLink?.detach()
 
-		/** @type {JQuery} */ ;(this.$currentSection).empty()
+		const currentSectionTyped = /** @type {JQuery} */ (this.$currentSection)
+		currentSectionTyped.empty()
 		;[this.currentSection, ...this.currentSection.getAncestors()]
 			.reverse()
 			.forEach((sectionInTree, level) => {
@@ -374,12 +375,14 @@ class PageNav {
 			// Keep the data
 			this.$sectionWithBackLink?.detach()
 
-			/** @type {JQuery} */ ;(this.$topElement).empty()
+			const topElementTyped = /** @type {JQuery} */ (this.$topElement)
+			topElementTyped.empty()
 			this.$linksOnTop = this.$topLink = this.$tocLink = this.$currentSection = undefined
 			this.currentSection = undefined
 		}
 		if (!part || part === 'bottom') {
-			/** @type {JQuery} */ ;(this.$bottomElement).empty()
+			const bottomElementTyped = /** @type {JQuery} */ (this.$bottomElement)
+			bottomElementTyped.empty()
 			this.$bottomLink = undefined
 		}
 	}
@@ -391,7 +394,8 @@ class PageNav {
 	 */
 	resetSections() {
 		this.$sectionWithBackLink?.detach()
-		/** @type {JQuery} */ ;(this.$currentSection).empty()
+		const currentSectionTyped = /** @type {JQuery} */ (this.$currentSection)
+		currentSectionTyped.empty()
 		this.currentSection = undefined
 	}
 
@@ -413,8 +417,9 @@ class PageNav {
 
 		if (this.backLinkLocation) {
 			this.backLinkLocation = undefined
-			/** @type {JQuery} */ ;(this.$backLinkContainer).prev().removeClass('cd-pageNav-link-inline')
-			/** @type {JQuery} */ ;(this.$backLinkContainer).remove()
+			const backLinkContainerTyped = /** @type {JQuery} */ (this.$backLinkContainer)
+			backLinkContainerTyped.prev().removeClass('cd-pageNav-link-inline')
+			backLinkContainerTyped.remove()
 			this.$backLinkContainer = this.$sectionWithBackLink = undefined
 		}
 		if (!isBackLink) {

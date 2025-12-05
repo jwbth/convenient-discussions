@@ -60,7 +60,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 	/**
 	 * Create a booklet layout for foreign structured upload.
 	 *
-	 * @param  {...any} args
+	 * @param {...any} args
 	 */
 	constructor(...args) {
 		super(...args)
@@ -104,7 +104,8 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		const fieldset = /** @type {OO.ui.FieldsetLayout} */ (this.uploadForm.getItems()[0])
 
 		// Hide everything related to the "own work" checkbox
-		/** @type {OO.ui.FieldLayout[]} */ ;(fieldset.getItems()).slice(1).forEach((layout) => {
+		const fieldsetItemsTyped = /** @type {OO.ui.FieldLayout[]} */ (fieldset.getItems())
+		fieldsetItemsTyped.slice(1).forEach((layout) => {
 			layout.toggle(false)
 		})
 
@@ -300,7 +301,8 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 		this.controls.license.input.on('change', this.onInfoFormChange)
 
 		// Add items to the fieldset
-		/** @type {OO.ui.FieldsetLayout} */ ;(this.infoForm.getItems()[1]).addItems(
+		const infoFormFieldsetTyped = /** @type {OO.ui.FieldsetLayout} */ (this.infoForm.getItems()[1])
+		infoFormFieldsetTyped.addItems(
 			[this.controls.source.field, this.controls.author.field, this.controls.license.field],
 			2,
 		)
