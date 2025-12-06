@@ -133,60 +133,6 @@ function licenseExtractionPlugin(buildMode) {
 }
 
 /**
- * Custom plugin to inline specific CSS files into JS bundle.
- *
- * @returns {import('vite').Plugin}
- */
-function inlineCssPlugin() {
-	return {
-		name: 'inline-css',
-		enforce: 'post',
-		generateBundle(_options, bundle) {
-			// Find the CSS file that contains tribute styles
-			const cssFiles = Object.keys(bundle).filter(
-				(fileName) =>
-					fileName.endsWith('.css') && bundle[fileName].type === 'asset',
-			)
-
-			for (const cssFileName of cssFiles) {
-				const cssAsset = bundle[cssFileName]
-				if (cssAsset.type === 'asset') {
-					const cssContent = cssAsset.source.toString()
-
-					// Check if this CSS file contains tribute styles
-					if (cssContent.includes('.tribute-container')) {
-						// Find the main JS bundle
-						const mainBundleKey = Object.keys(bundle).find(
-							(fileName) =>
-								fileName.includes('convenientDiscussions-main') &&
-								bundle[fileName].type === 'chunk',
-						)
-
-						if (mainBundleKey) {
-							const mainBundle = bundle[mainBundleKey]
-							if (mainBundle.type === 'chunk') {
-								// Inject CSS into the JS bundle
-								const cssInjectionCode = `
-(function() {
-	const style = document.createElement('style');
-	style.textContent = ${JSON.stringify(cssContent)};
-	document.head.appendChild(style);
-})();
-`
-								mainBundle.code = cssInjectionCode + mainBundle.code
-							}
-						}
-
-						// Remove the CSS file from the bundle
-						delete bundle[cssFileName]
-					}
-				}
-			}
-		},
-	}
-}
-
-/**
  * Custom plugin for build notifications. Matches webpack-build-notifier behavior: suppress success
  * and warning notifications, only show errors (unless it's the first successful build after an
  * error).
@@ -368,7 +314,7 @@ export default defineConfig(({ mode, command }) => {
 		})
 	}
 
-	plugins.push(inlineCssPlugin(), buildNotificationPlugin())
+	plugins.push(buildNotificationPlugin())
 
 	// // Add nowiki banner plugins for non-single builds
 	// if (!buildMode.isSingle) {
