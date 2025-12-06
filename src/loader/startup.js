@@ -8,6 +8,7 @@
 import '../shared/polyfills'
 
 import './convenientDiscussions'
+import '../../dist/convenientDiscussions-i18n/en'
 
 import defaultConfig from '../../config/default'
 import configUrls from '../../config/urls.json'
@@ -18,7 +19,6 @@ import { typedKeysOf, unique } from '../shared/utils-general'
 import { getFooter } from '../utils-window'
 
 import cd from './cd'
-
 ;(async () => {
 	await bootstrap()
 	$(start)
@@ -226,13 +226,13 @@ async function getStrings() {
  *
  * @fires preprocessed
  */
-async function start() {
+function start() {
 	cd.debug.startTimer('start')
 
 	// MAIN TASKS
 
 	makeSureConfigIsSet()
-	await makeSureStringsAreSet()
+	makeSureStringsAreSet()
 	cd.loader.init()
 
 	// ADDITIONAL TWEAKS
@@ -274,16 +274,13 @@ function makeSureConfigIsSet() {
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.messages mw.messages} if not
  * already.
  */
-async function makeSureStringsAreSet() {
+function makeSureStringsAreSet() {
 	if (Object.keys(mw.messages.get()).some((key) => key.startsWith('convenient-discussions-')))
 		return
 
 	// Strings that should be displayed in the site language, not the user language.
 	const contentStrings = ['es-', 'cf-autocomplete-commentlinktext', 'move-']
 
-	if (!SINGLE_LANG_CODE) {
-		await import('../../dist/convenientDiscussions-i18n/en')
-	}
 	const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
 		const lang = contentStrings.some(
 			(contentStringName) =>

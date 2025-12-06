@@ -128,9 +128,9 @@ class AutocompleteManager {
 	 * @private
 	 */
 	createAutocompleteInstances(types, typeConfigs) {
-		types.forEach(async (type) => {
+		types.forEach((type) => {
 			const config = typeConfigs[type] || {}
-			const instance = await AutocompleteFactory.create(type, config)
+			const instance = AutocompleteFactory.create(type, config)
 			instance.manager = this
 			this.autocompleteInstances.set(type, instance)
 		})
@@ -140,8 +140,6 @@ class AutocompleteManager {
 	 * Initialize autocomplete for the inputs.
 	 */
 	init() {
-		import('./tribute/tribute.less')
-
 		this.inputs.forEach((input) => {
 			const element = input.$input[0]
 			this.tribute.attach(element)
