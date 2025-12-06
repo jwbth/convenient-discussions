@@ -19,8 +19,10 @@ import { getFooter } from '../utils-window'
 
 import cd from './cd'
 
-await bootstrap()
-$(start)
+;(async () => {
+	await bootstrap()
+	$(start)
+})()
 
 /**
  * The function that is called first.

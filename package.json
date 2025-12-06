@@ -13,6 +13,8 @@
 	"license": "MIT",
 	"author": "Jack who built the house",
 	"sideEffects": [
+		"./src/loader/convenientDiscussions.loader.js",
+		"./src/shared/polyfills.js",
 		"./src/worker/worker.js",
 		"./src/worker/extendDomhandler.js"
 	],
