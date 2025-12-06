@@ -1,14 +1,14 @@
 import dateFormats from '../../data/dateFormats.json'
 import digitsData from '../../data/digits.json'
 import languageFallbacks from '../../data/languageFallbacks.json'
-import CommentLayersCss from '../Comment.layers.less'
-import CommentCss from '../Comment.less'
-import CommentFormCss from '../CommentForm.less'
-import SectionCss from '../Section.less'
-import addCommentLinksCss from '../addCommentLinks.less'
-import globalCss from '../global.less'
-import navPanelCss from '../navPanel.less'
-import pageNavCss from '../pageNav.less'
+import CommentLayersCss from '../Comment.layers.less?inline'
+import CommentCss from '../Comment.less?inline'
+import CommentFormCss from '../CommentForm.less?inline'
+import SectionCss from '../Section.less?inline'
+import addCommentLinksCss from '../addCommentLinks.less?inline'
+import globalCss from '../global.less?inline'
+import navPanelCss from '../navPanel.less?inline'
+import pageNavCss from '../pageNav.less?inline'
 import {
 	defined,
 	getQueryParamBooleanValue,
@@ -18,9 +18,9 @@ import {
 	unique,
 } from '../shared/utils-general'
 import { dateTokenToMessageNames } from '../shared/utils-timestamp'
-import skinsCss from '../skins.less'
-import talkPageCss from '../talkPage.less'
-import tocCss from '../toc.less'
+import skinsCss from '../skins.less?inline'
+import talkPageCss from '../talkPage.less?inline'
+import tocCss from '../toc.less?inline'
 import { getUserInfo, splitIntoBatches } from '../utils-api'
 import { createSvg, transparentize } from '../utils-window'
 
@@ -591,11 +591,12 @@ class Loader {
 									meta: 'siteinfo',
 									siprop: ['specialpagealiases', 'general'],
 								})
-							.then((response) => {
-								const specialPageAliases = /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
-									response.query.specialpagealiases
-								)
-								specialPageAliases
+								.then((response) => {
+									const specialPageAliases =
+										/** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+											response.query.specialpagealiases
+										)
+									specialPageAliases
 										.filter((page) => specialPages.includes(page.realname))
 										.forEach((page) => {
 											cd.g.specialPageAliases[page.realname] = page.aliases.slice(

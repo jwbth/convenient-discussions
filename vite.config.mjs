@@ -2,10 +2,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { defineConfig } from 'vite'
-import banner from 'vite-plugin-banner'
 
 import nonNullableConfig from './config.mjs'
-import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs'
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
 const cdConfig = nonNullableConfig
@@ -135,9 +133,9 @@ function licenseExtractionPlugin(buildMode) {
 }
 
 /**
- * Custom plugin for build notifications.
- * Matches webpack-build-notifier behavior: suppress success and warning notifications,
- * only show errors (unless it's the first successful build after an error).
+ * Custom plugin for build notifications. Matches webpack-build-notifier behavior: suppress success
+ * and warning notifications, only show errors (unless it's the first successful build after an
+ * error).
  *
  * @returns {import('vite').Plugin}
  */
