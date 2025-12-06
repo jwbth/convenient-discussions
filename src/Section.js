@@ -341,10 +341,7 @@ class Section extends SectionSkeleton {
 			container = document.createElement('dl')
 			container.className = 'cd-commentLevel cd-commentLevel-1 cd-section-button-container'
 			const lastElementParent = /** @type {HTMLElement} */ (lastElement.parentElement)
-			lastElementParent.insertBefore(
-				container,
-				lastElement.nextElementSibling,
-			)
+			lastElementParent.insertBefore(container, lastElement.nextElementSibling)
 		} else {
 			container = lastElement
 			container.classList.add('cd-section-button-container')
@@ -416,7 +413,9 @@ class Section extends SectionSkeleton {
 			...[button?.element, baseSection?.addSubsectionButtonLastDescendant?.element].filter(defined),
 		)
 
-		const lastElementInFirstChunkParent = /** @type {HTMLElement} */ (this.lastElementInFirstChunk.parentElement)
+		const lastElementInFirstChunkParent = /** @type {HTMLElement} */ (
+			this.lastElementInFirstChunk.parentElement
+		)
 		lastElementInFirstChunkParent.insertBefore(
 			container,
 			this.lastElementInFirstChunk.nextElementSibling,
@@ -505,7 +504,9 @@ class Section extends SectionSkeleton {
 		if (this.hideAddSubsectionButtonTimeout) return
 
 		this.hideAddSubsectionButtonTimeout = setTimeout(() => {
-			const addSubsectionButtonsContainerTyped = /** @type {JQuery} */ (this.$addSubsectionButtonsContainer)
+			const addSubsectionButtonsContainerTyped = /** @type {JQuery} */ (
+				this.$addSubsectionButtonsContainer
+			)
 			addSubsectionButtonsContainerTyped.hide()
 		}, 1000)
 	}
@@ -521,7 +522,9 @@ class Section extends SectionSkeleton {
 		if (this.showAddSubsectionButtonTimeout) return
 
 		this.showAddSubsectionButtonTimeout = setTimeout(() => {
-			const addSubsectionButtonsContainerTyped = /** @type {JQuery} */ (this.$addSubsectionButtonsContainer)
+			const addSubsectionButtonsContainerTyped = /** @type {JQuery} */ (
+				this.$addSubsectionButtonsContainer
+			)
 			addSubsectionButtonsContainerTyped.show()
 		}, 1000)
 	}
@@ -1044,7 +1047,9 @@ class Section extends SectionSkeleton {
 				].filter(defined),
 			)
 			.on('toggle', (visible) => {
-				const moreMenuSelectTyped = /** @type {OO.ui.ButtonMenuSelectWidget} */ (this.actions.moreMenuSelect)
+				const moreMenuSelectTyped = /** @type {OO.ui.ButtonMenuSelectWidget} */ (
+					this.actions.moreMenuSelect
+				)
 				moreMenuSelectTyped.setFlags({
 					progressive: visible,
 				})
@@ -1114,7 +1119,9 @@ class Section extends SectionSkeleton {
 	 */
 	createAndClickMoreMenuSelect() {
 		this.addMoreMenuSelect()
-		const moreMenuSelectTyped = /** @type {OO.ui.ButtonMenuSelectWidget} */ (this.actions.moreMenuSelect)
+		const moreMenuSelectTyped = /** @type {OO.ui.ButtonMenuSelectWidget} */ (
+			this.actions.moreMenuSelect
+		)
 		moreMenuSelectTyped.focus().emit('click')
 	}
 
@@ -1211,10 +1218,7 @@ class Section extends SectionSkeleton {
 			this.headingElement.querySelector('.ext-discussiontools-init-section-bar')?.remove()
 		}
 		const headingElementParent = /** @type {HTMLElement} */ (this.headingElement.parentElement)
-		headingElementParent.insertBefore(
-			barElement,
-			this.headingElement.nextElementSibling,
-		)
+		headingElementParent.insertBefore(barElement, this.headingElement.nextElementSibling)
 
 		if (this.lastElement === this.headingElement) {
 			this.lastElement = barElement
@@ -1381,9 +1385,9 @@ class Section extends SectionSkeleton {
 	 *
 	 * @param {object} [initialState]
 	 * @param {import('./CommentForm').default} [commentForm]
-	 * @returns {Promise<import('./CommentForm').default>}
+	 * @returns {import('./CommentForm').default}
 	 */
-	async reply(initialState, commentForm) {
+	reply(initialState, commentForm) {
 		// Check for existence in case replying is called from a script of some kind (there is no button
 		// to call it from CD).
 		if (!this.replyForm) {
@@ -1397,7 +1401,7 @@ class Section extends SectionSkeleton {
 			 *
 			 * @type {import('./CommentForm').default | undefined}
 			 */
-			this.replyForm = await commentFormManager.setupCommentForm(
+			this.replyForm = commentFormManager.setupCommentForm(
 				this,
 				{
 					mode: 'replyInSection',
@@ -1420,7 +1424,7 @@ class Section extends SectionSkeleton {
 	 *
 	 * @param {object} [initialState]
 	 * @param {import('./CommentForm').default} [commentForm]
-	 * @returns {Promise<import('./CommentForm').default>}
+	 * @returns {import('./CommentForm').default}
 	 * @throws {CdError}
 	 */
 	addSubsection(initialState, commentForm) {
@@ -1516,7 +1520,7 @@ class Section extends SectionSkeleton {
 	/**
 	 * Show a move section dialog.
 	 */
-	async move() {
+	move() {
 		if (cd.loader.isPageOverlayOn()) return
 
 		const dialog = new MoveSectionDialog(this)

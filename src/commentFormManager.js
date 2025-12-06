@@ -104,16 +104,15 @@ class CommentFormManager extends EventEmitter {
 	 * @param {import('./CommentForm').CommentFormInitialState} [initialState] See
 	 *   {@link CommentForm}'s constructor.
 	 * @param {import('./CommentForm').default} [commentForm]
-	 * @returns {Promise<CommentForm>}
+	 * @returns {CommentForm}
 	 * @fires commentFormCreated
 	 */
-	async setupCommentForm(target, config, initialState, commentForm) {
+	setupCommentForm(target, config, initialState, commentForm) {
 		if (commentForm) {
 			commentForm.setTargets(target)
 			target.addCommentFormToPage(config.mode, commentForm)
 		} else {
 			const cf = new CommentForm({ target, initialState, ...config })
-			await cf.buildPromise
 			target.addCommentFormToPage(config.mode, cf)
 			cf.setup(initialState)
 			this.items.push(cf)
@@ -327,9 +326,10 @@ class CommentFormManager extends EventEmitter {
 					const target = this.getTargetByData(data.targetData)
 					if (data.targetWithOutdentedRepliesData) {
 						const dataTyped = /** @type {import('./CommentForm').CommentFormInitialState} */ (data)
-						dataTyped.targetWithOutdentedReplies = /** @type {import('./Comment').default|undefined} */ (
-							this.getTargetByData(data.targetWithOutdentedRepliesData)
-						)
+						dataTyped.targetWithOutdentedReplies =
+							/** @type {import('./Comment').default|undefined} */ (
+								this.getTargetByData(data.targetWithOutdentedRepliesData)
+							)
 					}
 					if (
 						target?.isActionable &&

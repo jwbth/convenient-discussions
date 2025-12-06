@@ -128,7 +128,7 @@ const existingSignature = ' [[User:Example|Example]] 00:00, 1 October 2021 (UTC)
  */
 
 /**
- * @typedef {Partial<Omit<import('../src/CommentForm').default, 'headlineInput'>> & CommentFormTestExtension} CommentFormMock
+ * @typedef {Partial<Omit<import('../src/CommentForm').default, 'headlineInput' | 'target'>> & CommentFormTestExtension} CommentFormMock
  */
 
 /** @type {CommentFormMock} */
