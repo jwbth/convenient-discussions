@@ -34,7 +34,7 @@ import TributeEvents from './TributeEvents'
 import TributeMenuEvents from './TributeMenuEvents'
 import TributeRange from './TributeRange'
 import TributeSearch from './TributeSearch'
-import './tribute.less'
+import tributeCss from './tribute.less?inline'
 
 /**
  * Properties that are shared between global config and individual collections. Global config
@@ -147,6 +147,8 @@ import './tribute.less'
  */
 
 class Tribute {
+	static cssInjected = false
+
 	constructor(
 		/** @type {TributeConfig} */ {
 			selectClass = 'highlight',
@@ -167,6 +169,11 @@ class Tribute {
 			direction = 'ltr',
 		},
 	) {
+		if (!Tribute.cssInjected) {
+			mw.util.addCSS(tributeCss)
+			Tribute.cssInjected = true
+		}
+
 		this.current = /** @type {{
 			collection: TributeCollection | null,
 			trigger: string | null,
