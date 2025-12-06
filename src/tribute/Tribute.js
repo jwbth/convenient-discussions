@@ -34,7 +34,7 @@ import TributeEvents from './TributeEvents'
 import TributeMenuEvents from './TributeMenuEvents'
 import TributeRange from './TributeRange'
 import TributeSearch from './TributeSearch'
-import './tribute.less?inline'
+import './tribute.less'
 
 /**
  * Properties that are shared between global config and individual collections. Global config

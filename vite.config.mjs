@@ -164,6 +164,55 @@ function buildNotificationPlugin() {
 }
 
 /**
+ * Custom plugin to inline CSS into JavaScript bundles.
+ *
+ * @returns {import('vite').Plugin}
+ */
+function inlineCssPlugin() {
+	return {
+		name: 'inline-css',
+		apply: 'build',
+		enforce: 'post',
+		generateBundle(_options, bundle) {
+			// Collect all CSS assets
+			const cssAssets = []
+			for (const [fileName, chunk] of Object.entries(bundle)) {
+				if (fileName.endsWith('.css') && chunk.type === 'asset') {
+					cssAssets.push({ fileName, source: chunk.source })
+				}
+			}
+
+			// If there's CSS to inline, inject it into the main JS chunks
+			if (cssAssets.length > 0) {
+				const cssContent = cssAssets.map((c) => c.source).join('\n')
+				const cssInjectionCode = `
+(function() {
+	if (typeof document !== 'undefined' && document.head) {
+		const style = document.createElement('style');
+		style.textContent = ${JSON.stringify(cssContent)};
+		document.head.appendChild(style);
+	}
+})();
+`
+
+				// Inject into main bundle
+				for (const [fileName, chunk] of Object.entries(bundle)) {
+					if (chunk.type === 'chunk' && fileName.endsWith('-main.js')) {
+						chunk.code += '\n' + cssInjectionCode
+						break // Only inject once
+					}
+				}
+
+				// Remove CSS files from bundle
+				for (const { fileName } of cssAssets) {
+					delete bundle[fileName]
+				}
+			}
+		},
+	}
+}
+
+/**
  * Custom plugin to inject custom source map URL.
  *
  * @param {string} baseUrl
@@ -282,7 +331,7 @@ export default defineConfig(({ mode, command }) => {
 			buildMode.isSingle && buildMode.lang
 				? JSON.stringify(buildMode.lang)
 				: 'undefined',
-		CACHE_BUSTER: generateRandomId(),
+		CACHE_BUSTER: JSON.stringify(generateRandomId()),
 	}
 
 	const plugins = []
@@ -315,6 +364,9 @@ export default defineConfig(({ mode, command }) => {
 	}
 
 	plugins.push(buildNotificationPlugin())
+
+	// Add inline CSS plugin to inject styles into JavaScript bundles
+	plugins.push(inlineCssPlugin())
 
 	// // Add nowiki banner plugins for non-single builds
 	// if (!buildMode.isSingle) {
