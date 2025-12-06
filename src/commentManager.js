@@ -259,7 +259,7 @@ export class CommentManager extends EventEmitter {
 	 */
 	initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
 		let timeConflict = false
-		const unseenComments = bootManager.getBootProcess().passedData.unseenComments
+		const unseenComments = controller.getBootProcess().passedData.unseenComments
 		this.items.forEach((comment) => {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const commentTimeConflict = comment.initNewAndSeen(
@@ -308,7 +308,7 @@ export class CommentManager extends EventEmitter {
 	 * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
 	 */
 	maybeRedrawLayers = (redrawAll = false) => {
-		if (bootManager.isBooting() || (document.hidden && !redrawAll)) return
+		if (cd.loader.isBooting() || (document.hidden && !redrawAll)) return
 
 		this.layersContainers.forEach((container) => {
 			container.cdCouldHaveMoved = true
@@ -600,9 +600,11 @@ export class CommentManager extends EventEmitter {
 
 		// Since we've confirmed this is a CompactCommentManager, we know items are CompactComment[]
 		const itemsTyped = /** @type {import('./CompactComment').default[]} */ (this.items)
-		itemsTyped.filter((comment) => Boolean(comment.layers)).forEach((comment) => {
-			comment.updateHoverState(event, isObstructingElementHovered)
-		})
+		itemsTyped
+			.filter((comment) => Boolean(comment.layers))
+			.forEach((comment) => {
+				comment.updateHoverState(event, isObstructingElementHovered)
+			})
 	}
 
 	/**
@@ -791,7 +793,7 @@ export class CommentManager extends EventEmitter {
 			classes: ['cd-button-ooui'],
 		})
 		button.on('click', () => {
-			bootManager.rebootTalkPage({
+			controller.rebootPage({
 				commentIds: descendantComments.map((comment) => comment.id).filter(definedAndNotNull),
 				pushState: true,
 			})
@@ -1169,7 +1171,7 @@ export class CommentManager extends EventEmitter {
 		const commentIndex = element.dataset.cdCommentIndex
 		if (commentIndex === undefined) {
 			const elementParent = /** @type {HTMLElement} */ (element.parentElement)
-			element.replaceWith(newElement)
+			elementParent.replaceWith(newElement)
 		} else {
 			this.items[Number(commentIndex)].replaceElement(element, newElement)
 		}

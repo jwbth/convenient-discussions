@@ -3,7 +3,6 @@ import MentionsAutocomplete from './MentionsAutocomplete'
 import TagsAutocomplete from './TagsAutocomplete'
 import TemplatesAutocomplete from './TemplatesAutocomplete'
 import WikilinksAutocomplete from './WikilinksAutocomplete'
-import CdError from './shared/CdError'
 
 /**
  * @typedef {'mentions' | 'commentLinks' | 'wikilinks' | 'templates' | 'tags'} AutocompleteType
@@ -38,11 +37,6 @@ const AutocompleteFactory = {
 				return new TagsAutocomplete(options)
 			case 'commentLinks':
 				return new CommentLinksAutocomplete(options)
-			default:
-				throw new CdError({
-					type: 'internal',
-					message: `Unknown autocomplete type: ${String(type)}`,
-				})
 		}
 	},
 

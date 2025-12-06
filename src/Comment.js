@@ -565,15 +565,18 @@ class Comment extends CommentSkeleton {
 	/**
 	 * Update extra signature timestamps (common logic).
 	 *
+	 * @param {boolean} areTimestampsDefault Whether timestamps in the default format are shown to the
+	 *   user.
 	 * @private
 	 */
-	updateExtraSignatureTimestamps() {
+	updateExtraSignatureTimestamps(areTimestampsDefault) {
 		this.extraSignatures.forEach((sig) => {
 			if (!sig.timestampText) return
 
 			const { timestamp: extraSigTimestamp, title: extraSigTitle } = this.formatTimestamp(
 				/** @type {Date} */ (sig.date),
 				sig.timestampText,
+				areTimestampsDefault,
 			)
 			sig.timestampElement.textContent = extraSigTimestamp
 			sig.timestampElement.title = extraSigTitle
@@ -600,8 +603,8 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * Initialize comment structure after parsing.
-	 * Finds signature element, then delegates to subclass implementation.
+	 * Initialize comment structure after parsing. Finds signature element, then delegates to subclass
+	 * implementation.
 	 */
 	initializeCommentStructure() {
 		this.signatureElement = this.$elements.find('.cd-signature')[0]
@@ -720,7 +723,7 @@ class Comment extends CommentSkeleton {
 		if (timestamp) {
 			this.reformattedTimestamp = timestamp
 			this.timestampTitle = title
-			this.updateTimestampElements(timestamp, title)
+			this.updateTimestampElements(timestamp, title, areTimestampsDefault)
 		}
 	}
 
@@ -761,13 +764,16 @@ class Comment extends CommentSkeleton {
 	 *
 	 * @param {string} timestamp
 	 * @param {string} title
+	 * @param {boolean} areTimestampsDefault Whether timestamps in the default format are shown to the
+	 *   user.
+	 * @private
 	 */
-	updateTimestampElements(timestamp, title) {
+	updateTimestampElements(timestamp, title, areTimestampsDefault) {
 		// Let subclass handle main timestamp element
 		this.updateMainTimestampElement(timestamp, title)
 
 		// Handle extra signatures (common logic)
-		this.updateExtraSignatureTimestamps()
+		this.updateExtraSignatureTimestamps(areTimestampsDefault)
 	}
 
 	/**
@@ -1663,7 +1669,6 @@ class Comment extends CommentSkeleton {
 								}
 								mw.notify(wrapHtml(text), { type: code === 'emptyDiff' ? 'info' : 'error' })
 							}
-							const diffLinkTyped = /** @type {Button} */ (diffLink)
 							diffLinkTyped.setPending(false)
 						},
 					})
@@ -2244,7 +2249,7 @@ class Comment extends CommentSkeleton {
 		const thankButtonTyped = /** @type {import('./CommentButton').default} */ (
 			this.actions?.thankButton
 		)
-		thankButtonTyped?.setPending(false)
+		thankButtonTyped.setPending(false)
 	}
 
 	/**
@@ -2762,7 +2767,7 @@ class Comment extends CommentSkeleton {
 		} else {
 			newElement = newElementOrHtml
 			const nativeElementParent = /** @type {HTMLElement} */ (nativeElement.parentElement)
-			element.replaceWith(newElement)
+			nativeElementParent.replaceWith(newElement)
 		}
 
 		// When we set .$elements, the setter automatically sets .elements. But not vice versa except

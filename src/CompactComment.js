@@ -225,7 +225,7 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	handleHover = (event) => {
-		if (this.isHovered || bootManager.isPageOverlayOn()) return
+		if (this.isHovered || cd.loader.isPageOverlayOn()) return
 
 		if (event?.type === 'touchstart') {
 			if (this.layers?.wasMenuHidden) {
@@ -235,12 +235,13 @@ class CompactComment extends Comment {
 			}
 
 			// FIXME: decouple
-			const commentManagerTyped = /** @type {import('./commentManager').default<CompactComment>} */ (
-				commentManager
-			)
-			commentManagerTyped.query((comment) => comment.isHovered).forEach((comment) => {
-				comment.handleUnhover()
-			})
+			const commentManagerTyped =
+				/** @type {import('./commentManager').default<CompactComment>} */ (commentManager)
+			commentManagerTyped
+				.query((comment) => comment.isHovered)
+				.forEach((comment) => {
+					comment.handleUnhover()
+				})
 		}
 
 		// Animation will be directed to wrong properties if we keep it going.

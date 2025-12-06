@@ -38,7 +38,6 @@ async function app() {
 
 /**
  * Set a number of {@link convenientDiscussions global object} properties.
- * Moved from bootManager.initGlobals()
  */
 export function initGlobals() {
 	// Halt if already initialized
@@ -126,7 +125,6 @@ export function initGlobals() {
 
 /**
  * Set the {@link convenientDiscussions} properties related to timestamp parsing.
- * Moved from bootManager.initTimestampTools()
  *
  * This should run after getSiteData() so that cd.g.timestampTools.content.timezone is available.
  */
@@ -175,7 +173,8 @@ export function initTimestampTools() {
 
 /**
  * Get a regexp that matches timestamps (without timezone at the end).
- * Helper for initTimestampTools(). Moved from bootManager.getTimestampMainPartPattern()
+ *
+ * Helper for initTimestampTools().
  *
  * @param {LanguageTarget} languageTarget
  * @returns {string}
@@ -259,7 +258,8 @@ function getTimestampMainPartPattern(languageTarget) {
 
 /**
  * Get codes of date components for timestamp parsing.
- * Helper for initTimestampTools(). Moved from bootManager.getMatchingGroups()
+ *
+ * Helper for initTimestampTools().
  *
  * @param {string} format
  * @returns {string[]}

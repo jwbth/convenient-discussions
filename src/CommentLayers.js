@@ -1,5 +1,6 @@
 import PrototypeRegistry from './PrototypeRegistry'
 import commentManager from './commentManager'
+import cd from './loader/cd'
 import TreeWalker from './shared/TreeWalker'
 import { addToArrayIfAbsent, sleep } from './shared/utils-general.js'
 import { isVisible } from './utils-window'
@@ -517,7 +518,7 @@ class CommentLayers {
 				const classList = new Set(Array.from(node.classList))
 				if (
 					['absolute', 'relative'].includes(style.position) ||
-					(node !== bootManager.$content[0] &&
+					(node !== cd.loader.$content[0] &&
 						(classList.has('mw-content-ltr') || classList.has('mw-content-rtl')))
 				) {
 					offsetParent = node

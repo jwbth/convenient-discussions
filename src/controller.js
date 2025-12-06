@@ -67,7 +67,6 @@ class Controller extends EventEmitter {
 
 	/**
 	 * The current (or last available) boot process.
-	 * Moved from bootManager.bootProcess
 	 *
 	 * @type {import('./BootProcess').default}
 	 */
@@ -498,7 +497,7 @@ class Controller extends EventEmitter {
 
 		if (this.scrollData.tocHeight) {
 			this.scrollData.offset +=
-				/** @type {JQuery} */ ((toc.$element).outerHeight() || 0) - this.scrollData.tocHeight
+				/** @type {JQuery} */ (toc.$element.outerHeight() || 0) - this.scrollData.tocHeight
 		}
 		window.scrollTo(0, this.scrollData.offset)
 
@@ -1745,7 +1744,6 @@ class Controller extends EventEmitter {
 
 	/**
 	 * Create a boot process.
-	 * Moved from bootManager.createBootProcess()
 	 *
 	 * @param {import('./BootProcess').PassedData} [passedData]
 	 * @returns {import('./BootProcess').default}
@@ -1794,11 +1792,11 @@ class Controller extends EventEmitter {
 		cd.debug.stopTimer('total time')
 
 		const timePerComment = // @ts-ignore
-		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-		(
-			(cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')) /
-			commentManager.getCount()
-		).toFixed(2)
+			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+			(
+				(cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')) /
+				commentManager.getCount()
+			).toFixed(2)
 
 		cd.debug.logAndResetTimer('total time')
 		console.debug(`number of comments: ${commentManager.getCount()}`)
