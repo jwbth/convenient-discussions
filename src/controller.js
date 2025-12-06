@@ -496,8 +496,8 @@ class Controller extends EventEmitter {
 		if (this.scrollData.offset === undefined) return
 
 		if (this.scrollData.tocHeight) {
-			this.scrollData.offset +=
-				/** @type {JQuery} */ (toc.$element.outerHeight() || 0) - this.scrollData.tocHeight
+			const $elementTyped = /** @type {JQuery} */ (toc.$element)
+			this.scrollData.offset += ($elementTyped.outerHeight() || 0) - this.scrollData.tocHeight
 		}
 		window.scrollTo(0, this.scrollData.offset)
 

@@ -34,6 +34,7 @@ require('../src/jqueryExtensions')
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
 const en = require('../i18n/en.json')
 const Comment = require('../src/Comment').default
+const commentManager = require('../src/commentManager').default
 const settings = require('../src/settings').default
 const cd = require('../src/shared/cd').default
 const { formatDateNative, initDayjs } = require('../src/utils-window')
@@ -130,7 +131,7 @@ function testWithSettings({
 	test(
 		spacePad(conditions, 60) +
 			' ' +
-			(reformattedTimestamp ? `"${reformattedTimestamp}"` : reformattedTimestamp),
+			(reformattedTimestamp ? `"${reformattedTimestamp}"` : String(reformattedTimestamp)),
 		() => {
 			/** @type {{ [x: string]: any }} */
 			const comment = {
@@ -143,10 +144,12 @@ function testWithSettings({
 
 			const adaptedReformatTimestamp = (/** @type {Timestamp} */ d) => {
 				comment.date = new Date(d)
-				comment.formatTimestamp = Comment.prototype.formatTimestamp
-				comment.updateTimestampElements = Comment.prototype.updateTimestampElements
-				comment.updateMainTimestampElement = Comment.prototype.updateMainTimestampElement
-				comment.updateExtraSignatureTimestamps = Comment.prototype.updateExtraSignatureTimestamps
+				comment.formatTimestamp = Comment.prototype.formatTimestamp.bind(Comment)
+				comment.updateTimestampElements = Comment.prototype.updateTimestampElements.bind(Comment)
+				comment.updateMainTimestampElement =
+					Comment.prototype.updateMainTimestampElement.bind(Comment)
+				comment.updateExtraSignatureTimestamps =
+					Comment.prototype.updateExtraSignatureTimestamps.bind(Comment)
 				Comment.prototype.reformatTimestamp.call(comment)
 
 				return {
@@ -161,7 +164,7 @@ function testWithSettings({
 			settings.set('timestampFormat', timestampFormat)
 			settings.set('useUiTime', useUiTime)
 			settings.set('hideTimezone', hideTimezone)
-			cd.g.areTimestampsDefault = !(
+			commentManager.timestampsDefault = !(
 				(settings.get('useUiTime') && 'UTC' !== cd.g.uiTimezone) ||
 				settings.get('timestampFormat') !== 'default' ||
 				mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||

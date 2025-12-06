@@ -549,12 +549,12 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * Update the main timestamp element.
+	 * _For internal use._ Update the main timestamp element.
+	 *
 	 * This method should be overridden by subclasses.
 	 *
 	 * @param {string} timestamp
 	 * @param {string} title
-	 * @protected
 	 */
 	updateMainTimestampElement(timestamp, title) {
 		// Default implementation for tests. TODO: Added by Sonnet. Get rid of?
@@ -563,20 +563,15 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * Update extra signature timestamps (common logic).
-	 *
-	 * @param {boolean} areTimestampsDefault Whether timestamps in the default format are shown to the
-	 *   user.
-	 * @private
+	 * _For internal use._ Update extra signature timestamps (common logic).
 	 */
-	updateExtraSignatureTimestamps(areTimestampsDefault) {
+	updateExtraSignatureTimestamps() {
 		this.extraSignatures.forEach((sig) => {
 			if (!sig.timestampText) return
 
 			const { timestamp: extraSigTimestamp, title: extraSigTitle } = this.formatTimestamp(
 				/** @type {Date} */ (sig.date),
 				sig.timestampText,
-				areTimestampsDefault,
 			)
 			sig.timestampElement.textContent = extraSigTimestamp
 			sig.timestampElement.title = extraSigTitle
@@ -709,21 +704,15 @@ class Comment extends CommentSkeleton {
 	 * _For internal use._ Change the format of the comment timestamp according to the settings. Do
 	 * the same with extra timestamps in the comment.
 	 *
-	 * @param {boolean} areTimestampsDefault Whether timestamps in the default format are shown to the
-	 *   user.
 	 */
-	reformatTimestamp(areTimestampsDefault) {
+	reformatTimestamp() {
 		if (!this.date) return
 
-		const { timestamp, title } = this.formatTimestamp(
-			this.date,
-			this.timestampElement.textContent,
-			areTimestampsDefault,
-		)
+		const { timestamp, title } = this.formatTimestamp(this.date, this.timestampElement.textContent)
 		if (timestamp) {
 			this.reformattedTimestamp = timestamp
 			this.timestampTitle = title
-			this.updateTimestampElements(timestamp, title, areTimestampsDefault)
+			this.updateTimestampElements(timestamp, title)
 		}
 	}
 
@@ -732,13 +721,12 @@ class Comment extends CommentSkeleton {
 	 *
 	 * @param {Date} date
 	 * @param {string} originalTimestamp
-	 * @param {boolean} areTimestampsDefault
 	 * @returns {{ timestamp: string; title: string }}
 	 */
-	formatTimestamp(date, originalTimestamp, areTimestampsDefault) {
+	formatTimestamp(date, originalTimestamp) {
 		let timestamp
 		let title = ''
-		if (!areTimestampsDefault) {
+		if (!commentManager.areTimestampsDefault()) {
 			timestamp = formatDate(date, !this.hideTimezone)
 		}
 
@@ -759,21 +747,19 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * Update timestamp elements with formatted timestamp and title.
+	 * _For internal use._ Update timestamp elements with formatted timestamp and title.
+	 *
 	 * Handles main timestamp update, then processes extra signatures.
 	 *
 	 * @param {string} timestamp
 	 * @param {string} title
-	 * @param {boolean} areTimestampsDefault Whether timestamps in the default format are shown to the
-	 *   user.
-	 * @private
 	 */
-	updateTimestampElements(timestamp, title, areTimestampsDefault) {
+	updateTimestampElements(timestamp, title) {
 		// Let subclass handle main timestamp element
 		this.updateMainTimestampElement(timestamp, title)
 
 		// Handle extra signatures (common logic)
-		this.updateExtraSignatureTimestamps(areTimestampsDefault)
+		this.updateExtraSignatureTimestamps()
 	}
 
 	/**

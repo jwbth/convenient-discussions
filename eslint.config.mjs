@@ -89,6 +89,12 @@ const config = defineConfig(
 					startLines: 1,
 				},
 			],
+
+			// VS Code allows Typescript types in JSDoc (e.g.
+			// `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`), so we don't need
+			// to enforce traditional JSDoc types. But need to be careful with this, since this disables
+			// us to catch invalid types.
+			'jsdoc/valid-types': 'off',
 		},
 	}),
 	importPlugin.flatConfigs.recommended,

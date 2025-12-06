@@ -666,9 +666,8 @@ class Settings extends EventEmitter {
 	}
 
 	/**
-	 * Initialize user settings.
+	 * _For internal use._ Initialize user settings.
 	 *
-	 * @private
 	 */
 	async init() {
 		// We fill the settings after the modules are loaded so that the settings set via common.js

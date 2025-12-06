@@ -74,7 +74,7 @@ export class CommentManager extends EventEmitter {
 	 *
 	 * @type {boolean}
 	 */
-	areTimestampsDefault
+	timestampsDefault
 
 	/**
 	 * Type guard to check if this is a CommentManager managing SpaciousComment instances.
@@ -98,7 +98,7 @@ export class CommentManager extends EventEmitter {
 	 * _For internal use._ Initialize the registry.
 	 */
 	init() {
-		this.areTimestampsDefault =
+		this.timestampsDefault =
 			(!settings.get('useUiTime') ||
 				cd.g.timestampTools.content.timezone === cd.g.timestampTools.user.timezone) &&
 			settings.get('timestampFormat') === 'default' &&
@@ -889,10 +889,10 @@ export class CommentManager extends EventEmitter {
 	 * _For internal use._ Change the format of the comment timestamps according to the settings.
 	 */
 	reformatTimestamps() {
-		if (this.areTimestampsDefault) return
+		if (this.timestampsDefault) return
 
 		this.items.forEach((comment) => {
-			comment.reformatTimestamp(this.areTimestampsDefault)
+			comment.reformatTimestamp()
 		})
 	}
 
@@ -1366,6 +1366,15 @@ export class CommentManager extends EventEmitter {
 	 */
 	getThanksStorage() {
 		return this.thanksStorage
+	}
+
+	/**
+	 * Determine whether the timestamps are in the default format.
+	 *
+	 * @returns {boolean}
+	 */
+	areTimestampsDefault() {
+		return this.timestampsDefault
 	}
 }
 

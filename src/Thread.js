@@ -993,7 +993,7 @@ class Thread extends mixInObject(
 					?.getMenu()
 					.findItemFromData('editOpeningComment')
 			)
-			editOpeningCommentItem?.setDisabled(true)
+			editOpeningCommentItem.setDisabled(true)
 		}
 
 		if (this.endElement !== this.visualEndElement) {
