@@ -356,7 +356,7 @@ export default defineConfig(({ mode, command }) => {
 			target: 'es2020',
 
 			// Minification configuration
-			minify: buildMode.isDev ? false : 'esbuild',
+			minify: effectiveIsDev ? false : 'esbuild',
 
 			// esbuild minification options
 			esbuildOptions: {
@@ -407,11 +407,14 @@ export default defineConfig(({ mode, command }) => {
 					// Output filename with mode-specific postfix
 					entryFileNames: `${bundleFilename}.js`,
 
+					// Chunk filename for dynamic imports
+					chunkFileNames: `${bundleFilename}-[name].js`,
+
 					// Module format (IIFE for browser global)
 					// format: 'iife',
 
-					// Disable code splitting (single output file)
-					// inlineDynamicImports: false,
+					// Inline all dynamic imports for production, allow code splitting for dev/single
+					inlineDynamicImports: !(effectiveIsDev || buildMode.isSingle),
 
 					// Enable module concatenation (hoisting transitive imports)
 					// hoistTransitiveImports: true,

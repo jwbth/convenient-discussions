@@ -286,6 +286,20 @@ const globalProperties = {
 	debug: getQueryParamBooleanValue('cddebug') ?? IS_DEV,
 
 	/**
+	 * Whether the script is running in development mode.
+	 *
+	 * @memberof convenientDiscussions.g
+	 */
+	isDev: IS_DEV,
+
+	/**
+	 * Whether the script is running in single-file mode.
+	 *
+	 * @memberof convenientDiscussions.g
+	 */
+	isSingle: IS_SINGLE,
+
+	/**
 	 * A replacement for
 	 * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
 	 * while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
