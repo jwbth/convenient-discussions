@@ -15,6 +15,7 @@ import type { ConvenientDiscussions } from './loader/cd'
 declare global {
 	const IS_STAGING: boolean
 	const IS_DEV: boolean
+	const IS_SINGLE: boolean
 	const SINGLE_CONFIG_FILE_NAME: string | undefined
 	const SINGLE_LANG_CODE: string | undefined
 	const CACHE_BUSTER: string

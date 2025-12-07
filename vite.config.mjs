@@ -274,6 +274,7 @@ export default defineConfig(({ mode, command }) => {
 	const defines = {
 		IS_DEV: JSON.stringify(effectiveIsDev),
 		IS_STAGING: JSON.stringify(buildMode.isStaging),
+		IS_SINGLE: JSON.stringify(buildMode.isSingle),
 		SINGLE_CONFIG_FILE_NAME:
 			buildMode.isSingle && buildMode.wiki
 				? JSON.stringify(buildMode.wiki)
@@ -401,23 +402,10 @@ export default defineConfig(({ mode, command }) => {
 
 			// Entry point and output configuration
 			rollupOptions: {
-				input: {
-					'convenientDiscussions-main': path.resolve(__dirname, 'src/app.js'),
-					'convenientDiscussions': path.resolve(
-						__dirname,
-						'src/loader/startup.js',
-					),
-				},
+				input: path.resolve(__dirname, 'src/loader/startup.js'),
 				output: {
 					// Output filename with mode-specific postfix
-					entryFileNames: (chunkInfo) => {
-						// Main bundle gets -main suffix, loader doesn't
-						if (chunkInfo.name === 'convenientDiscussions-main') {
-							return `convenientDiscussions-main${buildMode.filenamePostfix}.js`
-						}
-
-						return `${chunkInfo.name}${buildMode.filenamePostfix}.js`
-					},
+					entryFileNames: `${bundleFilename}.js`,
 
 					// Module format (IIFE for browser global)
 					// format: 'iife',

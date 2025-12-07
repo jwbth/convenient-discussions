@@ -674,6 +674,11 @@ class Loader {
 	 * @private
 	 */
 	loadApp() {
+		// In dev and single modes, use dynamic import to let Vite create a separate chunk
+		if (IS_DEV || IS_SINGLE) {
+			return import('../app.js').then(() => {})
+		}
+
 		return this.loadPreferablyFromDiskCache({
 			domain: 'commons.wikimedia.org',
 			pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
