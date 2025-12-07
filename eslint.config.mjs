@@ -124,7 +124,7 @@ const config = defineConfig(
 						'./src/worker/jsconfig.json',
 						'./src/shared/jsconfig.json',
 						'./tests/jsconfig.json',
-						'./playwright/jsconfig.json',
+						'./e2e/jsconfig.json',
 						'./config/jsconfig.json',
 						// './sandbox/jsconfig.json',
 					],

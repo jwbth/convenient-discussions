@@ -51,5 +51,5 @@ module.exports = defineConfig({
 	],
 
 	/* Build the script before running tests */
-	globalSetup: require.resolve('./playwright/global-setup.js'),
+	globalSetup: require.resolve('./e2e/global-setup.js'),
 })
