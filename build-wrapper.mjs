@@ -39,8 +39,6 @@ if (
 function constructCrossEnvCommand(customEnv, baseCommand) {
 	let crossEnvPrefix = ''
 
-	console.log(customEnv)
-
 	// 1. Iterate over the parsed arguments to build the cross-env prefix
 	for (const [key, value] of Object.entries(customEnv)) {
 		// It's good practice to prefix with VITE_ if these are meant for client-side access
@@ -62,7 +60,6 @@ if (args.mode === 'single' || args.single || process.env.VITE_SINGLE === '1') {
 }
 
 try {
-	console.log(command)
 	execSync(command, { stdio: 'inherit' })
 } catch (error) {
 	// @ts-ignore
