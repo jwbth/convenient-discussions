@@ -1,6 +1,6 @@
 /**
- * Main application entry point. This file is loaded by the loader via
- * loadPreferablyFromDiskCache() and initializes the main app.
+ * Main application entry point. This file is loaded by the loader via loadPreferablyFromDiskCache()
+ * and initializes the main app.
  *
  * @module app
  */

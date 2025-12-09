@@ -409,8 +409,8 @@ export default defineConfig(({ mode, command }) => {
 					// Module format (IIFE for browser global)
 					// format: 'iife',
 
-					// Inline all dynamic imports for production, allow code splitting for dev/single
-					inlineDynamicImports: !(effectiveIsDev || buildMode.isSingle),
+					// Inline all dynamic imports for production, allow code splitting for dev
+					inlineDynamicImports: !effectiveIsDev,
 
 					// Enable module concatenation (hoisting transitive imports)
 					// hoistTransitiveImports: true,

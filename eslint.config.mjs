@@ -102,9 +102,9 @@ const config = defineConfig(
 	importPlugin.flatConfigs.recommended,
 	importPlugin.flatConfigs.typescript,
 	stylistic.configs.customize({
-		semi: false,
-		arrowParens: true,
 		severity: 'warn',
+		arrowParens: true,
+		semi: false,
 		indent: 'tab',
 		quotes: 'single',
 	}),
