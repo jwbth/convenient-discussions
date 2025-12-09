@@ -219,13 +219,9 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
  * @returns {BuildMode}
  */
 function determineBuildMode(env, mode) {
-	const isDev = Boolean(
-		env.VITE_DEV || process.env.npm_config_dev || mode === 'development',
-	)
-	const isStaging = Boolean(env.VITE_STAGING || process.env.npm_config_staging)
-	const isSingle = Boolean(
-		env.VITE_SINGLE || process.env.npm_config_single || mode === 'single',
-	)
+	const isDev = Boolean(env.VITE_DEV || mode === 'development')
+	const isStaging = Boolean(env.VITE_STAGING)
+	const isSingle = Boolean(env.VITE_SINGLE || mode === 'single')
 
 	let filenamePostfix = ''
 	let lang
@@ -233,8 +229,8 @@ function determineBuildMode(env, mode) {
 	let project
 
 	if (isSingle) {
-		project = env.VITE_PROJECT || process.env.npm_config_project || 'w'
-		lang = env.VITE_LANG || process.env.npm_config_lang || 'en'
+		project = env.VITE_PROJECT || 'w'
+		lang = env.VITE_LANG || 'en'
 		wiki = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'].includes(project)
 			? `${project}-${lang}`
 			: project

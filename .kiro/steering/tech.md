@@ -34,13 +34,13 @@ npm run start
 npm run build
 
 # Development build
-npm run build --dev
+npm run build:dev
 
-# Test build (with .test postfix)
-npm run build --test
+# Staging build (with .staging postfix)
+npm run build:staging
 
-# Single-file build for specific wiki
-npm run single -- project=w lang=en
+# Single-file build for specific wiki (two `--` for Powershell)
+npm run single -- -- --project w --lang en
 
 # Run tests
 npm run test

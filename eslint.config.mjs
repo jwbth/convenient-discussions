@@ -95,6 +95,8 @@ const config = defineConfig(
 			// to enforce traditional JSDoc types. But need to be careful with this, since this disables
 			// us to catch invalid types.
 			'jsdoc/valid-types': 'off',
+
+			'jsdoc/require-hyphen-before-param-description': ['warn', 'never'],
 		},
 	}),
 	importPlugin.flatConfigs.recommended,
@@ -220,6 +222,7 @@ const config = defineConfig(
 					allowNullish: false,
 					allowNumber: true,
 					allowRegExp: false,
+					// allowUnknown: true,
 				},
 			],
 			'@typescript-eslint/no-dynamic-delete': 'off',
