@@ -6,7 +6,7 @@ import DtSubscriptions from './DtSubscriptions'
 import Section from './Section'
 import SpaciousComment from './SpaciousComment'
 import Thread from './Thread'
-import { initGlobals, initTimestampTools } from './app'
+// import { initGlobals, initTimestampTools } from './app'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -93,9 +93,7 @@ function processAndRemoveDtElements(elements) {
 			// of time if the elements aren't put into containers with less children.
 			if (i % 10 === 0) {
 				const dtMarkupHavenElementTyped = /** @type {HTMLSpanElement} */ (dtMarkupHavenElement)
-				dtMarkupHavenElementTyped.append(
-					document.createElement('span'),
-				)
+				dtMarkupHavenElementTyped.append(document.createElement('span'))
 			}
 			const dtMarkupHavenElementLastChild = /** @type {HTMLSpanElement} */ (
 				/** @type {HTMLSpanElement} */ (dtMarkupHavenElement).lastChild

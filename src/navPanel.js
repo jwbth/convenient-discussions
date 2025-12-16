@@ -8,12 +8,12 @@ import settings from './settings'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import updateChecker from './updateChecker'
 import {
-	createSvg,
 	formatDate,
 	isCmdModifierPressed,
 	isInputFocused,
 	keyCombination,
 } from './utils-window'
+import { createSvg } from './loader/convenientDiscussions.util'
 import visits from './visits'
 
 /**

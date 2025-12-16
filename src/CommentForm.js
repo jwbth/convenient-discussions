@@ -6,7 +6,7 @@ import CommentFormInputTransformer from './CommentFormInputTransformer'
 import CommentFormOperationRegistry from './CommentFormOperationRegistry'
 import EventEmitter from './EventEmitter'
 import MentionsAutocomplete from './MentionsAutocomplete'
-import UploadDialog from './UploadDialog'
+import getUploadDialogClass from './UploadDialog'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -663,7 +663,7 @@ class CommentForm extends EventEmitter {
 		await mw.loader.using(
 			cd.config.customCommentFormModules
 				.filter((module) => !module.checkFunc || module.checkFunc())
-				.map((module_1) => module_1.name),
+				.map((module) => module.name),
 		)
 
 		/**
@@ -1034,7 +1034,7 @@ class CommentForm extends EventEmitter {
 			const commentForm = this
 			dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons[
 				'wikieditor-toolbar-tool-file-upload'
-			] = /** @this {HTMLElement} */ function openUploadDialog() {
+			] = function openUploadDialog() {
 				$(this).dialog('close')
 				commentForm.uploadImage(undefined, true)
 			}
@@ -1285,6 +1285,7 @@ class CommentForm extends EventEmitter {
 
 			operation.close()
 
+			// Dummy comment to prevent Prettier from killing the empty line
 			;(this.headlineInput || this.commentInput).focus()
 			this.preview()
 		} catch (error) {
@@ -1435,7 +1436,7 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		this.uploadDialog = new UploadDialog()
+		this.uploadDialog = new (getUploadDialogClass())()
 		const windowManager = cd.getWindowManager()
 		windowManager.addWindows([this.uploadDialog])
 		const win = windowManager.openWindow(this.uploadDialog, {
@@ -1453,7 +1454,10 @@ class CommentForm extends EventEmitter {
 		 */
 
 		this.uploadDialog.uploadBooklet.on('fileSaved', (/** @type {ImageInfo} */ imageInfo) => {
-			const uploadDialogTyped = /** @type {import('./UploadDialog').default} */ (this.uploadDialog)
+			const uploadDialogTyped =
+				/** @type {InstanceType<ReturnType<import('./UploadDialog').default>>} */ (
+					this.uploadDialog
+				)
 			uploadDialogTyped.close()
 			win.closed.then(() => {
 				if (openInsertFileDialogAfterwards) {

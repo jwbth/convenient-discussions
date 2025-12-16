@@ -19,7 +19,7 @@
 		"./src/worker/extendDomhandler.js",
 		"./dist/convenientDiscussions-i18n/en.js"
 	],
-	"browser": "src/app.js",
+	"browser": "src/loader/startup.js",
 	"scripts": {
 		"build": "node build-wrapper.mjs",
 		"build:dev": "node build-wrapper.mjs --mode development",

@@ -410,7 +410,7 @@ export default defineConfig(({ mode, command }) => {
 					// format: 'iife',
 
 					// Inline all dynamic imports for production, allow code splitting for dev
-					inlineDynamicImports: !effectiveIsDev,
+					inlineDynamicImports: false,
 
 					// Enable module concatenation (hoisting transitive imports)
 					// hoistTransitiveImports: true,

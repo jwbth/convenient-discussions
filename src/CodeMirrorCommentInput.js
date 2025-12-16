@@ -1,13 +1,15 @@
+const codeMirrorExt = /** @type {typeof import('./CodeMirrorWikiEditor').default} */ (
+	mw.loader.getState('ext.CodeMirror.v6.WikiEditor') === 'ready'
+		? mw.loader.require('ext.CodeMirror.v6.WikiEditor')
+		: // eslint-disable-next-line jsdoc/require-jsdoc
+			class {}
+)
+
 /**
- *
+ * Our CodeMirror-based comment input widget.
  */
-export default class CodeMirrorCommentInput
-	extends /** @type {typeof import('./CodeMirrorWikiEditor').default} */ (
-		mw.loader.require('ext.CodeMirror.v6.WikiEditor')
-	)
-{
+export default class CodeMirrorCommentInput extends codeMirrorExt {
 	/**
-	 *
 	 * @param {import('./MultilineTextInputWidget').default} commentInput
 	 */
 	constructor(commentInput) {

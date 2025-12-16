@@ -22,7 +22,8 @@ import skinsCss from '../skins.less?inline'
 import talkPageCss from '../talkPage.less?inline'
 import tocCss from '../toc.less?inline'
 import { getUserInfo, splitIntoBatches } from '../utils-api'
-import { createSvg, transparentize } from '../utils-window'
+import { createSvg } from './convenientDiscussions.util'
+import { transparentize } from './convenientDiscussions.util'
 
 import cd from './cd'
 import debug from './convenientDiscussions.debug'
@@ -181,6 +182,9 @@ class Loader {
 				'user.options',
 				mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
 					? 'ext.confirmEdit.CaptchaInputWidget'
+					: undefined,
+				mw.loader.getState('ext.CodeMirror.v6.WikiEditor')
+					? 'ext.CodeMirror.v6.WikiEditor'
 					: undefined,
 			].filter(defined)
 
@@ -677,17 +681,7 @@ class Loader {
 		// In dev and single modes, use dynamic import to let Vite create a separate chunk
 		// In production, load from network
 		// Use cd.g runtime properties to prevent Vite from optimizing away the condition
-		if (cd.g.isDev || cd.g.isSingle) {
-			// Dynamic import - Vite will create a separate chunk for this
-			return import('../app.js').then(() => {})
-		}
-
-		return this.loadPreferablyFromDiskCache({
-			domain: 'commons.wikimedia.org',
-			pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
-			ttlInDays: 365,
-			addCacheBuster: true,
-		})
+		return import('../app.js').then(() => {})
 	}
 
 	/**

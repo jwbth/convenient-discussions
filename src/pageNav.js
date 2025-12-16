@@ -77,7 +77,8 @@ class PageNav {
 	 */
 	backLinkLocation
 
-	bodyScrollPaddingTop = controller.getBodyScrollPaddingTop()
+	/** @type {number} */
+	bodyScrollPaddingTop
 
 	/**
 	 * _For internal use._ Setup the page navigation block (mount or update).
@@ -98,6 +99,7 @@ class PageNav {
 	mount() {
 		if (cd.g.skin === 'vector-2022') return
 
+		this.bodyScrollPaddingTop = controller.getBodyScrollPaddingTop()
 		this.$topElement = $('<div>')
 			.attr('id', 'cd-pageNav-top')
 			.addClass('cd-pageNav')

@@ -28,7 +28,8 @@ import {
 import toc from './toc'
 import updateChecker from './updateChecker'
 import { getUserInfo } from './utils-api'
-import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window'
+import { copyText, getVisibilityByRects, wrapHtml } from './utils-window'
+import { skin$ } from './loader/convenientDiscussions.util'
 import workerCode from './worker/worker-gate?worker&inline-string'
 
 /**
@@ -1972,5 +1973,4 @@ class Controller extends EventEmitter {
 	}
 }
 
-export { Controller as Controller }
 export default new Controller()

@@ -10,13 +10,11 @@ import { createCheckboxControl } from './utils-oojs'
 import { wrapHtml } from './utils-window'
 
 /**
- * Builder class responsible for constructing the UI elements of a CommentForm.
- * Separates the construction logic from the behavioral logic of CommentForm.
+ * Builder class responsible for constructing the UI elements of a CommentForm. Separates the
+ * construction logic from the behavioral logic of CommentForm.
  */
 class CommentFormBuilder {
 	/**
-	 * Create a CommentFormBuilder.
-	 *
 	 * @param {import('./CommentForm').default} form The form instance being built.
 	 */
 	constructor(form) {

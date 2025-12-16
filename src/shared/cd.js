@@ -71,11 +71,6 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  * @typedef {object} GlobalPropertiesExtension
  * @property {string} contentLanguage Language code of the wiki's content language.
  * @property {string} userLanguage Language code of the wiki's user (interface) language.
- * @property {object} digits
- * @property {string | undefined} digits.content Regular expression matching a single digit in
- *   content language, e.g. `[0-9]`.
- * @property {string | undefined} digits.user Regular expression matching a single digit in user
- *   (interface) language, e.g. `[0-9]`.
  * @property {StringsByKey} contentLanguageMessages
  * @property {StringArraysByKey} specialPageAliases Some special page aliases in the wiki's
  *   language.

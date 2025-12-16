@@ -9,7 +9,7 @@ import { getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-g
 
 import cd from './cd'
 import debug from './convenientDiscussions.debug'
-import loader from './convenientDiscussions.loader.js'
+import loader from './convenientDiscussions.loader'
 import util from './convenientDiscussions.util'
 
 const mwStringsCache = /** @type {StringsByKey} */ ({})
@@ -242,6 +242,9 @@ const convenientDiscussionsWindow = {
 
 		return this.windowManagers[name]
 	},
+
+	g: {},
+	config: {},
 
 	/**
 	 * Reference to the {@link module:debug debug} module.
@@ -703,6 +706,20 @@ const globalProperties = {
 		content: {},
 		user: {},
 	}),
+
+	/**
+   * @typedef {object} Digits
+   * @property {string | undefined} digits.content Regular expression matching a single digit in
+   *   content language, e.g. `[0-9]`.
+   * @property {string | undefined} digits.user Regular expression matching a single digit in user
+   *   (interface) language, e.g. `[0-9]`.
+	 */
+
+	/** @type {Digits} */
+	digits: {
+		content: undefined,
+		user: undefined,
+	}
 }
 
 Object.assign(cd.g, globalProperties)

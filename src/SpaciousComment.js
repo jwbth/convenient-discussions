@@ -8,7 +8,7 @@ import SpaciousCommentLayers from './SpaciousCommentLayers'
 import cd from './loader/cd'
 import settings from './settings'
 import { isInline } from './shared/utils-general'
-import { createSvg } from './utils-window'
+import { createSvg } from './loader/convenientDiscussions.util'
 
 /**
  * @typedef {object[]} ReplaceSignatureWithHeaderReturn

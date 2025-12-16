@@ -1,7 +1,7 @@
 import Button from './Button'
 import Comment from './Comment'
 import LiveTimestamp from './LiveTimestamp'
-import MoveSectionDialog from './MoveSectionDialog'
+import getMoveSectionDialogClass from './MoveSectionDialog'
 import PrototypeRegistry from './PrototypeRegistry'
 import SectionSource from './SectionSource'
 import commentFormManager from './commentFormManager'
@@ -1523,7 +1523,7 @@ class Section extends SectionSkeleton {
 	move() {
 		if (cd.loader.isPageOverlayOn()) return
 
-		const dialog = new MoveSectionDialog(this)
+		const dialog = new (getMoveSectionDialogClass())(this)
 		const windowManager = cd.getWindowManager()
 		windowManager.addWindows([dialog])
 		windowManager.openWindow(dialog)
@@ -1562,7 +1562,7 @@ class Section extends SectionSkeleton {
 	 * Add the section to the subscription list.
 	 *
 	 * @param {'quiet'|'silent'} [mode]
-	 *   - No value: a notification will be shown.
+	 *   No value: a notification will be shown.
 	 *   - `'quiet'`: don't show a notification.
 	 *   - `'silent'`: don't even change any UI, including the subscribe button appearance. If there
 	 *   is an error, it will be displayed though.
@@ -1615,7 +1615,7 @@ class Section extends SectionSkeleton {
 	 * Remove the section from the subscription list.
 	 *
 	 * @param {'quiet'|'silent'} [mode]
-	 *   - No value: a notification will be shown.
+	 *   No value: a notification will be shown.
 	 *   - `'quiet'`: don't show a notification.
 	 *   - `'silent'`: don't even change any UI, including the subscribe button appearance. If there
 	 *   is an error, it will be displayed though.

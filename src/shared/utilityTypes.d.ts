@@ -11,6 +11,7 @@ declare global {
 	type RemoveMethods<T> = {
 		[K in keyof T as T[K] extends AnyFunction ? never : K]: T[K]
 	}
+	type AreTypesEqual<T, U> = T extends U ? (U extends T ? true : false) : false
 
 	/**
 	 * Creates a function type with N string parameters returning a string

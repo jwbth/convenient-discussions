@@ -6,7 +6,7 @@
 
 import Comment from './Comment'
 import PrototypeRegistry from './PrototypeRegistry'
-import { initGlobals, initTimestampTools } from './app'
+//import { initGlobals, initTimestampTools } from './app'
 import commentManager from './commentManager'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
@@ -84,7 +84,6 @@ async function bootstrap() {
 		--cd-parentheses-start: '${cd.mws('parentheses-start')}';
 		--cd-parentheses-end: '${cd.mws('parentheses-end')}';
 	}`)
-
 	;[moveFromStringStart] = cd.s('es-move-from').match(/^[^[$]+/) || []
 	;[moveToStringStart] = cd.s('es-move-to').match(/^[^[$]+/) || []
 
@@ -233,7 +232,6 @@ function processWatchlist($content) {
 function processContributions($content) {
 	// We need timestamp tools to be able to parse timestamps
 	if (cd.g.timestampTools.user.timezone === undefined) return
-
 	;[
 		...$content[0].querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)'),
 	].forEach((line) => {

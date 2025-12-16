@@ -70,6 +70,7 @@ const config = defineConfig(
 				'warn',
 				{
 					enableFixer: false,
+					exemptEmptyConstructors: true,
 					require: {
 						ClassDeclaration: true,
 						ClassExpression: true,

@@ -2,7 +2,7 @@ import CommentActions from './CommentActions'
 import CommentButton from './CommentButton'
 import PrototypeRegistry from './PrototypeRegistry'
 import cd from './loader/cd'
-import { createSvg } from './utils-window'
+import { createSvg } from './loader/convenientDiscussions.util'
 
 /**
  * Actions management for spacious comments with menu-based styling.

@@ -1,5 +1,7 @@
+import type yargs from 'yargs'
+
 declare global {
-	type YargsNonAwaited = Exclude<ReturnType<typeof import('yargs')>['argv'], Promise<any>>
+	type YargsNonAwaited = Exclude<ReturnType<typeof yargs>['argv'], Promise<any>>
 
 	/**
 	 * Creates a function type with N string parameters returning a string

@@ -1,5 +1,5 @@
 import EventEmitter from './EventEmitter'
-import SettingsDialog from './SettingsDialog'
+import getSettingsDialogClass from './SettingsDialog'
 import TextMasker from './TextMasker'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
@@ -14,13 +14,13 @@ import {
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
 import { showConfirmDialog } from './utils-oojs'
 import {
-	createSvg,
 	formatDateImproved,
 	formatDateNative,
 	formatDateRelative,
-	getFooter,
 	wrapHtml,
 } from './utils-window'
+import { createSvg } from './loader/convenientDiscussions.util'
+import { getFooter } from './loader/convenientDiscussions.util'
 
 /**
  * @typedef {object} SettingsValues
@@ -941,7 +941,7 @@ class Settings extends EventEmitter {
 			delete this.dialogPromise
 		}
 
-		const dialog = new SettingsDialog(initalPageName, focusSelector)
+		const dialog = new (getSettingsDialogClass())(initalPageName, focusSelector)
 		const windowManager = cd.getWindowManager('settings')
 		windowManager.addWindows([dialog])
 		windowManager.openWindow(dialog, { loadedSettings })
