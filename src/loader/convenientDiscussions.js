@@ -6,11 +6,10 @@
  */
 
 import { getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general'
-
+import './convenientDiscussions.debug'
+import './convenientDiscussions.loader'
+import './convenientDiscussions.util'
 import cd from './cd'
-import debug from './convenientDiscussions.debug'
-import loader from './convenientDiscussions.loader'
-import util from './convenientDiscussions.util'
 
 const mwStringsCache = /** @type {StringsByKey} */ ({})
 /** @type {boolean | undefined} */
@@ -245,28 +244,6 @@ const convenientDiscussionsWindow = {
 
 	g: {},
 	config: {},
-
-	/**
-	 * Reference to the {@link module:debug debug} module.
-	 *
-	 * @memberof convenientDiscussions
-	 */
-	debug,
-
-	/**
-	 * Loader-specific properties and methods that need to be accessible from both the loader and main
-	 * app contexts.
-	 *
-	 * @memberof convenientDiscussions
-	 */
-	loader,
-
-	/**
-	 * Utility functions accessible from anywhere in the script.
-	 *
-	 * @memberof convenientDiscussions
-	 */
-	util,
 
 	/** @type {{ [key: string]: any }} */
 	tests: {},

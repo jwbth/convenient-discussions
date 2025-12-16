@@ -26,8 +26,6 @@ import { createSvg } from './convenientDiscussions.util'
 import { transparentize } from './convenientDiscussions.util'
 
 import cd from './cd'
-import debug from './convenientDiscussions.debug'
-import convenientDiscussionsUtil from './convenientDiscussions.util'
 
 /**
  * Singleton for loading and managing page state related to booting and overlays. This goes to
@@ -344,8 +342,8 @@ class Loader {
 	 * @private
 	 */
 	initTalkPage() {
-		debug.stopTimer('start')
-		debug.startTimer('load data')
+		cd.debug.stopTimer('start')
+		cd.debug.startTimer('load data')
 
 		// If there is no data to load and, therefore, no period of time within which a reflow (layout
 		// thrashing) could happen without impeding performance, we cache the value so that it could
@@ -622,7 +620,7 @@ class Loader {
 	 */
 	initFormats() {
 		const getLanguageOrFallback = (/** @type {string} */ lang) =>
-			convenientDiscussionsUtil.getValidLanguageOrFallback(
+			cd.util.getValidLanguageOrFallback(
 				lang,
 				(/** @type {string} */ l) => isKeyOf(l, dateFormats),
 				languageFallbacks,
@@ -964,6 +962,4 @@ class Loader {
 }
 
 // Export a singleton instance
-const loader = new Loader()
-
-export default loader
+cd.loader = new Loader()

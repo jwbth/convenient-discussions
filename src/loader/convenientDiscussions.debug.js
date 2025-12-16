@@ -1,3 +1,4 @@
+import cd from './cd'
 import { isKeyOf, typedKeysOf } from '../shared/utils-general'
 
 /**
@@ -213,4 +214,4 @@ class Debug {
 	}
 }
 
-export default new Debug()
+cd.debug = new Debug()

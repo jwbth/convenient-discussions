@@ -1,6 +1,6 @@
 import cd from './cd'
 
-export default {
+cd.util = {
 	/**
 	 * Get the first fallback language that exists in the collection if it passes the validity check.
 	 *
