@@ -150,7 +150,7 @@ export default class CurrentPage extends Page {
 		return (
 			cd.loader.isPageOfType('talk') &&
 			this.exists() &&
-			cd.util.isCurrentRevision() &&
+			cd.utils.isCurrentRevision() &&
 			!this.isArchive()
 		)
 	}
@@ -161,7 +161,7 @@ export default class CurrentPage extends Page {
 	 * @returns {boolean}
 	 */
 	isCurrentArchive() {
-		return cd.util.isCurrentRevision() && this.isArchive()
+		return cd.utils.isCurrentRevision() && this.isArchive()
 	}
 
 	/**

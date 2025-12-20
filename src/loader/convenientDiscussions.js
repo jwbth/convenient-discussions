@@ -6,9 +6,10 @@
  */
 
 import { getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general'
+
 import './convenientDiscussions.debug'
 import './convenientDiscussions.loader'
-import './convenientDiscussions.util'
+import './convenientDiscussions.utils'
 import cd from './cd'
 
 const mwStringsCache = /** @type {StringsByKey} */ ({})
@@ -685,18 +686,18 @@ const globalProperties = {
 	}),
 
 	/**
-   * @typedef {object} Digits
-   * @property {string | undefined} digits.content Regular expression matching a single digit in
-   *   content language, e.g. `[0-9]`.
-   * @property {string | undefined} digits.user Regular expression matching a single digit in user
-   *   (interface) language, e.g. `[0-9]`.
+	 * @typedef {object} Digits
+	 * @property {string | undefined} content Regular expression matching a single digit in content
+	 *   language, e.g. `[0-9]`.
+	 * @property {string | undefined} user Regular expression matching a single digit in user
+	 *   (interface) language, e.g. `[0-9]`.
 	 */
 
 	/** @type {Digits} */
 	digits: {
 		content: undefined,
 		user: undefined,
-	}
+	},
 }
 
 Object.assign(cd.g, globalProperties)

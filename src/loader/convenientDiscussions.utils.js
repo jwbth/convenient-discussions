@@ -1,6 +1,6 @@
 import cd from './cd'
 
-cd.util = {
+const utils = {
 	/**
 	 * Get the first fallback language that exists in the collection if it passes the validity check.
 	 *
@@ -101,3 +101,18 @@ export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = h
 export function skin$(selectors) {
 	return $(selectors[cd.g.skin] || selectors.default || selectors.vector)
 }
+
+cd.utils = utils
+
+// people might try to use `cd.util` as an analogy of `mw.util`, hehe
+Object.defineProperty(cd, 'util', {
+	configurable: true,
+	enumerable: false,
+	get() {
+		console.error('cd.util is not a thing. Did you mean cd.utils?')
+
+		return cd.utils
+	},
+})
+
+export { utils }

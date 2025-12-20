@@ -7,7 +7,7 @@
 import controller from './controller'
 import cd from './loader/cd'
 import { isMetadataNode, sleep } from './shared/utils-general'
-import { createSvg } from './loader/convenientDiscussions.util'
+import { createSvg } from './loader/convenientDiscussions.utils'
 
 /**
  * jQuery. See {@link JQuery.fn jQuery.fn} for extensions.

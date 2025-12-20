@@ -7,13 +7,8 @@ import cd from './loader/cd'
 import settings from './settings'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import updateChecker from './updateChecker'
-import {
-	formatDate,
-	isCmdModifierPressed,
-	isInputFocused,
-	keyCombination,
-} from './utils-window'
-import { createSvg } from './loader/convenientDiscussions.util'
+import { formatDate, isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window'
+import { createSvg } from './loader/convenientDiscussions.utils'
 import visits from './visits'
 
 /**

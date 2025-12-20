@@ -16,9 +16,9 @@ import i18nList from '../../data/i18nList.json'
 import languageFallbacks from '../../data/languageFallbacks.json'
 import en from '../../i18n/en.json'
 import { typedKeysOf, unique } from '../shared/utils-general'
-import { getFooter } from './convenientDiscussions.util'
 
 import cd from './cd'
+import { getFooter } from './convenientDiscussions.utils'
 
 // Dummy comment to prevent Prettier from killing the empty line
 ;(async () => {
@@ -128,7 +128,7 @@ async function bootstrap() {
  */
 function setLanguages() {
 	const getLanguageOrFallback = (/** @type {string} */ lang) =>
-		cd.util.getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks)
+		cd.utils.getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks)
 
 	cd.g.userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'))
 

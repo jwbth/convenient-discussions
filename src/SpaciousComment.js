@@ -8,7 +8,7 @@ import SpaciousCommentLayers from './SpaciousCommentLayers'
 import cd from './loader/cd'
 import settings from './settings'
 import { isInline } from './shared/utils-general'
-import { createSvg } from './loader/convenientDiscussions.util'
+import { createSvg } from './loader/convenientDiscussions.utils'
 
 /**
  * @typedef {object[]} ReplaceSignatureWithHeaderReturn
@@ -191,7 +191,9 @@ class SpaciousComment extends Comment {
 		if (this.showContribsLink) {
 			contribsLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.lastElementChild)
 			if (!this.author.isRegistered()) {
-				const contribsLinkPreviousSibling = /** @type {HTMLElement} */ (contribsLink.previousSibling)
+				const contribsLinkPreviousSibling = /** @type {HTMLElement} */ (
+					contribsLink.previousSibling
+				)
 				contribsLinkPreviousSibling.remove()
 				contribsLink.remove()
 			}
@@ -382,10 +384,9 @@ class SpaciousComment extends Comment {
 			((!isSpaced &&
 				(node.getAttribute('style') || ['SUP', 'SUB'].includes(node.tagName)) &&
 				// Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
-				!node.classList.length) ||
+				!node.classList.length) || // https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
 				// Cases like https://ru.wikipedia.org/?diff=119667594
-				(// https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
-				(node.getAttribute('style') ||
+				((node.getAttribute('style') ||
 					// https://en.wikipedia.org/?oldid=1220458782#c-Dxneo-20240423211700-Dilettante-20240423210300
 					['B', 'STRONG'].includes(node.tagName)) &&
 					node.textContent.toLowerCase() === this.author.getName().toLowerCase()))

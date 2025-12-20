@@ -286,7 +286,7 @@ class CommentFormManager extends EventEmitter {
 	 */
 	saveSession = (force) => {
 		// A check in light of the existence of RevisionSlider, see the method
-		if (!cd.util.isCurrentRevision()) return
+		if (!cd.utils.isCurrentRevision()) return
 
 		if (force) {
 			this.actuallySaveSession()

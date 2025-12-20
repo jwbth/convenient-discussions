@@ -22,10 +22,9 @@ import skinsCss from '../skins.less?inline'
 import talkPageCss from '../talkPage.less?inline'
 import tocCss from '../toc.less?inline'
 import { getUserInfo, splitIntoBatches } from '../utils-api'
-import { createSvg } from './convenientDiscussions.util'
-import { transparentize } from './convenientDiscussions.util'
 
 import cd from './cd'
+import { createSvg, transparentize } from './convenientDiscussions.utils'
 
 /**
  * Singleton for loading and managing page state related to booting and overlays. This goes to
@@ -620,7 +619,7 @@ class Loader {
 	 */
 	initFormats() {
 		const getLanguageOrFallback = (/** @type {string} */ lang) =>
-			cd.util.getValidLanguageOrFallback(
+			cd.utils.getValidLanguageOrFallback(
 				lang,
 				(/** @type {string} */ l) => isKeyOf(l, dateFormats),
 				languageFallbacks,
@@ -963,3 +962,5 @@ class Loader {
 
 // Export a singleton instance
 cd.loader = new Loader()
+
+export { Loader }

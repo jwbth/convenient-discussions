@@ -32,8 +32,9 @@ import cd from '../shared/cd'
  * @property {import('../settings').default} settings
  * @property {import('../CommentForm').default[]} commentForms
  * @property {ConvenientDiscussionsApi} api
- * @property {typeof import('./convenientDiscussions.loader').default} loader
- * @property {typeof import('./convenientDiscussions.util').default} util
+ * @property {import('./convenientDiscussions.loader').Loader} loader
+ * @property {import('./convenientDiscussions.debug').Debug} debug
+ * @property {typeof import('./convenientDiscussions.utils').utils} utils
  * @property {boolean} isRunning
  * @property {ReturnType<import('./startup').getStringsPromise> | undefined} getStringsPromise
  */

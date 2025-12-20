@@ -29,7 +29,7 @@ import toc from './toc'
 import updateChecker from './updateChecker'
 import { getUserInfo } from './utils-api'
 import { copyText, getVisibilityByRects, wrapHtml } from './utils-window'
-import { skin$ } from './loader/convenientDiscussions.util'
+import { skin$ } from './loader/convenientDiscussions.utils'
 import workerCode from './worker/worker-gate?worker&inline-string'
 
 /**

@@ -13,14 +13,9 @@ import {
 } from './shared/utils-general'
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
 import { showConfirmDialog } from './utils-oojs'
-import {
-	formatDateImproved,
-	formatDateNative,
-	formatDateRelative,
-	wrapHtml,
-} from './utils-window'
-import { createSvg } from './loader/convenientDiscussions.util'
-import { getFooter } from './loader/convenientDiscussions.util'
+import { formatDateImproved, formatDateNative, formatDateRelative, wrapHtml } from './utils-window'
+import { createSvg } from './loader/convenientDiscussions.utils'
+import { getFooter } from './loader/convenientDiscussions.utils'
 
 /**
  * @typedef {object} SettingsValues

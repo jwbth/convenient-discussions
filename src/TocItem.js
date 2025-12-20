@@ -1,7 +1,7 @@
 import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { isElement, isText } from './shared/utils-general'
-import { createSvg } from './loader/convenientDiscussions.util'
+import { createSvg } from './loader/convenientDiscussions.utils'
 
 /**
  * An item of the table of contents.

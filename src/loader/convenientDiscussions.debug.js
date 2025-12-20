@@ -1,5 +1,6 @@
-import cd from './cd'
 import { isKeyOf, typedKeysOf } from '../shared/utils-general'
+
+import cd from './cd'
 
 /**
  * @typedef {object} TimerData
@@ -215,3 +216,5 @@ class Debug {
 }
 
 cd.debug = new Debug()
+
+export { Debug }

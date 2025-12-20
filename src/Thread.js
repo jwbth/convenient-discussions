@@ -1567,7 +1567,7 @@ class Thread extends mixInObject(
 			})
 		this.emit('toggle')
 
-		if (cd.util.isCurrentRevision() && collapsedThreads) {
+		if (cd.utils.isCurrentRevision() && collapsedThreads) {
 			collapsedThreadsStorageItem.setWithTime(mw.config.get('wgArticleId'), collapsedThreads).save()
 		}
 	}
@@ -1695,7 +1695,7 @@ class Thread extends mixInObject(
 	 * @private
 	 */
 	static saveCollapsedThreads() {
-		if (!cd.util.isCurrentRevision()) return
+		if (!cd.utils.isCurrentRevision()) return
 
 		new StorageItemWithKeysAndSaveTime('collapsedThreads')
 			.setWithTime(
