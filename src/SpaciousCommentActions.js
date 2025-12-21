@@ -2,7 +2,6 @@ import CommentActions from './CommentActions'
 import CommentButton from './CommentButton'
 import PrototypeRegistry from './PrototypeRegistry'
 import cd from './loader/cd'
-import { createSvg } from './loader/convenientDiscussions.utils'
 
 /**
  * Actions management for spacious comments with menu-based styling.
@@ -220,11 +219,11 @@ class SpaciousCommentActions extends CommentActions {
 		// Create SVG icon prototypes
 		this.prototypes.add(
 			'goToParentButtonSvg',
-			createSvg(16, 16, 20, 20).html(`<path d="M10 5l8 10H2z" />`)[0],
+			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M10 5l8 10H2z" />`)[0],
 		)
 		this.prototypes.add(
 			'goToChildButtonSvg',
-			createSvg(16, 16, 20, 20).html(`<path d="M10 15L2 5h16z" />`)[0],
+			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M10 15L2 5h16z" />`)[0],
 		)
 	}
 }

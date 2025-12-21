@@ -8,7 +8,6 @@ import SpaciousCommentLayers from './SpaciousCommentLayers'
 import cd from './loader/cd'
 import settings from './settings'
 import { isInline } from './shared/utils-general'
-import { createSvg } from './loader/convenientDiscussions.utils'
 
 /**
  * @typedef {object[]} ReplaceSignatureWithHeaderReturn
@@ -543,11 +542,11 @@ class SpaciousComment extends Comment {
 		// Create SVG icon prototypes for toggle child threads button
 		this.prototypes.add(
 			'collapseChildThreadsButtonSvg',
-			createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0],
+				cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0],
 		)
 		this.prototypes.add(
 			'expandChildThreadsButtonSvg',
-			createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0],
+				cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0],
 		)
 
 		// Initialize spacious-specific action prototypes

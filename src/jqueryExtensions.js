@@ -7,7 +7,6 @@
 import controller from './controller'
 import cd from './loader/cd'
 import { isMetadataNode, sleep } from './shared/utils-general'
-import { createSvg } from './loader/convenientDiscussions.utils'
 
 /**
  * jQuery. See {@link JQuery.fn jQuery.fn} for extensions.
@@ -232,7 +231,7 @@ export default {
 			$('<a>')
 				.attr('title', cd.s('cf-block-close'))
 				.append(
-					createSvg(20, 20).html(
+					cd.utils.createSvg(20, 20).html(
 						`<path d="M4.34 2.93l12.73 12.73-1.41 1.41L2.93 4.35z" /><path d="M17.07 4.34L4.34 17.07l-1.41-1.41L15.66 2.93z" />
 				`,
 					),

@@ -18,7 +18,6 @@ import en from '../../i18n/en.json'
 import { typedKeysOf, unique } from '../shared/utils-general'
 
 import cd from './cd'
-import { getFooter } from './convenientDiscussions.utils'
 
 // Dummy comment to prevent Prettier from killing the empty line
 ;(async () => {
@@ -325,7 +324,7 @@ function addFooterSwitcher() {
 			start()
 		})
 	}
-	getFooter().append($li)
+	cd.utils.getFooter().append($li)
 }
 
 /**

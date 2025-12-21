@@ -14,8 +14,6 @@ import {
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
 import { showConfirmDialog } from './utils-oojs'
 import { formatDateImproved, formatDateNative, formatDateRelative, wrapHtml } from './utils-window'
-import { createSvg } from './loader/convenientDiscussions.utils'
-import { getFooter } from './loader/convenientDiscussions.utils'
 
 /**
  * @typedef {object} SettingsValues
@@ -970,7 +968,7 @@ class Settings extends EventEmitter {
 					$('<div>')
 						.addClass('cd-rcnotice-img cd-rcnotice-arrow cd-icon')
 						.append(
-							createSvg(30, 30, 20, 20).html(
+													cd.utils.createSvg(30, 30, 20, 20).html(
 								`<path d="M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z" />`,
 							),
 						),
@@ -1089,7 +1087,7 @@ class Settings extends EventEmitter {
 	 * Add a settings link to the page footer.
 	 */
 	addLinkToFooter() {
-		getFooter().append(
+			cd.utils.getFooter().append(
 			$('<li>').append(
 				$('<a>')
 					.text(cd.s('footer-settings'))
