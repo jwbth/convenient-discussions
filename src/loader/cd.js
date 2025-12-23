@@ -34,6 +34,7 @@ import cd from '../shared/cd'
  * @property {import('../pageRegistry').default} pageRegistry
  * @property {import('../controller').default} controller
  * @property {import('../CommentForm').default[]} commentForms
+ * @property {import('../commentFormManager').default} commentFormManager
  * @property {ConvenientDiscussionsApi} api
  * @property {import('./convenientDiscussions.loader').Loader} loader
  * @property {import('./convenientDiscussions.debug').Debug} debug

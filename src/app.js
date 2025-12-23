@@ -40,6 +40,7 @@ cd.pageRegistry = pageRegistry
 cd.commentManager = commentManager
 cd.controller = controller
 cd.commentForms = commentFormManager.getAll()
+cd.commentFormManager = commentFormManager
 
 cd.tests.controller = controller
 cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker)
