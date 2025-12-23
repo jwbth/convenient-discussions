@@ -1,7 +1,6 @@
 import LZString from 'lz-string'
 
 import EventEmitter from './EventEmitter'
-import commentManager from './commentManager'
 import cd from './loader/cd'
 import settings from './settings'
 import CdError from './shared/CdError'
@@ -74,7 +73,7 @@ class Visits extends EventEmitter {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const shiftDueToTimeConflict =
 			this.currentPageData.length &&
-			commentManager.initNewAndSeen(this.currentPageData, currentTime, markAsReadRequested)
+			cd.commentManager.initNewAndSeen(this.currentPageData, currentTime, markAsReadRequested)
 				? 60
 				: 0
 

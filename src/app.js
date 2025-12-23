@@ -39,6 +39,9 @@ export { initGlobals, initTimestampTools } from './init'
 
 // Set up API after initialization
 cd.settings = settings
+cd.pageRegistry = pageRegistry
+cd.commentManager = commentManager
+cd.controller = controller
 cd.commentForms = commentFormManager.getAll()
 
 cd.tests.controller = controller

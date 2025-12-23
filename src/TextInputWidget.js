@@ -1,5 +1,5 @@
 import TextInputWidgetMixin from './TextInputWidgetMixin'
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
+import { es6ClassToOoJsClass, mixInClass } from './utils-oojs-class'
 
 /**
  * An input was changed manually.

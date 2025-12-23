@@ -30,6 +30,9 @@ import cd from '../shared/cd'
  * @property {import('../Comment').default[]} comments
  * @property {import('../Section').default[]} sections
  * @property {import('../settings').default} settings
+ * @property {import('../commentManager').default} commentManager
+ * @property {import('../pageRegistry').default} pageRegistry
+ * @property {import('../controller').default} controller
  * @property {import('../CommentForm').default[]} commentForms
  * @property {ConvenientDiscussionsApi} api
  * @property {import('./convenientDiscussions.loader').Loader} loader

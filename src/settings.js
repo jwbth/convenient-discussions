@@ -968,9 +968,11 @@ class Settings extends EventEmitter {
 					$('<div>')
 						.addClass('cd-rcnotice-img cd-rcnotice-arrow cd-icon')
 						.append(
-													cd.utils.createSvg(30, 30, 20, 20).html(
-								`<path d="M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z" />`,
-							),
+							cd.utils
+								.createSvg(30, 30, 20, 20)
+								.html(
+									`<path d="M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z" />`,
+								),
 						),
 					$('<img>')
 						.attr('width', 626)
@@ -1087,7 +1089,7 @@ class Settings extends EventEmitter {
 	 * Add a settings link to the page footer.
 	 */
 	addLinkToFooter() {
-			cd.utils.getFooter().append(
+		cd.utils.getFooter().append(
 			$('<li>').append(
 				$('<a>')
 					.text(cd.s('footer-settings'))
