@@ -25,13 +25,12 @@ import {
 } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
 import { handleApiReject, parseCode } from './utils-api'
+import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
 import {
 	buildEditSummary,
-	isCmdModifierPressed,
 	isExistentAnchor,
 	isHtmlConvertibleToWikitext,
 	isInputFocused,
-	keyCombination,
 	mergeJquery,
 	wrapDiffBody,
 	wrapHtml,

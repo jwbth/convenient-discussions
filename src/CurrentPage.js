@@ -235,9 +235,9 @@ export default class CurrentPage extends Page {
 	 * @param {object} [preloadConfig] See
 	 *   {@link CommentForm.getDefaultPreloadConfig}.
 	 * @param {boolean} [newTopicOnTop]
-	 * @returns {Promise<import('./CommentForm').default | undefined>}
+	 * @returns {import('./CommentForm').default | undefined}
 	 */
-	async addSection(
+	addSection(
 		initialState,
 		commentForm,
 		preloadConfig = CommentForm.getDefaultPreloadConfig(),

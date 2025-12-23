@@ -7,7 +7,8 @@ import cd from './loader/cd'
 import settings from './settings'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import updateChecker from './updateChecker'
-import { formatDate, isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window'
+import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
+import { formatDate, isInputFocused } from './utils-window'
 import visits from './visits'
 
 /**
@@ -133,9 +134,9 @@ class NavPanel {
 			},
 		}).hide()
 		$(this.state.previousButton.element).append(
-			cd.utils.createSvg(16, 16, 20, 20).html(
-				`<path d="M1 13.75l1.5 1.5 7.5-7.5 7.5 7.5 1.5-1.5-9-9-9 9z" />`,
-			),
+			cd.utils
+				.createSvg(16, 16, 20, 20)
+				.html(`<path d="M1 13.75l1.5 1.5 7.5-7.5 7.5 7.5 1.5-1.5-9-9-9 9z" />`),
 		)
 
 		this.state.nextButton = new Button({
@@ -148,9 +149,9 @@ class NavPanel {
 			},
 		}).hide()
 		$(this.state.nextButton.element).append(
-			cd.utils.createSvg(16, 16, 20, 20).html(
-				`<path d="M19 6.25l-1.5-1.5-7.5 7.5-7.5-7.5L1 6.25l9 9 9-9z" />`,
-			),
+			cd.utils
+				.createSvg(16, 16, 20, 20)
+				.html(`<path d="M19 6.25l-1.5-1.5-7.5 7.5-7.5-7.5L1 6.25l9 9 9-9z" />`),
 		)
 
 		this.state.firstUnseenButton = new Button({
@@ -173,11 +174,13 @@ class NavPanel {
 			},
 		}).hide()
 		$(this.state.commentFormButton.element).append(
-			cd.utils.createSvg(16, 16, 20, 20).html(
-				cd.g.contentDirection === 'ltr'
-					? `<path d="M18 0H2a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V2a2 2 0 00-2-2zM5 9.06a1.39 1.39 0 111.37-1.39A1.39 1.39 0 015 9.06zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39z" />`
-					: `<path d="M0 2v12c0 1.1.9 2 2 2h14l4 4V2c0-1.1-.9-2-2-2H2C.9 0 0 .9 0 2zm13.6 5.7c0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.6 1.4-1.4 1.4c-.8-.1-1.4-.7-1.4-1.4zM9.9 9.1s-.1 0 0 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.7 1.4-1.4 1.4zm-5.2 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4 0 .7-.7 1.4-1.4 1.4z" />`,
-			),
+			cd.utils
+				.createSvg(16, 16, 20, 20)
+				.html(
+					cd.g.contentDirection === 'ltr'
+						? `<path d="M18 0H2a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V2a2 2 0 00-2-2zM5 9.06a1.39 1.39 0 111.37-1.39A1.39 1.39 0 015 9.06zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39z" />`
+						: `<path d="M0 2v12c0 1.1.9 2 2 2h14l4 4V2c0-1.1-.9-2-2-2H2C.9 0 0 .9 0 2zm13.6 5.7c0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.6 1.4-1.4 1.4c-.8-.1-1.4-.7-1.4-1.4zM9.9 9.1s-.1 0 0 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.7 1.4-1.4 1.4zm-5.2 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4 0 .7-.7 1.4-1.4 1.4z" />`,
+				),
 		)
 
 		this.$element.append(
@@ -279,9 +282,9 @@ class NavPanel {
 							.attr('dir', 'ltr')
 
 							.text(`+${commentCount}`)
-					: cd.utils.createSvg(20, 20).html(
-							`<path d="M15.65 4.35A8 8 0 1017.4 13h-2.22a6 6 0 11-1-7.22L11 9h7V2z" />`,
-						),
+					: cd.utils
+							.createSvg(20, 20)
+							.html(`<path d="M15.65 4.35A8 8 0 1017.4 13h-2.22a6 6 0 11-1-7.22L11 9h7V2z" />`),
 			)
 			.toggleClass('cd-navPanel-addedCommentCount', Boolean(commentCount))
 			.toggleClass('cd-icon', !commentCount)

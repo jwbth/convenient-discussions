@@ -34,9 +34,6 @@ async function app() {
 	await controller.bootTalkPage(false)
 }
 
-// Re-export init functions for backward compatibility
-export { initGlobals, initTimestampTools } from './init'
-
 // Set up API after initialization
 cd.settings = settings
 cd.pageRegistry = pageRegistry

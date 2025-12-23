@@ -245,9 +245,6 @@ export function isHiddenByUntilFound(element) {
 	return false
 }
 
-// Re-export keyboard utilities from utils-keyboard.js
-export { keyCombination, isCmdModifierPressed } from './utils-keyboard'
-
 /**
  * @typedef {{
  *   higherNode: Node;

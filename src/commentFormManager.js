@@ -7,7 +7,8 @@ import cd from './loader/cd'
 import sectionManager from './sectionManager'
 import settings from './settings'
 import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './shared/utils-general'
-import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window'
+import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
+import { isInputFocused } from './utils-window'
 
 // TODO: make into a class extending a generic registry.
 
