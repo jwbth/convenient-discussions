@@ -1,7 +1,7 @@
 import ProcessDialog from './ProcessDialog'
 import StorageItem from './StorageItem'
 import commentFormManager from './commentFormManager'
-import controller from './controller'
+// import controller from './controller' // Access via cd.controller
 import cd from './loader/cd'
 import { areObjectsEqual } from './shared/utils-general'
 import { saveGlobalOption, saveLocalOption } from './utils-api'
@@ -209,7 +209,7 @@ export default function getSettingsDialogClass() {
 
 				this.popPending()
 
-				controller.addPreventUnloadCondition('dialog', () => this.isUnsaved())
+				cd.controller.addPreventUnloadCondition('dialog', () => this.isUnsaved())
 			})
 		}
 
@@ -237,7 +237,7 @@ export default function getSettingsDialogClass() {
 							return
 						}
 
-						controller.removePreventUnloadCondition('dialog')
+						cd.controller.removePreventUnloadCondition('dialog')
 
 						this.stack.setItem(this.reloadPanel)
 						this.actions.setMode('reboot')
@@ -248,7 +248,7 @@ export default function getSettingsDialogClass() {
 				case 'reboot': {
 					return new OO.ui.Process(async () => {
 						this.close()
-						if (!(await controller.rebootPage())) {
+						if (!(await cd.controller.rebootPage())) {
 							location.reload()
 						}
 					})
