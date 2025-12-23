@@ -6,8 +6,8 @@
 
 import Comment from './Comment'
 import PrototypeRegistry from './PrototypeRegistry'
-//import { initGlobals, initTimestampTools } from './app'
 import commentManager from './commentManager'
+import { initGlobals, initTimestampTools } from './init'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import {

@@ -1,4 +1,4 @@
-import { isCmdModifierPressed } from './utils-window'
+import { isCmdModifierPressed } from './utils-keyboard'
 
 /**
  * @callback Action
@@ -331,7 +331,6 @@ class Button {
 	setIcon(icon) {
 		const iconElement = this.iconElement
 		if (!iconElement) return
-
 		;[...iconElement.classList]
 			.filter((className) => className.startsWith('oo-ui-icon-'))
 			.forEach((className) => {

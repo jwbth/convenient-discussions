@@ -245,48 +245,8 @@ export function isHiddenByUntilFound(element) {
 	return false
 }
 
-/**
- * Check if the provided key combination is pressed given an event.
- *
- * @param {JQuery.KeyDownEvent|KeyboardEvent} event
- * @param {number} keyCode
- * @param {('cmd' | 'shift' | 'alt' | 'meta' | 'ctrl')[]} modifiers Use `'cmd'` instead of `'ctrl'`
- *   to capture both Windows and Mac machines.
- * @returns {boolean}
- */
-export function keyCombination(event, keyCode, modifiers = []) {
-	if (modifiers.includes('cmd')) {
-		modifiers.splice(
-			modifiers.indexOf('cmd'),
-			1,
-
-			// In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
-			// platform.
-			$.client.profile().platform === 'mac' ? 'meta' : 'ctrl',
-		)
-	}
-
-	return (
-		// eslint-disable-next-line @typescript-eslint/no-deprecated
-		event.keyCode === keyCode &&
-		/** @type {typeof modifiers} */ (['ctrl', 'shift', 'alt', 'meta']).every(
-			(mod) => modifiers.includes(mod) === event[/** @type {keyof typeof event} */ (mod + 'Key')],
-		)
-	)
-}
-
-/**
- * Whether a command modifier is pressed. On Mac, this means the Cmd key. On Windows, this means the
- * Ctrl key.
- *
- * @param {MouseEvent | KeyboardEvent | JQuery.MouseEventBase | JQuery.KeyboardEventBase} event
- * @returns {boolean}
- */
-export function isCmdModifierPressed(event) {
-	// In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
-	// platform.
-	return $.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey
-}
+// Re-export keyboard utilities from utils-keyboard.js
+export { keyCombination, isCmdModifierPressed } from './utils-keyboard'
 
 /**
  * @typedef {{
@@ -417,24 +377,23 @@ export function cleanUpPasteDom(element, containerElement) {
 		...element.querySelectorAll('[style]:not(pre [style])'),
 	])
 	styledElements.forEach((el) => {
-			if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
-				$(el).wrapInner('<u>')
-			}
-			if (
-				el.style.textDecoration === 'line-through' &&
-				!['STRIKE', 'S', 'DEL'].includes(el.tagName)
-			) {
-				$(el).wrapInner('<s>')
-			}
-			if (el.style.fontStyle === 'italic' && !['I', 'EM'].includes(el.tagName)) {
-				$(el).wrapInner('<i>')
-			}
-			if (['bold', '700'].includes(el.style.fontWeight) && !['B', 'STRONG'].includes(el.tagName)) {
-				$(el).wrapInner('<b>')
-			}
-			el.removeAttribute('style')
-		},
-	)
+		if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
+			$(el).wrapInner('<u>')
+		}
+		if (
+			el.style.textDecoration === 'line-through' &&
+			!['STRIKE', 'S', 'DEL'].includes(el.tagName)
+		) {
+			$(el).wrapInner('<s>')
+		}
+		if (el.style.fontStyle === 'italic' && !['I', 'EM'].includes(el.tagName)) {
+			$(el).wrapInner('<i>')
+		}
+		if (['bold', '700'].includes(el.style.fontWeight) && !['B', 'STRONG'].includes(el.tagName)) {
+			$(el).wrapInner('<b>')
+		}
+		el.removeAttribute('style')
+	})
 
 	const removeElement = (/** @type {Element} */ el) => {
 		el.remove()
@@ -467,7 +426,6 @@ export function cleanUpPasteDom(element, containerElement) {
 		)
 
 		.forEach(removeElement)
-
 	;[...element.querySelectorAll('style')].forEach(removeElement)
 
 	const topElements = /** @type {Element[]} */ (
@@ -525,7 +483,6 @@ export function cleanUpPasteDom(element, containerElement) {
 				el.removeAttribute(attr.name)
 			})
 	})
-
 	;[...element.children]
 		// <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
 		// don't create `*` markup in the API.)
