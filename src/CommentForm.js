@@ -1925,6 +1925,8 @@ class CommentForm extends EventEmitter {
 			commentsInSection = commentsInSection.filter((comment) => comment !== this.target)
 		}
 
+		const sections = sectionManager.getAll()
+
 		let pageOwner
 		if (cd.g.namespaceNumber === 3) {
 			const userName = (cd.page.title.match(/^([^/]+)/) || [])[0]
@@ -1979,7 +1981,7 @@ class CommentForm extends EventEmitter {
 			inputs: [this.commentInput],
 			typeConfigs: {
 				mentions: { defaultEntries: defaultUserNames },
-				commentLinks: { data: { comments: commentsInSection } },
+				commentLinks: { data: { comments: commentsInSection, sections } },
 			},
 		})
 		this.autocomplete.init()

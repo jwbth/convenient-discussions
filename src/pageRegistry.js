@@ -51,6 +51,7 @@ const pageRegistry = {
 		if (!(name in this.items)) {
 			this.items[name] = new (nameOrMwTitle === cd.g.pageName ? CurrentPage : Page)(
 				title,
+				this,
 				isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined,
 			)
 		} else if (isGendered) {

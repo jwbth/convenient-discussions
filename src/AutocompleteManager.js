@@ -65,7 +65,7 @@ class AutocompleteManager {
 		/** @type {AutocompleteType[]} @private */
 		this.types = cd.settings.get('autocompleteTypes')
 
-		/** @type {boolean} @private */
+		/** @type {boolean} */
 		this.useTemplateData = cd.settings.get('useTemplateData')
 
 		types = types.filter((type) => this.types.includes(type))
@@ -123,7 +123,7 @@ class AutocompleteManager {
 	 * Create autocomplete instances for the specified types.
 	 *
 	 * @param {AutocompleteType[]} types Types to create instances for
-	 * @param {Partial<Record<AutocompleteType, object>>} typeConfigs Configuration objects for each type
+	 * @param {Partial<Record<AutocompleteType, any>>} typeConfigs Configuration objects for each type
 	 * @private
 	 */
 	createAutocompleteInstances(types, typeConfigs) {

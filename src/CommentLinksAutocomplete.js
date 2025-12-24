@@ -1,6 +1,5 @@
 import BaseAutocomplete from './BaseAutocomplete'
 import cd from './loader/cd'
-import sectionManager from './sectionManager'
 import { underlinesToSpaces } from './shared/utils-general'
 
 /**
@@ -14,9 +13,10 @@ import { underlinesToSpaces } from './shared/utils-general'
 
 /**
  * @typedef {object} ConfigExtension
- * @property {object} [config] Configuration object
- * @property {object} [config.data] Configuration object
- * @property {import('./Comment').default[]} [config.data.comments] List of comments for
+ * @property {object} [data] Data object
+ * @property {import('./Comment').default[]} [data.comments] List of comments for
+ *   autocomplete
+ * @property {import('./Section').default[]} [data.sections] List of sections for
  *   autocomplete
  */
 
@@ -28,10 +28,12 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	/**
 	 * Create a CommentLinksAutocomplete instance.
 	 *
-	 * @param {import('./AutocompleteManager').AutocompleteConfigShared & ConfigExtension} [config]
+	 * @param {import('./AutocompleteManager').AutocompleteConfigShared & ConfigExtension} config
 	 *   Configuration object
 	 */
-	constructor(config = {}) {
+	// eslint-disable-next-line @typescript-eslint/no-useless-constructor
+	constructor(config) {
+		// The constructor is used to specify the type of the config parameter
 		super(config)
 	}
 
@@ -193,8 +195,10 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 			return acc
 		}, /** @type {CommentLinkEntry[]} */ ([]))
 
+		const sections = /** @type {import('./Section').default[]} */ (this.data.sections || [])
+
 		// Process sections into section link entries
-		const sectionItems = sectionManager.getAll().reduce((acc, section) => {
+		const sectionItems = sections.reduce((acc, section) => {
 			acc.push({
 				label: underlinesToSpaces(section.id),
 				urlFragment: underlinesToSpaces(section.id),

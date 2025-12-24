@@ -16,15 +16,6 @@ import { handleApiReject } from './utils-api'
  */
 class TemplatesAutocomplete extends BaseAutocomplete {
 	/**
-	 * Create a TemplatesAutocomplete instance.
-	 *
-	 * @param {import('./AutocompleteManager').AutocompleteConfigShared} [config] Configuration options
-	 */
-	constructor(config = {}) {
-		super(config)
-	}
-
-	/**
 	 * @override
 	 * @returns {string}
 	 */
@@ -132,7 +123,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				}
 
 				// Get selected text from the input widget if available
-				const element = this.manager?.tribute?.current.element
+				const element = this.manager?.tribute.current.element
 				let selectedText
 				if (
 					element?.cdInput &&

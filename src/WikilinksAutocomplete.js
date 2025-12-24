@@ -21,16 +21,6 @@ import { handleApiReject } from './utils-api'
  */
 class WikilinksAutocomplete extends BaseAutocomplete {
 	/**
-	 * Create a WikilinksAutocomplete instance.
-	 *
-	 * @param {import('./AutocompleteManager').AutocompleteConfigShared} [config] Configuration
-	 *   options
-	 */
-	constructor(config = {}) {
-		super(config)
-	}
-
-	/**
 	 * @override
 	 * @returns {string}
 	 */

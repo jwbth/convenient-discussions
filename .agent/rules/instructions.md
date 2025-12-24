@@ -2,7 +2,7 @@
 trigger: always_on
 ---
 
-# Instructions
+# Universal Instructions
 
 ## General Rules
 

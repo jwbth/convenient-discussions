@@ -14,16 +14,6 @@ import { handleApiReject } from './utils-api'
  */
 class MentionsAutocomplete extends BaseAutocomplete {
 	/**
-	 * Create a mentions autocomplete instance.
-	 *
-	 * @param {import('./AutocompleteManager').AutocompleteConfigShared} [config] Configuration
-	 *   options
-	 */
-	constructor(config = {}) {
-		super(config)
-	}
-
-	/**
 	 * Get the display label for mentions autocomplete.
 	 *
 	 * @override

@@ -332,7 +332,7 @@ class Comment extends CommentSkeleton {
 	wasMenuHidden
 
 	/** @type {import('./commentManager').CommentManager} */
-	commentManager
+	manager
 
 	/**
 	 * Create a comment object.
@@ -347,7 +347,7 @@ class Comment extends CommentSkeleton {
 	constructor(parser, signature, targets, commentManager) {
 		super(parser, signature, targets)
 
-		this.commentManager = commentManager
+		this.manager = commentManager
 
 		this.showContribsLink = cd.settings.get('showContribsLink')
 		this.hideTimezone = cd.settings.get('hideTimezone')
@@ -638,7 +638,7 @@ class Comment extends CommentSkeleton {
 		return Boolean(
 			this.actions?.toggleChildThreadsButton?.element.matches(':hover') &&
 				!cd.settings.get('toggleChildThreads-onboarded') &&
-				!this.commentManager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
+				!this.manager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
 		)
 	}
 
@@ -730,7 +730,7 @@ class Comment extends CommentSkeleton {
 	formatTimestamp(date, originalTimestamp) {
 		let timestamp
 		let title = ''
-		if (!this.commentManager.areTimestampsDefault()) {
+		if (!this.manager.areTimestampsDefault()) {
 			timestamp = formatDate(date, !this.hideTimezone)
 		}
 
@@ -1346,7 +1346,7 @@ class Comment extends CommentSkeleton {
 		this.handleUnhover(true)
 
 		// TODO: add add/remove methods to commentManager.underlays
-		removeFromArrayIfPresent(this.commentManager.underlays, this.layers.underlay)
+		removeFromArrayIfPresent(this.manager.underlays, this.layers.underlay)
 
 		this.layers.destroy()
 		const thisTyped = /** @type {any} */ (this)
@@ -1690,7 +1690,7 @@ class Comment extends CommentSkeleton {
 		if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
 			this.isSeenBeforeChanged ??= this.isSeen
 			this.isSeen = false
-			this.commentManager.registerSeen()
+			this.manager.registerSeen()
 		}
 
 		// Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -1754,7 +1754,7 @@ class Comment extends CommentSkeleton {
 		) {
 			this.isSeen = true
 			this.isSeenBeforeChanged = undefined
-			this.commentManager.emit('registerSeen')
+			this.manager.emit('registerSeen')
 		}
 
 		if (type === 'changed') {
@@ -1905,8 +1905,8 @@ class Comment extends CommentSkeleton {
 						threadTyped.getComments().forEach((comment) => {
 							comment.isSeen = true
 						})
-						this.commentManager.emit('registerSeen')
-						this.commentManager.goToFirstUnseenComment()
+						this.manager.emit('registerSeen')
+						this.manager.goToFirstUnseenComment()
 						notification.close()
 					},
 				},
@@ -2269,7 +2269,7 @@ class Comment extends CommentSkeleton {
 			mw.notify(cd.s('thank-success'), { type: 'success' })
 			this.setThanked()
 
-			this.commentManager
+			this.manager
 				.getThanksStorage()
 				.set(id, {
 					thankTime: Date.now(),
@@ -2383,7 +2383,7 @@ class Comment extends CommentSkeleton {
 	reply(initialState, commentForm) {
 		if (this.replyForm) return
 
-		if (this.commentManager.getByIndex(this.index + 1)?.isOutdented && this.section) {
+		if (this.manager.getByIndex(this.index + 1)?.isOutdented && this.section) {
 			let replyForm = this.section.replyForm
 			if (replyForm && replyForm.targetWithOutdentedReplies === this) {
 				replyForm.$element.cdScrollIntoView('center')
@@ -2688,13 +2688,11 @@ class Comment extends CommentSkeleton {
 		if (
 			registerAllInDirection &&
 			// Makes sense to register further?
-			this.commentManager
-				.getAll()
-				.some((comment) => comment.isSeen || comment.willFlashChangedOnSight)
+			this.manager.getAll().some((comment) => comment.isSeen || comment.willFlashChangedOnSight)
 		) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const change = registerAllInDirection === 'backward' ? -1 : 1
-			const nextComment = this.commentManager.getByIndex(this.index + change)
+			const nextComment = this.manager.getByIndex(this.index + change)
 			if (nextComment && nextComment.isInViewport() !== false) {
 				nextComment.registerSeen(registerAllInDirection, flash)
 			}
@@ -2846,7 +2844,7 @@ class Comment extends CommentSkeleton {
 		} else {
 			const comments = isInSectionContext
 				? /** @type {import('./Section').default} */ (this.section).comments
-				: this.commentManager.getAll()
+				: this.manager.getAll()
 			const index = comments.indexOf(this)
 			thisData = {
 				index,
@@ -3299,7 +3297,7 @@ class Comment extends CommentSkeleton {
 	maybeSplitParent() {
 		if (this.index === 0) return
 
-		const previousComment = /** @type {Comment} */ (this.commentManager.getByIndex(this.index - 1))
+		const previousComment = /** @type {Comment} */ (this.manager.getByIndex(this.index - 1))
 		if (this.level !== previousComment.level) return
 
 		const previousCommentLastElement = previousComment.elements[previousComment.elements.length - 1]
@@ -3337,7 +3335,7 @@ class Comment extends CommentSkeleton {
 			return
 		}
 
-		return this.commentManager.getById(this.id)
+		return this.manager.getById(this.id)
 	}
 
 	/**
@@ -3419,7 +3417,7 @@ class Comment extends CommentSkeleton {
 			(this.section
 				? this.section.commentsInFirstChunk.filter((comment) => !comment.getParent())
 				: // Parentless comments in the lead section
-					this.commentManager.query((comment) => !comment.section && !comment.getParent()))
+					this.manager.query((comment) => !comment.section && !comment.getParent()))
 		)
 	}
 

@@ -4,7 +4,6 @@ import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
-import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
 import { areObjectsEqual } from './shared/utils-general'
 
@@ -35,10 +34,11 @@ export default class CurrentPage extends Page {
 	 * Create a CurrentPage instance.
 	 *
 	 * @param {mw.Title} mwTitle
+	 * @param {typeof import('./pageRegistry').default} pageRegistry
 	 * @param {string} [genderedName]
 	 */
-	constructor(mwTitle, genderedName) {
-		super(mwTitle, genderedName)
+	constructor(mwTitle, pageRegistry, genderedName) {
+		super(mwTitle, pageRegistry, genderedName)
 		this.isActionable = this.isCommentable()
 	}
 
@@ -106,7 +106,7 @@ export default class CurrentPage extends Page {
 		if ($archivingInfo?.length) {
 			const sourcePage = $archivingInfo.attr('data-source-page')
 			if (sourcePage) {
-				const page = pageRegistry.get(sourcePage)
+				const page = this.registry.get(sourcePage)
 				if (page) {
 					return page
 				}

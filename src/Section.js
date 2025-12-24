@@ -199,7 +199,7 @@ class Section extends SectionSkeleton {
 	constructor(parser, heading, targets, sectionManager, subscriptions) {
 		super(parser, heading, targets)
 
-		this.sectionManager = sectionManager
+		this.manager = sectionManager
 		this.subscriptions = subscriptions
 
 		this.useTopicSubscription = cd.settings.get('useTopicSubscription')
@@ -635,7 +635,7 @@ class Section extends SectionSkeleton {
 	 * }}
 	 */
 	canBeReplied() {
-		const nextSection = this.sectionManager.getByIndex(this.index + 1)
+		const nextSection = this.manager.getByIndex(this.index + 1)
 
 		return (
 			this.isActionable &&
@@ -664,7 +664,7 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeSubsectioned() {
-		const nextSameLevelSection = this.sectionManager
+		const nextSameLevelSection = this.manager
 			.getAll()
 			.slice(this.index + 1)
 			.find((otherSection) => otherSection.level === this.level)
@@ -1575,7 +1575,7 @@ class Section extends SectionSkeleton {
 		// That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
 		// well, for which `sections` will have more than one section when there is more than one
 		// section created by a certain user at a certain moment in time.
-		const sections = this.sectionManager.getBySubscribeId(this.subscribeId)
+		const sections = this.manager.getBySubscribeId(this.subscribeId)
 		let finallyCallback
 		if (mode !== 'silent') {
 			const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined)
@@ -1595,9 +1595,7 @@ class Section extends SectionSkeleton {
 				this.id,
 				!!mode,
 				// Unsubscribe from
-				renamedFrom && !this.sectionManager.getBySubscribeId(renamedFrom).length
-					? renamedFrom
-					: undefined,
+				renamedFrom && !this.manager.getBySubscribeId(renamedFrom).length ? renamedFrom : undefined,
 			)
 			.then(() => {
 				// TODO: this condition seems a bad idea because when we could update the subscriptions but
@@ -1624,7 +1622,7 @@ class Section extends SectionSkeleton {
 	unsubscribe(mode) {
 		if (!this.subscribeId) return
 
-		const sections = this.sectionManager.getBySubscribeId(this.subscribeId)
+		const sections = this.manager.getBySubscribeId(this.subscribeId)
 		let finallyCallback
 		if (mode !== 'silent') {
 			const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined)
@@ -1959,7 +1957,7 @@ class Section extends SectionSkeleton {
 
 		return this.level <= 2
 			? defaultValue
-			: this.sectionManager
+			: this.manager
 					.getAll()
 					.slice(0, this.index)
 					.reverse()
@@ -1977,7 +1975,7 @@ class Section extends SectionSkeleton {
 		/** @type {Section[]} */
 		const children = []
 		let haveMetDirect = false
-		this.sectionManager
+		this.manager
 			.getAll()
 			.slice(this.index + 1)
 			.some((section) => {
@@ -2103,7 +2101,7 @@ class Section extends SectionSkeleton {
 	ensureSubscribeIdPresent(editTimestamp) {
 		if (!this.useTopicSubscription || this.subscribeId) return
 
-		this.subscribeId = this.sectionManager.generateDtSubscriptionId(
+		this.subscribeId = this.manager.generateDtSubscriptionId(
 			cd.user.getName(),
 			this.oldestComment?.date?.toISOString() || editTimestamp,
 		)
@@ -2165,7 +2163,7 @@ class Section extends SectionSkeleton {
 	 * @returns {Comment | undefined}
 	 */
 	getCommentAboveCommentToBeAdded(commentForm) {
-		return this.sectionManager
+		return this.manager
 			.getAll()
 			.slice(
 				0,
@@ -2188,14 +2186,14 @@ class Section extends SectionSkeleton {
 	 * @returns {Section | undefined}
 	 */
 	findNewSelf() {
-		return this.sectionManager.search({
+		return this.manager.search({
 			headline: this.headline,
 			oldestCommentId: this.oldestComment?.id,
 			index: this.index,
 			id: this.id,
 
 			// We cache ancestors when saving the session, so this call will return the right value,
-			// despite the fact that this.sectionManager.items has already changed.
+			// despite the fact that this.manager.items has already changed.
 			ancestors: this.getAncestors().map((section) => section.headline),
 		})?.section
 	}

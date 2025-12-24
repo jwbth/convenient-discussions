@@ -9,7 +9,6 @@
 import PageSource from './PageSource'
 import TextMasker from './TextMasker'
 import cd from './loader/cd'
-import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
 import { defined, mergeRegexps } from './shared/utils-general'
 import { handleApiReject, requestInBackground } from './utils-api'
@@ -87,10 +86,13 @@ export default class Page {
 	 * Create a page instance.
 	 *
 	 * @param {mw.Title} mwTitle
+	 * @param {typeof import('./pageRegistry').default} pageRegistry
 	 * @param {string} [genderedName]
 	 * @throws {CdError} If the string in the first parameter is not a valid title.
 	 */
-	constructor(mwTitle, genderedName) {
+	constructor(mwTitle, pageRegistry, genderedName) {
+		this.registry = pageRegistry
+
 		// TODO: remove after uses by foreign scripts are replaced.
 		if (!(mwTitle instanceof mw.Title)) {
 			mwTitle = new mw.Title(mwTitle)
@@ -246,7 +248,7 @@ export default class Page {
 			}
 		}
 
-		return (result && pageRegistry.get(result)) || this
+		return (result && this.registry.get(result)) || this
 	}
 
 	/**
@@ -617,7 +619,7 @@ export default class Page {
 									// Find the first <template> with a <title> child equal to the name
 									.filter(
 										(_, template) =>
-											pageRegistry.get($(template).children('title').text().trim()) === page,
+											this.registry.get($(template).children('title').text().trim()) === page,
 									)
 									.first()
 									.find('comment')

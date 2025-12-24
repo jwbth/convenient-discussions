@@ -12,16 +12,6 @@ import { ensureArray } from './shared/utils-general'
  */
 class TagsAutocomplete extends BaseAutocomplete {
 	/**
-	 * Create a TagsAutocomplete instance.
-	 *
-	 * @param {import('./AutocompleteManager').AutocompleteConfigShared} [config] Configuration
-	 *   options
-	 */
-	constructor(config = {}) {
-		super(config)
-	}
-
-	/**
 	 * Create the default lazy loading function for tags.
 	 *
 	 * @returns {TagEntry[]} The default tag entries
