@@ -6,7 +6,6 @@ import PrototypeRegistry from './PrototypeRegistry'
 import SpaciousCommentActions from './SpaciousCommentActions'
 import SpaciousCommentLayers from './SpaciousCommentLayers'
 import cd from './loader/cd'
-import settings from './settings'
 import { isInline } from './shared/utils-general'
 
 /**
@@ -519,7 +518,7 @@ class SpaciousComment extends Comment {
 		authorTalkLink.textContent = cd.s('comment-author-talk')
 		authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink)
 
-		if (settings.get('showContribsLink')) {
+		if (cd.settings.get('showContribsLink')) {
 			const separator = document.createElement('span')
 			separator.innerHTML = cd.sParse('dot-separator')
 
@@ -542,11 +541,11 @@ class SpaciousComment extends Comment {
 		// Create SVG icon prototypes for toggle child threads button
 		this.prototypes.add(
 			'collapseChildThreadsButtonSvg',
-				cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0],
+			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0],
 		)
 		this.prototypes.add(
 			'expandChildThreadsButtonSvg',
-				cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0],
+			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0],
 		)
 
 		// Initialize spacious-specific action prototypes

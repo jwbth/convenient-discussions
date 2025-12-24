@@ -1,6 +1,5 @@
 import controller from './controller'
 import cd from './loader/cd'
-import settings from './settings'
 import {
 	areObjectsEqual,
 	calculateWordOverlap,
@@ -37,7 +36,7 @@ export class SectionManager {
 	 * @param {import('./Subscriptions').default} subscriptions
 	 */
 	init(subscriptions) {
-		this.improvePerformance = settings.get('improvePerformance')
+		this.improvePerformance = cd.settings.get('improvePerformance')
 
 		controller.on('scroll', this.maybeUpdateVisibility)
 		subscriptions.on('process', this.addSubscribeButtons)

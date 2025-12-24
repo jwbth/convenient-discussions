@@ -6,7 +6,6 @@ import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import settings from './settings'
 import CdError from './shared/CdError'
 import {
 	calculateWordOverlap,
@@ -902,7 +901,7 @@ class UpdateChecker extends EventEmitter {
 			all,
 			relevant: /** @type {CommentWorkerNew[]} */ (
 				all.filter((comment) => {
-					if (!settings.get('notifyCollapsedThreads') && comment.logicalLevel !== 0) {
+					if (!cd.settings.get('notifyCollapsedThreads') && comment.logicalLevel !== 0) {
 						let parentMatch
 						for (
 							let /** @type {CommentWorkerNew | undefined} */ c = comment;

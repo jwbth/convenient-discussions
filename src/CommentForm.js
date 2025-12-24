@@ -13,7 +13,6 @@ import cd from './loader/cd'
 import notifications from './notifications'
 import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
-import settings from './settings'
 import CdError from './shared/CdError'
 import Parser from './shared/Parser'
 import { defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './shared/utils-general'
@@ -537,7 +536,7 @@ class CommentForm extends EventEmitter {
 
 		// Unlike when changing other settings on the fly, changing this one won't alter the behavior
 		// *for the current form*, because truth be told, we don't value it very much.
-		this.useTopicSubscription = settings.get('useTopicSubscription')
+		this.useTopicSubscription = cd.settings.get('useTopicSubscription')
 
 		/**
 		 * Whether the toolbar is loaded (it could be loaded at the beginning or later, if the user
@@ -545,7 +544,7 @@ class CommentForm extends EventEmitter {
 		 *
 		 * @type {boolean}
 		 */
-		this.toolbarLoaded = settings.get('showToolbar')
+		this.toolbarLoaded = cd.settings.get('showToolbar')
 
 		this.uploadToCommons = cd.g.isProbablyWmfSulWiki
 
@@ -665,7 +664,7 @@ class CommentForm extends EventEmitter {
 			this.addEventListeners()
 		})
 
-		settings.on('set', this.onSettingsUpdate)
+		cd.settings.on('set', this.onSettingsUpdate)
 	}
 
 	/**
@@ -1085,7 +1084,7 @@ class CommentForm extends EventEmitter {
 			.first()
 			.addClass('ext-codemirror-mediawiki')
 
-		if (settings.get('useCodeMirror')) {
+		if (cd.settings.get('useCodeMirror')) {
 			this.initCodeMirror()
 		} else {
 			this.commentInput.$input.wikiEditor('addToToolbar', {
@@ -1636,13 +1635,13 @@ class CommentForm extends EventEmitter {
 		this.terminateAutocomplete()
 		this.initAutocomplete()
 
-		this.previewButton.toggle(!settings.get('autopreview'))
-		this.viewChangesButton.toggle(settings.get('autopreview'))
+		this.previewButton.toggle(!cd.settings.get('autopreview'))
+		this.viewChangesButton.toggle(cd.settings.get('autopreview'))
 
-		if (settings.get('showToolbar') && !this.toolbarLoaded) {
+		if (cd.settings.get('showToolbar') && !this.toolbarLoaded) {
 			const builder = new CommentFormBuilder(this)
 			builder.buildToolbar(this.loadCustomModules())
-		} else if (!settings.get('showToolbar') && this.toolbarLoaded) {
+		} else if (!cd.settings.get('showToolbar') && this.toolbarLoaded) {
 			this.hideToolbar()
 		}
 
@@ -1781,7 +1780,7 @@ class CommentForm extends EventEmitter {
 		if (
 			controller.isLongPage() &&
 			$.client.profile().layout === 'webkit' &&
-			!settings.get('improvePerformance') &&
+			!cd.settings.get('improvePerformance') &&
 			!this.haveSuggestedToImprovePerformanceRecently()
 		) {
 			const keypressCount = 10
@@ -1815,7 +1814,7 @@ class CommentForm extends EventEmitter {
 	 * @returns {boolean}
 	 */
 	haveSuggestedToImprovePerformanceRecently() {
-		const lastSuggested = settings.get('improvePerformance-lastSuggested')
+		const lastSuggested = cd.settings.get('improvePerformance-lastSuggested')
 
 		return Boolean(lastSuggested && getDayTimestamp() - lastSuggested < 14)
 	}
@@ -1842,7 +1841,7 @@ class CommentForm extends EventEmitter {
 				wrapHtml(cd.sParse('warning-performance'), {
 					callbacks: {
 						'cd-notification-talkPageSettings': () => {
-							settings.showDialog('talkPage')
+							cd.settings.showDialog('talkPage')
 						},
 					},
 				}),
@@ -1852,7 +1851,7 @@ class CommentForm extends EventEmitter {
 					autoHideSeconds: 'long',
 				},
 			)
-			settings.saveSettingOnTheFly('improvePerformance-lastSuggested', getDayTimestamp())
+			cd.settings.saveSettingOnTheFly('improvePerformance-lastSuggested', getDayTimestamp())
 		}
 	}
 
@@ -1892,7 +1891,7 @@ class CommentForm extends EventEmitter {
 			this.toggleAdvanced()
 		})
 		this.settingsButton?.on('click', () => {
-			settings.showDialog()
+			cd.settings.showDialog()
 		})
 		this.cancelButton.on('click', () => {
 			this.cancel()
@@ -1944,7 +1943,7 @@ class CommentForm extends EventEmitter {
 							(_, /** @type {HTMLAnchorElement} */ el) =>
 								cd.g.userLinkRegexp.test(el.title) &&
 								!el.closest(
-									settings.get('commentDisplay') === 'spacious'
+									cd.settings.get('commentDisplay') === 'spacious'
 										? '.cd-comment-author'
 										: '.cd-signature',
 								),
@@ -1976,7 +1975,7 @@ class CommentForm extends EventEmitter {
 		defaultUserNames = defaultUserNames.filter(unique)
 
 		this.autocomplete = new AutocompleteManager({
-			types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
+			types: cd.settings.get('autocompleteTypes'),
 			inputs: [this.commentInput],
 			typeConfigs: {
 				mentions: { defaultEntries: defaultUserNames },
@@ -2586,7 +2585,7 @@ class CommentForm extends EventEmitter {
 	async preview(isAuto = true, operation = undefined) {
 		if (
 			this.isContentBeingLoaded() ||
-			(!settings.get('autopreview') && (isAuto || this.isBeingSubmitted()))
+			(!cd.settings.get('autopreview') && (isAuto || this.isBeingSubmitted()))
 		) {
 			operation?.close()
 
@@ -2700,7 +2699,7 @@ class CommentForm extends EventEmitter {
 			}
 		}
 
-		if (settings.get('autopreview') && this.previewButton.$element.is(':visible')) {
+		if (cd.settings.get('autopreview') && this.previewButton.$element.is(':visible')) {
 			this.previewButton.toggle(false)
 			this.viewChangesButton.toggle(true)
 		}
@@ -2781,7 +2780,7 @@ class CommentForm extends EventEmitter {
 			this.showMessage(cd.sParse('cf-notice-nochanges'))
 		}
 
-		if (settings.get('autopreview')) {
+		if (cd.settings.get('autopreview')) {
 			this.viewChangesButton.toggle(false)
 			this.previewButton.toggle(true)
 		}
@@ -3485,7 +3484,7 @@ class CommentForm extends EventEmitter {
 		}
 
 		let content = ''
-		if (settings.get('autocompleteTypes').includes('mentions')) {
+		if (cd.settings.get('autocompleteTypes').includes('mentions')) {
 			content = cd.config.mentionCharacter
 		} else {
 			// TODO
@@ -3915,7 +3914,7 @@ class CommentForm extends EventEmitter {
 	 */
 	onboardOntoMultipleForms() {
 		if (
-			settings.get('manyForms-onboarded') ||
+			cd.settings.get('manyForms-onboarded') ||
 			!cd.user.isRegistered() ||
 			// This form will be the second
 			this.commentFormManager.getCount() !== 1 ||
@@ -3957,7 +3956,7 @@ class CommentForm extends EventEmitter {
 		$(document.body).append(this.manyFormsPopup.$element)
 		this.manyFormsPopup.toggle(true)
 		this.manyFormsPopup.on('closing', () => {
-			settings.saveSettingOnTheFly('manyForms-onboarded', true)
+			cd.settings.saveSettingOnTheFly('manyForms-onboarded', true)
 		})
 	}
 
@@ -3969,7 +3968,7 @@ class CommentForm extends EventEmitter {
 	onboardOntoUpload() {
 		if (
 			!this.uploadToCommons ||
-			settings.get('upload-onboarded') ||
+			cd.settings.get('upload-onboarded') ||
 			!cd.user.isRegistered() ||
 			// Left column hidden in Timeless
 			(cd.g.skin === 'timeless' && window.innerWidth < 1100) ||
@@ -4009,7 +4008,7 @@ class CommentForm extends EventEmitter {
 		$(document.body).append(this.uploadPopup.$element)
 		this.uploadPopup.toggle(true)
 		this.uploadPopup.on('closing', () => {
-			settings.saveSettingOnTheFly('upload-onboarded', true)
+			cd.settings.saveSettingOnTheFly('upload-onboarded', true)
 		})
 	}
 

@@ -14,7 +14,6 @@ import { initGlobals, initTimestampTools } from './init'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
-import settings from './settings'
 import updateChecker from './updateChecker'
 import { buildEditSummary, wrapDiffBody, wrapHtml } from './utils-window'
 import visits from './visits'
@@ -35,12 +34,11 @@ async function app() {
 }
 
 // Set up API after initialization
-cd.settings = settings
 cd.commentForms = commentFormManager.getAll()
 
 cd.tests.controller = controller
 cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker)
-cd.tests.showSettingsDialog = settings.showDialog.bind(settings)
+cd.tests.showSettingsDialog = cd.settings.showDialog.bind(cd.settings)
 cd.tests.visits = visits
 
 /**

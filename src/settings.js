@@ -12,8 +12,8 @@ import {
 	ucFirst,
 } from './shared/utils-general'
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
-import { showConfirmDialog } from './utils-oojs'
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-date'
+import { showConfirmDialog } from './utils-oojs'
 import { wrapHtml } from './utils-window'
 
 /**
@@ -1102,4 +1102,6 @@ class Settings extends EventEmitter {
 	}
 }
 
-export default new Settings()
+const settings = new Settings()
+cd.settings = settings
+export default settings

@@ -1,7 +1,6 @@
 import AutocompleteFactory from './AutocompleteFactory'
 import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor'
 import cd from './loader/cd'
-import settings from './settings'
 import CdError from './shared/CdError'
 import { typedEntries } from './shared/utils-general'
 import Tribute from './tribute/Tribute'
@@ -64,10 +63,10 @@ class AutocompleteManager {
 	 */
 	constructor({ types, inputs, typeConfigs = {}, enablePerformanceMonitoring = false }) {
 		/** @type {AutocompleteType[]} @private */
-		this.types = settings.get('autocompleteTypes')
+		this.types = cd.settings.get('autocompleteTypes')
 
 		/** @type {boolean} @private */
-		this.useTemplateData = settings.get('useTemplateData')
+		this.useTemplateData = cd.settings.get('useTemplateData')
 
 		types = types.filter((type) => this.types.includes(type))
 

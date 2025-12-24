@@ -11,7 +11,6 @@ import dayJsTimezone from 'dayjs/plugin/timezone'
 import dayJsUtc from 'dayjs/plugin/utc'
 
 import cd from './loader/cd'
-import settings from './settings'
 import { dateTokenToMessageNames } from './shared/utils-timestamp'
 
 /** @type {string | undefined} */
@@ -60,7 +59,7 @@ export function initDayjs() {
  */
 export function formatDate(date, addTimezone = false) {
 	let timestamp
-	const timestampFormat = settings.get('timestampFormat')
+	const timestampFormat = cd.settings.get('timestampFormat')
 	if (timestampFormat === 'default') {
 		timestamp = formatDateNative(date, addTimezone)
 	} else if (timestampFormat === 'improved') {
@@ -91,7 +90,7 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
 	let minutes
 	let dayOfWeek
 	if (
-		settings.get('useUiTime') &&
+		cd.settings.get('useUiTime') &&
 		!['UTC', 0, undefined].includes(timestampToolsUser.timezone) &&
 		!timezone
 	) {
@@ -215,7 +214,10 @@ export function formatDateImproved(date, addTimezone = false) {
 	let now = new Date()
 	let dayjsDate = dayjs(date)
 	let timezoneOffset
-	if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(timestampToolsUser.timezone)) {
+	if (
+		cd.settings.get('useUiTime') &&
+		!['UTC', 0, undefined].includes(timestampToolsUser.timezone)
+	) {
 		if (timestampToolsUser.isSameAsLocalTimezone) {
 			timezoneOffset = -date.getTimezoneOffset()
 		} else {

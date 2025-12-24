@@ -6,7 +6,6 @@ import StorageItemWithKeys from './StorageItemWithKeys'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
-import settings from './settings'
 import CdError from './shared/CdError'
 import CommentSkeleton from './shared/CommentSkeleton'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
@@ -350,11 +349,11 @@ class Comment extends CommentSkeleton {
 
 		this.commentManager = commentManager
 
-		this.showContribsLink = settings.get('showContribsLink')
-		this.hideTimezone = settings.get('hideTimezone')
-		this.timestampFormat = settings.get('timestampFormat')
-		this.useUiTime = settings.get('useUiTime')
-		this.countEditsAsNewComments = settings.get('countEditsAsNewComments')
+		this.showContribsLink = cd.settings.get('showContribsLink')
+		this.hideTimezone = cd.settings.get('hideTimezone')
+		this.timestampFormat = cd.settings.get('timestampFormat')
+		this.useUiTime = cd.settings.get('useUiTime')
+		this.countEditsAsNewComments = cd.settings.get('countEditsAsNewComments')
 
 		/**
 		 * Comment author user object.
@@ -381,7 +380,8 @@ class Comment extends CommentSkeleton {
 			cd.page.isActive() &&
 			!controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
 
-		this.isEditable = this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'))
+		this.isEditable =
+			this.isActionable && (this.isOwn || cd.settings.get('allowEditOthersComments'))
 
 		// Delay bindEvents call until after construction is complete
 		setTimeout(() => {
@@ -637,7 +637,7 @@ class Comment extends CommentSkeleton {
 	shouldOnboardOntoToggleChildThreads() {
 		return Boolean(
 			this.actions?.toggleChildThreadsButton?.element.matches(':hover') &&
-				!settings.get('toggleChildThreads-onboarded') &&
+				!cd.settings.get('toggleChildThreads-onboarded') &&
 				!this.commentManager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
 		)
 	}
@@ -675,7 +675,7 @@ class Comment extends CommentSkeleton {
 				wrapHtml(cd.sParse('togglechildthreads-popup-text'), {
 					callbacks: {
 						'cd-notification-settings': () => {
-							settings.showDialog('talkPage', '.cd-setting-collapseThreadsLevel input')
+							cd.settings.showDialog('talkPage', '.cd-setting-collapseThreadsLevel input')
 						},
 					},
 				}).children(),
@@ -691,7 +691,7 @@ class Comment extends CommentSkeleton {
 		$(document.body).append(this.toggleChildThreadsPopup.$element)
 		this.toggleChildThreadsPopup.toggle(true)
 		this.toggleChildThreadsPopup.on('closing', () => {
-			settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true)
+			cd.settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true)
 			this.teardownOnboardOntoToggleChildThreadsPopup()
 		})
 		controller.once('startReboot', this.teardownOnboardOntoToggleChildThreadsPopup)

@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 
 import EventEmitter from './EventEmitter'
 import cd from './loader/cd'
-import settings from './settings'
 import { removeFromArrayIfPresent } from './shared/utils-general'
 import { formatDate } from './utils-date'
 import { mixInObject } from './utils-oojs'
@@ -107,7 +106,7 @@ class LiveTimestamp extends mixInObject(
 		 */
 		this.addTimezone = addTimezone
 
-		this.format = settings.get('timestampFormat')
+		this.format = cd.settings.get('timestampFormat')
 	}
 
 	/**
@@ -191,7 +190,7 @@ class LiveTimestamp extends mixInObject(
 	static initImproved() {
 		let date = dayjs()
 		const timezone = cd.g.timestampTools.user.timezone
-		if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(timezone)) {
+		if (cd.settings.get('useUiTime') && !['UTC', 0, undefined].includes(timezone)) {
 			date = typeof timezone === 'number' ? date.utcOffset(timezone) : date.tz(timezone)
 		} else {
 			date = date.utc()

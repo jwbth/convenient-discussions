@@ -4,7 +4,6 @@ import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
-import settings from './settings'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import updateChecker from './updateChecker'
 import { formatDate } from './utils-date'
@@ -320,7 +319,7 @@ class NavPanel {
 				cd.s('navpanel-newcomments-refresh') +
 				' ' +
 				cd.mws('parentheses', 'R')
-			if (areThereNew && settings.get('highlightNewInterval')) {
+			if (areThereNew && cd.settings.get('highlightNewInterval')) {
 				tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier)
 			}
 			const bullet = removeWikiMarkup(cd.s('bullet'))
@@ -351,12 +350,12 @@ class NavPanel {
 
 			// When timestamps are relative, we need to update the tooltip manually every minute. When
 			// `improved` timestamps are used, timestamps are updated in LiveTimestamp.updateImproved().
-			if (settings.get('timestampFormat') === 'relative') {
+			if (cd.settings.get('timestampFormat') === 'relative') {
 				this.utirbtTimeout = setTimeout(this.updateTimestampsInRefreshButtonTooltip, cd.g.msInMin)
 			}
 		} else {
 			tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R')
-			if (areThereNew && settings.get('highlightNewInterval')) {
+			if (areThereNew && cd.settings.get('highlightNewInterval')) {
 				tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier)
 			}
 		}

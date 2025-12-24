@@ -8,7 +8,6 @@ import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
-import settings from './settings'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
 import { defined, getHeadingLevel, underlinesToSpaces, unique } from './shared/utils-general'
@@ -203,7 +202,7 @@ class Section extends SectionSkeleton {
 		this.sectionManager = sectionManager
 		this.subscriptions = subscriptions
 
-		this.useTopicSubscription = settings.get('useTopicSubscription')
+		this.useTopicSubscription = cd.settings.get('useTopicSubscription')
 
 		/**
 		 * Automatically updated sequental number of the section.
@@ -724,7 +723,7 @@ class Section extends SectionSkeleton {
 	createAuthorsPopupContent() {
 		// Collect the data needed to display the content
 
-		const authorsSortSetting = settings.get('authorsSort')
+		const authorsSortSetting = cd.settings.get('authorsSort')
 		const data = this.comments
 			.map((comment) => comment.author)
 			.filter(unique)
@@ -779,7 +778,7 @@ class Section extends SectionSkeleton {
 		})
 		sortSelect.on('choose', (item) => {
 			stack.setItem(getPanelByName(/** @type {PanelName} */ (item.getData())))
-			settings.saveSettingOnTheFly('authorsSort', item.getData())
+			cd.settings.saveSettingOnTheFly('authorsSort', item.getData())
 		})
 
 		// Create the panels

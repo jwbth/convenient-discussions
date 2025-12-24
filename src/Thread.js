@@ -5,7 +5,6 @@ import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
-import settings from './settings'
 import CdError from './shared/CdError'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
 import {
@@ -1433,7 +1432,7 @@ class Thread extends mixInObject(
 	 *   collapsed threads from the local storage.
 	 */
 	static reset = (autocollapse = true) => {
-		this.enabled = settings.get('enableThreads')
+		this.enabled = cd.settings.get('enableThreads')
 		if (!this.enabled) {
 			new StorageItemWithKeysAndSaveTime('collapsedThreads').removeItem()
 
@@ -1456,7 +1455,7 @@ class Thread extends mixInObject(
 				})
 		}
 
-		this.collapseThreadsLevel = settings.get('collapseThreadsLevel')
+		this.collapseThreadsLevel = cd.settings.get('collapseThreadsLevel')
 		this.treeWalker = new ElementsTreeWalker(controller.rootElement)
 		commentManager.getAll().forEach((rootComment) => {
 			try {

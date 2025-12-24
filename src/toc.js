@@ -11,7 +11,6 @@ import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import settings from './settings'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
 import { defined } from './shared/utils-general'
@@ -382,7 +381,7 @@ class Toc {
 	 * @private
 	 */
 	addNewSections = (sections) => {
-		if (!settings.get('modifyToc') || !this.isPresent()) return
+		if (!cd.settings.get('modifyToc') || !this.isPresent()) return
 
 		if (!this.isInSidebar()) {
 			controller.saveRelativeScrollPosition(true)
@@ -556,14 +555,14 @@ class Toc {
 			if (comment.date) {
 				nativeDate = formatDateNative(comment.date)
 				date =
-					settings.get('timestampFormat') === 'default' || !addAsItem
+					cd.settings.get('timestampFormat') === 'default' || !addAsItem
 						? nativeDate
 						: formatDate(comment.date)
 			} else {
 				nativeDate = date = cd.s('navpanel-newcomments-unknowndate')
 			}
 
-			const dateIfNative = settings.get('timestampFormat') === 'default' ? date : ''
+			const dateIfNative = cd.settings.get('timestampFormat') === 'default' ? date : ''
 			const text =
 				// Names
 				(parent?.author && comment.level > 1
@@ -587,7 +586,7 @@ class Toc {
 				a.addEventListener('click', this.handleCommentClick)
 
 				let timestampSpan
-				if (settings.get('timestampFormat') !== 'default' && comment.date) {
+				if (cd.settings.get('timestampFormat') !== 'default' && comment.date) {
 					timestampSpan = document.createElement('span')
 					timestampSpan.textContent = date
 					timestampSpan.title = /** @type {string} */ (nativeDate)
@@ -652,7 +651,7 @@ class Toc {
 	 * @private
 	 */
 	async addNewComments(commentsBySection, bootProcess) {
-		if (!settings.get('modifyToc') || !this.isPresent()) return
+		if (!cd.settings.get('modifyToc') || !this.isPresent()) return
 
 		await this.updateTocSectionsPromise
 		this.$element.find('.cd-toc-addedCommentList').remove()

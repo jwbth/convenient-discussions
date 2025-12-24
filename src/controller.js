@@ -14,7 +14,6 @@ import navPanel from './navPanel'
 import notifications from './notifications'
 import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
-import settings from './settings'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
 import Parser from './shared/Parser'
 import {
@@ -269,7 +268,7 @@ class Controller extends EventEmitter {
 		this.commentLayersOptionalBackgroundHighlightingCss ??= mw.util.addCSS(
 			commentLayersOptionalBackgroundHighlightingCss,
 		)
-		this.commentLayersOptionalBackgroundHighlightingCss.disabled = settings.get(
+		this.commentLayersOptionalBackgroundHighlightingCss.disabled = cd.settings.get(
 			'useBackgroundHighlighting',
 		)
 	}
@@ -891,7 +890,7 @@ class Controller extends EventEmitter {
 	 * _For internal use._ Add event listeners to `window`, `document`, hooks.
 	 */
 	addEventListeners() {
-		if (settings.get('commentDisplay') !== 'spacious') {
+		if (cd.settings.get('commentDisplay') !== 'spacious') {
 			// The `mouseover` event allows to capture the state when the cursor is not moving but ends up
 			// above a comment but not above any comment parts (for example, as a result of scrolling).
 			// The benefit may be low compared to the performance cost, but it's unexpected when the user
@@ -984,7 +983,7 @@ class Controller extends EventEmitter {
 
 		const currentUserName = cd.user.getName()
 		const excludeSelector = [
-			settings.get('commentDisplay') === 'spacious' ? 'cd-comment-author' : 'cd-signature',
+			cd.settings.get('commentDisplay') === 'spacious' ? 'cd-comment-author' : 'cd-signature',
 		]
 			.concat(cd.config.noSignatureClasses)
 			.map((name) => `.${name}`)
@@ -1163,8 +1162,8 @@ class Controller extends EventEmitter {
 		// Undocumented feature allowing to copy a link of a default type without opening a dialog.
 		const relevantSetting =
 			object instanceof Comment
-				? settings.get('defaultCommentLinkType')
-				: settings.get('defaultSectionLinkType')
+				? cd.settings.get('defaultCommentLinkType')
+				: cd.settings.get('defaultSectionLinkType')
 		if (!event.shiftKey && relevantSetting) {
 			switch (relevantSetting) {
 				case 'wikilink':
@@ -1278,13 +1277,13 @@ class Controller extends EventEmitter {
 	showRegularNotification(comments) {
 		/** @type {import('./updateChecker').CommentWorkerNew[]} */
 		let filteredComments = []
-		if (settings.get('notifications') === 'all') {
+		if (cd.settings.get('notifications') === 'all') {
 			filteredComments = comments
-		} else if (settings.get('notifications') === 'toMe') {
+		} else if (cd.settings.get('notifications') === 'toMe') {
 			filteredComments = comments.filter((comment) => comment.isToMe)
 		}
 
-		if (settings.get('notifications') !== 'none' && filteredComments.length) {
+		if (cd.settings.get('notifications') !== 'none' && filteredComments.length) {
 			// Combine with content of notifications that were displayed but are still open (i.e., the
 			// user most likely didn't see them because the tab is in the background). In the past there
 			// could be more than one notification, now there can be only one.
@@ -1382,9 +1381,9 @@ class Controller extends EventEmitter {
 	showDesktopNotification(comments) {
 		/** @type {import('./updateChecker').CommentWorkerNew[]} */
 		let filteredComments = []
-		if (settings.get('desktopNotifications') === 'all') {
+		if (cd.settings.get('desktopNotifications') === 'all') {
 			filteredComments = comments
-		} else if (settings.get('desktopNotifications') === 'toMe') {
+		} else if (cd.settings.get('desktopNotifications') === 'toMe') {
 			filteredComments = comments.filter((comment) => comment.isToMe)
 		}
 
@@ -1525,7 +1524,7 @@ class Controller extends EventEmitter {
 	}
 
 	/**
-	 * Create an appropriate {@link Subscriptions} singleton based on the user settings.
+	 * Create an appropriate {@link Subscriptions} singleton based on the user cd.settings.
 	 *
 	 * @returns {import('./Subscriptions').default}
 	 */
@@ -1668,7 +1667,7 @@ class Controller extends EventEmitter {
 	 */
 	isSubscribingDisabled() {
 		return (
-			cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'))
+			cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(cd.settings.get('desktopNotifications'))
 		)
 	}
 

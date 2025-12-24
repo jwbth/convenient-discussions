@@ -4,7 +4,6 @@ import TextInputWidget from './TextInputWidget'
 import TextMasker from './TextMasker'
 import controller from './controller'
 import cd from './loader/cd'
-import settings from './settings'
 import { defined, removeDoubleSpaces } from './shared/utils-general'
 import { createCheckboxControl } from './utils-oojs'
 import { wrapHtml } from './utils-window'
@@ -97,7 +96,7 @@ class CommentFormBuilder {
 				value: 'watch',
 				selected:
 					initialState.watch ??
-					((settings.get('watchOnReply') && !this.form.isMode('edit')) ||
+					((cd.settings.get('watchOnReply') && !this.form.isMode('edit')) ||
 						$('.mw-watchlink a[href*="action=unwatch"]').length ||
 						mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')),
 				label: cd.s('cf-watch'),
@@ -116,7 +115,7 @@ class CommentFormBuilder {
 						value: 'subscribe',
 						selected: Boolean(
 							initialState.subscribe ??
-								((settings.get('subscribeOnReply') && !this.form.isMode('edit')) ||
+								((cd.settings.get('subscribeOnReply') && !this.form.isMode('edit')) ||
 									subscribableSection?.subscriptionState),
 						),
 						label: cd.s(
@@ -250,8 +249,8 @@ class CommentFormBuilder {
 			classes: ['cd-commentForm-previewButton'],
 			tabIndex: this.form.getTabIndex(35),
 		})
-		if (settings.get('autopreview')) {
-			this.form.previewButton.toggle(!settings.get('autopreview'))
+		if (cd.settings.get('autopreview')) {
+			this.form.previewButton.toggle(!cd.settings.get('autopreview'))
 		}
 		this.form.previewButton.on('toggle', this.form.adjustLabels)
 
@@ -336,7 +335,7 @@ class CommentFormBuilder {
 			].filter(defined),
 		)
 
-		if (!this.form.isMode('edit') && !settings.get('alwaysExpandAdvanced')) {
+		if (!this.form.isMode('edit') && !cd.settings.get('alwaysExpandAdvanced')) {
 			this.form.$advanced.hide()
 		}
 
@@ -366,8 +365,8 @@ class CommentFormBuilder {
 	 * @fires commentFormToolbarReady
 	 */
 	async buildToolbar(customModulesPromise) {
-		if (!settings.get('showToolbar') || !mw.loader.getState('ext.wikiEditor')) {
-			if (settings.get('useCodeMirror')) {
+		if (!cd.settings.get('showToolbar') || !mw.loader.getState('ext.wikiEditor')) {
+			if (cd.settings.get('useCodeMirror')) {
 				this.form.initCodeMirror()
 			}
 
@@ -411,7 +410,7 @@ class CommentFormBuilder {
 	 * Add the insert buttons block under the comment input.
 	 */
 	buildInsertButtons() {
-		const insertButtons = settings.get('insertButtons')
+		const insertButtons = cd.settings.get('insertButtons')
 		if (!insertButtons.length) return
 
 		this.form.$insertButtons ??= $('<div>')

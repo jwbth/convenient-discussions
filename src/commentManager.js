@@ -5,7 +5,6 @@ import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
-import settings from './settings'
 import TreeWalker from './shared/TreeWalker'
 import {
 	definedAndNotNull,
@@ -99,11 +98,11 @@ export class CommentManager extends EventEmitter {
 	 */
 	init() {
 		this.timestampsDefault =
-			(!settings.get('useUiTime') ||
+			(!cd.settings.get('useUiTime') ||
 				cd.g.timestampTools.content.timezone === cd.g.timestampTools.user.timezone) &&
-			settings.get('timestampFormat') === 'default' &&
+			cd.settings.get('timestampFormat') === 'default' &&
 			mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
-			!settings.get('hideTimezone')
+			!cd.settings.get('hideTimezone')
 
 		this.thanksStorage = new StorageItemWithKeys('thanks')
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
@@ -178,7 +177,7 @@ export class CommentManager extends EventEmitter {
 	 */
 	setup() {
 		// This can be updated after an in-script page reload.
-		this.commentDisplay = settings.get('commentDisplay')
+		this.commentDisplay = cd.settings.get('commentDisplay')
 
 		this.reformatTimestamps()
 		this.findAndUpdateTableComments()

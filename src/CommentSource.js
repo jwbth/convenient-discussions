@@ -1,6 +1,5 @@
 import TextMasker from './TextMasker'
 import cd from './loader/cd'
-import settings from './settings'
 import CdError from './shared/CdError'
 import {
 	calculateWordOverlap,
@@ -697,9 +696,9 @@ class CommentSource {
 
 		if (
 			cd.config.outdentTemplates.length &&
-			settings.get('outdent') &&
-			settings.get('outdentLevel') &&
-			this.replyIndentation.length >= settings.get('outdentLevel') &&
+			cd.settings.get('outdent') &&
+			cd.settings.get('outdentLevel') &&
+			this.replyIndentation.length >= cd.settings.get('outdentLevel') &&
 			this.indentation.length > indentationAfter.length &&
 			isNextLine
 		) {

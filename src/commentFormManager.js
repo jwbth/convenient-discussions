@@ -5,7 +5,6 @@ import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import settings from './settings'
 import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './shared/utils-general'
 import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
 import { isInputFocused } from './utils-window'
@@ -83,7 +82,7 @@ class CommentFormManager extends EventEmitter {
 
 		mw.hook('ext.CodeMirror.toggle').add((enabled, codeMirror) => {
 			this.items.find((item) => item.codeMirror === codeMirror)?.setCodeMirrorActive(enabled)
-			settings.saveSettingOnTheFly('useCodeMirror', enabled)
+			cd.settings.saveSettingOnTheFly('useCodeMirror', enabled)
 		})
 	}
 

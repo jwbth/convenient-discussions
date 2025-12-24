@@ -17,7 +17,6 @@ import notifications from './notifications'
 import pageNav from './pageNav'
 import processFragment from './processFragment'
 import sectionManager from './sectionManager'
-import settings from './settings'
 import Parser from './shared/Parser'
 import {
 	defined,
@@ -333,7 +332,7 @@ class BootProcess {
 			controller.setupMutationObserver()
 
 			if (
-				settings.get('commentDisplay') === 'spacious' &&
+				cd.settings.get('commentDisplay') === 'spacious' &&
 				commentManager.getCount() &&
 				this.isFirstRun()
 			) {
@@ -349,7 +348,7 @@ class BootProcess {
 			// sees it.
 			controller.restoreRelativeScrollPosition()
 
-			settings.addLinkToFooter()
+			cd.settings.addLinkToFooter()
 		}
 
 		/**
@@ -406,7 +405,7 @@ class BootProcess {
 
 			// This could have been executed from bootstrap() in addCommentLinks.js already.
 			initGlobals()
-			await settings.getInitPromise()
+			await cd.settings.getInitPromise()
 
 			initTimestampTools()
 			this.initPatterns()
@@ -469,7 +468,7 @@ class BootProcess {
 	 * Set some global variables related to the user signature.
 	 */
 	updateSignatureData() {
-		const signaturePrefix = settings.get('signaturePrefix')
+		const signaturePrefix = cd.settings.get('signaturePrefix')
 		cd.g.userSignature = signaturePrefix + cd.g.signCode
 
 		const signatureContent = mw.user.options.get('nickname')
@@ -658,7 +657,7 @@ class BootProcess {
 	 */
 	initPrototypes() {
 		// Initialize prototypes for the appropriate Comment class based on commentDisplay setting
-		if (settings.get('commentDisplay') === 'spacious') {
+		if (cd.settings.get('commentDisplay') === 'spacious') {
 			SpaciousComment.initPrototypes()
 		} else {
 			CompactComment.initPrototypes()
@@ -675,7 +674,7 @@ class BootProcess {
 	 */
 	findTargets() {
 		const CommentClass =
-			settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
+			cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
 
 		this.parser = new Parser({
 			CommentClass,
@@ -931,8 +930,8 @@ class BootProcess {
 	async showPopups() {
 		this.maybeSuggestDisableDt()
 
-		await settings.maybeOnboardOntoSpaciousComments()
-		await settings.maybeConfirmDesktopNotifications()
+		await cd.settings.maybeOnboardOntoSpaciousComments()
+		await cd.settings.maybeConfirmDesktopNotifications()
 	}
 
 	/**

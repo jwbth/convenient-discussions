@@ -3,7 +3,6 @@ import LZString from 'lz-string'
 import EventEmitter from './EventEmitter'
 import commentManager from './commentManager'
 import cd from './loader/cd'
-import settings from './settings'
 import CdError from './shared/CdError'
 import { subtractDaysFromNow, typedKeysOf } from './shared/utils-general'
 import { getUserInfo, saveLocalOption } from './utils-api'
@@ -115,11 +114,12 @@ class Visits extends EventEmitter {
 	update(currentTime, markAsReadRequested) {
 		for (let i = this.currentPageData.length - 1; i >= 0; i--) {
 			if (
-				Number(this.currentPageData[i]) < currentTime - 60 * settings.get('highlightNewInterval') ||
+				Number(this.currentPageData[i]) <
+					currentTime - 60 * cd.settings.get('highlightNewInterval') ||
 				// Add this condition for rare cases when the time of the previous visit is later than the
 				// current time (see timeConflict). In that case, when highlightNewInterval is set to 0,
 				// the user shouldn't get comments highlighted again all of a sudden.
-				!settings.get('highlightNewInterval') ||
+				!cd.settings.get('highlightNewInterval') ||
 				markAsReadRequested
 			) {
 				// Remove visits _before_ the found one.
