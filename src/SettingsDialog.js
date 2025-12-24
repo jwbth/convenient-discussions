@@ -1,8 +1,9 @@
 import ProcessDialog from './ProcessDialog'
 import StorageItem from './StorageItem'
 import commentFormManager from './commentFormManager'
-// import controller from './controller' // Access via cd.controller
+import controller from './controller'
 import cd from './loader/cd'
+import settings from './settings'
 import { areObjectsEqual } from './shared/utils-general'
 import { saveGlobalOption, saveLocalOption } from './utils-api'
 import {
@@ -166,7 +167,7 @@ export default function getSettingsDialogClass() {
 		 *
 		 * @override
 		 * @param {object} data Dialog opening data
-		 * @param {Partial<import('./settings').SettingsValues>} data.loadedSettings Loaded cd.settings
+		 * @param {Partial<import('./settings').SettingsValues>} data.loadedSettings Loaded settings
 		 * @returns {OO.ui.Process}
 		 * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
 		 * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
@@ -192,16 +193,16 @@ export default function getSettingsDialogClass() {
 		 */
 		getReadyProcess() {
 			return super.getReadyProcess().next(() => {
-				// this.cd.settings can be empty after removing the data using the relevant functionality in the
+				// this.settings can be empty after removing the data using the relevant functionality in the
 				// UI.
 				if (!Object.keys(this.loadedSettings).length) {
-					this.loadedSettings = cd.settings.get()
+					this.loadedSettings = settings.get()
 				}
 
 				this.renderControls(this.loadedSettings)
 
 				this.stack.setItem(this.settingsPanel)
-				this.bookletLayout.setPage(this.initialPageName || cd.settings.scheme.ui[0].name)
+				this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name)
 				if (this.focusSelector) {
 					this.$body.find(this.focusSelector).trigger('focus')
 				}
@@ -209,7 +210,7 @@ export default function getSettingsDialogClass() {
 
 				this.popPending()
 
-				cd.controller.addPreventUnloadCondition('dialog', () => this.isUnsaved())
+				controller.addPreventUnloadCondition('dialog', () => this.isUnsaved())
 			})
 		}
 
@@ -229,15 +230,15 @@ export default function getSettingsDialogClass() {
 						this.pushPending()
 
 						try {
-							await cd.settings.save(this.collectSettings())
-							cd.settings.set(cd.settings)
+							await settings.save(this.collectSettings())
+							settings.set(settings)
 						} catch (error) {
-							this.handleError(error, 'error-cd.settings-save', true)
+							this.handleError(error, 'error-settings-save', true)
 
 							return
 						}
 
-						cd.controller.removePreventUnloadCondition('dialog')
+						controller.removePreventUnloadCondition('dialog')
 
 						this.stack.setItem(this.reloadPanel)
 						this.actions.setMode('reboot')
@@ -248,7 +249,7 @@ export default function getSettingsDialogClass() {
 				case 'reboot': {
 					return new OO.ui.Process(async () => {
 						this.close()
-						if (!(await cd.controller.rebootPage())) {
+						if (!(await controller.rebootPage())) {
 							location.reload()
 						}
 					})
@@ -261,7 +262,7 @@ export default function getSettingsDialogClass() {
 				case 'reset': {
 					return new OO.ui.Process(() => {
 						if (confirm(cd.s('sd-reset-confirm'))) {
-							this.renderControls(cd.settings.scheme.default)
+							this.renderControls(settings.scheme.default)
 							this.bookletLayout.setPage(
 								/** @type {string} */ (this.bookletLayout.getCurrentPageName()),
 							)
@@ -277,14 +278,14 @@ export default function getSettingsDialogClass() {
 		/**
 		 * Create widget fields with states of controls set according to setting values.
 		 *
-		 * @param {Partial<import('./settings').SettingsValues>} settingValues Values of cd.settings
+		 * @param {Partial<import('./settings').SettingsValues>} settingValues Values of settings
 		 *   according to which to set the states of controls.
 		 * @returns {OO.ui.PageLayout[]}
 		 * @protected
 		 */
 		createPages(settingValues) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const pages = cd.settings.scheme.ui.map((pageData) => {
+			const pages = settings.scheme.ui.map((pageData) => {
 				const $fields = pageData.controls.map((data) => {
 					const name = data.name
 
@@ -408,12 +409,12 @@ export default function getSettingsDialogClass() {
 		/**
 		 * Render control widgets.
 		 *
-		 * @param {Partial<import('./settings').SettingsValues>} settingValues Values of cd.settings
+		 * @param {Partial<import('./settings').SettingsValues>} settingValues Values of settings
 		 *   according to which to set the states of controls.
 		 * @protected
 		 */
 		renderControls(settingValues) {
-			cd.settings.initUi()
+			settings.initUi()
 
 			this.bookletLayout = new OO.ui.BookletLayout({
 				outlined: true,
@@ -425,13 +426,13 @@ export default function getSettingsDialogClass() {
 		}
 
 		/**
-		 * Get an object with cd.settings related to states (see {@link module:cd.settings.scheme}).
+		 * Get an object with settings related to states (see {@link module:settings.scheme}).
 		 *
 		 * @returns {Partial<import('./settings').SettingsValues>}
 		 * @protected
 		 */
 		getStateSettings() {
-			return cd.settings.scheme.states.reduce((obj, state) => {
+			return settings.scheme.states.reduce((obj, state) => {
 				obj[state] = /** @type {any} */ (this.loadedSettings[state])
 
 				return obj
@@ -462,7 +463,7 @@ export default function getSettingsDialogClass() {
 						case 'radio': {
 							const nTyped = /** @type {import('./settings').OnlySettingsOfType<'radio'>} */ (n)
 							settingsValues[nTyped] = /** @type {any} */ (
-								control.input.findSelectedItem()?.getData() || cd.settings.scheme.default[nTyped]
+								control.input.findSelectedItem()?.getData() || settings.scheme.default[nTyped]
 							)
 							break
 						}
@@ -502,12 +503,12 @@ export default function getSettingsDialogClass() {
 			)
 
 			return {
-				...cd.settings.scheme.default,
+				...settings.scheme.default,
 				...this.collectedSettings,
 				...this.getStateSettings(),
 				'insertButtons-altered':
 					JSON.stringify(this.collectedSettings.insertButtons) !==
-					JSON.stringify(cd.settings.scheme.default.insertButtons),
+					JSON.stringify(settings.scheme.default.insertButtons),
 			}
 		}
 
@@ -556,8 +557,8 @@ export default function getSettingsDialogClass() {
 				reset: !areObjectsEqual(
 					{ ...collectedSettings },
 					{
-						...cd.settings.scheme.default,
-						...cd.settings.scheme.resetsTo,
+						...settings.scheme.default,
+						...settings.scheme.resetsTo,
 						...this.getStateSettings(),
 					},
 				),

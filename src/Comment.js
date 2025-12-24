@@ -3,6 +3,8 @@ import CommentSource from './CommentSource'
 import CommentSubitemList from './CommentSubitemList'
 import LiveTimestamp from './LiveTimestamp'
 import StorageItemWithKeys from './StorageItemWithKeys'
+import commentFormManager from './commentFormManager'
+import controller from './controller'
 import cd from './loader/cd'
 import settings from './settings'
 import CdError from './shared/CdError'
@@ -331,6 +333,9 @@ class Comment extends CommentSkeleton {
 	 */
 	wasMenuHidden
 
+	/** @type {import('./commentManager').CommentManager} */
+	commentManager
+
 	/**
 	 * Create a comment object.
 	 *
@@ -339,9 +344,12 @@ class Comment extends CommentSkeleton {
 	 *   {@link Parser#findSignatures}.
 	 * @param {import('./shared/Parser').Target<Node>[]} targets Sorted target objects returned by
 	 *   {@link Parser#findSignatures} + {@link Parser#findHeadings}.
+	 * @param {import('./commentManager').CommentManager} commentManager
 	 */
-	constructor(parser, signature, targets) {
+	constructor(parser, signature, targets, commentManager) {
 		super(parser, signature, targets)
+
+		this.commentManager = commentManager
 
 		this.showContribsLink = settings.get('showContribsLink')
 		this.hideTimezone = settings.get('hideTimezone')
@@ -372,7 +380,7 @@ class Comment extends CommentSkeleton {
 		 */
 		this.isActionable =
 			cd.page.isActive() &&
-			!cd.controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
+			!controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
 
 		this.isEditable = this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'))
 
@@ -394,7 +402,7 @@ class Comment extends CommentSkeleton {
 		 * @private
 		 */
 		const getContainerListType = (el) => {
-			const treeWalker = new ElementsTreeWalker(cd.controller.rootElement, el)
+			const treeWalker = new ElementsTreeWalker(controller.rootElement, el)
 			while (treeWalker.parentNode()) {
 				if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
 					return /** @type {ListType} */ (treeWalker.currentNode.tagName.toLowerCase())
@@ -431,7 +439,7 @@ class Comment extends CommentSkeleton {
 				this.highlightables[this.highlightables.length - 1],
 			]
 			firstAndLastHighlightable.forEach((highlightable, i) => {
-				const treeWalker = new ElementsTreeWalker(cd.controller.rootElement, highlightable)
+				const treeWalker = new ElementsTreeWalker(controller.rootElement, highlightable)
 				nestingLevels[i] = 0
 				while (treeWalker.parentNode()) {
 					nestingLevels[i]++
@@ -631,7 +639,7 @@ class Comment extends CommentSkeleton {
 		return Boolean(
 			this.actions?.toggleChildThreadsButton?.element.matches(':hover') &&
 				!settings.get('toggleChildThreads-onboarded') &&
-				!cd.commentManager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
+				!this.commentManager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
 		)
 	}
 
@@ -687,7 +695,7 @@ class Comment extends CommentSkeleton {
 			settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true)
 			this.teardownOnboardOntoToggleChildThreadsPopup()
 		})
-		cd.controller.once('startReboot', this.teardownOnboardOntoToggleChildThreadsPopup)
+		controller.once('startReboot', this.teardownOnboardOntoToggleChildThreadsPopup)
 	}
 
 	teardownOnboardOntoToggleChildThreadsPopup = () => {
@@ -723,7 +731,7 @@ class Comment extends CommentSkeleton {
 	formatTimestamp(date, originalTimestamp) {
 		let timestamp
 		let title = ''
-		if (!cd.commentManager.areTimestampsDefault()) {
+		if (!this.commentManager.areTimestampsDefault()) {
 			timestamp = formatDate(date, !this.hideTimezone)
 		}
 
@@ -816,8 +824,8 @@ class Comment extends CommentSkeleton {
 				if (
 					// Currently we can't have comments with no highlightable elements.
 					this.highlightables.length > 1 &&
-					(cd.controller.getFloatingElements().includes(testElement) ||
-						cd.controller.getHiddenElements().includes(testElement))
+					(controller.getFloatingElements().includes(testElement) ||
+						controller.getHiddenElements().includes(testElement))
 				) {
 					if (el.classList.contains('cd-comment-part-first')) {
 						el.classList.remove('cd-comment-part-first')
@@ -1055,7 +1063,7 @@ class Comment extends CommentSkeleton {
 		rectBottom,
 		top,
 		bottom,
-		floatingRects = cd.controller.getFloatingElements().map(getExtendedRect),
+		floatingRects = controller.getFloatingElements().map(getExtendedRect),
 	) {
 		// Check if the comment offset intersects the offsets of floating elements on the page. (Only
 		// then would we need altering comment styles to get the correct offset which is an expensive
@@ -1102,7 +1110,7 @@ class Comment extends CommentSkeleton {
 				// Prevent issues with comments like this:
 				// https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#202107140040_SGrabarczuk_(WMF).
 				this.highlightables.forEach((el, i) => {
-					if (cd.controller.getFloatingElements().some((floatingEl) => el.contains(floatingEl))) {
+					if (controller.getFloatingElements().some((floatingEl) => el.contains(floatingEl))) {
 						el.style.overflow = initialOverflows[i]
 					}
 				})
@@ -1140,7 +1148,7 @@ class Comment extends CommentSkeleton {
 		if (!this.layers?.getContainer().cdIsTopLayersContainer) return
 
 		if (this.level === 0) {
-			const offsets = cd.controller.getContentColumnOffsets()
+			const offsets = controller.getContentColumnOffsets()
 
 			// 2 instead of 1 for Timeless
 			const leftStretched = left - offsets.startMargin - 2
@@ -1163,7 +1171,7 @@ class Comment extends CommentSkeleton {
 	 * @returns {Direction}
 	 */
 	getDirection() {
-		this.direction ??= cd.controller.areThereLtrRtlMixes()
+		this.direction ??= controller.areThereLtrRtlMixes()
 			? // Take the last element because the first one may be the section heading which can have
 				// another direction.
 				this.elements[this.elements.length - 1]
@@ -1193,7 +1201,7 @@ class Comment extends CommentSkeleton {
 					? cd.g.contentFontSize * 3.2
 					: cd.g.contentFontSize * 2.2 - 1
 		} else if (this.isStartStretched) {
-			startMargin = cd.controller.getContentColumnOffsets().startMargin
+			startMargin = controller.getContentColumnOffsets().startMargin
 		} else {
 			const marginElement = this.thread?.$expandNote?.[0] || this.marginHighlightable
 			if (marginElement.parentElement?.classList.contains('cd-commentLevel')) {
@@ -1211,7 +1219,7 @@ class Comment extends CommentSkeleton {
 			}
 		}
 		const endMargin = this.isEndStretched
-			? cd.controller.getContentColumnOffsets().startMargin
+			? controller.getContentColumnOffsets().startMargin
 			: cd.g.commentFallbackSideMargin
 
 		return {
@@ -1339,7 +1347,7 @@ class Comment extends CommentSkeleton {
 		this.handleUnhover(true)
 
 		// TODO: add add/remove methods to commentManager.underlays
-		removeFromArrayIfPresent(cd.commentManager.underlays, this.layers.underlay)
+		removeFromArrayIfPresent(this.commentManager.underlays, this.layers.underlay)
 
 		this.layers.destroy()
 		const thisTyped = /** @type {any} */ (this)
@@ -1404,7 +1412,7 @@ class Comment extends CommentSkeleton {
 			seenStorageItem.set(mw.config.get('wgArticleId'), seen).save()
 		}
 
-		cd.controller.maybeMarkPageAsRead()
+		controller.maybeMarkPageAsRead()
 	}
 
 	/**
@@ -1615,9 +1623,7 @@ class Comment extends CommentSkeleton {
 			: new Button({
 					label: cd.s('comment-changed-refresh'),
 					action: () => {
-						cd.controller.rebootPage(
-							type === 'deleted' || !this.id ? {} : { commentIds: [this.id] },
-						)
+						controller.rebootPage(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] })
 					},
 				})
 
@@ -1685,7 +1691,7 @@ class Comment extends CommentSkeleton {
 		if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
 			this.isSeenBeforeChanged ??= this.isSeen
 			this.isSeen = false
-			cd.commentManager.registerSeen()
+			this.commentManager.registerSeen()
 		}
 
 		// Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -1749,14 +1755,14 @@ class Comment extends CommentSkeleton {
 		) {
 			this.isSeen = true
 			this.isSeenBeforeChanged = undefined
-			commentManager.emit('registerSeen')
+			this.commentManager.emit('registerSeen')
 		}
 
 		if (type === 'changed') {
 			// The change was reverted and the user hasn't seen the change - no need to flash the comment.
 			if (this.willFlashChangedOnSight) {
 				this.willFlashChangedOnSight = false
-				cd.controller.maybeMarkPageAsRead()
+				controller.maybeMarkPageAsRead()
 			} else if (this.id) {
 				const seenStorageItem = new StorageItemWithKeys('seenRenderedChanges')
 				const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {}
@@ -1900,8 +1906,8 @@ class Comment extends CommentSkeleton {
 						threadTyped.getComments().forEach((comment) => {
 							comment.isSeen = true
 						})
-						cd.commentManager.emit('registerSeen')
-						cd.commentManager.goToFirstUnseenComment()
+						this.commentManager.emit('registerSeen')
+						this.commentManager.goToFirstUnseenComment()
 						notification.close()
 					},
 				},
@@ -1996,7 +2002,7 @@ class Comment extends CommentSkeleton {
 	 * @param {JQuery.TriggeredEvent | MouseEvent | KeyboardEvent} event
 	 */
 	copyLink = (event) => {
-		cd.controller.showCopyLinkDialog(this, event)
+		controller.showCopyLinkDialog(this, event)
 	}
 
 	/**
@@ -2264,7 +2270,7 @@ class Comment extends CommentSkeleton {
 			mw.notify(cd.s('thank-success'), { type: 'success' })
 			this.setThanked()
 
-			commentManager
+			this.commentManager
 				.getThanksStorage()
 				.set(id, {
 					thankTime: Date.now(),
@@ -2374,19 +2380,18 @@ class Comment extends CommentSkeleton {
 	 *
 	 * @param {object} [initialState]
 	 * @param {import('./CommentForm').default} [commentForm]
-	 * @returns {Promise<void>}
 	 */
-	async reply(initialState, commentForm) {
+	reply(initialState, commentForm) {
 		if (this.replyForm) return
 
-		if (cd.commentManager.getByIndex(this.index + 1)?.isOutdented && this.section) {
+		if (this.commentManager.getByIndex(this.index + 1)?.isOutdented && this.section) {
 			let replyForm = this.section.replyForm
 			if (replyForm && replyForm.targetWithOutdentedReplies === this) {
 				replyForm.$element.cdScrollIntoView('center')
 				replyForm.commentInput.focus()
 			} else {
 				if (!replyForm) {
-					replyForm = await this.section.reply({ targetWithOutdentedReplies: this })
+					replyForm = this.section.reply({ targetWithOutdentedReplies: this })
 				}
 				const selection = window.getSelection()
 				if (selection.type !== 'Range') {
@@ -2405,7 +2410,7 @@ class Comment extends CommentSkeleton {
 		 *
 		 * @type {import('./CommentForm').default|undefined}
 		 */
-		this.replyForm = await cd.commentFormManager.setupCommentForm(
+		this.replyForm = commentFormManager.setupCommentForm(
 			this,
 			{
 				mode: 'reply',
@@ -2498,9 +2503,9 @@ class Comment extends CommentSkeleton {
 	 *
 	 * @param {object} [initialState] See {@link CommentForm}'s constructor.
 	 * @param {import('./CommentForm').default} [commentForm]
-	 * @returns {Promise<import('./CommentForm').default>}
+	 * @returns {import('./CommentForm').default}
 	 */
-	async edit(initialState, commentForm) {
+	edit(initialState, commentForm) {
 		// Check for existence in case the editing is initiated from a script of some kind (there is no
 		// button to call it from CD when the form is displayed).
 		if (!this.editForm) {
@@ -2509,7 +2514,7 @@ class Comment extends CommentSkeleton {
 			 *
 			 * @type {import('./CommentForm').default|undefined}
 			 */
-			this.editForm = await cd.commentFormManager.setupCommentForm(
+			this.editForm = commentFormManager.setupCommentForm(
 				this,
 				{
 					mode: 'edit',
@@ -2653,7 +2658,7 @@ class Comment extends CommentSkeleton {
 		}
 
 		const scrollY = window.scrollY
-		const viewportTop = scrollY + cd.controller.getBodyScrollPaddingTop()
+		const viewportTop = scrollY + controller.getBodyScrollPaddingTop()
 		const viewportBottom = scrollY + window.innerHeight
 
 		return partially
@@ -2684,13 +2689,13 @@ class Comment extends CommentSkeleton {
 		if (
 			registerAllInDirection &&
 			// Makes sense to register further?
-			cd.commentManager
+			this.commentManager
 				.getAll()
 				.some((comment) => comment.isSeen || comment.willFlashChangedOnSight)
 		) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const change = registerAllInDirection === 'backward' ? -1 : 1
-			const nextComment = cd.commentManager.getByIndex(this.index + change)
+			const nextComment = this.commentManager.getByIndex(this.index + change)
 			if (nextComment && nextComment.isInViewport() !== false) {
 				nextComment.registerSeen(registerAllInDirection, flash)
 			}
@@ -2842,7 +2847,7 @@ class Comment extends CommentSkeleton {
 		} else {
 			const comments = isInSectionContext
 				? /** @type {import('./Section').default} */ (this.section).comments
-				: commentManager.getAll()
+				: this.commentManager.getAll()
 			const index = comments.indexOf(this)
 			thisData = {
 				index,
@@ -3295,7 +3300,7 @@ class Comment extends CommentSkeleton {
 	maybeSplitParent() {
 		if (this.index === 0) return
 
-		const previousComment = /** @type {Comment} */ (cd.commentManager.getByIndex(this.index - 1))
+		const previousComment = /** @type {Comment} */ (this.commentManager.getByIndex(this.index - 1))
 		if (this.level !== previousComment.level) return
 
 		const previousCommentLastElement = previousComment.elements[previousComment.elements.length - 1]
@@ -3333,7 +3338,7 @@ class Comment extends CommentSkeleton {
 			return
 		}
 
-		return cd.commentManager.getById(this.id)
+		return this.commentManager.getById(this.id)
 	}
 
 	/**
@@ -3415,7 +3420,7 @@ class Comment extends CommentSkeleton {
 			(this.section
 				? this.section.commentsInFirstChunk.filter((comment) => !comment.getParent())
 				: // Parentless comments in the lead section
-					cd.commentManager.query((comment) => !comment.section && !comment.getParent()))
+					this.commentManager.query((comment) => !comment.section && !comment.getParent()))
 		)
 	}
 

@@ -7,7 +7,9 @@ const path = require('node:path')
 
 const srcDir = path.join(__dirname, 'src')
 const visited = new Set()
+/** @type {string[]} */
 const stack = []
+/** @type {string[]} */
 const cycles = []
 
 /**
@@ -106,7 +108,11 @@ analyzeDependencies(appPath)
 if (cycles.length > 0) {
 	console.log(`Found ${cycles.length} circular dependencies:\n`)
 	cycles.forEach((cycle, index) => {
-		console.log(`${index + 1}. ${cycle}`)
+		const parts = cycle.split(' → ')
+		const middleString = parts.slice(1, -1).join(' → ')
+		console.log(
+			`${index + 1}. \u001B[33m${parts[0]}\u001B[0m${middleString ? ' → ' + middleString + ' → ' : ''}\u001B[33m${parts[parts.length - 1]}\u001B[0m`,
+		)
 	})
 } else {
 	console.log('No circular dependencies found!')

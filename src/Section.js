@@ -8,7 +8,6 @@ import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
-import sectionManager from './sectionManager'
 import settings from './settings'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
@@ -193,12 +192,14 @@ class Section extends SectionSkeleton {
 	 *   {@link Parser#findHeadings}.
 	 * @param {import('./shared/Parser').Target<Node>[]} targets Sorted target objects returned by
 	 *   returned by {@link Parser#findSignatures} + {@link Parser#findHeadings}.
+	 * @param {import('./sectionManager').SectionManager} sectionManager
 	 * @param {import('./Subscriptions').default} subscriptions
 	 * @throws {CdError}
 	 */
-	constructor(parser, heading, targets, subscriptions) {
+	constructor(parser, heading, targets, sectionManager, subscriptions) {
 		super(parser, heading, targets)
 
+		this.sectionManager = sectionManager
 		this.subscriptions = subscriptions
 
 		this.useTopicSubscription = settings.get('useTopicSubscription')
@@ -634,7 +635,7 @@ class Section extends SectionSkeleton {
 	 * }}
 	 */
 	canBeReplied() {
-		const nextSection = sectionManager.getByIndex(this.index + 1)
+		const nextSection = this.sectionManager.getByIndex(this.index + 1)
 
 		return (
 			this.isActionable &&
@@ -663,7 +664,7 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeSubsectioned() {
-		const nextSameLevelSection = sectionManager
+		const nextSameLevelSection = this.sectionManager
 			.getAll()
 			.slice(this.index + 1)
 			.find((otherSection) => otherSection.level === this.level)
@@ -1574,7 +1575,7 @@ class Section extends SectionSkeleton {
 		// That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
 		// well, for which `sections` will have more than one section when there is more than one
 		// section created by a certain user at a certain moment in time.
-		const sections = sectionManager.getBySubscribeId(this.subscribeId)
+		const sections = this.sectionManager.getBySubscribeId(this.subscribeId)
 		let finallyCallback
 		if (mode !== 'silent') {
 			const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined)
@@ -1594,7 +1595,7 @@ class Section extends SectionSkeleton {
 				this.id,
 				!!mode,
 				// Unsubscribe from
-				renamedFrom && !sectionManager.getBySubscribeId(renamedFrom).length
+				renamedFrom && !this.sectionManager.getBySubscribeId(renamedFrom).length
 					? renamedFrom
 					: undefined,
 			)
@@ -1623,7 +1624,7 @@ class Section extends SectionSkeleton {
 	unsubscribe(mode) {
 		if (!this.subscribeId) return
 
-		const sections = sectionManager.getBySubscribeId(this.subscribeId)
+		const sections = this.sectionManager.getBySubscribeId(this.subscribeId)
 		let finallyCallback
 		if (mode !== 'silent') {
 			const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined)
@@ -1958,7 +1959,7 @@ class Section extends SectionSkeleton {
 
 		return this.level <= 2
 			? defaultValue
-			: sectionManager
+			: this.sectionManager
 					.getAll()
 					.slice(0, this.index)
 					.reverse()
@@ -1976,7 +1977,7 @@ class Section extends SectionSkeleton {
 		/** @type {Section[]} */
 		const children = []
 		let haveMetDirect = false
-		sectionManager
+		this.sectionManager
 			.getAll()
 			.slice(this.index + 1)
 			.some((section) => {
@@ -2102,7 +2103,7 @@ class Section extends SectionSkeleton {
 	ensureSubscribeIdPresent(editTimestamp) {
 		if (!this.useTopicSubscription || this.subscribeId) return
 
-		this.subscribeId = sectionManager.generateDtSubscriptionId(
+		this.subscribeId = this.sectionManager.generateDtSubscriptionId(
 			cd.user.getName(),
 			this.oldestComment?.date?.toISOString() || editTimestamp,
 		)
@@ -2164,7 +2165,7 @@ class Section extends SectionSkeleton {
 	 * @returns {Comment | undefined}
 	 */
 	getCommentAboveCommentToBeAdded(commentForm) {
-		return sectionManager
+		return this.sectionManager
 			.getAll()
 			.slice(
 				0,
@@ -2187,14 +2188,14 @@ class Section extends SectionSkeleton {
 	 * @returns {Section | undefined}
 	 */
 	findNewSelf() {
-		return sectionManager.search({
+		return this.sectionManager.search({
 			headline: this.headline,
 			oldestCommentId: this.oldestComment?.id,
 			index: this.index,
 			id: this.id,
 
 			// We cache ancestors when saving the session, so this call will return the right value,
-			// despite the fact that sectionManager.items has already changed.
+			// despite the fact that this.sectionManager.items has already changed.
 			ancestors: this.getAncestors().map((section) => section.headline),
 		})?.section
 	}

@@ -129,10 +129,11 @@ class Parser {
 	 *
 	 * @param {SignatureTarget<N>} signature
 	 * @param {Target<N>[]} targets
+	 * @param {N extends import('domhandler').Node ? undefined : import('../commentManager').CommentManager} commentManager
 	 * @returns {InstanceType<typeof this.context.CommentClass>}
 	 */
-	createComment(signature, targets) {
-		return new this.context.CommentClass(this, signature, targets)
+	createComment(signature, targets, commentManager) {
+		return new this.context.CommentClass(this, signature, targets, commentManager)
 	}
 
 	/**
@@ -140,11 +141,12 @@ class Parser {
 	 *
 	 * @param {HeadingTarget<N>} heading
 	 * @param {Target<N>[]} targets
+	 * @param {N extends import('domhandler').Node ? undefined : import('../sectionManager').SectionManager} sectionManager
 	 * @param {import('../Subscriptions').default} [subscriptions]
 	 * @returns {InstanceType<typeof this.context.SectionClass>}
 	 */
-	createSection(heading, targets, subscriptions) {
-		return new this.context.SectionClass(this, heading, targets, subscriptions)
+	createSection(heading, targets, sectionManager, subscriptions) {
+		return new this.context.SectionClass(this, heading, targets, sectionManager, subscriptions)
 	}
 
 	/**
@@ -445,7 +447,8 @@ class Parser {
 		const unsignedElements = /** @type {HTMLElementFor<N>[]} */ ([
 			...this.context.rootElement.getElementsByClassName(cd.config.unsignedClass),
 		])
-		unsignedElements.filter((element) => {
+		unsignedElements
+			.filter((element) => {
 				// Only templates with no timestamp interest us.
 				if (this.context.getElementByClassName(element, 'cd-timestamp')) {
 					return false
@@ -469,30 +472,29 @@ class Parser {
 					...element.getElementsByTagName('a'),
 				])
 				elementLinks.some((link) => {
-						const { userName: authorName, linkType } = Parser.processLink(link) || {}
-						if (authorName) {
-							let authorLink
-							let authorTalkLink
-							if (linkType === 'user') {
-								authorLink = /** @type {HTMLElementFor<N>} */ (link)
-							} else if (linkType === 'userTalk') {
-								authorTalkLink = /** @type {HTMLElementFor<N>} */ (link)
-							}
-							element.classList.add('cd-signature')
-							unsigneds.push({
-								element,
-								authorName,
-								isUnsigned: true,
-								authorLink,
-								authorTalkLink,
-							})
-
-							return true
+					const { userName: authorName, linkType } = Parser.processLink(link) || {}
+					if (authorName) {
+						let authorLink
+						let authorTalkLink
+						if (linkType === 'user') {
+							authorLink = /** @type {HTMLElementFor<N>} */ (link)
+						} else if (linkType === 'userTalk') {
+							authorTalkLink = /** @type {HTMLElementFor<N>} */ (link)
 						}
+						element.classList.add('cd-signature')
+						unsigneds.push({
+							element,
+							authorName,
+							isUnsigned: true,
+							authorLink,
+							authorTalkLink,
+						})
 
-						return false
-					},
-				)
+						return true
+					}
+
+					return false
+				})
 			})
 
 		return unsigneds
@@ -559,12 +561,17 @@ class Parser {
 	 *
 	 * @param {ElementLike} element
 	 * @param {boolean} [onlyChildrenWithoutCommentLevel]
+	 * @param {typeof Parser.prototype.getChildElements} [getChildElements]
 	 * @returns {{
 	 *   nodes: ElementLike[];
 	 *   levelsPassed: number;
 	 * }}
 	 */
-	getTopElementsWithText(element, onlyChildrenWithoutCommentLevel = false) {
+	getTopElementsWithText(
+		element,
+		onlyChildrenWithoutCommentLevel = false,
+		getChildElements = this.getChildElements.bind(this),
+	) {
 		// We ignore all spaces as an easy way to ignore only whitespace text nodes between element
 		// nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -576,7 +583,7 @@ class Parser {
 		do {
 			nodes = children
 			children = nodes.reduce(
-				(arr, el) => arr.concat([...this.getChildElements(el)]),
+				(arr, el) => arr.concat([...getChildElements(el)]),
 				/** @type {ElementLike[]} */ ([]),
 			)
 			if (['DL', 'UL', 'OL'].includes(nodes[0].tagName)) {

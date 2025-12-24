@@ -11,10 +11,10 @@ import dayJsTimezone from 'dayjs/plugin/timezone'
 import dayJsUtc from 'dayjs/plugin/utc'
 
 import Button from './Button'
-// import controller from './controller' // Access via cd.controller
 import cd from './loader/cd'
 import settings from './settings'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
+import Parser from './shared/Parser'
 import {
 	decodeHtmlEntities,
 	defined,
@@ -426,7 +426,11 @@ export function cleanUpPasteDom(element, containerElement) {
 	;[...element.querySelectorAll('style')].forEach(removeElement)
 
 	const topElements = /** @type {Element[]} */ (
-		cd.controller.getBootProcess().parser.getTopElementsWithText(element, true).nodes
+		Parser.prototype.getTopElementsWithText(
+			element,
+			true,
+			Parser.prototype.getChildElements.bind(Parser.prototype),
+		).nodes
 	)
 	if (topElements[0] !== element) {
 		element.innerHTML = ''

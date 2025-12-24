@@ -114,7 +114,7 @@ npm run i18n
 
 - **app.js**: Main application entry point
 - **loader/loader.js**: Entry point for the module loading the main app
-- **cd.js**: Core Convenient Discussions object
+- **cd.js**: `cd`, core Convenient Discussions object
 - **convenientDiscussions.js**: Main initialization script
 - **TalkPageBootProcess.js**: Application bootstrap logic for talk pages
 - **pageController.js**: Main controller

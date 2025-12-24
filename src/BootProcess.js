@@ -8,6 +8,7 @@ import SpaciousComment from './SpaciousComment'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
+import controller from './controller'
 import { initGlobals, initTimestampTools } from './init'
 import jqueryExtensions from './jqueryExtensions'
 import cd from './loader/cd'
@@ -40,7 +41,7 @@ import visits from './visits'
  */
 function removeDtButtonHtmlComments() {
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const treeWalker = document.createNodeIterator(cd.controller.rootElement, NodeFilter.SHOW_COMMENT)
+	const treeWalker = document.createNodeIterator(controller.rootElement, NodeFilter.SHOW_COMMENT)
 	let node
 	while ((node = /** @type {globalThis.Comment | null} */ (treeWalker.nextNode()))) {
 		if (node.textContent.startsWith('__DTREPLYBUTTONS__')) {
@@ -66,7 +67,7 @@ function processAndRemoveDtElements(elements) {
 	/** @type {HTMLSpanElement | undefined} */
 	let dtMarkupHavenElement
 	if (moveNotRemove) {
-		if (!cd.controller.getBootProcess().isFirstRun()) {
+		if (!controller.getBootProcess().isFirstRun()) {
 			dtMarkupHavenElement = cd.loader.$content.children('.cd-dtMarkupHaven')[0]
 		}
 		if (dtMarkupHavenElement) {
@@ -80,12 +81,12 @@ function processAndRemoveDtElements(elements) {
 
 	const elementsToProcess = /** @type {HTMLElement[]} */ (
 		elements.concat([
-			...cd.controller.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
+			...controller.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
 		])
 	)
 	elementsToProcess.forEach((el, i) => {
 		if (Object.hasOwn(el.dataset, 'mwCommentStart') && Comment.isDtId(el.id)) {
-			cd.controller.getBootProcess().addDtCommentId(el.id)
+			controller.getBootProcess().addDtCommentId(el.id)
 		}
 		if (moveNotRemove) {
 			// DT gets the DOM offset of each of these elements upon initialization which can take a lot
@@ -105,7 +106,7 @@ function processAndRemoveDtElements(elements) {
 	if (!moveNotRemove) {
 		;[
 			.../** @type {NodeListOf<HTMLSpanElement>} */ (
-				cd.controller.rootElement.querySelectorAll('span[data-mw-comment]')
+				controller.rootElement.querySelectorAll('span[data-mw-comment]')
 			),
 		].forEach((el) => {
 			delete el.dataset.mwComment
@@ -136,7 +137,7 @@ function processAndRemoveDtElements(elements) {
 
 /**
  * A single process of booting or rebooting CD onto a talk page. In some sense, it is a (re-)builder
- * for {@link cd.controller}. On first run, it's a builder for {@link convenientDiscussions.g}.
+ * for {@link controller}. On first run, it's a builder for {@link convenientDiscussions.g}.
  */
 class BootProcess {
 	/** @type {boolean} */
@@ -184,7 +185,7 @@ class BootProcess {
 		cd.debug.startTimer('main code')
 
 		if (this.firstRun) {
-			cd.controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY)
+			controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY)
 
 			userRegistry.loadMuted()
 		}
@@ -247,7 +248,7 @@ class BootProcess {
 
 		if (this.passedData.parseData?.text) {
 			cd.debug.startTimer('update page contents')
-			cd.controller.updatePageContents(this.passedData.parseData)
+			controller.updatePageContents(this.passedData.parseData)
 			cd.debug.stopTimer('update page contents')
 		}
 
@@ -267,7 +268,7 @@ class BootProcess {
 		commentManager.reformatComments()
 
 		// This updates some styles, shifting the offsets.
-		cd.controller.$root.addClass('cd-parsed')
+		controller.$root.addClass('cd-parsed')
 
 		// Should be below navPanel.setup() as commentFormManager.restoreSession() indirectly calls
 		// navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
@@ -275,7 +276,7 @@ class BootProcess {
 			if (this.firstRun) {
 				cd.page.addAddTopicButton()
 			}
-			cd.controller.connectToAddTopicButtons()
+			controller.connectToAddTopicButtons()
 
 			// If the viewport position restoration relies on elements that are made hidden during this
 			// (when editing a comment), it can't be restored properly, but this is relatively minor
@@ -323,12 +324,12 @@ class BootProcess {
 			pageNav.setup()
 
 			if (this.firstRun) {
-				cd.controller.addEventListeners()
+				controller.addEventListeners()
 			}
 
-			// We set up the mutation observer at every reload because cd.controller.$content may change
+			// We set up the mutation observer at every reload because controller.$content may change
 			// (e.g. RevisionSlider replaces it).
-			cd.controller.setupMutationObserver()
+			controller.setupMutationObserver()
 
 			if (
 				settings.get('commentDisplay') === 'spacious' &&
@@ -345,7 +346,7 @@ class BootProcess {
 		if (this.firstRun) {
 			// Restore the initial viewport position in terms of visible elements, which is how the user
 			// sees it.
-			cd.controller.restoreRelativeScrollPosition()
+			controller.restoreRelativeScrollPosition()
 
 			settings.addLinkToFooter()
 		}
@@ -375,7 +376,7 @@ class BootProcess {
 
 		// This is needed to calculate the rendering time: it won't complete until everything gets
 		// rendered.
-		cd.controller.rootElement.getBoundingClientRect()
+		controller.rootElement.getBoundingClientRect()
 
 		cd.debug.stopTimer('final code and rendering')
 
@@ -412,9 +413,9 @@ class BootProcess {
 			$.fn.extend(jqueryExtensions)
 			initDayjs()
 		} else {
-			cd.controller.reset()
+			controller.reset()
 		}
-		this.subscriptions = cd.controller.getSubscriptionsInstance()
+		this.subscriptions = controller.getSubscriptionsInstance()
 		if (this.firstRun) {
 			// The order of the subsequent calls matters because the modules depend on others in a certain
 			// way.
@@ -429,7 +430,7 @@ class BootProcess {
 			//    terminology).
 			sectionManager.init(this.subscriptions)
 
-			updateChecker.init(cd.controller.getWorker())
+			updateChecker.init(controller.getWorker())
 			toc.init(this.subscriptions)
 			commentFormManager.init()
 			commentManager.init()
@@ -438,7 +439,7 @@ class BootProcess {
 			notifications.init()
 			Parser.init()
 		}
-		cd.controller.setup(this.passedData.parseData?.text)
+		controller.setup(this.passedData.parseData?.text)
 		toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc)
 		this.updateSignatureData()
 
@@ -681,11 +682,11 @@ class BootProcess {
 			childElementsProp: 'children',
 			follows: (n1, n2) =>
 				Boolean(n2.compareDocumentPosition(n1) & Node.DOCUMENT_POSITION_FOLLOWING),
-			getAllTextNodes: () => getAllTextNodes(cd.controller.rootElement),
+			getAllTextNodes: () => getAllTextNodes(controller.rootElement),
 			getElementByClassName: (el, className) => el.querySelector(`.${className}`),
-			rootElement: cd.controller.rootElement,
+			rootElement: controller.rootElement,
 			document,
-			areThereOutdents: cd.controller.areThereOutdents,
+			areThereOutdents: controller.areThereOutdents,
 			processAndRemoveDtElements,
 			removeDtButtonHtmlComments,
 		})
@@ -709,7 +710,7 @@ class BootProcess {
 				.filter((target) => target.type === 'signature')
 				.forEach((signature) => {
 					try {
-						commentManager.add(this.parser.createComment(signature, this.targets))
+						commentManager.add(this.parser.createComment(signature, this.targets, commentManager))
 					} catch (error) {
 						console.error(error)
 					}
@@ -757,7 +758,9 @@ class BootProcess {
 			.filter((target) => target.type === 'heading')
 			.forEach((heading) => {
 				try {
-					sectionManager.add(this.parser.createSection(heading, this.targets, this.subscriptions))
+					sectionManager.add(
+						this.parser.createSection(heading, this.targets, sectionManager, this.subscriptions),
+					)
 				} catch (error) {
 					console.error(error)
 				}

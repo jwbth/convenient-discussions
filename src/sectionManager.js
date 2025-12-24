@@ -22,7 +22,7 @@ import visits from './visits'
 /**
  * Singleton storing data about sections on the page and managing them.
  */
-class SectionManager {
+export class SectionManager {
 	/**
 	 * List of sections.
 	 *

@@ -21,7 +21,7 @@ import './extendDomhandler'
 import { isComment, isText } from 'domhandler'
 import { parseDocument } from 'htmlparser2'
 
-import debug from '../loader/convenientDiscussions.debug'
+import { Debug } from '../loader/convenientDiscussions.debug'
 import CdError from '../shared/CdError'
 import CommentSkeleton from '../shared/CommentSkeleton'
 import Parser from '../shared/Parser'
@@ -36,6 +36,7 @@ let alarmTimeout
 /** @type {import('domhandler').Element | undefined} */
 let rootElement
 
+const debug = new Debug()
 debug.init()
 
 /**
@@ -115,7 +116,7 @@ function processComments(parser, targets) {
 		.filter((target) => target.type === 'signature')
 		.forEach((signature) => {
 			try {
-				cd.comments.push(parser.createComment(signature, targets))
+				cd.comments.push(parser.createComment(signature, targets, undefined))
 			} catch (error) {
 				if (!(error instanceof CdError)) {
 					console.error(error)
@@ -136,7 +137,7 @@ function processSections(parser, targets) {
 		.filter((target) => target.type === 'heading')
 		.forEach((heading) => {
 			try {
-				cd.sections.push(parser.createSection(heading, targets))
+				cd.sections.push(parser.createSection(heading, targets, undefined))
 			} catch (error) {
 				if (!(error instanceof CdError)) {
 					console.error(error)

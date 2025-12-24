@@ -36,11 +36,7 @@ async function app() {
 
 // Set up API after initialization
 cd.settings = settings
-cd.pageRegistry = pageRegistry
-cd.commentManager = commentManager
-cd.controller = controller
 cd.commentForms = commentFormManager.getAll()
-cd.commentFormManager = commentFormManager
 
 cd.tests.controller = controller
 cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker)

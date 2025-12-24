@@ -9,8 +9,9 @@ import type {
 	Text as DomHandlerText,
 } from 'domhandler'
 
-import type BrowserComment from '../Comment'
+import type CommentCd from '../Comment'
 import type Section from '../Section'
+import type { CommentManager } from '../commentManager'
 
 import type { HeadingTarget, SignatureTarget, Target } from './Parser'
 import type { ConvenientDiscussionsBase } from './cd'
@@ -165,11 +166,13 @@ declare global {
 			parser: Parser<N>,
 			signature: SignatureTarget<N>,
 			targets: Target<N>[],
-		) => N extends DomHandlerNode ? CommentWorker : BrowserComment
+			commentManager: N extends DomHandlerNode ? undefined : CommentManager,
+		) => N extends DomHandlerNode ? CommentWorker : CommentCd
 		SectionClass: new (
 			parser: Parser<N>,
 			heading: HeadingTarget<N>,
 			targets: Target<N>[],
+			sectionManager: N extends DomHandlerNode ? undefined : SectionManager,
 			subscriptions: Subscriptions,
 		) => N extends DomHandlerNode ? SectionWorker : Section
 
