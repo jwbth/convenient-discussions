@@ -12,7 +12,8 @@ import cd from './loader/cd'
 import sectionManager from './sectionManager'
 import { defined, sleep, underlinesToSpaces } from './shared/utils-general'
 import { removeWikiMarkup } from './shared/utils-wikitext'
-import { formatDateNative, isExistentAnchor, wrapHtml } from './utils-window'
+import { formatDateNative } from './utils-date'
+import { isExistentAnchor, wrapHtml } from './utils-window'
 
 /** @type {string} */
 let decodedValue

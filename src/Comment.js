@@ -25,11 +25,10 @@ import {
 import { extractNumeralAndConvertToNumber, removeWikiMarkup } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api'
+import { formatDate, formatDateNative } from './utils-date'
 import { showConfirmDialog } from './utils-oojs'
 import {
 	extractSignatures,
-	formatDate,
-	formatDateNative,
 	getExtendedRect,
 	isVisible,
 	limitSelectionAtEndBoundary,

@@ -13,7 +13,8 @@ import {
 } from './shared/utils-general'
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
 import { showConfirmDialog } from './utils-oojs'
-import { formatDateImproved, formatDateNative, formatDateRelative, wrapHtml } from './utils-window'
+import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-date'
+import { wrapHtml } from './utils-window'
 
 /**
  * @typedef {object} SettingsValues

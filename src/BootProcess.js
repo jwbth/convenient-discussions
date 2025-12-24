@@ -31,7 +31,8 @@ import toc from './toc'
 import updateChecker from './updateChecker'
 import userRegistry from './userRegistry'
 import { handleApiReject, saveOptions } from './utils-api'
-import { getAllTextNodes, initDayjs, wrapHtml } from './utils-window'
+import { initDayjs } from './utils-date'
+import { getAllTextNodes, wrapHtml } from './utils-window'
 import visits from './visits'
 
 /**

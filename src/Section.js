@@ -15,7 +15,8 @@ import { defined, getHeadingLevel, underlinesToSpaces, unique } from './shared/u
 import { encodeWikilink, maskDistractingCode, normalizeCode } from './shared/utils-wikitext'
 import toc from './toc'
 import { handleApiReject } from './utils-api'
-import { formatDate, getRangeContents } from './utils-window'
+import { formatDate } from './utils-date'
+import { getRangeContents } from './utils-window'
 
 /**
  * A section in the browser context (as opposed to the worker context, see {@link SectionWorker}).

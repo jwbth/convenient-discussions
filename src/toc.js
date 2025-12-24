@@ -16,7 +16,8 @@ import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
 import { defined } from './shared/utils-general'
 import updateChecker from './updateChecker'
-import { formatDate, formatDateNative, getLinkedAnchor } from './utils-window'
+import { formatDate, formatDateNative } from './utils-date'
+import { getLinkedAnchor } from './utils-window'
 import visits from './visits'
 
 /**

@@ -7,8 +7,9 @@ import cd from './loader/cd'
 import settings from './settings'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import updateChecker from './updateChecker'
+import { formatDate } from './utils-date'
 import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
-import { formatDate, isInputFocused } from './utils-window'
+import { isInputFocused } from './utils-window'
 import visits from './visits'
 
 /**
