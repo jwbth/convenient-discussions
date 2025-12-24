@@ -113,7 +113,7 @@ class CommentFormManager extends EventEmitter {
 			commentForm.setTargets(target)
 			target.addCommentFormToPage(config.mode, commentForm)
 		} else {
-			const cf = new CommentForm({ target, initialState, ...config })
+			const cf = new CommentForm({ target, initialState, commentFormManager: this, ...config })
 			target.addCommentFormToPage(config.mode, cf)
 			cf.setup(initialState)
 			this.items.push(cf)

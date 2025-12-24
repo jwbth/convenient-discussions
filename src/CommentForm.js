@@ -7,7 +7,6 @@ import CommentFormOperationRegistry from './CommentFormOperationRegistry'
 import EventEmitter from './EventEmitter'
 import MentionsAutocomplete from './MentionsAutocomplete'
 import getUploadDialogClass from './UploadDialog'
-import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
@@ -131,6 +130,7 @@ import {
  * @property {Mode} mode
  * @property {TypedTarget<Mode>} target Comment, section, or page that the form is associated in the
  *   UI.
+ * @property {typeof import('./commentFormManager').default} commentFormManager
  * @property {CommentFormInitialState} [initialState = {}] Initial state of the form (data saved in
  *   the previous session, quoted text, data transferred from DT's new topic form, etc.).
  * @property {PreloadConfig} [preloadConfig = {}] Configuration to preload content into the form.
@@ -144,6 +144,12 @@ import {
  * @augments EventEmitter<EventMap>
  */
 class CommentForm extends EventEmitter {
+	/**
+	 * @type {typeof import('./commentFormManager').default}
+	 * @private
+	 */
+	commentFormManager
+
 	/**
 	 * Comment, section, or page with which the form is associated in the UI.
 	 *
@@ -517,8 +523,17 @@ class CommentForm extends EventEmitter {
 	 * @param {CommentFormConfig<Mode>} config
 	 * @fires commentFormCustomModulesReady
 	 */
-	constructor({ mode, target, initialState = {}, preloadConfig = {}, newTopicOnTop = false }) {
+	constructor({
+		mode,
+		target,
+		commentFormManager,
+		initialState = {},
+		preloadConfig = {},
+		newTopicOnTop = false,
+	}) {
 		super()
+
+		this.commentFormManager = commentFormManager
 
 		// Unlike when changing other settings on the fly, changing this one won't alter the behavior
 		// *for the current form*, because truth be told, we don't value it very much.
@@ -3078,7 +3093,7 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		if (commentFormManager.getAll().some((commentForm) => commentForm.isBeingSubmitted())) {
+		if (this.commentFormManager.getAll().some((commentForm) => commentForm.isBeingSubmitted())) {
 			this.handleError({
 				error: new CdError({
 					type: 'ui',
@@ -3903,7 +3918,7 @@ class CommentForm extends EventEmitter {
 			settings.get('manyForms-onboarded') ||
 			!cd.user.isRegistered() ||
 			// This form will be the second
-			commentFormManager.getCount() !== 1 ||
+			this.commentFormManager.getCount() !== 1 ||
 			// Left column hidden in Timeless
 			(cd.g.skin === 'timeless' && window.innerWidth < 1100) ||
 			(cd.g.skin === 'vector-2022' && window.innerWidth < 1000)
