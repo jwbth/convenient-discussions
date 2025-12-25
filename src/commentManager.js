@@ -1,6 +1,4 @@
-import CompactComment from './CompactComment'
 import EventEmitter from './EventEmitter'
-import SpaciousComment from './SpaciousComment'
 import StorageItemWithKeys from './StorageItemWithKeys'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
@@ -82,6 +80,18 @@ export class CommentManager extends EventEmitter {
 	CommentClass
 
 	/**
+	 * Set the comment classes.
+	 *
+	 * @param {object} classes
+	 * @param {typeof import('./CompactComment').default} classes.CompactComment
+	 * @param {typeof import('./SpaciousComment').default} classes.SpaciousComment
+	 */
+	setCommentClasses({ CompactComment, SpaciousComment }) {
+		this.CommentClass =
+			cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
+	}
+
+	/**
 	 * Type guard to check if this is a CommentManager managing SpaciousComment instances.
 	 *
 	 * @returns {this is CommentManager<import('./SpaciousComment').default>}
@@ -113,9 +123,6 @@ export class CommentManager extends EventEmitter {
 		this.thanksStorage = new StorageItemWithKeys('thanks')
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
-
-		this.CommentClass =
-			cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
 
 		controller
 			.on('scroll', this.registerSeen)

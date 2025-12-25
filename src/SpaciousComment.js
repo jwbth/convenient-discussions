@@ -487,8 +487,9 @@ class SpaciousComment extends Comment {
 	static prototypes = new PrototypeRegistry()
 
 	/**
-	 * Initialize prototypes for spacious comments.
-	 * Creates header wrapper and SVG icon prototypes.
+	 * Initialize prototypes for spacious comments. Creates header wrapper and SVG icon prototypes.
+	 *
+	 * @override
 	 */
 	static initPrototypes() {
 		// Initialize shared layer prototypes (underlay, overlay)

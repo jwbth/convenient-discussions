@@ -325,6 +325,8 @@ class CompactComment extends Comment {
 
 	/**
 	 * Initialize prototypes for compact comments.
+	 *
+	 * @override
 	 */
 	static initPrototypes() {
 		// Initialize shared layer prototypes (underlay, overlay)

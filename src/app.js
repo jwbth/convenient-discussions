@@ -6,6 +6,8 @@
  */
 
 import Comment from './Comment'
+import CompactComment from './CompactComment'
+import SpaciousComment from './SpaciousComment'
 import addCommentLinks from './addCommentLinks'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
@@ -14,6 +16,7 @@ import { initGlobals, initTimestampTools } from './init'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
+import settings from './settings'
 import updateChecker from './updateChecker'
 import { buildEditSummary, wrapDiffBody, wrapHtml } from './utils-window'
 import visits from './visits'
@@ -30,6 +33,8 @@ async function app() {
 	initGlobals()
 	initTimestampTools()
 
+	commentManager.setCommentClasses({ CompactComment, SpaciousComment })
+
 	await controller.bootTalkPage(false)
 }
 
@@ -38,8 +43,8 @@ cd.commentForms = commentFormManager.getAll()
 
 cd.tests.controller = controller
 cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker)
-cd.tests.showSettingsDialog = cd.settings.showDialog.bind(cd.settings)
 cd.tests.visits = visits
+cd.tests.showSettingsDialog = settings.showDialog.bind(cd.settings)
 
 /**
  * Script's publicly available API. Here there are some utilities that we believe should be

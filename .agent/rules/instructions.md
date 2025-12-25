@@ -13,6 +13,7 @@ trigger: always_on
 
 ### JavaScript & TypeScript
 
+- Temporary rule: Don't run tests (they are broken, and I know it).
 - One class per file.
 - Don't introduce one-time variables. E.g., instead of writing
 
