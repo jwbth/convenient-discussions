@@ -2,10 +2,7 @@
 	"extends": "../../jsconfig-base.json",
 	"compilerOptions": {
 		"target": "es2022",
-
-		// We mix `import`s and `require()` calls
-		"module": "preserve",
-
+		"moduleResolution": "bundler",
 		"lib": ["ES2023", "WebWorker"],
 
 		// Something drags Node's types in (e.g. setTimeout starts to return NodeJS.Timeout), no idea

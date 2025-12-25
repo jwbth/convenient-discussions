@@ -20,6 +20,7 @@ const config = defineConfig(
 			'config/**/*',
 			'src/tribute/**',
 			'sandbox/**',
+			'backup/**',
 		],
 	},
 	{

@@ -1,7 +1,7 @@
 {
 	"extends": "../jsconfig-base.json",
 	"compilerOptions": {
-		"module": "preserve",
+		"moduleResolution": "bundler",
 		// Support ES2022 functions and runtime APIs, but not language features
 		"target": "es2015",
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],

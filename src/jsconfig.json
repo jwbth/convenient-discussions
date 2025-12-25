@@ -2,10 +2,7 @@
 	"extends": "../jsconfig-base.json",
 	"compilerOptions": {
 		"target": "es2022",
-
-		// We mix `import`s and `require()` calls
-		"module": "preserve",
-
+		"moduleResolution": "bundler",
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
 		"types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
 	},

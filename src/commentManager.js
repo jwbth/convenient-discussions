@@ -24,15 +24,15 @@ import visits from './visits'
 /**
  * @typedef {object} EventMap
  * @property {[]} registerSeen
- * @property {[Comment]} unselect
- * @property {[Comment]} select
+ * @property {[import('./Comment').default]} unselect
+ * @property {[import('./Comment').default]} select
  */
 
 /**
  * Singleton storing data about comments on the page and managing them.
  *
  * @augments EventEmitter<EventMap>
- * @template {Comment} [C=Comment]
+ * @template {import('./Comment').default} [C=import('./Comment').default]
  */
 export class CommentManager extends EventEmitter {
 	/**
@@ -77,6 +77,11 @@ export class CommentManager extends EventEmitter {
 	timestampsDefault
 
 	/**
+	 * @type {typeof import('./Comment').default}
+	 */
+	CommentClass
+
+	/**
 	 * Type guard to check if this is a CommentManager managing SpaciousComment instances.
 	 *
 	 * @returns {this is CommentManager<import('./SpaciousComment').default>}
@@ -109,6 +114,9 @@ export class CommentManager extends EventEmitter {
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
 
+		this.CommentClass =
+			cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
+
 		controller
 			.on('scroll', this.registerSeen)
 			.on('mutate', this.maybeRedrawLayers)
@@ -119,7 +127,7 @@ export class CommentManager extends EventEmitter {
 				// history.pushState() is called from Comment#scrollTo() (after clicks on added (gray)
 				// items in the TOC). A marginal state of this happening is when a page with a comment ID in
 				// the fragment is opened and then a link with the same fragment is clicked.
-				if (!Comment.isAnyId(fragment) || history.state?.cdJumpedToComment) return
+				if (!this.CommentClass.isAnyId(fragment) || history.state?.cdJumpedToComment) return
 
 				this.getByAnyId(fragment, true)?.scrollTo()
 			})
@@ -614,7 +622,7 @@ export class CommentManager extends EventEmitter {
 	 * @param {boolean} [impreciseDate] Comment date is inferred from the edit date (but these
 	 *   may be different). If `true`, we allow the time on the page to be 1-3 minutes less than the
 	 *   edit time.
-	 * @returns {Comment | undefined}
+	 * @returns {import('./Comment').default | undefined}
 	 */
 	getById(id, impreciseDate = false) {
 		if (!this.items.length || !id) {
@@ -626,11 +634,11 @@ export class CommentManager extends EventEmitter {
 
 		let comment = findById(id)
 		if (!comment && impreciseDate) {
-			const { date, author } = Comment.parseId(id) || {}
+			const { date, author } = this.CommentClass.parseId(id) || {}
 			if (date) {
 				for (let gap = 1; !comment && gap <= 3; gap++) {
 					comment = findById(
-						Comment.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author),
+						this.CommentClass.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author),
 					)
 				}
 			}
@@ -641,7 +649,7 @@ export class CommentManager extends EventEmitter {
 
 	/**
 	 * @typedef {Expand<
-	 *   ReturnType<typeof Comment.parseDtId> & { comment: Comment | undefined }
+	 *   ReturnType<typeof import('./Comment').default.parseDtId> & { comment: import('./Comment').default | undefined }
 	 * >} DtIdComponents
 	 */
 
@@ -652,10 +660,10 @@ export class CommentManager extends EventEmitter {
 	 * @param {string} id
 	 * @param {ReturnComponents} [returnComponents] Whether to return the constituents of the ID (as
 	 *   an object) together with a comment.
-	 * @returns {(ReturnComponents extends true ? DtIdComponents : Comment) | undefined}
+	 * @returns {(ReturnComponents extends true ? DtIdComponents : import('./Comment').default) | undefined}
 	 */
 	getByDtId(id, returnComponents) {
-		const data = Comment.parseDtId(id)
+		const data = this.CommentClass.parseDtId(id)
 		if (!data) {
 			return
 		}
@@ -701,10 +709,10 @@ export class CommentManager extends EventEmitter {
 	 * @param {boolean} [impreciseDate] (For CD IDs.) Comment date is inferred from the edit
 	 *   date (but these may be different). If `true`, we allow the time on the page to be 1-3 minutes
 	 *   less than the edit time.
-	 * @returns {Comment | undefined}
+	 * @returns {import('./Comment').default | undefined}
 	 */
 	getByAnyId(id, impreciseDate = false) {
-		return Comment.isId(id) ? this.getById(id, impreciseDate) : this.getByDtId(id)
+		return this.CommentClass.isId(id) ? this.getById(id, impreciseDate) : this.getByDtId(id)
 	}
 
 	/**
@@ -735,8 +743,8 @@ export class CommentManager extends EventEmitter {
 		$('.cd-thread-newCommentsNote').remove()
 
 		const newCommentIndexes = newComments.map((comment) => comment.index)
-		Comment.groupByParent(newComments).forEach((comments, parent) => {
-			if (parent instanceof Comment) {
+		this.CommentClass.groupByParent(newComments).forEach((comments, parent) => {
+			if (parent instanceof this.CommentClass) {
 				this.addNewCommentsNote(parent, comments, 'thread', newCommentIndexes)
 			} else {
 				// Add notes for level 0 comments and their children and the rest of the comments (for
@@ -762,7 +770,7 @@ export class CommentManager extends EventEmitter {
 	/**
 	 * Add an individual new comments notification to a thread or section.
 	 *
-	 * @param {Comment|import('./Section').default} parent
+	 * @param {import('./Comment').default|import('./Section').default} parent
 	 * @param {import('./updateChecker').CommentWorkerNew[]} childComments
 	 * @param {'thread'|'section'} type
 	 * @param {number[]} newCommentIndexes
@@ -803,7 +811,7 @@ export class CommentManager extends EventEmitter {
 		let $buttoned
 		/** @type {JQuery} */
 		let $classed
-		if (parent instanceof Comment) {
+		if (parent instanceof this.CommentClass) {
 			button.$element.addClass('cd-thread-button')
 			const { $wrappingItem } = parent.addSubitem('newCommentsNote', 'bottom')
 			$classed = $buttoned = $wrappingItem
@@ -912,7 +920,7 @@ export class CommentManager extends EventEmitter {
 	/**
 	 * Determine which comment on the page is selected.
 	 *
-	 * @returns {Comment | undefined}
+	 * @returns {import('./Comment').default | undefined}
 	 */
 	getSelectedComment = () => {
 		const selection = window.getSelection()
@@ -956,7 +964,7 @@ export class CommentManager extends EventEmitter {
 	 *
 	 * @param {Date} date
 	 * @param {string} author
-	 * @returns {Comment | undefined}
+	 * @returns {import('./Comment').default | undefined}
 	 */
 	findPriorComment(date, author) {
 		return this.items
@@ -1383,7 +1391,7 @@ export class CommentManager extends EventEmitter {
 	 * @returns {typeof import('./Comment').default}
 	 */
 	getCommentClass() {
-		return cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
+		return this.CommentClass
 	}
 }
 
