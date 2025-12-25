@@ -12,7 +12,8 @@ import { isInline } from './shared/utils-general'
  * A compact comment class that handles compact MediaWiki talk page formatting
  * with traditional layout and overlay menu-based actions.
  *
- * @augments Comment
+ * @template {boolean} [OpeningSection=boolean]
+ * @augments Comment<OpeningSection>
  */
 class CompactComment extends Comment {
 	/**

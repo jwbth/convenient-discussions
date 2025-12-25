@@ -26,21 +26,23 @@ import cd from '../shared/cd'
 
 /**
  * @typedef {object} ConvenientDiscussionsWindowExtension
- * @property {I18n} i18n
- * @property {import('../Comment').default[]} comments
- * @property {import('../Section').default[]} sections
- * @property {import('../settings').default} settings
- * @property {import('../commentManager').default} commentManager
- * @property {import('../pageRegistry').default} pageRegistry
- * @property {import('../controller').default} controller
- * @property {import('../CommentForm').default[]} commentForms
- * @property {import('../commentFormManager').default} commentFormManager
- * @property {ConvenientDiscussionsApi} api
- * @property {import('./convenientDiscussions.loader').Loader} loader
- * @property {import('./convenientDiscussions.debug').Debug} debug
- * @property {typeof import('./convenientDiscussions.utils').utils} utils
- * @property {boolean} isRunning
+ * @property {I18n} i18n Language strings.
+ * @property {import('./convenientDiscussions.loader').Loader} loader Utilities for loading the main
+ *   script. Some of them continue to be used after the fact to avoid duplication.
+ * @property {import('./convenientDiscussions.debug').Debug} debug Debug utilities.
+ * @property {typeof import('./convenientDiscussions.utils').utils} utils Several utilities that
+ *   would be avaliable before the main script is loaded.
+ * @property {import('../settings').default} settings User settings.
+ * @property {import('../Comment').default[]} comments List of all comments for convenience.
+ * @property {import('../Section').default[]} sections List of all sections for convenience.
+ * @property {import('../CommentForm').default[]} commentForms List of all comment forms for
+ *   convenience.
+ * @property {ConvenientDiscussionsApi} api Several API methods.
+ * @property {boolean} isRunning Whether the script has launched (used to prevent two parallel
+ *   scripts running).
  * @property {ReturnType<import('./startup').getStringsPromise> | undefined} getStringsPromise
+ *   Promise that is set in per-wiki configs that resolves to the i18n strings, as well as some date
+ *   and time formats.
  */
 
 /**

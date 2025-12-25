@@ -18,7 +18,8 @@ import { isInline } from './shared/utils-general'
  * A spacious comment class that handles spacious comment formatting with author/date headers
  * and structured layout.
  *
- * @augments Comment
+ * @template {boolean} [OpeningSection=boolean]
+ * @augments Comment<OpeningSection>
  */
 class SpaciousComment extends Comment {
 	/**
