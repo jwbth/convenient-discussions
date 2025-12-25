@@ -3,11 +3,9 @@ import BootProcess from './BootProcess'
 import Comment from './Comment'
 import commentLayersOptionalBackgroundHighlightingCss from './Comment.layers.optionalBackgroundHighlighting.less?inline'
 import CommentForm from './CommentForm'
-import CompactComment from './CompactComment'
 import CopyLinkDialog from './CopyLinkDialog'
 import DtSubscriptions from './DtSubscriptions'
 import EventEmitter from './EventEmitter'
-import SpaciousComment from './SpaciousComment'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
@@ -1970,15 +1968,6 @@ class Controller extends EventEmitter {
 		if (methodName) {
 			history[methodName](history.state, '', cd.page.getUrl(newQuery))
 		}
-	}
-
-	/**
-	 * Get the comment class to use based on the user settings.
-	 *
-	 * @returns {typeof Comment}
-	 */
-	getCommentClass() {
-		return cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
 	}
 }
 

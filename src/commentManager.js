@@ -1,5 +1,6 @@
-import Comment from './Comment'
+import CompactComment from './CompactComment'
 import EventEmitter from './EventEmitter'
+import SpaciousComment from './SpaciousComment'
 import StorageItemWithKeys from './StorageItemWithKeys'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
@@ -1374,6 +1375,15 @@ export class CommentManager extends EventEmitter {
 	 */
 	areTimestampsDefault() {
 		return this.timestampsDefault
+	}
+
+	/**
+	 * Get the comment class to use based on the user settings.
+	 *
+	 * @returns {typeof import('./Comment').default}
+	 */
+	getCommentClass() {
+		return cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
 	}
 }
 

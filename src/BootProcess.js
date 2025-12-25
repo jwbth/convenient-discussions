@@ -1,10 +1,8 @@
 import Comment from './Comment'
 import CommentForm from './CommentForm'
 import CommentFormInputTransformer from './CommentFormInputTransformer'
-import CompactComment from './CompactComment'
 import DtSubscriptions from './DtSubscriptions'
 import Section from './Section'
-import SpaciousComment from './SpaciousComment'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
@@ -656,13 +654,7 @@ class BootProcess {
 	 * Initialize prototypes of elements and OOUI widgets.
 	 */
 	initPrototypes() {
-		// Initialize prototypes for the appropriate Comment class based on commentDisplay setting
-		if (cd.settings.get('commentDisplay') === 'spacious') {
-			SpaciousComment.initPrototypes()
-		} else {
-			CompactComment.initPrototypes()
-		}
-
+		commentManager.getCommentClass().initPrototypes()
 		Section.initPrototypes()
 		Thread.initPrototypes()
 	}
@@ -673,11 +665,8 @@ class BootProcess {
 	 * @private
 	 */
 	findTargets() {
-		const CommentClass =
-			cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
-
 		this.parser = new Parser({
-			CommentClass,
+			CommentClass: commentManager.getCommentClass(),
 			SectionClass: Section,
 			childElementsProp: 'children',
 			follows: (n1, n2) =>

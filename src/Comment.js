@@ -3842,6 +3842,15 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
+	 * _For internal use._ Initialize prototypes of elements and OOUI widgets.
+	 *
+	 * This method is intended to be overridden by subclasses.
+	 */
+	static initPrototypes() {
+		// Does nothing by default.
+	}
+
+	/**
 	 * Scroll to the first comment in the list, but flash all of them.
 	 *
 	 * @param {Comment[]} comments
