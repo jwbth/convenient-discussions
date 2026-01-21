@@ -72,8 +72,8 @@ export default class CurrentPage extends Page {
 	}
 
 	/**
-	 * Get the archive prefix for the page. Checks both regex rules from the parent class and page
-	 * DOM elements.
+	 * Get the archive prefix for the page. Checks both regex rules from the parent class and page DOM
+	 * elements.
 	 *
 	 * @override
 	 * @param {boolean} [onlyExplicit]

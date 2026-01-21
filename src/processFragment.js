@@ -47,7 +47,7 @@ let searchResults
 /**
  * _For internal use._ Perform URL fragment-related tasks.
  */
-export default async function processFragment() {
+export default function processFragment() {
 	const value = location.hash.slice(1)
 	let commentId
 	try {
@@ -59,6 +59,9 @@ export default async function processFragment() {
 		console.error(error)
 	}
 
+	/**
+	 * @type {Comment | undefined}
+	 */
 	let comment
 	if (commentId) {
 		;({ date, author } = Comment.parseId(commentId) || {})
@@ -117,7 +120,9 @@ function maybeNotifyNotFound() {
 
 	if (date && author) {
 		label = cd.sParse('deadanchor-comment-lead')
-		const priorComment = commentManager.findPriorComment(date, author)
+		const priorComment = /** @type {Comment & { id: string } | undefined} */ (
+			commentManager.findPriorComment(date, author)
+		)
 		if (priorComment) {
 			guessedCommentText = (' ' + cd.sParse('deadanchor-comment-previous', '#' + priorComment.id))
 				// Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
@@ -187,7 +192,9 @@ async function searchForNotFoundItem() {
 		}
 	}
 	const archivePrefix = cd.page.getArchivePrefix()
-	searchQuery += ` prefix:${archivePrefix}`
+	if (archivePrefix) {
+		searchQuery += ` prefix:${archivePrefix}`
+	}
 
 	const response = await cd.getApi().get({
 		action: 'query',
@@ -200,7 +207,7 @@ async function searchForNotFoundItem() {
 
 		srlimit: 20,
 	})
-	searchResults = response?.query?.search
+	searchResults = response.query?.search
 
 	notifyAboutSearchResults()
 }
@@ -252,7 +259,7 @@ function notifyAboutSearchResults() {
 		if (date) {
 			const matches = Object.entries(searchResults)
 				.map(([, result]) => result)
-				.filter((result) => removeWikiMarkup(result.snippet)?.includes(token))
+				.filter((result) => result.snippet && removeWikiMarkup(result.snippet).includes(token))
 			if (matches.length === 1) {
 				exactMatchPageTitle = matches[0].title
 			}
