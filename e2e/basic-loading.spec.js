@@ -72,7 +72,8 @@ test.describe('Basic Script Loading and Page Parsing', () => {
 		// Note: We use the built dist file instead of the dev server URL to avoid CORS errors.
 		// Modern browsers block loading scripts from localhost into pages from other origins.
 		await page.addScriptTag({
-			path: './dist/convenientDiscussions.js',
+			type: 'module',
+			url: 'http://localhost:9000/src/loader/startup.js',
 		})
 		console.log('💉 Convenient Discussions script injected from dist/')
 
