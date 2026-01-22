@@ -41,12 +41,13 @@ const TEST_PAGES = {
  * The test account should have spaciousComments setting disabled for consistent testing.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string} url - Wikipedia talk page URL (defaults to JWBTH test page)
+ * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
  */
 async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 	console.log(`🚀 Setting up Convenient Discussions on: ${url}`)
 
 	// Set up console message capture
+	/** @type {{ type: string; text: string }[]} */
 	const consoleMessages = []
 	page.on('console', (msg) => {
 		const type = msg.type()
@@ -88,9 +89,7 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 	// Wait for Convenient Discussions to initialize
 	await page.waitForFunction(
 		() =>
-			window.convenientDiscussions &&
-			window.convenientDiscussions.comments !== undefined &&
-			window.convenientDiscussions.settings,
+			window.convenientDiscussions?.comments !== undefined && window.convenientDiscussions.settings,
 		{ timeout: 15_000 },
 	)
 	console.log('🎯 Convenient Discussions initialized')
@@ -242,10 +241,91 @@ async function getConsoleMessages(page) {
 	return await page.evaluate(() => window._testConsoleMessages || [])
 }
 
+/**
+ * Complete setup for Convenient Discussions browser testing using the development server.
+ * This injects the script from localhost:9000 instead of the built dist file.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
+ */
+async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JWBTH_TEST) {
+	console.log(`🚀 Setting up Convenient Discussions from dev server on: ${url}`)
+
+	// Set up console message capture
+	/** @type {{ type: string; text: string }[]} */
+	const consoleMessages = []
+	page.on('console', (msg) => {
+		const type = msg.type()
+		const text = msg.text()
+		consoleMessages.push({ type, text })
+
+		// Log errors and warnings immediately
+		if (type === 'error') {
+			console.log(`❌ Browser Error: ${text}`)
+		} else if (type === 'warning') {
+			console.log(`⚠️ Browser Warning: ${text}`)
+		}
+	})
+
+	// Set up page error capture
+	page.on('pageerror', (error) => {
+		console.log(`💥 Page Error: ${error.message}`)
+		consoleMessages.push({ type: 'pageerror', text: error.message })
+	})
+
+	// Navigate to Wikipedia talk page
+	await page.goto(url)
+	console.log('📄 Navigated to Wikipedia page')
+
+	// Wait for page to load completely
+	await page.waitForLoadState('networkidle')
+	console.log('🌐 Page loaded')
+
+	// Wait for MediaWiki globals to be available
+	await page.waitForFunction(() => window.mw && window.$, { timeout: 10_000 })
+	console.log('⚙️ MediaWiki globals loaded')
+
+	// Inject the development script from localhost:9000
+	await page.addScriptTag({
+		type: 'module',
+		url: 'http://localhost:9000/src/loader/startup.js',
+	})
+	console.log('💉 Convenient Discussions script injected from dev server')
+
+	// Wait for Convenient Discussions to initialize
+	await page.waitForFunction(
+		() =>
+			window.convenientDiscussions?.comments !== undefined && window.convenientDiscussions.settings,
+		{ timeout: 15_000 },
+	)
+	console.log('🎯 Convenient Discussions initialized')
+
+	// Additional wait for comments to be fully processed
+	await page.waitForTimeout(2000)
+	console.log('✅ Setup complete - ready for testing')
+
+	// Log summary of console messages
+	const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror')
+	const warnings = consoleMessages.filter((msg) => msg.type === 'warning')
+
+	if (errors.length > 0) {
+		console.log(`🔍 Found ${errors.length} console errors during setup`)
+	}
+	if (warnings.length > 0) {
+		console.log(`🔍 Found ${warnings.length} console warnings during setup`)
+	}
+
+	// Store console messages on the page for tests to access
+	await page.evaluate((messages) => {
+		window._testConsoleMessages = messages
+	}, consoleMessages)
+}
+
 module.exports = {
 	TEST_PAGES,
 	waitForConvenientDiscussions,
 	setupConvenientDiscussions,
+	setupConvenientDiscussionsFromDevServer,
 	getCommentByIndex,
 	getSpaciousComment,
 	getCompactComment,
