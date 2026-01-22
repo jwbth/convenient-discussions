@@ -127,6 +127,7 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  * @property {import('./CommentSkeleton').default[]} comments
  * @property {import('./SectionSkeleton').default[]} sections
  * @property {GlobalProps} g
+ * @property {import('../loader/convenientDiscussions.debug').Debug} debug Debug utilities.
  */
 
 /**

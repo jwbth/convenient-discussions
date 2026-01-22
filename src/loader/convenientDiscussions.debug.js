@@ -12,7 +12,8 @@ import cd from './cd'
 
 /**
  * A number of methods to simplify measuring time that it takes to run certain routines as well as
- * counting the number of times certain instructions run.
+ * counting the number of times certain instructions run, and logging messages with a
+ * "Convenient Discussions:" prefix.
  *
  * @module debug
  */
@@ -212,6 +213,48 @@ class Debug {
 	 */
 	incrementCounter(label) {
 		this.counters[label]++
+	}
+
+	/**
+	 * Log an error message with "Convenient Discussions:" prefix.
+	 *
+	 * @param {string | any} message
+	 * @param {...any} args Additional arguments to pass to console.error.
+	 */
+	logError(message, ...args) {
+		if (typeof message === 'string') {
+			console.error(`Convenient Discussions: ${message}`, ...args)
+		} else {
+			console.error('Convenient Discussions:', message, ...args)
+		}
+	}
+
+	/**
+	 * Log a warning message with "Convenient Discussions:" prefix.
+	 *
+	 * @param {string | any} message
+	 * @param {...any} args Additional arguments to pass to console.warn.
+	 */
+	logWarn(message, ...args) {
+		if (typeof message === 'string') {
+			console.warn(`Convenient Discussions: ${message}`, ...args)
+		} else {
+			console.warn('Convenient Discussions:', message, ...args)
+		}
+	}
+
+	/**
+	 * Log a debug message with "Convenient Discussions:" prefix.
+	 *
+	 * @param {string | any} message
+	 * @param {...any} args Additional arguments to pass to console.debug.
+	 */
+	logDebug(message, ...args) {
+		if (typeof message === 'string') {
+			console.debug(`Convenient Discussions: ${message}`, ...args)
+		} else {
+			console.debug('Convenient Discussions:', message, ...args)
+		}
 	}
 }
 

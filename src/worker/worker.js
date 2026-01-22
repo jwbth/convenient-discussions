@@ -36,8 +36,8 @@ let alarmTimeout
 /** @type {import('domhandler').Element | undefined} */
 let rootElement
 
-const debug = new Debug()
-debug.init()
+cd.debug = new Debug()
+cd.debug.init()
 
 /**
  * Send a "wake up" message to the window after the specified interval.
@@ -223,17 +223,17 @@ function parse() {
 
 	const targets = findTargets(parser)
 
-	debug.startTimer('worker: process comments')
+	cd.debug.startTimer('worker: process comments')
 	processComments(parser, targets)
-	debug.stopTimer('worker: process comments')
+	cd.debug.stopTimer('worker: process comments')
 
-	debug.startTimer('worker: process sections')
+	cd.debug.startTimer('worker: process sections')
 	processSections(parser, targets)
-	debug.stopTimer('worker: process sections')
+	cd.debug.stopTimer('worker: process sections')
 
-	debug.startTimer('worker: prepare comments and sections')
+	cd.debug.startTimer('worker: prepare comments and sections')
 	prepareCommentsAndSections(parser)
-	debug.stopTimer('worker: prepare comments and sections')
+	cd.debug.stopTimer('worker: prepare comments and sections')
 }
 
 /**
@@ -287,7 +287,7 @@ function onMessageFromWindow(event) {
 
 	if (message.task === 'parse') {
 		const timerLabel = `worker: processing revision ${message.revisionId}`
-		debug.startTimer(timerLabel)
+		cd.debug.startTimer(timerLabel)
 
 		cd.g = message.g
 		cd.config = message.config
@@ -318,8 +318,8 @@ function onMessageFromWindow(event) {
 			}),
 		)
 
-		debug.stopTimer(timerLabel)
-		debug.logAndResetEverything()
+		cd.debug.stopTimer(timerLabel)
+		cd.debug.logAndResetEverything()
 	}
 }
 
