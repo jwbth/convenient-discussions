@@ -1,5 +1,5 @@
 import cd from './loader/cd'
-import { es6ClassToOoJsClass } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 export function getForeignStructuredUploadClass() {

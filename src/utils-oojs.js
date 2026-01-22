@@ -538,5 +538,3 @@ export function createGenericControl(type, input, fieldOptions = {}, data = {}) 
 
 	return { type, field, input, ...data }
 }
-
-export * from './utils-oojs-class'

@@ -1,5 +1,5 @@
 import { convertHtmlToWikitext } from './utils-api'
-import { es6ClassToOoJsClass } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 import {
 	cleanUpPasteDom,
 	getElementFromPasteHtml,

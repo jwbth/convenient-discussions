@@ -8,7 +8,8 @@ import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
 import { defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './shared/utils-general'
 import { encodeWikilink, endWithTwoNewlines } from './shared/utils-wikitext'
-import { createCheckboxControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs'
+import { createCheckboxControl, createTitleControl } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 import { buildEditSummary, findFirstTimestamp, wrapHtml } from './utils-window'
 
 /**

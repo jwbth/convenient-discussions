@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/valid-types */
-import { es6ClassToOoJsClass } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 
 /**
  * @template {{ [key: string]: OO.ArgTuple }} [EventMap = { [key: string]: OO.ArgTuple }]

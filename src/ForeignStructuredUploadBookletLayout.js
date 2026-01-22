@@ -12,8 +12,8 @@ import {
 	createRadioControl,
 	createTextControl,
 	createTitleControl,
-	es6ClassToOoJsClass,
 } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 import { mergeJquery, wrapHtml } from './utils-window'
 
 // TODO: Make it work on third-party wikis (where the target host is not Wikimedia Commons)

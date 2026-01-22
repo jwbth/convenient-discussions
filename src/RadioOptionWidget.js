@@ -1,5 +1,5 @@
 import DivLabelWidget from './DivLabelWidget'
-import { es6ClassToOoJsClass } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 
 /**
  * @typedef {OO.ui.RadioOptionWidget.ConfigOptions & { help?: string | JQuery }} RadioOptionWidgetConfig

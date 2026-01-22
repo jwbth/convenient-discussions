@@ -13,8 +13,8 @@ import {
 	createNumberControl,
 	createRadioControl,
 	createTextControl,
-	es6ClassToOoJsClass,
 } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 export default function getSettingsDialogClass() {

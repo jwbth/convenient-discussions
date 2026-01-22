@@ -4,7 +4,7 @@ import EventEmitter from './EventEmitter'
 import cd from './loader/cd'
 import { removeFromArrayIfPresent } from './shared/utils-general'
 import { formatDate } from './utils-date'
-import { mixInObject } from './utils-oojs'
+import { mixInObject } from './utils-oojs-class'
 
 /**
  * @typedef {'default'|'improved'|'relative'} TimestampFormat

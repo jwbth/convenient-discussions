@@ -1,6 +1,5 @@
 /**
  * Helpers for class manipulation in OOUI.
- * Extracted from utils-oojs.js to avoid circular dependencies.
  *
  * @module utilsOojsClass
  */

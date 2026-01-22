@@ -29,7 +29,6 @@ import cd from '../shared/cd'
  * @property {I18n} i18n Language strings.
  * @property {import('./convenientDiscussions.loader').Loader} loader Utilities for loading the main
  *   script. Some of them continue to be used after the fact to avoid duplication.
- * @property {import('./convenientDiscussions.debug').Debug} debug Debug utilities.
  * @property {typeof import('./convenientDiscussions.utils').utils} utils Several utilities that
  *   would be avaliable before the main script is loaded.
  * @property {import('../settings').default} settings User settings.

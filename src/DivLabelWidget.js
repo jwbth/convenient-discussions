@@ -1,4 +1,4 @@
-import { es6ClassToOoJsClass } from './utils-oojs'
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 
 /**
  * OOUI label widget.

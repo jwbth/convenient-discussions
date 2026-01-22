@@ -1,5 +1,5 @@
 import ProcessDialogMixin from './ProcessDialogMixin'
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
+import { es6ClassToOoJsClass, mixInClass } from './utils-oojs-class'
 
 /**
  * Our class that extends {@link OO.ui.ProcessDialog OO.ui.ProcessDialog}, adding a couple

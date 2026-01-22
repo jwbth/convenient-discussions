@@ -2,7 +2,7 @@ import ForeignStructuredUploadBookletLayout from './ForeignStructuredUploadBookl
 import ProcessDialogMixin from './ProcessDialogMixin'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs'
+import { es6ClassToOoJsClass, mixInClass } from './utils-oojs-class'
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 export default function getUploadDialogClass() {

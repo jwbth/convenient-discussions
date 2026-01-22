@@ -16,7 +16,7 @@ import {
 import updateChecker from './updateChecker'
 import { loadUserGenders } from './utils-api'
 import { isCmdModifierPressed } from './utils-keyboard'
-import { mixInObject } from './utils-oojs'
+import { mixInObject } from './utils-oojs-class'
 import {
 	getCommonGender,
 	getExtendedRect,
