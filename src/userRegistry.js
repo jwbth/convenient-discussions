@@ -110,7 +110,7 @@ export default {
 					mw.hook('convenientDiscussions.mutedUsers').fire(users)
 				},
 				(/** @type {unknown} */ error) => {
-					console.error("Couldn't load the names of the muted users.", error)
+					cd.debug.logError("Couldn't load the names of the muted users.", error)
 				},
 			)
 		} else {

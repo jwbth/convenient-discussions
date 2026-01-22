@@ -147,7 +147,7 @@ class Toc {
 					.filter((link) => link.getAttribute('href') !== '#')
 					.map((link) => new TocItem(link, this))
 			} catch (error) {
-				console.error("Couldn't find an element for an item of the table of contents.", error)
+				cd.debug.logError("Couldn't find an element for an item of the table of contents.", error)
 				this.items = []
 			}
 		}

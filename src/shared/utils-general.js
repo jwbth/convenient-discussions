@@ -59,7 +59,7 @@ export function isInline(node, considerTextNodesAsInline = false) {
 		node.isConnected
 	) {
 		// This is very expensive. Avoid by any means.
-		console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node)
+		cd.debug.logWarn('Expensive operation: isInline() called for:', node)
 		node.cdIsInline = window.getComputedStyle(node).display.startsWith('inline')
 	}
 

@@ -265,7 +265,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 				)
 			} else {
 				errorText = cd.s('cld-diff-error-unknown')
-				console.warn(error)
+				cd.debug.logWarn(error)
 			}
 		}
 

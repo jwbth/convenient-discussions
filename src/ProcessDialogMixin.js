@@ -66,7 +66,7 @@ class ProcessDialogMixin {
 		}
 
 		this.showErrors(errorInstance)
-		console.warn(error)
+		cd.debug.logWarn(error)
 		this.$errors
 			.find('.oo-ui-buttonElement:not(.oo-ui-flaggedElement-primary) > .oo-ui-buttonElement-button')
 			.on('click', () => {

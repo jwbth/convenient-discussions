@@ -347,7 +347,7 @@ class AutocompleteCache {
 				this.set(key, data)
 			} catch (error) {
 				// Silently ignore prefetch errors
-				console.warn(`Prefetch failed for key ${key}:`, error)
+				cd.debug.logWarn(`Prefetch failed for key ${key}:`, error)
 			}
 		})
 

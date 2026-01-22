@@ -1943,7 +1943,7 @@ class Comment extends CommentSkeleton {
 		const parent = this.getParent()
 
 		if (!parent) {
-			console.error('This comment has no parent.')
+			cd.debug.logError('This comment has no parent.')
 
 			return
 		}
@@ -2229,7 +2229,7 @@ class Comment extends CommentSkeleton {
 						cd.sParse('error-diffnotfound-history', historyUrl)
 				} else {
 					text = cd.sParse('thank-error')
-					console.warn(error)
+					cd.debug.logWarn(error)
 				}
 				break
 			}
@@ -2948,7 +2948,7 @@ class Comment extends CommentSkeleton {
 			if (!this.genderRequest) {
 				this.genderRequest = loadUserGenders([this.author])
 				errorCallback = (/** @type {Error} */ error) => {
-					console.warn(`Couldn't get the gender of user ${this.author.getName()}.`, error)
+					cd.debug.logWarn(`Couldn't get the gender of user ${this.author.getName()}.`, error)
 				}
 			}
 			if (!this.genderRequestCallbacks.includes(callback)) {

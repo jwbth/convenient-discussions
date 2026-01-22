@@ -504,7 +504,7 @@ class UpdateChecker extends EventEmitter {
 			await this.performCheck()
 		} catch (error) {
 			if (!(error instanceof CdError) || error.getCode() !== 'network') {
-				console.warn(error)
+				cd.debug.logWarn(error)
 			}
 		}
 

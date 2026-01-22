@@ -54,7 +54,7 @@ class TextMasker {
 	 */
 	mask(regexp, type, useGroups = false) {
 		if (type && !type.match(/^\w+$/)) {
-			console.warn(
+			cd.debug.logWarn(
 				'TextMasker.mask: the `type` argument should match `^\\w+$/`. Proceeding nevertheless.',
 			)
 		}

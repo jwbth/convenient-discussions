@@ -804,7 +804,7 @@ class Controller extends EventEmitter {
 		try {
 			this.emit('popState', decodeURIComponent(location.hash.slice(1)))
 		} catch (error) {
-			console.error(error)
+			cd.debug.logError(error)
 		}
 
 		// Make sure the title has no incorrect new comment count when the user presses the "Back"
@@ -1774,9 +1774,8 @@ class Controller extends EventEmitter {
 			await this.bootProcess.execute(isReload)
 		} catch (error) {
 			mw.notify(cd.s('error-processpage'), { type: 'error' })
-			console.error(error)
+			cd.debug.logError(error)
 		}
-
 		cd.loader.hideBootingOverlay()
 		this.debugLog()
 		cd.loader.setBooting(false)
@@ -1798,8 +1797,8 @@ class Controller extends EventEmitter {
 			).toFixed(2)
 
 		cd.debug.logAndResetTimer('total time')
-		console.debug(`number of comments: ${commentManager.getCount()}`)
-		console.debug(`per comment: ${timePerComment}`)
+		cd.debug.logDebug(`number of comments: ${commentManager.getCount()}`)
+		cd.debug.logDebug(`per comment: ${timePerComment}`)
 		cd.debug.logAndResetEverything()
 	}
 
@@ -1828,7 +1827,7 @@ class Controller extends EventEmitter {
 		cd.debug.startTimer('get HTML')
 
 		getUserInfo().catch((/** @type {unknown} */ error) => {
-			console.warn(error)
+			cd.debug.logWarn(error)
 		})
 
 		cd.loader.showBootingOverlay()
@@ -1842,7 +1841,7 @@ class Controller extends EventEmitter {
 				throw error
 			} else {
 				mw.notify(cd.s('error-reloadpage'), { type: 'error' })
-				console.warn(error)
+				cd.debug.logWarn(error)
 
 				return false
 			}

@@ -49,7 +49,7 @@ export default async function addCommentLinks() {
 	try {
 		await bootstrap()
 	} catch (error) {
-		console.warn(error)
+		cd.debug.logWarn(error)
 
 		return
 	}

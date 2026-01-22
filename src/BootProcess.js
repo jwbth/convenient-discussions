@@ -701,13 +701,13 @@ class BootProcess {
 					try {
 						commentManager.add(this.parser.createComment(signature, this.targets, commentManager))
 					} catch (error) {
-						console.error(error)
+						cd.debug.logError(error)
 					}
 				})
 
 			commentManager.setup()
 		} catch (error) {
-			console.error(error)
+			cd.debug.logError(error)
 		}
 
 		/**
@@ -751,7 +751,7 @@ class BootProcess {
 						this.parser.createSection(heading, this.targets, sectionManager, this.subscriptions),
 					)
 				} catch (error) {
-					console.error(error)
+					cd.debug.logError(error)
 				}
 			})
 

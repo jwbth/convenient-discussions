@@ -346,7 +346,7 @@ class CommentFormManager extends EventEmitter {
 							targetMethod(data, undefined, data.preloadConfig, data.newTopicOnTop)
 							haveRestored = true
 						} catch (error) {
-							console.warn(error)
+							cd.debug.logWarn(error)
 
 							return true
 						}

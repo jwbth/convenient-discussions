@@ -205,7 +205,7 @@ export default function getMoveSectionDialogClass() {
 							recoverable: false,
 						})
 					} else {
-						console.warn(error)
+						cd.debug.logWarn(error)
 						this.abort({
 							message: cd.sParse('error-javascript'),
 							recoverable: false,
@@ -425,7 +425,7 @@ export default function getMoveSectionDialogClass() {
 						})
 					}
 				} else {
-					console.warn(error)
+					cd.debug.logWarn(error)
 					throw new CdError({
 						message: cd.sParse('error-javascript'),
 						details: { recoverable: false },
@@ -447,7 +447,7 @@ export default function getMoveSectionDialogClass() {
 						],
 					})
 				} else {
-					console.warn(error)
+					cd.debug.logWarn(error)
 					throw new CdError({ details: [cd.sParse('error-javascript'), false] })
 				}
 			}
@@ -493,7 +493,7 @@ export default function getMoveSectionDialogClass() {
 						throw new CdError({ details: [cd.sParse('error-network'), true] })
 					}
 				} else {
-					console.warn(error)
+					cd.debug.logWarn(error)
 					throw new CdError({ details: [cd.sParse('error-javascript'), false] })
 				}
 			}
@@ -580,7 +580,7 @@ export default function getMoveSectionDialogClass() {
 						throw new CdError({ details: [genericMessage + ' ' + message, true] })
 					}
 				} else {
-					console.warn(error)
+					cd.debug.logWarn(error)
 					throw new CdError({
 						details: [genericMessage + ' ' + cd.sParse('error-javascript'), false],
 					})
@@ -641,7 +641,7 @@ export default function getMoveSectionDialogClass() {
 						],
 					})
 				} else {
-					console.warn(error)
+					cd.debug.logWarn(error)
 					throw new CdError({
 						details: [genericMessage + ' ' + cd.sParse('error-javascript'), false, true],
 					})

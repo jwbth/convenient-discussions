@@ -720,7 +720,7 @@ class Settings extends EventEmitter {
 
 		if (!areObjectsEqual(this.values, remoteSettings)) {
 			this.save().catch((/** @type {unknown} */ error) => {
-				console.warn("Couldn't save the settings to the server.", error)
+				cd.debug.logWarn("Couldn't save the settings to the server.", error)
 			})
 		}
 
@@ -1071,7 +1071,7 @@ class Settings extends EventEmitter {
 						await promise
 					} catch (error) {
 						mw.notify(cd.s('error-settings-save'), { type: 'error' })
-						console.warn(error)
+						cd.debug.logWarn(error)
 					}
 				}
 			}

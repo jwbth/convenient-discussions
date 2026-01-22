@@ -43,7 +43,7 @@ class Visits extends EventEmitter {
 			// which can be critical for determining subscriptions.
 			this.unpack(await getUserInfo(reuse).then(({ visits }) => visits))
 		} catch (error) {
-			console.warn("Convenient Discussions: Couldn't load the settings from the server.", error)
+			cd.debug.logWarn("Couldn't load the settings from the server.", error)
 
 			return
 		}
@@ -186,10 +186,10 @@ class Visits extends EventEmitter {
 					this.cleanUp(0.1)
 					this.save()
 				} else {
-					console.error(error)
+					cd.debug.logError(error)
 				}
 			} else {
-				console.error(error)
+				cd.debug.logError(error)
 			}
 		}
 	}

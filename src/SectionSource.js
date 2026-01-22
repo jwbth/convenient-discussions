@@ -107,7 +107,7 @@ class SectionSource {
 		try {
 			this.collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode)
 		} catch (error) {
-			console.warn(`Couldn't read the "${this.headline}" section contents.`, error)
+			cd.debug.logWarn(`Couldn't read the "${this.headline}" section contents.`, error)
 
 			return
 		}

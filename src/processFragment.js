@@ -56,7 +56,7 @@ export default function processFragment() {
 			commentId = decodedValue
 		}
 	} catch (error) {
-		console.error(error)
+		cd.debug.logError(error)
 	}
 
 	/**

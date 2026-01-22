@@ -2225,7 +2225,7 @@ class CommentForm extends EventEmitter {
 		if (this.torndown) return
 
 		if (errorToLog) {
-			console.warn(errorToLog)
+			cd.debug.logWarn(errorToLog)
 		}
 
 		if (cancel) {
@@ -3867,7 +3867,7 @@ class CommentForm extends EventEmitter {
 				)
 				addingMethod(undefined, this)
 			} catch (error) {
-				console.warn(error)
+				cd.debug.logWarn(error)
 
 				return this.rescue()
 			}

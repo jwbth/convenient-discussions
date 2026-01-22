@@ -51,7 +51,7 @@ class StorageItem {
 	reload() {
 		const obj = mw.storage.getObject(`${this.constructor.prefix}-${this.key}`)
 		if (obj === false) {
-			console.error('Storage is unavailable.')
+			cd.debug.logError('Storage is unavailable.')
 		}
 		this.data = obj || {}
 

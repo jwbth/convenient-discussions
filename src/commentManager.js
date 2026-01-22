@@ -579,7 +579,7 @@ export class CommentManager extends EventEmitter {
 				const proportion =
 					(viewportTop - higherTop) / (lowerBottom - viewportBottom + (viewportTop - higherTop))
 				if (proportion < 0 || proportion >= 1) {
-					console.warn(
+					cd.debug.logWarn(
 						"The proportion shouldn't be less than 0 or greater or equal to 1.",
 						'proportion',
 						proportion,
@@ -1049,7 +1049,7 @@ export class CommentManager extends EventEmitter {
 		if (
 			controller.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
 		) {
-			console.warn('.cd-commentLevel adjacencies have left.')
+			cd.debug.logWarn('.cd-commentLevel adjacencies have left.')
 		}
 
 		this.items.forEach((comment) => {
