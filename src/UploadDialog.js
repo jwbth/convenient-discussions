@@ -1,8 +1,12 @@
-import ForeignStructuredUploadBookletLayout from './ForeignStructuredUploadBookletLayout'
+import { getForeignStructuredUploadBookletLayoutClass } from './ForeignStructuredUploadBookletLayout'
 import ProcessDialogMixin from './ProcessDialogMixin'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { es6ClassToOoJsClass, mixInClass } from './utils-oojs-class'
+
+/**
+ * @typedef {ReturnType<getForeignStructuredUploadBookletLayoutClass>} ForeignStructuredUploadBookletLayout
+ */
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 export default function getUploadDialogClass() {
@@ -11,9 +15,7 @@ export default function getUploadDialogClass() {
 	 * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
 	 */
 	class UploadDialog extends mixInClass(
-		/** @type {typeof mw.Upload.Dialog<typeof ForeignStructuredUploadBookletLayout>} */ (
-			mw.Upload.Dialog
-		),
+		/** @type {typeof mw.Upload.Dialog<ForeignStructuredUploadBookletLayout>} */ (mw.Upload.Dialog),
 		ProcessDialogMixin,
 	) {
 		/**
@@ -23,8 +25,8 @@ export default function getUploadDialogClass() {
 		 */
 		constructor(config = {}) {
 			super(
-				/** @type {mw.Upload.Dialog.Config<typeof ForeignStructuredUploadBookletLayout>} */ ({
-					bookletClass: ForeignStructuredUploadBookletLayout,
+				/** @type {mw.Upload.Dialog.Config<ForeignStructuredUploadBookletLayout>} */ ({
+					bookletClass: getForeignStructuredUploadBookletLayoutClass(),
 					booklet: {
 						target: mw.config.get('wgServerName') === 'commons.wikimedia.org' ? 'local' : 'shared',
 					},

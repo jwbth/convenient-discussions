@@ -19,18 +19,18 @@ import { mergeJquery, wrapHtml } from './utils-window'
 // TODO: Make it work on third-party wikis (where the target host is not Wikimedia Commons)
 
 /**
- * @typedef {InstanceType<ReturnType<getForeignStructuredUploadClass>>} ForeignStructuredUpload
+ * @typedef {ReturnType<getForeignStructuredUploadClass>} ForeignStructuredUploadClass
  */
 
 // eslint-disable-next-line jsdoc/require-jsdoc
-export default function getForeignStructuredUploadBookletLayoutClass() {
+export function getForeignStructuredUploadBookletLayoutClass() {
 	const ForeignStructuredUploadClass = getForeignStructuredUploadClass()
 
 	/**
 	 * Class extending
 	 * {@link mw.ForeignStructuredUpload.BookletLayout mw.ForeignStructuredUpload.BookletLayout} and
-	 * adding more details to the process of uploading a file using the {@link ForeignStructuredUpload}
-	 * model. See {@link UploadDialog} for the dialog itself.
+	 * adding more details to the process of uploading a file using the
+	 * {@link ForeignStructuredUploadClass} model. See {@link UploadDialog} for the dialog itself.
 	 *
 	 * @augments mw.ForeignStructuredUpload.BookletLayout
 	 */
@@ -51,7 +51,7 @@ export default function getForeignStructuredUploadBookletLayoutClass() {
 
 		/**
 		 * @override
-		 * @type {ForeignStructuredUpload}
+		 * @type {InstanceType<ForeignStructuredUploadClass>}
 		 */
 		// @ts-expect-error: Initialized in createUpload(); narrowing parent type
 		upload
@@ -345,7 +345,7 @@ export default function getForeignStructuredUploadBookletLayoutClass() {
 		 * Returns a {@link mw.ForeignStructuredUpload mw.ForeignStructuredUpload} with the target
 		 * specified in config.
 		 *
-		 * @returns {ForeignStructuredUpload}
+		 * @returns {InstanceType<ForeignStructuredUploadClass>}
 		 * @protected
 		 * @override
 		 */
