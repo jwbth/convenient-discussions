@@ -68,12 +68,13 @@ test.describe('Basic Script Loading and Page Parsing', () => {
 				}),
 		)
 
-		// Inject the development script from localhost:9000
+		// Inject the built Convenient Discussions script
+		// Note: We use the built dist file instead of the dev server URL to avoid CORS errors.
+		// Modern browsers block loading scripts from localhost into pages from other origins.
 		await page.addScriptTag({
-			type: 'module',
-			url: 'http://localhost:9000/src/loader/startup.js',
+			path: './dist/convenientDiscussions.js',
 		})
-		console.log('💉 Development script injected from localhost:9000')
+		console.log('💉 Convenient Discussions script injected from dist/')
 
 		// Wait for isRunning to become true
 		await page.waitForFunction(
@@ -114,12 +115,16 @@ test.describe('Basic Script Loading and Page Parsing', () => {
 
 		if (errors.length > 0) {
 			console.log('❌ Errors found:')
-			errors.forEach((err, i) => console.log(`  ${i + 1}. ${err.text}`))
+			errors.forEach((err, i) => {
+				console.log(`  ${i + 1}. ${err.text}`)
+			})
 		}
 
 		if (warnings.length > 0) {
 			console.log('⚠️ Warnings found:')
-			warnings.forEach((warn, i) => console.log(`  ${i + 1}. ${warn.text}`))
+			warnings.forEach((warn, i) => {
+				console.log(`  ${i + 1}. ${warn.text}`)
+			})
 		}
 
 		// Assertions
