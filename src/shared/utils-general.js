@@ -945,3 +945,45 @@ export function isKeyOf(key, obj) {
 export function subtractDaysFromNow(number) {
 	return Date.now() - number * cd.g.msInDay
 }
+
+/**
+ * Log an error message with "Convenient Discussions:" prefix.
+ *
+ * @param {string | any} message
+ * @param {...any} args Additional arguments to pass to console.error.
+ */
+export function logError(message, ...args) {
+	if (typeof message === 'string') {
+		console.error(`Convenient Discussions: ${message}`, ...args)
+	} else {
+		console.error('Convenient Discussions:', message, ...args)
+	}
+}
+
+/**
+ * Log a warning message with "Convenient Discussions:" prefix.
+ *
+ * @param {string | any} message
+ * @param {...any} args Additional arguments to pass to console.warn.
+ */
+export function logWarn(message, ...args) {
+	if (typeof message === 'string') {
+		console.warn(`Convenient Discussions: ${message}`, ...args)
+	} else {
+		console.warn('Convenient Discussions:', message, ...args)
+	}
+}
+
+/**
+ * Log a debug message with "Convenient Discussions:" prefix.
+ *
+ * @param {string | any} message
+ * @param {...any} args Additional arguments to pass to console.debug.
+ */
+export function logDebug(message, ...args) {
+	if (typeof message === 'string') {
+		console.debug(`Convenient Discussions: ${message}`, ...args)
+	} else {
+		console.debug('Convenient Discussions:', message, ...args)
+	}
+}
