@@ -49,6 +49,9 @@ npm run single -- -- --project w --lang en
 # Run tests
 npm run test
 
+# Run browser tests in Playwright
+npm run test:browser
+
 # Generate documentation
 npm run docs
 
