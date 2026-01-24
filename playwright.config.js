@@ -32,6 +32,13 @@ module.exports = defineConfig({
 
 		/* Use authentication state if available */
 		storageState: fs.existsSync(authFile) ? authFile : undefined,
+
+		launchOptions: {
+			args: [
+				// Disables the CORS/PNA checks entirely
+				'--disable-web-security',
+			],
+		},
 	},
 
 	/* Configure projects for major browsers */
