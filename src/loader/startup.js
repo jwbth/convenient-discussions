@@ -73,7 +73,7 @@ async function bootstrap() {
 
 	if (SINGLE_CONFIG_FILE_NAME) {
 		try {
-			cd.config = (await import('../config/wikis/' + SINGLE_CONFIG_FILE_NAME + '.js')).default
+			cd.config = (await import('../../config/wikis/' + SINGLE_CONFIG_FILE_NAME + '.js')).default
 		} catch {
 			// Empty
 		}
@@ -93,7 +93,7 @@ async function bootstrap() {
 			cd.i18n.en[name] = replaceEntities(cd.i18n.en[name])
 		})
 		if (SINGLE_LANG_CODE !== 'en') {
-			cd.i18n[SINGLE_LANG_CODE] = await import('../i18n/' + SINGLE_LANG_CODE + '.json')
+			cd.i18n[SINGLE_LANG_CODE] = await import('../../i18n/' + SINGLE_LANG_CODE + '.json')
 			const langObj = cd.i18n[SINGLE_LANG_CODE]
 			Object.keys(cd.i18n[SINGLE_LANG_CODE])
 				.filter((name) => typeof langObj[name] === 'string')
