@@ -48,7 +48,7 @@ test.describe('Basic Script Loading and Page Parsing', () => {
 		console.log('🌐 Page loaded')
 
 		// Wait for MediaWiki globals to be available
-		await page.waitForFunction(() => window.mw && window.$ && window.OO, { timeout: 10_000 })
+		await page.waitForFunction(() => window.mw && window.$ && window.OO, { timeout: 5000 })
 		console.log('⚙️ MediaWiki globals loaded')
 
 		// Set up hook listener BEFORE injecting the script
@@ -80,16 +80,18 @@ test.describe('Basic Script Loading and Page Parsing', () => {
 		// Wait for isRunning to become true
 		await page.waitForFunction(
 			() => window.convenientDiscussions && window.convenientDiscussions.isRunning === true,
-			{ timeout: 10_000 },
+			{ timeout: 5000 },
 		)
 		console.log('✅ cd.isRunning is true')
 
 		// Wait for the pageReady hook to fire (with timeout)
 		const pageReadyResult = await Promise.race([
 			pageReadyPromise,
-			new Promise((resolve) =>
-				setTimeout(() => resolve({ hookFired: false, timeout: true }), 20_000),
-			),
+			new Promise((resolve) => {
+				setTimeout(() => {
+					resolve({ hookFired: false, timeout: true })
+				}, 10_000)
+			}),
 		])
 
 		console.log('📊 Page ready result:', pageReadyResult)

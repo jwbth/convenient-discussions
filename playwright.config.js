@@ -58,5 +58,11 @@ module.exports = defineConfig({
 	],
 
 	/* Build the script before running tests */
-	globalSetup: require.resolve('./e2e/global-setup.js'),
+	// globalSetup: require.resolve('./e2e/global-setup.js'),
+
+	/* Run your local dev server before starting the tests */
+	webServer: {
+		command: 'npm run start',
+		reuseExistingServer: !process.env.CI,
+	},
 })
