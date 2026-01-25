@@ -301,7 +301,8 @@ class Loader {
 		return (
 			(namespaceNumber % 2 === 1 ||
 				this.pageWhitelistRegexp?.test(pageName) ||
-				(!this.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))) &&
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				(!this.pageWhitelistRegexp && cd.config?.customTalkNamespaces.includes(namespaceNumber))) &&
 			!this.pageBlacklistRegexp?.test(pageName)
 		)
 	}

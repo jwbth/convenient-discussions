@@ -244,7 +244,6 @@ const convenientDiscussionsWindow = {
 	},
 
 	g: {},
-	config: {},
 
 	/** @type {{ [key: string]: any }} */
 	tests: {},
