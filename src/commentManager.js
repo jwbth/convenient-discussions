@@ -1185,8 +1185,7 @@ export class CommentManager extends EventEmitter {
 		// If this element is a part of a comment, replace it in the Comment object instance.
 		const commentIndex = element.dataset.cdCommentIndex
 		if (commentIndex === undefined) {
-			const elementParent = /** @type {HTMLElement} */ (element.parentElement)
-			elementParent.replaceWith(newElement)
+			element.replaceWith(newElement)
 		} else {
 			this.items[Number(commentIndex)].replaceElement(element, newElement)
 		}

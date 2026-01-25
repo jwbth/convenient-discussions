@@ -2755,8 +2755,7 @@ class Comment extends CommentSkeleton {
 			newElement = /** @type {HTMLElement} */ (parentElement.children[index])
 		} else {
 			newElement = newElementOrHtml
-			const nativeElementParent = /** @type {HTMLElement} */ (nativeElement.parentElement)
-			nativeElementParent.replaceWith(newElement)
+			nativeElement.replaceWith(newElement)
 		}
 
 		// When we set .$elements, the setter automatically sets .elements. But not vice versa except
