@@ -6,7 +6,7 @@ const path = require('path')
  * Helper functions for authentication in Playwright tests
  */
 
-const AUTH_STATE_PATH = path.join(__dirname, '.auth', 'user.json')
+const AUTH_STATE_PATH = path.join(__dirname, '..', '..', 'playwright', '.auth', 'user.json')
 
 /**
  * Check if authentication state exists

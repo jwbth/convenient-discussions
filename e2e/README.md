@@ -103,28 +103,34 @@ The tests run against live Wikipedia pages with your Convenient Discussions scri
 
 All test preparation is handled by a single function in `helpers/test-utils.js`:
 
-````javascript
-const { setupConvenientDiscussions, TEST_PAGES } = require('./helpers/test-utils');
+```javascript
+const {
+  setupConvenientDiscussions,
+  TEST_PAGES,
+} = require('./helpers/test-utils')
 
 test.beforeEach(async ({ page }) => {
   // Uses default test page (Talk:Main_Page)
-  await setupConvenientDiscussions(page);
+  await setupConvenientDiscussions(page)
 
   // Or specify a different test page
-  await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES);
-});
+  await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
+})
+```
 
 ## Configuration
 
 ### Test Pages
 
 The tests are configured to use live Wikipedia talk pages:
+
 - **Default**: `https://en.wikipedia.org/wiki/Talk:Main_Page`
 - **Alternative**: Any Wikipedia talk page with comments
 
 ### Authentication
 
 For testing features that require login:
+
 - See `AUTH_SETUP_GUIDE.md` for complete authentication setup
 - See `auth-example.spec.js` for cookie-based authentication examples
 - Most Comment functionality works without login
@@ -139,9 +145,10 @@ Use the "Debug Playwright Tests" launch configuration in VS Code to debug tests 
 ### Playwright Inspector
 
 Run with `--debug` flag to use Playwright's built-in inspector:
+
 ```bash
 npx playwright test --debug comment-layers.spec.js
-````
+```
 
 ### Screenshots and Videos
 

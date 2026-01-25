@@ -31,7 +31,7 @@ export WIKIPEDIA_PASSWORD=YourTestPassword
 npx playwright test
 
 # Run specific test to verify auth
-npx playwright test test-wikipedia-auth.spec.js
+npx playwright test e2e/test-wikipedia-auth.spec.js
 ```
 
 ## How It Works
@@ -48,12 +48,15 @@ npx playwright test test-wikipedia-auth.spec.js
 
 ```
 playwright/
-├── .auth/
-│   └── user.json             # Generated auth state (gitignored)
+└── .auth/
+    └── user.json             # Generated auth state (gitignored)
+
+e2e/
 ├── auth.setup.js             # Playwright auth setup (follows official pattern)
-├── auth-helper.js            # Helper functions for auth management
 ├── auth-core.js              # Legacy auth logic (can be removed)
-└── test-wikipedia-auth.spec.js # Example authenticated test
+├── test-wikipedia-auth.spec.js # Example authenticated test
+└── helpers/
+    └── auth-helper.js        # Helper functions for auth management
 ```
 
 ## Configuration
@@ -81,7 +84,7 @@ The `playwright.config.js` is configured to:
 
 ```javascript
 const { test, expect } = require('@playwright/test')
-const { setupAuthenticatedContext } = require('./auth-helper')
+const { setupAuthenticatedContext } = require('./helpers/auth-helper')
 
 test.describe('My Tests', () => {
   test.beforeEach(async ({ context }) => {
@@ -186,7 +189,7 @@ test('check if logged in', async ({ page }) => {
 
 ```bash
 # Run auth test specifically
-npx playwright test test-wikipedia-auth.spec.js --headed
+npx playwright test test-wikipedia-auth --headed
 
 # Clear auth state and retry
 rm -rf playwright/.auth
@@ -199,7 +202,7 @@ npx playwright test --project=setup
 ### Manual Auth State Management
 
 ```javascript
-const { clearAuthState, hasAuthState } = require('./auth-helper')
+const { clearAuthState, hasAuthState } = require('./helpers/auth-helper')
 
 // Check if authenticated
 if (hasAuthState()) {
