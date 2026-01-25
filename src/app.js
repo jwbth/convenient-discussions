@@ -35,6 +35,7 @@ async function app() {
 
 	commentManager.setCommentClasses({ CompactComment, SpaciousComment })
 
+	controller.createBootProcess()
 	await controller.bootTalkPage(false)
 }
 

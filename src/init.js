@@ -68,7 +68,7 @@ export function initGlobals() {
 export function initTimestampTools() {
 	// Halt if already initialized
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-	if (!cd.g.timestampTools.user.regexp) return
+	if (cd.g.timestampTools.user.regexp) return
 
 	const timestampTools = cd.g.timestampTools
 	const content = timestampTools.content
