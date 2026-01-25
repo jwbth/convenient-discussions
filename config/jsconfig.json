@@ -1,9 +1,10 @@
 {
 	"extends": "../jsconfig-base.json",
 	"compilerOptions": {
-		"moduleResolution": "bundler",
+		"module": "esnext",
 		// Support ES2022 functions and runtime APIs, but not language features
 		"target": "es2015",
+		"moduleResolution": "bundler",
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
 	},

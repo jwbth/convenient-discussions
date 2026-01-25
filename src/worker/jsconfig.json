@@ -1,6 +1,7 @@
 {
 	"extends": "../../jsconfig-base.json",
 	"compilerOptions": {
+		"module": "esnext",
 		"target": "es2022",
 		"moduleResolution": "bundler",
 		"lib": ["ES2023", "WebWorker"],
