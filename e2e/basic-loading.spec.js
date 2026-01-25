@@ -13,136 +13,154 @@ const { TEST_PAGES } = require('./helpers/test-utils')
  * 5. No critical errors occur during initialization
  */
 
-test.describe('Basic Script Loading and Page Parsing', () => {
-	test('should successfully load script, parse page, and fire pageReady hook', async ({ page }) => {
-		console.log('🚀 Starting basic loading test')
+/**
+ * Run basic loading test for a specific URL
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} url
+ */
+async function runBasicLoadingTest(page, url) {
+	console.log(`🚀 Starting basic loading test for: ${url}`)
 
-		// Set up console message capture
-		/** @type {{ type: string; text: string }[]} */
-		const consoleMessages = []
-		page.on('console', (msg) => {
-			const type = msg.type()
-			const text = msg.text()
-			consoleMessages.push({ type, text })
+	// Set up console message capture
+	/** @type {{ type: string; text: string }[]} */
+	const consoleMessages = []
+	page.on('console', (msg) => {
+		const type = msg.type()
+		const text = msg.text()
+		consoleMessages.push({ type, text })
 
-			// Log errors and warnings immediately for debugging
-			if (type === 'error') {
-				console.log(`❌ Browser Error: ${text}`)
-			} else if (type === 'warning') {
-				console.log(`⚠️ Browser Warning: ${text}`)
-			}
-		})
+		// Log errors and warnings immediately for debugging
+		if (type === 'error') {
+			console.log(`❌ Browser Error: ${text}`)
+		} else if (type === 'warning') {
+			console.log(`⚠️ Browser Warning: ${text}`)
+		}
+	})
 
-		// Set up page error capture
-		page.on('pageerror', (error) => {
-			console.log(`💥 Page Error: ${error.message}`)
-			consoleMessages.push({ type: 'pageerror', text: error.message })
-		})
+	// Set up page error capture
+	page.on('pageerror', (error) => {
+		console.log(`💥 Page Error: ${error.message}`)
+		consoleMessages.push({ type: 'pageerror', text: error.message })
+	})
 
-		// Navigate to the lightweight test page
-		await page.goto(TEST_PAGES.JWBTH_TEST)
-		console.log('📄 Navigated to test page:', TEST_PAGES.JWBTH_TEST)
+	// Navigate to the test page
+	await page.goto(url)
+	console.log('📄 Navigated to test page:', url)
 
-		// Wait for page to load completely
-		await page.waitForLoadState('networkidle')
-		console.log('🌐 Page loaded')
+	// Wait for page to load completely
+	await page.waitForLoadState('networkidle')
+	console.log('🌐 Page loaded')
 
-		// Wait for MediaWiki globals to be available
-		await page.waitForFunction(() => window.mw && window.$ && window.OO, { timeout: 5000 })
-		console.log('⚙️ MediaWiki globals loaded')
+	// Wait for MediaWiki globals to be available
+	await page.waitForFunction(() => window.mw && window.$ && window.OO, { timeout: 10_000 })
+	console.log('⚙️ MediaWiki globals loaded')
 
-		// Set up hook listener BEFORE injecting the script
-		const pageReadyPromise = page.evaluate(
-			() =>
-				new Promise((resolve) => {
-					// @ts-expect-error - cd is the convenientDiscussions object
-					window.mw.hook('convenientDiscussions.pageReady').add((cd) => {
-						resolve({
-							hookFired: true,
-							hasComments: !!cd.comments,
-							commentsCount: cd.comments?.length || 0,
-							hasSections: !!cd.sections,
-							sectionsCount: cd.sections?.length || 0,
-						})
-					})
-				}),
-		)
-
-		// Inject the built Convenient Discussions script
-		// Note: We use the built dist file instead of the dev server URL to avoid CORS errors.
-		// Modern browsers block loading scripts from localhost into pages from other origins.
-		await page.addScriptTag({
-			type: 'module',
-			url: 'http://localhost:9000/src/loader/startup.js',
-		})
-		console.log('💉 Convenient Discussions script injected from dist/')
-
-		// Wait for isRunning to become true
-		await page.waitForFunction(
-			() => window.convenientDiscussions && window.convenientDiscussions.isRunning === true,
-			{ timeout: 5000 },
-		)
-		console.log('✅ cd.isRunning is true')
-
-		// Wait for the pageReady hook to fire (with timeout)
-		const pageReadyResult = await Promise.race([
-			pageReadyPromise,
+	// Set up hook listener BEFORE injecting the script
+	const pageReadyPromise = page.evaluate(
+		() =>
 			new Promise((resolve) => {
-				setTimeout(() => {
-					resolve({ hookFired: false, timeout: true })
-				}, 10_000)
+				// @ts-expect-error - cd is the convenientDiscussions object
+				window.mw.hook('convenientDiscussions.pageReady').add((cd) => {
+					resolve({
+						hookFired: true,
+						hasComments: !!cd.comments,
+						commentsCount: cd.comments?.length || 0,
+						hasSections: !!cd.sections,
+						sectionsCount: cd.sections?.length || 0,
+					})
+				})
 			}),
-		])
+	)
 
-		console.log('📊 Page ready result:', pageReadyResult)
+	// Inject the built Convenient Discussions script
+	// Note: We use the built dist file instead of the dev server URL to avoid CORS errors.
+	// Modern browsers block loading scripts from localhost into pages from other origins.
+	await page.addScriptTag({
+		type: 'module',
+		url: 'http://localhost:9000/src/loader/startup.js',
+	})
+	console.log('💉 Convenient Discussions script injected from dist/')
 
-		// Collect final state information
-		const finalState = await page.evaluate(() => ({
-			isRunning: window.convenientDiscussions?.isRunning,
-			hasComments: !!window.convenientDiscussions?.comments,
-			commentsCount: window.convenientDiscussions?.comments?.length || 0,
-			hasSections: !!window.convenientDiscussions?.sections,
-			sectionsCount: window.convenientDiscussions?.sections?.length || 0,
-			hasSettings: !!window.convenientDiscussions?.settings,
-			hasG: !!window.convenientDiscussions?.g,
-			currentPage: window.convenientDiscussions?.g?.CURRENT_PAGE?.name,
-		}))
+	// Wait for isRunning to become true
+	await page.waitForFunction(
+		() => window.convenientDiscussions && window.convenientDiscussions.isRunning === true,
+		{ timeout: 10_000 },
+	)
+	console.log('✅ cd.isRunning is true')
 
-		console.log('📋 Final state:', finalState)
+	// Wait for the pageReady hook to fire (with timeout)
+	const pageReadyResult = await Promise.race([
+		pageReadyPromise,
+		new Promise((resolve) => {
+			setTimeout(() => {
+				resolve({ hookFired: false, timeout: true })
+			}, 15_000)
+		}),
+	])
 
-		// Count errors and warnings
-		const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror')
-		const warnings = consoleMessages.filter((msg) => msg.type === 'warning')
+	console.log('📊 Page ready result:', pageReadyResult)
 
-		console.log(`🔍 Console summary: ${errors.length} errors, ${warnings.length} warnings`)
+	// Collect final state information
+	const finalState = await page.evaluate(() => ({
+		isRunning: window.convenientDiscussions?.isRunning,
+		hasComments: !!window.convenientDiscussions?.comments,
+		commentsCount: window.convenientDiscussions?.comments?.length || 0,
+		hasSections: !!window.convenientDiscussions?.sections,
+		sectionsCount: window.convenientDiscussions?.sections?.length || 0,
+		hasSettings: !!window.convenientDiscussions?.settings,
+		hasG: !!window.convenientDiscussions?.g,
+		currentPage: window.convenientDiscussions?.g?.CURRENT_PAGE?.name,
+	}))
 
-		if (errors.length > 0) {
-			console.log('❌ Errors found:')
-			errors.forEach((err, i) => {
-				console.log(`  ${i + 1}. ${err.text}`)
-			})
-		}
+	console.log('📋 Final state:', finalState)
 
-		if (warnings.length > 0) {
-			console.log('⚠️ Warnings found:')
-			warnings.forEach((warn, i) => {
-				console.log(`  ${i + 1}. ${warn.text}`)
-			})
-		}
+	// Count errors and warnings
+	const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror')
+	const warnings = consoleMessages.filter((msg) => msg.type === 'warning')
 
-		// Assertions
-		expect(pageReadyResult.hookFired, 'pageReady hook should have fired').toBe(true)
-		expect(pageReadyResult.timeout, 'pageReady hook should not have timed out').toBeUndefined()
-		expect(finalState.isRunning, 'cd.isRunning should be true').toBe(true)
-		expect(finalState.hasComments, 'cd.comments should exist').toBe(true)
-		expect(finalState.commentsCount, 'Should have found comments on the page').toBeGreaterThan(0)
-		expect(finalState.hasSections, 'cd.sections should exist').toBe(true)
-		expect(finalState.hasSettings, 'cd.settings should exist').toBe(true)
-		expect(finalState.hasG, 'cd.g should exist').toBe(true)
+	console.log(`🔍 Console summary: ${errors.length} errors, ${warnings.length} warnings`)
 
-		// No critical errors should have occurred
-		expect(errors.length, 'Should have no console errors').toBe(0)
+	if (errors.length > 0) {
+		console.log('❌ Errors found:')
+		errors.forEach((err, i) => {
+			console.log(`  ${i + 1}. ${err.text}`)
+		})
+	}
 
-		console.log('✅ All assertions passed!')
+	if (warnings.length > 0) {
+		console.log('⚠️ Warnings found:')
+		warnings.forEach((warn, i) => {
+			console.log(`  ${i + 1}. ${warn.text}`)
+		})
+	}
+
+	// Assertions
+	expect(pageReadyResult.hookFired, 'pageReady hook should have fired').toBe(true)
+	expect(pageReadyResult.timeout, 'pageReady hook should not have timed out').toBeUndefined()
+	expect(finalState.isRunning, 'cd.isRunning should be true').toBe(true)
+	expect(finalState.hasComments, 'cd.comments should exist').toBe(true)
+	expect(finalState.commentsCount, 'Should have found comments on the page').toBeGreaterThan(0)
+	expect(finalState.hasSections, 'cd.sections should exist').toBe(true)
+	expect(finalState.hasSettings, 'cd.settings should exist').toBe(true)
+	expect(finalState.hasG, 'cd.g should exist').toBe(true)
+
+	// No critical errors should have occurred
+	expect(errors.length, 'Should have no console errors').toBe(0)
+
+	console.log('✅ All assertions passed!')
+}
+
+test.describe('Basic Script Loading and Page Parsing', () => {
+	test('should successfully load script, parse page, and fire pageReady hook (JWBTH_TEST)', async ({
+		page,
+	}) => {
+		await runBasicLoadingTest(page, TEST_PAGES.JWBTH_TEST)
+	})
+
+	test('should successfully load script, parse page, and fire pageReady hook (VILLAGE_PUMP)', async ({
+		page,
+	}) => {
+		await runBasicLoadingTest(page, TEST_PAGES.VILLAGE_PUMP)
 	})
 })

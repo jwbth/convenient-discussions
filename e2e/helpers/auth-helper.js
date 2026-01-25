@@ -1,6 +1,6 @@
 // @ts-check
-const fs = require('fs')
-const path = require('path')
+const fs = require('node:fs')
+const path = require('node:path')
 
 /**
  * Helper functions for authentication in Playwright tests
@@ -10,6 +10,7 @@ const AUTH_STATE_PATH = path.join(__dirname, '..', '..', 'playwright', '.auth', 
 
 /**
  * Check if authentication state exists
+ *
  * @returns {boolean}
  */
 function hasAuthState() {
@@ -18,6 +19,7 @@ function hasAuthState() {
 
 /**
  * Get authentication state for use in test context
+ *
  * @returns {string | undefined} Path to auth state file if it exists
  */
 function getAuthStatePath() {
@@ -26,6 +28,7 @@ function getAuthStatePath() {
 
 /**
  * Setup authenticated context for a test
+ *
  * @param {import('@playwright/test').BrowserContext} context
  * @returns {Promise<void>}
  */
@@ -34,6 +37,7 @@ async function setupAuthenticatedContext(context) {
 		console.warn(
 			'⚠️  No authentication state found. Run auth setup first or tests will run as anonymous user.',
 		)
+
 		return
 	}
 
@@ -52,6 +56,7 @@ async function setupAuthenticatedContext(context) {
 
 /**
  * Clean up authentication state (for testing or reset)
+ *
  * @returns {void}
  */
 function clearAuthState() {
