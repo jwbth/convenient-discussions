@@ -42,10 +42,6 @@ class CommentFormBuilder {
 			})
 		}
 
-		// Keep this synced with CommentForm.less: @num-rows-comment and @num-rows-section
-		const NUM_ROWS_COMMENT = 3
-		const NUM_ROWS_SECTION = 5
-
 		this.form.commentInput = new MultilineTextInputWidget({
 			value: initialState.comment ?? '',
 			placeholder: this.form.target.getCommentFormCommentInputPlaceholder(this.form.mode, () => {
@@ -56,7 +52,7 @@ class CommentFormBuilder {
 					),
 				)
 			}),
-			rows: this.form.headlineInput ? NUM_ROWS_SECTION : NUM_ROWS_COMMENT,
+			rows: this.form.getInitialRowCount(),
 			autosize: true,
 			maxRows: 9999,
 			classes: ['cd-commentForm-commentInput'],
