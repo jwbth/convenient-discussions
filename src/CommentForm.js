@@ -413,7 +413,7 @@ class CommentForm {
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState?.comment ?? '',
       placeholder: commentInputPlaceholder,
-      rows: this.headlineInput ? 5 : 3,
+      rows: this.getInitialRowCount(),
       autosize: true,
       maxRows: 9999,
       classes: ['cd-commentForm-commentInput'],
@@ -436,6 +436,10 @@ class CommentForm {
     this.summaryInput.$input.codePointLimit(cd.g.summaryLengthLimit);
     mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.summaryLengthLimit);
     this.updateAutoSummary(!initialState?.summary);
+  }
+
+  getInitialRowCount() {
+    return this.headlineInput ? 5 : 3;
   }
 
   /**
@@ -956,6 +960,16 @@ class CommentForm {
       };
     }
     $input.wikiEditor('addModule', dialogsDefaultConfig);
+
+    // Monkey patch to remove WikiEditor's resizing dragbar and its traces
+    this.commentInput.$element
+      .find('.ext-WikiEditor-ResizingDragBar')
+      .remove();
+    const $uiText = this.commentInput.$element.find('.wikiEditor-ui-text');
+    $uiText.css('height', '');
+    $input.attr('rows', this.getInitialRowCount());
+    $input.removeClass('ext-WikiEditor-resizable-textbox');
+    $uiText.closest('.wikiEditor-ui-view').removeClass('wikiEditor-ui-view-resizable');
 
     this.commentInput.$element
       .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]')
