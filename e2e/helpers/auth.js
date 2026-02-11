@@ -16,6 +16,7 @@ async function ensureAuthenticated(page) {
 	const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
 	if ((await userMenu.count()) > 0) {
 		console.log('✅ Already authenticated')
+
 		return
 	}
 
@@ -31,12 +32,14 @@ async function ensureAuthenticated(page) {
 		)
 	}
 
-	const currentUrl = page.url()
+	const targetUrl = page.url()
+	const currentUrl = new URL(targetUrl)
+	const returnTo = currentUrl.pathname + currentUrl.search
 
 	// Navigate to login page, preserving the return to URL if possible
 	// MediaWiki usually handles returnto automatically if we go to Special:UserLogin from a page
 	await page.goto(
-		`https://test.wikipedia.org/w/index.php?title=Special:UserLogin&returnto=${encodeURIComponent(currentUrl)}`,
+		`https://test.wikipedia.org/w/index.php?title=Special:UserLogin&returnto=${encodeURIComponent(returnTo)}`,
 	)
 
 	// Wait for login form
@@ -66,7 +69,7 @@ async function ensureAuthenticated(page) {
 	const errorBox = page.locator('.errorbox')
 	if ((await errorBox.count()) > 0) {
 		const errorText = await errorBox.textContent()
-		throw new Error(`Login failed: ${errorText}`)
+		throw new Error(`Login failed: ${errorText || 'Unknown error'}`)
 	}
 
 	// Final verification
@@ -81,9 +84,9 @@ async function ensureAuthenticated(page) {
 	console.log(`💾 Authentication state saved to ${authFile}`)
 
 	// Ensure we are back on the target page if login didn't redirect us
-	if (page.url() !== currentUrl && !page.url().includes('Special:UserLogin')) {
-		console.log(`↪️  Navigating back to target URL: ${currentUrl}`)
-		await page.goto(currentUrl)
+	if (page.url() !== targetUrl && !page.url().includes('Special:UserLogin')) {
+		console.log(`↪️  Navigating back to target URL: ${targetUrl}`)
+		await page.goto(targetUrl)
 		await page.waitForLoadState('networkidle')
 	}
 }
