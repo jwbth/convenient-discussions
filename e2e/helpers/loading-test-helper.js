@@ -1,22 +1,21 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
-
-const { ensureAuthenticated } = require('./helpers/auth')
-const { TEST_PAGES } = require('./helpers/test-utils')
+const { expect } = require('@playwright/test')
+const { ensureAuthenticated } = require('./auth')
 
 /**
- * Basic test to verify Convenient Discussions script loading and page parsing lifecycle
- * for an AUTHENTICATED user.
- */
-
-/**
- * Run basic loading test for a specific URL
+ * Shared logic for basic loading tests.
  *
  * @param {import('@playwright/test').Page} page
  * @param {string} url
+ * @param {object} [options]
+ * @param {boolean} [options.authenticated=false]
  */
-async function runBasicLoadingTest(page, url) {
-	console.log(`🚀 Starting basic loading test for AUTHENTICATED user: ${url}`)
+async function runBasicLoadingTest(page, url, options = {}) {
+	const { authenticated = false } = options
+
+	console.log(
+		`🚀 Starting basic loading test for ${authenticated ? 'AUTHENTICATED' : 'ANONYMOUS'} user: ${url}`,
+	)
 
 	// Set up console message capture
 	/** @type {{ type: string; text: string }[]} */
@@ -43,12 +42,14 @@ async function runBasicLoadingTest(page, url) {
 	await page.goto(url)
 	console.log('📄 Navigated to test page:', url)
 
-	// Ensure the user is authenticated on this page
-	await ensureAuthenticated(page)
+	if (authenticated) {
+		// Ensure the user is authenticated on this page
+		await ensureAuthenticated(page)
+	}
 
 	// Wait for page to load completely (in case login redirected us)
 	await page.waitForLoadState('networkidle')
-	console.log('🌐 Page ready and authenticated')
+	console.log('🌐 Page ready')
 
 	// Wait for MediaWiki globals to be available
 	await page.waitForFunction(() => window.mw && window.$ && window.OO, { timeout: 10_000 })
@@ -126,8 +127,6 @@ async function runBasicLoadingTest(page, url) {
 	console.log('✅ All assertions passed!')
 }
 
-test.describe('Authenticated Script Loading and Page Parsing', () => {
-	test('should successfully load script for authenticated user (JWBTH_TEST)', async ({ page }) => {
-		await runBasicLoadingTest(page, TEST_PAGES.JWBTH_TEST)
-	})
-})
+module.exports = {
+	runBasicLoadingTest,
+}
