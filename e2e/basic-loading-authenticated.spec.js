@@ -1,5 +1,7 @@
 // @ts-check
 const { test, expect } = require('@playwright/test')
+
+const { ensureAuthenticated } = require('./helpers/auth')
 const { TEST_PAGES } = require('./helpers/test-utils')
 
 /**
@@ -41,23 +43,12 @@ async function runBasicLoadingTest(page, url) {
 	await page.goto(url)
 	console.log('📄 Navigated to test page:', url)
 
-	// Wait for page to load completely
+	// Ensure the user is authenticated on this page
+	await ensureAuthenticated(page)
+
+	// Wait for page to load completely (in case login redirected us)
 	await page.waitForLoadState('networkidle')
-	console.log('🌐 Page loaded')
-
-	// VERIFY AUTHENTICATION
-	const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
-	const anonMenu = page.locator('#pt-anonuserpage')
-
-	if ((await userMenu.count()) > 0) {
-		console.log('✅ Verified: User is authenticated')
-	} else {
-		if ((await anonMenu.count()) > 0) {
-			throw new Error('Verification failed: User is NOT authenticated (anonymous menu found)')
-		} else {
-			throw new Error('Verification failed: Could not determine authentication status')
-		}
-	}
+	console.log('🌐 Page ready and authenticated')
 
 	// Wait for MediaWiki globals to be available
 	await page.waitForFunction(() => window.mw && window.$ && window.OO, { timeout: 10_000 })
