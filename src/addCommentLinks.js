@@ -75,7 +75,7 @@ export default async function addCommentLinks() {
 async function bootstrap() {
 	try {
 		// We need strings for parentheses (is that all?..)
-		await cd.loader.getSiteDataPromise(true)
+		await cd.loader.getSiteDataPromise()
 	} catch (error) {
 		throw new Error(`Couldn't load the data required for the script.`, { cause: error })
 	}

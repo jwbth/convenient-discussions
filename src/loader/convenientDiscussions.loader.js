@@ -407,17 +407,9 @@ class Loader {
 	 * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
 	 * data.
 	 *
-	 * @param {boolean} [onlyUserLanguageMessages] Whether to load only user language messages.
 	 * @returns {Promise<any[]>} There should be at least one promise in the array.
 	 */
-	getSiteDataPromise(onlyUserLanguageMessages) {
-		if (onlyUserLanguageMessages) {
-			// Too much hassle to try and deduplicate requested site data here. onlyUserLanguageMessages
-			// is only needed for addCommentLinks(), and the only case when addCommentLinks() is used
-			// together with the main code is diffs.
-			return this.getSiteData()
-		}
-
+	getSiteDataPromise() {
 		this.siteDataPromise ??= this.getSiteData()
 
 		return this.siteDataPromise
@@ -426,12 +418,11 @@ class Loader {
 	/**
 	 * Load messages needed to parse and generate timestamps as well as some site data.
 	 *
-	 * @param {boolean} [onlyUserLanguageMessages] Whether to load only user language messages.
 	 * @returns {Promise<any[]>} There should be at least one promise in the array.
 	 * @private
 	 */
 	// eslint-disable-next-line max-lines-per-function
-	getSiteData(onlyUserLanguageMessages = false) {
+	getSiteData() {
 		this.initFormats()
 
 		const contentLanguageMessageNames = [
@@ -549,45 +540,39 @@ class Loader {
 			// eslint-disable-next-line unicorn/prefer-array-flat
 			/** @type {JQuery.Promise<any>[]} */ ([])
 				.concat(
-					onlyUserLanguageMessages
-						? requestUserLanguageMessages()
-						: areLanguagesEqual
-							? // We use splitIntoBatches() to request in parallel (see the note above), even though
-								// .loadMessages() splits into batches automatically (but requests in sequence).
-								splitIntoBatches(
-									contentLanguageMessageNames.concat(userLanguageMessageNames).filter(unique),
+					areLanguagesEqual
+						? // We use splitIntoBatches() to request in parallel (see the note above), even though
+							// .loadMessages() splits into batches automatically (but requests in sequence).
+							splitIntoBatches(
+								contentLanguageMessageNames.concat(userLanguageMessageNames).filter(unique),
+							).map((nextNames) =>
+								cd
+									.getApi()
+									.loadMessagesIfMissing(nextNames)
+									.then(() => {
+										filterAndSetContentLanguageMessages(mw.messages.get())
+									}),
+							)
+						: [
+								...splitIntoBatches(
+									contentLanguageMessageNames.filter((name) => !cd.g.contentLanguageMessages[name]),
 								).map((nextNames) =>
 									cd
 										.getApi()
-										.loadMessagesIfMissing(nextNames)
-										.then(() => {
-											filterAndSetContentLanguageMessages(mw.messages.get())
-										}),
-								)
-							: [
-									...splitIntoBatches(
-										contentLanguageMessageNames.filter(
-											(name) => !cd.g.contentLanguageMessages[name],
-										),
-									).map((nextNames) =>
-										cd
-											.getApi()
-											.getMessages(nextNames, {
-												// cd.g.contentLanguage is not used here for the reasons described in
-												// startup.js where it is declared.
-												amlang: mw.config.get('wgContentLanguage'),
-											})
-											.then(setContentLanguageMessages),
-									),
-									...requestUserLanguageMessages(),
-								],
+										.getMessages(nextNames, {
+											// cd.g.contentLanguage is not used here for the reasons described in
+											// startup.js where it is declared.
+											amlang: mw.config.get('wgContentLanguage'),
+										})
+										.then(setContentLanguageMessages),
+								),
+								...requestUserLanguageMessages(),
+							],
 				)
 				.concat(
-					onlyUserLanguageMessages ||
-						(specialPages.every(
-							(page) => page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length,
-						) &&
-							content.timezone)
+					specialPages.every(
+						(page) => page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length,
+					) && content.timezone
 						? []
 						: cd
 								.getApi()
