@@ -44,7 +44,6 @@ test.describe('Debug CD Initialization', () => {
 		const cdInfo = await page.evaluate(() => ({
 			hasConvenientDiscussions: !!window.convenientDiscussions,
 			cdKeys: window.convenientDiscussions ? Object.keys(window.convenientDiscussions) : [],
-			hasComments: window.convenientDiscussions ? !!window.convenientDiscussions.comments : false,
 			commentsLength: window.convenientDiscussions?.comments
 				? window.convenientDiscussions.comments.length
 				: 0,
@@ -70,7 +69,6 @@ test.describe('Debug CD Initialization', () => {
 
 		const finalCdInfo = await page.evaluate(() => ({
 			hasConvenientDiscussions: !!window.convenientDiscussions,
-			hasComments: window.convenientDiscussions ? !!window.convenientDiscussions.comments : false,
 			commentsLength: window.convenientDiscussions?.comments
 				? window.convenientDiscussions.comments.length
 				: 0,

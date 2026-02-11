@@ -1,5 +1,6 @@
 // @ts-check
 const { expect } = require('@playwright/test')
+
 const { ensureAuthenticated } = require('./auth')
 
 /**
@@ -8,7 +9,7 @@ const { ensureAuthenticated } = require('./auth')
  * @param {import('@playwright/test').Page} page
  * @param {string} url
  * @param {object} [options]
- * @param {boolean} [options.authenticated=false]
+ * @param {boolean} [options.authenticated]
  */
 async function runBasicLoadingTest(page, url, options = {}) {
 	const { authenticated = false } = options
@@ -63,9 +64,7 @@ async function runBasicLoadingTest(page, url, options = {}) {
 				window.mw.hook('convenientDiscussions.pageReady').add((cd) => {
 					resolve({
 						hookFired: true,
-						hasComments: !!cd.comments,
 						commentsCount: cd.comments?.length || 0,
-						hasSections: !!cd.sections,
 						sectionsCount: cd.sections?.length || 0,
 					})
 				})
@@ -101,9 +100,7 @@ async function runBasicLoadingTest(page, url, options = {}) {
 	// Collect final state information
 	const finalState = await page.evaluate(() => ({
 		isRunning: window.convenientDiscussions?.isRunning,
-		hasComments: !!window.convenientDiscussions?.comments,
 		commentsCount: window.convenientDiscussions?.comments?.length || 0,
-		hasSections: !!window.convenientDiscussions?.sections,
 		sectionsCount: window.convenientDiscussions?.sections?.length || 0,
 		hasSettings: !!window.convenientDiscussions?.settings,
 		hasG: !!window.convenientDiscussions?.g,
@@ -114,8 +111,12 @@ async function runBasicLoadingTest(page, url, options = {}) {
 
 	// Assertions
 	expect(pageReadyResult.hookFired, 'pageReady hook should have fired').toBe(true)
+	expect(pageReadyResult.timeout, 'pageReady hook should not have timed out').toBeUndefined()
 	expect(finalState.isRunning, 'cd.isRunning should be true').toBe(true)
-	expect(finalState.hasComments, 'cd.comments should exist').toBe(true)
+	expect(finalState.commentsCount, 'Should have found comments on the page').toBeGreaterThan(0)
+	expect(finalState.sectionsCount, 'Should have found sections on the page').toBeGreaterThan(0)
+	expect(finalState.hasSettings, 'cd.settings should exist').toBe(true)
+	expect(finalState.hasG, 'cd.g should exist').toBe(true)
 
 	// No critical errors should have occurred
 	const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror')
