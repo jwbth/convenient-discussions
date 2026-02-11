@@ -21,6 +21,19 @@ setup('authenticate', async ({ page }) => {
 
 	console.log('🔐 Setting up authentication for test.wikipedia.org...')
 
+	// Check if already logged in (Playwright uses storageState from config if it exists)
+	console.log('🔍 Checking for an existing session...')
+	await page.goto('https://test.wikipedia.org/wiki/Main_Page')
+	const userMenuCheck = page.locator('#pt-userpage, #pt-userpage-2')
+	if ((await userMenuCheck.count()) > 0) {
+		console.log('✅ Already authenticated - skipping login')
+		await page.context().storageState({ path: authFile })
+
+		return
+	}
+
+	console.log('🔑 Not authenticated. Proceeding to login page...')
+
 	// Navigate to test.wikipedia.org login page
 	await page.goto('https://test.wikipedia.org/wiki/Special:UserLogin')
 
