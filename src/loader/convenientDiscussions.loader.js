@@ -265,6 +265,10 @@ class Loader {
 	 * Check if the _article_ page (the one with `wgIsArticle` being true) of the current page is a
 	 * talk page eligible for CD to run on.
 	 *
+	 * This is the case on edit, history pages, etc. However, the assessments of whether the page is
+	 * eligible may be different on a history page and on an article page of the same title, since the
+	 * page may contain elements with special classes that we can only access on the article page.
+	 *
 	 * @returns {boolean}
 	 */
 	isArticlePageOfTypeTalk() {
@@ -328,7 +332,7 @@ class Loader {
 			this.pageTypes.history ||
 			this.pageTypes.diff ||
 			this.articlePageOfTypeTalk ||
-			// Instant Diffs script can be called on talk pages as well
+			// Instant Diffs script can be used on talk pages as well
 			this.pageTypes.talk
 		) {
 			this.initCommentLinks()

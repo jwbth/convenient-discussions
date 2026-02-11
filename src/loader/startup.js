@@ -269,7 +269,7 @@ function start() {
  * Merge the loaded configuration with the default configuration if not already.
  */
 function makeSureConfigIsSet() {
-	if (cd.config._mergedWithDefault) return
+	if (cd.config?._mergedWithDefault) return
 
 	cd.config = { ...defaultConfig, ...cd.config, _mergedWithDefault: true }
 }
