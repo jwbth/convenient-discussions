@@ -39,7 +39,7 @@ test.describe('Authentication Example', () => {
 		)
 
 		// Check if logged in
-		const userMenu = page.locator('#pt-userpage')
+		const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
 		await expect(userMenu).toBeVisible()
 	})
 

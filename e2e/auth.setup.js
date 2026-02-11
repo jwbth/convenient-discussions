@@ -1,5 +1,5 @@
 // @ts-check
-const { test: setup, expect } = require('@playwright/test')
+const { test: setup } = require('@playwright/test')
 
 const authFile = 'playwright/.auth/user.json'
 
@@ -45,7 +45,7 @@ setup('authenticate', async ({ page }) => {
 
 		// Wait for either successful login or error message
 		await Promise.race([
-			page.waitForSelector('#pt-userpage', { timeout: 120_000 }), // Wait up to 2 minutes
+			page.waitForSelector('#pt-userpage, #pt-userpage-2', { timeout: 120_000 }), // Wait up to 2 minutes
 			page.waitForSelector('#pt-anonuserpage', { timeout: 120_000 }),
 			page.waitForSelector('.errorbox', { timeout: 120_000 }),
 		])
@@ -60,7 +60,7 @@ setup('authenticate', async ({ page }) => {
 	}
 
 	// Verify we're logged in by checking for user menu
-	const userMenu = page.locator('#pt-userpage')
+	const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
 	const anonMenu = page.locator('#pt-anonuserpage')
 
 	if ((await userMenu.count()) > 0) {

@@ -8,8 +8,9 @@ const { chromium } = require('@playwright/test')
 
 /**
  * Setup authentication for test.wikipedia.org
- * @param {string} username - Wikipedia username
- * @param {string} password - Wikipedia password
+ *
+ * @param {string} username Wikipedia username
+ * @param {string} password Wikipedia password
  * @returns {Promise<void>}
  */
 async function setupAuth(username, password) {
@@ -24,7 +25,7 @@ async function setupAuth(username, password) {
 		await page.goto('https://test.wikipedia.org/wiki/Special:UserLogin')
 
 		// Wait for login form to be visible
-		await page.waitForSelector('#wpName1', { timeout: 10000 })
+		await page.waitForSelector('#wpName1', { timeout: 10_000 })
 
 		// Fill in credentials
 		await page.fill('#wpName1', username)
@@ -34,10 +35,12 @@ async function setupAuth(username, password) {
 		await page.click('#wpLoginAttempt')
 
 		// Wait for successful login (redirect or user menu appears)
-		await page.waitForSelector('#pt-userpage, #pt-anonuserpage', { timeout: 15000 })
+		await page.waitForSelector('#pt-userpage, #pt-userpage-2, #pt-anonuserpage', {
+			timeout: 15_000,
+		})
 
 		// Verify we're logged in by checking for user menu
-		const userMenu = await page.locator('#pt-userpage')
+		const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
 		if ((await userMenu.count()) === 0) {
 			throw new Error('Login failed - user menu not found')
 		}

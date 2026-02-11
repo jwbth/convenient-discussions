@@ -15,9 +15,8 @@ test.describe('Test Wikipedia Authentication', () => {
 		await page.waitForLoadState('networkidle')
 
 		// Check if we're logged in by looking for user menu or personal tools
-		const userMenu = page.locator('#pt-userpage')
+		const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
 		const anonMenu = page.locator('#pt-anonuserpage')
-		const personalTools = page.locator('#p-personal')
 
 		// Check authentication status by looking for specific user elements
 		// Note: Personal tools may be hidden by CSS (visibility: hidden) in Vector skin
@@ -48,7 +47,9 @@ test.describe('Test Wikipedia Authentication', () => {
 			console.log('ℹ️  Checking for any authentication indicators')
 
 			// Look for alternative authentication indicators
-			const userLinks = page.locator('#pt-userpage, #pt-mytalk, #pt-preferences, #pt-logout')
+			const userLinks = page.locator(
+				'#pt-userpage, #pt-userpage-2, #pt-mytalk, #pt-preferences, #pt-logout',
+			)
 			const anonLinks = page.locator('#pt-anonuserpage, #pt-anontalk, #pt-login')
 
 			if ((await userLinks.count()) > 0) {

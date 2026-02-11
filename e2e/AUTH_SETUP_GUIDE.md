@@ -104,7 +104,7 @@ test.describe('My Tests', () => {
 test('check if logged in', async ({ page }) => {
   await page.goto('/wiki/Main_Page')
 
-  const userMenu = page.locator('#pt-userpage')
+  const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
   const anonMenu = page.locator('#pt-anonuserpage')
 
   if ((await userMenu.count()) > 0) {
