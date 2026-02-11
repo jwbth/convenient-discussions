@@ -43,7 +43,7 @@ npm run build:dev
 # Staging build (with .staging postfix)
 npm run build:staging
 
-# Single-file build for specific wiki (two `--` for Powershell)
+# Single-file build for specific wiki (NOTE: two `--` for Powershell)
 npm run single -- -- --project w --lang en
 
 # Run tests
@@ -51,6 +51,9 @@ npm run test
 
 # Run browser tests in Playwright
 npm run test:browser
+
+# Run browser tests in Playwright with a headed browser (NOTE: two `--` for Powershell)
+npm run test:browser -- -- --headed
 
 # Generate documentation
 npm run docs
