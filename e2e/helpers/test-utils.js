@@ -14,8 +14,7 @@ async function waitForConvenientDiscussions(page) {
 		() =>
 			window.convenientDiscussions.comments &&
 			window.convenientDiscussions.comments.length > 0 &&
-			window.convenientDiscussions.settings &&
-			window.convenientDiscussions.g.CURRENT_PAGE,
+			window.convenientDiscussions.settings,
 		{ timeout: 15_000 },
 	)
 }
@@ -57,7 +56,10 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 		// Log errors and warnings immediately
 		if (type === 'error') {
 			console.log(`❌ Browser Error: ${text}`)
-		} else if (type === 'warning') {
+		} else if (
+			type === 'warning' &&
+			!text.match(/deprecated ResourceLoader module|CdxPopover|adjacencies have left/)
+		) {
 			console.log(`⚠️ Browser Warning: ${text}`)
 		}
 	})
@@ -257,6 +259,14 @@ async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JW
 	page.on('console', (msg) => {
 		const type = msg.type()
 		const text = msg.text()
+		if (
+			text.match(
+				/deprecated ResourceLoader module|The stream mediawiki|CdxPopover|adjacencies have left/,
+			)
+		) {
+			return
+		}
+
 		consoleMessages.push({ type, text })
 
 		// Log errors and warnings immediately

@@ -49,9 +49,6 @@ test.describe('Debug CD Initialization', () => {
 				: 0,
 			hasSettings: window.convenientDiscussions ? !!window.convenientDiscussions.settings : false,
 			hasG: window.convenientDiscussions ? !!window.convenientDiscussions.g : false,
-			currentPage: window.convenientDiscussions?.g
-				? window.convenientDiscussions.g.CURRENT_PAGE
-				: null,
 			errors: window.console ? [] : 'No console access',
 		}))
 		console.log('CD info after injection:', cdInfo)

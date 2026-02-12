@@ -104,7 +104,6 @@ async function runBasicLoadingTest(page, url, options = {}) {
 		sectionsCount: window.convenientDiscussions?.sections?.length || 0,
 		hasSettings: !!window.convenientDiscussions?.settings,
 		hasG: !!window.convenientDiscussions?.g,
-		currentPage: window.convenientDiscussions?.g?.CURRENT_PAGE?.name,
 	}))
 
 	console.log('📋 Final state:', finalState)

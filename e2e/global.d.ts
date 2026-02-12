@@ -7,11 +7,7 @@ declare global {
 			comments?: any[]
 			sections?: any[]
 			settings?: any
-			g?: {
-				CURRENT_PAGE?: {
-					name?: string
-				}
-			}
+			g?: any
 		}
 		_testConsoleMessages?: { type: string; text: string }[]
 	}
