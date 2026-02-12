@@ -1,3 +1,6 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_CommentFormInputTransformer from '../src/CommentFormInputTransformer';
+import * as mock_src_shared_cd from '../src/shared/cd';
 // TODO: use some interfaces for mocks and real objects alike?
 
 window.mw = {
@@ -16,8 +19,8 @@ window.mw = {
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
 const mw = window.mw
 
-const CommentFormInputTransformer = require('../src/CommentFormInputTransformer').default
-const cd = require('../src/shared/cd').default
+const CommentFormInputTransformer = mock_src_CommentFormInputTransformer.default
+const cd = mock_src_shared_cd.default
 
 /** @type {Partial<typeof import('../config/default').default>} */
 const defaultConfig = {

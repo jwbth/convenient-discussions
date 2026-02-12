@@ -1,6 +1,9 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_CommentActions from '../src/CommentActions';
+
 
 // Mock dependencies
 jest.mock('../src/Comment', () => ({
@@ -116,7 +119,7 @@ describe('SpaciousCommentActions', () => {
 
 	describe('constructor', () => {
 		it('should inherit from CommentActions', () => {
-			const CommentActions = require('../src/CommentActions')
+			const CommentActions = mock_src_CommentActions
 			expect(actions).toBeInstanceOf(CommentActions)
 		})
 

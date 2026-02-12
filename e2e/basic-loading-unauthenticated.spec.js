@@ -1,8 +1,8 @@
 // @ts-check
-const { test } = require('@playwright/test')
+import { test } from '@playwright/test'
 
-const { runBasicLoadingTest } = require('./helpers/loading-test-helper')
-const { TEST_PAGES } = require('./helpers/test-utils')
+import { runBasicLoadingTest } from './helpers/loading-test-helper.js'
+import { TEST_PAGES } from './helpers/test-utils.js'
 
 /**
  * Basic tests to verify Convenient Discussions script loading and page parsing lifecycle

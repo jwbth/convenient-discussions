@@ -331,7 +331,7 @@ async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JW
 	}, consoleMessages)
 }
 
-module.exports = {
+export {
 	TEST_PAGES,
 	waitForConvenientDiscussions,
 	setupConvenientDiscussions,

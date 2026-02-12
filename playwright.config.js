@@ -1,17 +1,20 @@
-require('dotenv').config()
+import 'dotenv/config'
 // @ts-check
 
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const { defineConfig, devices } = require('@playwright/test')
+import { defineConfig, devices } from '@playwright/test'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const authFile = path.join(__dirname, 'playwright', '.auth', 'user.json')
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
-module.exports = defineConfig({
+export default defineConfig({
 	testDir: './e2e',
 	/* Run tests in files in parallel */
 	fullyParallel: true,
@@ -58,7 +61,7 @@ module.exports = defineConfig({
 	],
 
 	/* Build the script before running tests */
-	// globalSetup: require.resolve('./e2e/global-setup.js'),
+	// globalSetup: './e2e/global-setup.js',
 
 	/* Run your local dev server before starting the tests */
 	webServer: {

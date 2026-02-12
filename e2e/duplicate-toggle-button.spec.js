@@ -1,7 +1,7 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
+import { test, expect } from '@playwright/test'
 
-const { setupConvenientDiscussions, TEST_PAGES } = require('./helpers/test-utils')
+import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
  * Browser tests for duplicate toggleChildThreadsButton issue

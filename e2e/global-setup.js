@@ -1,13 +1,13 @@
 // @ts-check
-const { execSync } = require('node:child_process')
-const fs = require('node:fs')
-const path = require('node:path')
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
 
 /**
  * Global setup for browser tests
  * Builds Convenient Discussions script before running tests
  */
-async function globalSetup() {
+export default async function globalSetup() {
 	console.log('Building Convenient Discussions for browser tests...')
 
 	try {
@@ -29,5 +29,3 @@ async function globalSetup() {
 		throw error
 	}
 }
-
-module.exports = globalSetup

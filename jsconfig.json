@@ -2,7 +2,7 @@
 	"extends": "./jsconfig-base.json",
 	"compilerOptions": {
 		"target": "esnext",
-		"module": "nodenext",
+		"module": "esnext",
 		"types": [
 			// For typescript-eslint
 			"prompts"

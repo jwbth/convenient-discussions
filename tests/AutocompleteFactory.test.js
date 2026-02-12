@@ -1,6 +1,13 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_MentionsAutocomplete from '../src/MentionsAutocomplete';
+import * as mock_src_WikilinksAutocomplete from '../src/WikilinksAutocomplete';
+import * as mock_src_TemplatesAutocomplete from '../src/TemplatesAutocomplete';
+import * as mock_src_TagsAutocomplete from '../src/TagsAutocomplete';
+import * as mock_src_CommentLinksAutocomplete from '../src/CommentLinksAutocomplete';
+
 
 import AutocompleteFactory from '../src/AutocompleteFactory'
 import CdError from '../src/shared/CdError'
@@ -63,7 +70,7 @@ describe('AutocompleteFactory', () => {
 
 			expect(instance.type).toBe('mentions')
 			expect(instance.config).toEqual(config)
-			expect(require('../src/MentionsAutocomplete').default).toHaveBeenCalledWith(config)
+			expect(mock_src_MentionsAutocomplete.default).toHaveBeenCalledWith(config)
 		})
 
 		it('should create WikilinksAutocomplete instance', () => {
@@ -72,7 +79,7 @@ describe('AutocompleteFactory', () => {
 
 			expect(instance.type).toBe('wikilinks')
 			expect(instance.config).toEqual(config)
-			expect(require('../src/WikilinksAutocomplete').default).toHaveBeenCalledWith(config)
+			expect(mock_src_WikilinksAutocomplete.default).toHaveBeenCalledWith(config)
 		})
 
 		it('should create TemplatesAutocomplete instance', () => {
@@ -81,7 +88,7 @@ describe('AutocompleteFactory', () => {
 
 			expect(instance.type).toBe('templates')
 			expect(instance.config).toEqual(config)
-			expect(require('../src/TemplatesAutocomplete').default).toHaveBeenCalledWith(config)
+			expect(mock_src_TemplatesAutocomplete.default).toHaveBeenCalledWith(config)
 		})
 
 		it('should create TagsAutocomplete instance', () => {
@@ -90,7 +97,7 @@ describe('AutocompleteFactory', () => {
 
 			expect(instance.type).toBe('tags')
 			expect(instance.config).toEqual(config)
-			expect(require('../src/TagsAutocomplete').default).toHaveBeenCalledWith(config)
+			expect(mock_src_TagsAutocomplete.default).toHaveBeenCalledWith(config)
 		})
 
 		it('should create CommentLinksAutocomplete instance', () => {
@@ -99,14 +106,14 @@ describe('AutocompleteFactory', () => {
 
 			expect(instance.type).toBe('commentLinks')
 			expect(instance.config).toEqual(config)
-			expect(require('../src/CommentLinksAutocomplete').default).toHaveBeenCalledWith(config)
+			expect(mock_src_CommentLinksAutocomplete.default).toHaveBeenCalledWith(config)
 		})
 
 		it('should create instance with empty config when no options provided', () => {
 			const instance = AutocompleteFactory.create('mentions')
 
 			expect(instance.config).toEqual({})
-			expect(require('../src/MentionsAutocomplete').default).toHaveBeenCalledWith({})
+			expect(mock_src_MentionsAutocomplete.default).toHaveBeenCalledWith({})
 		})
 
 		it('should throw CdError for unknown type', () => {

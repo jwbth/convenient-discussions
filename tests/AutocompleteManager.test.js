@@ -1,6 +1,11 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_settings from '../src/settings';
+import * as mock_src_tribute_Tribute from '../src/tribute/Tribute';
+import * as mock_src_cd from '../src/cd';
+
 
 import AutocompleteFactory from '../src/AutocompleteFactory'
 import AutocompleteManager from '../src/AutocompleteManager'
@@ -122,7 +127,7 @@ describe('AutocompleteManager', () => {
 		})
 
 		it('should filter types based on settings', () => {
-			require('../src/settings').get.mockImplementation((key) => {
+			mock_src_settings.get.mockImplementation((key) => {
 				if (key === 'autocompleteTypes') {
 					return ['mentions', 'templates'] // Only allow these types
 				}
@@ -151,7 +156,7 @@ describe('AutocompleteManager', () => {
 			const comments = [{ id: 'c1' }, { id: 'c2' }]
 
 			// Reset settings mock to allow commentLinks
-			require('../src/settings').get.mockImplementation((key) => {
+			mock_src_settings.get.mockImplementation((key) => {
 				if (key === 'autocompleteTypes') {
 					return ['commentLinks']
 				}
@@ -179,7 +184,7 @@ describe('AutocompleteManager', () => {
 			const defaultUserNames = ['User1', 'User2']
 
 			// Reset settings mock to allow mentions
-			require('../src/settings').get.mockImplementation((key) => {
+			mock_src_settings.get.mockImplementation((key) => {
 				if (key === 'autocompleteTypes') {
 					return ['mentions']
 				}
@@ -209,7 +214,7 @@ describe('AutocompleteManager', () => {
 				inputs: [mockInput1],
 			})
 
-			expect(require('../src/tribute/Tribute')).toHaveBeenCalledWith({
+			expect(mock_src_tribute_Tribute).toHaveBeenCalledWith({
 				collection: expect.any(Array),
 				allowSpaces: true,
 				menuItemLimit: 10,
@@ -224,7 +229,7 @@ describe('AutocompleteManager', () => {
 	describe('createAutocompleteInstances', () => {
 		it('should create instances for all specified types', () => {
 			// Reset settings mock to allow all types
-			require('../src/settings').get.mockImplementation((key) => {
+			mock_src_settings.get.mockImplementation((key) => {
 				if (key === 'autocompleteTypes') {
 					return ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks']
 				}
@@ -258,7 +263,7 @@ describe('AutocompleteManager', () => {
 	describe('getCollections', () => {
 		it('should return collections for all autocomplete instances', () => {
 			// Reset settings mock to allow all types
-			require('../src/settings').get.mockImplementation((key) => {
+			mock_src_settings.get.mockImplementation((key) => {
 				if (key === 'autocompleteTypes') {
 					return ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks']
 				}
@@ -404,7 +409,7 @@ describe('AutocompleteManager', () => {
 				},
 			}
 
-			require('../src/cd').getApi.mockReturnValue({
+			mock_src_cd.getApi.mockReturnValue({
 				get: jest.fn().mockResolvedValue(mockResponse),
 			})
 
@@ -432,7 +437,7 @@ describe('AutocompleteManager', () => {
 				},
 			}
 
-			require('../src/cd').getApi.mockReturnValue({
+			mock_src_cd.getApi.mockReturnValue({
 				get: jest.fn().mockResolvedValue(mockResponse),
 			})
 
@@ -442,7 +447,7 @@ describe('AutocompleteManager', () => {
 		})
 
 		it('should handle API errors gracefully', async () => {
-			require('../src/cd').getApi.mockReturnValue({
+			mock_src_cd.getApi.mockReturnValue({
 				get: jest.fn().mockRejectedValue(new Error('API Error')),
 			})
 
@@ -456,7 +461,7 @@ describe('AutocompleteManager', () => {
 		})
 
 		it('should handle empty response', async () => {
-			require('../src/cd').getApi.mockReturnValue({
+			mock_src_cd.getApi.mockReturnValue({
 				get: jest.fn().mockResolvedValue({ pages: {} }),
 			})
 

@@ -1,5 +1,5 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
+import { test, expect } from '@playwright/test'
 
 /**
  * Debug test to see what's happening with Convenient Discussions initialization

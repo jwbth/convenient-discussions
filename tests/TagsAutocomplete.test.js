@@ -1,3 +1,4 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
 import TagsAutocomplete from '../src/TagsAutocomplete'
 
 // Mock dependencies

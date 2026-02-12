@@ -1,5 +1,8 @@
 // @ts-check
-const path = require('node:path')
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const authFile = path.join(__dirname, '..', '..', 'playwright', '.auth', 'user.json')
 
@@ -9,13 +12,14 @@ const authFile = path.join(__dirname, '..', '..', 'playwright', '.auth', 'user.j
  *
  * @param {import('@playwright/test').Page} page
  */
-async function ensureAuthenticated(page) {
+export async function ensureAuthenticated(page) {
 	console.log(`🔍 Checking authentication on: ${page.url()}`)
 
 	// Check if already logged in by looking for user menu
 	const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
 	if ((await userMenu.count()) > 0) {
 		console.log('✅ Already authenticated')
+
 		return
 	}
 
@@ -86,8 +90,4 @@ async function ensureAuthenticated(page) {
 		await page.goto(currentUrl)
 		await page.waitForLoadState('networkidle')
 	}
-}
-
-module.exports = {
-	ensureAuthenticated,
 }

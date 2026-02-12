@@ -1,3 +1,4 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
 /**
  * Performance tests for the autocomplete system.
  * Tests response times, memory usage, and caching efficiency.

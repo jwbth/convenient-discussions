@@ -1,6 +1,9 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_commentManager from '../src/commentManager';
+
 
 // Mock dependencies
 jest.mock('../src/commentManager', () => ({
@@ -96,7 +99,7 @@ describe('CommentLayers', () => {
 		})
 
 		it('should add underlay to commentManager.underlays', () => {
-			const commentManager = require('../src/commentManager').default
+			const commentManager = mock_src_commentManager.default
 
 			layers.create()
 

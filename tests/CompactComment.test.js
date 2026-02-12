@@ -1,6 +1,10 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_Comment from '../src/Comment';
+import * as mock_src_CommentLayers from '../src/CommentLayers';
+
 
 // Mock global dependencies
 global.OO = {
@@ -83,7 +87,7 @@ describe('CompactComment', () => {
 
 	describe('constructor', () => {
 		it('should inherit from Comment', () => {
-			const Comment = require('../src/Comment').default
+			const Comment = mock_src_Comment.default
 			expect(comment).toBeInstanceOf(Comment)
 		})
 
@@ -142,7 +146,7 @@ describe('CompactComment', () => {
 	describe('initPrototypes', () => {
 		beforeEach(() => {
 			// Reset the prototypes mock
-			const CommentLayers = require('../src/CommentLayers').default
+			const CommentLayers = mock_src_CommentLayers.default
 			CommentLayers.prototypes = {
 				get: jest.fn((key) => {
 					if (key === 'overlay') {
@@ -166,7 +170,7 @@ describe('CompactComment', () => {
 		})
 
 		it('should call CommentLayers initPrototypes', () => {
-			const CommentLayers = require('../src/CommentLayers').default
+			const CommentLayers = mock_src_CommentLayers.default
 			const layersInitSpy = jest.spyOn(CommentLayers, 'initPrototypes')
 
 			CompactComment.initPrototypes()
@@ -175,7 +179,7 @@ describe('CompactComment', () => {
 		})
 
 		it('should get base overlay prototype from CommentLayers', () => {
-			const CommentLayers = require('../src/CommentLayers').default
+			const CommentLayers = mock_src_CommentLayers.default
 			const layersGetSpy = jest.spyOn(CommentLayers.prototypes, 'get')
 
 			CompactComment.initPrototypes()

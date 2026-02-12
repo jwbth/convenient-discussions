@@ -1,6 +1,10 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_commentManager from '../src/commentManager';
+import * as mock_src_cd from '../src/cd';
+
 
 // Mock global dependencies
 global.OO = {
@@ -128,7 +132,7 @@ describe('CommentActions', () => {
 		jest.clearAllMocks()
 
 		// Set up commentManager mock
-		const commentManager = require('../src/commentManager').default
+		const commentManager = mock_src_commentManager.default
 		commentManager.getByIndex.mockReturnValue(null)
 		commentManager.getThanksStorage.mockReturnValue({
 			getData: jest.fn(() => ({})),
@@ -212,7 +216,7 @@ describe('CommentActions', () => {
 		})
 
 		it('should disable reply button for outdented comments', () => {
-			const commentManager = require('../src/commentManager').default
+			const commentManager = mock_src_commentManager.default
 			commentManager.getByIndex.mockReturnValue({ isOutdented: true })
 
 			actions.addReplyButton()
@@ -268,7 +272,7 @@ describe('CommentActions', () => {
 	})
 
 	describe('addThankButton', () => {
-		const cd = require('../src/cd')
+		const cd = mock_src_cd
 
 		it('should create and append thank button for valid comments', () => {
 			actions.addThankButton()
@@ -310,7 +314,7 @@ describe('CommentActions', () => {
 		})
 
 		it('should set thanked state for already thanked comments', () => {
-			const commentManager = require('../src/commentManager').default
+			const commentManager = mock_src_commentManager.default
 			commentManager.getThanksStorage.mockReturnValue({
 				getData: () => ({ 'test-comment-id': { id: 'test-comment-id' } }),
 			})

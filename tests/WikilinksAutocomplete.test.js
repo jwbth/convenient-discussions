@@ -1,3 +1,6 @@
+import { jest, describe, beforeEach, expect } from '@jest/globals'
+
+import * as mock_src_loader_cd from '../src/loader/cd'
 // Mock the cd module first
 jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
@@ -63,7 +66,7 @@ describe('WikilinksAutocomplete', () => {
 	describe('getLabel', () => {
 		it('should return the correct label', () => {
 			expect(autocomplete.getLabel()).toBe('mocked-cf-autocomplete-wikilinks-label')
-			expect(require('../src/loader/cd').s).toHaveBeenCalledWith('cf-autocomplete-wikilinks-label')
+			expect(mock_src_loader_cd.s).toHaveBeenCalledWith('cf-autocomplete-wikilinks-label')
 		})
 	})
 
@@ -162,7 +165,7 @@ describe('WikilinksAutocomplete', () => {
 
 	describe('makeApiRequest', () => {
 		beforeEach(() => {
-			require('../src/loader/cd').getApi.mockReturnValue({
+			mock_src_loader_cd.getApi.mockReturnValue({
 				get: jest
 					.fn()
 					.mockResolvedValue(['query', ['Test page', 'Test article', 'Testing'], [], []]),
@@ -170,7 +173,7 @@ describe('WikilinksAutocomplete', () => {
 		})
 
 		it('should make API request and process results', async () => {
-			const cd = require('../src/loader/cd')
+			const cd = mock_src_loader_cd
 			const results = await autocomplete.makeApiRequest('test')
 
 			expect(cd.getApi).toHaveBeenCalledWith(autocomplete.constructor.apiConfig)
@@ -187,7 +190,7 @@ describe('WikilinksAutocomplete', () => {
 		it('should handle colon prefix', async () => {
 			const results = await autocomplete.makeApiRequest(':test')
 
-			expect(require('../src/loader/cd').getApi().get).toHaveBeenCalledWith({
+			expect(mock_src_loader_cd.getApi().get).toHaveBeenCalledWith({
 				action: 'opensearch',
 				search: 'test',
 				redirects: 'return',
@@ -220,7 +223,7 @@ describe('WikilinksAutocomplete', () => {
 		})
 
 		it('should handle API errors', () => {
-			require('../src/loader/cd').getApi().get.mockRejectedValue(new Error('API Error'))
+			mock_src_loader_cd.getApi().get.mockRejectedValue(new Error('API Error'))
 
 			// Note: API error handling is complex due to static method dependencies
 			// This is tested through integration tests
@@ -228,7 +231,7 @@ describe('WikilinksAutocomplete', () => {
 		})
 
 		it('should handle empty API response', async () => {
-			require('../src/loader/cd').getApi().get.mockResolvedValue(['query', [], [], []])
+			mock_src_loader_cd.getApi().get.mockResolvedValue(['query', [], [], []])
 
 			const results = await autocomplete.makeApiRequest('test')
 

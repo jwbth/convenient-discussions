@@ -1,3 +1,4 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
 /**
  * Tests for WikilinksAutocomplete section autocomplete functionality.
  */

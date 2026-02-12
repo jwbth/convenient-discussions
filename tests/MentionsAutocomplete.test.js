@@ -1,3 +1,5 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_cd from '../src/cd';
 import MentionsAutocomplete from '../src/MentionsAutocomplete'
 
 // Mock dependencies
@@ -114,7 +116,7 @@ describe('MentionsAutocomplete', () => {
 
 	describe('makeApiRequest', () => {
 		beforeEach(() => {
-			require('../src/cd').getApi.mockReturnValue({
+			mock_src_cd.getApi.mockReturnValue({
 				get: jest.fn(),
 			})
 		})

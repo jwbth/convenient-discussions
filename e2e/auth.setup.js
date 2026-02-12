@@ -1,7 +1,7 @@
 // @ts-check
-const { test: setup } = require('@playwright/test')
+import { test as setup } from '@playwright/test'
 
-const { ensureAuthenticated } = require('./helpers/auth')
+import { ensureAuthenticated } from './helpers/auth.js'
 
 /**
  * Standalone authentication setup script.

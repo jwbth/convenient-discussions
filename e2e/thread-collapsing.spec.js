@@ -1,11 +1,11 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
+import { test, expect } from '@playwright/test'
 
-const {
+import {
 	setupConvenientDiscussionsFromDevServer,
 	TEST_PAGES,
 	waitForConvenientDiscussions,
-} = require('./helpers/test-utils')
+} from './helpers/test-utils.js'
 
 /**
  * Tests for thread collapsing and expanding functionality.

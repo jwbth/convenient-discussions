@@ -1,7 +1,7 @@
 // @ts-check
-const { expect } = require('@playwright/test')
+import { expect } from '@playwright/test'
 
-const { ensureAuthenticated } = require('./auth')
+import { ensureAuthenticated } from './auth.js'
 
 /**
  * Shared logic for basic loading tests.
@@ -11,7 +11,7 @@ const { ensureAuthenticated } = require('./auth')
  * @param {object} [options]
  * @param {boolean} [options.authenticated]
  */
-async function runBasicLoadingTest(page, url, options = {}) {
+export async function runBasicLoadingTest(page, url, options = {}) {
 	const { authenticated = false } = options
 
 	console.log(
@@ -49,7 +49,7 @@ async function runBasicLoadingTest(page, url, options = {}) {
 	}
 
 	// Wait for page to load completely (in case login redirected us)
-	await page.waitForLoadState('networkidle')
+	await page.waitForLoadState('load')
 	console.log('🌐 Page ready')
 
 	// Wait for MediaWiki globals to be available
@@ -125,8 +125,4 @@ async function runBasicLoadingTest(page, url, options = {}) {
 	).toBe(0)
 
 	console.log('✅ All assertions passed!')
-}
-
-module.exports = {
-	runBasicLoadingTest,
 }

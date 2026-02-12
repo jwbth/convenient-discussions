@@ -1,5 +1,5 @@
 // @ts-check
-const { chromium } = require('@playwright/test')
+import { chromium } from '@playwright/test'
 
 /**
  * Authentication setup for test.wikipedia.org
@@ -13,7 +13,7 @@ const { chromium } = require('@playwright/test')
  * @param {string} password Wikipedia password
  * @returns {Promise<void>}
  */
-async function setupAuth(username, password) {
+export async function setupAuth(username, password) {
 	const browser = await chromium.launch()
 	const context = await browser.newContext()
 	const page = await context.newPage()
@@ -57,5 +57,3 @@ async function setupAuth(username, password) {
 		await browser.close()
 	}
 }
-
-module.exports = { setupAuth }

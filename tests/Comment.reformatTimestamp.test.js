@@ -1,3 +1,13 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_oojs from 'oojs';
+import * as mock_date_fns_tz from 'date-fns-tz';
+import * as mock_src_jqueryExtensions from '../src/jqueryExtensions';
+import * as mock_i18n_en_json from '../i18n/en.json';
+import * as mock_src_Comment from '../src/Comment';
+import * as mock_src_commentManager from '../src/commentManager';
+import * as mock_src_settings from '../src/settings';
+import * as mock_src_shared_cd from '../src/shared/cd';
+import * as mock_src_utils_window from '../src/utils-window';
 // TODO: use some interfaces for mocks and real objects alike?
 
 window.mw = {
@@ -24,20 +34,20 @@ window.mw = {
 }
 const mw = window.mw
 
-window.OO = require('oojs')
+window.OO = mock_oojs
 
-const getTimezoneOffset = require('date-fns-tz').getTimezoneOffset
+const getTimezoneOffset = mock_date_fns_tz.getTimezoneOffset
 
 window.$ = {}
-require('../src/jqueryExtensions')
+mock_src_jqueryExtensions
 
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-const en = require('../i18n/en.json')
-const Comment = require('../src/Comment').default
-const commentManager = require('../src/commentManager').default
-const settings = require('../src/settings').default
-const cd = require('../src/shared/cd').default
-const { formatDateNative, initDayjs } = require('../src/utils-window')
+const en = mock_i18n_en_json
+const Comment = mock_src_Comment.default
+const commentManager = mock_src_commentManager.default
+const settings = mock_src_settings.default
+const cd = mock_src_shared_cd.default
+const { formatDateNative, initDayjs } = mock_src_utils_window
 
 cd.config = {
 	defaultInsertButtons: [],

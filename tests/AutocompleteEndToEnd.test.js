@@ -1,3 +1,4 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
 /**
  * @file End-to-end tests for complete autocomplete user workflows
  */

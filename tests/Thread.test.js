@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
 
 describe('Thread hidden="until-found" functionality', () => {
 	let mockElement

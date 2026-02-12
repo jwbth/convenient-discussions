@@ -1,6 +1,9 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_CommentLayers from '../src/CommentLayers';
+
 
 // Mock dependencies
 jest.mock('../src/CommentLayers', () => {
@@ -87,7 +90,7 @@ describe('CompactCommentLayers', () => {
 		global.setTimeout.callbacks = {}
 
 		// Mock the prototype registries
-		const CommentLayers = require('../src/CommentLayers')
+		const CommentLayers = mock_src_CommentLayers
 		CommentLayers.prototypes.get.mockReturnValue({
 			tagName: 'DIV',
 			firstChild: { tagName: 'DIV' },
@@ -121,7 +124,7 @@ describe('CompactCommentLayers', () => {
 
 	describe('constructor', () => {
 		it('should inherit from CommentLayers', () => {
-			const CommentLayers = require('../src/CommentLayers')
+			const CommentLayers = mock_src_CommentLayers
 			expect(layers).toBeInstanceOf(CommentLayers)
 		})
 
@@ -161,7 +164,7 @@ describe('CompactCommentLayers', () => {
 
 		it('should handle missing overlay gracefully', () => {
 			// Mock create to not set overlay
-			const CommentLayers = require('../src/CommentLayers')
+			const CommentLayers = mock_src_CommentLayers
 			const originalCreate = CommentLayers.prototype.create
 			CommentLayers.prototype.create = function () {
 				this.createCalled = true

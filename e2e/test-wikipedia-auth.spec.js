@@ -1,5 +1,5 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
+import { test, expect } from '@playwright/test'
 
 /**
  * Example test demonstrating authentication on test.wikipedia.org
@@ -12,7 +12,7 @@ test.describe('Test Wikipedia Authentication', () => {
 		await page.goto('/wiki/Main_Page')
 
 		// Wait for page to load
-		await page.waitForLoadState('networkidle')
+		await page.waitForLoadState('load')
 
 		// Check if we're logged in by looking for user menu or personal tools
 		const userMenu = page.locator('#pt-userpage, #pt-userpage-2')
@@ -72,7 +72,7 @@ test.describe('Test Wikipedia Authentication', () => {
 		await page.goto('/wiki/User_talk:JWBTH')
 
 		// Wait for page to load
-		await page.waitForLoadState('networkidle')
+		await page.waitForLoadState('load')
 
 		// Verify we're on a talk page
 		await expect(page.locator('#ca-talk')).toHaveClass(/selected/)

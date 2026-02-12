@@ -1,6 +1,6 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
-const { setupConvenientDiscussions, TEST_PAGES } = require('./helpers/test-utils')
+import { test, expect } from '@playwright/test'
+import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
  * Specific validation for the CompactComment duplicate button fix

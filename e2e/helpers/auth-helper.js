@@ -1,19 +1,22 @@
 // @ts-check
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * Helper functions for authentication in Playwright tests
  */
 
-const AUTH_STATE_PATH = path.join(__dirname, '..', '..', 'playwright', '.auth', 'user.json')
+export const AUTH_STATE_PATH = path.join(__dirname, '..', '..', 'playwright', '.auth', 'user.json')
 
 /**
  * Check if authentication state exists
  *
  * @returns {boolean}
  */
-function hasAuthState() {
+export function hasAuthState() {
 	return fs.existsSync(AUTH_STATE_PATH)
 }
 
@@ -22,7 +25,7 @@ function hasAuthState() {
  *
  * @returns {string | undefined} Path to auth state file if it exists
  */
-function getAuthStatePath() {
+export function getAuthStatePath() {
 	return hasAuthState() ? AUTH_STATE_PATH : undefined
 }
 
@@ -32,7 +35,7 @@ function getAuthStatePath() {
  * @param {import('@playwright/test').BrowserContext} context
  * @returns {Promise<void>}
  */
-async function setupAuthenticatedContext(context) {
+export async function setupAuthenticatedContext(context) {
 	if (!hasAuthState()) {
 		console.warn(
 			'⚠️  No authentication state found. Run auth setup first or tests will run as anonymous user.',
@@ -59,17 +62,9 @@ async function setupAuthenticatedContext(context) {
  *
  * @returns {void}
  */
-function clearAuthState() {
+export function clearAuthState() {
 	if (fs.existsSync(AUTH_STATE_PATH)) {
 		fs.unlinkSync(AUTH_STATE_PATH)
 		console.log('🗑️  Authentication state cleared')
 	}
-}
-
-module.exports = {
-	hasAuthState,
-	getAuthStatePath,
-	setupAuthenticatedContext,
-	clearAuthState,
-	AUTH_STATE_PATH,
 }

@@ -1,3 +1,4 @@
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
 /**
  * @file Tests for Tribute integration compatibility
  */

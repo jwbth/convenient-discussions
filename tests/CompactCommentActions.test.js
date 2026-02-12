@@ -1,6 +1,10 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_CommentActions from '../src/CommentActions';
+import * as mock_src_cd from '../src/cd';
+
 
 // Mock dependencies
 jest.mock(
@@ -180,7 +184,7 @@ describe('CompactCommentActions', () => {
 
 	describe('constructor', () => {
 		it('should inherit from CommentActions', () => {
-			const CommentActions = require('../src/CommentActions')
+			const CommentActions = mock_src_CommentActions
 			expect(actions).toBeInstanceOf(CommentActions)
 		})
 	})
@@ -386,7 +390,7 @@ describe('CompactCommentActions', () => {
 		})
 
 		it('should not create thank button when user is not registered', () => {
-			const cd = require('../src/cd')
+			const cd = mock_src_cd
 			cd.user.isRegistered.mockReturnValue(false)
 
 			actions.addThankButton()

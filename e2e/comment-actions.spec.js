@@ -1,7 +1,7 @@
 // @ts-check
-const { test, expect } = require('@playwright/test')
+import { test, expect } from '@playwright/test'
 
-const { setupConvenientDiscussions } = require('./helpers/test-utils')
+import { setupConvenientDiscussions } from './helpers/test-utils.js'
 
 /**
  * Browser tests for Comment actions functionality

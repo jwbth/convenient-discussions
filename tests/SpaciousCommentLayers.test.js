@@ -1,6 +1,9 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_CommentLayers from '../src/CommentLayers';
+
 
 // Mock dependencies
 jest.mock(
@@ -64,7 +67,7 @@ describe('SpaciousCommentLayers', () => {
 
 	describe('constructor', () => {
 		it('should inherit from CommentLayers', () => {
-			const CommentLayers = require('../src/CommentLayers')
+			const CommentLayers = mock_src_CommentLayers
 			expect(layers).toBeInstanceOf(CommentLayers)
 		})
 
@@ -128,7 +131,7 @@ describe('SpaciousCommentLayers', () => {
 
 	describe('inheritance behavior', () => {
 		it('should inherit all base class methods', () => {
-			const CommentLayers = require('../src/CommentLayers')
+			const CommentLayers = mock_src_CommentLayers
 			const baseInstance = new CommentLayers(mockComment)
 
 			// Check that spacious layers has the same methods as base class

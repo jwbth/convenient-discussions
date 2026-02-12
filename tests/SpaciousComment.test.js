@@ -1,6 +1,12 @@
 /**
  * @jest-environment jsdom
  */
+import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
+import * as mock_src_Comment from '../src/Comment';
+import * as mock_src_CommentLayers from '../src/CommentLayers';
+import * as mock_src_settings from '../src/settings';
+import * as mock_src_utils_window from '../src/utils-window';
+
 
 // Mock global dependencies
 global.OO = {
@@ -90,7 +96,7 @@ describe('SpaciousComment', () => {
 
 	describe('constructor', () => {
 		it('should inherit from Comment', () => {
-			const Comment = require('../src/Comment').default
+			const Comment = mock_src_Comment.default
 			expect(comment).toBeInstanceOf(Comment)
 		})
 
@@ -113,7 +119,7 @@ describe('SpaciousComment', () => {
 		})
 
 		it('should call CommentLayers initPrototypes', () => {
-			const CommentLayers = require('../src/CommentLayers').default
+			const CommentLayers = mock_src_CommentLayers.default
 			const layersInitSpy = jest.spyOn(CommentLayers, 'initPrototypes')
 
 			SpaciousComment.initPrototypes()
@@ -173,7 +179,7 @@ describe('SpaciousComment', () => {
 		})
 
 		it('should include user info card button in header', () => {
-			const Comment = require('../src/Comment').default
+			const Comment = mock_src_Comment.default
 			const createUserInfoSpy = jest.spyOn(Comment, 'createUserInfoCardButton')
 
 			SpaciousComment.initPrototypes()
@@ -182,7 +188,7 @@ describe('SpaciousComment', () => {
 		})
 
 		it('should include contribs link when setting is enabled', () => {
-			const settings = require('../src/settings')
+			const settings = mock_src_settings
 			settings.get.mockReturnValue(true)
 
 			SpaciousComment.initPrototypes()
@@ -198,7 +204,7 @@ describe('SpaciousComment', () => {
 		})
 
 		it('should not include contribs link when setting is disabled', () => {
-			const settings = require('../src/settings')
+			const settings = mock_src_settings
 			settings.get.mockReturnValue(false)
 
 			SpaciousComment.initPrototypes()
@@ -213,7 +219,7 @@ describe('SpaciousComment', () => {
 		})
 
 		it('should create SVG icons with correct dimensions', () => {
-			const { createSvg } = require('../src/utils-window')
+			const { createSvg } = mock_src_utils_window
 
 			SpaciousComment.initPrototypes()
 

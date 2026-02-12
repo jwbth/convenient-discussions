@@ -1,7 +1,10 @@
+import { jest, describe, beforeEach, expect } from '@jest/globals'
+
 import TemplatesAutocomplete from '../src/TemplatesAutocomplete'
+import * as mock_src_cd from '../src/loader/cd'
 
 // Mock dependencies
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
 	mws: jest.fn((key) => ' '),
 	g: {
@@ -186,7 +189,7 @@ describe('TemplatesAutocomplete', () => {
 			const mockApi = {
 				get: jest.fn().mockResolvedValue(mockResponse),
 			}
-			require('../src/cd').getApi.mockReturnValue(mockApi)
+			mock_src_cd.getApi.mockReturnValue(mockApi)
 
 			await templatesAutocomplete.insertTemplateData(mockItem, mockInput)
 
@@ -215,7 +218,7 @@ describe('TemplatesAutocomplete', () => {
 			const mockApi = {
 				get: jest.fn().mockResolvedValue(mockResponse),
 			}
-			require('../src/cd').getApi.mockReturnValue(mockApi)
+			mock_src_cd.getApi.mockReturnValue(mockApi)
 
 			await templatesAutocomplete.insertTemplateData(mockItem, mockInput)
 
@@ -226,7 +229,7 @@ describe('TemplatesAutocomplete', () => {
 			const mockApi = {
 				get: jest.fn().mockRejectedValue(new Error('API Error')),
 			}
-			require('../src/cd').getApi.mockReturnValue(mockApi)
+			mock_src_cd.getApi.mockReturnValue(mockApi)
 
 			await templatesAutocomplete.insertTemplateData(mockItem, mockInput)
 
@@ -243,7 +246,7 @@ describe('TemplatesAutocomplete', () => {
 					pages: {},
 				}),
 			}
-			require('../src/cd').getApi.mockReturnValue(mockApi)
+			mock_src_cd.getApi.mockReturnValue(mockApi)
 
 			await templatesAutocomplete.insertTemplateData(mockItem, mockInput)
 
