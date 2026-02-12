@@ -91,8 +91,7 @@ trigger: always_on
 
 ## Build System Files
 
-- **webpack.config.js**: Webpack configuration
-- **babel.config.js**: Babel transpilation setup
+- **vite.config.js**: Vite configuration
 - **eslint.config.js**: ESLint rules and configuration
 - **jest.config.js**: Test configuration
 - **jsconfig.json**: TypeScript/JSDoc configuration, split between:

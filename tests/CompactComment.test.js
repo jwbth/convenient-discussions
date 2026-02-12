@@ -1,10 +1,10 @@
 /**
  * @jest-environment jsdom
  */
-import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_src_Comment from '../src/Comment';
-import * as mock_src_CommentLayers from '../src/CommentLayers';
+import { jest, describe, beforeEach, expect } from '@jest/globals'
 
+import * as mock_src_Comment from '../src/Comment'
+import * as mock_src_CommentLayers from '../src/CommentLayers'
 
 // Mock global dependencies
 global.OO = {

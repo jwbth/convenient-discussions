@@ -2,7 +2,7 @@ import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globa
 import CommentLinksAutocomplete from '../src/CommentLinksAutocomplete'
 
 // Mock dependencies
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key, ...args) => {
 		const messages = {
 			'cf-autocomplete-commentlinks-label': 'Comment links',

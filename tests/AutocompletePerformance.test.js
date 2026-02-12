@@ -25,7 +25,7 @@ global.OO = {
 	},
 }
 
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	g: {
 		contentDirection: 'ltr',
 		userNamespacesRegexp: /^User:/,

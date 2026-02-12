@@ -2,8 +2,7 @@
  * @jest-environment jsdom
  */
 import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_src_CommentActions from '../src/CommentActions';
-
+import * as mock_src_CommentActions from '../src/CommentActions'
 
 // Mock dependencies
 jest.mock('../src/Comment', () => ({
@@ -79,7 +78,7 @@ jest.mock(
 		},
 )
 
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
 }))
 

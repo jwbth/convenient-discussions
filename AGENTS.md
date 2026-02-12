@@ -31,8 +31,7 @@
 
 - **JavaScript (ES2020)**: Main development language with modern syntax support
 - **TypeScript**: Strict type checking via JSDoc comments and .d.ts files (no compilation)
-- **Webpack 5**: Module bundling and build system
-- **Babel**: JavaScript transpilation with modern feature support
+- **Vite**: Module bundling and build system
 - **Less**: CSS preprocessing for styling
 
 ### Key Dependencies

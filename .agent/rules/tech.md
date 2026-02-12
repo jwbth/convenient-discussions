@@ -8,8 +8,7 @@ trigger: always_on
 
 - **JavaScript (ES2020)**: Main development language with modern syntax support
 - **TypeScript**: Strict type checking via JSDoc comments and .d.ts files (no compilation)
-- **Webpack 5**: Module bundling and build system
-- **Babel**: JavaScript transpilation with modern feature support
+- **Vite**: Module bundling and build system
 - **Less**: CSS preprocessing for styling
 
 ## Key Dependencies
@@ -23,7 +22,8 @@ trigger: always_on
 ### Development Dependencies
 
 - **ESLint**: Code linting with TypeScript, JSDoc, and Unicorn, and Stylistic plugins
-- **Jest**: Testing framework
+- **Playwright**: E2E testing framework
+- **Jest**: Unit testing framework
 - **CodeMirror 6**: Rich text editing capabilities
 
 ## Build System

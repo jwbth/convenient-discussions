@@ -2,17 +2,16 @@
  * @jest-environment jsdom
  */
 import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_src_settings from '../src/settings';
-import * as mock_src_tribute_Tribute from '../src/tribute/Tribute';
-import * as mock_src_cd from '../src/cd';
-
+import * as mock_src_settings from '../src/settings'
+import * as mock_src_tribute_Tribute from '../src/tribute/Tribute'
+import * as mock_src_cd from '../src/loader/cd'
 
 import AutocompleteFactory from '../src/AutocompleteFactory'
 import AutocompleteManager from '../src/AutocompleteManager'
 
 // Mock dependencies
 jest.mock('../src/AutocompleteFactory')
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	g: {
 		contentDirection: 'ltr',
 		userNamespacesRegexp: /^User:(.+)$/,

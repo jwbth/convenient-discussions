@@ -1,7 +1,7 @@
 import CommentActions from './CommentActions'
 import CommentButton from './CommentButton'
-import cd from './loader/cd'
 import commentManager from './commentManager'
+import cd from './loader/cd'
 
 /**
  * Actions management for compact comments with overlay-based styling.

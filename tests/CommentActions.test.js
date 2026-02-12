@@ -2,9 +2,8 @@
  * @jest-environment jsdom
  */
 import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_src_commentManager from '../src/commentManager';
-import * as mock_src_cd from '../src/cd';
-
+import * as mock_src_commentManager from '../src/commentManager'
+import * as mock_src_cd from '../src/loader/cd'
 
 // Mock global dependencies
 global.OO = {
@@ -30,7 +29,7 @@ jest.mock(
 )
 
 // Mock dependencies
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
 	user: {
 		isRegistered: jest.fn(() => true),

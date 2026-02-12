@@ -2,7 +2,7 @@ import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globa
 import TagsAutocomplete from '../src/TagsAutocomplete'
 
 // Mock dependencies
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
 	g: {
 		allowedTags: ['div', 'span', 'p', 'strong', 'em', 'code', 'pre', 'blockquote'],
@@ -18,7 +18,7 @@ global.mw = {
 }
 
 // Import the mocked cd
-import cd from '../src/cd'
+import cd from '../src/loader/cd'
 
 describe('TagsAutocomplete', () => {
 	let tagsAutocomplete

@@ -1,9 +1,9 @@
 import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_src_cd from '../src/cd';
+import * as mock_src_cd from '../src/loader/cd'
 import MentionsAutocomplete from '../src/MentionsAutocomplete'
 
 // Mock dependencies
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
 	config: {
 		mentionCharacter: '@',

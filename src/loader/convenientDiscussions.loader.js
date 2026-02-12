@@ -893,7 +893,9 @@ class Loader {
 				$('<div>')
 					.addClass('cd-bootingOverlay-logo cd-icon')
 					.append(
-						$('<div>').addClass('cd-bootingOverlay-logo-partBackground'),
+						$('<div>')
+							.addClass('cd-bootingOverlay-logo-partBackground')
+							.attr('title', cd.s('script-name')),
 						cd.utils
 							.createSvg(55, 55, 50, 50)
 							.html(

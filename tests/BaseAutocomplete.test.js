@@ -3,9 +3,8 @@
  */
 import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
 
-
 // Mock dependencies
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	getApi: () => ({
 		get: jest.fn(),
 	}),

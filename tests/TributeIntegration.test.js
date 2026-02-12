@@ -38,7 +38,7 @@ global.mw = {
 }
 
 // Mock dependencies
-jest.mock('../src/cd.js', () => ({
+jest.mock('../src/loader/cd.js', () => ({
 	config: {
 		mentionRequiresLeadingSpace: true,
 		mentionCharacter: '@',

@@ -2,11 +2,10 @@
  * @jest-environment jsdom
  */
 import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_src_Comment from '../src/Comment';
-import * as mock_src_CommentLayers from '../src/CommentLayers';
-import * as mock_src_settings from '../src/settings';
-import * as mock_src_utils_window from '../src/utils-window';
-
+import * as mock_src_Comment from '../src/Comment'
+import * as mock_src_CommentLayers from '../src/CommentLayers'
+import * as mock_src_settings from '../src/settings'
+import * as mock_src_utils_window from '../src/utils-window'
 
 // Mock global dependencies
 global.OO = {
@@ -56,7 +55,7 @@ jest.mock('../src/Comment', () => ({
 	},
 }))
 
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
 	s: jest.fn((key) => `mocked-${key}`),
 	mws: jest.fn((key) => `mocked-${key}`),
 	sParse: jest.fn((key) => `parsed-${key}`),
