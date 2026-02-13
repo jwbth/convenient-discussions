@@ -1,71 +1,102 @@
-import { jest, test, expect } from '@jest/globals'
+import { jest } from '@jest/globals'
 import * as mock_date_fns_tz from 'date-fns-tz'
-import * as mock_oojs from 'oojs'
 
 import * as mock_i18n_en_json from '../i18n/en.json'
-import * as mock_src_Comment from '../src/Comment'
-import * as mock_src_commentManager from '../src/commentManager'
-import * as mock_src_jqueryExtensions from '../src/jqueryExtensions'
-import * as mock_src_settings from '../src/settings'
-import * as mock_src_shared_cd from '../src/shared/cd'
-import * as mock_src_utils_window from '../src/utils-window'
 // TODO: use some interfaces for mocks and real objects alike?
-
-window.mw = {
-	config: {
-		/** @type {{ [key: string]: any }} */
-		values: {
-			wgContentLanguage: 'en',
-			wgUserLanguage: 'en',
-		},
-		get: (/** @type {string} */ name) => mw.config.values[name],
-		set: (/** @type {string} */ name, /** @type {string} */ value) => {
-			mw.config.values[name] = value
-		},
-	},
-	msg: (/** @type {string} */ name) => messages[mw.config.get('wgUserLanguage')][name],
-	user: {
-		options: {
-			get: () => ({}),
-		},
-	},
-	loader: {
-		getState: () => {},
-	},
-}
-const mw = window.mw
-
-window.OO = mock_oojs
 
 const getTimezoneOffset = mock_date_fns_tz.getTimezoneOffset
 
-window.$ = {}
-mock_src_jqueryExtensions
-
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-const en = mock_i18n_en_json
+const en = mock_i18n_en_json.default || mock_i18n_en_json
+import * as mock_src_Comment from '../src/Comment'
+import * as mock_src_commentManager from '../src/commentManager'
+import * as mock_src_settings from '../src/settings'
 const Comment = mock_src_Comment.default
 const commentManager = mock_src_commentManager.default
 const settings = mock_src_settings.default
-const cd = mock_src_shared_cd.default
-const { formatDateNative, initDayjs } = mock_src_utils_window
 
-cd.config = {
+import { enUS } from 'date-fns/locale'
+
+import * as mock_src_shared_cd from '../src/shared/cd'
+import { formatDateNative, initDayjs } from '../src/utils-date.js'
+
+const cd = mock_src_shared_cd.default
+cd.i18n.en.dateFnsLocale = enUS
+
+mw.msg = (/** @type {string} */ name) => en[name] || mw.messages.values[name] || name
+mw.config.set('wgContentLanguage', 'en')
+mw.config.set('wgUserLanguage', 'en')
+mw.messages.set({
+	'january': 'January',
+	'february': 'February',
+	'march': 'March',
+	'april': 'April',
+	'may_long': 'May',
+	'june': 'June',
+	'july': 'July',
+	'august': 'August',
+	'september': 'September',
+	'october': 'October',
+	'november': 'November',
+	'december': 'December',
+	'jan': 'Jan',
+	'feb': 'Feb',
+	'mar': 'Mar',
+	'apr': 'Apr',
+	'may': 'May',
+	'jun': 'Jun',
+	'jul': 'Jul',
+	'aug': 'Aug',
+	'sep': 'Sep',
+	'oct': 'Oct',
+	'nov': 'Nov',
+	'dec': 'Dec',
+	'sun': 'Sun',
+	'mon': 'Mon',
+	'tue': 'Tue',
+	'wed': 'Wed',
+	'thu': 'Thu',
+	'fri': 'Fri',
+	'sat': 'Sat',
+	'sunday': 'Sunday',
+	'monday': 'Monday',
+	'tuesday': 'Tuesday',
+	'wednesday': 'Wednesday',
+	'thursday': 'Thursday',
+	'friday': 'Friday',
+	'saturday': 'Saturday',
+	'timezone-utc': 'UTC',
+	'parentheses': '($1)',
+	'comma-separator': ', ',
+	'word-separator': ' ',
+})
+
+Object.assign(cd.config, {
 	defaultInsertButtons: [],
 	defaultSignaturePrefix: ' ',
-}
-cd.g = {
+})
+Object.assign(cd.g, {
 	settingsOptionName: 'userjs-convenientDiscussions-settings',
 	phpCharToUpper: {},
 	userLanguage: 'en',
 	uiDateFormat: 'H:i, j F Y',
 	msInMin: 1000 * 60,
-}
+	timestampTools: {
+		content: {
+			dateFormat: 'H:i, j F Y',
+			timezone: 'UTC',
+		},
+		user: {
+			dateFormat: 'H:i, j F Y',
+			timezone: 'UTC',
+		},
+	},
+})
 cd.mws = (/** @type {string} */ name) =>
 	({
 		'timezone-utc': 'UTC',
 	})[name]
-cd.i18n = { en }
+cd.i18n = { en: { ...en, dateFnsLocale: enUS } }
 cd.s = (/** @type {string} */ name) => cd.i18n.en[name]
 settings.save = async () => {}
 cd.settings = settings
@@ -155,12 +186,13 @@ function testWithSettings({
 
 			const adaptedReformatTimestamp = (/** @type {Timestamp} */ d) => {
 				comment.date = new Date(d)
-				comment.formatTimestamp = Comment.prototype.formatTimestamp.bind(Comment)
-				comment.updateTimestampElements = Comment.prototype.updateTimestampElements.bind(Comment)
+				comment.manager = commentManager
+				comment.formatTimestamp = Comment.prototype.formatTimestamp.bind(comment)
+				comment.updateTimestampElements = Comment.prototype.updateTimestampElements.bind(comment)
 				comment.updateMainTimestampElement =
-					Comment.prototype.updateMainTimestampElement.bind(Comment)
+					Comment.prototype.updateMainTimestampElement.bind(comment)
 				comment.updateExtraSignatureTimestamps =
-					Comment.prototype.updateExtraSignatureTimestamps.bind(Comment)
+					Comment.prototype.updateExtraSignatureTimestamps.bind(comment)
 				Comment.prototype.reformatTimestamp.call(comment)
 
 				return {
@@ -170,13 +202,12 @@ function testWithSettings({
 			}
 
 			const dateObj = new Date(date)
-			cd.g.uiTimezone = timezone || 'UTC'
-			cd.g.uiTimezoneOffset = getTimezoneOffset(String(timezone), dateObj.getTime()) / cd.g.msInMin
+			cd.g.timestampTools.user.timezone = timezone || 'UTC'
 			settings.set('timestampFormat', timestampFormat)
 			settings.set('useUiTime', useUiTime)
 			settings.set('hideTimezone', hideTimezone)
 			commentManager.timestampsDefault = !(
-				(settings.get('useUiTime') && 'UTC' !== cd.g.uiTimezone) ||
+				(settings.get('useUiTime') && 'UTC' !== cd.g.timestampTools.user.timezone) ||
 				settings.get('timestampFormat') !== 'default' ||
 				mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||
 				settings.get('hideTimezone')
@@ -203,7 +234,7 @@ function testWithSettings({
 				})
 			} finally {
 				if (nowTimestamp) {
-					jest.setSystemTime(originalDate)
+					jest.useRealTimers()
 				}
 			}
 		},
