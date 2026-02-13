@@ -1,13 +1,14 @@
-import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_oojs from 'oojs';
-import * as mock_date_fns_tz from 'date-fns-tz';
-import * as mock_src_jqueryExtensions from '../src/jqueryExtensions';
-import * as mock_i18n_en_json from '../i18n/en.json';
-import * as mock_src_Comment from '../src/Comment';
-import * as mock_src_commentManager from '../src/commentManager';
-import * as mock_src_settings from '../src/settings';
-import * as mock_src_shared_cd from '../src/shared/cd';
-import * as mock_src_utils_window from '../src/utils-window';
+import { jest, test, expect } from '@jest/globals'
+import * as mock_date_fns_tz from 'date-fns-tz'
+import * as mock_oojs from 'oojs'
+
+import * as mock_i18n_en_json from '../i18n/en.json'
+import * as mock_src_Comment from '../src/Comment'
+import * as mock_src_commentManager from '../src/commentManager'
+import * as mock_src_jqueryExtensions from '../src/jqueryExtensions'
+import * as mock_src_settings from '../src/settings'
+import * as mock_src_shared_cd from '../src/shared/cd'
+import * as mock_src_utils_window from '../src/utils-window'
 // TODO: use some interfaces for mocks and real objects alike?
 
 window.mw = {
