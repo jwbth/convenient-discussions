@@ -712,9 +712,9 @@ class Settings extends EventEmitter {
 
 		// Migrate users from the old commentDisplay boolean setting to the new commentDisplay string
 		// union setting
-		if (/** @type {any} */ (remoteSettings).reformatComments === true) {
+		if (/** @type {any} */ (remoteSettings).commentDisplay === true) {
 			this.values.commentDisplay = 'spacious'
-		} else if (/** @type {any} */ (remoteSettings).reformatComments === false) {
+		} else if (/** @type {any} */ (remoteSettings).commentDisplay === false) {
 			this.values.commentDisplay = 'compact'
 		}
 
