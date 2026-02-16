@@ -1,6 +1,7 @@
-import { jest, describe, beforeEach, afterEach, test, expect } from '@jest/globals'
-import * as mock_src_CommentFormInputTransformer from '../src/CommentFormInputTransformer';
-import * as mock_src_shared_cd from '../src/shared/cd';
+import { describe, test, expect } from '@jest/globals'
+
+import * as mock_src_CommentFormInputTransformer from '../src/CommentFormInputTransformer'
+import * as mock_src_shared_cd from '../src/shared/cd'
 // TODO: use some interfaces for mocks and real objects alike?
 
 window.mw = {

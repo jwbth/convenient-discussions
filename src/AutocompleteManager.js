@@ -169,7 +169,9 @@ class AutocompleteManager {
 		this.inputs.forEach((input) => {
 			this.tribute.detach(input.$input[0])
 			// Clean up TextInputWidget if it has a destroy method
-			input.destroy()
+			if (typeof input.destroy === 'function') {
+				input.destroy()
+			}
 		})
 
 		// Clean up autocomplete instances

@@ -620,7 +620,9 @@ class Tribute {
 		}
 
 		setTimeout(() => {
-			delete el.dataset.tribute
+			if (el?.dataset) {
+				delete el.dataset.tribute
+			}
 			this.isActive = false
 			if (el.tributeMenu) {
 				el.tributeMenu.remove()

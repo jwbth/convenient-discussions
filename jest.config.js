@@ -7,8 +7,9 @@
 export default {
 	testEnvironment: 'jsdom',
 	testMatch: ['**/tests/*.test.js'],
+	setupFiles: ['<rootDir>/tests/setup.js'],
 	moduleNameMapper: {
 		'\\.(css|less)(\\?inline)?$': '<rootDir>/tests/styleMock.js',
-		'^\\./(.*)/worker-gate\\?worker&inline-string$': '<rootDir>/tests/workerMock.js',
+		'/worker-gate$': '<rootDir>/tests/workerMock.js',
 	},
 }
