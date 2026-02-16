@@ -1,5 +1,5 @@
-import { jest } from '@jest/globals'
 import { enUS } from 'date-fns/locale'
+import { vi, test, expect } from 'vitest'
 
 import * as mock_i18n_en_json from '../i18n/en.json'
 import * as mock_src_Comment from '../src/Comment'
@@ -191,8 +191,8 @@ function testWithSettings({
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const originalDate = new Date()
 			if (nowTimestamp) {
-				jest.useFakeTimers()
-				jest.setSystemTime(new Date(nowTimestamp))
+				vi.useFakeTimers()
+				vi.setSystemTime(new Date(nowTimestamp))
 			}
 			try {
 				expect(adaptedReformatTimestamp(date)).toEqual({
@@ -201,7 +201,7 @@ function testWithSettings({
 				})
 			} finally {
 				if (nowTimestamp) {
-					jest.useRealTimers()
+					vi.useRealTimers()
 				}
 			}
 		},

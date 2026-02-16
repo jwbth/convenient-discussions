@@ -108,7 +108,7 @@ const createProxy = (/** @type {string | symbol} */ name = '') => {
 				const msgKey = args[0]
 				const result = mw.msg(msgKey)
 
-				process.stderr.write(`Proxy call: cd.${String(name)}("${msgKey}") -> "${result}"\n`)
+				// process.stderr.write(`Proxy call: cd.${String(name)}("${msgKey}") -> "${result}"\n`)
 
 				return result
 			}

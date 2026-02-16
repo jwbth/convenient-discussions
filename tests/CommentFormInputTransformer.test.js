@@ -1,4 +1,4 @@
-import { describe, test, expect } from '@jest/globals'
+import { describe, test, expect } from 'vitest'
 
 import * as mock_src_CommentFormInputTransformer from '../src/CommentFormInputTransformer'
 import * as mock_src_shared_cd from '../src/shared/cd'
@@ -80,7 +80,7 @@ function testWithData({ label, code, expected, commentForm, action = 'submit', c
 			if (expected instanceof Error) {
 				expect(() => {
 					transformer.transform()
-				}).toThrow(expected)
+				}).toThrow(expected.message)
 			} else {
 				expect(transformer.transform())[typeof expected === 'string' ? 'toEqual' : 'toMatch'](
 					expected,
