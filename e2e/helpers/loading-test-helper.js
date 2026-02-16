@@ -121,7 +121,7 @@ export async function runBasicLoadingTest(page, url, options = {}) {
 	const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror')
 	expect(
 		errors.length,
-		`Should have no console errors (found: ${errors.map((e) => e.text).join(', ')})`,
+		`Should have no console errors\nFound:\n${errors.map((e) => e.text).join('\n')}`,
 	).toBe(0)
 
 	console.log('✅ All assertions passed!')

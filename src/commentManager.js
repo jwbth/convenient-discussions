@@ -87,8 +87,7 @@ export class CommentManager extends EventEmitter {
 	 * @param {typeof import('./SpaciousComment').default} classes.SpaciousComment
 	 */
 	setCommentClasses({ CompactComment, SpaciousComment }) {
-		this.CommentClass =
-			cd.settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment
+		this.classes = { CompactComment, SpaciousComment }
 	}
 
 	/**
@@ -107,6 +106,19 @@ export class CommentManager extends EventEmitter {
 	 */
 	isCompactCommentManager() {
 		return this.commentDisplay === 'compact'
+	}
+
+	/**
+	 * _For internal use._ Initialize the registry.
+	 */
+	/**
+	 * Set the comment class to use based on the user settings.
+	 */
+	setupCommentClass() {
+		this.CommentClass =
+			cd.settings.get('commentDisplay') === 'spacious'
+				? this.classes.SpaciousComment
+				: this.classes.CompactComment
 	}
 
 	/**
