@@ -1,7 +1,7 @@
 // @ts-check
 import { test as setup } from '@playwright/test'
 
-import { ensureAuthenticated } from './helpers/auth.js'
+import { ensureAuthenticated } from './helpers/login.js'
 
 /**
  * Standalone authentication setup script.

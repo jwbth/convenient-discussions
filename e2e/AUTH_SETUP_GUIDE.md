@@ -56,7 +56,7 @@ e2e/
 ├── auth-core.js              # Legacy auth logic (can be removed)
 ├── test-wikipedia-auth.spec.js # Example authenticated test
 └── helpers/
-    └── auth-helper.js        # Helper functions for auth management
+    └── auth-state.js         # Helper functions for auth management
 ```
 
 ## Configuration
@@ -84,7 +84,7 @@ The `playwright.config.js` is configured to:
 
 ```javascript
 const { test, expect } = require('@playwright/test')
-const { setupAuthenticatedContext } = require('./helpers/auth-helper')
+const { setupAuthenticatedContext } = require('./helpers/auth-state')
 
 test.describe('My Tests', () => {
   test.beforeEach(async ({ context }) => {
@@ -202,7 +202,7 @@ npx playwright test --project=setup
 ### Manual Auth State Management
 
 ```javascript
-const { clearAuthState, hasAuthState } = require('./helpers/auth-helper')
+const { clearAuthState, hasAuthState } = require('./helpers/auth-state')
 
 // Check if authenticated
 if (hasAuthState()) {

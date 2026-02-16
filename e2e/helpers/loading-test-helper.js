@@ -1,7 +1,7 @@
 // @ts-check
 import { expect } from '@playwright/test'
 
-import { ensureAuthenticated } from './auth.js'
+import { ensureAuthenticated } from './login.js'
 
 /**
  * Shared logic for basic loading tests.
