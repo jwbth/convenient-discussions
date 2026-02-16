@@ -10,6 +10,6 @@ export default {
 	setupFiles: ['<rootDir>/tests/setup.js'],
 	moduleNameMapper: {
 		'\\.(css|less)(\\?inline)?$': '<rootDir>/tests/styleMock.js',
-		'/worker-gate$': '<rootDir>/tests/workerMock.js',
+		'/worker-gate(\\.js)?(\\?.*)?$': '<rootDir>/tests/workerMock.js',
 	},
 }

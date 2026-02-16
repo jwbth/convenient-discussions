@@ -18,7 +18,7 @@ const settings = mock_src_settings.default
 const cd = mock_src_shared_cd.default
 cd.i18n.en.dateFnsLocale = enUS
 
-mw.msg = (/** @type {string} */ name) => en[name] || mw.messages.values[name] || name
+mw.msg = (/** @type {string} */ name) => mw.messages.values[name] || en[name] || name
 mw.config.set('wgContentLanguage', 'en')
 mw.config.set('wgUserLanguage', 'en')
 mw.messages.set({
@@ -180,10 +180,12 @@ function testWithSettings({
 
 			if (contentLanguage) {
 				mw.config.set('wgUserLanguage', contentLanguage)
+				mw.messages.set(messages[contentLanguage])
 			}
 			comment.timestampElement.textContent = formatDateNative(dateObj, true, 'UTC')
 			if (contentLanguage) {
 				mw.config.set('wgUserLanguage', 'en')
+				mw.messages.set(messages.en)
 			}
 
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
