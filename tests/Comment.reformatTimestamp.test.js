@@ -1,24 +1,19 @@
 import { jest } from '@jest/globals'
-import * as mock_date_fns_tz from 'date-fns-tz'
+import { enUS } from 'date-fns/locale'
 
 import * as mock_i18n_en_json from '../i18n/en.json'
-// TODO: use some interfaces for mocks and real objects alike?
-
-const getTimezoneOffset = mock_date_fns_tz.getTimezoneOffset
-
-// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-const en = mock_i18n_en_json.default || mock_i18n_en_json
 import * as mock_src_Comment from '../src/Comment'
 import * as mock_src_commentManager from '../src/commentManager'
 import * as mock_src_settings from '../src/settings'
+import * as mock_src_shared_cd from '../src/shared/cd'
+import { formatDateNative, initDayjs } from '../src/utils-date.js'
+// TODO: use some interfaces for mocks and real objects alike?
+
+// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+const en = mock_i18n_en_json.default
 const Comment = mock_src_Comment.default
 const commentManager = mock_src_commentManager.default
 const settings = mock_src_settings.default
-
-import { enUS } from 'date-fns/locale'
-
-import * as mock_src_shared_cd from '../src/shared/cd'
-import { formatDateNative, initDayjs } from '../src/utils-date.js'
 
 const cd = mock_src_shared_cd.default
 cd.i18n.en.dateFnsLocale = enUS
@@ -27,48 +22,18 @@ mw.msg = (/** @type {string} */ name) => en[name] || mw.messages.values[name] ||
 mw.config.set('wgContentLanguage', 'en')
 mw.config.set('wgUserLanguage', 'en')
 mw.messages.set({
-	'january': 'January',
-	'february': 'February',
-	'march': 'March',
-	'april': 'April',
-	'may_long': 'May',
-	'june': 'June',
-	'july': 'July',
-	'august': 'August',
-	'september': 'September',
-	'october': 'October',
-	'november': 'November',
-	'december': 'December',
-	'jan': 'Jan',
-	'feb': 'Feb',
-	'mar': 'Mar',
-	'apr': 'Apr',
-	'may': 'May',
-	'jun': 'Jun',
-	'jul': 'Jul',
-	'aug': 'Aug',
-	'sep': 'Sep',
-	'oct': 'Oct',
-	'nov': 'Nov',
-	'dec': 'Dec',
-	'sun': 'Sun',
-	'mon': 'Mon',
-	'tue': 'Tue',
-	'wed': 'Wed',
-	'thu': 'Thu',
-	'fri': 'Fri',
-	'sat': 'Sat',
-	'sunday': 'Sunday',
-	'monday': 'Monday',
-	'tuesday': 'Tuesday',
-	'wednesday': 'Wednesday',
-	'thursday': 'Thursday',
-	'friday': 'Friday',
-	'saturday': 'Saturday',
-	'timezone-utc': 'UTC',
-	'parentheses': '($1)',
-	'comma-separator': ', ',
-	'word-separator': ' ',
+	january: 'January',
+	february: 'February',
+	march: 'March',
+	april: 'April',
+	may_long: 'May',
+	june: 'June',
+	july: 'July',
+	august: 'August',
+	september: 'September',
+	october: 'October',
+	november: 'November',
+	december: 'December',
 })
 
 Object.assign(cd.config, {
