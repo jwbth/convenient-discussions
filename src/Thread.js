@@ -987,12 +987,12 @@ class Thread extends mixInObject(
 		}
 
 		if (this.rootComment.isOpeningSection()) {
-			const editOpeningCommentItem = /** @type {OO.ui.MenuOptionWidget} */ (
+			const editOpeningCommentItem = /** @type {OO.ui.MenuOptionWidget | undefined} */ (
 				/** @type {import('./Section').default} */ (this.rootComment.section).actions.moreMenuSelect
 					?.getMenu()
 					.findItemFromData('editOpeningComment')
 			)
-			editOpeningCommentItem.setDisabled(true)
+			editOpeningCommentItem?.setDisabled(true)
 		}
 
 		if (this.endElement !== this.visualEndElement) {
@@ -1039,12 +1039,12 @@ class Thread extends mixInObject(
 		this.expandNoteContainer = undefined
 
 		if (this.rootComment.isOpeningSection()) {
-			const editOpeningCommentItem = /** @type {OO.ui.MenuOptionWidget} */ (
+			const editOpeningCommentItem = /** @type {OO.ui.MenuOptionWidget | undefined} */ (
 				this.rootComment.section.actions.moreMenuSelect
 					?.getMenu()
 					.findItemFromData('editOpeningComment')
 			)
-			editOpeningCommentItem.setDisabled(false)
+			editOpeningCommentItem?.setDisabled(false)
 		}
 
 		this.isCollapsed = false

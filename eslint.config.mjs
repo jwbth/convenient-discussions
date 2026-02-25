@@ -150,7 +150,7 @@ const config = defineConfig(
 					destructuring: 'all',
 				},
 			],
-			'arrow-body-style': ['error', 'as-needed'],
+			'arrow-body-style': 'error',
 			'prefer-arrow-callback': 'error',
 			'one-var': ['error', 'never'],
 			'no-promise-executor-return': 'error',
@@ -189,15 +189,12 @@ const config = defineConfig(
 
 			// We use these for text masking
 			'no-control-regex': 'off',
-			'no-constant-condition': [
-				'error',
-				{
-					checkLoops: false,
-				},
-			],
 
 			// Those are useful in array destructuring
 			'no-sparse-arrays': 'off',
+
+			// Overriden by @typescript-eslint/no-unnecessary-condition
+			'no-constant-condition': 'off',
 
 			// Overriden by @typescript-eslint/class-methods-use-this
 			'class-methods-use-this': 'off',
@@ -209,7 +206,7 @@ const config = defineConfig(
 			// Enabled in TypeScript with strictNullChecks
 			'no-unsafe-optional-chaining': 'off',
 
-			// Handled by @typescript-eslint
+			// Overridden by @typescript-eslint/no-unused-vars
 			'no-unused-vars': 'off',
 
 			// Impractical strict rules
@@ -228,12 +225,6 @@ const config = defineConfig(
 				},
 			],
 			'@typescript-eslint/no-dynamic-delete': 'off',
-
-			// We use inline require() because some global identifiers like OO.ui become available to us
-			// only after they are loaded with mw.loader.
-			'@typescript-eslint/no-var-requires': 'off',
-			'@typescript-eslint/no-require-imports': 'off',
-			'unicorn/prefer-module': 'off',
 
 			'@typescript-eslint/no-unused-vars': [
 				'warn',
@@ -271,8 +262,8 @@ const config = defineConfig(
 			'@typescript-eslint/no-unsafe-member-access': 'off',
 			'@typescript-eslint/no-unsafe-argument': 'off',
 
-			// Temporarily disable until we make sure this doesn't increase file size or debugging or
-			// users (e.g. somebody wants to use an old browser). This is also useful for ternary
+			// Temporarily disable until we make sure this doesn't increase file size or affect debugging
+			// or users (e.g. somebody wants to use an old browser). This rule is also useful for ternary
 			// expressions (e.g. `variable === undefined ? ... : variable`) but they can't be enabled
 			// individually.
 			'@typescript-eslint/prefer-nullish-coalescing': 'off',
@@ -384,9 +375,6 @@ const config = defineConfig(
 
 			// We have files with JSDoc types
 			'unicorn/no-empty-file': 'off',
-
-			// We build with an old babel-loader which doesn't support this
-			'unicorn/prefer-top-level-await': 'off',
 
 			// Import plugin rules
 			'import/order': [
