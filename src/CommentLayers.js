@@ -139,6 +139,9 @@ class CommentLayers {
 		this.$overlay = $(this.overlay)
 		this.$marker = $(this.marker)
 
+		this.underlay.dataset.cdCommentIndex = String(this.comment.index)
+		this.overlay.dataset.cdCommentIndex = String(this.comment.index)
+
 		// Allow subclasses to set up additional elements
 		this.setupAdditionalElements()
 	}
