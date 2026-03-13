@@ -266,8 +266,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Handle unhover event for compact comments.
-	 * Cleans up hover state and hides menu for compact comments.
+	 * Handle unhover event for compact comments. Cleans up hover state and hides menu.
 	 *
 	 * @param {boolean} [force] Unhover even if the "Toggle child threads" popup is open.
 	 * @override

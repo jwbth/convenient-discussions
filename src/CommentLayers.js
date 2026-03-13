@@ -130,6 +130,9 @@ class CommentLayers {
 		)
 
 		this.updateStyles(true)
+		if (!this.offset) {
+			this.computeOffset()
+		}
 
 		// Create jQuery wrappers
 		this.$underlay = $(this.underlay)
@@ -199,10 +202,9 @@ class CommentLayers {
 
 	/**
 	 * Set classes to the underlay, overlay, and other elements according to a comment flag.
-	 * This replicates the logic from Comment.updateClassesForFlag.
 	 *
 	 * @param {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed'} flag
-	 * @param {boolean} add
+	 * @param {boolean} add Whether to add or remove the class.
 	 */
 	updateClassesForFlag(flag, add) {
 		if (this.underlay.classList.contains(`cd-comment-underlay-${flag}`) === add) return
@@ -215,15 +217,16 @@ class CommentLayers {
 			this.comment.actions?.editButton?.setDisabled(add)
 		}
 
-		if (flag === 'hovered' && !add && /** @type {any} */ (this).overlayInnerWrapper) {
-			const thisTyped = /** @type {any} */ (this)
+		const thisTyped = /** @type {any} */ (this)
+		if (flag === 'hovered' && !add && thisTyped.overlayInnerWrapper) {
 			thisTyped.overlayInnerWrapper.style.display = ''
 		}
 	}
 
 	/**
 	 * Hide the comment menu. Base implementation does nothing.
-	 * Override in subclasses that have menu functionality.
+	 *
+	 * Overriden in subclasses that have menu functionality.
 	 *
 	 * @param {Event} [_event] The event that triggered the hide action.
 	 */
@@ -233,7 +236,8 @@ class CommentLayers {
 
 	/**
 	 * Defer hiding the menu. Base implementation does nothing.
-	 * Override in subclasses that have menu functionality.
+	 *
+	 * Overriden in subclasses that have menu functionality.
 	 *
 	 * @param {MouseEvent} _event The mousedown event.
 	 */
@@ -243,7 +247,8 @@ class CommentLayers {
 
 	/**
 	 * Cancel the deferred menu hiding. Base implementation does nothing.
-	 * Override in subclasses that have menu functionality.
+	 *
+	 * Overriden in subclasses that have menu functionality.
 	 */
 	dontHideMenu() {
 		// Base implementation - no timeout to clear

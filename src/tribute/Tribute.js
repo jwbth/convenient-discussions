@@ -618,10 +618,10 @@ class Tribute {
 		if (el.tributeMenu) {
 			this.menuEvents.unbind(el.tributeMenu)
 		}
+		delete el.dataset.tribute
+		this.isActive = false
 
 		setTimeout(() => {
-			delete el.dataset.tribute
-			this.isActive = false
 			if (el.tributeMenu) {
 				el.tributeMenu.remove()
 			}

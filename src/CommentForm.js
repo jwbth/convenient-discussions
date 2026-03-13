@@ -667,13 +667,13 @@ class CommentForm extends EventEmitter {
 		cd.settings.on('set', this.onSettingsUpdate)
 	}
 
-  getInitialRowCount() {
-    // Keep this synced with CommentForm.less: @num-rows-comment and @num-rows-section
-    const NUM_ROWS_COMMENT = 3
-    const NUM_ROWS_SECTION = 5
+	getInitialRowCount() {
+		// Keep this synced with CommentForm.less: @num-rows-comment and @num-rows-section
+		const NUM_ROWS_COMMENT = 3
+		const NUM_ROWS_SECTION = 5
 
-    return this.headlineInput ? NUM_ROWS_SECTION : NUM_ROWS_COMMENT
-  }
+		return this.headlineInput ? NUM_ROWS_SECTION : NUM_ROWS_COMMENT
+	}
 
 	/**
 	 * Load the names of the custom modules to load (e.g. for the toolbar).
@@ -1069,17 +1069,15 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	removeToolbarElements() {
-    // Monkey patch to remove WikiEditor's resizing dragbar and its traces
-    this.commentInput.$element
-      .find('.ext-WikiEditor-ResizingDragBar')
-      .remove();
-    const $uiText = this.commentInput.$element.find('.wikiEditor-ui-text');
-    $uiText.css('height', '');
-    this.commentInput.$input.attr('rows', this.getInitialRowCount());
-    this.commentInput.$input.removeClass('ext-WikiEditor-resizable-textbox');
-    $uiText.closest('.wikiEditor-ui-view').removeClass('wikiEditor-ui-view-resizable');
+		// Monkey patch to remove WikiEditor's resizing dragbar and its traces
+		this.commentInput.$element.find('.ext-WikiEditor-ResizingDragBar').remove()
+		const $uiText = this.commentInput.$element.find('.wikiEditor-ui-text')
+		$uiText.css('height', '')
+		this.commentInput.$input.attr('rows', this.getInitialRowCount())
+		this.commentInput.$input.removeClass('ext-WikiEditor-resizable-textbox')
+		$uiText.closest('.wikiEditor-ui-view').removeClass('wikiEditor-ui-view-resizable')
 
-    this.commentInput.$element
+		this.commentInput.$element
 			.find(
 				'.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]',
 			)
@@ -3882,7 +3880,7 @@ class CommentForm extends EventEmitter {
 			try {
 				const addingMethod = /** @type {CommentFormAddingMethod} */ (
 					newSelf[/** @type {keyof typeof newSelf} */ (newSelf.getCommentFormMethodName(this.mode))]
-				)
+				).bind(newSelf)
 				addingMethod(undefined, this)
 			} catch (error) {
 				cd.debug.logWarn(error)
