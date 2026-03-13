@@ -43,6 +43,22 @@ const TEST_PAGES = {
  * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
  */
 async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
+	await internalSetup(page, url, async () => {
+		// Inject your built Convenient Discussions script
+		await page.addScriptTag({
+			path: './dist/convenientDiscussions.dev.js',
+		})
+	})
+}
+
+/**
+ * Common setup logic for Convenient Discussions browser testing.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} url
+ * @param {() => Promise<void>} injectScriptCallback
+ */
+async function internalSetup(page, url, injectScriptCallback) {
 	console.log(`🚀 Setting up Convenient Discussions on: ${url}`)
 
 	// Set up console message capture
@@ -51,15 +67,22 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 	page.on('console', (msg) => {
 		const type = msg.type()
 		const text = msg.text()
+
+		// Filter out common noise
+		if (
+			text.match(
+				/deprecated ResourceLoader module|The stream mediawiki|CdxPopover|adjacencies have left/,
+			)
+		) {
+			return
+		}
+
 		consoleMessages.push({ type, text })
 
 		// Log errors and warnings immediately
 		if (type === 'error') {
 			console.log(`❌ Browser Error: ${text}`)
-		} else if (
-			type === 'warning' &&
-			!text.match(/deprecated ResourceLoader module|CdxPopover|adjacencies have left/)
-		) {
+		} else if (type === 'warning') {
 			console.log(`⚠️ Browser Warning: ${text}`)
 		}
 	})
@@ -68,6 +91,7 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 	page.on('pageerror', (error) => {
 		console.log(`💥 Page Error: ${error.stack || error.message}`)
 		consoleMessages.push({ type: 'pageerror', text: error.stack || error.message })
+		throw error
 	})
 
 	// Navigate to Wikipedia talk page
@@ -82,18 +106,29 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 	await page.waitForFunction(() => window.mw && window.$, { timeout: 10_000 })
 	console.log('⚙️ MediaWiki globals loaded')
 
-	// Inject your built Convenient Discussions script
-	await page.addScriptTag({
-		path: './dist/convenientDiscussions.js',
-	})
+	// Inject the script via callback
+	await injectScriptCallback()
 	console.log('💉 Convenient Discussions script injected')
 
-	// Wait for Convenient Discussions to initialize
-	await page.waitForFunction(
-		() =>
-			window.convenientDiscussions?.comments !== undefined && window.convenientDiscussions.settings,
-		{ timeout: 15_000 },
-	)
+	// Wait for CD to load
+	try {
+		await page.waitForFunction(
+			() =>
+				window.convenientDiscussions?.comments !== undefined &&
+				window.convenientDiscussions.comments.length > 0 &&
+				window.convenientDiscussions.settings,
+			{ timeout: 15_000 },
+		)
+	} catch (e) {
+		const pageErrors = consoleMessages.filter((m) => m.type === 'pageerror')
+		if (pageErrors.length > 0) {
+			throw new Error(
+				'Page errors occurred during initialization:\n' +
+					pageErrors.map((m) => m.text).join('\n\n'),
+			)
+		}
+		throw e
+	}
 	console.log('🎯 Convenient Discussions initialized')
 
 	// Additional wait for comments to be fully processed
@@ -163,8 +198,11 @@ async function getCompactComment(page, index = 0) {
  * @param {boolean} enabled
  */
 async function toggleSpaciousComments(page, enabled) {
-	await page.evaluate((enabled) => {
-		window.convenientDiscussions.settings.set('commentDisplay', enabled ? 'spacious' : 'compact')
+	await page.evaluate((enabledValue) => {
+		window.convenientDiscussions.settings.set(
+			'commentDisplay',
+			enabledValue ? 'spacious' : 'compact',
+		)
 	}, enabled)
 
 	// Wait for setting to take effect
@@ -180,12 +218,12 @@ async function toggleSpaciousComments(page, enabled) {
  */
 async function createTestComment(page, content = 'Test comment content', spacious = false) {
 	await page.evaluate(
-		({ content, spacious }) => {
+		({ contentValue, spaciousValue }) => {
 			// This would need to be implemented based on your test setup
 			// For now, this is a placeholder
-			console.log('Creating test comment:', content, spacious)
+			console.log('Creating test comment:', contentValue, spaciousValue)
 		},
-		{ content, spacious },
+		{ contentValue: content, spaciousValue: spacious },
 	)
 }
 
@@ -251,88 +289,13 @@ async function getConsoleMessages(page) {
  * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
  */
 async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JWBTH_TEST) {
-	console.log(`🚀 Setting up Convenient Discussions from dev server on: ${url}`)
-
-	// Set up console message capture
-	/** @type {{ type: string; text: string }[]} */
-	const consoleMessages = []
-	page.on('console', (msg) => {
-		const type = msg.type()
-		const text = msg.text()
-		if (
-			text.match(
-				/deprecated ResourceLoader module|The stream mediawiki|CdxPopover|adjacencies have left/,
-			)
-		) {
-			return
-		}
-
-		consoleMessages.push({ type, text })
-
-		// Log errors and warnings immediately
-		if (type === 'error') {
-			console.log(`❌ Browser Error: ${text}`)
-		} else if (type === 'warning') {
-			console.log(`⚠️ Browser Warning: ${text}`)
-		}
+	await internalSetup(page, url, async () => {
+		// Inject the development script from localhost:9000
+		await page.addScriptTag({
+			type: 'module',
+			url: 'http://localhost:9000/src/loader/startup.js',
+		})
 	})
-
-	// Set up page error capture
-	page.on('pageerror', (error) => {
-		console.log(`💥 Page Error: ${error.stack || error.message}`)
-		consoleMessages.push({ type: 'pageerror', text: error.stack || error.message })
-		throw error
-	})
-
-	// Navigate to Wikipedia talk page
-	await page.goto(url)
-	console.log('📄 Navigated to Wikipedia page')
-
-	// Wait for page to load completely
-	await page.waitForLoadState('networkidle')
-	console.log('🌐 Page loaded')
-
-	// Wait for MediaWiki globals to be available
-	await page.waitForFunction(() => window.mw && window.$, { timeout: 10_000 })
-	console.log('⚙️ MediaWiki globals loaded')
-
-	// Inject the development script from localhost:9000
-	await page.addScriptTag({
-		type: 'module',
-		url: 'http://localhost:9000/src/loader/startup.js',
-	})
-	console.log('💉 Convenient Discussions script injected from dev server')
-
-	// Wait for CD to load
-	try {
-		await page.waitForFunction(() => window.convenientDiscussions && window.convenientDiscussions.comments && window.convenientDiscussions.comments.length > 0, { timeout: 15000 })
-	} catch (e) {
-		if (consoleMessages.some(m => m.type === 'pageerror')) {
-			throw new Error('Page errors occurred: ' + consoleMessages.filter(m => m.type === 'pageerror').map(m => m.text).join('\n\n'))
-		}
-		throw e
-	}
-	console.log('🎯 Convenient Discussions initialized')
-
-	// Additional wait for comments to be fully processed
-	await page.waitForTimeout(2000)
-	console.log('✅ Setup complete - ready for testing')
-
-	// Log summary of console messages
-	const errors = consoleMessages.filter((msg) => msg.type === 'error' || msg.type === 'pageerror')
-	const warnings = consoleMessages.filter((msg) => msg.type === 'warning')
-
-	if (errors.length > 0) {
-		console.log(`🔍 Found ${errors.length} console errors during setup`)
-	}
-	if (warnings.length > 0) {
-		console.log(`🔍 Found ${warnings.length} console warnings during setup`)
-	}
-
-	// Store console messages on the page for tests to access
-	await page.evaluate((messages) => {
-		window._testConsoleMessages = messages
-	}, consoleMessages)
 }
 
 export {
