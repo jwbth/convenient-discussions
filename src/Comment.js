@@ -602,8 +602,8 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * Initialize comment structure after parsing. Finds signature element, then delegates to subclass
-	 * implementation.
+	 * Initialize comment structure after parsing (when live-updating a comment with a new version).
+	 * Finds signature element, then delegates to subclass implementation.
 	 */
 	initializeCommentStructure() {
 		this.signatureElement = this.$elements.find('.cd-signature')[0]
@@ -612,9 +612,8 @@ class Comment extends CommentSkeleton {
 
 	/**
 	 * Implementation-specific comment structure initialization.
-	 * This method should be overridden by subclasses.
 	 *
-	 * @protected
+	 * This method should be overridden by subclasses.
 	 */
 	initializeCommentStructureImpl() {
 		// Default implementation - will be overridden by subclasses
@@ -1782,7 +1781,7 @@ class Comment extends CommentSkeleton {
 	 *   the new revision as delivered by the worker.
 	 * @returns {boolean} Was the update successful.
 	 */
-	update(currentComment, newComment) {
+	liveUpdate(currentComment, newComment) {
 		this.htmlToCompare = newComment.htmlToCompare
 
 		const elementNames = [...this.$elements].map((el) => el.tagName)

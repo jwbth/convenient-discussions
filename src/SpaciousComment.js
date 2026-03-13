@@ -9,10 +9,12 @@ import cd from './loader/cd'
 import { isInline } from './shared/utils-general'
 
 /**
- * @typedef {object[]} ReplaceSignatureWithHeaderReturn
+ * @typedef {object} ReplaceSignatureWithHeaderReturnItem
  * @property {string} pageName
  * @property {HTMLAnchorElement} link
  */
+
+/** @typedef {ReplaceSignatureWithHeaderReturnItem[]} ReplaceSignatureWithHeaderReturn */
 
 /**
  * A spacious comment class that handles spacious comment formatting with author/date headers
@@ -34,7 +36,7 @@ class SpaciousComment extends Comment {
 	/**
 	 * Comment actions for spacious comments.
 	 *
-	 * @type {SpaciousCommentActions | undefined}
+	 * @type {SpaciousCommentActions}
 	 * @override
 	 */
 	// @ts-expect-error: Narrowing parent type
@@ -86,10 +88,6 @@ class SpaciousComment extends Comment {
 		// Create spacious layers
 		this.layers = new SpaciousCommentLayers(this)
 		this.layers.create()
-
-		// Create spacious actions
-		this.actions = new SpaciousCommentActions(this)
-		this.actions.create()
 
 		/**
 		 * An underlay and overlay have been created for a comment.
@@ -160,12 +158,15 @@ class SpaciousComment extends Comment {
 	 * Implementation-specific structure initialization for spacious comments.
 	 * Replaces signature with header and adds menu.
 	 *
-	 * @protected
+	 * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
 	 * @override
 	 */
 	initializeCommentStructureImpl() {
-		this.replaceSignatureWithHeader()
+		this.actions = new SpaciousCommentActions(this)
+		const pagesToCheckExistence = this.replaceSignatureWithHeader()
 		this.addMenu()
+
+		return pagesToCheckExistence
 	}
 
 	/**
@@ -277,18 +278,16 @@ class SpaciousComment extends Comment {
 			 *
 			 * @type {CommentButton}
 			 */
-			if (this.actions) {
-				this.actions.copyLinkButton = new CommentButton({
-					label: this.reformattedTimestamp || this.timestamp,
-					tooltip: this.timestampTitle,
-					classes: ['cd-comment-button-labeled', 'cd-comment-timestamp', 'mw-selflink-fragment'],
-					action: this.copyLink,
-					href: this.dtId && '#' + this.dtId,
-				})
+			this.actions.copyLinkButton = new CommentButton({
+				label: this.reformattedTimestamp || this.timestamp,
+				tooltip: this.timestampTitle,
+				classes: ['cd-comment-button-labeled', 'cd-comment-timestamp', 'mw-selflink-fragment'],
+				action: this.copyLink,
+				href: this.dtId && '#' + this.dtId,
+			})
 
-				this.headerElement.append(this.actions.copyLinkButton.element)
-				this.timestampElement = this.actions.copyLinkButton.labelElement
-			}
+			this.headerElement.append(this.actions.copyLinkButton.element)
+			this.timestampElement = this.actions.copyLinkButton.labelElement
 			if (this.date) {
 				new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone).init()
 			}
@@ -458,14 +457,11 @@ class SpaciousComment extends Comment {
 		this.menuElement = menuElement
 		this.$menu = $(menuElement)
 
-		this.actions?.addReplyButton()
-		this.actions?.addEditButton()
-		this.actions?.addThankButton()
-		this.actions?.addGoToParentButton()
+		this.actions.create()
 
 		// The menu may be re-added (after a comment's content is updated). We need to restore
 		// something.
-		this.actions?.maybeAddGoToChildButton()
+		this.actions.maybeAddGoToChildButton()
 
 		// We need a wrapper to ensure correct positioning in LTR-in-RTL situations and vice versa.
 		const menuWrapper = document.createElement('div')

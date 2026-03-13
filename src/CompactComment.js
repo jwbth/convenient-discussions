@@ -79,8 +79,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Implementation-specific logic for adding change note to compact comments.
-	 * Adds the note to the last block element.
+	 * Implementation-specific logic for adding change note to compact comments. Adds the note to the
+	 * last block element.
 	 *
 	 * @param {JQuery} $changeNote
 	 * @protected

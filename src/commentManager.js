@@ -879,8 +879,7 @@ export class CommentManager extends EventEmitter {
 			const spaciousComment = /** @type {import('./SpaciousComment').default} */ (
 				/** @type {unknown} */ (comment)
 			)
-			acc.push(...spaciousComment.replaceSignatureWithHeader())
-			spaciousComment.addMenu()
+			acc.push(...spaciousComment.initializeCommentStructureImpl())
 
 			return acc
 		}, /** @type {import('./SpaciousComment').ReplaceSignatureWithHeaderReturn} */ ([]))

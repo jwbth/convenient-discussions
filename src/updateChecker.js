@@ -725,7 +725,7 @@ class UpdateChecker extends EventEmitter {
 				if (this.hasCommentChanged(currentComment, newComment)) {
 					// The comment may have already been updated previously.
 					if (!comment.htmlToCompare || comment.htmlToCompare !== newComment.htmlToCompare) {
-						const updateSuccess = comment.update(currentComment, newComment)
+						const updateSuccess = comment.liveUpdate(currentComment, newComment)
 						markAsChangedData.push({
 							comment,
 							isNewRevisionRendered: updateSuccess,
@@ -735,7 +735,7 @@ class UpdateChecker extends EventEmitter {
 						events.changed = { updateSuccess }
 					}
 				} else if (comment.isChanged) {
-					comment.update(currentComment, newComment)
+					comment.liveUpdate(currentComment, newComment)
 					comment.unmarkAsChanged('changed')
 					events.unchanged = true
 				}

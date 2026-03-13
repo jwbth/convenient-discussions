@@ -1698,7 +1698,7 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
-	 * _For internal use._ When the section's headline is live-updated in {@link Comment#update}, also
+	 * _For internal use._ When the section's headline is live-updated in {@link Comment#liveUpdate}, also
 	 * update some aspects of the section.
 	 *
 	 * @param {JQuery} $html

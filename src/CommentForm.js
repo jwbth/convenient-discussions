@@ -667,6 +667,11 @@ class CommentForm extends EventEmitter {
 		cd.settings.on('set', this.onSettingsUpdate)
 	}
 
+	/**
+	 * Get the initial number of rows for the comment input.
+	 *
+	 * @returns {number}
+	 */
 	getInitialRowCount() {
 		// Keep this synced with CommentForm.less: @num-rows-comment and @num-rows-section
 		const NUM_ROWS_COMMENT = 3
