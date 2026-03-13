@@ -27,7 +27,6 @@ const TEST_PAGES = {
 	CD_TEST_CASES:
 		'https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases',
 	VILLAGE_PUMP: 'https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)',
-	SANDBOX: 'https://en.wikipedia.org/wiki/Wikipedia_talk:Sandbox',
 	// Compact test page with few comments for quick testing
 	JWBTH_TEST: 'https://test.wikipedia.org/wiki/User_talk:JWBTH',
 }
@@ -192,18 +191,15 @@ async function getCompactComment(page, index = 0) {
 }
 
 /**
- * Toggle spacious comments setting
+ * Toggle comment display
  *
  * @param {import('@playwright/test').Page} page
- * @param {boolean} enabled
+ * @param {'spacious' | 'compact'} display
  */
-async function toggleSpaciousComments(page, enabled) {
-	await page.evaluate((enabledValue) => {
-		window.convenientDiscussions.settings.set(
-			'commentDisplay',
-			enabledValue ? 'spacious' : 'compact',
-		)
-	}, enabled)
+async function toggleCommentDisplay(page, display) {
+	await page.evaluate((displayValue) => {
+		window.convenientDiscussions.settings.set('commentDisplay', displayValue)
+	}, display)
 
 	// Wait for setting to take effect
 	await page.waitForTimeout(100)
@@ -306,7 +302,7 @@ export {
 	getCommentByIndex,
 	getSpaciousComment,
 	getCompactComment,
-	toggleSpaciousComments,
+	toggleCommentDisplay,
 	createTestComment,
 	commentHasLayers,
 	highlightComment,
