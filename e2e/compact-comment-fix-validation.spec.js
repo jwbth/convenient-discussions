@@ -1,5 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
+
 import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
@@ -17,12 +18,12 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 		const result = await page.evaluate(() => {
 			const cd = window.convenientDiscussions
 
-			if (!cd || !cd.comments) {
+			if (!cd?.comments) {
 				return { error: 'No comments available for testing' }
 			}
 
 			let compactCommentsChecked = 0
-			let issuesFound = []
+			const issuesFound = []
 
 			// Check each comment's actions
 			cd.comments.forEach((comment, index) => {
@@ -56,8 +57,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 
 						// Check if the create method was called properly (no duplicates)
 						// We can't directly test method calls, but we can check the result
-						const hasChildren =
-							comment.getChildren && comment.getChildren().some((child) => child.thread)
+						const hasChildren = comment.getChildren?.().some((child) => child.thread)
 						const hasToggleButton = !!actions.toggleChildThreadsButton
 
 						if (hasChildren && !hasToggleButton) {
@@ -82,6 +82,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 
 		if (result.error) {
 			console.log(`ℹ️ ${result.error}`)
+
 			return
 		}
 
@@ -107,7 +108,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 		const simulationResult = await page.evaluate(() => {
 			const cd = window.convenientDiscussions
 
-			if (!cd || !cd.comments) {
+			if (!cd?.comments) {
 				return { error: 'No comments available' }
 			}
 
@@ -120,27 +121,27 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 
 			cd.comments.forEach((comment) => {
 				if (
-					comment.constructor.name === 'CompactComment' ||
-					(comment.elements && !comment.elements[0]?.classList.contains('cd-comment-reformatted'))
+					(comment.constructor.name === 'CompactComment' ||
+						(comment.elements &&
+							!comment.elements[0]?.classList.contains('cd-comment-reformatted'))) &&
+					comment.actions?.toggleChildThreadsButton
 				) {
-					if (comment.actions && comment.actions.toggleChildThreadsButton) {
-						compactCommentsWithToggleButtons++
+					compactCommentsWithToggleButtons++
 
-						// Count actual DOM elements with the toggle button class within this comment's context
-						const commentElement = comment.elements[0]
-						if (commentElement) {
-							const toggleButtons = commentElement.querySelectorAll(
-								'.cd-comment-button-toggleChildThreads',
-							)
-							totalToggleButtonElements += toggleButtons.length
+					// Count actual DOM elements with the toggle button class within this comment's context
+					const commentElement = comment.elements[0]
+					if (commentElement) {
+						const toggleButtons = commentElement.querySelectorAll(
+							'.cd-comment-button-toggleChildThreads',
+						)
+						totalToggleButtonElements += toggleButtons.length
 
-							// Before our fix, this would be > 1 for comments with children
-							if (toggleButtons.length > 1) {
-								return {
-									error: `Duplicate buttons found in comment - fix failed!`,
-									duplicateCount: toggleButtons.length,
-									commentId: comment.id,
-								}
+						// Before our fix, this would be > 1 for comments with children
+						if (toggleButtons.length > 1) {
+							return {
+								error: `Duplicate buttons found in comment - fix failed!`,
+								duplicateCount: toggleButtons.length,
+								commentId: comment.id,
 							}
 						}
 					}
@@ -161,6 +162,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 		if (simulationResult.error) {
 			console.log(`❌ ${simulationResult.error}`)
 			expect(simulationResult.error).toBeUndefined()
+
 			return
 		}
 
@@ -175,7 +177,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 
 		// The key assertion: average should be 1.0 (exactly one button per comment)
 		if (simulationResult.compactCommentsWithToggleButtons > 0) {
-			expect(simulationResult.averageButtonsPerComment).toBeLessThanOrEqual(1.0)
+			expect(simulationResult.averageButtonsPerComment).toBeLessThanOrEqual(1)
 		}
 
 		console.log('✅ Original duplicate issue is resolved')

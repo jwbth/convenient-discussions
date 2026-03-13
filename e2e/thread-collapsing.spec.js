@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test'
 
 import {
-	setupConvenientDiscussionsFromDevServer,
+	setupConvenientDiscussions,
 	TEST_PAGES,
 	waitForConvenientDiscussions,
 } from './helpers/test-utils.js'
@@ -23,7 +23,7 @@ test.describe('Thread Collapsing', () => {
 		// The prompt says "Let's add a playwright test testing thread collapsing and expanding".
 		// I'll use CD_TEST_CASES to be safe, assuming it exists and is public.
 		// Re-reading test-utils.js: TEST_PAGES.CD_TEST_CASES is defined.
-		await setupConvenientDiscussionsFromDevServer(page, TEST_PAGES.CD_TEST_CASES)
+		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
 	})
 
 	test('should collapse and expand a thread', async ({ page }) => {

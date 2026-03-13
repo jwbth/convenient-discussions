@@ -1,5 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
+
 import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
@@ -11,20 +12,18 @@ test.describe('Check Comments Availability', () => {
 		await setupConvenientDiscussions(page, TEST_PAGES.SANDBOX)
 
 		// Check what comments CD found
-		const cdInfo = await page.evaluate(() => {
-			return {
-				commentsLength: window.convenientDiscussions.comments.length,
-				sectionsLength: window.convenientDiscussions.sections.length,
-				commentElements: document.querySelectorAll('.cd-comment').length,
-				allCommentClasses: Array.from(document.querySelectorAll('[class*="cd-comment"]')).map(
-					(el) => el.className,
-				),
-				hasDiscussionContent: !!document.querySelector('.mw-parser-output'),
-				hasSignatures: document.querySelectorAll(
-					'.mw-parser-output a[title*="User:"], .mw-parser-output a[title*="User talk:"]',
-				).length,
-			}
-		})
+		const cdInfo = await page.evaluate(() => ({
+			commentsLength: window.convenientDiscussions.comments.length,
+			sectionsLength: window.convenientDiscussions.sections.length,
+			commentElements: document.querySelectorAll('.cd-comment').length,
+			allCommentClasses: Array.from(document.querySelectorAll('[class*="cd-comment"]')).map(
+				(el) => el.className,
+			),
+			hasDiscussionContent: !!document.querySelector('.mw-parser-output'),
+			hasSignatures: document.querySelectorAll(
+				'.mw-parser-output a[title*="User:"], .mw-parser-output a[title*="User talk:"]',
+			).length,
+		}))
 
 		console.log('CD Comments Info:', cdInfo)
 
@@ -57,13 +56,11 @@ test.describe('Check Comments Availability', () => {
 	test('Check Village Pump page', async ({ page }) => {
 		await setupConvenientDiscussions(page, TEST_PAGES.VILLAGE_PUMP)
 
-		const cdInfo = await page.evaluate(() => {
-			return {
-				commentsLength: window.convenientDiscussions.comments.length,
-				sectionsLength: window.convenientDiscussions.sections.length,
-				commentElements: document.querySelectorAll('.cd-comment').length,
-			}
-		})
+		const cdInfo = await page.evaluate(() => ({
+			commentsLength: window.convenientDiscussions.comments.length,
+			sectionsLength: window.convenientDiscussions.sections.length,
+			commentElements: document.querySelectorAll('.cd-comment').length,
+		}))
 
 		console.log('Village Pump CD Info:', cdInfo)
 		expect(true).toBe(true)

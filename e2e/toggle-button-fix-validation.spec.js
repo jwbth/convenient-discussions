@@ -1,5 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
+
 import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
@@ -111,6 +112,7 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 
 		if (codeValidation.error) {
 			console.log(`⚠️ ${codeValidation.error}`)
+
 			return // Skip this test if CD isn't loaded
 		}
 

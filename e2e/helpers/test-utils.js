@@ -42,7 +42,7 @@ const TEST_PAGES = {
  * @param {import('@playwright/test').Page} page
  * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
  */
-async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
+async function setupConvenientDiscussionsFromDevBuild(page, url = TEST_PAGES.JWBTH_TEST) {
 	await internalSetup(page, url, async () => {
 		// Inject your built Convenient Discussions script
 		await page.addScriptTag({
@@ -288,7 +288,7 @@ async function getConsoleMessages(page) {
  * @param {import('@playwright/test').Page} page
  * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
  */
-async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JWBTH_TEST) {
+async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 	await internalSetup(page, url, async () => {
 		// Inject the development script from localhost:9000
 		await page.addScriptTag({
@@ -301,8 +301,8 @@ async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JW
 export {
 	TEST_PAGES,
 	waitForConvenientDiscussions,
+	setupConvenientDiscussionsFromDevBuild,
 	setupConvenientDiscussions,
-	setupConvenientDiscussionsFromDevServer,
 	getCommentByIndex,
 	getSpaciousComment,
 	getCompactComment,
