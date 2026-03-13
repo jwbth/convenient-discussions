@@ -344,37 +344,9 @@ class Loader {
 	 *
 	 * @private
 	 */
-	initTalkPage() {
+	async initTalkPage() {
 		cd.debug.stopTimer('start')
 		cd.debug.startTimer('load data')
-
-		Promise.all([
-			this.loadApp(),
-			this.maybeLoadTalkPageModules(),
-
-			// Make some requests in advance if the API module is ready in order not to make 2 requests
-			// sequentially. We don't make a `userinfo` request, because if there is more than one tab in
-			// the background, this request is made and the execution stops at mw.loader.using, which
-			// results in overriding the renewed visits setting of one tab by another tab (the visits are
-			// loaded by one tab, then another tab, then written by one tab, then by another tab).
-			mw.loader.getState('mediawiki.api') === 'ready'
-				? this.getSiteDataPromise()
-				: Promise.resolve(),
-
-			// We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
-			// if several pages are opened simultaneously. In this situation, visits could be requested
-			// for multiple pages; updated and then saved for each of them with losing the updates from
-			// the rest.
-		]).then(
-			() => {
-				this.app?.()
-			},
-			(/** @type {unknown} */ error) => {
-				mw.notify(cd.s('error-loaddata'), { type: 'error' })
-				console.error(error)
-				this.hideBootingOverlay()
-			},
-		)
 
 		this.showBootingOverlay()
 
@@ -398,6 +370,32 @@ class Loader {
 		*/
 		this.initCssValues()
 		this.addTalkPageCss()
+
+		try {
+			await Promise.all([
+				this.maybeLoadTalkPageModules().then(() => this.loadApp()),
+
+				// Make some requests in advance if the API module is ready in order not to make 2 requests
+				// sequentially. We don't make a `userinfo` request, because if there is more than one tab in
+				// the background, this request is made and the execution stops at mw.loader.using, which
+				// results in overriding the renewed visits setting of one tab by another tab (the visits are
+				// loaded by one tab, then another tab, then written by one tab, then by another tab).
+				mw.loader.getState('mediawiki.api') === 'ready'
+					? this.getSiteDataPromise()
+					: Promise.resolve(),
+
+				// We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
+				// if several pages are opened simultaneously. In this situation, visits could be requested
+				// for multiple pages; updated and then saved for each of them with losing the updates from
+				// the rest.
+			])
+
+			this.app?.()
+		} catch (error) {
+			mw.notify(cd.s('error-loaddata'), { type: 'error' })
+			console.error(error)
+			this.hideBootingOverlay()
+		}
 	}
 
 	/**
