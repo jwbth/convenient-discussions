@@ -66,8 +66,8 @@ async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
 
 	// Set up page error capture
 	page.on('pageerror', (error) => {
-		console.log(`💥 Page Error: ${error.message}`)
-		consoleMessages.push({ type: 'pageerror', text: error.message })
+		console.log(`💥 Page Error: ${error.stack || error.message}`)
+		consoleMessages.push({ type: 'pageerror', text: error.stack || error.message })
 	})
 
 	// Navigate to Wikipedia talk page
@@ -279,8 +279,9 @@ async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JW
 
 	// Set up page error capture
 	page.on('pageerror', (error) => {
-		console.log(`💥 Page Error: ${error.message}`)
-		consoleMessages.push({ type: 'pageerror', text: error.message })
+		console.log(`💥 Page Error: ${error.stack || error.message}`)
+		consoleMessages.push({ type: 'pageerror', text: error.stack || error.message })
+		throw error
 	})
 
 	// Navigate to Wikipedia talk page
@@ -302,12 +303,15 @@ async function setupConvenientDiscussionsFromDevServer(page, url = TEST_PAGES.JW
 	})
 	console.log('💉 Convenient Discussions script injected from dev server')
 
-	// Wait for Convenient Discussions to initialize
-	await page.waitForFunction(
-		() =>
-			window.convenientDiscussions?.comments !== undefined && window.convenientDiscussions.settings,
-		{ timeout: 15_000 },
-	)
+	// Wait for CD to load
+	try {
+		await page.waitForFunction(() => window.convenientDiscussions && window.convenientDiscussions.comments && window.convenientDiscussions.comments.length > 0, { timeout: 15000 })
+	} catch (e) {
+		if (consoleMessages.some(m => m.type === 'pageerror')) {
+			throw new Error('Page errors occurred: ' + consoleMessages.filter(m => m.type === 'pageerror').map(m => m.text).join('\n\n'))
+		}
+		throw e
+	}
 	console.log('🎯 Convenient Discussions initialized')
 
 	// Additional wait for comments to be fully processed
