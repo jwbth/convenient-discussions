@@ -1,11 +1,12 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
 
-import { setupConvenientDiscussions } from './helpers/test-utils.js'
+import { setupConvenientDiscussions, toggleCommentDisplay } from './helpers/test-utils.js'
 
 test.describe('Comment overlay', () => {
 	test.beforeEach(async ({ page }) => {
 		await setupConvenientDiscussions(page)
+		await toggleCommentDisplay(page, 'compact')
 	})
 
 	test('Overlay should appear when hovering the first comment', async ({ page }) => {
