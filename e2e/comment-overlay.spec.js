@@ -54,7 +54,7 @@ test.describe('Comment overlay', () => {
 		await secondCommentPart.hover()
 		await page.waitForTimeout(1000)
 
-		const overlayMenu = page.locator('.cd-comment-overlay-menu').nth(1)
+		const overlayMenu = page.locator('.cd-comment-overlay-menu').first()
 		await expect(overlayMenu).toBeVisible()
 	})
 })

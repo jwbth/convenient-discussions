@@ -25,7 +25,7 @@ test.describe('Comment Visual Appearance - Compact Style', () => {
 		await expect(header).not.toBeVisible()
 
 		// Should have traditional signature inline with content
-		const signature = compactComment.locator('.cd-comment-signature')
+		const signature = compactComment.locator('.cd-signature')
 		await expect(signature).toBeVisible()
 	})
 
