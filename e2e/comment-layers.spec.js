@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
 
-import { setupConvenientDiscussions } from './helpers/test-utils.js'
+import { setupConvenientDiscussions, toggleCommentDisplay } from './helpers/test-utils.js'
 
 /**
  * Browser tests for Comment layers functionality
@@ -14,6 +14,7 @@ import { setupConvenientDiscussions } from './helpers/test-utils.js'
 test.describe('Comment Layers - Compact Style', () => {
 	test.beforeEach(async ({ page }) => {
 		await setupConvenientDiscussions(page)
+		await toggleCommentDisplay(page, 'compact')
 	})
 
 	test('CompactComment should show overlay menu on hover', async ({ page }) => {
@@ -35,37 +36,15 @@ test.describe('Comment Layers - Compact Style', () => {
 		const overlay = page.locator('.cd-comment-overlay').first()
 
 		// Check if the layers exist (they should be created on hover for compact comments)
-		const underlayExists = (await underlay.count()) > 0
-		const overlayExists = (await overlay.count()) > 0
+		await expect(underlay, 'Underlay should be created').toBeVisible()
+		await expect(overlay, 'Overlay should be created').toBeVisible()
 
-		console.log('Underlay exists:', underlayExists)
-		console.log('Overlay exists:', overlayExists)
+		// Check for overlay menu elements specific to compact comments
+		const overlayMenu = page.locator('.cd-comment-overlay-menu').first()
+		const overlayGradient = page.locator('.cd-comment-overlay-gradient').first()
 
-		if (underlayExists && overlayExists) {
-			await expect(underlay).toBeVisible()
-			await expect(overlay).toBeVisible()
-
-			// Check for overlay menu elements specific to compact comments
-			const overlayMenu = page.locator('.cd-comment-overlay-menu').first()
-			const overlayGradient = page.locator('.cd-comment-overlay-gradient').first()
-
-			const menuExists = (await overlayMenu.count()) > 0
-			const gradientExists = (await overlayGradient.count()) > 0
-
-			console.log('Overlay menu exists:', menuExists)
-			console.log('Overlay gradient exists:', gradientExists)
-
-			if (menuExists) {
-				await expect(overlayMenu).toBeVisible()
-			}
-			if (gradientExists) {
-				await expect(overlayGradient).toBeVisible()
-			}
-		} else {
-			console.log('Layers were not created - this indicates an issue with layer creation')
-			// For now, let's just check that the comment part exists
-			await expect(firstCommentPart).toBeVisible()
-		}
+		await expect(overlayMenu, 'Overlay menu should be visible').toBeVisible()
+		await expect(overlayGradient, 'Overlay gradient should be visible').toBeVisible()
 	})
 
 	test('Compact comment layers should be positioned correctly', async ({ page }) => {
@@ -79,28 +58,25 @@ test.describe('Comment Layers - Compact Style', () => {
 		const underlay = page.locator('.cd-comment-underlay').first()
 		const overlay = page.locator('.cd-comment-overlay').first()
 
-		const underlayExists = (await underlay.count()) > 0
-		const overlayExists = (await overlay.count()) > 0
+		// Check if layers were created
+		await expect(underlay, 'Underlay should be visible').toBeVisible()
+		await expect(overlay, 'Overlay should be visible').toBeVisible()
 
-		if (underlayExists && overlayExists) {
-			await expect(underlay).toBeVisible()
-			await expect(overlay).toBeVisible()
+		// Verify positioning - underlay should be behind comment, overlay in front
+		const commentBox = await firstCommentPart.boundingBox()
+		const underlayBox = await underlay.boundingBox()
+		const overlayBox = await overlay.boundingBox()
 
-			// Verify positioning - underlay should be behind comment, overlay in front
-			const commentBox = await firstCommentPart.boundingBox()
-			const underlayBox = await underlay.boundingBox()
-			const overlayBox = await overlay.boundingBox()
+		expect(commentBox, 'Comment box should exist').not.toBeNull()
+		expect(underlayBox, 'Underlay box should exist').not.toBeNull()
+		expect(overlayBox, 'Overlay box should exist').not.toBeNull()
 
-			if (underlayBox && overlayBox && commentBox) {
-				// Basic positioning checks - layers should be positioned near the comment
-				expect(Math.abs(underlayBox.x - commentBox.x)).toBeLessThan(50)
-				expect(Math.abs(overlayBox.x - commentBox.x)).toBeLessThan(50)
-				expect(Math.abs(underlayBox.y - commentBox.y)).toBeLessThan(50)
-				expect(Math.abs(overlayBox.y - commentBox.y)).toBeLessThan(50)
-			}
-		} else {
-			console.log('Layers not created - skipping positioning test')
-			await expect(firstCommentPart).toBeVisible()
+		if (underlayBox && overlayBox && commentBox) {
+			// Basic positioning checks - layers should be positioned near the comment
+			expect(Math.abs(underlayBox.x - commentBox.x)).toBeLessThan(50)
+			expect(Math.abs(overlayBox.x - commentBox.x)).toBeLessThan(50)
+			expect(Math.abs(underlayBox.y - commentBox.y)).toBeLessThan(50)
+			expect(Math.abs(overlayBox.y - commentBox.y)).toBeLessThan(50)
 		}
 	})
 
@@ -114,24 +90,19 @@ test.describe('Comment Layers - Compact Style', () => {
 		const underlay = page.locator('.cd-comment-underlay').first()
 		const overlay = page.locator('.cd-comment-overlay').first()
 
-		const underlayExists = (await underlay.count()) > 0
-		const overlayExists = (await overlay.count()) > 0
+		await expect(underlay, 'Underlay should be visible').toBeVisible()
+		await expect(overlay, 'Overlay should be visible').toBeVisible()
 
-		if (underlayExists && overlayExists) {
-			// Check initial styles
-			await expect(underlay).toHaveCSS('position', 'absolute')
-			await expect(overlay).toHaveCSS('position', 'absolute')
+		// Check initial styles
+		await expect(underlay).toHaveCSS('position', 'absolute')
+		await expect(overlay).toHaveCSS('position', 'absolute')
 
-			// Trigger style update (e.g., window resize)
-			await page.setViewportSize({ width: 1200, height: 800 })
-			await page.waitForTimeout(200)
+		// Trigger style update (e.g., window resize)
+		await page.setViewportSize({ width: 1200, height: 800 })
+		await page.waitForTimeout(200)
 
-			// Verify layers are still properly positioned
-			await expect(underlay).toBeVisible()
-			await expect(overlay).toBeVisible()
-		} else {
-			console.log('Layers not created - skipping style test')
-			await expect(firstCommentPart).toBeVisible()
-		}
+		// Verify layers are still properly positioned
+		await expect(underlay).toBeVisible()
+		await expect(overlay).toBeVisible()
 	})
 })
