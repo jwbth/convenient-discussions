@@ -39,15 +39,48 @@ const TEST_PAGES = {
  * The test account should have spaciousComments setting disabled for consistent testing.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
+ * @param {string | { url?: string, settings?: object }} [urlOrOptions]
+ *   Wikipedia talk page URL or options object.
+ * @param {object} [settings] Settings to set BEFORE script injection.
  */
-async function setupConvenientDiscussionsFromDevBuild(page, url = TEST_PAGES.JWBTH_TEST) {
-	await internalSetup(page, url, async () => {
-		// Inject your built Convenient Discussions script
-		await page.addScriptTag({
-			path: './dist/convenientDiscussions.dev.js',
-		})
-	})
+async function setupConvenientDiscussionsFromDevBuild(
+	page,
+	urlOrOptions = TEST_PAGES.JWBTH_TEST,
+	settings = {},
+) {
+	const { url, finalSettings } = parseSetupArgs(urlOrOptions, settings)
+	await internalSetup(
+		page,
+		url,
+		async () => {
+			// Inject your built Convenient Discussions script
+			await page.addScriptTag({
+				path: './dist/convenientDiscussions.dev.js',
+			})
+		},
+		finalSettings,
+	)
+}
+
+/**
+ * Helper to parse setup arguments
+ *
+ * @param {string | { url?: string, settings?: object }} urlOrOptions
+ * @param {object} settings
+ * @returns {{ url: string, finalSettings: object }}
+ */
+function parseSetupArgs(urlOrOptions, settings) {
+	let url = TEST_PAGES.JWBTH_TEST
+	let finalSettings = settings
+
+	if (typeof urlOrOptions === 'object' && urlOrOptions !== null) {
+		url = urlOrOptions.url || TEST_PAGES.JWBTH_TEST
+		finalSettings = { ...urlOrOptions.settings, ...settings }
+	} else {
+		url = urlOrOptions
+	}
+
+	return { url, finalSettings }
 }
 
 /**
@@ -56,8 +89,9 @@ async function setupConvenientDiscussionsFromDevBuild(page, url = TEST_PAGES.JWB
  * @param {import('@playwright/test').Page} page
  * @param {string} url
  * @param {() => Promise<void>} injectScriptCallback
+ * @param {object} [settings]
  */
-async function internalSetup(page, url, injectScriptCallback) {
+async function internalSetup(page, url, injectScriptCallback, settings = {}) {
 	console.log(`🚀 Setting up Convenient Discussions on: ${url}`)
 
 	// Set up console message capture
@@ -104,6 +138,18 @@ async function internalSetup(page, url, injectScriptCallback) {
 	// Wait for MediaWiki globals to be available
 	await page.waitForFunction(() => window.mw && window.$, { timeout: 10_000 })
 	console.log('⚙️ MediaWiki globals loaded')
+
+	// Set settings before script injection
+	if (Object.keys(settings).length > 0) {
+		await page.evaluate((settingsObj) => {
+			for (const [key, value] of Object.entries(settingsObj)) {
+				// Convert setting name to CD global name (e.g. commentDisplay -> cdCommentDisplay)
+				const globalName = 'cdLocal' + key.charAt(0).toUpperCase() + key.slice(1)
+				window[globalName] = value
+			}
+		}, settings)
+		console.log('🔧 Pre-injection settings applied:', settings)
+	}
 
 	// Inject the script via callback
 	await injectScriptCallback()
@@ -198,7 +244,11 @@ async function getCompactComment(page, index = 0) {
  */
 async function toggleCommentDisplay(page, display) {
 	await page.evaluate((displayValue) => {
-		window.convenientDiscussions.settings.set('commentDisplay', displayValue)
+		if (window.convenientDiscussions?.settings) {
+			window.convenientDiscussions.settings.set('commentDisplay', displayValue)
+		} else {
+			window.cdLocalCommentDisplay = displayValue
+		}
 	}, display)
 
 	// Wait for setting to take effect
@@ -282,16 +332,28 @@ async function getConsoleMessages(page) {
  * This injects the script from localhost:9000 instead of the built dist file.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string} url Wikipedia talk page URL (defaults to JWBTH test page)
+ * @param {string | { url?: string, settings?: object }} [urlOrOptions]
+ *   Wikipedia talk page URL or options object.
+ * @param {object} [settings] Settings to set BEFORE script injection.
  */
-async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
-	await internalSetup(page, url, async () => {
-		// Inject the development script from localhost:9000
-		await page.addScriptTag({
-			type: 'module',
-			url: 'http://localhost:9000/src/loader/startup.js',
-		})
-	})
+async function setupConvenientDiscussions(
+	page,
+	urlOrOptions = TEST_PAGES.JWBTH_TEST,
+	settings = {},
+) {
+	const { url, finalSettings } = parseSetupArgs(urlOrOptions, settings)
+	await internalSetup(
+		page,
+		url,
+		async () => {
+			// Inject the development script from localhost:9000
+			await page.addScriptTag({
+				type: 'module',
+				url: 'http://localhost:9000/src/loader/startup.js',
+			})
+		},
+		finalSettings,
+	)
 }
 
 export {

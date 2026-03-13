@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
 
-import { setupConvenientDiscussions, toggleCommentDisplay, TEST_PAGES } from './helpers/test-utils.js'
+import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
  * Specific validation for the CompactComment duplicate button fix
@@ -12,8 +12,7 @@ import { setupConvenientDiscussions, toggleCommentDisplay, TEST_PAGES } from './
 
 test.describe('CompactComment Duplicate Button Fix', () => {
 	test('should validate that CompactComment actions are created correctly', async ({ page }) => {
-		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
-		await toggleCommentDisplay(page, 'compact')
+		await setupConvenientDiscussions(page, { url: TEST_PAGES.CD_TEST_CASES, settings: { commentDisplay: 'compact' } })
 
 		// Test the specific fix we made - ensure no duplicate calls to addToggleChildThreadsButton
 		const result = await page.evaluate(() => {
@@ -103,8 +102,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 	})
 
 	test('should confirm the original duplicate issue is resolved', async ({ page }) => {
-		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
-		await toggleCommentDisplay(page, 'compact')
+		await setupConvenientDiscussions(page, { url: TEST_PAGES.CD_TEST_CASES, settings: { commentDisplay: 'compact' } })
 
 		// This test simulates what would have happened before our fix
 		const simulationResult = await page.evaluate(() => {

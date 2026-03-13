@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
 
-import { setupConvenientDiscussions, toggleCommentDisplay } from './helpers/test-utils.js'
+import { setupConvenientDiscussions } from './helpers/test-utils.js'
 
 /**
  * Browser tests for Comment visual appearance and behavior
@@ -13,8 +13,7 @@ import { setupConvenientDiscussions, toggleCommentDisplay } from './helpers/test
 
 test.describe('Comment Visual Appearance - Compact Style', () => {
 	test.beforeEach(async ({ page }) => {
-		await setupConvenientDiscussions(page)
-		await toggleCommentDisplay(page, 'compact')
+		await setupConvenientDiscussions(page, { settings: { commentDisplay: 'compact' } })
 	})
 
 	test('CompactComment should maintain MediaWiki appearance', async ({ page }) => {
