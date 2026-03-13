@@ -348,9 +348,6 @@ class Loader {
 		cd.debug.stopTimer('start')
 		cd.debug.startTimer('load data')
 
-		// If there is no data to load and, therefore, no period of time within which a reflow (layout
-		// thrashing) could happen without impeding performance, we cache the value so that it could
-		// be used in .saveRelativeScrollPosition() without causing a reflow.
 		Promise.all([
 			this.loadApp(),
 			this.maybeLoadTalkPageModules(),

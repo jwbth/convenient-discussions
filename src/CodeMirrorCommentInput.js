@@ -33,7 +33,8 @@ export default class CodeMirrorCommentInput extends codeMirrorExt {
 			class: 'ime-position-inside',
 		})
 
-		this.addMwHook(
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		this.addMwHook?.(
 			'ext.CodeMirror.preferences.apply',
 			(/** @type {string} */ prefName, /** @type {boolean} */ enabled) => {
 				if (enabled !== this.preferences.getPreference(prefName)) {
@@ -66,7 +67,8 @@ export default class CodeMirrorCommentInput extends codeMirrorExt {
 	 * @param {string} text
 	 */
 	updatePlaceholder(text) {
-		this.view.dispatch({
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		this.view?.dispatch({
 			effects: this.cdPlaceholderCompartment.reconfigure(this.lib.placeholder(text)),
 		})
 	}
