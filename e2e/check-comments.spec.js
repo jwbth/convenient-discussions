@@ -16,9 +16,9 @@ test.describe('Check Comments Availability', () => {
 			commentsLength: window.convenientDiscussions.comments.length,
 			sectionsLength: window.convenientDiscussions.sections.length,
 			commentElements: document.querySelectorAll('.cd-comment').length,
-			allCommentClasses: Array.from(document.querySelectorAll('[class*="cd-comment"]')).map(
-				(el) => el.className,
-			),
+			// allCommentClasses: Array.from(document.querySelectorAll('[class*="cd-comment"]')).map(
+			// 	(el) => el.className,
+			// ),
 			hasDiscussionContent: !!document.querySelector('.mw-parser-output'),
 			hasSignatures: document.querySelectorAll(
 				'.mw-parser-output a[title*="User:"], .mw-parser-output a[title*="User talk:"]',

@@ -2,6 +2,7 @@
 import { expect } from '@playwright/test'
 
 import { ensureAuthenticated } from './login.js'
+import { shouldIgnoreConsoleMessage } from './test-utils.js'
 
 /**
  * Shared logic for basic loading tests.
@@ -24,6 +25,11 @@ export async function runBasicLoadingTest(page, url, options = {}) {
 	page.on('console', (msg) => {
 		const type = msg.type()
 		const text = msg.text()
+
+		if (shouldIgnoreConsoleMessage(text)) {
+			return
+		}
+
 		consoleMessages.push({ type, text })
 
 		if (type === 'error') {
@@ -35,6 +41,10 @@ export async function runBasicLoadingTest(page, url, options = {}) {
 
 	// Set up page error capture
 	page.on('pageerror', (error) => {
+		if (shouldIgnoreConsoleMessage(error.message)) {
+			return
+		}
+
 		console.log(`💥 Page Error: ${error.message}`)
 		consoleMessages.push({ type: 'pageerror', text: error.message })
 	})

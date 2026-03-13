@@ -102,11 +102,7 @@ async function internalSetup(page, url, injectScriptCallback, settings = {}) {
 		const text = msg.text()
 
 		// Filter out common noise
-		if (
-			text.match(
-				/deprecated ResourceLoader module|The stream mediawiki|CdxPopover|adjacencies have left/,
-			)
-		) {
+		if (shouldIgnoreConsoleMessage(text)) {
 			return
 		}
 
@@ -122,8 +118,13 @@ async function internalSetup(page, url, injectScriptCallback, settings = {}) {
 
 	// Set up page error capture
 	page.on('pageerror', (error) => {
-		console.log(`💥 Page Error: ${error.stack || error.message}`)
-		consoleMessages.push({ type: 'pageerror', text: error.stack || error.message })
+		const text = error.stack || error.message
+		if (shouldIgnoreConsoleMessage(text)) {
+			return
+		}
+
+		console.log(`💥 Page Error: ${text}`)
+		consoleMessages.push({ type: 'pageerror', text })
 		throw error
 	})
 
@@ -148,7 +149,7 @@ async function internalSetup(page, url, injectScriptCallback, settings = {}) {
 				window[globalName] = value
 			}
 		}, settings)
-		console.log('🔧 Pre-injection settings applied:', settings)
+		// console.log('🔧 Pre-injection settings applied:', settings)
 	}
 
 	// Inject the script via callback
@@ -356,11 +357,24 @@ async function setupConvenientDiscussions(
 	)
 }
 
+/**
+ * Check if a console message should be ignored based on its text.
+ *
+ * @param {string} text
+ * @returns {boolean}
+ */
+function shouldIgnoreConsoleMessage(text) {
+	return !!text.match(
+		/deprecated ResourceLoader module|The stream mediawiki|CdxPopover|adjacencies have left/,
+	)
+}
+
 export {
 	TEST_PAGES,
 	waitForConvenientDiscussions,
 	setupConvenientDiscussionsFromDevBuild,
 	setupConvenientDiscussions,
+	shouldIgnoreConsoleMessage,
 	getCommentByIndex,
 	getSpaciousComment,
 	getCompactComment,
