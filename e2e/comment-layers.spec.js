@@ -22,6 +22,9 @@ test.describe('Comment Layers - Compact Style', () => {
 
 		// Get the comment index to access the Comment object
 		const commentIndex = await firstCommentPart.getAttribute('data-cd-comment-index')
+		if (commentIndex === null) {
+			throw new Error('Comment index not found')
+		}
 		console.log('Comment index:', commentIndex)
 
 		// Hover over the comment part to trigger layer creation
@@ -30,17 +33,26 @@ test.describe('Comment Layers - Compact Style', () => {
 		// Wait a bit for layers to be created
 		await page.waitForTimeout(500)
 
-		// Check if layers were created by looking for underlay and overlay elements
-		const underlay = page.locator('.cd-comment-underlay').first()
-		const overlay = page.locator('.cd-comment-overlay').first()
+		// Assign test IDs via the global object to use Locators
+		await page.evaluate((index) => {
+			// @ts-ignore
+			const layers = window.convenientDiscussions.comments[index].layers
+			layers.underlay.dataset.testId = `underlay-${index}`
+			layers.overlay.dataset.testId = `overlay-${index}`
+			layers.overlayMenu.dataset.testId = `overlayMenu-${index}`
+			layers.overlayGradient.dataset.testId = `overlayGradient-${index}`
+		}, commentIndex)
+
+		const underlay = page.locator(`[data-test-id="underlay-${commentIndex}"]`)
+		const overlay = page.locator(`[data-test-id="overlay-${commentIndex}"]`)
 
 		// Check if the layers exist (they should be created on hover for compact comments)
 		await expect(underlay, 'Underlay should be created').toBeVisible()
 		await expect(overlay, 'Overlay should be created').toBeVisible()
 
 		// Check for overlay menu elements specific to compact comments
-		const overlayMenu = page.locator('.cd-comment-overlay-menu').first()
-		const overlayGradient = page.locator('.cd-comment-overlay-gradient').first()
+		const overlayMenu = page.locator(`[data-test-id="overlayMenu-${commentIndex}"]`)
+		const overlayGradient = page.locator(`[data-test-id="overlayGradient-${commentIndex}"]`)
 
 		await expect(overlayMenu, 'Overlay menu should be visible').toBeVisible()
 		await expect(overlayGradient, 'Overlay gradient should be visible').toBeVisible()
@@ -49,13 +61,26 @@ test.describe('Comment Layers - Compact Style', () => {
 	test('Compact comment layers should be positioned correctly', async ({ page }) => {
 		const firstCommentPart = page.locator('.cd-comment-part-first').first()
 
+		// Get the comment index to access the Comment object
+		const commentIndex = await firstCommentPart.getAttribute('data-cd-comment-index')
+		if (commentIndex === null) {
+			throw new Error('Comment index not found')
+		}
+
 		// Trigger layer creation by hovering
 		await firstCommentPart.hover()
 		await page.waitForTimeout(500)
 
 		// Check if layers were created
-		const underlay = page.locator('.cd-comment-underlay').first()
-		const overlay = page.locator('.cd-comment-overlay').first()
+		await page.evaluate((index) => {
+			// @ts-ignore
+			const layers = window.convenientDiscussions.comments[index].layers
+			layers.underlay.dataset.testId = `underlay-${index}`
+			layers.overlay.dataset.testId = `overlay-${index}`
+		}, commentIndex)
+
+		const underlay = page.locator(`[data-test-id="underlay-${commentIndex}"]`)
+		const overlay = page.locator(`[data-test-id="overlay-${commentIndex}"]`)
 
 		// Check if layers were created
 		await expect(underlay, 'Underlay should be visible').toBeVisible()
@@ -82,12 +107,25 @@ test.describe('Comment Layers - Compact Style', () => {
 	test('Compact comment layer styles should update correctly', async ({ page }) => {
 		const firstCommentPart = page.locator('.cd-comment-part-first').first()
 
+		// Get the comment index to access the Comment object
+		const commentIndex = await firstCommentPart.getAttribute('data-cd-comment-index')
+		if (commentIndex === null) {
+			throw new Error('Comment index not found')
+		}
+
 		// Trigger layer creation by hovering
 		await firstCommentPart.hover()
 		await page.waitForTimeout(500)
 
-		const underlay = page.locator('.cd-comment-underlay').first()
-		const overlay = page.locator('.cd-comment-overlay').first()
+		await page.evaluate((index) => {
+			// @ts-ignore
+			const layers = window.convenientDiscussions.comments[index].layers
+			layers.underlay.dataset.testId = `underlay-${index}`
+			layers.overlay.dataset.testId = `overlay-${index}`
+		}, commentIndex)
+
+		const underlay = page.locator(`[data-test-id="underlay-${commentIndex}"]`)
+		const overlay = page.locator(`[data-test-id="overlay-${commentIndex}"]`)
 
 		await expect(underlay, 'Underlay should be visible').toBeVisible()
 		await expect(overlay, 'Overlay should be visible').toBeVisible()
