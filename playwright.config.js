@@ -37,6 +37,9 @@ export default defineConfig({
 		/* Use authentication state if available */
 		storageState: fs.existsSync(authFile) ? authFile : undefined,
 
+		/* Bypass CSP so Vite HMR websocket can connect */
+		bypassCSP: true,
+
 		launchOptions: {
 			args: [
 				// Disables the CORS/PNA checks entirely
