@@ -810,23 +810,24 @@ class Loader {
 		}
 
 		Promise.all([
-			this.loadApp(),
-			mw.loader.using([
-				'jquery.client',
-				'mediawiki.Title',
-				'mediawiki.api',
-				'mediawiki.jqueryMsg',
-				'mediawiki.user',
-				'mediawiki.util',
-				'oojs',
-				'oojs-ui-core',
-				'oojs-ui-widgets',
-				'oojs-ui-windows',
-				'oojs-ui.styles.icons-alerts',
-				'oojs-ui.styles.icons-editing-list',
-				'oojs-ui.styles.icons-interactions',
-				'user.options',
-			]),
+			mw.loader
+				.using([
+					'jquery.client',
+					'mediawiki.Title',
+					'mediawiki.api',
+					'mediawiki.jqueryMsg',
+					'mediawiki.user',
+					'mediawiki.util',
+					'oojs',
+					'oojs-ui-core',
+					'oojs-ui-widgets',
+					'oojs-ui-windows',
+					'oojs-ui.styles.icons-alerts',
+					'oojs-ui.styles.icons-editing-list',
+					'oojs-ui.styles.icons-interactions',
+					'user.options',
+				])
+				.then(() => this.loadApp()),
 		]).then(
 			() => {
 				this.addCommentLinks?.()
