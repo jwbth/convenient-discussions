@@ -676,7 +676,13 @@ class Controller extends EventEmitter {
 	 * @param {MouseEvent | JQuery.MouseMoveEvent | JQuery.MouseOverEvent} event
 	 */
 	handleMouseMove(event) {
-		if (this.mouseMoveBlocked || this.isAutoScrolling() || cd.loader.isPageOverlayOn()) return
+		if (
+			cd.settings.get('commentDisplay') !== 'compact' ||
+			this.mouseMoveBlocked ||
+			this.isAutoScrolling() ||
+			cd.loader.isPageOverlayOn()
+		)
+			return
 
 		// Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
 		// about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
@@ -890,16 +896,14 @@ class Controller extends EventEmitter {
 	 * _For internal use._ Add event listeners to `window`, `document`, hooks.
 	 */
 	addEventListeners() {
-		if (cd.settings.get('commentDisplay') !== 'spacious') {
-			// The `mouseover` event allows to capture the state when the cursor is not moving but ends up
-			// above a comment but not above any comment parts (for example, as a result of scrolling).
-			// The benefit may be low compared to the performance cost, but it's unexpected when the user
-			// scrolls a comment and it suddenly stops being highlighted because the cursor is between
-			// neighboring <p>s.
-			$(document).on('mousemove mouseover', (event) => {
-				this.handleMouseMove(/** @type {JQuery.MouseMoveEvent | JQuery.MouseOverEvent} */ (event))
-			})
-		}
+		// The `mouseover` event allows to capture the state when the cursor is not moving but ends up
+		// above a comment but not above any comment parts (for example, as a result of scrolling).
+		// The benefit may be low compared to the performance cost, but it's unexpected when the user
+		// scrolls a comment and it suddenly stops being highlighted because the cursor is between
+		// neighboring <p>s.
+		$(document).on('mousemove mouseover', (event) => {
+			this.handleMouseMove(/** @type {JQuery.MouseMoveEvent | JQuery.MouseOverEvent} */ (event))
+		})
 
 		// We need the `visibilitychange` event because many things may move while the document is
 		// hidden, and movements are not processed when the document is hidden.

@@ -404,8 +404,11 @@ class BootProcess {
 			// This could have been executed from bootstrap() in addCommentLinks.js already.
 			initGlobals()
 			await cd.settings.getInitPromise()
-			commentManager.setupCommentClass()
+		}
 
+		commentManager.setupCommentClass()
+
+		if (this.firstRun) {
 			initTimestampTools()
 			this.initPatterns()
 			this.initPrototypes()

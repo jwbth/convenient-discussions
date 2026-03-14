@@ -19,11 +19,8 @@ import { typedKeysOf, unique } from '../shared/utils-general'
 
 import cd from './cd'
 
-// Dummy comment to prevent Prettier from killing the empty line
-;(async () => {
-	await bootstrap()
-	$(start)
-})()
+await bootstrap()
+$(start)
 
 /**
  * The function that is called first.
@@ -196,7 +193,7 @@ export function getStringsPromise() {
 		? // If no language fallbacks are employed, we can do without requesting additional i18ns.
 			// cd.getStringsPromise may be set in the configuration file.
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			cd.i18n
+			cd.g.userLanguage in cd.i18n
 			? Promise.resolve()
 			: cd.getStringsPromise || getStrings()
 		: getStrings()
@@ -218,7 +215,7 @@ async function getStrings() {
 			.map((lang) =>
 				cd.loader.loadPreferablyFromDiskCache({
 					domain: 'commons.wikimedia.org',
-					pageName: `User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js`,
+					pageName: `User:Jack who built the house/convenientDiscussions-i18n/${lang}.js`,
 					ttlInDays: 1,
 				}),
 			),
@@ -294,7 +291,8 @@ function makeSureStringsAreSet() {
 		)
 			? cd.g.contentLanguage
 			: cd.g.userLanguage
-		acc[name] = (lang in cd.i18n && cd.i18n[lang][name]) ?? cd.i18n.en[name]
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		acc[name] = cd.i18n[lang]?.[name] ?? cd.i18n.en[name]
 
 		return acc
 	}, /** @type {StringsByKey} */ ({}))

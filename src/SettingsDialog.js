@@ -72,7 +72,7 @@ export default function getSettingsDialogClass() {
 		settingsPanel
 
 		/** @type {OO.ui.PanelLayout} */
-		reloadPanel
+		rebootPanel
 
 		/** @type {OO.ui.PanelLayout} */
 		dataDeletedPanel
@@ -137,11 +137,11 @@ export default function getSettingsDialogClass() {
 				expanded: true,
 			})
 
-			this.reloadPanel = new OO.ui.PanelLayout({
+			this.rebootPanel = new OO.ui.PanelLayout({
 				padded: true,
 				expanded: false,
 			})
-			this.reloadPanel.$element.append(
+			this.rebootPanel.$element.append(
 				$('<p>').text(cd.s('sd-saved', commentFormManager.maybeGetFormDataWontBeLostString())),
 			)
 
@@ -152,7 +152,7 @@ export default function getSettingsDialogClass() {
 			this.dataDeletedPanel.$element.append($('<p>').text(cd.s('sd-dataremoved')))
 
 			this.stack = new OO.ui.StackLayout({
-				items: [this.loadingPanel, this.settingsPanel, this.reloadPanel, this.dataDeletedPanel],
+				items: [this.loadingPanel, this.settingsPanel, this.rebootPanel, this.dataDeletedPanel],
 			})
 
 			this.$body.append(this.stack.$element)
@@ -240,7 +240,7 @@ export default function getSettingsDialogClass() {
 
 						controller.removePreventUnloadCondition('dialog')
 
-						this.stack.setItem(this.reloadPanel)
+						this.stack.setItem(this.rebootPanel)
 						this.actions.setMode('reboot')
 
 						this.popPending()

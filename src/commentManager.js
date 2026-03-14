@@ -109,9 +109,6 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * _For internal use._ Initialize the registry.
-	 */
-	/**
 	 * Set the comment class to use based on the user settings.
 	 */
 	setupCommentClass() {

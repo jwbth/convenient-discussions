@@ -685,7 +685,7 @@ class Loader {
 		domain,
 		pageName,
 		ttlInDays,
-		ctype,
+		ctype = 'text/javascript',
 		addCacheBuster = false,
 	}) {
 		const ttlInMs = ttlInDays * cd.g.msInDay
@@ -697,7 +697,7 @@ class Loader {
 		)
 
 		const apiPage = apiResponse.query.pages[0]
-		if (!apiPage.missing) return
+		if (apiPage.missing) return
 
 		const content = apiPage.revisions[0].content
 		if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
