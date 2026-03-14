@@ -80,6 +80,24 @@ export class CommentManager extends EventEmitter {
 	CommentClass
 
 	/**
+	 * Comment classes (CompactComment and SpaciousComment).
+	 *
+	 * @type {{
+	 *   CompactComment: typeof import('./CompactComment').default,
+	 *   SpaciousComment: typeof import('./SpaciousComment').default,
+	 * }}
+	 * @private
+	 */
+	classes
+
+	/**
+	 * Current comment display mode.
+	 *
+	 * @type {'spacious' | 'compact' | null}
+	 */
+	commentDisplay
+
+	/**
 	 * Set the comment classes.
 	 *
 	 * @param {object} classes

@@ -67,7 +67,7 @@ index 39599da..44bfb2a 100644
          type Prototype = OptionWidget.Prototype;
  
 diff --git a/node_modules/@types/oojs-ui/WindowInstance.d.ts b/node_modules/@types/oojs-ui/WindowInstance.d.ts
-index b62f0d1..902a140 100644
+index b62f0d1..62071f0 100644
 --- a/node_modules/@types/oojs-ui/WindowInstance.d.ts
 +++ b/node_modules/@types/oojs-ui/WindowInstance.d.ts
 @@ -12,14 +12,20 @@ declare namespace OO.ui {
@@ -87,7 +87,7 @@ index b62f0d1..902a140 100644
 -            closed: JQuery.Promise<void>;
 +        // We can't just check for `string extends T` in the condition, because strings may be
 +        // constant (e.g. 'accept')
-+        type PromiseReturn<T> = Extract<T, string> extends never ? unknown : { action: T };
++        type PromiseReturn<T> = Extract<T, string> extends never ? unknown : { action: T } | undefined;
 +
 +        interface Props<A = undefined> {
 +            opening: JQuery.Promise<unknown>;

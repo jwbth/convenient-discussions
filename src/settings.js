@@ -1009,7 +1009,7 @@ class Settings extends EventEmitter {
 		})
 		const closeData = await win.closed
 
-		// If the user pressed Escape (meaning they are likely just don't want to read anything),
+		// If the user pressed Escape (meaning they are likely just not in the mood to read anything),
 		// re-show the popup next time
 		if (closeData?.action) {
 			try {
