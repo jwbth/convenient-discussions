@@ -175,12 +175,12 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Prepend a button to the compact comment overlay menu.
+	 * Add a button to the compact comment overlay menu.
 	 *
 	 * @override
-	 * @param {CommentButton} button The button to prepend.
+	 * @param {CommentButton} button The button to add.
 	 */
-	prependButton(button) {
+	addButton(button) {
 		this.getOverlayMenu()?.prepend(button.element)
 	}
 
@@ -213,7 +213,7 @@ class CompactCommentActions extends CommentActions {
 				targetButton.element.nextSibling || null,
 			)
 		} else {
-			this.prependButton(this.toggleChildThreadsButton)
+			this.addButton(this.toggleChildThreadsButton)
 		}
 	}
 
@@ -229,7 +229,7 @@ class CompactCommentActions extends CommentActions {
 		if (this.goToChildButton?.isConnected()) return
 
 		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction)
-		this.prependButton(this.goToChildButton)
+		this.addButton(this.goToChildButton)
 	}
 
 	/**

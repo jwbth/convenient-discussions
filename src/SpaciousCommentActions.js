@@ -135,15 +135,11 @@ class SpaciousCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createToggleChildThreadsButton(action) {
-		const button = new CommentButton({
+		return new CommentButton({
 			tooltip: cd.s('cm-togglechildthreads-tooltip'),
 			classes: ['cd-comment-button-icon', 'cd-comment-button-toggleChildThreads', 'cd-icon'],
 			action,
 		})
-
-		this.comment.updateToggleChildThreadsButton()
-
-		return button
 	}
 
 	/**
@@ -167,22 +163,14 @@ class SpaciousCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Prepend a button to the spacious comment header.
+	 * Add a button to the spacious comment header.
 	 *
 	 * @override
-	 * @param {CommentButton} button The button to prepend.
+	 * @param {CommentButton} button The button to add.
 	 */
-	prependButton(button) {
+	addButton(button) {
 		if (button === this.goToChildButton) {
-			// Insert go to child button in the correct position in header
-			this.comment.headerElement.insertBefore(
-				button.element,
-				(
-					this.goToParentButton?.element ||
-					(this.comment.hasTimestamp() ? this.comment.timestampElement : undefined) ||
-					this.comment.headerElement
-				).nextSibling,
-			)
+			this.comment.headerElement.append(button.element)
 		} else {
 			this.comment.headerElement.prepend(button.element)
 		}
@@ -204,6 +192,7 @@ class SpaciousCommentActions extends CommentActions {
 		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(
 			this.onToggleChildThreadsAction,
 		)
+		this.comment.updateToggleChildThreadsButton()
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
 			this.comment.maybeOnboardOntoToggleChildThreads()
 		})

@@ -245,7 +245,7 @@ class CommentActions {
 		if (this.goToChildButton?.isConnected()) return
 
 		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction)
-		this.prependButton(this.goToChildButton)
+		this.addButton(this.goToChildButton)
 	}
 
 	/**
@@ -372,13 +372,13 @@ class CommentActions {
 	}
 
 	/**
-	 * Prepend a button to the appropriate container. To be overridden by subclasses.
+	 * Add a button to the appropriate container. To be overridden by subclasses.
 	 *
-	 * @param {CommentButton} _button The button to prepend.
+	 * @param {CommentButton} _button The button to add.
 	 * @abstract
 	 */
-	prependButton(_button) {
-		throw new Error('prependButton must be implemented by subclasses')
+	addButton(_button) {
+		throw new Error('addButton must be implemented by subclasses')
 	}
 
 	/**
