@@ -983,7 +983,7 @@ export class CommentManager extends EventEmitter {
 	 */
 	findPriorComment(date, author) {
 		return this.items
-			.filter((comment) => comment.hasDate())
+			.filter((comment) => comment.hasTimestamp())
 			.filter(
 				(comment) =>
 					comment.author.getName() === author &&

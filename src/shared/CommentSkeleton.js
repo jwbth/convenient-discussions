@@ -95,11 +95,18 @@ class CommentSkeleton {
 	date
 
 	/**
-	 * _For internal use._ Comment author name.
+	 * Comment author name.
 	 *
 	 * @type {string}
 	 */
 	authorName
+
+	/**
+	 * Comment timestamp text (for debugging).
+	 *
+	 * @type {string | undefined}
+	 */
+	timestampText
 
 	/**
 	 * Comment ID.
@@ -265,6 +272,31 @@ class CommentSkeleton {
 		this.isOutdented = false
 
 		signature.comment = this
+	}
+
+	/**
+	 * Check if a comment (skeleton) or signature has all timestamp-related properties set.
+	 *
+	 * @template {AnyNode} N
+	 * @param {CommentSkeleton<N> | import('./Parser').SignatureTarget<N> | undefined} obj
+	 * @returns {obj is (CommentSkeleton<N> & { date: Date; timestampElement: ElementFor<N>; timestamp: string }) | (import('./Parser').SignatureTarget<N> & { date: Date; timestampElement: ElementFor<N>; timestampText: string })}
+	 */
+	static hasTimestamp(obj) {
+		return Boolean(
+			obj?.date &&
+			obj.timestampElement &&
+			((/** @type {CommentSkeleton} */ (obj)).timestamp ||
+				(/** @type {import('./Parser').SignatureTarget} */ (obj)).timestampText)
+		)
+	}
+
+	/**
+	 * Check if the comment has all timestamp-related properties set.
+	 *
+	 * @returns {this is this & { date: Date; timestampElement: ElementFor<N>; timestamp: string }}
+	 */
+	hasTimestamp() {
+		return CommentSkeleton.hasTimestamp(this)
 	}
 
 	/** @typedef {'start'|'back'|'up'|'dive'|'replaced'} Step */

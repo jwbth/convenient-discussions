@@ -179,7 +179,7 @@ class SpaciousCommentActions extends CommentActions {
 				button.element,
 				(
 					this.goToParentButton?.element ||
-					this.comment.timestampElement ||
+					(this.comment.hasTimestamp() ? this.comment.timestampElement : undefined) ||
 					this.comment.headerElement
 				).nextSibling,
 			)

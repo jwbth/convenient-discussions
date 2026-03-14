@@ -180,13 +180,11 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	updateMainTimestampElement(timestamp, title) {
+		if (!this.hasTimestamp()) return
+
 		this.timestampElement.textContent = timestamp
 		this.timestampElement.title = title
-		new LiveTimestamp(
-			this.timestampElement,
-			/** @type {Date} */ (this.date),
-			!this.hideTimezone,
-		).init()
+		new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone).init()
 	}
 
 	/**

@@ -561,9 +561,8 @@ class Comment extends CommentSkeleton {
 	 * @param {string} title
 	 */
 	updateMainTimestampElement(timestamp, title) {
-		if (!this.timestampElement) return
+		if (!this.hasTimestamp()) return
 
-		// Default implementation for tests. TODO: Added by Sonnet. Get rid of?
 		this.timestampElement.textContent = timestamp
 		this.timestampElement.title = title
 	}
@@ -573,19 +572,15 @@ class Comment extends CommentSkeleton {
 	 */
 	updateExtraSignatureTimestamps() {
 		this.extraSignatures.forEach((sig) => {
-			if (!sig.timestampText) return
+			if (!Comment.hasTimestamp(sig)) return
 
 			const { timestamp: extraSigTimestamp, title: extraSigTitle } = this.formatTimestamp(
-				/** @type {Date} */ (sig.date),
+				sig.date,
 				sig.timestampText,
 			)
 			sig.timestampElement.textContent = extraSigTimestamp
 			sig.timestampElement.title = extraSigTitle
-			new LiveTimestamp(
-				sig.timestampElement,
-				/** @type {Date} */ (sig.date),
-				!this.hideTimezone,
-			).init()
+			new LiveTimestamp(sig.timestampElement, sig.date, !this.hideTimezone).init()
 		})
 	}
 
@@ -711,7 +706,7 @@ class Comment extends CommentSkeleton {
 	 *
 	 */
 	reformatTimestamp() {
-		if (!this.date) return
+		if (!this.hasTimestamp()) return
 
 		const { timestamp, title } = this.formatTimestamp(this.date, this.timestampElement.textContent)
 		if (timestamp) {
@@ -2013,7 +2008,7 @@ class Comment extends CommentSkeleton {
 	 */
 	async findEdit() {
 		if (!this.addingEdit) {
-			if (!this.date) {
+			if (!this.hasTimestamp()) {
 				throw new CdError({
 					type: 'internal',
 				})
@@ -3483,14 +3478,7 @@ class Comment extends CommentSkeleton {
 		return this
 	}
 
-	/**
-	 * Check whether the command has a date.
-	 *
-	 * @returns {this is { date: Date }}
-	 */
-	hasDate() {
-		return Boolean(this.date)
-	}
+	// hasTimestamp() is inherited from CommentSkeleton
 
 	/**
 	 * Create a reply button.
