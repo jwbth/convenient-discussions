@@ -126,7 +126,7 @@ class CommentSkeleton {
 	/**
 	 * _For internal use._ Comment timestamp element.
 	 *
-	 * @type {ElementFor<N>}
+	 * @type {ElementFor<N> | undefined}
 	 */
 	timestampElement
 
@@ -777,9 +777,9 @@ class CommentSkeleton {
 					// https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=125481598#c-Oleg_Yunakov-20220830173400-Iniquity-20220830171400
 					// will be left out of the comment.
 					!isInline(node) &&
-						(// Signature count. The second parameter of .getElementsByClassName() is an
+						// Signature count. The second parameter of .getElementsByClassName() is an
 						// optimization for the worker context.
-						node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length -
+						(node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length -
 							Number(hasCurrentSignature) >
 							0 ||
 							(firstForeignComponentAfter &&
@@ -1714,7 +1714,6 @@ class CommentSkeleton {
 	 */
 	static updateOutdentStyle(element, parser) {
 		if (cd.isWorker()) return
-
 		;[...element.childNodes].forEach((child) => {
 			if (!(child instanceof HTMLElement)) return
 
@@ -1746,7 +1745,6 @@ class CommentSkeleton {
 	 */
 	static processOutdents(parser) {
 		if (!parser.context.areThereOutdents()) return
-
 		;[...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
 			.reverse()
 			.forEach((element) => {

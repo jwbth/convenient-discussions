@@ -177,7 +177,11 @@ class SpaciousCommentActions extends CommentActions {
 			// Insert go to child button in the correct position in header
 			this.comment.headerElement.insertBefore(
 				button.element,
-				(this.goToParentButton?.element || this.comment.timestampElement).nextSibling,
+				(
+					this.goToParentButton?.element ||
+					this.comment.timestampElement ||
+					this.comment.headerElement
+				).nextSibling,
 			)
 		} else {
 			this.comment.headerElement.prepend(button.element)

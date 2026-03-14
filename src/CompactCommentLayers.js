@@ -1,8 +1,8 @@
 import CommentLayers from './CommentLayers.js'
 
 /**
- * Specialized layer management for compact comments.
- * Handles compact-specific layer positioning and overlay menu management.
+ * Specialized layer management for compact comments. Handles compact-specific layer positioning and
+ * overlay menu management.
  */
 class CompactCommentLayers extends CommentLayers {
 	/**

@@ -131,7 +131,7 @@ class CommentLayers {
 
 		this.updateStyles(true)
 		if (!this.offset) {
-			this.computeOffset()
+			this.computeAndSaveOffset()
 		}
 
 		// Create jQuery wrappers
@@ -287,17 +287,17 @@ class CommentLayers {
 	 * Calculate the underlay and overlay offset and set it to the `layersOffset` property.
 	 *
 	 * @param {object} [options]
-	 * @returns {boolean | undefined} Was the comment moved. `undefined` if it is invisible.
+	 * @returns {boolean | undefined} Was the comment displaced. `undefined` if it is invisible.
 	 */
-	computeOffset(options = {}) {
+	computeAndSaveOffset(options = {}) {
 		const containerOffset = this.getContainerOffset()
 		if (!containerOffset) return
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const wasMoved = this.comment.getOffset({
+		const displaced = this.comment.manageOffset({
 			...options,
 			considerFloating: true,
-			set: true,
+			save: true,
 		})
 
 		if (this.comment.offset) {
@@ -313,7 +313,7 @@ class CommentLayers {
 			this.offset = undefined
 		}
 
-		return wasMoved
+		return displaced
 	}
 
 	/**
@@ -462,11 +462,11 @@ class CommentLayers {
 	 */
 	getContainerOffset() {
 		const container = this.getContainer()
-		if (!container.cdCachedLayersContainerOffset || container.cdCouldHaveMoved) {
+		if (!container.cdCachedLayersContainerOffset || container.cdCouldHaveBeenDisplaced) {
 			const rect = container.getBoundingClientRect()
 			if (!isVisible(container)) return
 
-			container.cdCouldHaveMoved = false
+			container.cdCouldHaveBeenDisplaced = false
 			container.cdCachedLayersContainerOffset = {
 				top: rect.top + window.scrollY,
 				left: rect.left + window.scrollX,

@@ -179,6 +179,8 @@ class Loader {
 				mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
 					? 'ext.confirmEdit.CaptchaInputWidget'
 					: undefined,
+				// We need to instantiate our clase based on the CodeMirror class, so we load it now, not on
+				// comment form creation.
 				mw.loader.getState('ext.CodeMirror.v6.WikiEditor')
 					? 'ext.CodeMirror.v6.WikiEditor'
 					: undefined,

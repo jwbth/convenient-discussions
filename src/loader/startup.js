@@ -266,6 +266,7 @@ function start() {
  * Merge the loaded configuration with the default configuration if not already.
  */
 function makeSureConfigIsSet() {
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (cd.config?._mergedWithDefault) return
 
 	cd.config = { ...defaultConfig, ...cd.config, _mergedWithDefault: true }

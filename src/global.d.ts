@@ -341,7 +341,7 @@ declare global {
 			top: number
 			left: number
 		}
-		cdCouldHaveMoved?: boolean
+		cdCouldHaveBeenDisplaced?: boolean
 		cdMargin?: {
 			top: number
 			bottom: number

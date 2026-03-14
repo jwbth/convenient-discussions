@@ -42,7 +42,7 @@ import { parseTimestamp } from './utils-timestamp'
  * @typedef {object} SignatureTarget
  * @property {'signature'} type
  * @property {HTMLElementFor<N>} element
- * @property {HTMLElementFor<N>} timestampElement
+ * @property {HTMLElementFor<N>} [timestampElement]
  * @property {string} [timestampText]
  * @property {Date} [date]
  * @property {HTMLElementFor<N>} [authorLink]
@@ -164,8 +164,10 @@ class Parser {
 				[...this.context.rootElement.getElementsByTagName('span')]
 					.filter(
 						(el) =>
-							el.hasAttribute('data-mw-comment-start') ||
-							el.hasAttribute('data-mw-comment-end') ||
+							((el.hasAttribute('data-mw-comment-start') ||
+								el.hasAttribute('data-mw-comment-end')) &&
+								// DT will throw an error if we remove markup from headings (see line `pageThreads.findCommentById($threadMarker.data('mw-thread-id'))`)
+								!isHeadingNode(/** @type {Element} */ (el.parentElement))) ||
 							// This, in fact, targets the one span at the top of the page, out of sections which makes
 							// comments taller (example:
 							// https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=876639400).
@@ -488,6 +490,7 @@ class Parser {
 							isUnsigned: true,
 							authorLink,
 							authorTalkLink,
+							isExtraSignature: false,
 						})
 
 						return true

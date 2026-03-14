@@ -168,7 +168,7 @@ export class CommentManager extends EventEmitter {
 		visits.on('process', this.registerSeen).on('process', async () => {
 			// A workaround to fight the bug in Chromium where comments layers are misplaced after page
 			// load. I couldn't establish the cause of it - comment positions are rechecked on events
-			// and also periodically, and if a comment is moved, it's layers are redrawn. But then these
+			// and also periodically, and if a comment is displaced, it's layers are redrawn. But then these
 			// positions are cached, and if nothing seems to be changed, we don't recheck _all_ comment
 			// positions every time. Probably there is some misalignment between how the browser renders
 			// the positions and how it reports the changes (e.g. it updates the positions of elements
@@ -335,14 +335,14 @@ export class CommentManager extends EventEmitter {
 		if (cd.loader.isBooting() || (document.hidden && !redrawAll)) return
 
 		this.layersContainers.forEach((container) => {
-			container.cdCouldHaveMoved = true
+			container.cdCouldHaveBeenDisplaced = true
 		})
 
 		let floatingRects
 		/** @type {C[]} */
 		const comments = []
 		const rootBottom = controller.$root[0].getBoundingClientRect().bottom + window.scrollY
-		let notMovedCount = 0
+		let notDisplacedCount = 0
 
 		// We go from the end and stop at the first _three_ comments that have not been misplaced. A
 		// quirky reason for this is that the mouse could be over some comment making its underlay to be
@@ -373,25 +373,25 @@ export class CommentManager extends EventEmitter {
 					comment.removeLayers()
 				} else if (shouldBeHighlighted) {
 					floatingRects ??= controller.getFloatingElements().map(getExtendedRect)
-					const isMoved = comment.configureLayers({
+					const displaced = comment.configureLayers({
 						// If a comment was hidden, then became visible, we need to add the layers.
 						add: true,
 
 						update: false,
 						floatingRects,
 					})
-					if (isMoved || redrawAll) {
-						notMovedCount = 0
+					if (displaced || redrawAll) {
+						notDisplacedCount = 0
 						comments.push(comment)
-					} else if (isMoved === undefined) {
+					} else if (displaced === undefined) {
 						comment.removeLayers()
 
 						// Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
 						// layers preceding them.
 					} else if (comment.layers?.getContainer().cdIsTopLayersContainer) {
-						// isMoved === false
-						notMovedCount++
-						if (notMovedCount === 2) {
+						// displaced === false
+						notDisplacedCount++
+						if (notDisplacedCount === 2) {
 							return true
 						}
 					}
@@ -467,7 +467,7 @@ export class CommentManager extends EventEmitter {
 		// Visibility is checked in the sense that an element is visible on the page, not necessarily in
 		// the viewport.
 		const isCommentVisible = (/** @type {C} */ comment) => {
-			comment.getOffset({ set: true })
+			comment.manageOffset({ save: true })
 
 			return Boolean(comment.roughOffset)
 		}
@@ -523,7 +523,7 @@ export class CommentManager extends EventEmitter {
 		// there is only few comments. Usually the cycle finishes after a few steps.
 		for (const _item of this.items) {
 			if (!comment.roughOffset) {
-				comment.getOffset({ set: true })
+				comment.manageOffset({ save: true })
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				if (!comment.roughOffset) {
 					const commentCandidate =

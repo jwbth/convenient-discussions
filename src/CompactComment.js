@@ -210,7 +210,6 @@ class CompactComment extends Comment {
 	 * Implementation-specific structure initialization for compact comments.
 	 * Sets up timestamp element and reformats timestamp.
 	 *
-	 * @protected
 	 * @override
 	 */
 	initializeCommentStructureImpl() {

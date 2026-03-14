@@ -17,8 +17,8 @@ import { isInline } from './shared/utils-general'
 /** @typedef {ReplaceSignatureWithHeaderReturnItem[]} ReplaceSignatureWithHeaderReturn */
 
 /**
- * A spacious comment class that handles spacious comment formatting with author/date headers
- * and structured layout.
+ * A spacious comment class. Handles spacious comment formatting with author/date headers and
+ * structured layout.
  *
  * @template {boolean} [OpeningSection=boolean]
  * @augments Comment<OpeningSection>
@@ -118,23 +118,23 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Update the main timestamp element for spacious comments.
-	 * Only updates if there are extra signatures (timestamp is handled in header otherwise).
+	 * Update the main timestamp element for spacious comments. Only updates if there are extra
+	 * signatures (timestamp is handled in header otherwise).
 	 *
 	 * @param {string} timestamp
 	 * @param {string} title
 	 * @override
 	 */
 	updateMainTimestampElement(timestamp, title) {
-		if (this.extraSignatures.length) {
-			this.timestampElement.textContent = timestamp
-			this.timestampElement.title = title
-			new LiveTimestamp(
-				this.timestampElement,
-				/** @type {Date} */ (this.date),
-				!this.hideTimezone,
-			).init()
-		}
+		if (!this.timestampElement || !this.extraSignatures.length) return
+
+		this.timestampElement.textContent = timestamp
+		this.timestampElement.title = title
+		new LiveTimestamp(
+			this.timestampElement,
+			/** @type {Date} */ (this.date),
+			!this.hideTimezone,
+		).init()
 	}
 
 	/**

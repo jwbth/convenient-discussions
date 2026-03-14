@@ -1222,7 +1222,7 @@ class Thread extends mixInObject(
 			if (elTop) {
 				offsetTop = elTop.getBoundingClientRect()
 			} else {
-				offsetTop = comment.getOffset({ floatingRects })
+				offsetTop = comment.manageOffset({ floatingRects })
 				if (offsetTop) {
 					offsetTop.top -= scrollY
 					offsetTop.bottom -= scrollY

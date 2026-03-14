@@ -98,7 +98,7 @@ class Comment extends CommentSkeleton {
 
 	/**
 	 * @override
-	 * @type {HTMLElement}
+	 * @type {HTMLElement | undefined}
 	 */
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
 	timestampElement = this.timestampElement
@@ -561,6 +561,8 @@ class Comment extends CommentSkeleton {
 	 * @param {string} title
 	 */
 	updateMainTimestampElement(timestamp, title) {
+		if (!this.timestampElement) return
+
 		// Default implementation for tests. TODO: Added by Sonnet. Get rid of?
 		this.timestampElement.textContent = timestamp
 		this.timestampElement.title = title
@@ -895,36 +897,36 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * @template {boolean} [Set=false]
-	 * @typedef {object} GetOffsetOptions
+	 * @template {boolean} [Save=false]
+	 * @typedef {object} ManageOffsetOptions
 	 * @property {import('./utils-window').ExtendedDOMRect[]} [floatingRects]
 	 *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
 	 *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
 	 *   calculated in advance for many elements in one sequence to save time.
 	 * @property {boolean} [considerFloating] Whether to take floating elements around the comment
 	 *   into account. Deemed `true` if `floatingRects` is set.
-	 * @property {Set} [set] Whether to set the offset to the `offset` (if `considerFloating` is
+	 * @property {Save} [save] Whether to set the offset to the `offset` (if `considerFloating` is
 	 *   `true`) or `roughOffset` (if `considerFloating` is `false`) property. If `true`, the function
-	 *   will return a boolean value indicating if the comment is moved instead of the offset. (This
-	 *   value can be used to stop recalculating comment offsets if a number of comments in a row have
-	 *   not moved for optimization purposes.) Setting the `offset` property implies that the layers
-	 *   offset will be updated afterwards (see {@link Comment#updateLayersOffset}) - otherwise, the
-	 *   next attempt to call this method to update the layers offset will return `false` meaning the
-	 *   comment isn't moved, and the layers offset will stay wrong.
+	 *   will return a boolean value indicating if the comment was displaced instead of the offset.
+	 *   (This value can be used to stop recalculating comment offsets if a number of comments in a
+	 *   row have not moved for optimization purposes.) Setting the `offset` property implies that the
+	 *   layers offset will be updated afterwards (see {@link Comment#updateLayersOffset}) -
+	 *   otherwise, the next attempt to call this method to update the layers offset will return
+	 *   `false` meaning the comment wasn't displaced, and the layers offset will stay wrong.
 	 */
 
 	/**
 	 * @overload
-	 * @param {GetOffsetOptions} [options]
+	 * @param {ManageOffsetOptions} [options]
 	 * @returns {CommentOffset | undefined}
 	 *
 	 * @overload
-	 * @param {GetOffsetOptions<true>} [options]
+	 * @param {ManageOffsetOptions<true>} [options]
 	 * @returns {boolean | undefined}
 	 */
 
 	/**
-	 * Get the coordinates of the comment. Optionally set them as the `offset` or `roughOffset`
+	 * Get the coordinates of the comment. Optionally save them as the `offset` or `roughOffset`
 	 * property. Also set the {@link Comment#isStartStretched isStartStretched} and
 	 * {@link Comment#isEndStretched isEndStretched} properties (if `options.considerFloating` is
 	 * `true`).
@@ -932,14 +934,14 @@ class Comment extends CommentSkeleton {
 	 * Note that comment coordinates are not static, obviously, but we need to recalculate them only
 	 * occasionally.
 	 *
-	 * @param {GetOffsetOptions<boolean>} [options]
-	 * @returns {CommentOffset|boolean|undefined} Offset object. If the comment is not visible,
-	 *   returns `undefined`. If `options.set` is `true`, returns a boolean value indicating if the
-	 *   comment has moved instead of the offset.
+	 * @param {ManageOffsetOptions<boolean>} [options]
+	 * @returns {CommentOffset|boolean|undefined} If the comment is not visible, returns `undefined`.
+	 *   If `options.save` is `true`, returns a boolean value indicating if the comment was displaced
+	 *   instead of the offset. Otherwise, returns the offset object.
 	 */
-	getOffset(options = {}) {
+	manageOffset(options = {}) {
 		options.considerFloating ??= Boolean(options.floatingRects)
-		options.set ??= false
+		options.save ??= false
 
 		let firstElement
 		let lastElement
@@ -954,7 +956,7 @@ class Comment extends CommentSkeleton {
 		let rectBottom = this.elements.length === 1 ? rectTop : Comment.getCommentPartRect(lastElement)
 
 		if (!isVisible(firstElement, lastElement)) {
-			this.maybeSetOffset(undefined, options)
+			this.maybeSaveOffset(undefined, options)
 
 			return
 		}
@@ -964,7 +966,7 @@ class Comment extends CommentSkeleton {
 		// content starts to occupy less space.
 		const scrollY = window.scrollY
 
-		// Has the comment's position stayed the same (i.e. it hasn't moved)? This value will be
+		// Has the comment's position stayed the same (i.e. it wasn't displaced)? This value will be
 		// `true` wrongly if the comment is around floating elements, but that doesn't hurt much.
 		if (
 			this.offset &&
@@ -976,12 +978,12 @@ class Comment extends CommentSkeleton {
 			// Has the width of the first highlightable stayed the same?
 			Math.abs(this.highlightables[0].offsetWidth - this.offset.firstHighlightableWidth) < 0.01
 		) {
-			// If floating elements aren't supposed to be taken into account but the comment isn't moved,
-			// we still set or return the offset with floating elements taken into account because that
-			// shouldn't do any harm.
-			this.maybeSetOffset(this.offset, options)
+			// If floating elements aren't supposed to be taken into account but the comment wasn't
+			// displaced, we still set or return the offset with floating elements taken into account
+			// because that shouldn't do any harm.
+			this.maybeSaveOffset(this.offset, options)
 
-			return options.set ? false : this.offset
+			return options.save ? false : this.offset
 		}
 
 		const top = scrollY + rectTop.top
@@ -1014,21 +1016,21 @@ class Comment extends CommentSkeleton {
 				bottom - top > window.innerHeight - 250 ? top + (window.innerHeight - 250) : bottom,
 			firstHighlightableWidth: firstElement.offsetWidth,
 		}
-		this.maybeSetOffset(offset, options)
+		this.maybeSaveOffset(offset, options)
 
-		return options.set ? true : offset
+		return options.save ? true : offset
 	}
 
 	/**
-	 * If `options.set` is `true`, set the offset to the `offset` (if `options.considerFloating` is
+	 * If `options.save` is `true`, set the offset to the `offset` (if `options.considerFloating` is
 	 * `true`) or `roughOffset` (if `options.considerFloating` is `false`) property.
 	 *
 	 * @param {CommentOffset|undefined} offset
-	 * @param {GetOffsetOptions<boolean>} options
+	 * @param {ManageOffsetOptions<boolean>} options
 	 * @private
 	 */
-	maybeSetOffset(offset, options) {
-		if (!options.set) return
+	maybeSaveOffset(offset, options) {
+		if (!options.save) return
 
 		if (options.considerFloating) {
 			this.offset = offset
@@ -1231,8 +1233,8 @@ class Comment extends CommentSkeleton {
 	 * @property {boolean} [add=true] Add the layers in case they are created. If set to `false`, it
 	 *   is expected that the layers created during this procedure, if any, will be added afterwards
 	 *   (otherwise there would be layers without a parent element which would lead to bugs).
-	 * @property {boolean} [update=true] Update the layers' offset in case the comment is moved. If
-	 *   set to `false`, it is expected that the offset will be updated afterwards.
+	 * @property {boolean} [update=true] Update the layers' offset in case the comment was displaced.
+	 *   If set to `false`, it is expected that the offset will be updated afterwards.
 	 * @property {import('./utils-window').ExtendedDOMRect[]} [floatingRects]
 	 *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
 	 *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
@@ -1240,15 +1242,15 @@ class Comment extends CommentSkeleton {
 	 */
 
 	/**
-	 * @typedef {GetOffsetOptions & ConfigureLayersOptionsExtension} ConfigureLayersOptions
+	 * @typedef {ManageOffsetOptions & ConfigureLayersOptionsExtension} ConfigureLayersOptions
 	 */
 
 	/**
 	 * Add the underlay and overlay if they are missing, update their styles, recalculate their offset
-	 * and redraw if the comment has been moved or do nothing if everything is right.
+	 * and redraw if the comment was displaced or do nothing if everything is right.
 	 *
 	 * @param {ConfigureLayersOptions} [options]
-	 * @returns {boolean | undefined} Is the comment moved or created. `undefined` if we couldn't
+	 * @returns {boolean | undefined} Is the comment displaced or created. `undefined` if we couldn't
 	 *   determine (for example, if the element is invisible).
 	 */
 	configureLayers = (options = {}) => {
@@ -1265,16 +1267,15 @@ class Comment extends CommentSkeleton {
 			return true
 		}
 
-		// If layers exist, compute their offset and update if needed
-		const isMoved = this.layers.computeOffset(options)
-		if (isMoved === undefined) return
+		const displaced = this.layers.computeAndSaveOffset(options)
+		if (displaced === undefined) return
 
 		this.layers.updateStyles()
-		if (isMoved && options.update) {
+		if (displaced && options.update) {
 			this.layers.updateOffset()
 		}
 
-		return isMoved
+		return displaced
 	}
 
 	/**
@@ -1918,7 +1919,7 @@ class Comment extends CommentSkeleton {
 				tag: 'cd-commentInCollapsedThread',
 			})
 		} else {
-			const offset = this.getOffset({ considerFloating: true })
+			const offset = this.manageOffset({ considerFloating: true })
 			;(this.editForm?.$element || this.$elements).cdScrollIntoView(
 				alignment ||
 					(this.isOpeningSection() ||
@@ -2650,7 +2651,7 @@ class Comment extends CommentSkeleton {
 	 * @param {CommentOffset | undefined} [offset] Prefetched offset.
 	 * @returns {boolean | undefined}
 	 */
-	isInViewport(partially = false, offset = this.getOffset()) {
+	isInViewport(partially = false, offset = this.manageOffset()) {
 		if (!offset) {
 			return
 		}
