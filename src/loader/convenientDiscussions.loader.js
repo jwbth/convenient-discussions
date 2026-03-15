@@ -121,6 +121,14 @@ class Loader {
 	booting = false
 
 	/**
+	 * Main app code content.
+	 *
+	 * @type {string | undefined}
+	 * @private
+	 */
+	appCode
+
+	/**
 	 * Main app function. Assigned from app.js.
 	 *
 	 * @type {((...args: any) => void) | undefined}
@@ -393,6 +401,8 @@ class Loader {
 				// the rest.
 			])
 
+			await this.runApp()
+
 			this.app?.()
 		} catch (error) {
 			mw.notify(cd.s('error-loaddata'), { type: 'error' })
@@ -661,19 +671,36 @@ class Loader {
 	 * @returns {Promise<void>}
 	 * @private
 	 */
-	loadApp() {
+	async loadApp() {
 		// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
 		// production, load from network.
 		if (IS_DEV || IS_SINGLE) {
-			return import('../app.js').then(() => {})
+			return
 		}
 
-		return this.loadPreferablyFromDiskCache({
+		this.appCode = await this.loadPreferablyFromDiskCache({
 			domain: 'commons.wikimedia.org',
 			pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
 			ttlInDays: 365,
 			addCacheBuster: true,
+			execute: false,
 		})
+	}
+
+	/**
+	 * Run the main app.
+	 *
+	 * @returns {Promise<void>}
+	 * @private
+	 */
+	async runApp() {
+		if (IS_DEV || IS_SINGLE) {
+			await import('../app.js')
+		} else if (this.appCode) {
+			const scriptTag = document.createElement('script')
+			scriptTag.innerHTML = this.appCode
+			document.head.append(scriptTag)
+		}
 	}
 
 	/**
@@ -690,7 +717,8 @@ class Loader {
 	 * @param {number} options.ttlInDays
 	 * @param {string} [options.ctype]
 	 * @param {boolean} [options.addCacheBuster]
-	 * @returns {Promise<void>}
+	 * @param {boolean} [options.execute]
+	 * @returns {Promise<string | undefined>}
 	 */
 	async loadPreferablyFromDiskCache({
 		domain,
@@ -698,6 +726,7 @@ class Loader {
 		ttlInDays,
 		ctype = 'text/javascript',
 		addCacheBuster = false,
+		execute = true,
 	}) {
 		const ttlInMs = ttlInDays * cd.g.msInDay
 		const pageEncoded = encodeURIComponent(pageName)
@@ -712,11 +741,17 @@ class Loader {
 
 		const content = apiPage.revisions[0].content
 		if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
-			const scriptTag = document.createElement('script')
-			scriptTag.innerHTML = content
-			document.head.append(scriptTag)
+			if (execute) {
+				const scriptTag = document.createElement('script')
+				scriptTag.innerHTML = content
+				document.head.append(scriptTag)
+			}
+			return content
 		} else if (ctype === 'text/css' && apiPage.contentmodel === 'css') {
-			mw.loader.addStyleTag(content)
+			if (execute) {
+				mw.loader.addStyleTag(content)
+			}
+			return content
 		}
 	}
 
@@ -841,6 +876,8 @@ class Loader {
 				]),
 				this.loadApp(),
 			])
+
+			await this.runApp()
 
 			this.addCommentLinks?.()
 
