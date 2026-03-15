@@ -2,6 +2,10 @@
 
 **Convenient Discussions** is a JavaScript tool that provides an enhanced user experience for MediaWiki talk pages. It acts as a shell over the existing MediaWiki discussion system.
 
+## General instructions
+
+- Don't run tests unless asked.
+
 ## Project Structure
 
 ### Building
