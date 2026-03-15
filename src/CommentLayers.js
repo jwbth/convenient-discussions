@@ -432,12 +432,12 @@ class CommentLayers {
 		// If there was an animation scheduled, cancel it
 		this.unhighlightDeferred?.reject()
 
-		this.unhighlightDeferred = $.Deferred()
-		this.unhighlightDeferred.then(() => {
+		const deferred = (this.unhighlightDeferred = $.Deferred())
+		deferred.then(() => {
 			this.animateBack(flag, callback)
 		})
 
-		sleep(delay).then(() => this.unhighlightDeferred?.resolve())
+		sleep(delay).then(() => deferred.resolve())
 	}
 
 	/**
