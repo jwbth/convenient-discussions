@@ -284,9 +284,9 @@ class CommentSkeleton {
 	static hasTimestamp(obj) {
 		return Boolean(
 			obj?.date &&
-			obj.timestampElement &&
-			((/** @type {CommentSkeleton} */ (obj)).timestamp ||
-				(/** @type {import('./Parser').SignatureTarget} */ (obj)).timestampText)
+				obj.timestampElement &&
+				/** @type {CommentSkeleton} */ ((obj).timestamp ||
+					/** @type {import('./Parser').SignatureTarget} */ (obj).timestampText),
 		)
 	}
 
@@ -376,9 +376,9 @@ class CommentSkeleton {
 			!this.isElementEligible(fiaParentElement, treeWalker, 'start') ||
 			// Outdent templates in the same item element. TODO: add a test for this case (e.g.
 			// https://ru.wikipedia.org/wiki/Википедия:Голосования/Срочное_включение_нового_Vector#c-Iniquity-20240204205500-AndyVolykhov-20240204201000)
-			[...this.parser.getChildElements(fiaParentElement)].some((child) =>
-				this.parser.rejectClasses.some((name) => child.classList.contains(name)),
-			)
+			this.parser
+				.getChildElements(fiaParentElement)
+				.some((child) => this.parser.rejectClasses.some((name) => child.classList.contains(name)))
 		) {
 			// Collect inline parts after the signature
 			treeWalker.currentNode = farthestInlineAncestor
@@ -993,7 +993,7 @@ class CommentSkeleton {
 			if (
 				(node.tagName === 'P' &&
 					!node.textContent.trim() &&
-					[...this.parser.getChildElements(node)].every((child) => child.tagName === 'BR')) ||
+					this.parser.getChildElements(node).every((child) => child.tagName === 'BR')) ||
 				node.tagName === 'HR' ||
 				isMetadataNode(node) ||
 				Array.from(node.classList).some((name) => ['references', 'reflist-talk'].includes(name)) ||

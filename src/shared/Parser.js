@@ -586,7 +586,7 @@ class Parser {
 		do {
 			nodes = children
 			children = nodes.reduce(
-				(arr, el) => arr.concat([...getChildElements(el)]),
+				(arr, el) => arr.concat(getChildElements(el)),
 				/** @type {ElementLike[]} */ ([]),
 			)
 			if (['DL', 'UL', 'OL'].includes(nodes[0].tagName)) {
@@ -788,9 +788,11 @@ class Parser {
 	 * @returns {ElementLike[]}
 	 */
 	getChildElements(element) {
-		return /** @type {ElementLike[]} */ (
+		const children = /** @type {ElementLike[] | HTMLCollection} */ (
 			element[/** @type {keyof ElementLike} */ (this.context.childElementsProp)]
 		)
+
+		return [...children]
 	}
 
 	/**

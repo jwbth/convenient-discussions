@@ -400,7 +400,7 @@ export function cleanUpPasteDom(element, containerElement) {
 		Parser.prototype.getTopElementsWithText(
 			element,
 			true,
-			Parser.prototype.getChildElements.bind(Parser.prototype),
+			Parser.prototype.getChildElements.bind({ context: { childElementsProp: 'children' } }),
 		).nodes
 	)
 	if (topElements[0] !== element) {
