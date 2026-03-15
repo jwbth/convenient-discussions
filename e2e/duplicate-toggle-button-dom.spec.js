@@ -4,15 +4,18 @@ import { test, expect } from '@playwright/test'
 import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
- * Validation test for the duplicate toggleChildThreadsButton fix
+ * DOM-level check for duplicate toggle child threads buttons
  *
- * This test specifically validates that the fix for the duplicate toggle child threads
- * buttons is working correctly. The fix involved removing the duplicate call to
- * addToggleChildThreadsButton() from CompactComment.js.
+ * Scans the rendered DOM using querySelectorAll to find all
+ * `.cd-comment-button-toggleChildThreads` elements, groups them by their immediate
+ * parent container element, and asserts no container holds more than one such button.
+ *
+ * For the equivalent check via the CD JS object model see
+ * duplicate-toggle-button-actions.spec.js.
  */
 
-test.describe('Toggle Child Threads Button Fix Validation', () => {
-	test('should confirm no duplicate toggle buttons exist after fix', async ({ page }) => {
+test.describe('Duplicate Toggle Child Threads Button — DOM Scan', () => {
+	test('should have at most one toggle button per button container in the DOM', async ({ page }) => {
 		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
 
 		// Get statistics about toggle buttons to validate the fix
@@ -76,8 +79,8 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 		console.log('✅ Fix validation passed - no duplicate toggle buttons detected')
 	})
 
-	test('should verify the fix works in the code structure', async ({ page }) => {
-		// This test validates that our code fix is working by checking the CD object
+	test('should report basic CD object statistics (sanity check)', async ({ page }) => {
+		// Sanity check: CD is loaded and comments/actions are populated
 		const codeValidation = await page.evaluate(() => {
 			// Check if Convenient Discussions is loaded
 			if (!window.convenientDiscussions) {

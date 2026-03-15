@@ -4,14 +4,18 @@ import { test, expect } from '@playwright/test'
 import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 /**
- * Specific validation for the CompactComment duplicate button fix
+ * JS object model check for duplicate toggle child threads buttons
  *
- * This test validates that our specific fix (removing duplicate call from CompactComment.js)
- * is working correctly by testing the behavior at the individual comment level.
+ * Iterates over `cd.comments` and checks two things per comment:
+ *   1. The `actions.toggleChildThreadsButton` property is a proper single button object.
+ *   2. The DOM contains at most one `.cd-comment-button-toggleChildThreads` element
+ *      within each comment's first element.
+ *
+ * For the equivalent check via a raw DOM scan see duplicate-toggle-button-dom.spec.js.
  */
 
-test.describe('CompactComment Duplicate Button Fix', () => {
-	test('should validate that CompactComment actions are created correctly', async ({ page }) => {
+test.describe('Duplicate Toggle Child Threads Button — Actions Object', () => {
+	test('should have a proper single toggleChildThreadsButton object per compact comment', async ({ page }) => {
 		await setupConvenientDiscussions(page, { url: TEST_PAGES.CD_TEST_CASES, settings: { commentDisplay: 'compact' } })
 
 		// Test the specific fix we made - ensure no duplicate calls to addToggleChildThreadsButton
@@ -101,7 +105,7 @@ test.describe('CompactComment Duplicate Button Fix', () => {
 		console.log('✅ CompactComment fix validation passed')
 	})
 
-	test('should confirm the original duplicate issue is resolved', async ({ page }) => {
+	test('should have at most one toggle button DOM element per compact comment', async ({ page }) => {
 		await setupConvenientDiscussions(page, { url: TEST_PAGES.CD_TEST_CASES, settings: { commentDisplay: 'compact' } })
 
 		// This test simulates what would have happened before our fix
