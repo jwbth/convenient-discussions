@@ -5,6 +5,7 @@ declare global {
 		convenientDiscussions: {
 			isRunning?: boolean
 			comments?: any[]
+			commentForms?: any[]
 			sections?: any[]
 			settings?: any
 			g?: any
