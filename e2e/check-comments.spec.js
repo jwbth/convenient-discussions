@@ -7,9 +7,9 @@ import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
  * Check what comments are available on different pages
  */
 
-test.describe('Check Comments Availability', () => {
-	test('Check what comments exist on sandbox page', async ({ page }) => {
-		await setupConvenientDiscussions(page, TEST_PAGES.SANDBOX)
+test.describe('Check comments availability', () => {
+	test('Check what comments exist on CD test cases page', async ({ page }) => {
+		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
 
 		// Check what comments CD found
 		const cdInfo = await page.evaluate(() => ({

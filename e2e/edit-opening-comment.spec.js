@@ -36,7 +36,45 @@ async function waitForEditFormInputs(page, timeoutMs = 20000) {
 	return /** @type {{ headlineText: string, commentText: string }} */ (await handle.jsonValue())
 }
 
-test.describe('Edit opening comment via section "More options" menu', () => {
+/**
+ * Mark the actionsElement of a section with a data attribute, hover the hamburger button to
+ * trigger lazy creation of the real OO.ui widget, then click it to open the dropdown.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} headline
+ */
+async function openSectionMoreMenu(page, headline) {
+	const found = await page.evaluate((h) => {
+		const section = window.convenientDiscussions.sections?.find((s) => s.headline === h)
+		if (!section?.actionsElement) return false
+
+		// Stamp actionsElement so we can scope our locators without relying on nth().
+		section.actionsElement.dataset.testSectionActions = h
+
+		return true
+	}, headline)
+
+	if (!found) {
+		throw new Error(
+			`Could not find the actions element for section "${headline}". ` +
+				'Does it have the "More options" menu?',
+		)
+	}
+
+	// Using a Playwright locator (not an ElementHandle) means it re-queries the DOM after hover
+	// removes the dummy <a> and inserts the real OO.ui.ButtonMenuSelectWidget.
+	const actionsContainer = page.locator(`[data-test-section-actions="${headline}"]`)
+	const hamburger = actionsContainer.locator('.cd-section-bar-moremenu a')
+
+	// Hover triggers the lazy widget-creation callback.
+	await hamburger.hover()
+	await page.waitForTimeout(300)
+
+	// Click now finds the newly-inserted widget element.
+	await hamburger.click()
+}
+
+test.describe('Section "More options" menu', () => {
 	test.beforeEach(async ({ page }) => {
 		await setupConvenientDiscussions(page, { url: TEST_PAGES.JWBTH_TEST })
 	})
@@ -44,46 +82,10 @@ test.describe('Edit opening comment via section "More options" menu', () => {
 	test('clicking "Edit opening comment" opens a form with heading and comment text pre-filled', async ({
 		page,
 	}) => {
-		// 1. Mark the actionsElement of "Section 1" with a data attribute so we can scope our
-		//    locators to it. Using locators (not element handles) means Playwright will re-query
-		//    the DOM automatically after hover replaces the dummy button with the real OO.ui widget.
-		const found = await page.evaluate((headline) => {
-			const section = window.convenientDiscussions.sections?.find(
-				(s) => s.headline === headline,
-			)
-			if (!section?.actionsElement) return false
-
-			section.actionsElement.dataset.testSectionActions = headline
-
-			return true
-		}, SECTION_HEADLINE)
-
-		if (!found) {
-			throw new Error(
-				`Could not find the actions element for section "${SECTION_HEADLINE}". ` +
-					'Does it have the "More options" menu?',
-			)
-		}
-		console.log(`📝 Found section "${SECTION_HEADLINE}" actions element`)
-
-		// 2. Hover the hamburger <a> to trigger lazy creation of the real OO.ui.ButtonMenuSelectWidget.
-		//    Using a Playwright locator (not an ElementHandle) means it will re-query after the DOM
-		//    mutation, preventing the "Element is not attached to DOM" error.
-		const actionsContainer = page.locator(
-			`[data-test-section-actions="${SECTION_HEADLINE}"]`,
-		)
-		const hamburger = actionsContainer.locator('.cd-section-bar-moremenu a')
-		await hamburger.hover()
-
-		// Give the widget a moment to be created in place of the dummy.
-		await page.waitForTimeout(300)
-
-		// 3. Click to open the dropdown menu. The locator re-queries, so it picks up the new element.
-		await hamburger.click()
+		await openSectionMoreMenu(page, SECTION_HEADLINE)
 		console.log('✅ Opened "More options" dropdown menu')
 
-		// 4. Click the "Edit opening comment" menu item.
-		//    It has an "edit" icon class on the icon element inside the option widget.
+		// The "Edit opening comment" item has an "edit" icon.
 		const menuItem = page.locator('.oo-ui-menuSelectWidget .oo-ui-optionWidget').filter({
 			has: page.locator('.oo-ui-icon-edit'),
 		})
@@ -91,11 +93,9 @@ test.describe('Edit opening comment via section "More options" menu', () => {
 		await menuItem.click()
 		console.log('✅ Clicked "Edit opening comment" menu item')
 
-		// 5. The comment form should appear.
 		await expect(page.locator('.cd-commentForm')).toBeVisible({ timeout: 10000 })
 		console.log('✅ Comment form is visible')
 
-		// 6. Wait for the server to return the source and populate both inputs.
 		const { headlineText, commentText } = await waitForEditFormInputs(page)
 
 		expect(headlineText).toBeTruthy()
@@ -105,5 +105,47 @@ test.describe('Edit opening comment via section "More options" menu', () => {
 		expect(commentText).toBeTruthy()
 		expect(commentText).toContain(OPENING_COMMENT_TEXT)
 		console.log(`✅ Comment input contains: "${commentText}"`)
+	})
+
+	test('clicking "Add subsection" opens a form immediately before the next section heading', async ({
+		page,
+	}) => {
+		await openSectionMoreMenu(page, SECTION_HEADLINE)
+		console.log('✅ Opened "More options" dropdown menu')
+
+		// The "Add subsection" item has a "speechBubbleAdd" icon.
+		const menuItem = page.locator('.oo-ui-menuSelectWidget .oo-ui-optionWidget').filter({
+			has: page.locator('.oo-ui-icon-speechBubbleAdd'),
+		})
+		await expect(menuItem).toBeVisible({ timeout: 5000 })
+		await menuItem.click()
+		console.log('✅ Clicked "Add subsection" menu item')
+
+		// The form should appear immediately before the next h2 heading.
+		const nextHeading = page.locator('.mw-heading2:has(#test4)')
+		await expect(nextHeading).toBeVisible()
+
+		// The "Add subsection" form is placed just before the next h2, so it should be its
+		// immediately preceding sibling in the DOM.
+		const formPrecedesHeading = await nextHeading.evaluate((heading) => {
+			const prev = heading.previousElementSibling
+
+			return (
+				prev?.classList.contains('cd-commentForm') ||
+				// The form may be wrapped in a cd-commentForm-outerWrapper <dd>/<li>.
+				prev?.querySelector('.cd-commentForm') !== null
+			)
+		})
+
+		expect(
+			formPrecedesHeading,
+			'Add subsection form should appear immediately before .mw-heading2:has(#test4)',
+		).toBe(true)
+		console.log('✅ Add subsection form is immediately before the next section heading')
+
+		// The form should also have a visible headline input (for the subsection title).
+		const headlineInput = page.locator('.cd-commentForm .cd-commentForm-headlineInput')
+		await expect(headlineInput).toBeVisible({ timeout: 5000 })
+		console.log('✅ Headline input is visible in the Add subsection form')
 	})
 })
