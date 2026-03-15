@@ -220,7 +220,7 @@ export class CommentManager extends EventEmitter {
 	 */
 	setup() {
 		// This can be updated after an in-script page reload.
-		this.commentDisplay = cd.settings.get('commentDisplay')
+		this.commentDisplay = cd.settings.get('commentDisplay') || 'compact'
 
 		this.reformatTimestamps()
 		this.findAndUpdateTableComments()

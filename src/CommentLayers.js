@@ -416,13 +416,6 @@ class CommentLayers {
 	 * @param {() => void} [callback]
 	 */
 	flash(flag, delay, callback) {
-		this.comment.configureLayers()
-		if (!this.comment.layers) {
-			callback?.()
-
-			return
-		}
-
 		/**
 		 * Comment underlay and menu, whose colors are animated in some events.
 		 *

@@ -245,18 +245,9 @@ class CompactComment extends Comment {
 		// Animation will be directed to wrong properties if we keep it going.
 		this.layers?.$animatedBackground?.stop(true, true)
 
-		// Configure layers (create if they don't exist, update if they do)
-		const layersResult = this.configureLayers()
-
-		// If configureLayers returns undefined, it means the comment is invisible or there was an error
-		if (layersResult === undefined) {
-			return
-		}
-
-		// If layers still don't exist after configuration, something went wrong
-		if (!this.layers) {
-			return
-		}
+		// Update classes if the comment is visible and wasn't displaced. If it was, the layers are
+		// removed and created again when the next event fires.
+		if (this.configureLayers() !== false) return
 
 		this.isHovered = true
 		this.updateClassesForFlag('hovered', true)

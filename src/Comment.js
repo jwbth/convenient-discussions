@@ -1245,7 +1245,7 @@ class Comment extends CommentSkeleton {
 	 * and redraw if the comment was displaced or do nothing if everything is right.
 	 *
 	 * @param {ConfigureLayersOptions} [options]
-	 * @returns {boolean | undefined} Is the comment displaced or created. `undefined` if we couldn't
+	 * @returns {boolean | undefined} Was the comment displaced or created. `undefined` if we couldn't
 	 *   determine (for example, if the element is invisible).
 	 */
 	configureLayers = (options = {}) => {
@@ -1357,7 +1357,14 @@ class Comment extends CommentSkeleton {
 	 * @param {() => void} [callback]
 	 */
 	flash(flag, delay, callback) {
-		this.layers?.flash(flag, delay, callback)
+		this.configureLayers()
+		if (!this.layers) {
+			callback?.()
+
+			return
+		}
+
+		this.layers.flash(flag, delay, callback)
 	}
 
 	/**

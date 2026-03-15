@@ -677,7 +677,7 @@ class Controller extends EventEmitter {
 	 */
 	handleMouseMove(event) {
 		if (
-			cd.settings.get('commentDisplay') !== 'compact' ||
+			cd.settings.get('commentDisplay') === 'spacious' ||
 			this.mouseMoveBlocked ||
 			this.isAutoScrolling() ||
 			cd.loader.isPageOverlayOn()
