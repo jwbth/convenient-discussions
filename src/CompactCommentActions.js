@@ -33,6 +33,19 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
+	 * Create a reply widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createReplyWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-reply'),
+			framed: false,
+			flags: ['progressive'],
+			classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+		})
+
+	/**
 	 * Create a reply button for compact comments.
 	 *
 	 * @override
@@ -41,11 +54,23 @@ class CompactCommentActions extends CommentActions {
 	 */
 	createReplyButton(action) {
 		return new CommentButton({
-			element: this.comment.createReplyButton().$element[0],
+			element: this.createReplyWidget().$element[0],
 			action,
-			widgetConstructor: this.comment.createReplyButton,
+			widgetConstructor: this.createReplyWidget,
 		})
 	}
+
+	/**
+	 * Create an edit widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createEditWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-edit'),
+			framed: false,
+			classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+		})
 
 	/**
 	 * Create an edit button for compact comments.
@@ -56,11 +81,31 @@ class CompactCommentActions extends CommentActions {
 	 */
 	createEditButton(action) {
 		return new CommentButton({
-			element: this.comment.createEditButton().$element[0],
+			element: this.createEditWidget().$element[0],
 			action,
-			widgetConstructor: this.comment.createEditButton,
+			widgetConstructor: this.createEditWidget,
 		})
 	}
+
+	/**
+	 * Create a thank widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createThankWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-thank'),
+			icon: 'heart',
+			invisibleLabel: true,
+			title: cd.s('cm-thank-tooltip'),
+			framed: false,
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-ooui-icon-thank',
+			],
+		})
 
 	/**
 	 * Create a thank button for compact comments.
@@ -72,11 +117,26 @@ class CompactCommentActions extends CommentActions {
 	 */
 	createThankButton(action, _isThanked) {
 		return new CommentButton({
-			element: this.comment.createThankButton().$element[0],
+			element: this.createThankWidget().$element[0],
 			action,
-			widgetConstructor: this.comment.createThankButton,
+			widgetConstructor: this.createThankWidget,
 		})
 	}
+
+	/**
+	 * Create a copy link widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createCopyLinkWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-copylink'),
+			icon: 'link',
+			invisibleLabel: true,
+			title: cd.s('cm-copylink-tooltip'),
+			framed: false,
+			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+		})
 
 	/**
 	 * Create a copy link button for compact comments.
@@ -86,16 +146,31 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createCopyLinkButton(action) {
-		const element = this.comment.createCopyLinkButton().$element[0]
+		const element = this.createCopyLinkWidget().$element[0]
 
 		return new CommentButton({
 			element,
 			buttonElement: /** @type {HTMLElement} */ (element.firstChild),
 			action,
-			widgetConstructor: this.comment.createCopyLinkButton,
+			widgetConstructor: this.createCopyLinkWidget,
 			href: this.comment.dtId && '#' + this.comment.dtId,
 		})
 	}
+
+	/**
+	 * Create a "Go to parent" widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createGoToParentWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-gotoparent-tooltip'),
+			icon: 'upTriangle',
+			invisibleLabel: true,
+			title: cd.s('cm-gotoparent-tooltip'),
+			framed: false,
+			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+		})
 
 	/**
 	 * Create a "Go to parent" button for compact comments.
@@ -105,14 +180,29 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createGoToParentButton(action) {
-		const buttonElement = this.comment.createGoToParentButton().$element[0]
+		const buttonElement = this.createGoToParentWidget().$element[0]
 
 		return new CommentButton({
 			buttonElement,
 			action,
-			widgetConstructor: this.comment.createGoToParentButton,
+			widgetConstructor: this.createGoToParentWidget,
 		})
 	}
+
+	/**
+	 * Create a "Go to child" widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createGoToChildWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-gotochild'),
+			icon: 'downTriangle',
+			invisibleLabel: true,
+			title: cd.s('cm-gotochild-tooltip'),
+			framed: false,
+			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+		})
 
 	/**
 	 * Create a "Go to child" button for compact comments.
@@ -122,14 +212,29 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createGoToChildButton(action) {
-		const element = this.comment.createGoToChildButton().$element[0]
+		const element = this.createGoToChildWidget().$element[0]
 
 		return new CommentButton({
 			element,
 			action,
-			widgetConstructor: this.comment.createGoToChildButton,
+			widgetConstructor: this.createGoToChildWidget,
 		})
 	}
+
+	/**
+	 * Create a "Toggle child threads" widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createToggleChildThreadsWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-togglechildthreads'),
+			icon: this.comment.areChildThreadsCollapsed() ? 'add' : 'subtract',
+			invisibleLabel: true,
+			title: cd.s('cm-togglechildthreads-tooltip'),
+			framed: false,
+			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+		})
 
 	/**
 	 * Create a "Toggle child threads" button for compact comments.
@@ -139,19 +244,19 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createToggleChildThreadsButton(action) {
-		const element = this.comment.createToggleChildThreadsButton().$element[0]
+		const element = this.createToggleChildThreadsWidget().$element[0]
 
 		return new CommentButton({
 			element,
 			iconElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-iconElement-icon')),
 			action,
-			widgetConstructor: this.comment.createToggleChildThreadsButton,
+			widgetConstructor: this.createToggleChildThreadsWidget,
 			classes: ['cd-comment-button-toggleChildThreads'],
 		})
 	}
 
 	/**
-	 * Get the overlay menu container for compact comments.
+	 * Get the overlay menu container.
 	 *
 	 * @override
 	 * @returns {JQuery | undefined} The overlay menu jQuery object, or undefined if not available.
@@ -160,12 +265,12 @@ class CompactCommentActions extends CommentActions {
 	getOverlayMenu() {
 		const layers = this.comment.layers
 		if (layers && 'overlayMenu' in layers) {
-			return /** @type {import('./CompactCommentLayers').default} */ (layers).$overlayMenu
+			return layers.$overlayMenu
 		}
 	}
 
 	/**
-	 * Append a button to the compact comment overlay menu.
+	 * Append a button to the comment overlay menu.
 	 *
 	 * @override
 	 * @param {CommentButton} button The button to append.
@@ -175,7 +280,7 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Add a button to the compact comment overlay menu.
+	 * Add a button to the comment overlay menu.
 	 *
 	 * @override
 	 * @param {CommentButton} button The button to add.
@@ -204,11 +309,11 @@ class CompactCommentActions extends CommentActions {
 			this.comment.maybeOnboardOntoToggleChildThreads()
 		})
 
-		// Insert after go to parent/child buttons if they exist
+		// Insert after "Go to parent/child" buttons if they exist
 		const targetButton = this.goToParentButton || this.goToChildButton
-		const overlayMenu = this.getOverlayMenu()
-		if (targetButton && overlayMenu) {
-			overlayMenu[0].insertBefore(
+		const $overlayMenu = this.getOverlayMenu()
+		if (targetButton && $overlayMenu) {
+			$overlayMenu[0].insertBefore(
 				this.toggleChildThreadsButton.element,
 				targetButton.element.nextSibling || null,
 			)
@@ -218,7 +323,7 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Override to handle specific positioning for go to child button.
+	 * Override to handle specific positioning for "Go to child" button.
 	 *
 	 * @override
 	 */
@@ -233,7 +338,7 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Override addReplyButton for compact comments.
+	 * Create a reply button and add it to the comment overlay menu.
 	 *
 	 * @override
 	 */
@@ -256,7 +361,7 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Override addEditButton for compact comments.
+	 * Create an edit button and add it to the comment overlay menu.
 	 *
 	 * @override
 	 */
@@ -268,7 +373,7 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Override addThankButton for compact comments.
+	 * Create a thank button and add it to the comment overlay menu.
 	 *
 	 * @override
 	 */
@@ -302,7 +407,7 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Override addGoToParentButton for compact comments.
+	 * Create a "Go to parent" button and add it to the comment overlay menu.
 	 *
 	 * @override
 	 */
@@ -314,7 +419,7 @@ class CompactCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Override addCopyLinkButton for compact comments.
+	 * Create a "Copy link" button and add it to the comment overlay menu.
 	 *
 	 * @override
 	 */
