@@ -28,7 +28,7 @@ const TEST_PAGES = {
 		'https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases',
 	VILLAGE_PUMP: 'https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)',
 	// Compact test page with few comments for quick testing
-	JWBTH_TEST: 'https://test.wikipedia.org/wiki/User_talk:JWBTH',
+	JWBTH_TEST: 'https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page',
 }
 
 /**

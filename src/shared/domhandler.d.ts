@@ -1,7 +1,6 @@
 // These are types for our extensions of domhandler. It's not called extendDomhandler.d.ts because
-// that would cause type imports from './extendDomhandler' to be from this module.
-
-// import { DataNode, Element } from 'domhandler';
+// that would cause type imports from './extendDomhandler' (extendDomhandler.js) to be from this
+// module.
 
 declare module 'domhandler' {
 	namespace Node {

@@ -205,10 +205,20 @@ class SpaciousCommentActions extends CommentActions {
 	}
 
 	/**
+	 * Have the prototypes been initialized.
+	 *
+	 * @type {boolean}
+	 */
+	static prototypesInitted = false
+
+	/**
 	 * Initialize prototypes for spacious comment actions.
+	 *
 	 * Creates SVG icon prototypes for navigation buttons.
 	 */
 	static initPrototypes() {
+		if (this.prototypesInitted) return
+
 		// Create SVG icon prototypes
 		this.prototypes.add(
 			'goToParentButtonSvg',
@@ -218,6 +228,8 @@ class SpaciousCommentActions extends CommentActions {
 			'goToChildButtonSvg',
 			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M10 15L2 5h16z" />`)[0],
 		)
+
+		this.prototypesInitted = true
 	}
 }
 

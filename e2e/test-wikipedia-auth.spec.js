@@ -69,7 +69,7 @@ test.describe('Test Wikipedia Authentication', () => {
 
 	test('should access a talk page on test.wikipedia.org', async ({ page }) => {
 		// Navigate to the JWBTH test page
-		await page.goto('/wiki/User_talk:JWBTH')
+		await page.goto('/wiki/User_talk:JWBTH/CD_test_page')
 
 		// Wait for page to load
 		await page.waitForLoadState('load')

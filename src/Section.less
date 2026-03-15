@@ -185,11 +185,12 @@ ol .cd-section-button {
 	visibility: hidden;
 }
 
-.ext-discussiontools-visualenhancements-enabled
-	.cd-commentLayersContainer
-	+ .ext-discussiontools-init-section {
-	margin-top: 0;
-	border-top: 0;
+.ext-discussiontools-visualenhancements-enabled .cd-commentLayersContainer {
+	+ .ext-discussiontools-init-section,
+	+ meta + .ext-discussiontools-init-section {
+		margin-top: 0;
+		border-top: 0;
+	}
 }
 
 // "Add to subsection" buttons
