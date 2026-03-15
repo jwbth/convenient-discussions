@@ -18,28 +18,31 @@ test.describe('Toggle Child Threads Button Fix Validation', () => {
 		// Get statistics about toggle buttons to validate the fix
 		const validation = await page.evaluate(() => {
 			const allToggleButtons = document.querySelectorAll('.cd-comment-button-toggleChildThreads')
+
+			// Key the map by the actual container element so that elements sharing the same
+			// class name are still treated as distinct containers.
 			const buttonContainers = new Map()
 
-			// Group buttons by their immediate container
+			// Group buttons by their immediate container element
 			allToggleButtons.forEach((button) => {
 				const container = button.parentElement
-				const containerId = container?.id || container?.className || 'unknown'
-
-				if (!buttonContainers.has(containerId)) {
-					buttonContainers.set(containerId, [])
+				if (!buttonContainers.has(container)) {
+					buttonContainers.set(container, [])
 				}
-				buttonContainers.get(containerId).push(button)
+				buttonContainers.get(container).push(button)
 			})
 
 			// Find containers with multiple buttons (potential duplicates)
 			const duplicateContainers = []
-			buttonContainers.forEach((buttons, containerId) => {
+			buttonContainers.forEach((buttons, container) => {
 				if (buttons.length > 1) {
+					const commentIndex =
+						container?.closest('[data-cd-comment-index]')?.dataset.cdCommentIndex ?? 'unknown'
 					duplicateContainers.push({
-						containerId,
+						commentIndex,
 						buttonCount: buttons.length,
-						containerTag: buttons[0].parentElement?.tagName,
-						containerClasses: buttons[0].parentElement?.className,
+						containerTag: container?.tagName,
+						containerClasses: container?.className,
 					})
 				}
 			})

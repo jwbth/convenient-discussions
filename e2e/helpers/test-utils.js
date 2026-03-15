@@ -35,20 +35,16 @@ const TEST_PAGES = {
  * Complete setup for Convenient Discussions browser testing
  * Handles all preparation steps: navigation, MediaWiki loading, script injection, and CD initialization
  *
- * NOTE: Currently focused on compact-style comments only (spaciousComments: false)
- * The test account should have spaciousComments setting disabled for consistent testing.
- *
  * @param {import('@playwright/test').Page} page
  * @param {string | { url?: string, settings?: Record<string, unknown> }} [urlOrOptions]
- *   Wikipedia talk page URL or options object.
- * @param {Record<string, unknown>} [settings] Settings to set BEFORE script injection.
+ *   Wikipedia talk page URL or options object with optional settings.
  */
 async function setupConvenientDiscussionsFromDevBuild(
 	page,
 	urlOrOptions = TEST_PAGES.JWBTH_TEST,
-	settings = {},
 ) {
-	const { url, finalSettings } = parseSetupArgs(urlOrOptions, settings)
+	const url = typeof urlOrOptions === 'object' ? (urlOrOptions.url ?? TEST_PAGES.JWBTH_TEST) : urlOrOptions
+	const settings = typeof urlOrOptions === 'object' ? (urlOrOptions.settings ?? {}) : {}
 	await internalSetup(
 		page,
 		url,
@@ -58,29 +54,8 @@ async function setupConvenientDiscussionsFromDevBuild(
 				path: './dist/convenientDiscussions.dev.js',
 			})
 		},
-		finalSettings,
+		settings,
 	)
-}
-
-/**
- * Helper to parse setup arguments
- *
- * @param {string | { url?: string, settings?: Record<string, unknown> }} urlOrOptions
- * @param {Record<string, unknown>} settings
- * @returns {{ url: string, finalSettings: Record<string, unknown> }}
- */
-function parseSetupArgs(urlOrOptions, settings) {
-	let url = TEST_PAGES.JWBTH_TEST
-	let finalSettings = settings
-
-	if (typeof urlOrOptions === 'object' && urlOrOptions !== null) {
-		url = urlOrOptions.url || TEST_PAGES.JWBTH_TEST
-		finalSettings = { ...urlOrOptions.settings, ...settings }
-	} else {
-		url = urlOrOptions
-	}
-
-	return { url, finalSettings }
 }
 
 /**
@@ -334,15 +309,14 @@ async function getConsoleMessages(page) {
  *
  * @param {import('@playwright/test').Page} page
  * @param {string | { url?: string, settings?: Record<string, unknown> }} [urlOrOptions]
- *   Wikipedia talk page URL or options object.
- * @param {Record<string, unknown>} [settings] Settings to set BEFORE script injection.
+ *   Wikipedia talk page URL or options object with optional settings.
  */
 async function setupConvenientDiscussions(
 	page,
 	urlOrOptions = TEST_PAGES.JWBTH_TEST,
-	settings = {},
 ) {
-	const { url, finalSettings } = parseSetupArgs(urlOrOptions, settings)
+	const url = typeof urlOrOptions === 'object' ? (urlOrOptions.url ?? TEST_PAGES.JWBTH_TEST) : urlOrOptions
+	const settings = typeof urlOrOptions === 'object' ? (urlOrOptions.settings ?? {}) : {}
 	await internalSetup(
 		page,
 		url,
@@ -353,7 +327,7 @@ async function setupConvenientDiscussions(
 				url: 'http://localhost:9000/src/loader/startup.js',
 			})
 		},
-		finalSettings,
+		settings,
 	)
 }
 

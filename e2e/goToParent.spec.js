@@ -6,13 +6,10 @@ import { setupConvenientDiscussions } from './helpers/test-utils.js'
 test.describe('Go to parent highlighting', () => {
 	test.beforeEach(async ({ page }) => {
 		// Using the test page provided by the user
-		await setupConvenientDiscussions(
-			page,
-			'https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page',
-			{
-				settings: { commentDisplay: 'compact' },
-			},
-		)
+		await setupConvenientDiscussions(page, {
+			url: 'https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page',
+			settings: { commentDisplay: 'compact' },
+		})
 	})
 
 	test('should highlight parent comment on first click of "Go to parent"', async ({ page }) => {
