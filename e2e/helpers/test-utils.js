@@ -39,9 +39,9 @@ const TEST_PAGES = {
  * The test account should have spaciousComments setting disabled for consistent testing.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string | { url?: string, settings?: object }} [urlOrOptions]
+ * @param {string | { url?: string, settings?: Record<string, unknown> }} [urlOrOptions]
  *   Wikipedia talk page URL or options object.
- * @param {object} [settings] Settings to set BEFORE script injection.
+ * @param {Record<string, unknown>} [settings] Settings to set BEFORE script injection.
  */
 async function setupConvenientDiscussionsFromDevBuild(
 	page,
@@ -65,9 +65,9 @@ async function setupConvenientDiscussionsFromDevBuild(
 /**
  * Helper to parse setup arguments
  *
- * @param {string | { url?: string, settings?: object }} urlOrOptions
- * @param {object} settings
- * @returns {{ url: string, finalSettings: object }}
+ * @param {string | { url?: string, settings?: Record<string, unknown> }} urlOrOptions
+ * @param {Record<string, unknown>} settings
+ * @returns {{ url: string, finalSettings: Record<string, unknown> }}
  */
 function parseSetupArgs(urlOrOptions, settings) {
 	let url = TEST_PAGES.JWBTH_TEST
@@ -89,7 +89,7 @@ function parseSetupArgs(urlOrOptions, settings) {
  * @param {import('@playwright/test').Page} page
  * @param {string} url
  * @param {() => Promise<void>} injectScriptCallback
- * @param {object} [settings]
+ * @param {Record<string, unknown>} [settings]
  */
 async function internalSetup(page, url, injectScriptCallback, settings = {}) {
 	console.log(`🚀 Setting up Convenient Discussions on: ${url}`)
@@ -144,7 +144,7 @@ async function internalSetup(page, url, injectScriptCallback, settings = {}) {
 	if (Object.keys(settings).length > 0) {
 		await page.evaluate((settingsObj) => {
 			for (const [key, value] of Object.entries(settingsObj)) {
-				// Convert setting name to CD global name (e.g. commentDisplay -> cdCommentDisplay)
+				// Convert setting name to CD global name (e.g. commentDisplay -> cdLocalCommentDisplay)
 				const globalName = 'cdLocal' + key.charAt(0).toUpperCase() + key.slice(1)
 				window[globalName] = value
 			}
@@ -333,9 +333,9 @@ async function getConsoleMessages(page) {
  * This injects the script from localhost:9000 instead of the built dist file.
  *
  * @param {import('@playwright/test').Page} page
- * @param {string | { url?: string, settings?: object }} [urlOrOptions]
+ * @param {string | { url?: string, settings?: Record<string, unknown> }} [urlOrOptions]
  *   Wikipedia talk page URL or options object.
- * @param {object} [settings] Settings to set BEFORE script injection.
+ * @param {Record<string, unknown>} [settings] Settings to set BEFORE script injection.
  */
 async function setupConvenientDiscussions(
 	page,
