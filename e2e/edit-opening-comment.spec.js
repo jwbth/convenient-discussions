@@ -14,7 +14,7 @@ const OPENING_COMMENT_TEXT = 'first section comment'
  * @param {number} timeoutMs
  * @returns {Promise<{ headlineText: string, commentText: string }>}
  */
-async function waitForEditFormInputs(page, timeoutMs = 20_000) {
+async function waitForEditFormInputs(page, timeoutMs = 20000) {
 	const handle = await page.waitForFunction(
 		() => {
 			const commentForm = window.convenientDiscussions.commentForms?.find(
@@ -44,34 +44,42 @@ test.describe('Edit opening comment via section "More options" menu', () => {
 	test('clicking "Edit opening comment" opens a form with heading and comment text pre-filled', async ({
 		page,
 	}) => {
-		// 1. Find "Section 1" and get its hamburger button element.
-		const hamburgerHandle = await page.evaluateHandle((headline) => {
+		// 1. Mark the actionsElement of "Section 1" with a data attribute so we can scope our
+		//    locators to it. Using locators (not element handles) means Playwright will re-query
+		//    the DOM automatically after hover replaces the dummy button with the real OO.ui widget.
+		const found = await page.evaluate((headline) => {
 			const section = window.convenientDiscussions.sections?.find(
 				(s) => s.headline === headline,
 			)
-			if (!section) return undefined
+			if (!section?.actionsElement) return false
 
-			// The hamburger is the dummy button inside actionsElement with class cd-section-bar-moremenu.
-			return section.actionsElement?.querySelector('.cd-section-bar-moremenu a')
+			section.actionsElement.dataset.testSectionActions = headline
+
+			return true
 		}, SECTION_HEADLINE)
 
-		const hamburgerElement = hamburgerHandle.asElement()
-		if (!hamburgerElement) {
+		if (!found) {
 			throw new Error(
-				`Could not find the hamburger button for section "${SECTION_HEADLINE}". ` +
+				`Could not find the actions element for section "${SECTION_HEADLINE}". ` +
 					'Does it have the "More options" menu?',
 			)
 		}
-		console.log(`📝 Found section "${SECTION_HEADLINE}" hamburger button`)
+		console.log(`📝 Found section "${SECTION_HEADLINE}" actions element`)
 
-		// 2. Hover to trigger lazy creation of the real OO.ui.ButtonMenuSelectWidget.
-		await hamburgerElement.hover()
+		// 2. Hover the hamburger <a> to trigger lazy creation of the real OO.ui.ButtonMenuSelectWidget.
+		//    Using a Playwright locator (not an ElementHandle) means it will re-query after the DOM
+		//    mutation, preventing the "Element is not attached to DOM" error.
+		const actionsContainer = page.locator(
+			`[data-test-section-actions="${SECTION_HEADLINE}"]`,
+		)
+		const hamburger = actionsContainer.locator('.cd-section-bar-moremenu a')
+		await hamburger.hover()
 
-		// Give the widget a moment to be created.
+		// Give the widget a moment to be created in place of the dummy.
 		await page.waitForTimeout(300)
 
-		// 3. Click to open the dropdown menu.
-		await hamburgerElement.click()
+		// 3. Click to open the dropdown menu. The locator re-queries, so it picks up the new element.
+		await hamburger.click()
 		console.log('✅ Opened "More options" dropdown menu')
 
 		// 4. Click the "Edit opening comment" menu item.
@@ -79,12 +87,12 @@ test.describe('Edit opening comment via section "More options" menu', () => {
 		const menuItem = page.locator('.oo-ui-menuSelectWidget .oo-ui-optionWidget').filter({
 			has: page.locator('.oo-ui-icon-edit'),
 		})
-		await expect(menuItem).toBeVisible({ timeout: 5_000 })
+		await expect(menuItem).toBeVisible({ timeout: 5000 })
 		await menuItem.click()
 		console.log('✅ Clicked "Edit opening comment" menu item')
 
 		// 5. The comment form should appear.
-		await expect(page.locator('.cd-commentForm')).toBeVisible({ timeout: 10_000 })
+		await expect(page.locator('.cd-commentForm')).toBeVisible({ timeout: 10000 })
 		console.log('✅ Comment form is visible')
 
 		// 6. Wait for the server to return the source and populate both inputs.
