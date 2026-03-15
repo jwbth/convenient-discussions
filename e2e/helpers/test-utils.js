@@ -343,6 +343,44 @@ function shouldIgnoreConsoleMessage(text) {
 	)
 }
 
+/**
+ * Mark the actionsElement of a section with a data attribute, hover the hamburger button to
+ * trigger lazy creation of the real OO.ui widget, then click it to open the dropdown.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} headline
+ */
+async function openSectionMoreMenu(page, headline) {
+	const found = await page.evaluate((h) => {
+		const section = window.convenientDiscussions.sections?.find((s) => s.headline === h)
+		if (!section?.actionsElement) return false
+
+		// Stamp actionsElement so we can scope our locators without relying on nth().
+		section.actionsElement.dataset.testSectionActions = h
+
+		return true
+	}, headline)
+
+	if (!found) {
+		throw new Error(
+			`Could not find the actions element for section "${headline}". ` +
+				'Does it have the "More options" menu?',
+		)
+	}
+
+	// Using a Playwright locator (not an ElementHandle) means it re-queries the DOM after hover
+	// removes the dummy <a> and inserts the real OO.ui.ButtonMenuSelectWidget.
+	const actionsContainer = page.locator(`[data-test-section-actions="${headline}"]`)
+	const hamburger = actionsContainer.locator('.cd-section-bar-moremenu a')
+
+	// Hover triggers the lazy widget-creation callback.
+	await hamburger.hover()
+	await page.waitForTimeout(300)
+
+	// Click now finds the newly-inserted widget element.
+	await hamburger.click()
+}
+
 export {
 	TEST_PAGES,
 	waitForConvenientDiscussions,
@@ -358,4 +396,5 @@ export {
 	highlightComment,
 	getCommentPositioning,
 	getConsoleMessages,
+	openSectionMoreMenu,
 }

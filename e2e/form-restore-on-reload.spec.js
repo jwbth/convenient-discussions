@@ -53,7 +53,7 @@ test.describe('Comment form restoration after page reload', () => {
 
 		// Wait for the form to appear inside the wrapper (class is added dynamically).
 		await expect(firstReplyWrapper).toHaveClass(/cd-replyButtonWrapper-hasCommentForm/, {
-			timeout: 5_000,
+			timeout: 5000,
 		})
 		console.log('✅ Reply form is open inside .cd-replyButtonWrapper')
 
@@ -99,7 +99,7 @@ test.describe('Comment form restoration after page reload', () => {
 		await expect(
 			restoredWrapper,
 			'A .cd-replyButtonWrapper should contain the restored form',
-		).toBeVisible({ timeout: 5_000 })
+		).toBeVisible({ timeout: 5000 })
 		console.log('✅ Restored form is inside .cd-replyButtonWrapper')
 
 		// 9. Assert: the text in the restored form matches what was typed before reload.

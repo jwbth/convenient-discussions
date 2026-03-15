@@ -11,29 +11,29 @@ test.describe('Add subsection buttons', () => {
 	})
 
 	test('hovering the section reply link reveals "Add subsection" buttons', async ({ page }) => {
-		// Find the .cd-replyButtonWrapper that belongs to the section whose headline is "test3".
-		// Each wrapper is placed after its section, so we scope the search to the heading's section.
-		const replyLink = page
-			.locator('h3')
-			.filter({ hasText: 'test3' })
-			.locator('~ .cd-replyButtonWrapper a')
+		const sectionButtonContainer = page
+			.locator('.mw-heading3')
+			.filter({ has: page.locator('h3', { hasText: 'test3' }) })
+			.locator('~ .cd-section-button-container')
 			.first()
+
+		const replyLink = sectionButtonContainer.locator('.cd-replyButtonWrapper a')
 		await expect(replyLink).toBeVisible({ timeout: 10_000 })
 
 		// Hover over the link for 1.5 s to trigger the "Add subsection" buttons to appear.
 		await replyLink.hover()
-		await page.waitForTimeout(1_500)
+		await page.waitForTimeout(1500)
 
 		// The subsection button container should now be visible.
-		const container = page.locator('.cd-addSubsectionButtons-container')
-		await expect(container).toBeVisible({ timeout: 5_000 })
+		const container = sectionButtonContainer.locator('+ .cd-addSubsectionButtons-container')
+		await expect(container).toBeVisible({ timeout: 5000 })
 
 		// Two <a> elements should be present with the expected labels.
 		const buttons = container.locator('a')
 		await expect(buttons).toHaveCount(2)
 
 		await expect(buttons.nth(0)).toHaveText('Add subsection to "test3"')
-		await expect(buttons.nth(1)).toHaveText('Add subsection "Section 1"')
+		await expect(buttons.nth(1)).toHaveText('Add subsection to "Section 1"')
 		console.log('✅ Both "Add subsection" buttons are visible with expected labels')
 	})
 })

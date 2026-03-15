@@ -1,7 +1,11 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
 
-import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
+import {
+	setupConvenientDiscussions,
+	TEST_PAGES,
+	openSectionMoreMenu,
+} from './helpers/test-utils.js'
 
 const SECTION_HEADLINE = 'Section 1'
 const OPENING_COMMENT_TEXT = 'first section comment'
@@ -14,7 +18,7 @@ const OPENING_COMMENT_TEXT = 'first section comment'
  * @param {number} timeoutMs
  * @returns {Promise<{ headlineText: string, commentText: string }>}
  */
-async function waitForEditFormInputs(page, timeoutMs = 20000) {
+async function waitForEditFormInputs(page, timeoutMs = 20_000) {
 	const handle = await page.waitForFunction(
 		() => {
 			const commentForm = window.convenientDiscussions.commentForms?.find(
@@ -36,44 +40,6 @@ async function waitForEditFormInputs(page, timeoutMs = 20000) {
 	return /** @type {{ headlineText: string, commentText: string }} */ (await handle.jsonValue())
 }
 
-/**
- * Mark the actionsElement of a section with a data attribute, hover the hamburger button to
- * trigger lazy creation of the real OO.ui widget, then click it to open the dropdown.
- *
- * @param {import('@playwright/test').Page} page
- * @param {string} headline
- */
-async function openSectionMoreMenu(page, headline) {
-	const found = await page.evaluate((h) => {
-		const section = window.convenientDiscussions.sections?.find((s) => s.headline === h)
-		if (!section?.actionsElement) return false
-
-		// Stamp actionsElement so we can scope our locators without relying on nth().
-		section.actionsElement.dataset.testSectionActions = h
-
-		return true
-	}, headline)
-
-	if (!found) {
-		throw new Error(
-			`Could not find the actions element for section "${headline}". ` +
-				'Does it have the "More options" menu?',
-		)
-	}
-
-	// Using a Playwright locator (not an ElementHandle) means it re-queries the DOM after hover
-	// removes the dummy <a> and inserts the real OO.ui.ButtonMenuSelectWidget.
-	const actionsContainer = page.locator(`[data-test-section-actions="${headline}"]`)
-	const hamburger = actionsContainer.locator('.cd-section-bar-moremenu a')
-
-	// Hover triggers the lazy widget-creation callback.
-	await hamburger.hover()
-	await page.waitForTimeout(300)
-
-	// Click now finds the newly-inserted widget element.
-	await hamburger.click()
-}
-
 test.describe('Section "More options" menu', () => {
 	test.beforeEach(async ({ page }) => {
 		await setupConvenientDiscussions(page, { url: TEST_PAGES.JWBTH_TEST })
@@ -93,7 +59,7 @@ test.describe('Section "More options" menu', () => {
 		await menuItem.click()
 		console.log('✅ Clicked "Edit opening comment" menu item')
 
-		await expect(page.locator('.cd-commentForm')).toBeVisible({ timeout: 10000 })
+		await expect(page.locator('.cd-commentForm')).toBeVisible({ timeout: 10_000 })
 		console.log('✅ Comment form is visible')
 
 		const { headlineText, commentText } = await waitForEditFormInputs(page)
@@ -122,7 +88,7 @@ test.describe('Section "More options" menu', () => {
 		console.log('✅ Clicked "Add subsection" menu item')
 
 		// The form should appear immediately before the next h2 heading.
-		const nextHeading = page.locator('.mw-heading2:has(#test4)')
+		const nextHeading = page.locator('.mw-heading2:has(#Section_for_moving)')
 		await expect(nextHeading).toBeVisible()
 
 		// The "Add subsection" form is placed just before the next h2, so it should be its
@@ -139,7 +105,7 @@ test.describe('Section "More options" menu', () => {
 
 		expect(
 			formPrecedesHeading,
-			'Add subsection form should appear immediately before .mw-heading2:has(#test4)',
+			'Add subsection form should appear immediately before .mw-heading2:has(#Section_for_moving)',
 		).toBe(true)
 		console.log('✅ Add subsection form is immediately before the next section heading')
 
