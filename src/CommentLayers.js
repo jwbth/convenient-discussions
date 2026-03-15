@@ -416,15 +416,9 @@ class CommentLayers {
 	 * @param {() => void} [callback]
 	 */
 	flash(flag, delay, callback) {
-		/**
-		 * Comment underlay and menu, whose colors are animated in some events.
-		 *
-		 * @type {JQuery|undefined}
-		 */
-		// Check if this is a CompactCommentLayers instance by checking for $overlayMenu property
 		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
 
-		// Reset animations and colors
+		// Reset animations
 		this.$animatedBackground.add(this.$marker).stop(true, true)
 
 		this.updateClassesForFlag(flag, true)
@@ -433,11 +427,15 @@ class CommentLayers {
 		this.unhighlightDeferred?.reject()
 
 		const deferred = (this.unhighlightDeferred = $.Deferred())
-		deferred.then(() => {
-			this.animateBack(flag, callback)
-		})
+		deferred
+			.fail(() => {})
+			.done(() => {
+				this.animateBack(flag, callback)
+			})
 
-		sleep(delay).then(() => deferred.resolve())
+		sleep(delay).then(() => {
+			deferred.resolve()
+		})
 	}
 
 	/**

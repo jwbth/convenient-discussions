@@ -56,11 +56,11 @@ test.describe('Go to parent highlighting', () => {
 		// Based on CommentActions.js, it's created by createGoToParentButton.
 		// In compact mode, it's likely a button in the overlay menu.
 		const goToParentButton = overlay.locator('.cd-comment-button-goToParent')
-		const buttonInfo = await goToParentButton.evaluate(el => ({
+		const buttonInfo = await goToParentButton.evaluate((el) => ({
 			className: el.className,
 			isConnected: el.isConnected,
 			tagName: el.tagName,
-			innerHTML: el.innerHTML.substring(0, 100)
+			innerHTML: el.innerHTML.substring(0, 100),
 		}))
 		console.log('🔘 Button Info:', JSON.stringify(buttonInfo))
 
@@ -77,7 +77,9 @@ test.describe('Go to parent highlighting', () => {
 		await expect(parentUnderlay).toHaveClass(/cd-comment-underlay-target/)
 	})
 
-	test('should keep highlighting for full duration after second quick click of "Go to parent"', async ({ page }) => {
+	test('should keep highlighting for full duration after second quick click of "Go to parent"', async ({
+		page,
+	}) => {
 		// Find the first comment on the 1st level (so, above the 0th)
 		const commentInfo = await page.evaluate(() => {
 			const comment = window.convenientDiscussions.comments.find((c) => c.level === 1)
@@ -121,16 +123,6 @@ test.describe('Go to parent highlighting', () => {
 
 		// Wait 1000ms before clicking again. The first flash(1500ms) timer now has 500ms left.
 		await page.waitForTimeout(1000)
-
-		// Ignore the "undefined" page error that occurs during the second click due to
-		// a jQuery promise rejection (when resetting the previous flash's timer).
-		// Standard browsers ignore this, but Playwright's default configuration catches it.
-		page.removeAllListeners('pageerror')
-		page.on('pageerror', (error) => {
-			if (error.message !== 'undefined') {
-				throw error
-			}
-		})
 
 		// Click "Go to parent" a second time, resetting the highlight window to another 1500ms
 		await goToParentButton.click()
