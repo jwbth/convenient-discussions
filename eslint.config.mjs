@@ -1,13 +1,12 @@
-// import babelParser from '@babel/eslint-parser';
 import js from '@eslint/js'
 import stylistic from '@stylistic/eslint-plugin'
+import { defineConfig } from 'eslint/config'
 import esX from 'eslint-plugin-es-x'
 import importPlugin from 'eslint-plugin-import'
 import { jsdoc } from 'eslint-plugin-jsdoc'
 import noOneTimeVars from 'eslint-plugin-no-one-time-vars'
 import unicorn from 'eslint-plugin-unicorn'
 import unusedImports from 'eslint-plugin-unused-imports'
-import { defineConfig } from 'eslint/config'
 import tseslint from 'typescript-eslint'
 
 const config = defineConfig(
