@@ -316,11 +316,11 @@ class Loader {
 	/**
 	 * Set page types and initialize talk page or comment links page.
 	 */
-	init() {
+	async init() {
 		this.setPageTypesTalk()
 
 		if (this.pageTypes.talk) {
-			this.initTalkPage()
+			await this.initTalkPage()
 		}
 
 		this.pageTypes.watchlist = this.isWatchlistPage()
@@ -337,7 +337,7 @@ class Loader {
 			// Instant Diffs script can be used on talk pages as well
 			this.pageTypes.talk
 		) {
-			this.initCommentLinks()
+			await this.initCommentLinks()
 		}
 	}
 
@@ -375,7 +375,8 @@ class Loader {
 
 		try {
 			await Promise.all([
-				this.maybeLoadTalkPageModules().then(() => this.loadApp()),
+				this.maybeLoadTalkPageModules(),
+				this.loadApp(),
 
 				// Make some requests in advance if the API module is ready in order not to make 2 requests
 				// sequentially. We don't make a `userinfo` request, because if there is more than one tab in
@@ -661,10 +662,18 @@ class Loader {
 	 * @private
 	 */
 	loadApp() {
-		// In dev and single modes, use dynamic import to let Vite create a separate chunk
-		// In production, load from network
-		// Use cd.g runtime properties to prevent Vite from optimizing away the condition
-		return import('../app.js').then(() => {})
+		// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
+		// production, load from network.
+		if (IS_DEV || IS_SINGLE) {
+			return import('../app.js').then(() => {})
+		}
+
+		return this.loadPreferablyFromDiskCache({
+			domain: 'commons.wikimedia.org',
+			pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
+			ttlInDays: 365,
+			addCacheBuster: true,
+		})
 	}
 
 	/**
@@ -794,9 +803,10 @@ class Loader {
 	/**
 	 * Initialize comment links on special pages and execute the addCommentLinks function.
 	 *
+	 * @returns {Promise<void>}
 	 * @private
 	 */
-	initCommentLinks() {
+	async initCommentLinks() {
 		// Make some requests in advance if the API module is ready in order not to make 2 requests
 		// sequentially.
 		if (mw.loader.getState('mediawiki.api') === 'ready') {
@@ -811,9 +821,9 @@ class Loader {
 			}
 		}
 
-		Promise.all([
-			mw.loader
-				.using([
+		try {
+			await Promise.all([
+				mw.loader.using([
 					'jquery.client',
 					'mediawiki.Title',
 					'mediawiki.api',
@@ -828,22 +838,20 @@ class Loader {
 					'oojs-ui.styles.icons-editing-list',
 					'oojs-ui.styles.icons-interactions',
 					'user.options',
-				])
-				.then(() => this.loadApp()),
-		]).then(
-			() => {
-				this.addCommentLinks?.()
+				]),
+				this.loadApp(),
+			])
 
-				// See the comment above: "Additions of CSS...".
-				mw.util.addCSS(globalCss)
+			this.addCommentLinks?.()
 
-				mw.util.addCSS(addCommentLinksCss)
-			},
-			(/** @type {unknown} */ error) => {
-				mw.notify(cd.s('error-loaddata'), { type: 'error' })
-				console.error(error)
-			},
-		)
+			// See the comment above: "Additions of CSS...".
+			mw.util.addCSS(globalCss)
+
+			mw.util.addCSS(addCommentLinksCss)
+		} catch (error) {
+			mw.notify(cd.s('error-loaddata'), { type: 'error' })
+			console.error(error)
+		}
 	}
 
 	/**
