@@ -103,7 +103,7 @@ class CompactCommentActions extends CommentActions {
 				'cd-button-ooui',
 				'cd-comment-button-ooui',
 				'cd-comment-button-ooui-icon',
-				'cd-comment-button-ooui-icon-thank',
+				'cd-comment-button-thank',
 			],
 		})
 
@@ -135,7 +135,12 @@ class CompactCommentActions extends CommentActions {
 			invisibleLabel: true,
 			title: cd.s('cm-copylink-tooltip'),
 			framed: false,
-			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-ooui-icon-copylink',
+			],
 		})
 
 	/**
@@ -169,7 +174,12 @@ class CompactCommentActions extends CommentActions {
 			invisibleLabel: true,
 			title: cd.s('cm-gotoparent-tooltip'),
 			framed: false,
-			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-goToParent',
+			],
 		})
 
 	/**
@@ -201,7 +211,12 @@ class CompactCommentActions extends CommentActions {
 			invisibleLabel: true,
 			title: cd.s('cm-gotochild-tooltip'),
 			framed: false,
-			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-goToChild',
+			],
 		})
 
 	/**
@@ -233,7 +248,12 @@ class CompactCommentActions extends CommentActions {
 			invisibleLabel: true,
 			title: cd.s('cm-togglechildthreads-tooltip'),
 			framed: false,
-			classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-toggleChildThreads',
+			],
 		})
 
 	/**
