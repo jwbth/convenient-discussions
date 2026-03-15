@@ -342,7 +342,7 @@ class CommentFormManager extends EventEmitter {
 								target[
 									/** @type {keyof typeof target} */ (target.getCommentFormMethodName(data.mode))
 								]
-							)
+							).bind(target)
 							targetMethod(data, undefined, data.preloadConfig, data.newTopicOnTop)
 							haveRestored = true
 						} catch (error) {
