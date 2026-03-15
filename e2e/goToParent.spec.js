@@ -115,14 +115,14 @@ test.describe('Go to parent highlighting', () => {
 
 		const goToParentButton = overlay.locator('.cd-comment-button-goToParent')
 
-		// Click "Go to parent" once
+		// Click "Go to parent" a first time
 		await goToParentButton.click()
 		console.log('✅ Clicked "Go to parent" button (first time)')
 
-		// Wait a short period to simulate a quick second click
-		await page.waitForTimeout(100)
+		// Wait 1000ms before clicking again. The first flash(1500ms) timer now has 500ms left.
+		await page.waitForTimeout(1000)
 
-		// Click "Go to parent" a second time
+		// Click "Go to parent" a second time, resetting the highlight window to another 1500ms
 		await goToParentButton.click()
 		console.log('✅ Clicked "Go to parent" button (second time)')
 
@@ -130,21 +130,20 @@ test.describe('Go to parent highlighting', () => {
 			`.cd-comment-underlay[data-cd-comment-index="${commentInfo.parentIndex}"]`,
 		)
 
-		// Immediately after the second click, the parent should be highlighted
+		// 1000ms after the second click the highlight window has 500ms remaining, so the
+		// class MUST still be present.
+		//
+		// BUG: the first sleep(1500) promise completes 500ms after the second click and
+		// resolves this.unhighlightDeferred (which now points to the second flash's
+		// deferred), triggering animateBack() and removing the class prematurely. So at
+		// this point the class is already gone and this assertion fails.
+		await page.waitForTimeout(1000)
 		await expect(parentUnderlay).toHaveClass(/cd-comment-underlay-target/)
-		console.log('✅ Parent highlighted immediately after second click')
+		console.log('✅ Parent still highlighted 1000ms after second click')
 
-		// Wait for the full highlighting duration (1500ms)
-		await page.waitForTimeout(1500)
-
-		// The parent should still be highlighted after the full duration from the second click
-		await expect(parentUnderlay).toHaveClass(/cd-comment-underlay-target/)
-		console.log('✅ Parent still highlighted after full duration from second click')
-
-		// Wait a little longer to ensure the highlighting is removed
-		await page.waitForTimeout(100)
-
-		// The parent should no longer be highlighted
+		// Wait another 1000ms (now 2000ms after the second click). The 1500ms highlight
+		// window will have expired, so the class should be gone.
+		await page.waitForTimeout(1000)
 		await expect(parentUnderlay).not.toHaveClass(/cd-comment-underlay-target/)
 		console.log('✅ Parent highlighting removed after duration expired')
 	})
