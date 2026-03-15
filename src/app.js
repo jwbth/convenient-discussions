@@ -26,8 +26,8 @@ cd.loader.app = app
 cd.loader.addCommentLinks = addCommentLinks
 
 /**
- * Main app function for talk pages.
- * Called by loader after modules are loaded.
+ * Main app function for talk pages. Called by {@link convenientDiscussions.loader} after modules
+ * are loaded.
  */
 async function app() {
 	initGlobals()
