@@ -421,7 +421,7 @@ export default class Page {
 	 * @param {GetRevisionsOptions<T>} [customOptions]
 	 * @param {boolean} [inBackground] Make a request that won't set the process on hold when
 	 *   the tab is in the background.
-	 * @returns {Promise<Revision<T>[]>}
+	 * @returns {Promise<Revision<T>[] | undefined>}
 	 */
 	async getRevisions(customOptions = {}, inBackground = false) {
 		const options = /** @type {import('types-mediawiki/api_params').ApiQueryRevisionsParams} */ ({
@@ -442,7 +442,7 @@ export default class Page {
 					.catch(handleApiReject)
 		const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request)
 
-		return /** @type {Revision<T>[]} */ (response.query?.pages?.[0]?.revisions)
+		return /** @type {Revision<T>[] | undefined} */ (response.query?.pages?.[0]?.revisions)
 	}
 
 	/**

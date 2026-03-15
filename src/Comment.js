@@ -2035,6 +2035,12 @@ class Comment extends CommentSkeleton {
 					rvlimit: 500,
 				})
 
+			if (!revisions) {
+				throw new CdError({
+					type: 'response',
+				})
+			}
+
 			/**
 			 * @typedef {object} ApiResponseCompare
 			 * @property {object} compare
@@ -2043,7 +2049,7 @@ class Comment extends CommentSkeleton {
 
 			const responses = /** @type {ApiResponseCompare[]} */ (
 				await Promise.all(
-					// Compare requests
+					// "Compare" requests
 					revisions.map((revision) =>
 						cd
 							.getApi()
@@ -3486,7 +3492,6 @@ class Comment extends CommentSkeleton {
 	}
 
 	// hasTimestamp() is inherited from CommentSkeleton
-
 
 	/**
 	 * Check if this comment opens a section and has a reference to it.

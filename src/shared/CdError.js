@@ -4,7 +4,7 @@
  * - `'network'` for network errors defined in the script, whether on the client or server
  * - `'api'` for MediaWiki API errors defined on the server
  * - `'response'` for errors defined in the script when there is something wrong with the MediaWiki
- *   API response, excluding MediaWiki API errors defined on the server
+ *   API response (e.g. the page is missing), excluding MediaWiki API errors defined on the server
  * - `'parse'` for parse errors defined in the script
  * - `'ui'` for UI errors (e.g. when the user does something wrong and we can't handle it silently)
  * - `'javascript'` for JavaScript errors
