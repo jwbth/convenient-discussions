@@ -1395,10 +1395,19 @@ class Thread extends mixInObject(
 	static treeWalker
 
 	/**
+	 * Have the prototypes been initialized.
+	 *
+	 * @type {boolean}
+	 */
+	static prototypesInitted = false
+
+	/**
 	 * _For internal use._ Create element prototypes to reuse them instead of creating new elements
 	 * from scratch (which is more expensive).
 	 */
 	static initPrototypes() {
+		if (this.prototypesInitted) return
+
 		this.prototypes.add(
 			'expandButton',
 			new OO.ui.ButtonWidget({
@@ -1423,6 +1432,8 @@ class Thread extends mixInObject(
 		line.className = 'cd-thread-line'
 		threadClickArea.append(line)
 		this.prototypes.add('clickArea', threadClickArea)
+
+		this.prototypesInitted = true
 	}
 
 	/**

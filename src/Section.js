@@ -2280,10 +2280,19 @@ class Section extends SectionSkeleton {
 	static prototypes = new PrototypeRegistry()
 
 	/**
+	 * Have the prototypes been initialized.
+	 *
+	 * @type {boolean}
+	 */
+	static prototypesInitted = false
+
+	/**
 	 * _For internal use._ Create element and widget prototypes to reuse them instead of creating new
 	 * elements from scratch (which is more expensive).
 	 */
 	static initPrototypes() {
+		if (this.prototypesInitted) return
+
 		this.prototypes.add(
 			'replyButton',
 			new OO.ui.ButtonWidget({
@@ -2320,6 +2329,8 @@ class Section extends SectionSkeleton {
 				classes: ['cd-section-bar-button'],
 			}).$element[0],
 		)
+
+		this.prototypesInitted = true
 	}
 }
 

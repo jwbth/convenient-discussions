@@ -181,12 +181,22 @@ class CompactCommentLayers extends CommentLayers {
 	}
 
 	/**
+	 * Have the prototypes been initialized.
+	 *
+	 * @type {boolean}
+	 * @override
+	 */
+	static prototypesInitted = false
+
+	/**
 	 * Initialize prototypes for compact comment layers.
 	 * Creates compact-specific overlay with menu elements.
 	 *
 	 * @override
 	 */
 	static initPrototypes() {
+		if (this.prototypesInitted) return
+
 		// Get the base overlay prototype and enhance it with compact-specific elements
 		const baseOverlay = CommentLayers.prototypes.get('overlay')
 
@@ -206,6 +216,8 @@ class CompactCommentLayers extends CommentLayers {
 
 		// Store the enhanced overlay prototype
 		this.prototypes.add('overlay', baseOverlay)
+
+		this.prototypesInitted = true
 	}
 }
 

@@ -561,12 +561,19 @@ class CommentLayers {
 	}
 
 	/**
+	 * Have the prototypes been initialized.
+	 *
+	 * @type {boolean}
+	 */
+	static prototypesInitted = false
+
+	/**
 	 * _For internal use._ Create element prototypes to reuse them instead of creating new elements
 	 * from scratch (which is more expensive).
 	 * Creates shared prototypes (underlay, overlay) that are common to all comment types.
 	 */
 	static initPrototypes() {
-		this.prototypes = new PrototypeRegistry()
+		if (this.prototypesInitted) return
 
 		// Create shared layer elements (underlay, overlay)
 		const commentUnderlay = document.createElement('div')
@@ -585,6 +592,8 @@ class CommentLayers {
 
 		this.prototypes.add('underlay', commentUnderlay)
 		this.prototypes.add('overlay', commentOverlay)
+
+		this.prototypesInitted = true
 	}
 }
 

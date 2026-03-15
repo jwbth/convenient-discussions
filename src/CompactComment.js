@@ -320,16 +320,27 @@ class CompactComment extends Comment {
 	static prototypes = new PrototypeRegistry()
 
 	/**
+	 * Have the prototypes been initialized.
+	 *
+	 * @type {boolean}
+	 */
+	static prototypesInitted = false
+
+	/**
 	 * Initialize prototypes for compact comments.
 	 *
 	 * @override
 	 */
 	static initPrototypes() {
+		if (this.prototypesInitted) return
+
 		// Initialize shared layer prototypes (underlay, overlay)
 		CommentLayers.initPrototypes()
 
 		// Initialize compact-specific layer prototypes
 		CompactCommentLayers.initPrototypes()
+
+		this.prototypesInitted = true
 	}
 }
 

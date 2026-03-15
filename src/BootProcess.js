@@ -411,12 +411,12 @@ class BootProcess {
 		if (this.firstRun) {
 			initTimestampTools()
 			this.initPatterns()
-			this.initPrototypes()
 			$.fn.extend(jqueryExtensions)
 			initDayjs()
 		} else {
 			controller.reset()
 		}
+		this.initPrototypes()
 		this.subscriptions = controller.getSubscriptionsInstance()
 		if (this.firstRun) {
 			// The order of the subsequent calls matters because the modules depend on others in a certain
