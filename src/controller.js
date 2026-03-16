@@ -28,7 +28,7 @@ import toc from './toc'
 import updateChecker from './updateChecker'
 import { getUserInfo } from './utils-api'
 import { copyText, getVisibilityByRects, wrapHtml } from './utils-window'
-import workerCode from './worker/worker-gate?worker&inline-string'
+import workerCode from './worker/worker?worker&inline-string'
 
 /**
  * @typedef {object} EventMap

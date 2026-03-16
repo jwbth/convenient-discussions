@@ -14,6 +14,7 @@
 	"author": "Jack who built the house",
 	"type": "module",
 	"sideEffects": [
+		"./src/loader/convenientDiscussions.js",
 		"./src/loader/convenientDiscussions.loader.js",
 		"./src/loader/convenientDiscussions.util.js",
 		"./src/loader/convenientDiscussions.debug.js",

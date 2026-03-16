@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 
 import nonNullableConfig from './config.mjs'
+import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs'
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
 const cdConfig = nonNullableConfig
@@ -285,7 +286,7 @@ export default defineConfig(({ mode, command }) => {
 	const plugins = []
 
 	// Add inline worker string plugin (must be early in pipeline)
-	// plugins.push(inlineWorkerStringPlugin());
+	plugins.push(inlineWorkerStringPlugin())
 
 	// Add define plugin for dev server (Vite's define only works in build mode)
 	if (isDevServer) {
@@ -479,9 +480,9 @@ export default defineConfig(({ mode, command }) => {
 		worker: {
 			format: 'iife',
 
-			// Worker source maps follow the same strategy as the main bundle
-			// When inlined (?worker&inline), the worker code becomes part of the main bundle
-			// and shares the same source map
+			// Worker source maps follow the same strategy as the main bundle. When inlined
+			// (?worker&inline), the worker code becomes part of the main bundle and shares the same
+			// source map.
 			rollupOptions: {
 				output: {
 					// Worker filename with mode-specific postfix

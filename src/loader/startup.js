@@ -19,8 +19,12 @@ import { typedKeysOf, unique } from '../shared/utils-general'
 
 import cd from './cd'
 
-await bootstrap()
-$(start)
+// Dummy comment to prevent Prettier from killing the empty line
+// eslint-disable-next-line unicorn/prefer-top-level-await
+;(async () => {
+	await bootstrap()
+	$(start)
+})()
 
 /**
  * The function that is called first.
