@@ -60,7 +60,16 @@ export default class CodeMirrorCommentInput extends codeMirrorExt {
 			this.cdChangeExtension,
 			this.cdContentClassExtension,
 		)
-		super.initialize([this.defaultExtensions, ...extensions])
+
+		// Use `try` to monkey-patch some logging error thrown in field() in codemirror6.bundle.lib.js
+		// when trying to open settings for a *second* comment form on the page (so it's an error caused
+		// by creating multiple instances of a comment form on one page). MusikAnimal, if you see this,
+		// consider fixing it in the source xD
+		try {
+			super.initialize([this.defaultExtensions, ...extensions])
+		} catch {
+			// Empty
+		}
 	}
 
 	/**
@@ -71,5 +80,23 @@ export default class CodeMirrorCommentInput extends codeMirrorExt {
 		this.view?.dispatch({
 			effects: this.cdPlaceholderCompartment.reconfigure(this.lib.placeholder(text)),
 		})
+	}
+
+	/**
+	 * @override
+	 */
+	destroy() {
+		super.destroy()
+
+		// Monkey-patch an error in CodeMirror in codemirror.wikieditor.js on line `button.setValue(
+		// searchPanelOpen( this.view.state ) );` when closing a *second* comment form on the page (so
+		// it's an error caused by creating multiple instances of a comment form on one page).
+		// `dispatch()` lets to avoid another error when *opening* a new comment form. MusikAnimal, if
+		// you see this, consider fixing it in the source xD
+		this.view = {
+			// @ts-ignore
+			state: { field: () => null, config: { compartments: { get: () => null } } },
+			dispatch: () => null,
+		}
 	}
 }
