@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
 
-import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
+import { setupConvenientDiscussions, TEST_PAGES, getSectionButtonContainer } from './helpers/test-utils.js'
 
 test.describe('Add subsection buttons', () => {
 	test.beforeEach(async ({ page }) => {
@@ -11,11 +11,7 @@ test.describe('Add subsection buttons', () => {
 	})
 
 	test('hovering the section reply link reveals "Add subsection" buttons', async ({ page }) => {
-		const sectionButtonContainer = page
-			.locator('.mw-heading3')
-			.filter({ has: page.locator('h3', { hasText: 'test3' }) })
-			.locator('~ .cd-section-button-container')
-			.first()
+		const sectionButtonContainer = getSectionButtonContainer(page, 'test3')
 
 		const replyLink = sectionButtonContainer.locator('.cd-replyButtonWrapper a')
 		await expect(replyLink).toBeVisible({ timeout: 10_000 })

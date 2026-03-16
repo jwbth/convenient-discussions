@@ -381,6 +381,21 @@ async function openSectionMoreMenu(page, headline) {
 	await hamburger.click()
 }
 
+/**
+ * Get the button container for a section by its headline text.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} headline
+ * @returns {import('@playwright/test').Locator}
+ */
+function getSectionButtonContainer(page, headline) {
+	return page
+		.locator('.mw-heading')
+		.filter({ has: page.locator('h1, h2, h3, h4, h5, h6', { hasText: headline }) })
+		.locator('~ .cd-section-button-container')
+		.first()
+}
+
 export {
 	TEST_PAGES,
 	waitForConvenientDiscussions,
@@ -397,4 +412,5 @@ export {
 	getCommentPositioning,
 	getConsoleMessages,
 	openSectionMoreMenu,
+	getSectionButtonContainer,
 }
