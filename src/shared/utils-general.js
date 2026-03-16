@@ -377,7 +377,7 @@ export function keepClonableValues(obj, allowedFuncNames = []) {
 			!(val instanceof RegExp || val instanceof Date)
 		) {
 			try {
-				if (!areObjectsEqual(/** @type {T} */ (val), JSON.parse(JSON.stringify(val)))) {
+				if (!areObjectsEqual(/** @type {T} */ (val), structuredClone(val))) {
 					delete newObj[key]
 				}
 			} catch {
