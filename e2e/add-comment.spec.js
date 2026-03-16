@@ -50,7 +50,10 @@ test.describe('Add comment workflow', () => {
 		console.log(`✅ New comment is visible. Time difference: ${endTime - startTime}ms`)
 
 		// The comment should become highlighted (for a short period of time)
-		const highlightedElement = page.locator('.cd-comment-underlay-target')
+		const commentIndex = await newComment.getAttribute('data-cd-comment-index')
+		const highlightedElement = page.locator(
+			`.cd-comment-underlay-target[data-cd-comment-index="${commentIndex}"]`,
+		)
 		await expect(highlightedElement).toBeVisible({ timeout: 5000 })
 		console.log('✅ New comment is highlighted')
 	})

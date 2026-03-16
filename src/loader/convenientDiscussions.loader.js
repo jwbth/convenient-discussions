@@ -189,9 +189,7 @@ class Loader {
 					: undefined,
 				// We need to instantiate our clase based on the CodeMirror class, so we load it now, not on
 				// comment form creation.
-				mw.loader.getState('ext.CodeMirror.v6.WikiEditor')
-					? 'ext.CodeMirror.v6.WikiEditor'
-					: undefined,
+				cd.g.isCodeMirror6Installed ? 'ext.CodeMirror.v6.WikiEditor' : undefined,
 			].filter(defined)
 
 			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
@@ -746,11 +744,13 @@ class Loader {
 				scriptTag.innerHTML = content
 				document.head.append(scriptTag)
 			}
+
 			return content
 		} else if (ctype === 'text/css' && apiPage.contentmodel === 'css') {
 			if (execute) {
 				mw.loader.addStyleTag(content)
 			}
+
 			return content
 		}
 	}

@@ -1706,8 +1706,8 @@ class Controller extends EventEmitter {
 	 */
 	getWorker() {
 		if (!this.worker) {
-			// Create worker from inlined code using Blob URL
-			// This avoids CSP issues with separate worker files on Wikimedia sites
+			// Create a worker from inlined code using a Blob URL. This avoids CSP issues with separate
+			// worker files on Wikimedia sites.
 			const blob = new Blob([workerCode], { type: 'application/javascript' })
 			const blobUrl = URL.createObjectURL(blob)
 			this.worker = new Worker(blobUrl)
