@@ -198,9 +198,12 @@ export default function getMoveSectionDialogClass() {
 					this.section.locateInCode()
 				} catch (error) {
 					if (error instanceof CdError) {
+						const editUrl = cd.g.server + cd.page.getUrl({ action: 'edit' })
 						this.abort({
 							message: cd.sParse(
 								error.getCode() === 'locateSection' ? 'error-locatesection' : 'error-unknown',
+								editUrl,
+								cd.page.name,
 							),
 							recoverable: false,
 						})
@@ -369,8 +372,9 @@ export default function getMoveSectionDialogClass() {
 					this.actions.setMode('success')
 					this.popPending()
 				})
-			} // if (action === 'close')
+			}
 
+			// if (action === 'close')
 			return new OO.ui.Process(() => {
 				this.close()
 			})
@@ -438,10 +442,13 @@ export default function getMoveSectionDialogClass() {
 				sectionSource = this.section.locateInCode()
 			} catch (error) {
 				if (error instanceof CdError) {
+					const editUrl = cd.g.server + cd.page.getUrl({ action: 'edit' })
 					throw new CdError({
 						details: [
 							cd.sParse(
 								error.getCode() === 'locateSection' ? 'error-locatesection' : 'error-unknown',
+								editUrl,
+								cd.page.name,
 							),
 							true,
 						],
