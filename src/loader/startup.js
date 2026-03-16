@@ -254,16 +254,6 @@ function start() {
 	if (!cd.loader.isBooting()) {
 		cd.debug.stopTimer('start')
 	}
-
-	/**
-	 * The page has been preprocessed (not parsed yet, but its type has been checked and some
-	 * basic structures have been initialized).
-	 *
-	 * @event preprocessed
-	 * @param {object} cd {@link convenientDiscussions} object.
-	 * @global
-	 */
-	mw.hook('convenientDiscussions.preprocessed').fire(cd)
 }
 
 /**
