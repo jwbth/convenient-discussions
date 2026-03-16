@@ -2,8 +2,8 @@
 @codemirror-editor-additional-padding: 5px;
 
 // Keep this synced with CommentForm#createTextInputs
-@num-rows-comment: 3;
-@num-rows-section: 5;
+@num-rows-comment: 4;
+@num-rows-section: 6;
 
 .cd-commentForm {
 	display: flow-root;
@@ -15,10 +15,6 @@
 	direction: var(--cd-direction-user);
 
 	margin: 0.5em 0;
-
-	// Match .mw-editform
-	font-size: var(--font-size-small, 0.875rem);
-	line-height: 1.5714285;
 
 	.cd-reformattedComments & {
 		margin-block: 0.75em;
@@ -75,14 +71,28 @@
 		mask-position: center;
 	}
 
+	.group-codemirror .oo-ui-buttonElement-button {
+		height: 2.25em;
+	}
+
 	.cd-highlight .tool-button[rel="quote"] {
 		background-color: var(--color-progressive, #36c);
+	}
+
+	// Enough of this gray
+	.wikiEditor-ui-toolbar {
+		background-color: transparent;
 	}
 
 	// Until T312970 is fixed
 	.wikiEditor-ui-toolbar .tabs span.tab a {
 		height: 2.14285714em;
+		line-height: 2.14285714em;
 		border: 1px solid transparent;
+
+		&::before {
+			height: 2.14285714em;
+		}
 	}
 
 	.wikiEditor-ui-toolbar .group .label {
@@ -166,6 +176,11 @@
 	.cm-content {
 		// Match the padding (when unfocused) or margin (when focused) of `.cm-gutters`.
 		margin: 1px 1px 1px 0;
+	}
+
+	.ͼ1 .cm-scroller {
+		// Proportional font size
+		font-family: monospace, monospace;
 	}
 }
 
@@ -419,7 +434,6 @@
 }
 
 .cd-insertButtons {
-	background-color: var(--background-color-interactive-subtle, #f8f9fa);
 	border: 1px solid var(--border-color-base, #a2a9b1);
 	border-top: 0;
 	font-size: 0.928571em;
@@ -455,7 +469,6 @@
 }
 
 .cd-toolbarPlaceholder {
-	background-color: var(--background-color-interactive-subtle, #f8f9fa);
 	border: 1px solid var(--border-color-base, #a2a9b1);
 	border-bottom: 0;
 	height: 2.2857143em;

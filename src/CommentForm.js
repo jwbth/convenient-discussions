@@ -674,8 +674,8 @@ class CommentForm extends EventEmitter {
 	 */
 	getInitialRowCount() {
 		// Keep this synced with CommentForm.less: @num-rows-comment and @num-rows-section
-		const NUM_ROWS_COMMENT = 3
-		const NUM_ROWS_SECTION = 5
+		const NUM_ROWS_COMMENT = 4
+		const NUM_ROWS_SECTION = 6
 
 		return this.headlineInput ? NUM_ROWS_SECTION : NUM_ROWS_COMMENT
 	}
