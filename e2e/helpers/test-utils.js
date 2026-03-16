@@ -1,7 +1,5 @@
-// @ts-check
-
 /**
- * Browser test utilities for Comment class testing
+ * Browser test utilities
  */
 
 /**
@@ -39,11 +37,9 @@ const TEST_PAGES = {
  * @param {string | { url?: string, settings?: Record<string, unknown> }} [urlOrOptions]
  *   Wikipedia talk page URL or options object with optional settings.
  */
-async function setupConvenientDiscussionsFromDevBuild(
-	page,
-	urlOrOptions = TEST_PAGES.JWBTH_TEST,
-) {
-	const url = typeof urlOrOptions === 'object' ? (urlOrOptions.url ?? TEST_PAGES.JWBTH_TEST) : urlOrOptions
+async function setupConvenientDiscussionsFromDevBuild(page, urlOrOptions = TEST_PAGES.JWBTH_TEST) {
+	const url =
+		typeof urlOrOptions === 'object' ? (urlOrOptions.url ?? TEST_PAGES.JWBTH_TEST) : urlOrOptions
 	const settings = typeof urlOrOptions === 'object' ? (urlOrOptions.settings ?? {}) : {}
 	await internalSetup(
 		page,
@@ -311,11 +307,9 @@ async function getConsoleMessages(page) {
  * @param {string | { url?: string, settings?: Record<string, unknown> }} [urlOrOptions]
  *   Wikipedia talk page URL or options object with optional settings.
  */
-async function setupConvenientDiscussions(
-	page,
-	urlOrOptions = TEST_PAGES.JWBTH_TEST,
-) {
-	const url = typeof urlOrOptions === 'object' ? (urlOrOptions.url ?? TEST_PAGES.JWBTH_TEST) : urlOrOptions
+async function setupConvenientDiscussions(page, urlOrOptions = TEST_PAGES.JWBTH_TEST) {
+	const url =
+		typeof urlOrOptions === 'object' ? (urlOrOptions.url ?? TEST_PAGES.JWBTH_TEST) : urlOrOptions
 	const settings = typeof urlOrOptions === 'object' ? (urlOrOptions.settings ?? {}) : {}
 	await internalSetup(
 		page,
