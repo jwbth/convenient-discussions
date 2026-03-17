@@ -268,7 +268,7 @@ class Controller extends EventEmitter {
 		this.commentLayersOptionalBackgroundHighlightingCss ??= mw.util.addCSS(
 			commentLayersOptionalBackgroundHighlightingCss,
 		)
-		this.commentLayersOptionalBackgroundHighlightingCss.disabled = cd.settings.get(
+		this.commentLayersOptionalBackgroundHighlightingCss.disabled = !cd.settings.get(
 			'useBackgroundHighlighting',
 		)
 	}
