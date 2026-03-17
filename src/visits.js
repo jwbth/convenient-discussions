@@ -49,7 +49,6 @@ class Visits extends EventEmitter {
 		}
 
 		const articleId = mw.config.get('wgArticleId')
-		this.data = {}
 		if (!(articleId in this.data)) {
 			this.data[articleId] = []
 		}
