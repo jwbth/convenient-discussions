@@ -416,6 +416,9 @@ class CommentLayers {
 	 * @param {() => void} [callback]
 	 */
 	flash(flag, delay, callback) {
+		// If there was an animation scheduled, cancel it
+		this.unhighlightDeferred?.reject()
+
 		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
 
 		// Reset animations
@@ -423,15 +426,10 @@ class CommentLayers {
 
 		this.updateClassesForFlag(flag, true)
 
-		// If there was an animation scheduled, cancel it
-		this.unhighlightDeferred?.reject()
-
 		const deferred = (this.unhighlightDeferred = $.Deferred())
-		deferred
-			.fail(() => {})
-			.done(() => {
-				this.animateBack(flag, callback)
-			})
+		deferred.always(() => {
+			this.animateBack(flag, callback)
+		})
 
 		sleep(delay).then(() => {
 			deferred.resolve()
