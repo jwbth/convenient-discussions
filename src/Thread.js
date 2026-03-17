@@ -15,7 +15,6 @@ import {
 } from './shared/utils-general'
 import updateChecker from './updateChecker'
 import { loadUserGenders } from './utils-api'
-import { isCmdModifierPressed } from './utils-keyboard'
 import { mixInObject } from './utils-oojs-class'
 import {
 	getCommonGender,
@@ -686,7 +685,7 @@ class Thread extends mixInObject(
 	createLine() {
 		this.clickArea = Thread.prototypes.get('clickArea')
 
-		this.clickArea.title = cd.s('thread-tooltip', cd.g.cmdModifier)
+		this.clickArea.title = cd.s('thread-tooltip')
 
 		// Add some debouncing so that the user is not annoyed by the cursor changing its form when
 		// moving across thread lines.
@@ -820,7 +819,7 @@ class Thread extends mixInObject(
 	addExpandNote(loadUserGendersPromise) {
 		const element = Thread.prototypes.get('expandButton')
 		const button = new Button({
-			tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
+			tooltip: cd.s('thread-expand-tooltip'),
 			action: this.onToggleClick,
 			element,
 			buttonElement: /** @type {HTMLElement} */ (element.firstChild),
@@ -885,10 +884,12 @@ class Thread extends mixInObject(
 	 * @private
 	 */
 	onToggleClick = (event) => {
-		if (isCmdModifierPressed(event)) {
-			this.toggleAllOflevel()
-		} else if (event.altKey) {
-			this.toggleWithSiblings(true)
+		if (event.altKey) {
+			if (event.shiftKey) {
+				this.toggleAllOflevel()
+			} else {
+				this.toggleWithSiblings(true)
+			}
 		} else {
 			this.toggle()
 		}
