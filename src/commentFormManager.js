@@ -537,7 +537,7 @@ class CommentFormManager extends EventEmitter {
 	 */
 	maybeGetFormDataWontBeLostString() {
 		return this.getAll().some((cf) => cf.isAltered())
-			? cd.s('word-separator') + cd.mws('parentheses', cd.s('notification-formdata'))
+			? cd.mws('word-separator') + cd.mws('parentheses', cd.s('notification-formdata'))
 			: ''
 	}
 }
