@@ -44,6 +44,22 @@ class ProcessDialogMixin {
 	}
 
 	/**
+	 * OOUI native method that returns a process for taking action.
+	 *
+	 * @param {string} [action] Symbolic name of the action.
+	 * @returns {OO.ui.Process}
+	 * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
+	 * @ignore
+	 */
+	getActionProcess(action) {
+		if (!action) {
+			controller.removePreventUnloadCondition('dialog')
+		}
+
+		return OO.ui.ProcessDialog.prototype.getActionProcess.call(this, action)
+	}
+
+	/**
 	 * Handle a error, displaying a message with the provided name and popping the pending state. If
 	 * the error is not recoverable, the dialog is closed on "Dismiss".
 	 *
