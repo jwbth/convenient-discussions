@@ -488,13 +488,8 @@ class CommentFormManager extends EventEmitter {
 				this.saveSession(true)
 			}
 
-			return (
-				mw.user.options.get('useeditwarning') &&
-				(this.getLastActiveAltered() ||
-					((mw.user.options.get('editondblclick') ||
-						mw.user.options.get('editsectiononrightclick')) &&
-						this.getCount()))
-			)
+			// We restore or rescue the forms anyway.
+			return false
 		})
 	}
 
