@@ -110,7 +110,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	// eslint-disable-next-line jsdoc/multiline-blocks
 	/** @template {keyof EventMap} K @overload
 	 * @param {K} event Thse event name.
-	 * @param {...EventMap[K]} args Arguments to passssd to the listeners.
+	 * @param {...EventMap[K]} args Arguments to pass to the listeners.
 	 * @returns {boolean}
 	 */
 	/**

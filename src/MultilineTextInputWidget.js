@@ -18,9 +18,6 @@ class MultilineTextInputWidget extends mixInClass(
 	OO.ui.MultilineTextInputWidget,
 	TextInputWidgetMixin,
 ) {
-	/** @type {boolean} */
-	codeMirrorEnabled
-
 	/**
 	 * Focus the input and select a specified range within the text.
 	 *
