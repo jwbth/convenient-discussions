@@ -1557,18 +1557,28 @@ class CommentForm extends EventEmitter {
 			this.preview()
 		}
 
-		// Use capture to get ahead of CodeMirror's keydown handler. Note that there may be a dupliucate
+		// Use capture to get ahead of CodeMirror's keydown handler. Note that there may be a duplicate
 		// event dispatched by the textarea in CodeMirror#domEventHandlersExtension.
 		this.$element[0].addEventListener(
 			'keydown',
 			(event) => {
-				if (
-					this.codeMirror?.isActive &&
-					/** @type {Element} */ (event.target).tagName === 'TEXTAREA'
-				)
-					return
+				// We have some ugly inquisitive code here because we need to coordinate 3 components that
+				// all may take precedence depending on the case: CodeMirror, Tribute (autocomplete),
+				// CommentForm. E.g., Esc is handled by all three (Esc to close different panels and menus);
+				// Ctrl+Enter was handled by all three, but I removed it from Tribute. Tribute uses capture;
+				// CodeMirror doesn't; we use capture for part of the keys. We control CommentForm and
+				// Tribute and don't control CodeMirror. We process keys on the comment form element;
+				// Tribute and CodeMirror process keys on the inputs. So it's tricky.
 
-				// Hotkeys
+				if ($('.cd-autocompleteContainer').length) {
+					return
+				}
+
+				// Ctrl+Enter
+				if (keyCombination(event, 13, ['cmd'])) {
+					this.submit()
+					event.preventDefault()
+				}
 
 				// Esc
 				if (
@@ -1580,63 +1590,66 @@ class CommentForm extends EventEmitter {
 						!this.$element.find('.cm-panels :focus, .cm-mw-panel--search-panel').length)
 				) {
 					this.cancel()
-				}
-
-				// Ctrl+Enter
-				if (keyCombination(event, 13, ['cmd'])) {
-					this.submit()
-				}
-
-				// WikiEditor started supporting these in October 2024
-				// https://phabricator.wikimedia.org/T62928
-				if (!this.toolbarLoaded) {
-					// Ctrl+B
-					if (keyCombination(event, 66, ['cmd'])) {
-						this.encapsulateSelection({
-							pre: `'''`,
-							peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
-							post: `'''`,
-						})
-						event.preventDefault()
-					}
-
-					// Ctrl+I
-					if (keyCombination(event, 73, ['cmd'])) {
-						this.encapsulateSelection({
-							pre: `''`,
-							peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
-							post: `''`,
-						})
-						event.preventDefault()
-					}
-
-					// Ctrl+U
-					if (keyCombination(event, 85, ['cmd'])) {
-						this.encapsulateSelection(CommentForm.encapsulateOptions.underline)
-						event.preventDefault()
-					}
-				}
-
-				// Ctrk+Shift+5
-				if (keyCombination(event, 53, ['cmd', 'shift'])) {
-					this.encapsulateSelection(CommentForm.encapsulateOptions.strikethrough)
-					event.preventDefault()
-				}
-
-				// Ctrk+Shift+6
-				if (keyCombination(event, 54, ['cmd', 'shift'])) {
-					this.encapsulateSelection(CommentForm.encapsulateOptions.code)
-					event.preventDefault()
-				}
-
-				// Ctrk+Shift+8
-				if (keyCombination(event, 56, ['cmd', 'shift'])) {
-					this.commentInput.$element.find('.tool[rel="ulist"] a').get(0)?.click()
 					event.preventDefault()
 				}
 			},
 			{ capture: true },
 		)
+
+		this.$element[0].addEventListener('keydown', (event) => {
+			if (this.codeMirror?.isActive && /** @type {Element} */ (event.target).tagName === 'TEXTAREA')
+				return
+
+			// Hotkeys
+
+			// WikiEditor started supporting these in October 2024
+			// https://phabricator.wikimedia.org/T62928
+			if (!this.toolbarLoaded) {
+				// Ctrl+B
+				if (keyCombination(event, 66, ['cmd'])) {
+					this.encapsulateSelection({
+						pre: `'''`,
+						peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
+						post: `'''`,
+					})
+					event.preventDefault()
+				}
+
+				// Ctrl+I
+				if (keyCombination(event, 73, ['cmd'])) {
+					this.encapsulateSelection({
+						pre: `''`,
+						peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
+						post: `''`,
+					})
+					event.preventDefault()
+				}
+
+				// Ctrl+U
+				if (keyCombination(event, 85, ['cmd'])) {
+					this.encapsulateSelection(CommentForm.encapsulateOptions.underline)
+					event.preventDefault()
+				}
+			}
+
+			// Ctrk+Shift+5
+			if (keyCombination(event, 53, ['cmd', 'shift'])) {
+				this.encapsulateSelection(CommentForm.encapsulateOptions.strikethrough)
+				event.preventDefault()
+			}
+
+			// Ctrk+Shift+6
+			if (keyCombination(event, 54, ['cmd', 'shift'])) {
+				this.encapsulateSelection(CommentForm.encapsulateOptions.code)
+				event.preventDefault()
+			}
+
+			// Ctrk+Shift+8
+			if (keyCombination(event, 56, ['cmd', 'shift'])) {
+				this.commentInput.$element.find('.tool[rel="ulist"] a').get(0)?.click()
+				event.preventDefault()
+			}
+		})
 
 		// "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
 		this.$element.on('focusin', () => {
