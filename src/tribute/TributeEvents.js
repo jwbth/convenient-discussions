@@ -216,7 +216,7 @@ class TributeEvents {
 	callbacks() {
 		// jwbth: Removed `delete` and `space` keys from here, see keys().
 		return {
-			triggerChar: (e, el, trigger) => {
+			triggerChar: (_, el, trigger) => {
 				let tribute = this.tribute
 				tribute.current.trigger = trigger
 

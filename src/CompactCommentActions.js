@@ -151,14 +151,26 @@ class CompactCommentActions extends CommentActions {
 	 * @returns {CommentButton} The created button.
 	 */
 	createCopyLinkButton(action) {
-		const element = this.createCopyLinkWidget().$element[0]
-
 		return new CommentButton({
-			element,
-			buttonElement: /** @type {HTMLElement} */ (element.firstChild),
+			element: this.createCopyLinkWidget().$element[0],
 			action,
 			widgetConstructor: this.createCopyLinkWidget,
 			href: this.comment.dtId && '#' + this.comment.dtId,
+		})
+	}
+
+	/**
+	 * Create a "Go to parent" button for compact comments.
+	 *
+	 * @override
+	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 */
+	createGoToParentButton(action) {
+		return new CommentButton({
+			element: this.createGoToParentWidget().$element[0],
+			action,
+			widgetConstructor: this.createGoToParentWidget,
 		})
 	}
 
@@ -183,19 +195,19 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
-	 * Create a "Go to parent" button for compact comments.
+	 * Create a "Go to child" button for compact comments.
 	 *
 	 * @override
 	 * @param {import('./Button').Action} action The action to perform when clicked.
 	 * @returns {CommentButton} The created button.
 	 */
-	createGoToParentButton(action) {
-		const buttonElement = this.createGoToParentWidget().$element[0]
+	createGoToChildButton(action) {
+		const element = this.createGoToChildWidget().$element[0]
 
 		return new CommentButton({
-			buttonElement,
+			element,
 			action,
-			widgetConstructor: this.createGoToParentWidget,
+			widgetConstructor: this.createGoToChildWidget,
 		})
 	}
 
@@ -220,19 +232,21 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
-	 * Create a "Go to child" button for compact comments.
+	 * Create a "Toggle child threads" button for compact comments.
 	 *
 	 * @override
 	 * @param {import('./Button').Action} action The action to perform when clicked.
 	 * @returns {CommentButton} The created button.
 	 */
-	createGoToChildButton(action) {
-		const element = this.createGoToChildWidget().$element[0]
+	createToggleChildThreadsButton(action) {
+		const element = this.createToggleChildThreadsWidget().$element[0]
 
 		return new CommentButton({
 			element,
+			iconElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-iconElement-icon')),
 			action,
-			widgetConstructor: this.createGoToChildWidget,
+			widgetConstructor: this.createToggleChildThreadsWidget,
+			classes: ['cd-comment-button-toggleChildThreads'],
 		})
 	}
 
@@ -255,25 +269,6 @@ class CompactCommentActions extends CommentActions {
 				'cd-comment-button-toggleChildThreads',
 			],
 		})
-
-	/**
-	 * Create a "Toggle child threads" button for compact comments.
-	 *
-	 * @override
-	 * @param {import('./Button').Action} action The action to perform when clicked.
-	 * @returns {CommentButton} The created button.
-	 */
-	createToggleChildThreadsButton(action) {
-		const element = this.createToggleChildThreadsWidget().$element[0]
-
-		return new CommentButton({
-			element,
-			iconElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-iconElement-icon')),
-			action,
-			widgetConstructor: this.createToggleChildThreadsWidget,
-			classes: ['cd-comment-button-toggleChildThreads'],
-		})
-	}
 
 	/**
 	 * Get the overlay menu container.
@@ -408,13 +403,14 @@ class CompactCommentActions extends CommentActions {
 
 		const isThanked = Object.entries(commentManager.getThanksStorage().getData()).some(
 			// TODO: Remove `|| this.comment.dtId === thank.id || this.comment.id === thank.id` part
-			// after migration is complete on January 1, 2026
+			// after migration is complete on June 1, 2026
 			([id, thank]) =>
 				this.comment.dtId === id ||
 				this.comment.id === id ||
 				// This comes from the local storage, the value may be corrupt
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				this.comment.dtId === thank?.id ||
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				this.comment.id === thank?.id,
 		)
 

@@ -33,8 +33,8 @@ import type CodeMirrorPreferences from '../../mediawiki-extensions-CodeMirror/re
 /**
  * Interface for the CodeMirror editor.
  *
- * This class is a wrapper around the CodeMirror library,
- * providing a simplified interface for creating and managing CodeMirror instances in MediaWiki.
+ * This class is a wrapper around the CodeMirror library, providing a simplified interface for
+ * creating and managing CodeMirror instances in MediaWiki.
  *
  * ## Lifecycle
  *
@@ -81,8 +81,8 @@ declare class CodeMirror {
 	isActive: boolean
 
 	/**
-	 * The .ext-codemirror-wrapper container. This houses both
-	 * the original textarea and the CodeMirror editor.
+	 * The .ext-codemirror-wrapper container. This houses both the original textarea and the
+	 * CodeMirror editor.
 	 */
 	container: HTMLDivElement // | null;
 
@@ -137,8 +137,8 @@ declare class CodeMirror {
 	private formSubmitEventHandler: AnyFunction | null
 
 	/**
-	 * Mapping of mw.hook handlers added by CodeMirror.
-	 * Handlers added here will be removed during deactivation.
+	 * Mapping of mw.hook handlers added by CodeMirror. Handlers added here will be removed during
+	 * deactivation.
 	 */
 	private hooks: Record<string, Set<AnyFunction>>
 
@@ -156,14 +156,13 @@ declare class CodeMirror {
 	constructor(textarea: HTMLTextAreaElement | JQuery | string, langSupport?: LanguageSupport)
 
 	/**
-	 * Default extensions used by CodeMirror.
-	 * Extensions here should be applicable to all theoretical uses of CodeMirror in MediaWiki.
-	 * This getter can be overridden to apply additional extensions before
-	 * initialization. To apply a new extension after initialization,
-	 * use {@link CodeMirror#applyExtension applyExtension()}, or through
+	 * Default extensions used by CodeMirror. Extensions here should be applicable to all theoretical
+	 * uses of CodeMirror in MediaWiki. This getter can be overridden to apply additional extensions
+	 * before initialization. To apply a new extension after initialization, use
+	 * {@link CodeMirror#applyExtension applyExtension()}, or through
 	 * {@link CodeMirrorExtensionRegistry} using
-	 * {@link CodeMirrorExtensionRegistry#register register()} if it needs
-	 * to be reconfigured (such as toggling on and off).
+	 * {@link CodeMirrorExtensionRegistry#register register()} if it needs to be reconfigured (such as
+	 * toggling on and off).
 	 */
 	get defaultExtensions(): Extension | Extension[]
 
@@ -203,16 +202,15 @@ declare class CodeMirror {
 	get closeBracketsExtension(): Extension
 
 	/**
-	 * This extension listens for changes in the CodeMirror editor and fires
-	 * the `ext.CodeMirror.input` hook with the ViewUpdate object.
+	 * This extension listens for changes in the CodeMirror editor and fires the
+	 * `ext.CodeMirror.input` hook with the ViewUpdate object.
 	 */
 	get updateExtension(): Extension
 
 	/**
-	 * This extension sets the height of the CodeMirror editor to match the
-	 * textarea. This getter can be overridden to
-	 * change the height of the editor, but it's usually simpler to set the
-	 * height of the textarea using CSS prior to initialization.
+	 * This extension sets the height of the CodeMirror editor to match the textarea. This getter can
+	 * be overridden to change the height of the editor, but it's usually simpler to set the height of
+	 * the textarea using CSS prior to initialization.
 	 */
 	get heightExtension(): Extension
 
@@ -234,10 +232,10 @@ declare class CodeMirror {
 	protected get phrasesExtension(): Extension
 
 	/**
-	 * We give a small subset of special characters a tooltip explaining what they are.
-	 * The messages and for what characters are defined here.
-	 * Any character that does not have a message will instead use CM6 defaults,
-	 * which is the localization of 'codemirror-control-character' followed by the Unicode number.
+	 * We give a small subset of special characters a tooltip explaining what they are. The messages
+	 * and for what characters are defined here. Any character that does not have a message will
+	 * instead use CM6 defaults, which is the localization of 'codemirror-control-character' followed
+	 * by the Unicode number.
 	 */
 	protected get specialCharsExtension(): Extension
 
@@ -260,25 +258,24 @@ declare class CodeMirror {
 	 * Setup CodeMirror and add it to the DOM. This will hide the original textarea.
 	 *
 	 * This method should only be called once per instance. Use {@link CodeMirror#toggle toggle},
-	 * {@link CodeMirror#activate activate}, and {@link CodeMirror#deactivate deactivate}
-	 * to enable or disable the same CodeMirror instance programmatically, and restore or hide
-	 * the original textarea.
+	 * {@link CodeMirror#activate activate}, and {@link CodeMirror#deactivate deactivate} to enable or
+	 * disable the same CodeMirror instance programmatically, and restore or hide the original
+	 * textarea.
 	 *
 	 * @param {Extension | Extension[]} [extensions] Extensions to use.
 	 */
 	initialize(extensions?: Extension | Extension[]): void
 
 	/**
-	 * Use a MutationObserver to watch for CSS class changes to the <html> element,
-	 * and update the CodeMirror editor's theme accordingly. This is only necessary
-	 * for non-wikitext, where we don't use our own CSS classes during tokenization.
+	 * Use a MutationObserver to watch for CSS class changes to the <html> element, and update the
+	 * CodeMirror editor's theme accordingly. This is only necessary for non-wikitext, where we don't
+	 * use our own CSS classes during tokenization.
 	 */
 	addDarkModeMutationObserver(): void
 
 	/**
-	 * Add a handler for the given Hook.
-	 * This method is used to ensure no hook handlers are duplicated across lifecycle methods,
-	 * All handlers will be removed during deactivation.
+	 * Add a handler for the given Hook. This method is used to ensure no hook handlers are duplicated
+	 * across lifecycle methods, All handlers will be removed during deactivation.
 	 *
 	 * @param {string} hook
 	 * @param {AnyFunction} fn
@@ -301,8 +298,8 @@ declare class CodeMirror {
 	protected addFormSubmitHandler(): void
 
 	/**
-	 * Apply an Extension to the CodeMirror editor.
-	 * This is accomplished through top-level reconfiguration of the EditorView.
+	 * Apply an Extension to the CodeMirror editor. This is accomplished through top-level
+	 * reconfiguration of the EditorView.
 	 *
 	 * If the extension needs to be reconfigured (such as toggling on and off), use the
 	 * extensionRegistry instead.
@@ -312,19 +309,16 @@ declare class CodeMirror {
 	applyExtension(extension: Extension): void
 
 	/**
-	 * Toggle CodeMirror on or off from the textarea.
-	 * This will call initialize if CodeMirror
-	 * is being enabled for the first time.
+	 * Toggle CodeMirror on or off from the textarea. This will call initialize if CodeMirror is being
+	 * enabled for the first time.
 	 *
-	 * @param {boolean} [force] `true` to enable CodeMirror, `false` to disable.
-	 *   Note that the ext.CodeMirror.toggle
-	 *   hook will not be fired if this parameter is set.
+	 * @param {boolean} [force] `true` to enable CodeMirror, `false` to disable. Note that the
+	 *   ext.CodeMirror.toggle hook will not be fired if this parameter is set.
 	 */
 	toggle(force?: boolean): void
 
 	/**
-	 * Activate CodeMirror on the textarea.
-	 * This sets the state property and shows the editor view,
+	 * Activate CodeMirror on the textarea. This sets the state property and shows the editor view,
 	 * hiding the original textarea.
 	 *
 	 * initialize is expected to be called before this method.
@@ -332,15 +326,14 @@ declare class CodeMirror {
 	protected activate(): void
 
 	/**
-	 * Deactivate CodeMirror on the textarea, restoring the original
-	 * textarea and hiding the editor. This life-cycle method should retain the
-	 * view but discard the state.
+	 * Deactivate CodeMirror on the textarea, restoring the original textarea and hiding the editor.
+	 * This life-cycle method should retain the view but discard the state.
 	 */
 	protected deactivate(): void
 
 	/**
-	 * Destroy the CodeMirror instance and revert to the original textarea.
-	 * This action should be considered irreversible.
+	 * Destroy the CodeMirror instance and revert to the original textarea. This action should be
+	 * considered irreversible.
 	 */
 	destroy(): void
 
@@ -378,8 +371,8 @@ declare class CodeMirror {
 	}
 
 	/**
-	 * Get a CodeMirrorChild object for use on other textareas that
-	 * should have preferences synced with this CodeMirror instance.
+	 * Get a CodeMirrorChild object for use on other textareas that should have preferences synced
+	 * with this CodeMirror instance.
 	 */
 	get child(): CodeMirrorChild
 }

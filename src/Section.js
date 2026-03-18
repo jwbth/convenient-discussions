@@ -1593,7 +1593,7 @@ class Section extends SectionSkeleton {
 			.subscribe(
 				this.subscribeId,
 				this.id,
-				!!mode,
+				Boolean(mode),
 				// Unsubscribe from
 				renamedFrom && !this.manager.getBySubscribeId(renamedFrom).length ? renamedFrom : undefined,
 			)
@@ -1637,7 +1637,7 @@ class Section extends SectionSkeleton {
 		}
 
 		this.subscriptions
-			.unsubscribe(this.subscribeId, this.id, !!mode)
+			.unsubscribe(this.subscribeId, this.id, Boolean(mode))
 			.then(() => {
 				if (mode !== 'silent') {
 					sections.forEach((section) => {
