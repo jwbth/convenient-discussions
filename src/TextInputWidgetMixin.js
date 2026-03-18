@@ -177,11 +177,11 @@ class TextInputWidgetMixin {
 	}
 
 	/**
-	 * Clean up event listeners when the widget is destroyed.
+	 * Clean up selection change listener.
 	 *
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	destroy() {
+	cleanUpSelectionChangeListener() {
 		document.removeEventListener(
 			'selectionchange',
 			/** @type {NonNullable<typeof this.handleSelectionChange>} */ (this.handleSelectionChange),

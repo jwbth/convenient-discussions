@@ -1,5 +1,6 @@
 import AutocompleteFactory from './AutocompleteFactory'
 import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor'
+import MultilineTextInputWidget from './MultilineTextInputWidget'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { typedEntries } from './shared/utils-general'
@@ -136,11 +137,33 @@ class AutocompleteManager {
 	}
 
 	/**
+	 * Get the input element to attach the autocomplete to.
+	 *
+	 * @param {import('./TextInputWidget').default} input
+	 * @returns {HTMLElement}
+	 * @private
+	 */
+	getTargetElement(input) {
+		return (
+			(input instanceof MultilineTextInputWidget && input.codeMirror?.view.contentDOM) ||
+			input.$input[0]
+		)
+	}
+
+	/**
 	 * Initialize autocomplete for the inputs.
 	 */
 	init() {
 		this.inputs.forEach((input) => {
-			const element = input.$input[0]
+			if (
+				cd.settings.get('useNativeAutocomplete') &&
+				input instanceof MultilineTextInputWidget &&
+				input.codeMirror
+			) {
+				return
+			}
+
+			const element = this.getTargetElement(input)
 			this.tribute.attach(element)
 			element.cdInput = input
 			element.addEventListener('tribute-active-true', () => {
@@ -167,10 +190,9 @@ class AutocompleteManager {
 	 */
 	terminate() {
 		this.inputs.forEach((input) => {
-			this.tribute.detach(input.$input[0])
-			// Clean up TextInputWidget if it has a destroy method
-			if (typeof input.destroy === 'function') {
-				input.destroy()
+			this.tribute.detach(this.getTargetElement(input))
+			if (typeof input.cleanUpSelectionChangeListener === 'function') {
+				input.cleanUpSelectionChangeListener()
 			}
 		})
 

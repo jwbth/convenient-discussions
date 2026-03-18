@@ -120,12 +120,9 @@ class TributeRange {
 				data = { start: data }
 			}
 			data.end = data.end || ''
-			let isCmdModifierPressed = navigator.platform.includes('Mac')
-				? originalEvent.metaKey
-				: originalEvent.ctrlKey
 			data.content = (!(data.omitContentCheck?.() && !originalEvent.shiftKey) && data.content) || ''
-			if (isCmdModifierPressed && data.cmdModify) {
-				data.cmdModify()
+			if (originalEvent.altKey && data.altModify) {
+				data.altModify()
 			}
 
 			let myField = this.tribute.current.element
@@ -162,20 +159,29 @@ class TributeRange {
 			text += textSuffix
 
 			// jwbth: Preserve the undo/redo functionality in browsers that support it.
-			myField.focus()
+			const $myField = $(
+				myField.classList.contains('cm-content')
+					? myField.parentElement.parentElement.previousSibling
+					: myField,
+			)
+			$myField.focus()
 			if (!document.execCommand('insertText', false, text)) {
-				myField.value = myField.value.substring(0, startPos) + text + ending
+				$myField.textSelection(
+					'setContents',
+					$myField.textSelection('getContents').substring(0, startPos) + text + ending,
+				)
 			}
 
 			// jwbth: Start offset is calculated from the start position of the inserted text.
 			// Absent value means the selection start position should match with the end position
 			// (i.e., no text should be selected).
 			if (originalEvent.shiftKey || (data.selectContent && !data.content)) {
-				myField.selectionEnd = startPos + text.length - data.end.length
-				myField.selectionStart = startPos + data.start.length
+				$myField.textSelection('setSelection', {
+					start: startPos + data.start.length,
+					end: startPos + text.length - data.end.length,
+				})
 			} else {
-				myField.selectionEnd = startPos + text.length
-				myField.selectionStart = myField.selectionEnd
+				$myField.textSelection('setSelection', { start: startPos + text.length })
 			}
 
 			context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))

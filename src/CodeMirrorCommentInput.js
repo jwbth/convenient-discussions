@@ -25,8 +25,29 @@ export default class CodeMirrorCommentInput extends codeMirrorExt {
 		this.lib = mw.loader.require('ext.CodeMirror.v6.lib')
 		this.cdPlaceholderCompartment = new this.lib.Compartment()
 		this.cdChangeExtension = this.lib.EditorView.updateListener.of((update) => {
+			// Make CodeMirror dispatch `input` events like OOUI's TextInputWidget. Also maintain `value`,
+			// `selectionStart`, and `selectionEnd` properties on the textarea (for autocomplete by
+			// Tribute).
+
+			// 1. Only calculate if the selection actually changed to avoid layout thrashing
+			if (update.selectionSet) {
+				const target = /** @type {any} */ (update.view.contentDOM)
+
+				// 1. Sync the state to the DOM element properties
+				// Third-party scripts usually check .value and selection indices
+				target.value = update.state.doc.toString()
+				target.selectionStart = update.state.selection.main.from
+				target.selectionEnd = update.state.selection.main.to
+			}
+
+			// 2. Dispatch the event from the contenteditable element
 			if (update.docChanged) {
-				this.textarea.dispatchEvent(new KeyboardEvent('input'))
+				const inputEvent = new Event('input', {
+					bubbles: true,
+					cancelable: true,
+				})
+
+				update.view.contentDOM.dispatchEvent(inputEvent)
 			}
 		})
 		this.cdContentClassExtension = this.lib.EditorView.contentAttributes.of({

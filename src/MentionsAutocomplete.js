@@ -58,7 +58,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 			omitContentCheck() {
 				return !selectedText && !this.start.includes('/')
 			},
-			cmdModify() {
+			altModify() {
 				this.end += cd.mws('colon-separator', { language: 'content' })
 			},
 		}

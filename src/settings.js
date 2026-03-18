@@ -50,6 +50,7 @@ import { wrapHtml } from './utils-window'
  * @property {boolean} upload-onboarded
  * @property {boolean} useBackgroundHighlighting
  * @property {boolean} useCodeMirror
+ * @property {boolean} useNativeAutocomplete
  * @property {boolean} useTemplateData
  * @property {boolean} useTopicSubscription
  * @property {boolean} useUiTime
@@ -235,6 +236,7 @@ class Settings extends EventEmitter {
 			timestampFormat: 'radio',
 			useBackgroundHighlighting: 'checkbox',
 			useCodeMirror: 'checkbox',
+			useNativeAutocomplete: 'checkbox',
 			useTemplateData: 'checkbox',
 			useTopicSubscription: 'checkbox',
 			useUiTime: 'checkbox',
@@ -299,6 +301,7 @@ class Settings extends EventEmitter {
 			'timestampFormat': 'default',
 			'upload-onboarded': false,
 			'useBackgroundHighlighting': true,
+			'useNativeAutocomplete': false,
 			'useTemplateData': true,
 			'useTopicSubscription': cd.g.isDtInstalled,
 			'useUiTime': true,
@@ -464,6 +467,11 @@ class Settings extends EventEmitter {
 						max: 999,
 						help: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
 						classes: ['cd-setting--indented'],
+					},
+					{
+						name: 'useNativeAutocomplete',
+						type: this.scheme.controlTypes.useNativeAutocomplete,
+						label: cd.s('sd-usenativeautocomplete'),
 					},
 					{
 						name: 'autocompleteTypes',

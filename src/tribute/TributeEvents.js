@@ -40,20 +40,26 @@ class TributeEvents {
 		element.boundKeydown = this.keydown.bind(element, this)
 		element.boundKeyup = this.keyup.bind(element, this)
 		element.boundInput = this.input.bind(element, this)
+		element.boundSelectionChange = this.selectionchange.bind(element, this)
 
-		element.addEventListener('keydown', element.boundKeydown, false)
-		element.addEventListener('keyup', element.boundKeyup, false)
-		element.addEventListener('input', element.boundInput, false)
+		// Use capture to get ahead of CodeMirror's keydown handler. Note that there may be a duplicate
+		// event dispatched by the textarea in CodeMirror#domEventHandlersExtension.
+		element.addEventListener('keydown', element.boundKeydown, { capture: true })
+		element.addEventListener('keyup', element.boundKeyup, { capture: true })
+		document.addEventListener('selectionchange', element.boundSelectionChange, { capture: true })
+		element.addEventListener('input', element.boundInput, { capture: true })
 	}
 
 	unbind(element) {
-		element.removeEventListener('keydown', element.boundKeydown, false)
-		element.removeEventListener('keyup', element.boundKeyup, false)
-		element.removeEventListener('input', element.boundInput, false)
+		element.removeEventListener('keydown', element.boundKeydown, { capture: true })
+		element.removeEventListener('keyup', element.boundKeyup, { capture: true })
+		element.removeEventListener('selectionchange', element.boundSelectionChange, { capture: true })
+		element.removeEventListener('input', element.boundInput, { capture: true })
 
 		delete element.boundKeydown
 		delete element.boundKeyup
 		delete element.boundInput
+		delete element.boundSelectionChange
 	}
 
 	keydown(instance, event) {
@@ -75,6 +81,12 @@ class TributeEvents {
 		instance.inputEvent = true
 
 		instance.keyup.call(this, instance, event)
+	}
+
+	selectionchange(instance, event) {
+		if (document.activeElement === this) {
+			instance.keyup.call(this, instance, event)
+		}
 	}
 
 	click(instance, event) {
@@ -102,7 +114,11 @@ class TributeEvents {
 			tribute.hideMenu()
 
 			// TODO: should fire with externalTrigger and target is outside of menu
-		} else if (tribute.current.element && !tribute.current.externalTrigger) {
+		} else if (
+			tribute.current.element &&
+			!tribute.current.externalTrigger &&
+			!tribute.current.element.contains(event.target)
+		) {
 			tribute.current.externalTrigger = false
 			setTimeout(() => tribute.hideMenu())
 		}
@@ -113,7 +129,7 @@ class TributeEvents {
 		const tribute = instance.tribute
 
 		// jwbth: Added this to avoid appearing-disappearing of the menu when moving the caret.
-		if (!instance.inputEvent && !tribute.isActive) return
+		// if (!instance.inputEvent && !tribute.isActive) return
 
 		if (instance.inputEvent) {
 			instance.inputEvent = false

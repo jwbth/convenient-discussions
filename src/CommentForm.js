@@ -3476,8 +3476,8 @@ class CommentForm extends EventEmitter {
 			if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
 				data.content = ''
 			}
-			const cmdModifyTyped = /** @type {NonNullable<typeof data.cmdModify>} */ (data.cmdModify)
-			cmdModifyTyped()
+			const altModifyTyped = /** @type {NonNullable<typeof data.altModify>} */ (data.altModify)
+			altModifyTyped()
 			const text = data.start + (data.content || '') + (data.end || '')
 			this.commentInput
 				.selectRange(0)
@@ -4126,7 +4126,15 @@ class CommentForm extends EventEmitter {
 	 * @param {boolean} active
 	 */
 	setCodeMirrorActive(active) {
+		if (Boolean(this.commentInput.codeMirror) === active) return
+
+		this.autocomplete.terminate()
 		this.commentInput.setCodeMirror(active ? this.codeMirror : undefined)
+		// this.autocomplete.init()
+
+		if (!active) {
+			this.commentInput.focus()
+		}
 	}
 
 	static counter = 0
