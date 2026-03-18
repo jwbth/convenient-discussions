@@ -3225,12 +3225,13 @@ class CommentForm extends EventEmitter {
 		if (this.torndown) return
 
 		this.operations.closeAll()
+		this.unregister()
+		this.codeMirror?.destroy()
+		cd.settings.off('set', this.onSettingsUpdate)
 		if (this.$element[0].isConnected) {
 			this.target.cleanUpCommentFormTraces(this.mode, this)
 			this.$element.remove()
 		}
-		this.unregister()
-		this.codeMirror?.destroy()
 		this.emit('teardown')
 		this.torndown = true
 	}
