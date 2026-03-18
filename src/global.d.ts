@@ -378,6 +378,14 @@ declare global {
 	}
 
 	namespace OO.ui {
+		namespace mixin {
+			namespace PendingElement {
+				interface Props {
+					pending: number
+				}
+			}
+		}
+
 		namespace Window {
 			interface Props {
 				$body: JQuery

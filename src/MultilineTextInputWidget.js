@@ -61,6 +61,8 @@ class MultilineTextInputWidget extends mixInClass(
 	setCodeMirror(codeMirror) {
 		/** @type {import('./CodeMirrorWikiEditor').default} */
 		this.codeMirror = codeMirror
+
+		this.updateCodeMirrorPendingClass()
 	}
 
 	/**
@@ -88,6 +90,38 @@ class MultilineTextInputWidget extends mixInClass(
 		return this.codeMirror
 			? this.codeMirror.container.contains(document.activeElement)
 			: this.$input.is(':focus')
+	}
+
+	/**
+	 * @override
+	 */
+	pushPending() {
+		super.pushPending()
+		this.updateCodeMirrorPendingClass()
+
+		return this
+	}
+
+	/**
+	 * @override
+	 */
+	popPending() {
+		super.popPending()
+		this.updateCodeMirrorPendingClass()
+
+		return this
+	}
+
+	/**
+	 * Update the pending status of the CodeMirror instance.
+	 *
+	 * @private
+	 */
+	updateCodeMirrorPendingClass() {
+		this.codeMirror?.view.contentDOM.classList.toggle(
+			'oo-ui-pendingElement-pending',
+			this.pending > 0,
+		)
 	}
 }
 
