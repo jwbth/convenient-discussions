@@ -885,6 +885,7 @@ class Loader {
 					'oojs-ui.styles.icons-alerts',
 					'oojs-ui.styles.icons-editing-list',
 					'oojs-ui.styles.icons-interactions',
+					'oojs-ui.styles.icons-movement',
 					'user.options',
 				]),
 				this.loadApp(),
