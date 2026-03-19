@@ -37,6 +37,15 @@ class TextInputWidgetMixin {
 	}
 
 	/**
+	 * Handle selection changes in the document. Only updates the stored selection if the
+	 * autocomplete menu is not active.
+	 *
+	 * @type {() => void}
+	 * @private
+	 */
+	handleSelectionChange
+
+	/**
 	 * Construct the instance. A separate method is used to allow the class to be used as a mixin.
 	 *
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
@@ -46,22 +55,14 @@ class TextInputWidgetMixin {
 			this.emit('manualChange', this.getValue())
 		})
 
-		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin
-		/**
-		 * Handle selection changes in the document. Only updates the stored selection if the autocomplete
-		 * menu is not active.
-		 *
-		 * @type {() => void}
-		 * @private
-		 */
+		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin and
+		// not classes that extend it.
 		this.handleSelectionChange = () => {
 			// Only update selection if this input is focused and autocomplete menu is not active
-			if (document.activeElement === this.getEditableElement() && !this.autocompleteMenuActive) {
+			if (document.activeElement === this.getEditableElement()[0] && !this.autocompleteMenuActive) {
 				this.updateSelectedTextForAutocomplete()
 			}
 		}
-
-		document.addEventListener('selectionchange', this.handleSelectionChange)
 	}
 
 	/**
@@ -145,7 +146,9 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	updateSelectedTextForAutocomplete() {
-		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (this.$input[0])
+		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (
+			this.getEditableElement()[0]
+		)
 		const start = element.selectionStart
 		const end = element.selectionEnd
 
@@ -189,11 +192,32 @@ class TextInputWidgetMixin {
 	/**
 	 * Get the editable element of the input.
 	 *
-	 * @returns {HTMLElement}
+	 * @returns {JQuery}
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	getEditableElement() {
-		return this.$input[0]
+		return this.$input
+	}
+
+	/**
+	 * Attach selection change listener.
+	 *
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	addSelectionChangeListener() {
+		document.addEventListener('selectionchange', this.handleSelectionChange)
+	}
+
+	/**
+	 * Clean up selection change listener.
+	 *
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	removeSelectionChangeListener() {
+		document.removeEventListener(
+			'selectionchange',
+			/** @type {NonNullable<typeof this.handleSelectionChange>} */ (this.handleSelectionChange),
+		)
 	}
 }
 

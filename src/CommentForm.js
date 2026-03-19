@@ -1754,59 +1754,7 @@ class CommentForm extends EventEmitter {
 			.on('change', preview)
 			.on('change', emitChange)
 
-		/**
-		 * @typedef {object} TributeReplacedEvent
-		 * @property {object} instance
-		 * @property {string} instance.trigger
-		 */
-
-		this.commentInput.$input
-			.on('dragover', (event) => {
-				const data = /** @type {DragEvent} */ (event.originalEvent).dataTransfer
-				if (
-					!data ||
-					![...data.items].some((item) => CommentForm.allowedFileTypes.includes(item.type))
-				) {
-					return
-				}
-
-				this.commentInput.$element.addClass('cd-input-acceptFile')
-				event.preventDefault()
-			})
-			.on('dragleave drop blur', () => {
-				this.commentInput.$element.removeClass('cd-input-acceptFile')
-			})
-			.on('paste', this.handlePasteDrop)
-			.on('tribute-replaced', (event) => {
-				if (
-					/** @type {CustomEvent<TributeReplacedEvent>} */ (event.originalEvent).detail.instance
-						.trigger === cd.config.mentionCharacter
-				) {
-					if (this.isMode('edit')) {
-						this.showMessage(
-							wrapHtml(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true }),
-							{
-								type: 'notice',
-								name: 'mentionEdit',
-							},
-						)
-					}
-					if (
-						this.omitSignatureCheckbox?.isSelected() &&
-						!this.commentInput.getValue().includes(cd.g.signCode)
-					) {
-						this.showMessage(
-							wrapHtml(cd.sParse('cf-reaction-mention-nosignature'), {
-								targetBlank: true,
-							}),
-							{
-								type: 'notice',
-								name: 'mentionNoSignature',
-							},
-						)
-					}
-				}
-			})
+		this.addEventListenersToCommentInput()
 
 		// "Performance issues?" hint
 		if (
@@ -1837,6 +1785,78 @@ class CommentForm extends EventEmitter {
 			.on('change', emitChange)
 
 		this.summaryInput.on('enter', this.submit)
+	}
+
+	/**
+	 * Add event listeners to the comment input, be it a textarea or CodeMirror's contenteditable.
+	 *
+	 * @private
+	 */
+	addEventListenersToCommentInput() {
+		/**
+		 * @typedef {object} TributeReplacedEvent
+		 * @property {object} instance
+		 * @property {string} instance.trigger
+		 */
+
+		this.commentInput
+			.getEditableElement()
+			.on('dragover.cd', (event) => {
+				const data = /** @type {DragEvent} */ (event.originalEvent).dataTransfer
+				if (
+					!data ||
+					![...data.items].some((item) => CommentForm.allowedFileTypes.includes(item.type))
+				) {
+					return
+				}
+
+				this.commentInput.$element.addClass('cd-input-acceptFile')
+				event.preventDefault()
+			})
+			.on('dragleave.cd drop.cd blur.cd', () => {
+				this.commentInput.$element.removeClass('cd-input-acceptFile')
+			})
+			.on('paste.cd', this.handlePasteDrop)
+			.on('tribute-replaced.cd', (event) => {
+				if (
+					/** @type {CustomEvent<TributeReplacedEvent>} */ (event.originalEvent).detail.instance
+						.trigger === cd.config.mentionCharacter
+				) {
+					if (this.isMode('edit')) {
+						this.showMessage(
+							wrapHtml(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true }),
+							{
+								type: 'notice',
+								name: 'mentionEdit',
+							},
+						)
+					}
+					if (
+						this.omitSignatureCheckbox?.isSelected() &&
+						!this.commentInput.getValue().includes(cd.g.signCode)
+					) {
+						this.showMessage(
+							wrapHtml(cd.sParse('cf-reaction-mention-nosignature'), {
+								targetBlank: true,
+							}),
+							{
+								type: 'notice',
+								name: 'mentionNoSignature',
+							},
+						)
+					}
+				}
+			})
+	}
+
+	/**
+	 * Remove event listeners from the comment input, be it a textarea or CodeMirror's
+	 * contenteditable.
+	 *
+	 * @private
+	 */
+	removeEventListenersFromCommentInput() {
+		this.commentInput.getEditableElement().off('.cd')
 	}
 
 	/**
@@ -3222,10 +3242,8 @@ class CommentForm extends EventEmitter {
 	teardown() {
 		if (this.torndown) return
 
-		this.operations.closeAll()
 		this.unregister()
-		this.codeMirror?.destroy()
-		cd.settings.off('set', this.onSettingsUpdate)
+		this.operations.closeAll()
 		if (this.$element[0].isConnected) {
 			this.target.cleanUpCommentFormTraces(this.mode, this)
 			this.$element.remove()
@@ -3251,6 +3269,8 @@ class CommentForm extends EventEmitter {
 		this.teardownInputPopups()
 
 		this.terminateAutocomplete()
+		this.codeMirror?.destroy()
+		cd.settings.off('set', this.onSettingsUpdate)
 
 		this.registered = false
 		this.emit('unregister')
@@ -4140,8 +4160,11 @@ class CommentForm extends EventEmitter {
 	setCodeMirrorActive(active) {
 		if (Boolean(this.commentInput.codeMirror) === active) return
 
+		this.removeEventListenersFromCommentInput()
+		// Autocomplete is initialized indirectly by the settings' `set` event. Perhaps we should
+		// initialize it directly here as well?
 		this.commentInput.setCodeMirror(active ? this.codeMirror : undefined)
-		// this.autocomplete.init()
+		this.addEventListenersToCommentInput()
 
 		if (!active) {
 			this.commentInput.focus()

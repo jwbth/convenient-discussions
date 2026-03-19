@@ -29,34 +29,21 @@ export default class CodeMirrorCommentInput extends codeMirrorExt {
 			// `selectionStart`, and `selectionEnd` properties on the textarea (for autocomplete by
 			// Tribute).
 
-			// 1. Only calculate if the selection actually changed to avoid layout thrashing
+			// Only calculate if the selection actually changed to avoid layout thrashing.
 			if (update.selectionSet) {
 				const target = /** @type {any} */ (update.view.contentDOM)
 
-				// 1. Sync the state to the DOM element properties
-				// Third-party scripts usually check .value and selection indices
+				// Sync the state to the DOM element properties. Third-party scripts usually check .value
+				// and selection indices.
 				target.value = update.state.doc.toString()
 				target.selectionStart = update.state.selection.main.from
 				target.selectionEnd = update.state.selection.main.to
 
-				// 2. Get the current position of the primary caret (head)
-				const pos = update.state.selection.main.head
-
-				// 3. Get the pixel coordinates relative to the window viewport
-				const rect = update.view.coordsAtPos(pos)
-
-				// coords can be null if the position is not currently rendered on screen
-				if (rect) {
-					const doc = document.documentElement
-					const windowLeft = (window.scrollX || doc.scrollLeft) - (doc.clientLeft || 0)
-					const windowTop = (window.scrollY || doc.scrollTop) - (doc.clientTop || 0)
-					target.cdSelectionHeadLeft = windowLeft + rect.left
-					target.cdSelectionHeadRight = windowLeft + rect.right
-					target.cdSelectionHeadTop = windowTop + rect.top
-				}
+				// Set the update object on the target element for other scripts to use.
+				target.cdCodeMirrorUpdate = update
 			}
 
-			// 2. Dispatch the event from the contenteditable element
+			// Dispatch the event from the contenteditable element.
 			if (update.docChanged) {
 				const inputEvent = new Event('input', {
 					bubbles: true,

@@ -157,7 +157,7 @@ class AutocompleteManager {
 				return []
 			}
 
-			const element = input.getEditableElement()
+			const element = input.getEditableElement()[0]
 			this.tribute.attach(element)
 			element.cdInput = input
 			element.addEventListener('tribute-active-true', () => {
@@ -175,6 +175,7 @@ class AutocompleteManager {
 					this.tribute.menuEvents.windowResizeEvent?.()
 				})
 			}
+			input.addSelectionChangeListener()
 
 			return [element]
 		})
@@ -186,6 +187,12 @@ class AutocompleteManager {
 	terminate() {
 		this.elements.forEach((element) => {
 			this.tribute.detach(element)
+		})
+
+		this.inputs.forEach((input) => {
+			if (typeof input.removeSelectionChangeListener === 'function') {
+				input.removeSelectionChangeListener()
+			}
 		})
 
 		// Clean up autocomplete instances

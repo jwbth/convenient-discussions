@@ -1,5 +1,6 @@
 /// <reference types="types-mediawiki" />
 
+import type { ViewUpdate } from '@codemirror/view'
 import type { ApiResponse } from 'types-mediawiki/mw/Api'
 
 import type CheckboxInputWidget from './CheckboxInputWidget'
@@ -349,9 +350,7 @@ declare global {
 			right: number
 		}
 		cdInput?: TextInputWidget
-		cdSelectionHeadLeft?: number
-		cdSelectionHeadRight?: number
-		cdSelectionHeadTop?: number
+		cdCodeMirrorUpdate?: ViewUpdate
 	}
 
 	namespace mw {

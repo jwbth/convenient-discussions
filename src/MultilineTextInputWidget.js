@@ -115,17 +115,17 @@ class MultilineTextInputWidget extends mixInClass(
 	 * @private
 	 */
 	updateCodeMirrorPendingClass() {
-		this.getEditableElement().classList.toggle('oo-ui-pendingElement-pending', this.pending > 0)
+		this.getEditableElement().toggleClass('oo-ui-pendingElement-pending', this.pending > 0)
 	}
 
 	/**
 	 * Get the editable element of the input.
 	 *
-	 * @returns {HTMLElement}
+	 * @returns {JQuery}
 	 * @override
 	 */
 	getEditableElement() {
-		return this.codeMirror?.view.contentDOM || this.$input[0]
+		return $(this.codeMirror?.view.contentDOM || this.$input)
 	}
 }
 

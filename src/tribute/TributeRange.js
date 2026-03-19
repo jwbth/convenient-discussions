@@ -54,7 +54,7 @@ class TributeRange {
 	}
 
 	/**
-	 * @param {string | object} data
+	 * @param {string | import('./Tribute').InsertData} data
 	 * @param {boolean} requireLeadingSpace
 	 * @param {boolean} hasTrailingSpace
 	 * @param {KeyboardEvent | MouseEvent} originalEvent
@@ -70,14 +70,6 @@ class TributeRange {
 
 		if (info !== undefined) {
 			let context = this.tribute.current
-			let replaceEvent = new CustomEvent('tribute-replaced', {
-				detail: {
-					item: item,
-					instance: context,
-					context: info,
-					event: originalEvent,
-				},
-			})
 
 			// jwbth: We use a `data` object instead of a string, to store the start/end/content
 			// parts. The code processing these properties is added below.
@@ -148,6 +140,15 @@ class TributeRange {
 			} else {
 				$myField.textSelection('setSelection', { start: startPos + text.length })
 			}
+
+			let replaceEvent = new CustomEvent('tribute-replaced', {
+				detail: {
+					item: item,
+					instance: context,
+					context: info,
+					event: originalEvent,
+				},
+			})
 
 			context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
 			context.element.dispatchEvent(replaceEvent)
@@ -407,10 +408,17 @@ class TributeRange {
 		let left = 0
 		let right = 0
 
-		if (element.cdSelectionHeadLeft && element.cdSelectionHeadRight && element.cdSelectionHeadTop) {
-			top = element.cdSelectionHeadTop
-			left = element.cdSelectionHeadLeft
-			right = element.cdSelectionHeadRight
+		if (element.cdCodeMirrorUpdate) {
+			const update = element.cdCodeMirrorUpdate
+			const rect = update.view.coordsAtPos(position + this.tribute.current.trigger.length)
+			if (rect) {
+				const doc = document.documentElement
+				const windowLeft = (window.scrollX || doc.scrollLeft) - (doc.clientLeft || 0)
+				const windowTop = (window.scrollY || doc.scrollTop) - (doc.clientTop || 0)
+				top = windowTop + rect.top
+				left = windowLeft + rect.left
+				right = windowLeft + rect.right
+			}
 		} else {
 			// jwbth: Reuse the global object property.
 			let properties = convenientDiscussions.g.inputPropsAffectingCoords
