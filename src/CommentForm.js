@@ -1997,9 +1997,9 @@ class CommentForm extends EventEmitter {
 							(_, /** @type {HTMLAnchorElement} */ el) =>
 								cd.g.userLinkRegexp.test(el.title) &&
 								!el.closest(
-									cd.settings.get('commentDisplay') === 'spacious'
-										? '.cd-comment-author'
-										: '.cd-signature',
+									cd.settings.get('commentDisplay') === 'compact'
+										? '.cd-signature'
+										: '.cd-comment-author',
 								),
 						)
 						.get()

@@ -677,7 +677,7 @@ class Controller extends EventEmitter {
 	 */
 	handleMouseMove(event) {
 		if (
-			cd.settings.get('commentDisplay') === 'spacious' ||
+			cd.settings.get('commentDisplay') !== 'compact' ||
 			this.mouseMoveBlocked ||
 			this.isAutoScrolling() ||
 			cd.loader.isPageOverlayOn()
@@ -987,7 +987,7 @@ class Controller extends EventEmitter {
 
 		const currentUserName = cd.user.getName()
 		const excludeSelector = [
-			cd.settings.get('commentDisplay') === 'spacious' ? 'cd-comment-author' : 'cd-signature',
+			cd.settings.get('commentDisplay') === 'compact' ? 'cd-signature' : 'cd-comment-author',
 		]
 			.concat(cd.config.noSignatureClasses)
 			.map((name) => `.${name}`)

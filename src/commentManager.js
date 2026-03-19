@@ -131,9 +131,9 @@ export class CommentManager extends EventEmitter {
 	 */
 	setupCommentClass() {
 		this.CommentClass =
-			cd.settings.get('commentDisplay') === 'spacious'
-				? this.classes.SpaciousComment
-				: this.classes.CompactComment
+			cd.settings.get('commentDisplay') === 'compact'
+				? this.classes.CompactComment
+				: this.classes.SpaciousComment
 	}
 
 	/**
@@ -220,7 +220,7 @@ export class CommentManager extends EventEmitter {
 	 */
 	setup() {
 		// This can be updated after an in-script page reload.
-		this.commentDisplay = cd.settings.get('commentDisplay') || 'compact'
+		this.commentDisplay = cd.settings.get('commentDisplay') || 'spacious'
 
 		this.reformatTimestamps()
 		this.findAndUpdateTableComments()

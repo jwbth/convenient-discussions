@@ -330,7 +330,7 @@ class BootProcess {
 			controller.setupMutationObserver()
 
 			if (
-				cd.settings.get('commentDisplay') === 'spacious' &&
+				cd.settings.get('commentDisplay') !== 'compact' &&
 				commentManager.getCount() &&
 				this.isFirstRun()
 			) {

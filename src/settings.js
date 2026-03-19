@@ -1017,8 +1017,8 @@ class Settings extends EventEmitter {
 		})
 		const closeData = await win.closed
 
-		// If the user pressed Escape (meaning they are likely just not in the mood to read anything),
-		// re-show the popup next time
+		// If the user pressed Escape (meaning they are likely just not in the mood to read), re-show
+		// the popup next time. Otherwise, set the setting to spacious.
 		if (closeData?.action) {
 			try {
 				await this.saveSettingOnTheFly('commentDisplay', 'spacious')
