@@ -1194,11 +1194,12 @@ class Thread extends mixInObject(
 	 * @param {Thread[]} options.threadsToUpdate
 	 * @param {number} options.scrollX
 	 * @param {number} options.scrollY
+	 * @param {DOMRectReadOnly} options.rootRect
 	 * @param {import('./utils-window').ExtendedDOMRect[]} options.floatingRects
 	 * @returns {boolean}
 	 * @private
 	 */
-	updateLine({ elementsToAdd, threadsToUpdate, scrollX, scrollY, floatingRects }) {
+	updateLine({ elementsToAdd, threadsToUpdate, scrollX, scrollY, rootRect, floatingRects }) {
 		try {
 			const comment = this.rootComment
 
@@ -1219,44 +1220,44 @@ class Thread extends mixInObject(
 				this.isCollapsed || !needCalculateMargins ? this.getAdjustedStartElement() : undefined
 			const elBottom = this.isCollapsed ? elTop : this.getAdjustedEndElement(true)
 
-			let offsetTop
+			let rectTop
 			if (elTop) {
-				offsetTop = elTop.getBoundingClientRect()
+				rectTop = elTop.getBoundingClientRect()
 			} else {
-				offsetTop = comment.manageOffset({ floatingRects })
-				if (offsetTop) {
-					offsetTop.top -= scrollY
-					offsetTop.bottom -= scrollY
-					offsetTop.left -= scrollX
-					offsetTop.right -= scrollX
+				rectTop = comment.manageOffset({ floatingRects })
+				if (rectTop) {
+					rectTop.top -= scrollY
+					rectTop.bottom -= scrollY
+					rectTop.left -= scrollX
+					rectTop.right -= scrollX
 				}
 			}
 
 			if (
-				!offsetTop ||
-				(elTop ? !isVisible(elTop) : !getVisibilityByRects(/** @type {DOMRect} */ (offsetTop))) ||
+				!rectTop ||
+				(elTop ? !isVisible(elTop) : !getVisibilityByRects(/** @type {DOMRect} */ (rectTop))) ||
 				!elBottom ||
 				!isVisible(elBottom)
 			) {
 				throw new CdError()
 			}
 
-			const offsetBottom = elBottom.getBoundingClientRect()
+			const rectBottom = elBottom.getBoundingClientRect()
 			const commentMargins = needCalculateMargins ? comment.getMargins() : undefined
 			const dir = comment.getDirection()
-			const left = this.getThreadLineLeft(offsetTop, commentMargins, dir, scrollX)
+			const left = this.getThreadLineLeft(rectTop, commentMargins, dir, rootRect)
 
 			// FIXME: We use the first comment part's margins for the bottom rectangle which can lead to
 			// errors (need to check).
-			const bottomLeft = this.getThreadLineLeft(offsetBottom, commentMargins, dir, scrollX)
+			const bottomLeft = this.getThreadLineLeft(rectBottom, commentMargins, dir, rootRect)
 
 			// Are top and bottom aligned?
 			if (dir === 'ltr' ? bottomLeft < left : bottomLeft > left) {
 				throw new CdError()
 			}
 
-			const top = scrollY + offsetTop.top
-			const height = offsetBottom.bottom - (top - scrollY)
+			const top = -rootRect.top + rectTop.top
+			const height = rectBottom.bottom - rectTop.top
 
 			// Find the top comment that has its offset changed and stop at it.
 			if (
@@ -1294,14 +1295,14 @@ class Thread extends mixInObject(
 	/**
 	 * Get the left offset of the thread line.
 	 *
-	 * @param {{ left: number, right: number }} offset
+	 * @param {{ left: number, right: number }} rect
 	 * @param {import('./Comment').CommentMargins | undefined} commentMargins
 	 * @param {'rtl' | 'ltr'} dir
-	 * @param {number} scrollX
+	 * @param {DOMRectReadOnly} rootRect
 	 * @returns {number}
 	 * @private
 	 */
-	getThreadLineLeft(offset, commentMargins, dir, scrollX) {
+	getThreadLineLeft(rect, commentMargins, dir, rootRect) {
 		let left
 
 		// This calculation is the same as in .cd-comment-overlay-marker, but without -1px - we don't
@@ -1312,18 +1313,18 @@ class Thread extends mixInObject(
 		)
 
 		if (dir === 'ltr') {
-			left = offset.left + centerLeft
+			left = rect.left + centerLeft
 			if (commentMargins) {
 				left -= commentMargins.left + 1
 			}
 		} else {
-			left = offset.right - cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio - centerLeft
+			left = rect.right - cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio - centerLeft
 			if (commentMargins) {
 				left += commentMargins.right + 1
 			}
 		}
 
-		return left + scrollX - cd.g.threadLineSidePadding
+		return left - rootRect.left - cd.g.threadLineSidePadding
 	}
 
 	/**
@@ -1443,7 +1444,7 @@ class Thread extends mixInObject(
 	 * @param {boolean} [autocollapse] Autocollapse threads according to the settings and restore
 	 *   collapsed threads from the local storage.
 	 */
-	static reset = (autocollapse = true) => {
+	static reset(autocollapse = true) {
 		this.enabled = cd.settings.get('enableThreads')
 		if (!this.enabled) {
 			new StorageItemWithKeysAndSaveTime('collapsedThreads').removeItem()
@@ -1452,6 +1453,10 @@ class Thread extends mixInObject(
 		}
 
 		if (!this.isInited) {
+			if (window.getComputedStyle(controller.rootElement).position === 'static') {
+				controller.rootElement.style.position = 'relative'
+			}
+
 			this.on('toggle', this.updateLines)
 			controller.on('resize', this.updateLines).on('mutate', () => {
 				// Update only on mouse move to prevent short freezings of a page when there is a comment
@@ -1491,7 +1496,7 @@ class Thread extends mixInObject(
 		this.updateLines()
 
 		if (!this.threadLinesContainer.parentNode) {
-			document.body.append(this.threadLinesContainer)
+			controller.rootElement.append(this.threadLinesContainer)
 		}
 		if (autocollapse) {
 			this.autocollapseThreads()
@@ -1673,7 +1678,7 @@ class Thread extends mixInObject(
 		const threadsToUpdate = []
 		const scrollX = window.scrollX
 		const scrollY = window.scrollY
-
+		const rootRect = controller.rootElement.getBoundingClientRect()
 		const floatingRects = controller.getFloatingElements().map(getExtendedRect)
 		commentManager
 			.getAll()
@@ -1685,6 +1690,7 @@ class Thread extends mixInObject(
 					threadsToUpdate,
 					scrollX,
 					scrollY,
+					rootRect,
 					floatingRects,
 				}),
 			)
