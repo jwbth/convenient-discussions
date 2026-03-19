@@ -36,14 +36,13 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 	 */
 	class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
 		/**
-		 * @typedef {{
-		 *   preset: 'radio';
-		 *   title: 'title';
-		 *   configure: 'checkbox';
-		 *   source: 'text';
-		 *   author: 'text';
-		 *   license: 'text';
-		 * }} UploadDialogControlTypes
+		 * @typedef {object} UploadDialogControlTypes
+		 * @property {'radio'} preset
+		 * @property {'title'} title
+		 * @property {'checkbox'} configure
+		 * @property {'text'} source
+		 * @property {'text'} author
+		 * @property {'text'} license
 		 */
 
 		/** @type {ControlTypesByName<UploadDialogControlTypes>} */
@@ -660,11 +659,15 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 				this.dateWidget.setValidityFlag(true)
 			}
 
+			const controlsTyped =
+				/** @type {ControlTypesByName<UploadDialogControlTypes> | undefined} */ (this.controls)
+			if (!controlsTyped) return
+
 			// Clear the fields we added as well. We add them on the "setup" step, so they aren't there
 			// when .clear() initially runs.
-			this.controls.source.input.setValue('').setValidityFlag(true)
-			this.controls.author.input.setValue('').setValidityFlag(true)
-			this.controls.license.input.setValue('').setValidityFlag(true)
+			controlsTyped.source.input.setValue('').setValidityFlag(true)
+			controlsTyped.author.input.setValue('').setValidityFlag(true)
+			controlsTyped.license.input.setValue('').setValidityFlag(true)
 		}
 
 		/**
