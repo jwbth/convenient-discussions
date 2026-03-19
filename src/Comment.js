@@ -631,8 +631,14 @@ class Comment extends CommentSkeleton {
 	 * @returns {this is { actions: { toggleChildThreadsButton: import('./CommentButton').default } }}
 	 */
 	shouldOnboardOntoToggleChildThreads() {
+		const element = this.actions?.toggleChildThreadsButton?.element
+
 		return Boolean(
-			this.actions?.toggleChildThreadsButton?.element.matches(':hover') &&
+			element?.matches(':hover') &&
+				// There is some bug with the popup positioned at 0, 0; I couldn't find the cause, so maybe
+				// checkVisibility() would help.
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				(!element.checkVisibility || element.checkVisibility()) &&
 				!cd.settings.get('toggleChildThreads-onboarded') &&
 				!this.manager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
 		)
@@ -1528,6 +1534,12 @@ class Comment extends CommentSkeleton {
 			this.getSourcePage().compareRevisions(olderRevisionId, newerRevisionId),
 			mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
 		])
+		if (!revisions) {
+			throw new CdError({
+				type: 'response',
+				message: cd.sParse('comment-diff-error'),
+			})
+		}
 
 		const $cleanDiff = this.scrubDiff(body, revisions, commentsData)
 		if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
@@ -1700,8 +1712,8 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * Add a note that the comment has been changed.
-	 * Handles common setup, then delegates to subclass implementation.
+	 * Add a note that the comment has been changed. Handles common setup, then delegates to subclass
+	 * implementation.
 	 *
 	 * @param {JQuery} $changeNote
 	 * @private

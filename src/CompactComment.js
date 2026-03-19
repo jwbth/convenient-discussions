@@ -274,8 +274,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Update the comment's hover state based on a `mousemove` event.
-	 * Only applicable to compact comments that use hover interactions.
+	 * Update the comment's hover state based on a `mousemove` event. Only applicable to compact
+	 * comments that use hover interactions.
 	 *
 	 * @param {MouseEvent | JQuery.MouseMoveEvent | JQuery.MouseOverEvent} event
 	 * @param {boolean} isObstructingElementHovered
