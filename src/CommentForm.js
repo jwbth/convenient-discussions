@@ -1810,7 +1810,7 @@ class CommentForm extends EventEmitter {
 			.on('dragleave.cd drop.cd blur.cd', () => {
 				this.commentInput.$element.removeClass('cd-input-acceptFile')
 			})
-			.on('paste.cd', this.handlePasteDrop)
+			.on('paste.cd drop.cd', this.handlePasteDrop)
 			.on('tribute-replaced.cd', (event) => {
 				if (
 					/** @type {CustomEvent<TributeReplacedEvent>} */ (event.originalEvent).detail.instance
