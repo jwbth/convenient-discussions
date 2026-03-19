@@ -1,8 +1,10 @@
-// @ts-nocheck
 class TributeEvents {
+	/**
+	 * @param {import('./Tribute').default} tribute
+	 */
 	constructor(tribute) {
+		/** @type {import('./Tribute').default} */
 		this.tribute = tribute
-		this.tribute.events = this
 	}
 
 	/*
@@ -36,64 +38,79 @@ class TributeEvents {
 		]
 	}
 
+	/**
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 */
 	bind(element) {
-		element.boundKeydown = this.keydown.bind(element, this)
-		element.boundKeyup = this.keyup.bind(element, this)
-		element.boundInput = this.input.bind(element, this)
-		element.boundSelectionChange = this.selectionchange.bind(element, this)
+		const selectionChangeHandler = (event) => this.selectionchange(event, element)
+		this.selectionHandlerMap = new WeakMap()
+		this.selectionHandlerMap.set(element, selectionChangeHandler)
 
 		// Use capture to get ahead of CodeMirror's keydown handler. Note that there may be a duplicate
 		// event dispatched by the textarea in CodeMirror#domEventHandlersExtension.
-		element.addEventListener('keydown', element.boundKeydown, { capture: true })
-		element.addEventListener('keyup', element.boundKeyup, { capture: true })
-		document.addEventListener('selectionchange', element.boundSelectionChange, { capture: true })
-		element.addEventListener('input', element.boundInput, { capture: true })
+		element.addEventListener('keydown', this.keydown, { capture: true })
+		element.addEventListener('keyup', this.keyup)
+		document.addEventListener('selectionchange', selectionChangeHandler)
+		element.addEventListener('input', this.input)
 	}
 
+	/**
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 */
 	unbind(element) {
-		element.removeEventListener('keydown', element.boundKeydown, { capture: true })
-		element.removeEventListener('keyup', element.boundKeyup, { capture: true })
-		element.removeEventListener('selectionchange', element.boundSelectionChange, { capture: true })
-		element.removeEventListener('input', element.boundInput, { capture: true })
-
-		delete element.boundKeydown
-		delete element.boundKeyup
-		delete element.boundInput
-		delete element.boundSelectionChange
+		element.removeEventListener('keydown', this.keydown, { capture: true })
+		element.removeEventListener('keyup', this.keyup)
+		document.removeEventListener('selectionchange', this.selectionHandlerMap.get(element))
+		element.removeEventListener('input', this.input)
+		this.selectionHandlerMap.delete(element)
 	}
 
-	keydown(instance, event) {
+	/**
+	 * @param {Event} event
+	 */
+	keydown = (event) => {
+		const element = event.currentTarget
+
 		// jwbth: Removed shouldDeactivate() fixing the disappearing of the menu when a part of a
 		// mention is typed and the user presses any command key.
 
-		let element = this
-		instance.commandEvent = false
+		this.commandEvent = false
 
 		TributeEvents.keys().forEach((o) => {
 			if (o.key === event.keyCode) {
-				instance.commandEvent = true
-				instance.callbacks()[o.value.toLowerCase()](event, element)
+				this.commandEvent = true
+				this.callbacks()[o.value.toLowerCase()](event, element)
 			}
 		})
 	}
 
-	input(instance, event) {
-		instance.inputEvent = true
+	/**
+	 * @param {Event} event
+	 */
+	input = (event) => {
+		this.inputEvent = true
 
-		instance.keyup.call(this, instance, event)
+		this.keyup(event)
 	}
 
-	selectionchange(instance, event) {
-		if (document.activeElement === this) {
-			instance.keyup.call(this, instance, event)
+	/**
+	 * @param {Event} event
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 */
+	selectionchange = (event, element) => {
+		if (document.activeElement === element) {
+			this.keyup(event, element)
 		}
 	}
 
-	click(instance, event) {
-		// jwbth: Ignore other than left button clicks.
+	/**
+	 * @param {MouseEvent} event
+	 */
+	click = (event) => {
+		// jwbth: Ignore non-left button clicks.
 		if (event.which !== 1) return
 
-		let tribute = instance.tribute
+		let tribute = this.tribute
 		if (tribute.menu && tribute.menu.contains(event.target)) {
 			let li = event.target
 			event.preventDefault()
@@ -114,7 +131,20 @@ class TributeEvents {
 			tribute.hideMenu()
 
 			// TODO: should fire with externalTrigger and target is outside of menu
-		} else if (
+		}
+	}
+
+	/**
+	 * @param {MouseEvent} event
+	 */
+	mousedown = (event) => {
+		// jwbth: Ignore non-left button clicks.
+		if (event.which !== 1) return
+
+		let tribute = this.tribute
+		if (tribute.menu && tribute.menu.contains(event.target)) return
+
+		if (
 			tribute.current.element &&
 			!tribute.current.externalTrigger &&
 			!tribute.current.element.contains(event.target)
@@ -124,17 +154,21 @@ class TributeEvents {
 		}
 	}
 
-	keyup(instance, event) {
+	/**
+	 * @param {Event} event
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 */
+	keyup = (event, element = event.currentTarget) => {
 		// jwbth: Added this and replaces the usages below.
-		const tribute = instance.tribute
+		const tribute = this.tribute
 
 		// jwbth: Added this to avoid appearing-disappearing of the menu when moving the caret.
-		// if (!instance.inputEvent && !tribute.isActive) return
+		// if (!this.inputEvent && !tribute.isActive) return
 
-		if (instance.inputEvent) {
-			instance.inputEvent = false
+		if (this.inputEvent) {
+			this.inputEvent = false
 		}
-		instance.updateSelection(this)
+		this.updateSelection(element)
 
 		// Esc
 		if (event.keyCode === 27) return
@@ -152,15 +186,15 @@ class TributeEvents {
 
 		if (!tribute.allowSpaces && tribute.hasTrailingSpace) {
 			tribute.hasTrailingSpace = false
-			instance.commandEvent = true
+			this.commandEvent = true
 			return
 		}
 
-		// jwbth: Added this block (search for dropMenu for the explanation).
-		if (tribute.dropMenu || tribute.current.mentionText === undefined) {
+		// jwbth: Added this block (search for willHideMenu for the explanation).
+		if (tribute.willHideMenu || tribute.current.mentionText === undefined) {
 			tribute.isActive = false
 			tribute.hideMenu()
-			tribute.dropMenu = false
+			tribute.willHideMenu = false
 			return
 		}
 
@@ -170,7 +204,7 @@ class TributeEvents {
 			let trigger = tribute.current.triggerChar
 
 			if (typeof trigger !== 'undefined') {
-				instance.callbacks().triggerChar(event, this, trigger)
+				this.callbacks().triggerChar(event, element, trigger)
 			}
 		}
 
@@ -186,13 +220,13 @@ class TributeEvents {
 				the context menu, press "@".
 					Expected: An autocomplete menu appears.
 					Actual: Does not.
-					This is because "instance.commandEvent = false" is executed only on keydown event that
+					This is because "this.commandEvent = false" is executed only on keydown event that
 				lacks when pasting from the context menu.
 			 */
-			(tribute.current.trigger && instance.commandEvent !== true) ||
+			(tribute.current.trigger && this.commandEvent !== true) ||
 			(tribute.isActive && event.keyCode === 8)
 		) {
-			tribute.showMenuFor(this, true)
+			tribute.showMenuFor(element, true)
 		}
 	}
 

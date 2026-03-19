@@ -1,5 +1,3 @@
-/* eslint-disable */
-// @ts-nocheck
 /**
  * Tribute.js
  * Native ES6 JavaScript @mention Plugin
@@ -143,7 +141,7 @@ import tributeCss from './tribute.less?inline'
  */
 
 /**
- * @typedef {Element | NodeList | HTMLCollection | Element[]} TributeElement
+ * @typedef {Element | NodeList | HTMLCollection | Element[] | JQuery} TributeElement
  */
 
 class Tribute {
@@ -174,15 +172,21 @@ class Tribute {
 			Tribute.cssInjected = true
 		}
 
-		this.current = /** @type {{
-			collection: TributeCollection | null,
-			trigger: string | null,
-			externalTrigger: boolean | null,
-			element: HTMLElement | null,
-			triggerPos: number | null
-			mentionText: string | null,
-			filteredItems: TributeSearchResults<any>[] | null,
-		}} */ ({})
+		/**
+		 * @typedef {object} Current
+		 * @property {TributeCollection} [collection]
+		 * @property {string} [trigger]
+		 * @property {boolean} [externalTrigger]
+		 * @property {HTMLElement} [element]
+		 * @property {number} [triggerPos]
+		 * @property {string} [mentionText]
+		 * @property {TributeSearchResults<any>[]} [filteredItems]
+		 */
+
+		/**
+		 * @type {Current}
+		 */
+		this.current = {}
 		this.inputEvent = false
 		this.isActive = false
 		this.menuContainer = menuContainer
@@ -234,16 +238,27 @@ class Tribute {
 			}
 		})
 
-		new TributeRange(this)
-		new TributeEvents(this)
-		new TributeMenuEvents(this)
-		new TributeSearch(this)
+		this.range = new TributeRange(this)
+		this.events = new TributeEvents(this)
+		this.menuEvents = new TributeMenuEvents(this)
+		this.search = new TributeSearch(this)
+
+		/**
+		 * @type {boolean | undefined}
+		 */
+		this.willHideMenu = undefined
 	}
 
+	/**
+	 * @returns {boolean}
+	 */
 	get isActive() {
 		return this._isActive
 	}
 
+	/**
+	 * @param {boolean} val
+	 */
 	set isActive(val) {
 		if (this._isActive != val) {
 			this._isActive = val
@@ -254,6 +269,10 @@ class Tribute {
 		}
 	}
 
+	/**
+	 * @this {Tribute}
+	 * @param {TributeSearchResults<any>} item
+	 */
 	static defaultSelectTemplate(item) {
 		if (typeof item === 'undefined')
 			return `${this.current.collection.trigger}${this.current.mentionText}`
@@ -261,6 +280,10 @@ class Tribute {
 		return this.current.collection.trigger + item.original[this.current.collection.fillAttr]
 	}
 
+	/**
+	 * @this {Tribute}
+	 * @param {TributeSearchResults<any>} matchItem
+	 */
 	static defaultMenuItemTemplate(matchItem) {
 		return matchItem.string
 	}
@@ -269,6 +292,9 @@ class Tribute {
 		return ['TEXTAREA', 'INPUT']
 	}
 
+	/**
+	 * @returns {string[]}
+	 */
 	triggers() {
 		return this.collection.map((config) => {
 			return config.trigger
@@ -276,7 +302,6 @@ class Tribute {
 	}
 
 	/**
-	 *
 	 * @param {TributeElement} el
 	 */
 	attach(el) {
@@ -304,15 +329,22 @@ class Tribute {
 		}
 	}
 
+	/**
+	 * @param {Element} el
+	 */
 	_attach(el) {
 		if (Object.hasOwn(el.dataset, 'tribute')) {
 			console.warn('Tribute was already bound to ' + el.nodeName)
 		}
 
 		this.events.bind(el)
-		el.dataset.tribute = true
+		el.dataset.tribute = 'true'
 	}
 
+	/**
+	 * @param {string} containerClass
+	 * @returns {HTMLElement}
+	 */
 	createMenu(containerClass) {
 		let wrapper = document.createElement('div'),
 			ul = document.createElement('ul')
@@ -331,7 +363,12 @@ class Tribute {
 		return document.body.appendChild(wrapper)
 	}
 
+	/**
+	 * @param {Element} element
+	 * @param {boolean} scrollTo
+	 */
 	showMenuFor(element, scrollTo) {
+		const collection = /** @type {TributeCollection} */ (this.current.collection)
 		const processValues = (values) => {
 			// Tribute may not be active any more by the time the value callback returns
 			if (!this.isActive) {
@@ -341,22 +378,22 @@ class Tribute {
 			let items = this.search.filter(this.current.mentionText, values, {
 				// jwbth: Replaced "<span>" and "</span>" as default values with empty strings. Tags are
 				// displayed as plain text currently anyway.
-				pre: this.current.collection.searchOpts.pre || '',
-				post: this.current.collection.searchOpts.post || '',
-				skip: this.current.collection.searchOpts.skip,
+				pre: collection.searchOpts.pre || '',
+				post: collection.searchOpts.post || '',
+				skip: collection.searchOpts.skip,
 				extract: (el) => {
-					if (typeof this.current.collection.lookup === 'string') {
-						return el[this.current.collection.lookup]
-					} else if (typeof this.current.collection.lookup === 'function') {
-						return this.current.collection.lookup(el, this.current.mentionText)
+					if (typeof collection.lookup === 'string') {
+						return el[collection.lookup]
+					} else if (typeof collection.lookup === 'function') {
+						return collection.lookup(el, this.current.mentionText)
 					} else {
 						throw new TypeError('Invalid lookup attribute, lookup must be string or function.')
 					}
 				},
 			})
 
-			if (this.current.collection.menuItemLimit) {
-				items = items.slice(0, this.current.collection.menuItemLimit)
+			if (collection.menuItemLimit) {
+				items = items.slice(0, collection.menuItemLimit)
 			}
 
 			this.current.filteredItems = items
@@ -371,15 +408,14 @@ class Tribute {
 				})
 				this.current.element.dispatchEvent(noMatchEvent)
 				if (
-					(typeof this.current.collection.noMatchTemplate === 'function' &&
-						!this.current.collection.noMatchTemplate()) ||
-					!this.current.collection.noMatchTemplate
+					(typeof collection.noMatchTemplate === 'function' && !collection.noMatchTemplate()) ||
+					!collection.noMatchTemplate
 				) {
 					this.hideMenu()
 				} else {
-					typeof this.current.collection.noMatchTemplate === 'function'
-						? (ul.innerHTML = this.current.collection.noMatchTemplate())
-						: (ul.innerHTML = this.current.collection.noMatchTemplate)
+					typeof collection.noMatchTemplate === 'function'
+						? (ul.innerHTML = collection.noMatchTemplate())
+						: (ul.innerHTML = collection.noMatchTemplate)
 				}
 
 				return
@@ -389,10 +425,10 @@ class Tribute {
 			let fragment = document.createDocumentFragment()
 
 			// jwbth: Added this part.
-			if (this.current.collection.label) {
+			if (collection.label) {
 				let li = document.createElement('li')
 				li.classList.add('tribute-label')
-				li.textContent = this.current.collection.label
+				li.textContent = collection.label
 				fragment.append(li)
 			}
 
@@ -402,27 +438,27 @@ class Tribute {
 
 				// jwbth: Replaced this part.
 				li.classList.add('tribute-item')
-				if (this.current.collection.itemClass) {
-					li.classList.add(this.current.collection.itemClass)
+				if (collection.itemClass) {
+					li.classList.add(collection.itemClass)
 				}
 
-				li.addEventListener('mousemove', (e) => {
-					let [, index] = this._findLiTarget(e.target)
-					if (e.movementY !== 0) {
+				li.addEventListener('mousemove', (event) => {
+					let [, index] = this._findLiTarget(event.target)
+					if (event.movementY !== 0) {
 						this.events.setActiveLi(index)
 					}
 				})
 				if (this.menuSelected === index) {
-					li.classList.add(this.current.collection.selectClass)
+					li.classList.add(collection.selectClass)
 				}
 				// jwbth: Replaced innerHTML with textContent to prevent XSS injections.
-				li.textContent = this.current.collection.menuItemTemplate(item)
+				li.textContent = collection.menuItemTemplate(item)
 				fragment.append(li)
 			})
 			ul.append(fragment)
 
-			// jwbth: Added this line to make the menu redrawn immediately, not wait the setTimeout's
-			// callback.
+			// jwbth: Added this line to make the menu redrawn when the bottom is off screen. TODO: Fix
+			// this properly.
 			this.range.positionMenuAtCaret(scrollTo)
 		}
 
@@ -462,19 +498,27 @@ class Tribute {
 			this.current.mentionText = ''
 		}
 
-		if (typeof this.current.collection.values === 'function') {
-			this.current.collection.values(this.current.mentionText, processValues)
+		if (typeof collection.values === 'function') {
+			collection.values(this.current.mentionText, processValues)
 		} else {
-			processValues(this.current.collection.values)
+			processValues(collection.values)
 		}
 	}
 
+	/**
+	 * @param {Element} el
+	 * @returns {[Element, string] | []}
+	 */
 	_findLiTarget(el) {
 		if (!el) return []
 		const index = el.dataset.index
 		return index ? [el, index] : this._findLiTarget(el.parentNode)
 	}
 
+	/**
+	 * @param {Element} element
+	 * @param {number} collectionIndex
+	 */
 	showMenuForCollection(element, collectionIndex) {
 		if (element !== document.activeElement) {
 			this.placeCaretAtEnd(element)
@@ -497,6 +541,9 @@ class Tribute {
 	}
 
 	// TODO: make sure this works for inputs/textareas
+	/**
+	 * @param {Element} el
+	 */
 	placeCaretAtEnd(el) {
 		el.focus()
 		if (typeof window.getSelection != 'undefined' && typeof document.createRange != 'undefined') {
@@ -514,27 +561,35 @@ class Tribute {
 		}
 	}
 
-	insertAtCaret(textarea, text) {
-		var scrollPos = textarea.scrollTop
-		var caretPos = textarea.selectionStart
+	/**
+	 * @param {HTMLElement} element
+	 * @param {string} text
+	 * @returns {boolean}
+	 */
+	insertAtCaret(element, text) {
+		var scrollPos = element.scrollTop
+		var caretPos = element.selectionStart
 
-		textarea.focus()
+		element.focus()
 
 		// jwbth: Preserve the undo/redo functionality in browsers that support it.
 		const hasInsertedViaCommand = document.execCommand('insertText', false, text)
 		if (!hasInsertedViaCommand) {
-			var front = textarea.value.substring(0, caretPos)
-			var back = textarea.value.substring(textarea.selectionEnd, textarea.value.length)
-			textarea.value = front + text + back
+			var front = element.value.substring(0, caretPos)
+			var back = element.value.substring(element.selectionEnd, element.value.length)
+			element.value = front + text + back
 			caretPos += text.length
-			textarea.selectionStart = caretPos
-			textarea.selectionEnd = caretPos
+			element.selectionStart = caretPos
+			element.selectionEnd = caretPos
 		}
-		textarea.scrollTop = scrollPos
+		element.scrollTop = scrollPos
 
 		return hasInsertedViaCommand
 	}
 
+	/**
+	 * Hide the autocomplete menu.
+	 */
 	hideMenu() {
 		if (this.menu) {
 			this.menu.style.cssText = 'display: none;'
@@ -544,18 +599,34 @@ class Tribute {
 		}
 	}
 
+	/**
+	 * @param {number} index
+	 * @param {Event} originalEvent
+	 */
 	selectItemAtIndex(index, originalEvent) {
 		index = Number.parseInt(index)
 		if (typeof index !== 'number' || isNaN(index)) return
 		let item = this.current.filteredItems[index]
 		let data = this.current.collection.selectTemplate(item, originalEvent)
-		if (data !== null) this.replaceText(data, originalEvent, item)
+		if (data !== null) {
+			this.replaceText(data, originalEvent, item)
+		}
 	}
 
+	/**
+	 * @param {any} data
+	 * @param {Event} originalEvent
+	 * @param {TributeSearchResults<any>} item
+	 */
 	replaceText(data, originalEvent, item) {
 		this.range.replaceTriggerText(data, true, true, originalEvent, item)
 	}
 
+	/**
+	 * @param {TributeCollection} collection
+	 * @param {TributeSearchResults<any>[]} newValues
+	 * @param {boolean} replace
+	 */
 	_append(collection, newValues, replace) {
 		if (typeof collection.values === 'function') {
 			throw new TypeError('Unable to append to values, as it is a function.')
@@ -566,6 +637,11 @@ class Tribute {
 		}
 	}
 
+	/**
+	 * @param {string} collectionIndex
+	 * @param {TributeSearchResults<any>[]} newValues
+	 * @param {boolean} replace
+	 */
 	append(collectionIndex, newValues, replace) {
 		let index = Number.parseInt(collectionIndex)
 		if (typeof index !== 'number')
@@ -576,6 +652,10 @@ class Tribute {
 		this._append(collection, newValues, replace)
 	}
 
+	/**
+	 * @param {TributeSearchResults<any>[]} newValues
+	 * @param {boolean} replace
+	 */
 	appendCurrent(newValues, replace) {
 		if (this.isActive) {
 			this._append(this.current.collection, newValues, replace)
@@ -585,7 +665,6 @@ class Tribute {
 	}
 
 	/**
-	 *
 	 * @param {TributeElement} el
 	 */
 	detach(el) {
@@ -613,6 +692,9 @@ class Tribute {
 		}
 	}
 
+	/**
+	 * @param {Element} el
+	 */
 	_detach(el) {
 		this.events.unbind(el)
 		if (el.tributeMenu) {

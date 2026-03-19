@@ -1,11 +1,21 @@
-// @ts-nocheck
 // Thanks to https://github.com/mattyork/fuzzy
 class TributeSearch {
+	/**
+	 * @param {import('./Tribute').default} tribute
+	 */
 	constructor(tribute) {
+		/**
+		 * @type {import('./Tribute').default}
+		 */
 		this.tribute = tribute
-		this.tribute.search = this
 	}
 
+	/**
+	 * @param {string} pattern
+	 * @param {string} string
+	 * @param {object} opts
+	 * @returns {object | null}
+	 */
 	match(pattern, string, opts) {
 		opts = opts || {}
 		let pre = opts.pre || '',
@@ -102,6 +112,21 @@ class TributeSearch {
 		return rendered
 	}
 
+	/**
+	 * @typedef {object} FilterOpts
+	 * @property {boolean} [caseSensitive]
+	 * @property {(element: any) => string} [extract]
+	 * @property {string} [pre]
+	 * @property {string} [post]
+	 * @property {boolean} [skip]
+	 */
+
+	/**
+	 * @param {string} pattern
+	 * @param {any[]} arr
+	 * @param {FilterOpts} opts
+	 * @returns {any[]}
+	 */
 	filter(pattern, arr, opts) {
 		opts = opts || {}
 		return arr

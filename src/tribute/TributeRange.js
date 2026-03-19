@@ -1,4 +1,3 @@
-// @ts-nocheck
 // A replacement for unicode property escapes
 // (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes)
 // while they are not supported in major browsers. https://github.com/slevithan/xregexp can be used
@@ -7,14 +6,20 @@ const PUNCTUATION_REGEXP =
 	/[\s!-#%-\u002A,-/:;\u003F@\u005B-\u005D_\u007B}\u00A1\u00A7\u00AB\u00B6\u00B7\u00BB\u00BF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E3B\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]/
 
 class TributeRange {
+	/**
+	 * @param {import('./Tribute').default} tribute
+	 */
 	constructor(tribute) {
+		/**
+		 * @type {import('./Tribute').default}
+		 */
 		this.tribute = tribute
-		this.tribute.range = this
 	}
 
+	/**
+	 * @param {boolean} scrollTo
+	 */
 	positionMenuAtCaret(scrollTo) {
-		let coordinates
-
 		let info = this.getTriggerInfo(
 			false,
 			this.tribute.hasTrailingSpace,
@@ -30,23 +35,12 @@ class TributeRange {
 				return
 			}
 
-			coordinates = this.getTextAreaOrInputUnderlinePosition(
+			let positionStyle = this.getElementUnderlinePositionStyle(
 				this.tribute.current.element,
 				info.mentionPosition,
 			)
 
-			this.tribute.menu.style.cssText =
-				`top: ${coordinates.top}${typeof coordinates.top === 'number' ? 'px' : ''}; ` +
-				`left:${coordinates.left}${typeof coordinates.left === 'number' ? 'px' : ''}; ` +
-				`right: ${coordinates.right}${typeof coordinates.right === 'number' ? 'px' : ''}; ` +
-				`bottom: ${coordinates.bottom}${typeof coordinates.bottom === 'number' ? 'px' : ''}; ` +
-				`position: absolute; ` +
-				`display: block;`
-
-			// jwbth: Added this block.
-			if (coordinates.additionalStyles) {
-				this.tribute.menu.style.cssText += ' ' + coordinates.additionalStyles
-			}
+			this.tribute.menu.style.cssText = positionStyle + ' position: absolute; display: block;'
 
 			if (scrollTo) this.scrollIntoView()
 
@@ -59,42 +53,13 @@ class TributeRange {
 		return this.tribute.menuContainer === document.body || !this.tribute.menuContainer
 	}
 
-	selectElement(targetElement, path, offset) {
-		let range
-		let elem = targetElement
-
-		if (path) {
-			for (const element of path) {
-				elem = elem.childNodes[element]
-				if (elem === undefined) {
-					return
-				}
-				while (elem.length < offset) {
-					offset -= elem.length
-					elem = elem.nextSibling
-				}
-				if (elem.childNodes.length === 0 && !elem.length) {
-					elem = elem.previousSibling
-				}
-			}
-		}
-		let sel = window.getSelection()
-
-		range = document.createRange()
-		range.setStart(elem, offset)
-		range.setEnd(elem, offset)
-		range.collapse(true)
-
-		try {
-			sel.removeAllRanges()
-		} catch (error) {
-			console.warn(error)
-		}
-
-		sel.addRange(range)
-		targetElement.focus()
-	}
-
+	/**
+	 * @param {string | object} data
+	 * @param {boolean} requireLeadingSpace
+	 * @param {boolean} hasTrailingSpace
+	 * @param {KeyboardEvent | MouseEvent} originalEvent
+	 * @param {any} item
+	 */
 	replaceTriggerText(data, requireLeadingSpace, hasTrailingSpace, originalEvent, item) {
 		let info = this.getTriggerInfo(
 			true,
@@ -125,7 +90,7 @@ class TributeRange {
 				data.altModify()
 			}
 
-			let myField = this.tribute.current.element
+			let myField = /** @type {HTMLElement} */ (this.tribute.current.element)
 
 			// jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
 			// than 1.
@@ -161,7 +126,7 @@ class TributeRange {
 			// jwbth: Preserve the undo/redo functionality in browsers that support it.
 			const $myField = $(
 				myField.classList.contains('cm-content')
-					? myField.parentElement.parentElement.previousSibling
+					? /** @type {HTMLElement} */ (myField.parentElement.parentElement.previousSibling)
 					: myField,
 			)
 			$myField.focus()
@@ -189,24 +154,12 @@ class TributeRange {
 		}
 	}
 
-	getNodePositionInParent(element) {
-		if (element.parentNode === null) {
-			return 0
-		}
-
-		for (var i = 0; i < element.parentNode.childNodes.length; i++) {
-			let node = element.parentNode.childNodes[i]
-
-			if (node === element) {
-				return i
-			}
-		}
-	}
-
 	getTextPrecedingCurrentSelection() {
 		let text = ''
 
-		let textComponent = this.tribute.current.element
+		let textComponent = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (
+			this.tribute.current.element
+		)
 		if (textComponent) {
 			let startPos = textComponent.selectionStart
 			if (textComponent.value && startPos >= 0) {
@@ -217,10 +170,25 @@ class TributeRange {
 		return text
 	}
 
-	getTriggerInfo(menuAlreadyActive, hasTrailingSpace, requireLeadingSpace, allowSpaces) {
-		let selected, path, offset
+	/**
+	 * @typedef {object} TriggerInfo
+	 * @property {number} mentionPosition
+	 * @property {string} mentionText
+	 * @property {HTMLElement} mentionSelectedElement
+	 * @property {number[]} mentionSelectedPath
+	 * @property {number} mentionSelectedOffset
+	 * @property {string} mentionTriggerChar
+	 */
 
-		selected = this.tribute.current.element
+	/**
+	 * @param {boolean} menuAlreadyActive
+	 * @param {boolean} hasTrailingSpace
+	 * @param {boolean} requireLeadingSpace
+	 * @param {boolean} allowSpaces
+	 * @returns {TriggerInfo | undefined}
+	 */
+	getTriggerInfo(menuAlreadyActive, hasTrailingSpace, requireLeadingSpace, allowSpaces) {
+		let selected = this.tribute.current.element
 
 		let effectiveRange = this.getTextPrecedingCurrentSelection()
 
@@ -286,13 +254,13 @@ class TributeRange {
 			}
 
 			/*
-								jwbth: Added this block, breaking the block starting with `inputOk` check into two
-								parts, as we need to have the menu removed when:
-								- there is no valid trigger before the caret position,
-								- typing a space after "@" or "##",
-								- there are newlines before the caret position and the trigger position,
-								- there is a selection.
-						 */
+				jwbth: Added this block, breaking the block starting with `inputOk` check into two
+				parts, as we need to have the menu removed when:
+				- there is no valid trigger before the caret position,
+				- typing a space after "@" or "##",
+				- there are newlines before the caret position and the trigger position,
+				- there is a selection.
+			*/
 			if (
 				mostRecentTriggerCharPos === -1 ||
 				(originalCurrentTriggerSnippet && !originalCurrentTriggerSnippet[0].trim()) ||
@@ -301,10 +269,10 @@ class TributeRange {
 				// When pressed backspace in "[[#" and faced the trigger "[["
 				(this.tribute.current.trigger && triggerChar !== this.tribute.current.trigger)
 			) {
-				this.tribute.dropMenu = true
+				this.tribute.willHideMenu = true
 				return
 			} else {
-				this.tribute.dropMenu = false
+				this.tribute.willHideMenu = false
 			}
 
 			if (inputOk && !leadingSpace && (menuAlreadyActive || !regex.test(currentTriggerSnippet))) {
@@ -312,14 +280,19 @@ class TributeRange {
 					mentionPosition: mostRecentTriggerCharPos,
 					mentionText: currentTriggerSnippet,
 					mentionSelectedElement: selected,
-					mentionSelectedPath: path,
-					mentionSelectedOffset: offset,
+					mentionSelectedPath: undefined,
+					mentionSelectedOffset: undefined,
 					mentionTriggerChar: triggerChar,
 				}
 			}
 		}
 	}
 
+	/**
+	 * @param {string} str
+	 * @param {string} trigger
+	 * @returns {number}
+	 */
 	lastIndexWithLeadingSpace(str, trigger) {
 		let reversedStr = str.split('').reverse().join('')
 		let index = -1
@@ -345,6 +318,11 @@ class TributeRange {
 		return index
 	}
 
+	/**
+	 * @param {Coordinates} coordinates
+	 * @param {{ width: number | null, height: number | null }} menuDimensions
+	 * @returns {{ top: boolean, right: boolean, bottom: boolean, left: boolean }}
+	 */
 	isMenuOffScreen(coordinates, menuDimensions) {
 		// jwbth: Replaced window.innerWidth and window.innerHeight with doc.clientWidth and
 		// doc.clientHeight - the first ones include scrollbars. Removed some tweaks for
@@ -362,10 +340,7 @@ class TributeRange {
 			typeof coordinates.right === 'number'
 				? coordinates.right
 				: coordinates.left + menuDimensions.width
-		let menuBottom =
-			typeof coordinates.bottom === 'number'
-				? coordinates.bottom
-				: coordinates.top + menuDimensions.height
+		let menuBottom = coordinates.top + menuDimensions.height
 		let menuLeft =
 			typeof coordinates.left === 'number'
 				? coordinates.left
@@ -383,10 +358,7 @@ class TributeRange {
 		// Width of the menu depends of its contents and position
 		// We must check what its width would be without any obstruction
 		// This way, we can achieve good positioning for flipping the menu
-		let dimensions = {
-			width: null,
-			height: null,
-		}
+		let dimensions = /** @type {{ width: number, height: number }} */ ({})
 
 		// jwbth: Fixed "visibility; hidden;".
 		this.tribute.menu.style.cssText =
@@ -404,55 +376,21 @@ class TributeRange {
 		return dimensions
 	}
 
+	/**
+	 * @typedef {{
+	 * 	 top: number;
+	 * 	 left: number | undefined | 'auto';
+	 * 	 right: number | undefined | 'auto';
+	 * }} Coordinates
+	 */
+
 	// jwbth: Added RTL support.
-	getTextAreaOrInputUnderlinePosition(element, position) {
-		// jwbth: Reuse the global object property.
-		let properties = convenientDiscussions.g.inputPropsAffectingCoords
-
-		let div = document.createElement('div')
-		div.id = 'input-textarea-caret-position-mirror-div'
-		document.body.append(div)
-
-		let style = div.style
-		let computed = 'getComputedStyle' in window ? getComputedStyle(element) : element.currentStyle
-
-		style.whiteSpace = 'pre-wrap'
-		if (element.nodeName !== 'INPUT') {
-			style.wordWrap = 'break-word'
-		}
-
-		// position off-screen
-		style.position = 'absolute'
-		style.visibility = 'hidden'
-
-		// transfer the element's properties to the div
-		properties.forEach((prop) => {
-			style[prop] = computed[prop]
-		})
-
-		// jwbth: replaced parseInt with parseFloat: parseInt can result in a wrongly positioned
-		// menu due to a line break (have seen an example when edited [[:en:Wikipedia:Village pump
-		// (proposals)#Allow fair use non-freely licensed photos of politicians]]). Removed
-		// isFirefox condition as it was calculated incorrectly and was always `true`.
-		style.width = `${Number.parseFloat(computed.width)}px`
-		if (element.scrollHeight > Number.parseFloat(computed.height)) style.overflowY = 'scroll'
-
-		div.textContent = element.value.substring(0, position)
-
-		// jwbth: Removed replacing `\s` with `' '` as its function is unclear and negative effects
-		// are likely (say, when replacing the tab character with the space that has different
-		// width).
-
-		let triggerSpan = document.createElement('span')
-		triggerSpan.textContent = this.tribute.current.trigger
-
-		let span = document.createElement('span')
-		span.append(
-			triggerSpan,
-			element.value.substring(position + this.tribute.current.trigger.length) || '',
-		)
-		div.append(span)
-
+	/**
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 * @param {number} position
+	 * @returns {string}
+	 */
+	getElementUnderlinePositionStyle(element, position) {
 		let doc = document.documentElement
 
 		// jwbth: Replaced window.innerWidth with document.documentElement.clientWidth here and in
@@ -460,41 +398,105 @@ class TributeRange {
 		let windowWidth = doc.clientWidth
 		let windowHeight = doc.clientHeight
 
-		let rect = element.getBoundingClientRect()
-		let windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
-		let windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
+		let windowLeft = (window.scrollX || doc.scrollLeft) - (doc.clientLeft || 0)
+		let windowTop = (window.scrollY || doc.scrollTop) - (doc.clientTop || 0)
+
+		let elementComputedStyle = getComputedStyle(element)
 
 		let top = 0
 		let left = 0
 		let right = 0
-		if (this.menuContainerIsBody) {
-			top = rect.top
-			left = rect.left
-			right = rect.right
-		}
 
-		let coordinates = {
-			top:
-				top +
-				windowTop +
-				span.offsetTop +
-				Number.parseInt(computed.borderTopWidth) +
-				Number.parseInt(computed.fontSize) -
-				element.scrollTop,
-		}
-		if (this.tribute.direction === 'rtl') {
-			const offsetRight = doc.dir === 'rtl' ? windowWidth : div.getBoundingClientRect().right
-			coordinates.right =
-				windowWidth -
-				right +
-				(offsetRight - span.getBoundingClientRect().right) +
-				triggerSpan.offsetWidth
+		if (element.cdSelectionHeadLeft && element.cdSelectionHeadRight && element.cdSelectionHeadTop) {
+			top = element.cdSelectionHeadTop
+			left = element.cdSelectionHeadLeft
+			right = element.cdSelectionHeadRight
 		} else {
-			coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth + 1
+			// jwbth: Reuse the global object property.
+			let properties = convenientDiscussions.g.inputPropsAffectingCoords
+
+			let mirrorDiv = document.createElement('div')
+			mirrorDiv.className = 'tribute-mirrorDiv'
+			document.body.append(mirrorDiv)
+
+			let style = mirrorDiv.style
+
+			style.whiteSpace = 'pre-wrap'
+			if (element.nodeName !== 'INPUT') {
+				style.overflowWrap = 'break-word'
+			}
+
+			// position off-screen
+			style.position = 'absolute'
+			style.visibility = 'hidden'
+
+			// transfer the element's properties to the div
+			properties.forEach((prop) => {
+				// @ts-ignore
+				style[prop] = elementComputedStyle[prop]
+			})
+
+			// jwbth: replaced parseInt with parseFloat: parseInt can result in a wrongly positioned
+			// menu due to a line break (have seen an example when edited [[:en:Wikipedia:Village pump
+			// (proposals)#Allow fair use non-freely licensed photos of politicians]]). Removed
+			// isFirefox condition as it was calculated incorrectly and was always `true`.
+			style.width = `${Number.parseFloat(elementComputedStyle.width)}px`
+			if (element.scrollHeight > Number.parseFloat(elementComputedStyle.height))
+				style.overflowY = 'scroll'
+
+			mirrorDiv.textContent = element.value.substring(0, position)
+
+			// jwbth: Removed replacing `\s` with `' '` as its function is unclear and negative effects
+			// are likely (say, when replacing the tab character with the space that has different
+			// width).
+
+			let triggerSpan = document.createElement('span')
+			triggerSpan.textContent = this.tribute.current.trigger
+
+			let endingSpan = document.createElement('span')
+			endingSpan.append(
+				triggerSpan,
+				element.value.substring(position + this.tribute.current.trigger.length) || '',
+			)
+			mirrorDiv.append(endingSpan)
+
+			let rect = element.getBoundingClientRect()
+
+			if (this.menuContainerIsBody) {
+				top = rect.top
+				left = rect.left
+				right = rect.right
+			}
+
+			top =
+				windowTop +
+				top +
+				endingSpan.offsetTop +
+				Number.parseInt(elementComputedStyle.borderTopWidth) -
+				element.scrollTop
+
+			if (this.tribute.direction === 'rtl') {
+				const offsetRight =
+					doc.dir === 'rtl' ? windowWidth : mirrorDiv.getBoundingClientRect().right
+				right =
+					windowWidth -
+					right +
+					(offsetRight - endingSpan.getBoundingClientRect().right) +
+					triggerSpan.offsetWidth
+			} else {
+				left = windowLeft + left + endingSpan.offsetLeft + triggerSpan.offsetWidth + 1
+			}
+
+			mirrorDiv.remove()
 		}
 
-		let menuDimensions = this.getMenuDimensions()
-		let menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
+		let coordinates = /** @type {Coordinates} */ ({
+			top: top + Number.parseInt(elementComputedStyle.fontSize),
+			left: this.tribute.direction === 'rtl' ? 'auto' : left,
+			right: this.tribute.direction === 'rtl' ? right : 'auto',
+		})
+
+		let menuIsOffScreen = this.isMenuOffScreen(coordinates, this.getMenuDimensions())
 
 		if (this.tribute.direction === 'rtl') {
 			if (menuIsOffScreen.left) {
@@ -503,12 +505,13 @@ class TributeRange {
 			}
 		} else {
 			if (menuIsOffScreen.right) {
-				// jwbth: Simplified the positioning by putting `right` at 0.
+				// jwbth: Simplified positioning by putting `right` at 0.
 				coordinates.right = 0
 				coordinates.left = 'auto'
 			}
 		}
 
+		let additionalStyles = ''
 		if (menuIsOffScreen.bottom) {
 			// jwbth: Removed the block setting coordinates.bottom as a reference point as well as
 			// the parentHeight variable, added the block setting the height for the menu.
@@ -518,30 +521,34 @@ class TributeRange {
 				coordinates.top -
 				Number.parseFloat(getComputedStyle(element).paddingTop) -
 				3
-			coordinates.additionalStyles = `height: ${height}px; overflow-y: scroll;`
+			additionalStyles = `height: ${height}px; overflow-y: scroll;`
 		}
 
 		// jwbth: Removed the second check if the menu is off screen as it seems redundant after we
 		// stopped flipping the menu.
 
-		div.remove()
-		return coordinates
+		return (
+			`top: ${coordinates.top}${typeof coordinates.top === 'number' ? 'px' : ''}; ` +
+			`left:${coordinates.left}${typeof coordinates.left === 'number' ? 'px' : ''}; ` +
+			`right: ${coordinates.right}${typeof coordinates.right === 'number' ? 'px' : ''}; ` +
+			additionalStyles
+		)
 	}
 
 	scrollIntoView() {
 		let reasonableBuffer = 20,
 			clientRect
 		let maxScrollDisplacement = 100
-		let e = this.menu
+		let element = this.tribute.menu
 
-		if (typeof e === 'undefined') return
+		if (typeof element === 'undefined') return
 
 		while (clientRect === undefined || clientRect.height === 0) {
-			clientRect = e.getBoundingClientRect()
+			clientRect = element.getBoundingClientRect()
 
 			if (clientRect.height === 0) {
-				e = e.childNodes[0]
-				if (e === undefined || !e.getBoundingClientRect) {
+				element = element.childNodes[0]
+				if (element === undefined || !element.getBoundingClientRect) {
 					return
 				}
 			}

@@ -349,6 +349,9 @@ declare global {
 			right: number
 		}
 		cdInput?: TextInputWidget
+		cdSelectionHeadLeft?: number
+		cdSelectionHeadRight?: number
+		cdSelectionHeadTop?: number
 	}
 
 	namespace mw {

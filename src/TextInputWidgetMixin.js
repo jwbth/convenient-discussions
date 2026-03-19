@@ -11,6 +11,23 @@ import {
  * {@link OO.ui.TextInputWidget OO.ui.TextInputWidget} and adds some features we need.
  */
 class TextInputWidgetMixin {
+	/**
+	 * Whether the autocomplete menu is currently active. When active, the selected text
+	 * should be immutable.
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	autocompleteMenuActive = false
+
+	/**
+	 * Text that was selected before typing an autocomplete trigger.
+	 *
+	 * @type {string | undefined}
+	 * @private
+	 */
+	selectedTextForAutocomplete = undefined
+
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	constructor() {
 		// Workaround to make this.constructor in methods to be type-checked correctly
@@ -25,23 +42,6 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	construct() {
-		/**
-		 * Text that was selected before typing an autocomplete trigger.
-		 *
-		 * @type {string | undefined}
-		 * @private
-		 */
-		this.selectedTextForAutocomplete = undefined
-
-		/**
-		 * Whether the autocomplete menu is currently active. When active, the selected text
-		 * should be immutable.
-		 *
-		 * @type {boolean}
-		 * @private
-		 */
-		this.autocompleteMenuActive = false
-
 		this.$input.on('input', () => {
 			this.emit('manualChange', this.getValue())
 		})
@@ -56,7 +56,7 @@ class TextInputWidgetMixin {
 		 */
 		this.handleSelectionChange = () => {
 			// Only update selection if this input is focused and autocomplete menu is not active
-			if (document.activeElement === this.$input[0] && !this.autocompleteMenuActive) {
+			if (document.activeElement === this.getEditableElement() && !this.autocompleteMenuActive) {
 				this.updateSelectedTextForAutocomplete()
 			}
 		}
@@ -167,6 +167,16 @@ class TextInputWidgetMixin {
 	}
 
 	/**
+	 * Check if the autocomplete menu is currently active.
+	 *
+	 * @returns {boolean}
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	isAutocompleteMenuActive() {
+		return this.autocompleteMenuActive
+	}
+
+	/**
 	 * Get the text that was selected before typing an autocomplete trigger.
 	 *
 	 * @returns {string | undefined} The selected text, or undefined if none
@@ -177,15 +187,13 @@ class TextInputWidgetMixin {
 	}
 
 	/**
-	 * Clean up selection change listener.
+	 * Get the editable element of the input.
 	 *
+	 * @returns {HTMLElement}
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	cleanUpSelectionChangeListener() {
-		document.removeEventListener(
-			'selectionchange',
-			/** @type {NonNullable<typeof this.handleSelectionChange>} */ (this.handleSelectionChange),
-		)
+	getEditableElement() {
+		return this.$input[0]
 	}
 }
 

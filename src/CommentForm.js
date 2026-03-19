@@ -1557,6 +1557,8 @@ class CommentForm extends EventEmitter {
 			this.preview()
 		}
 
+		// Hotkeys
+
 		// Use capture to get ahead of CodeMirror's keydown handler. Note that there may be a duplicate
 		// event dispatched by the textarea in CodeMirror#domEventHandlersExtension.
 		this.$element[0].addEventListener(
@@ -1570,9 +1572,7 @@ class CommentForm extends EventEmitter {
 				// Tribute and don't control CodeMirror. We process keys on the comment form element;
 				// Tribute and CodeMirror process keys on the inputs. So it's tricky.
 
-				if ($('.cd-autocompleteContainer').length) {
-					return
-				}
+				if (this.commentInput.isAutocompleteMenuActive()) return
 
 				// Ctrl+Enter
 				if (keyCombination(event, 13, ['cmd'])) {
@@ -1599,8 +1599,6 @@ class CommentForm extends EventEmitter {
 		this.$element[0].addEventListener('keydown', (event) => {
 			if (this.codeMirror?.isActive && /** @type {Element} */ (event.target).tagName === 'TEXTAREA')
 				return
-
-			// Hotkeys
 
 			// WikiEditor started supporting these in October 2024
 			// https://phabricator.wikimedia.org/T62928
@@ -4142,7 +4140,6 @@ class CommentForm extends EventEmitter {
 	setCodeMirrorActive(active) {
 		if (Boolean(this.commentInput.codeMirror) === active) return
 
-		this.autocomplete.terminate()
 		this.commentInput.setCodeMirror(active ? this.codeMirror : undefined)
 		// this.autocomplete.init()
 

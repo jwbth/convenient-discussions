@@ -47,6 +47,14 @@ class AutocompleteManager {
 	itemLimit = 10
 
 	/**
+	 * Target elements of the inputs.
+	 *
+	 * @type {HTMLElement[]}
+	 * @private
+	 */
+	elements = []
+
+	/**
 	 * Create an autocomplete manager instance. An instance is a set of settings and inputs to which
 	 * these settings apply.
 	 *
@@ -137,33 +145,19 @@ class AutocompleteManager {
 	}
 
 	/**
-	 * Get the input element to attach the autocomplete to.
-	 *
-	 * @param {import('./TextInputWidget').default} input
-	 * @returns {HTMLElement}
-	 * @private
-	 */
-	getTargetElement(input) {
-		return (
-			(input instanceof MultilineTextInputWidget && input.codeMirror?.view.contentDOM) ||
-			input.$input[0]
-		)
-	}
-
-	/**
 	 * Initialize autocomplete for the inputs.
 	 */
 	init() {
-		this.inputs.forEach((input) => {
+		this.elements = this.inputs.flatMap((input) => {
 			if (
 				cd.settings.get('useNativeAutocomplete') &&
 				input instanceof MultilineTextInputWidget &&
 				input.codeMirror
 			) {
-				return
+				return []
 			}
 
-			const element = this.getTargetElement(input)
+			const element = input.getEditableElement()
 			this.tribute.attach(element)
 			element.cdInput = input
 			element.addEventListener('tribute-active-true', () => {
@@ -178,10 +172,11 @@ class AutocompleteManager {
 			})
 			if (input instanceof OO.ui.MultilineTextInputWidget) {
 				input.on('resize', () => {
-					// @ts-expect-error: Ignore Tribute stuff
 					this.tribute.menuEvents.windowResizeEvent?.()
 				})
 			}
+
+			return [element]
 		})
 	}
 
@@ -189,11 +184,8 @@ class AutocompleteManager {
 	 * Remove event handlers.
 	 */
 	terminate() {
-		this.inputs.forEach((input) => {
-			this.tribute.detach(this.getTargetElement(input))
-			if (typeof input.cleanUpSelectionChangeListener === 'function') {
-				input.cleanUpSelectionChangeListener()
-			}
+		this.elements.forEach((element) => {
+			this.tribute.detach(element)
 		})
 
 		// Clean up autocomplete instances

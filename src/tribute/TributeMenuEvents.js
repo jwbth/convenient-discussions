@@ -1,13 +1,12 @@
-// @ts-nocheck
 class TributeMenuEvents {
+	/**
+	 * @param {import('./Tribute').default} tribute
+	 */
 	constructor(tribute) {
 		this.tribute = tribute
-		this.tribute.menuEvents = this
-		this.menu = this.tribute.menu
 	}
 
 	bind() {
-		this.menuClickEvent = this.tribute.events.click.bind(null, this)
 		this.menuContainerScrollEvent = this.debounce(
 			() => {
 				if (this.tribute.isActive) {
@@ -27,43 +26,54 @@ class TributeMenuEvents {
 			false,
 		)
 
-		document.addEventListener('click', this.menuClickEvent, false)
+		document.addEventListener('click', this.tribute.events.click)
+		document.addEventListener('mousedown', this.tribute.events.mousedown)
 		window.addEventListener('resize', this.windowResizeEvent)
 
 		// jwbth: Added this line to make the menu change its height if its lower border is off screen.
 		window.addEventListener('scroll', this.windowResizeEvent)
 
-		if (this.menuContainer) {
-			this.menuContainer.addEventListener('scroll', this.menuContainerScrollEvent, false)
+		if (this.tribute.menuContainer) {
+			this.tribute.menuContainer.addEventListener('scroll', this.menuContainerScrollEvent, false)
 		} else {
 			window.addEventListener('scroll', this.menuContainerScrollEvent)
 		}
 	}
 
 	unbind() {
-		document.removeEventListener('click', this.menuClickEvent, false)
+		document.removeEventListener('click', this.tribute.events.click)
+		document.removeEventListener('mousedown', this.tribute.events.mousedown)
 		window.removeEventListener('resize', this.windowResizeEvent)
 
 		// jwbth: Added this line, see above.
 		window.removeEventListener('scroll', this.windowResizeEvent)
 
-		if (this.menuContainer) {
-			this.menuContainer.removeEventListener('scroll', this.menuContainerScrollEvent, false)
+		if (this.tribute.menuContainer) {
+			this.tribute.menuContainer.removeEventListener('scroll', this.menuContainerScrollEvent, false)
 		} else {
 			window.removeEventListener('scroll', this.menuContainerScrollEvent)
 		}
 	}
 
+	/**
+	 * @param {() => void} func
+	 * @param {number} wait
+	 * @param {boolean} immediate
+	 * @returns {() => void}
+	 */
 	debounce(func, wait, immediate) {
-		var timeout
+		/**
+		 * @type {number | null}
+		 */
+		let timeout
 		return () => {
-			var context = this,
-				args = arguments
-			var later = () => {
+			let context = this
+			let args = arguments
+			let later = () => {
 				timeout = null
 				if (!immediate) func.apply(context, args)
 			}
-			var callNow = immediate && !timeout
+			let callNow = immediate && !timeout
 			clearTimeout(timeout)
 			timeout = setTimeout(later, wait)
 			if (callNow) func.apply(context, args)
