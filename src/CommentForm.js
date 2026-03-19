@@ -849,9 +849,16 @@ class CommentForm extends EventEmitter {
 		const $input = this.commentInput.$input
 		const scriptPath = mw.config.get('wgScriptPath')
 		const lang = cd.g.userLanguage
+
 		$input.wikiEditor('addToToolbar', {
 			section: 'main',
-			group: 'format',
+			groups: {
+				'convenient-discussions': {},
+			},
+		})
+		$input.wikiEditor('addToToolbar', {
+			section: 'main',
+			group: 'convenient-discussions',
 			tools: {
 				smaller: {
 					label: cd.mws('wikieditor-toolbar-tool-small'),
@@ -866,19 +873,6 @@ class CommentForm extends EventEmitter {
 						},
 					},
 				},
-			},
-		})
-
-		$input.wikiEditor('addToToolbar', {
-			section: 'main',
-			groups: {
-				'convenient-discussions': {},
-			},
-		})
-		$input.wikiEditor('addToToolbar', {
-			section: 'main',
-			group: 'convenient-discussions',
-			tools: {
 				quote: {
 					label: `${cd.s('cf-quote-tooltip')} ${cd.mws(
 						'parentheses',
