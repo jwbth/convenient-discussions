@@ -4,12 +4,17 @@ import path from 'node:path'
 
 import chalk from 'chalk'
 import createDOMPurify from 'dompurify'
+// @ts-ignore: jsdom has no types
 import { JSDOM } from 'jsdom'
 import { rimraf } from 'rimraf'
 
 import { replaceEntitiesInI18n } from './misc/utils.mjs'
 
-const DOMPurify = createDOMPurify(new JSDOM('').window)
+const DOMPurify = createDOMPurify(
+	/** @type {import('dompurify').WindowLike} */ (
+		/** @type {unknown} */ (new JSDOM('').window)
+	),
+)
 
 const warning = (/** @type {string} */ text) => {
 	console.log(chalk.yellowBright(text))
@@ -83,9 +88,17 @@ function unhideText(text, hidden) {
  */
 
 /**
+ * @typedef {{ dirName: string, localeName: string }} LocaleNames
+ */
+
+/**
+ * @typedef {import('dompurify').Config & { filename: string, stringName: string, lang: string }} SanitizeConfig
+ */
+
+/**
  * Builds dayjs locales for the given i18n with fallbacks.
  *
- * @param {StringsByKey} i18nWithFallbacks
+ * @param {AnyByKey<StringsByKey>} i18nWithFallbacks
  * @returns {string[]}
  */
 function buildDayjsLocales(i18nWithFallbacks) {
@@ -158,14 +171,20 @@ export default defineConfig({
 	return langsHavingLocale
 }
 
+/**
+ * Builds date-fns locales for the given i18n with fallbacks.
+ *
+ * @param {AnyByKey<StringsByKey>} i18nWithFallbacks
+ * @returns {string[]}
+ */
 function buildDateFnsLocales(i18nWithFallbacks) {
 	// Create a temporary folder.
 	fs.mkdirSync(DATE_FNS_LOCALES_TEMP_DIR_NAME, { recursive: true })
 
-	/** @type {StringsByKey} */
+	/** @type {Record<string, LocaleNames>} */
 	const langNames = {}
 	Object.keys(i18nWithFallbacks).forEach((lang) => {
-		langNames[lang] = {}
+		langNames[lang] = { dirName: '', localeName: '' }
 		const names = langNames[lang]
 		names.dirName = lang
 			.replace(/^zh-hans$/, 'zh-cn')
@@ -250,34 +269,35 @@ export default defineConfig({
 }
 
 DOMPurify.addHook('uponSanitizeElement', (currentNode, data, config) => {
+	const sanitizeConfig = /** @type {SanitizeConfig} */ (config)
+	const element = /** @type {Element} */ (/** @type {unknown} */ (currentNode))
 	if (
 		!Object.keys(data.allowedTags).includes(data.tagName) &&
 		!['body', '#comment'].includes(data.tagName)
 	) {
 		// `< /li>` qualifies as `#comment` and has content available under `currentNode.textContent`.
 		warning(
-			`Disallowed tag found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(currentNode.outerHTML || currentNode.textContent)}. See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`,
+			`Disallowed tag found and sanitized in the string "${keyword(sanitizeConfig.stringName)}" in ${keyword(sanitizeConfig.filename)}: ${code(element.outerHTML || currentNode.textContent)}. See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${sanitizeConfig.stringName}/${sanitizeConfig.lang}.`,
 		)
-		console.log(
-			currentNode.outerHTML,
-			currentNode.textContent,
-			currentNode.tagName,
-		)
+		console.log(element.outerHTML, currentNode.textContent, element.tagName)
 	}
 })
 
 DOMPurify.addHook(
 	'uponSanitizeAttribute',
 	(_currentNode, hookEvent, config) => {
+		const sanitizeConfig = /** @type {SanitizeConfig} */ (config)
 		if (
 			!Object.keys(hookEvent.allowedAttributes).includes(hookEvent.attrName)
 		) {
 			warning(
-				`Disallowed attribute found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`,
+				`Disallowed attribute found and sanitized in the string "${keyword(sanitizeConfig.stringName)}" in ${keyword(sanitizeConfig.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${sanitizeConfig.stringName}/${sanitizeConfig.lang}.`,
 			)
 		}
 	},
 )
+
+/** @type {AnyByKey<StringsByKey>} */
 const i18n = {}
 fs.readdirSync('./i18n/')
 	.filter(
@@ -297,14 +317,17 @@ fs.readdirSync('./i18n/')
 					hidden,
 				)
 
-				sanitized = DOMPurify.sanitize(sanitized, {
-					ALLOWED_TAGS,
-					ALLOWED_ATTR: ['class', 'dir', 'href', 'target', 'style'],
-					ALLOW_DATA_ATTR: false,
-					filename,
-					stringName,
-					lang,
-				})
+				sanitized = DOMPurify.sanitize(
+					sanitized,
+					/** @type {SanitizeConfig} */ ({
+						ALLOWED_TAGS,
+						ALLOWED_ATTR: ['class', 'dir', 'href', 'target', 'style'],
+						ALLOW_DATA_ATTR: false,
+						filename,
+						stringName,
+						lang,
+					}),
+				)
 
 				sanitized = unhideText(sanitized, hidden)
 
@@ -343,17 +366,20 @@ fs.readdirSync('./i18n/')
 		i18n[lang] = strings
 	})
 
+/** @type {AnyByKey<StringsByKey>} */
 const i18nWithFallbacks = {}
 
 if (Object.keys(i18n).length) {
 	// Use language fallbacks data to fill missing messages. When the fallbacks need to be updated,
 	// they can be collected using
 	// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
+	/** @type {Record<string, string[]>} */
 	const fallbackData = JSON.parse(
 		fs.readFileSync('./data/languageFallbacks.json', 'utf8'),
 	)
 	Object.keys(i18n).forEach((lang) => {
 		const fallbacks = fallbackData[lang]
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		i18nWithFallbacks[lang] = fallbacks
 			? Object.assign(
 					{},
