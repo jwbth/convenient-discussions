@@ -1,9 +1,6 @@
 import PrototypeRegistry from './PrototypeRegistry'
 import commentManager from './commentManager'
-import cd from './loader/cd'
-import TreeWalker from './shared/TreeWalker'
-import { addToArrayIfAbsent, sleep } from './shared/utils-general.js'
-import { isVisible } from './utils-window'
+import { sleep } from './shared/utils-general.js'
 
 /**
  * Base class for managing comment visual layers (underlay and overlay).
@@ -82,13 +79,6 @@ class CommentLayers {
 	 * @type {{ top: number; left: number; width: number; height: number } | undefined}
 	 */
 	offset
-
-	/**
-	 * Container for the comment's layers.
-	 *
-	 * @type {Element | undefined}
-	 */
-	container
 
 	/**
 	 * Comment underlay and menu, whose colors are animated in some events.
@@ -262,7 +252,7 @@ class CommentLayers {
 	 */
 	add() {
 		this.updateOffset()
-		this.getContainer().append(this.underlay, this.overlay)
+		this.comment.getLayersContainer().append(this.underlay, this.overlay)
 	}
 
 	/**
@@ -290,7 +280,7 @@ class CommentLayers {
 	 * @returns {boolean | undefined} Was the comment displaced. `undefined` if it is invisible.
 	 */
 	computeAndSaveOffset(options = {}) {
-		const containerOffset = this.getContainerOffset()
+		const containerOffset = this.comment.getLayersContainerOffset()
 		if (!containerOffset) return
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -434,119 +424,6 @@ class CommentLayers {
 		sleep(delay).then(() => {
 			deferred.resolve()
 		})
-	}
-
-	/**
-	 * @typedef {object} ContainerOffset
-	 * @property {number} top Top offset.
-	 * @property {number} left Left offset.
-	 * @memberof CommentLayers
-	 * @inner
-	 */
-
-	/**
-	 * _For internal use._ Get the top and left offset of the layers container.
-	 *
-	 * @returns {ContainerOffset | undefined}
-	 */
-	getContainerOffset() {
-		const container = this.getContainer()
-		if (!container.cdCachedLayersContainerOffset || container.cdCouldHaveBeenDisplaced) {
-			const rect = container.getBoundingClientRect()
-			if (!isVisible(container)) return
-
-			container.cdCouldHaveBeenDisplaced = false
-			container.cdCachedLayersContainerOffset = {
-				top: rect.top + window.scrollY,
-				left: rect.left + window.scrollX,
-			}
-		}
-
-		return container.cdCachedLayersContainerOffset
-	}
-
-	/**
-	 * _For internal use._ Get and sometimes create the container for the comment's underlay and
-	 * overlay.
-	 *
-	 * @returns {Element}
-	 */
-	getContainer() {
-		if (this.container === undefined) {
-			let offsetParent
-
-			const treeWalker = new TreeWalker(
-				document.body,
-				undefined,
-				true,
-
-				// Start with the first or last element dependent on which is higher in the DOM hierarchy in
-				// terms of nesting level. There were issues with RTL in LTR (and vice versa) when we
-				// started with the first element, see
-				// https://github.com/jwbth/convenient-discussions/commit/9fcad9226a7019d6a643d7b17f1e824657302ebd.
-				// On the other hand, if we start with the first/last element, we get can in trouble when
-				// the start/end of the comment is inside a container while the end/start is not. A good
-				// example that combines both cases (press "up" on the "comments" "These images are too
-				// monochrome" and "So my suggestion is just, to..."):
-				// https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1217857130#c-Example-20240401111100-Indented_tables.
-				// This is a error, of course, that quoted comments are treated as real, but we can't do
-				// anything here.
-				this.comment.elements.length === 1 ||
-				this.comment.parser.getNestingLevel(this.comment.elements[0]) <=
-					this.comment.parser.getNestingLevel(
-						this.comment.elements[this.comment.elements.length - 1],
-					)
-					? this.comment.elements[0]
-					: this.comment.elements[this.comment.elements.length - 1],
-			)
-
-			while (treeWalker.parentNode()) {
-				const node = treeWalker.currentNode
-
-				// These elements have `position: relative` for the purpose we know.
-				if (node.classList.contains('cd-connectToPreviousItem')) continue
-
-				let style = node.cdStyle
-				if (!style) {
-					// window.getComputedStyle is expensive, so we save the result to the node's property.
-					style = window.getComputedStyle(node)
-					node.cdStyle = style
-				}
-				const classList = new Set(Array.from(node.classList))
-				if (
-					['absolute', 'relative'].includes(style.position) ||
-					(node !== cd.loader.$content[0] &&
-						(classList.has('mw-content-ltr') || classList.has('mw-content-rtl')))
-				) {
-					offsetParent = node
-				}
-				if (
-					style.backgroundColor.includes('rgb(') ||
-					(style.backgroundImage !== 'none' && !offsetParent)
-				) {
-					offsetParent = node
-					offsetParent.classList.add('cd-commentLayersContainer-parent-relative')
-				}
-				if (offsetParent) break
-			}
-			offsetParent ??= document.body
-			offsetParent.classList.add('cd-commentLayersContainer-parent')
-			let container = /** @type {HTMLElement} */ (offsetParent.firstElementChild)
-			if (!container.classList.contains('cd-commentLayersContainer')) {
-				container = document.createElement('div')
-				container.classList.add('cd-commentLayersContainer')
-				offsetParent.insertBefore(container, offsetParent.firstChild)
-
-				container.cdIsTopLayersContainer = !container.parentElement?.parentElement?.closest(
-					'.cd-commentLayersContainer-parent',
-				)
-			}
-			this.container = container
-
-			addToArrayIfAbsent(commentManager.layersContainers, container)
-		}
-
-		return this.container
 	}
 
 	/**

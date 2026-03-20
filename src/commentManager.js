@@ -406,7 +406,7 @@ export class CommentManager extends EventEmitter {
 
 						// Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
 						// layers preceding them.
-					} else if (comment.layers?.getContainer().cdIsTopLayersContainer) {
+					} else if (comment.getLayersContainer().cdIsTopLayersContainer) {
 						// displaced === false
 						notDisplacedCount++
 						if (notDisplacedCount === 2) {
