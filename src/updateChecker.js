@@ -275,7 +275,7 @@ class UpdateChecker extends EventEmitter {
 			},
 			true,
 		)
-		this.previousVisitRevisionId = revisions[0]?.revid
+		this.previousVisitRevisionId = revisions?.[0]?.revid
 		const currentRevisionId = mw.config.get('wgRevisionId')
 
 		if (!this.previousVisitRevisionId || this.previousVisitRevisionId >= currentRevisionId) return
@@ -561,7 +561,7 @@ class UpdateChecker extends EventEmitter {
 
 		const currentRevisionId = mw.config.get('wgRevisionId')
 		if (
-			!revisions.length ||
+			!revisions?.length ||
 			revisions[0].revid <= (this.lastCheckedRevisionId || currentRevisionId)
 		)
 			return

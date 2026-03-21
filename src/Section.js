@@ -2301,7 +2301,7 @@ class Section extends SectionSkeleton {
 				flags: ['progressive'],
 
 				// Add the thread button class as it behaves as a thread button in fact, being positioned
-				// inside a "cd-commentLevel" list.
+				// inside a `cd-commentLevel` list.
 				classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
 			}).$element[0],
 		)
