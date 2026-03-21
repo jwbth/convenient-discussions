@@ -860,19 +860,6 @@ class CommentForm extends EventEmitter {
 			section: 'main',
 			group: 'convenient-discussions',
 			tools: {
-				smaller: {
-					label: cd.mws('wikieditor-toolbar-tool-small'),
-					type: 'button',
-					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
-					action: {
-						type: 'encapsulate',
-						options: {
-							pre: '<small>',
-							peri: cd.mws('wikieditor-toolbar-tool-small-example'),
-							post: '</small>',
-						},
-					},
-				},
 				quote: {
 					label: `${cd.s('cf-quote-tooltip')} ${cd.mws(
 						'parentheses',
@@ -884,6 +871,19 @@ class CommentForm extends EventEmitter {
 						type: 'callback',
 						execute: () => {
 							this.quote(true, commentManager.getSelectedComment())
+						},
+					},
+				},
+				smaller: {
+					label: cd.mws('wikieditor-toolbar-tool-small'),
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
+					action: {
+						type: 'encapsulate',
+						options: {
+							pre: '<small>',
+							peri: cd.mws('wikieditor-toolbar-tool-small-example'),
+							post: '</small>',
 						},
 					},
 				},
