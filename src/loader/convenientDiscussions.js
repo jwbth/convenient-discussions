@@ -31,6 +31,13 @@ if (server.startsWith('//')) {
 }
 const bodyClassList = document.body.classList
 
+const dpr = window.devicePixelRatio
+
+// The divisor steps through 1, 5/3, 2, 8/3, 3, 11/3, 4, … — every third point on the 1/3 grid
+// (where the numerator ≡ 1 mod 3) is skipped, matching physical-pixel boundaries in the UI. We
+// round dpr down to the nearest such point, with min 1.
+const dprX3Floored = Math.floor(dpr * 3)
+
 const convenientDiscussionsWindow = {
 	/**
 	 * @type {{
@@ -284,8 +291,14 @@ const globalProperties = {
 	 */
 	commentMarkerWidth: /** @type {const} */ (3),
 
-	pixelDeviationRatioFor1px:
-		window.devicePixelRatio / Math.max(Math.floor(window.devicePixelRatio), 1),
+	// Some users increase the font size (zoom), which leads to some short distances jumping between 3
+	// and 4 physical pixels and similar. With the help of pixelDeviationRatio, we can make all widths
+	// look the same by using a variable that stores deviation from standard values. Also unround
+	// device pixel ratios (like 1.75) may have the same effect (not sure; need to confirm).
+	pixelDeviationRatio:
+		dpr / Math.max((dprX3Floored % 3 === 1 ? dprX3Floored - 1 : dprX3Floored) / 3, 1),
+
+	pixelDeviationRatioFor1px: dpr / Math.max(Math.floor(dpr), 1),
 
 	/**
 	 * Number of milliseconds in a minute.

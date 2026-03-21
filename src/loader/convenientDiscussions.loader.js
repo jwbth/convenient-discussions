@@ -822,6 +822,7 @@ class Loader {
 	--cd-float-content-start: ${floatContentStart};
 	--cd-float-content-end: ${floatContentEnd};
 	--cd-gradient-user-start: ${gradientUserStart};
+	--cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
 	--cd-pixel-deviation-ratio-for-1px: ${cd.g.pixelDeviationRatioFor1px};
 }`)
 		if (cd.config.outdentClass) {

@@ -103,14 +103,14 @@
 
 .cd-comment-overlay {
 	position: absolute;
-	z-index: 1;
 }
 
 .cd-comment-overlay-marker {
 	position: absolute;
 	top: 0;
-	width: var(--cd-comment-marker-width);
+	width: calc(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio));
 	height: 100%;
+	z-index: 2;
 
 	.cd-comment-overlay-new &,
 	.cd-comment-overlay-changed.cd-comment-overlay-changed & {
