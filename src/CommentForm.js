@@ -1333,12 +1333,11 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	getCommentInputDummyFloatableContainer() {
-		const element = /** @type {HTMLInputElement} */ (this.commentInput.$input[0])
-		const computedStyle = window.getComputedStyle(element)
+		const computedStyle = window.getComputedStyle(this.commentInput.getEditableElement()[0])
 		const $span = $('<span>')
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const $div = $('<div>')
-			.text(element.value.slice(0, Math.max(0, this.commentInput.getRange().to)))
+			.text(this.commentInput.getValue().slice(0, Math.max(0, this.commentInput.getRange().to)))
 			.css({
 				whiteSpace: 'pre-wrap',
 				wordWrap: 'break-word',
