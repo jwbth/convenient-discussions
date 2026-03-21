@@ -6,21 +6,24 @@ const codeMirrorExt = /** @type {typeof import('./CodeMirrorWikiEditor').default
 )
 
 /**
- * Our CodeMirror-based comment input widget.
+ * Our CodeMirror extension for OOUI inputs.
  */
-export default class CodeMirrorCommentInput extends codeMirrorExt {
+export default class OoUiInputCodeMirror extends codeMirrorExt {
 	/**
-	 * @param {import('./MultilineTextInputWidget').default} commentInput
+	 * @param {import('./MultilineTextInputWidget').default} input
 	 */
-	constructor(commentInput) {
-		super(commentInput.$input, mw.loader.require('ext.CodeMirror.v6.mode.mediawiki')())
+	constructor(input) {
+		super(input.$input, mw.loader.require('ext.CodeMirror.v6.mode.mediawiki')())
 
 		/**
-		 * @type {{
-		 *   Compartment: typeof import('@codemirror/state').Compartment
-		 *   EditorView: typeof import('@codemirror/view').EditorView
-		 *   placeholder: import('@codemirror/view').placeholder
-		 * }}
+		 * @typedef {object} Lib
+		 * @property {typeof import('@codemirror/state').Compartment} Compartment
+		 * @property {typeof import('@codemirror/view').EditorView} EditorView
+		 * @property {import('@codemirror/view').placeholder} placeholder
+		 */
+
+		/**
+		 * @type {Lib}
 		 */
 		this.lib = mw.loader.require('ext.CodeMirror.v6.lib')
 		this.cdPlaceholderCompartment = new this.lib.Compartment()
@@ -122,5 +125,12 @@ export default class CodeMirrorCommentInput extends codeMirrorExt {
 			state: { field: () => null, config: { compartments: { get: () => null } } },
 			dispatch: () => null,
 		}
+	}
+
+	/**
+	 * @param {boolean} enabled
+	 */
+	updateAutocompletePreference(enabled) {
+		this.preferences.lockPreference('autocomplete', this.view, enabled)
 	}
 }

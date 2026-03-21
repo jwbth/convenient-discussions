@@ -1,4 +1,5 @@
 import TextInputWidgetMixin from './TextInputWidgetMixin'
+import cd from './loader/cd'
 import { es6ClassToOoJsClass, mixInClass } from './utils-oojs-class'
 
 /**
@@ -53,13 +54,16 @@ class MultilineTextInputWidget extends mixInClass(
 	/**
 	 * Set the correspondent CodeMirror instance or `undefined` if CodeMirror is not active.
 	 *
-	 * @param {import('./CodeMirrorWikiEditor').default | undefined} codeMirror
+	 * @param {import('./OoUiInputCodeMirror').OoUiInputCodeMirror | undefined} codeMirror
 	 */
 	setCodeMirror(codeMirror) {
-		/** @type {import('./CodeMirrorWikiEditor').default} */
+		/** @type {import('./OoUiInputCodeMirror').OoUiInputCodeMirror} */
 		this.codeMirror = codeMirror
 
-		this.updateCodeMirrorPendingClass()
+		if (this.codeMirror) {
+			this.updateCodeMirrorPendingClass()
+			this.codeMirror.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
+		}
 	}
 
 	/**
@@ -115,6 +119,8 @@ class MultilineTextInputWidget extends mixInClass(
 	 * @private
 	 */
 	updateCodeMirrorPendingClass() {
+		if (!this.codeMirror) return
+
 		this.getEditableElement().toggleClass('oo-ui-pendingElement-pending', this.pending > 0)
 	}
 

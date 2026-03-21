@@ -1,11 +1,11 @@
 import AutocompleteManager from './AutocompleteManager'
-import CodeMirrorCommentInput from './CodeMirrorCommentInput'
 import Comment from './Comment'
 import CommentFormBuilder from './CommentFormBuilder'
 import CommentFormInputTransformer from './CommentFormInputTransformer'
 import CommentFormOperationRegistry from './CommentFormOperationRegistry'
 import EventEmitter from './EventEmitter'
 import MentionsAutocomplete from './MentionsAutocomplete'
+import OoUiInputCodeMirror from './OoUiInputCodeMirror'
 import getUploadDialogClass from './UploadDialog'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -1137,7 +1137,7 @@ class CommentForm extends EventEmitter {
 	 * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
 	 */
 	initCodeMirror = () => {
-		this.codeMirror = new CodeMirrorCommentInput(this.commentInput)
+		this.codeMirror = new OoUiInputCodeMirror(this.commentInput)
 		this.codeMirror.initialize(
 			undefined,
 			/** @type {string} */ (this.commentInput.$input.attr('placeholder')),
@@ -1671,6 +1671,8 @@ class CommentForm extends EventEmitter {
 
 		this.$insertButtons?.empty()
 		this.builder.buildInsertButtons()
+
+		this.codeMirror?.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
 	}
 
 	/**
@@ -4144,7 +4146,7 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Set whether CodeMirror is active.
+	 * Set whether CodeMirror is active. Update the autocomplete preference along the way.
 	 *
 	 * @param {boolean} active
 	 */
