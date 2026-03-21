@@ -131,7 +131,7 @@ class CompactCommentLayers extends CommentLayers {
 	 * @override
 	 */
 	hideMenu = (event) => {
-		if (!this.overlayInnerWrapper) return
+		if (!this.overlayInnerWrapper || this.comment.toggleChildThreadsPopup) return
 
 		event?.preventDefault()
 		this.overlayInnerWrapper.style.display = 'none'

@@ -31,34 +31,6 @@ if (server.startsWith('//')) {
 }
 const bodyClassList = document.body.classList
 
-// Some users increase the font size (zoom), which leads to some short distances jumping between 3
-// and 4 physical pixels and similar. With the help of pixelDeviationRatio, we can make all widths
-// look the same by using a variable that stores deviation from standard values. Also unround device
-// pixel ratios (like 1.75) may have the same effect (not sure; need to confirm). We can use a
-// formula here of course, but that would be less readable :)
-const devicePixelRatioToDivisor = [
-	// Thread lines are 4 or more physical pixels, comment markers are 12 or more physical pixels, 4 or more from each side
-	[4, 4],
-
-	// Thread lines are 3 physical pixels, comment markers are 11 physical pixels, 4 from each side
-	[3.666_666_6, 3.666_666_6],
-
-	// Thread lines are 3 physical pixels, comment markers are 9 physical pixels, 3 from each side
-	[3, 3],
-
-	// Thread lines are 2 physical pixels, comment markers are 8 physical pixels, 3 from each side
-	[2.666_666_6, 2.666_666_6],
-
-	// Thread lines are 2 physical pixels, comment markers are 6 physical pixels, 2 from each side
-	[2, 2],
-
-	// Thread lines are 1 physical pixel, comment markers are 5 physical pixels, 2 from each side
-	[1.666_666_6, 1.666_666_6],
-
-	// Thread lines are 1 physical pixel, comment markers are 3 physical pixels, 1 from each side (default)
-	[0, 1],
-]
-
 const convenientDiscussionsWindow = {
 	/**
 	 * @type {{
@@ -303,24 +275,14 @@ const globalProperties = {
 	 *
 	 * @memberof convenientDiscussions.g
 	 */
-	threadLineSidePadding: /** @type {const} */ (3),
+	threadLineSidePadding: /** @type {const} */ (5),
 
 	/**
-	 * Width (thickness) of comment markers and thread lines when you hover over them. Should be an
-	 * odd number - otherwise the browser will render 1 pixel more on one side, and for each comment
-	 * differently. See also pixelDeviationRatio that helps achieve this evenness.
+	 * Width (thickness) of comment markers and thread lines when you hover over them.
 	 *
 	 * @memberof convenientDiscussions.g
 	 */
 	commentMarkerWidth: /** @type {const} */ (3),
-
-	pixelDeviationRatio: /** @type {number} */ (
-		devicePixelRatioToDivisor.reduce(
-			(value, [dpr, divisor]) =>
-				value || (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value),
-			/** @type {number | undefined} */ (undefined),
-		)
-	),
 
 	pixelDeviationRatioFor1px:
 		window.devicePixelRatio / Math.max(Math.floor(window.devicePixelRatio), 1),

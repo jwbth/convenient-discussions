@@ -1,8 +1,8 @@
 import AutocompleteManager from './AutocompleteManager'
 import BootProcess from './BootProcess'
 import Comment from './Comment'
-import commentLayersOptionalBackgroundHighlightingCss from './Comment.layers.optionalBackgroundHighlighting.less?inline'
 import CommentForm from './CommentForm'
+import CommentLayersOptionalBackgroundHighlightingCss from './CommentLayers.optionalBackgroundHighlighting.less?inline'
 import CopyLinkDialog from './CopyLinkDialog'
 import DtSubscriptions from './DtSubscriptions'
 import EventEmitter from './EventEmitter'
@@ -266,7 +266,7 @@ class Controller extends EventEmitter {
 		this.$root.addClass('cd-parse-started')
 
 		this.commentLayersOptionalBackgroundHighlightingCss ??= mw.util.addCSS(
-			commentLayersOptionalBackgroundHighlightingCss,
+			CommentLayersOptionalBackgroundHighlightingCss,
 		)
 		this.commentLayersOptionalBackgroundHighlightingCss.disabled = !cd.settings.get(
 			'useBackgroundHighlighting',

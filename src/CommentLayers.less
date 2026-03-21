@@ -109,7 +109,7 @@
 .cd-comment-overlay-marker {
 	position: absolute;
 	top: 0;
-	width: calc(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio));
+	width: var(--cd-comment-marker-width);
 	height: 100%;
 
 	.cd-comment-overlay-new &,
@@ -200,16 +200,7 @@
 .cd-comment-overlay-marker,
 .cd-comment-overlay-line {
 	// This calculation is the same as in Thread#updateLine() but with -1px.
-	inset-inline-start: calc(
-		-1px -
-			(
-				(
-						(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio)) -
-							(1px / var(--cd-pixel-deviation-ratio-for-1px))
-					) /
-					2
-			)
-	);
+	inset-inline-start: -1px;
 }
 
 .cd-comment-overlay-line-gapCloser {

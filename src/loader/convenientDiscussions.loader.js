@@ -1,10 +1,11 @@
 import dateFormats from '../../data/dateFormats.json'
 import digitsData from '../../data/digits.json'
 import languageFallbacks from '../../data/languageFallbacks.json'
-import CommentLayersCss from '../Comment.layers.less?inline'
 import CommentCss from '../Comment.less?inline'
 import CommentFormCss from '../CommentForm.less?inline'
+import CommentLayersCss from '../CommentLayers.less?inline'
 import SectionCss from '../Section.less?inline'
+import ThreadCss from '../Thread.less?inline'
 import addCommentLinksCss from '../addCommentLinks.less?inline'
 import globalCss from '../global.less?inline'
 import navPanelCss from '../navPanel.less?inline'
@@ -821,7 +822,6 @@ class Loader {
 	--cd-float-content-start: ${floatContentStart};
 	--cd-float-content-end: ${floatContentEnd};
 	--cd-gradient-user-start: ${gradientUserStart};
-	--cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
 	--cd-pixel-deviation-ratio-for-1px: ${cd.g.pixelDeviationRatioFor1px};
 }`)
 		if (cd.config.outdentClass) {
@@ -839,8 +839,9 @@ class Loader {
 		mw.util.addCSS(globalCss)
 		mw.util.addCSS(CommentCss)
 		mw.util.addCSS(CommentFormCss)
-		mw.util.addCSS(SectionCss)
 		mw.util.addCSS(CommentLayersCss)
+		mw.util.addCSS(SectionCss)
+		mw.util.addCSS(ThreadCss)
 		mw.util.addCSS(navPanelCss)
 		mw.util.addCSS(pageNavCss)
 		mw.util.addCSS(skinsCss)

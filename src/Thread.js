@@ -1305,20 +1305,13 @@ class Thread extends mixInObject(
 	getThreadLineLeft(rect, commentMargins, dir, rootRect) {
 		let left
 
-		// This calculation is the same as in .cd-comment-overlay-marker, but without -1px - we don't
-		// need it. Don't round - we need a subpixel-precise value.
-		const centerLeft = -(
-			(cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio - 1 / cd.g.pixelDeviationRatioFor1px) /
-			2
-		)
-
 		if (dir === 'ltr') {
-			left = rect.left + centerLeft
+			left = rect.left
 			if (commentMargins) {
 				left -= commentMargins.left + 1
 			}
 		} else {
-			left = rect.right - cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio - centerLeft
+			left = rect.right - 1
 			if (commentMargins) {
 				left += commentMargins.right + 1
 			}
@@ -1453,10 +1446,6 @@ class Thread extends mixInObject(
 		}
 
 		if (!this.isInited) {
-			if (window.getComputedStyle(controller.rootElement).position === 'static') {
-				controller.rootElement.style.position = 'relative'
-			}
-
 			this.on('toggle', this.updateLines)
 			controller.on('resize', this.updateLines).on('mutate', () => {
 				// Update only on mouse move to prevent short freezings of a page when there is a comment
@@ -1489,15 +1478,15 @@ class Thread extends mixInObject(
 			this.threadLinesContainer = document.createElement('div')
 			this.threadLinesContainer.className = 'cd-threadLinesContainer'
 		}
+		if (!this.threadLinesContainer.isConnected) {
+			controller.rootElement.prepend(this.threadLinesContainer)
+		}
 
 		// We could choose not to update lines on initialization as it is a relatively costly operation
 		// that can be delayed, but not sure it makes any difference at which point the page is blocked
 		// for interactions.
 		this.updateLines()
 
-		if (!this.threadLinesContainer.parentNode) {
-			controller.rootElement.append(this.threadLinesContainer)
-		}
 		if (autocollapse) {
 			this.autocollapseThreads()
 		}
