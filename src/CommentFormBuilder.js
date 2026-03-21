@@ -404,6 +404,8 @@ class CommentFormBuilder {
 	 * Add the insert buttons block under the comment input.
 	 */
 	buildInsertButtons() {
+		this.form.$insertButtons?.empty()
+
 		const insertButtons = cd.settings.get('insertButtons')
 		if (!insertButtons.length) return
 

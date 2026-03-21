@@ -659,8 +659,8 @@ class CommentForm extends EventEmitter {
 			this.addEditNotices()
 		}
 
-		const builder = new CommentFormBuilder(this)
-		this.buildPromise = builder.build(initialState, this.loadCustomModules()).then(() => {
+		this.builder = new CommentFormBuilder(this)
+		this.buildPromise = this.builder.build(initialState, this.loadCustomModules()).then(() => {
 			this.addEventListeners()
 		})
 
@@ -1664,15 +1664,13 @@ class CommentForm extends EventEmitter {
 		this.viewChangesButton.toggle(cd.settings.get('autopreview'))
 
 		if (cd.settings.get('showToolbar') && !this.toolbarLoaded) {
-			const builder = new CommentFormBuilder(this)
-			builder.buildToolbar(this.loadCustomModules())
+			this.builder.buildToolbar(this.loadCustomModules())
 		} else if (!cd.settings.get('showToolbar') && this.toolbarLoaded) {
 			this.hideToolbar()
 		}
 
 		this.$insertButtons?.empty()
-		const builder = new CommentFormBuilder(this)
-		builder.buildInsertButtons()
+		this.builder.buildInsertButtons()
 	}
 
 	/**
