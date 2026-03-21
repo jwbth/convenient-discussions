@@ -62,7 +62,7 @@
 	"comment-deleted-short": "Deleted",
 
 	"togglechildthreads-popup-title": "New feature",
-	"togglechildthreads-popup-text": "<p>You can now collapse replies to comments by clicking \"−\". To that effect, you can also hold Alt when clicking a reply's thread line.</p>\n\n<p>An idea: change the setting \"<span class=\"cd-notification-settings\">[[$1|{{int:convenient-discussions-sd-collapsethreadslevel}}]]</span>\" from 10 to 2 so that only direct replies to topics are visible by default.</p>",
+	"togglechildthreads-popup-text": "<p>You can now collapse replies by clicking the minus (\"−\") button. Alternatively, hold <b>Alt</b> when clicking a thread line of one of the replies.</p>\n\n<p><b>Tip:</b> Set the setting \"<span class=\"cd-notification-settings\">[[$1|{{int:convenient-discussions-sd-collapsethreadslevel}}]]</span>\" to 2 so that only direct replies to topics are visible by default.</p>",
 
 	"section-reply": "Reply to section",
 	"section-addsubsection-to": "Add subsection to \"$1\"",

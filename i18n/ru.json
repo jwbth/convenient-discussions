@@ -77,7 +77,7 @@
 	"comment-deleted": "Сообщение было удалено.",
 	"comment-deleted-short": "Удалено",
 	"togglechildthreads-popup-title": "Новая функция",
-	"togglechildthreads-popup-text": "<p>Теперь можно сворачивать/разворачивать ответы на сообщение кликом по «−». С этой целью также можно удерживать Alt, кликая по линии ветки ответа.</p>\n\n<p>Идея: В настройке «<span class=\"cd-notification-settings\">[[$1|{{int:convenient-discussions-sd-collapsethreadslevel}}]]</span>» укажите 2, чтобы по умолчанию были видны только прямые ответы в разделы.</p>",
+	"togglechildthreads-popup-text": "<p>Теперь можно сворачивать/разворачивать ответы кликом по кнопке минуса («−»). В качестве альтернативы удерживайте <b>Alt</b>, кликая по линии ветки одного из ответов.</p>\n\n<p><b>Совет:</b> В настройке <i><span class=\"cd-notification-settings\">[[$1|{{int:convenient-discussions-sd-collapsethreadslevel}}]]</span></i> укажите 2, чтобы по умолчанию были видны только прямые ответы в разделы.</p>",
 	"section-reply": "Ответить в раздел",
 	"section-addsubsection-to": "Добавить подраздел в раздел «$1»",
 	"section-newcomments": "В разделе появилось {{plural:$1|$1 новое сообщение|$1 новых сообщения|$1 новых сообщений}} (вне веток) от {{plural:$2|1={{gender:$4|участника|участницы}}|{{gender:$4|участников|участниц|участников(-ц)}}}} $3. Нажмите, чтобы обновить страницу.",
