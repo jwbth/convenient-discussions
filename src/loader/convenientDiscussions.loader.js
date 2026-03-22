@@ -366,24 +366,26 @@ class Loader {
 			}
 		})
 
-		/*
-			Additions of CSS set a stage for a future reflow which delays operations dependent on
-			rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
-			order is like this:
-			1. Make network requests (above).
-			2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
-				 .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
-				 layout or added CSS yet, there is nothing to update.
-			3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
-				 to the fact that the network requests, if any, are already pending, we don't waste time.
-		*/
 		this.initCssValues()
-		this.addTalkPageCss()
 
 		try {
 			await Promise.all([
 				this.maybeLoadTalkPageModules(),
-				this.loadApp(),
+				this.loadApp().then(() => {
+					/*
+						Additions of CSS set a stage for a future reflow which delays operations dependent on
+						rendering, so we run them now, not after the requests are fulfilled, to save time. The
+						overall order is like this:
+						1. Make network requests (above).
+						2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
+						   .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
+						   layout or added CSS yet, there is nothing to update.
+						3. Run operations that create prerequisites for a reflow, such as adding CSS (below).
+						   Thanks to the fact that the network requests, if any, are already pending, we don't
+						   waste time.
+					*/
+					this.addTalkPageCss()
+				}),
 
 				// Make some requests in advance if the API module is ready in order not to make 2 requests
 				// sequentially. We don't make a `userinfo` request, because if there is more than one tab in
