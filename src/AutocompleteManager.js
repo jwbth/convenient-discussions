@@ -272,10 +272,17 @@ class AutocompleteManager {
 
 		// Get the selected text from the input widget if available
 		const element = this.tribute.current.element
-		const selectedText =
-			element?.cdInput && typeof element.cdInput.getSelectedTextForAutocomplete === 'function'
-				? element.cdInput.getSelectedTextForAutocomplete()
+		const savedSelection =
+			element?.cdInput && typeof element.cdInput.getAutocompleteSavedSelection === 'function'
+				? element.cdInput.getAutocompleteSavedSelection()
 				: undefined
+		let selectedText
+		if (
+			savedSelection &&
+			savedSelection.start === option.original.autocomplete.manager?.tribute.current.triggerPos
+		) {
+			selectedText = savedSelection.selectedText
+		}
 
 		return option.original.autocomplete.getInsertionFromEntry(option.original.entry, selectedText)
 	}

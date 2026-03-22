@@ -127,9 +127,18 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				let selectedText
 				if (
 					element?.cdInput &&
-					typeof element.cdInput.getSelectedTextForAutocomplete === 'function'
+					typeof element.cdInput.getAutocompleteSavedSelection === 'function'
 				) {
-					selectedText = element.cdInput.getSelectedTextForAutocomplete()
+					const savedSelection = element.cdInput.getAutocompleteSavedSelection()
+					if (
+						savedSelection &&
+						// By this comparison we make sure that the user immediately pressed the trigger
+						// character after selecting text.
+						savedSelection.start ===
+							option.original.autocomplete?.manager?.tribute.current.triggerPos
+					) {
+						selectedText = savedSelection.selectedText
+					}
 				}
 
 				return this.getInsertionFromEntry(option.original.entry, selectedText)

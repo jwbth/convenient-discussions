@@ -23,10 +23,10 @@ class TextInputWidgetMixin {
 	/**
 	 * Text that was selected before typing an autocomplete trigger.
 	 *
-	 * @type {string | undefined}
+	 * @type {{selectedText: string, start: number} | undefined}
 	 * @private
 	 */
-	selectedTextForAutocomplete = undefined
+	autocompleteSavedSelection = undefined
 
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	constructor() {
@@ -58,9 +58,8 @@ class TextInputWidgetMixin {
 		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin and
 		// not classes that extend it.
 		this.handleSelectionChange = () => {
-			// Only update selection if this input is focused and autocomplete menu is not active
 			if (document.activeElement === this.getEditableElement()[0] && !this.autocompleteMenuActive) {
-				this.updateSelectedTextForAutocomplete()
+				this.updateAutocompleteSavedSelection()
 			}
 		}
 	}
@@ -145,18 +144,22 @@ class TextInputWidgetMixin {
 	 * @protected
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	updateSelectedTextForAutocomplete() {
+	updateAutocompleteSavedSelection() {
 		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (
 			this.getEditableElement()[0]
 		)
 		const start = element.selectionStart
+		// We simulate selection and value properties for CodeMirror in OoUiInputCodeMirror, but this
+		// can run early when they are undefined.
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (start === undefined) return
+
 		const end = element.selectionEnd
 
-		// Only capture selection if there's actually selected text
-		this.selectedTextForAutocomplete =
-			start !== end && start !== null && end !== null
-				? element.value.substring(start, end)
-				: undefined
+		const selectedText =
+			start !== null && end !== null ? element.value.substring(start, end).trim() : ''
+		this.autocompleteSavedSelection =
+			selectedText.length > 0 ? { selectedText, start: /** @type {number} */ (start) } : undefined
 	}
 
 	/**
@@ -182,11 +185,12 @@ class TextInputWidgetMixin {
 	/**
 	 * Get the text that was selected before typing an autocomplete trigger.
 	 *
-	 * @returns {string | undefined} The selected text, or undefined if none
+	 * @returns {{selectedText: string, start: number} | undefined} The selected text and its
+	 *   start position, or undefined if none
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	getSelectedTextForAutocomplete() {
-		return this.selectedTextForAutocomplete
+	getAutocompleteSavedSelection() {
+		return this.autocompleteSavedSelection
 	}
 
 	/**
