@@ -946,9 +946,26 @@ class Settings extends EventEmitter {
 		const dialog = new (getSettingsDialogClass())(initalPageName, focusSelector)
 		const windowManager = cd.getWindowManager('settings')
 		windowManager.addWindows([dialog])
-		windowManager.openWindow(dialog, { loadedSettings })
+		const instance = windowManager.openWindow(dialog, { loadedSettings })
+		await instance.opened
 
 		cd.tests.settingsDialog = dialog
+	}
+
+	/**
+	 * Show the settings dialog, setting the button to pending state while it's loading.
+	 *
+	 * @param {import('./Button').default} button
+	 * @param {string} [initialPageName]
+	 * @param {string} [focusSelector]
+	 */
+	async showDialogOnButtonClick(button, initialPageName, focusSelector) {
+		button.setPending(true)
+		try {
+			await this.showDialog(initialPageName, focusSelector)
+		} finally {
+			button.setPending(false)
+		}
 	}
 
 	/**
@@ -996,11 +1013,11 @@ class Settings extends EventEmitter {
 						.append(
 							wrapHtml(cd.sParse('popup-commentDisplay-text'), {
 								callbacks: {
-									'cd-notification-settings': () => {
-										this.showDialog('talkPage')
+									'cd-notification-settings': (_event, button) => {
+										this.showDialogOnButtonClick(button, 'talkPage')
 									},
-									'cd-notification-settings-compactComments': () => {
-										this.showDialog('talkPage', '.cd-setting-commentDisplay')
+									'cd-notification-settings-compactComments': (_event, button) => {
+										this.showDialogOnButtonClick(button, 'talkPage', '.cd-setting-commentDisplay')
 									},
 								},
 							}).children(),

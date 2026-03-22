@@ -1885,8 +1885,8 @@ class CommentForm extends EventEmitter {
 			mw.notify(
 				wrapHtml(cd.sParse('warning-performance'), {
 					callbacks: {
-						'cd-notification-talkPageSettings': () => {
-							cd.settings.showDialog('talkPage')
+						'cd-notification-talkPageSettings': (_event, button) => {
+							cd.settings.showDialogOnButtonClick(button, 'talkPage')
 						},
 					},
 				}),

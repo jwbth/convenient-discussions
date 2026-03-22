@@ -665,8 +665,12 @@ class Comment extends CommentSkeleton {
 			$content: mergeJquery(
 				wrapHtml(cd.sParse('togglechildthreads-popup-text'), {
 					callbacks: {
-						'cd-notification-settings-togglechildthreads': () => {
-							cd.settings.showDialog('talkPage', '.cd-setting-collapseThreadsLevel input')
+						'cd-notification-settings-togglechildthreads': (_event, btn) => {
+							cd.settings.showDialogOnButtonClick(
+								btn,
+								'talkPage',
+								'.cd-setting-collapseThreadsLevel input',
+							)
 						},
 					},
 				}).children(),
