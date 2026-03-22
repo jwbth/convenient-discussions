@@ -143,28 +143,47 @@ class SpaciousCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Add a button to the spacious comment header or menu.
+	 * Add a button to the spacious comment menu.
 	 *
 	 * @override
 	 * @param {CommentButton} button The button to append.
 	 */
 	addButton(button) {
-		// Some buttons go in the header; others go in the menu
+		this.comment.menuElement?.append(button.element)
+	}
 
-		// eslint-disable-next-line unicorn/prefer-switch
-		if (button === this.goToParentButton) {
-			this.comment.headerElement.append(button.element)
-		} else if (button === this.goToChildButton) {
-			// Insert in header before change note
-			this.comment.headerElement.insertBefore(button.element, this.comment.$changeNote?.[0] || null)
-		} else if (button === this.toggleChildThreadsButton) {
-			this.comment.headerElement.insertBefore(
-				button.element,
-				this.goToParentButton?.element || null,
-			)
-		} else {
-			this.comment.menuElement?.append(button.element)
-		}
+	/**
+	 * Insert the "Go to parent" button into the header.
+	 *
+	 * @override
+	 */
+	insertGoToParentButton() {
+		this.comment.headerElement.append(/** @type {CommentButton} */ (this.goToParentButton).element)
+	}
+
+	/**
+	 * Insert the "Go to child" button into the header.
+	 *
+	 * @override
+	 */
+	insertGoToChildButton() {
+		// Insert in header before change note
+		this.comment.headerElement.insertBefore(
+			/** @type {CommentButton} */ (this.goToChildButton).element,
+			this.comment.$changeNote?.[0] || null,
+		)
+	}
+
+	/**
+	 * Insert the "Toggle child threads" button into the header.
+	 *
+	 * @override
+	 */
+	insertToggleChildThreadsButton() {
+		this.comment.headerElement.insertBefore(
+			/** @type {CommentButton} */ (this.toggleChildThreadsButton).element,
+			this.goToParentButton?.element || null,
+		)
 	}
 
 	/**

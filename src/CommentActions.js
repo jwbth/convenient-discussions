@@ -152,7 +152,7 @@ class CommentActions {
 		if (!this.comment.isActionable) return
 
 		this.replyButton = this.createReplyButton(this.onReplyAction)
-		this.addButton(this.replyButton)
+		this.insertReplyButton()
 
 		// Check if reply should be disabled due to outdented comments
 		if (
@@ -175,7 +175,7 @@ class CommentActions {
 		if (!this.comment.isEditable) return
 
 		this.editButton = this.createEditButton(this.onEditAction)
-		this.addButton(this.editButton)
+		this.insertEditButton()
 	}
 
 	/**
@@ -206,7 +206,7 @@ class CommentActions {
 		)
 
 		this.thankButton = this.createThankButton(this.onThankAction, isThanked)
-		this.addButton(this.thankButton)
+		this.insertThankButton()
 
 		if (isThanked) {
 			this.setThanked()
@@ -222,7 +222,7 @@ class CommentActions {
 		if (!this.comment.id) return
 
 		this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction)
-		this.addButton(this.copyLinkButton)
+		this.insertCopyLinkButton()
 	}
 
 	/**
@@ -234,7 +234,7 @@ class CommentActions {
 		if (!this.comment.getParent()) return
 
 		this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction)
-		this.addButton(this.goToParentButton)
+		this.insertGoToParentButton()
 	}
 
 	/**
@@ -249,7 +249,7 @@ class CommentActions {
 		if (this.goToChildButton?.isConnected()) return
 
 		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction)
-		this.addButton(this.goToChildButton)
+		this.insertGoToChildButton()
 	}
 
 	/**
@@ -272,7 +272,7 @@ class CommentActions {
 			this.comment.maybeOnboardOntoToggleChildThreads()
 		})
 
-		this.addButton(this.toggleChildThreadsButton)
+		this.insertToggleChildThreadsButton()
 	}
 
 	/**
@@ -285,6 +285,70 @@ class CommentActions {
 				.setLabel(cd.s('cm-thanked'))
 				.setTooltip(cd.s('cm-thanked-tooltip'))
 		}
+	}
+
+	/**
+	 * Insert the reply button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertReplyButton() {
+		this.addButton(/** @type {CommentButton} */ (this.replyButton))
+	}
+
+	/**
+	 * Insert the edit button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertEditButton() {
+		this.addButton(/** @type {CommentButton} */ (this.editButton))
+	}
+
+	/**
+	 * Insert the thank button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertThankButton() {
+		this.addButton(/** @type {CommentButton} */ (this.thankButton))
+	}
+
+	/**
+	 * Insert the copy link button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertCopyLinkButton() {
+		this.addButton(/** @type {CommentButton} */ (this.copyLinkButton))
+	}
+
+	/**
+	 * Insert the "Go to parent" button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertGoToParentButton() {
+		this.addButton(/** @type {CommentButton} */ (this.goToParentButton))
+	}
+
+	/**
+	 * Insert the "Go to child" button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertGoToChildButton() {
+		this.addButton(/** @type {CommentButton} */ (this.goToChildButton))
+	}
+
+	/**
+	 * Insert the "Toggle child threads" button into the DOM. Default implementation uses
+	 * {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertToggleChildThreadsButton() {
+		this.addButton(/** @type {CommentButton} */ (this.toggleChildThreadsButton))
 	}
 
 	/**
