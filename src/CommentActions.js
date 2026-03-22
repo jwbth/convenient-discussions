@@ -80,6 +80,8 @@ class CommentActions {
 		this.addReplyButton()
 		this.addEditButton()
 		this.addThankButton()
+		this.addCopyLinkButton()
+		this.addToggleChildThreadsButton()
 		this.addGoToParentButton()
 	}
 
@@ -150,7 +152,7 @@ class CommentActions {
 		if (!this.comment.isActionable) return
 
 		this.replyButton = this.createReplyButton(this.onReplyAction)
-		this.appendButton(this.replyButton)
+		this.addButton(this.replyButton)
 
 		// Check if reply should be disabled due to outdented comments
 		if (
@@ -173,7 +175,7 @@ class CommentActions {
 		if (!this.comment.isEditable) return
 
 		this.editButton = this.createEditButton(this.onEditAction)
-		this.appendButton(this.editButton)
+		this.addButton(this.editButton)
 	}
 
 	/**
@@ -192,17 +194,19 @@ class CommentActions {
 
 		const isThanked = Object.entries(commentManager.getThanksStorage().getData()).some(
 			// TODO: Remove `|| this.comment.dtId === thank.id || this.comment.id === thank.id` part
-			// after migration is complete on January 1, 2026
+			// after migration is complete on June 1, 2026
 			([id, thank]) =>
 				this.comment.dtId === id ||
 				this.comment.id === id ||
+				// This comes from the local storage, the value may be corrupt
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				this.comment.dtId === thank?.id ||
-				this.comment.id === thank.id,
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				this.comment.id === thank?.id,
 		)
 
 		this.thankButton = this.createThankButton(this.onThankAction, isThanked)
-		this.appendButton(this.thankButton)
+		this.addButton(this.thankButton)
 
 		if (isThanked) {
 			this.setThanked()
@@ -218,7 +222,7 @@ class CommentActions {
 		if (!this.comment.id) return
 
 		this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction)
-		this.appendButton(this.copyLinkButton)
+		this.addButton(this.copyLinkButton)
 	}
 
 	/**
@@ -230,7 +234,7 @@ class CommentActions {
 		if (!this.comment.getParent()) return
 
 		this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction)
-		this.appendButton(this.goToParentButton)
+		this.addButton(this.goToParentButton)
 	}
 
 	/**
@@ -264,11 +268,11 @@ class CommentActions {
 		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(
 			this.onToggleChildThreadsAction,
 		)
-		this.appendButton(this.toggleChildThreadsButton)
-
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
 			this.comment.maybeOnboardOntoToggleChildThreads()
 		})
+
+		this.addButton(this.toggleChildThreadsButton)
 	}
 
 	/**
@@ -365,16 +369,6 @@ class CommentActions {
 	 * Append a button to the appropriate container. To be overridden by subclasses.
 	 *
 	 * @param {CommentButton} _button The button to append.
-	 * @abstract
-	 */
-	appendButton(_button) {
-		throw new Error('appendButton must be implemented by subclasses')
-	}
-
-	/**
-	 * Add a button to the appropriate container. To be overridden by subclasses.
-	 *
-	 * @param {CommentButton} _button The button to add.
 	 * @abstract
 	 */
 	addButton(_button) {

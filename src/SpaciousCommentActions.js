@@ -143,38 +143,36 @@ class SpaciousCommentActions extends CommentActions {
 	}
 
 	/**
-	 * Append a button to the spacious comment menu.
+	 * Add a button to the spacious comment header or menu.
 	 *
 	 * @override
 	 * @param {CommentButton} button The button to append.
 	 */
-	appendButton(button) {
-		if (
-			button === this.goToParentButton ||
-			button === this.goToChildButton ||
-			button === this.toggleChildThreadsButton
-		) {
-			// These buttons go in the header
+	addButton(button) {
+		// Some buttons go in the header; others go in the menu
+
+		// eslint-disable-next-line unicorn/prefer-switch
+		if (button === this.goToParentButton) {
 			this.comment.headerElement.append(button.element)
+		} else if (button === this.goToChildButton) {
+			// Insert in header before change note
+			this.comment.headerElement.insertBefore(button.element, this.comment.$changeNote?.[0] || null)
+		} else if (button === this.toggleChildThreadsButton) {
+			this.comment.headerElement.insertBefore(
+				button.element,
+				this.goToParentButton?.element || null,
+			)
 		} else {
-			// Other buttons go in the menu
 			this.comment.menuElement?.append(button.element)
 		}
 	}
 
 	/**
-	 * Add a button to the spacious comment header.
+	 * Skip (copy link button is the timestamp).
 	 *
 	 * @override
-	 * @param {CommentButton} button The button to add.
 	 */
-	addButton(button) {
-		if (button === this.goToChildButton) {
-			this.comment.headerElement.append(button.element)
-		} else {
-			this.comment.headerElement.prepend(button.element)
-		}
-	}
+	addCopyLinkButton() {}
 
 	/**
 	 * Override to add toggle child threads button to header instead of menu.
@@ -182,26 +180,9 @@ class SpaciousCommentActions extends CommentActions {
 	 * @override
 	 */
 	addToggleChildThreadsButton() {
-		if (
-			!this.comment.getChildren().some((child) => child.thread) ||
-			this.toggleChildThreadsButton?.isConnected()
-		) {
-			return
-		}
+		super.addToggleChildThreadsButton()
 
-		this.toggleChildThreadsButton = this.createToggleChildThreadsButton(
-			this.onToggleChildThreadsAction,
-		)
 		this.comment.updateToggleChildThreadsButton()
-		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
-			this.comment.maybeOnboardOntoToggleChildThreads()
-		})
-
-		// Insert in header before change note
-		this.comment.headerElement.insertBefore(
-			this.toggleChildThreadsButton.element,
-			this.comment.$changeNote?.[0] || null,
-		)
 	}
 
 	/**

@@ -181,7 +181,7 @@
 .cd-comment-overlay-menu {
 	display: inline-flex;
 	padding-inline-start: 0.5em;
-	flex-direction: row;
+	flex-direction: row-reverse;
 	pointer-events: all;
 
 	> .oo-ui-buttonElement {
@@ -214,6 +214,11 @@
 
 .cd-comment-button-ooui.cd-comment-button-ooui {
 	margin: 0;
+
+	// Override OOUI's `.oo-ui-buttonElement-frameless.oo-ui-labelElement:first-child`
+	&.oo-ui-buttonElement-frameless.oo-ui-labelElement:first-child {
+		margin-inline: 0;
+	}
 
 	> .oo-ui-buttonElement-button {
 		padding-block: 0;
