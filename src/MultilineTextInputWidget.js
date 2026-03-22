@@ -54,10 +54,10 @@ class MultilineTextInputWidget extends mixInClass(
 	/**
 	 * Set the correspondent CodeMirror instance or `undefined` if CodeMirror is not active.
 	 *
-	 * @param {import('./OoUiInputCodeMirror').OoUiInputCodeMirror | undefined} codeMirror
+	 * @param {import('./OoUiInputCodeMirror').default | undefined} codeMirror
 	 */
 	setCodeMirror(codeMirror) {
-		/** @type {import('./OoUiInputCodeMirror').OoUiInputCodeMirror} */
+		/** @type {import('./OoUiInputCodeMirror').default} */
 		this.codeMirror = codeMirror
 
 		if (this.codeMirror) {

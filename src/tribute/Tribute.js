@@ -38,7 +38,7 @@ import tributeCss from './tribute.less?inline'
  * Properties that are shared between global config and individual collections. Global config
  * properties serve as defaults that can be overridden at the collection level.
  *
- * @template {any} [Value=any]
+ * @template {import('../BaseAutocomplete').Option} [Value=import('../BaseAutocomplete').Option]
  * @typedef {object} TributeSharedOptions
  * @property {string} [containerClass='tribute-container'] Class added to the menu container
  * @property {string} [fillAttr='value'] Column that contains the content to insert by default
@@ -57,7 +57,7 @@ import tributeCss from './tribute.less?inline'
 /**
  * Properties unique to individual collections.
  *
- * @template {any} [Value=any]
+ * @template {import('../BaseAutocomplete').Option} [Value=import('../BaseAutocomplete').Option]
  * @typedef {object} TributeCollectionSpecific
  * @property {string} label Collection identifier/label
  * @property {Value[] | ((text: string, callback: (arr: Value[]) => void) => void)} values Array of
@@ -91,7 +91,7 @@ import tributeCss from './tribute.less?inline'
 /**
  * A collection object.
  *
- * @template {any} [Value=any]
+ * @template {import('../BaseAutocomplete').Option} [Value=import('../BaseAutocomplete').Option]
  * @typedef {TributeSharedOptions<Value> & TributeCollectionSpecific<Value>} TributeCollection
  */
 
@@ -99,7 +99,7 @@ import tributeCss from './tribute.less?inline'
  * A config object supplied to the constructor. It has some properties intended to be defaults for
  * all collections.
  *
- * @template {any} [Value=any]
+ * @template {import('../BaseAutocomplete').Option} [Value=import('../BaseAutocomplete').Option]
  * @typedef {TributeSharedOptions<Value> & TributeConfigSpecific} TributeConfig
  */
 
@@ -115,7 +115,7 @@ import tributeCss from './tribute.less?inline'
 /**
  * Array items in the return value of {@link TributeSearch#filter}.
  *
- * @template {any} Value
+ * @template {import('../BaseAutocomplete').Option} Value
  * @typedef {object} TributeSearchResults
  * @property {string} string Matched string value
  * @property {number} score Match score
