@@ -20,7 +20,7 @@
 	"cm-reply-outdented-tooltip": "Can't reply to a comment that has outdented replies",
 	"cm-quote": "Quote",
 	"cm-togglechildthreads": "Collapse/expand replies",
-	"cm-togglechildthreads-tooltip": "Collapse/expand the replies to this comment. To that effect, you can also hold Alt when clicking a reply's thread line",
+	"cm-togglechildthreads-tooltip": "Collapse/expand the replies to this comment. Alternatively, hold Alt when clicking a thread line of one of the replies",
 
 	"thread-tooltip": "Collapse/expand the thread\n• Alt+click: Collapse/expand all sibling threads as well\n• Alt+Shift+click: Collapse/expand all threads of this level on the page\n• Middle-click and drag: Navigate threads",
 	"thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1=|}} $3)",

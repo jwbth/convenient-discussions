@@ -920,7 +920,7 @@ class Comment extends CommentSkeleton {
 	 *   will return a boolean value indicating if the comment was displaced instead of the offset.
 	 *   (This value can be used to stop recalculating comment offsets if a number of comments in a
 	 *   row have not moved for optimization purposes.) Setting the `offset` property implies that the
-	 *   layers offset will be updated afterwards (see {@link Comment#updateLayersOffset}) -
+	 *   layers offset will be updated afterwards (see {@link CommentLayers#updateOffset}) -
 	 *   otherwise, the next attempt to call this method to update the layers offset will return
 	 *   `false` meaning the comment wasn't displaced, and the layers offset will stay wrong.
 	 */
