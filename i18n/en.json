@@ -62,7 +62,7 @@
 	"comment-deleted-short": "Deleted",
 
 	"togglechildthreads-popup-title": "New feature",
-	"togglechildthreads-popup-text": "<p>You can now collapse replies by clicking the minus (\"−\") button. Alternatively, hold <b>Alt</b> when clicking a thread line of one of the replies.</p>\n\n<p><b>Tip:</b> Set the setting \"<span class=\"cd-notification-settings\">[[$1|{{int:convenient-discussions-sd-collapsethreadslevel}}]]</span>\" to 2 so that only direct replies to topics are visible by default.</p>",
+	"togglechildthreads-popup-text": "<p>You can now collapse replies by clicking the minus (\"−\") button. Alternatively, hold <b>Alt</b> when clicking a thread line of one of the replies.</p>\n\n<p><b>Tip:</b> Set the setting \"<span class=\"cd-notification-settings-togglechildthreads\">[[$1|{{int:convenient-discussions-sd-collapsethreadslevel}}]]</span>\" to 2 so that only direct replies to topics are visible by default.</p>",
 
 	"section-reply": "Reply to section",
 	"section-addsubsection-to": "Add subsection to \"$1\"",
@@ -310,7 +310,7 @@
 	"notification-newcomments-desktop": "$1 new {{plural:$1|comment|comments}}$2 on page \"$3\"$4.",
 	"notification-newcomments-mayberelevant": "that may be relevant to you",
 	"notification-reload": "Click to reload the page$1.",
-	"notification-formdata": "form data will not be lost",
+	"notification-formdata": "form data won't be lost",
 	"notification-part-insection": "in section \"$1\"",
 	"notification-part-onthispage": "on this page",
 
