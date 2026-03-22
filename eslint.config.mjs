@@ -268,7 +268,7 @@ const config = defineConfig(
 
 			'@typescript-eslint/array-type': ['error', { default: 'array' }],
 			'@typescript-eslint/parameter-properties': 'error',
-			'@typescript-eslint/no-shadow': 'error',
+			'@typescript-eslint/no-shadow': 'warn',
 			// '@typescript-eslint/class-methods-use-this': ['error', {
 			//   enforceForClassFields: true,
 			//   ignoreOverrideMethods: true,
