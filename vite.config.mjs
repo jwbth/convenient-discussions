@@ -399,10 +399,28 @@ export default defineConfig(({ mode, command }) => {
 
 			// Entry point and output configuration
 			rollupOptions: {
-				input: path.resolve(__dirname, 'src/loader/startup.js'),
+				input: {
+					[bundleFilename]: path.resolve(__dirname, 'src/loader/startup.js'),
+					'convenientDiscussions-styles': path.resolve(
+						__dirname,
+						'src/styles.less',
+					),
+				},
 				output: {
 					// Output filename with mode-specific postfix
-					entryFileNames: `${bundleFilename}.js`,
+					entryFileNames: '[name].js',
+
+					// Asset filename for CSS
+					assetFileNames: (assetInfo) => {
+						if (
+							assetInfo.name?.endsWith('.css') ||
+							assetInfo.names?.some((n) => n.endsWith('.css'))
+						) {
+							return 'convenientDiscussions-styles.css'
+						}
+
+						return '[name].[ext]'
+					},
 
 					// Chunk filename for dynamic imports
 					chunkFileNames: `${bundleFilename}-[name].js`,

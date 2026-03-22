@@ -1,15 +1,8 @@
 import dateFormats from '../../data/dateFormats.json'
 import digitsData from '../../data/digits.json'
 import languageFallbacks from '../../data/languageFallbacks.json'
-import CommentCss from '../Comment.less?inline'
-import CommentFormCss from '../CommentForm.less?inline'
-import CommentLayersCss from '../CommentLayers.less?inline'
-import SectionCss from '../Section.less?inline'
-import ThreadCss from '../Thread.less?inline'
 import addCommentLinksCss from '../addCommentLinks.less?inline'
 import globalCss from '../global.less?inline'
-import navPanelCss from '../navPanel.less?inline'
-import pageNavCss from '../pageNav.less?inline'
 import {
 	defined,
 	getQueryParamBooleanValue,
@@ -19,9 +12,6 @@ import {
 	unique,
 } from '../shared/utils-general'
 import { dateTokenToMessageNames } from '../shared/utils-timestamp'
-import skinsCss from '../skins.less?inline'
-import talkPageCss from '../talkPage.less?inline'
-import tocCss from '../toc.less?inline'
 import { getUserInfo, splitIntoBatches } from '../utils-api'
 
 import cd from './cd'
@@ -371,7 +361,8 @@ class Loader {
 		try {
 			await Promise.all([
 				this.maybeLoadTalkPageModules(),
-				this.loadApp().then(() => {
+				this.loadApp(),
+				this.loadStyles().then(() => {
 					/*
 						Additions of CSS set a stage for a future reflow which delays operations dependent on
 						rendering, so we run them now, not after the requests are fulfilled, to save time. The
@@ -694,7 +685,30 @@ class Loader {
 			pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
 			ttlInDays: 365,
 			addCacheBuster: true,
-			execute: false,
+			add: false,
+		})
+	}
+
+	/**
+	 * Load the styles for the talk page functionality.
+	 *
+	 * @returns {Promise<void>}
+	 * @private
+	 */
+	async loadStyles() {
+		if (IS_DEV || IS_SINGLE) {
+			await import('../styles.less')
+
+			return
+		}
+
+		await this.loadPreferablyFromDiskCache({
+			domain: 'commons.wikimedia.org',
+			pageName: `User:Jack_who_built_the_house/convenientDiscussions-styles.css`,
+			ttlInDays: 365,
+			addCacheBuster: true,
+			ctype: 'text/css',
+			add: true,
 		})
 	}
 
@@ -731,7 +745,7 @@ class Loader {
 	 * @param {number} options.ttlInDays
 	 * @param {string} [options.ctype]
 	 * @param {boolean} [options.addCacheBuster]
-	 * @param {boolean} [options.execute]
+	 * @param {boolean} [options.add]
 	 * @returns {Promise<string | undefined>}
 	 */
 	async loadPreferablyFromDiskCache({
@@ -740,7 +754,7 @@ class Loader {
 		ttlInDays,
 		ctype = 'text/javascript',
 		addCacheBuster = false,
-		execute = true,
+		add = true,
 	}) {
 		const ttlInMs = ttlInDays * cd.g.msInDay
 		const pageEncoded = encodeURIComponent(pageName)
@@ -755,7 +769,7 @@ class Loader {
 
 		const content = apiPage.revisions[0].content
 		if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
-			if (execute) {
+			if (add) {
 				const scriptTag = document.createElement('script')
 				scriptTag.innerHTML = content
 				document.head.append(scriptTag)
@@ -763,7 +777,7 @@ class Loader {
 
 			return content
 		} else if (ctype === 'text/css' && apiPage.contentmodel === 'css') {
-			if (execute) {
+			if (add) {
 				mw.loader.addStyleTag(content)
 			}
 
@@ -840,16 +854,6 @@ class Loader {
 		}
 
 		mw.util.addCSS(globalCss)
-		mw.util.addCSS(CommentCss)
-		mw.util.addCSS(CommentFormCss)
-		mw.util.addCSS(CommentLayersCss)
-		mw.util.addCSS(SectionCss)
-		mw.util.addCSS(ThreadCss)
-		mw.util.addCSS(navPanelCss)
-		mw.util.addCSS(pageNavCss)
-		mw.util.addCSS(skinsCss)
-		mw.util.addCSS(talkPageCss)
-		mw.util.addCSS(tocCss)
 	}
 
 	/**
