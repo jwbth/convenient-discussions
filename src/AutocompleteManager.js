@@ -160,6 +160,7 @@ class AutocompleteManager {
 			const element = input.getEditableElement()[0]
 			this.tribute.attach(element)
 			element.cdInput = input
+			input.autocompleteManager = this
 			element.addEventListener('tribute-active-true', () => {
 				AutocompleteManager.activeMenu = this.tribute.menu
 				// Set the autocomplete menu as active to make selected text immutable
@@ -257,6 +258,15 @@ class AutocompleteManager {
 		}
 
 		return collections
+	}
+
+	/**
+	 * Get all the triggers for all the autocomplete types registered for this instance.
+	 *
+	 * @returns {string[]}
+	 */
+	getTriggers() {
+		return Array.from(this.autocompleteInstances.values()).map((instance) => instance.getTrigger())
 	}
 
 	/**

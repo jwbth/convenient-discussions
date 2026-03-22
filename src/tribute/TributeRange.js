@@ -89,7 +89,7 @@ class TributeRange {
 			let endPos = info.mentionPosition + info.mentionText.length + info.mentionTriggerChar.length
 			let ending = myField.value.substring(endPos, myField.value.length)
 
-			if (originalEvent.shiftKey && data.shiftModify) {
+			if ((originalEvent.shiftKey || data.content) && data.shiftModify) {
 				data.shiftModify()
 			}
 

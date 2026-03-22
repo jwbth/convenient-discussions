@@ -44,16 +44,21 @@ export default class OoUiInputCodeMirror extends codeMirrorExt {
 
 				// Set the update object on the target element for other scripts to use.
 				target.cdCodeMirrorUpdate = update
+
+				if (!target.value) {
+					// Natively it doesn't emit for some reason
+					document.dispatchEvent(new Event('selectionchange'))
+				}
 			}
 
 			// Dispatch the event from the contenteditable element.
 			if (update.docChanged) {
-				const inputEvent = new Event('input', {
-					bubbles: true,
-					cancelable: true,
-				})
-
-				update.view.contentDOM.dispatchEvent(inputEvent)
+				update.view.contentDOM.dispatchEvent(
+					new Event('input', {
+						bubbles: true,
+						cancelable: true,
+					}),
+				)
 			}
 		})
 		this.cdContentClassExtension = this.lib.EditorView.contentAttributes.of({

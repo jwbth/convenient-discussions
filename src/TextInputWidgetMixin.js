@@ -28,6 +28,14 @@ class TextInputWidgetMixin {
 	 */
 	autocompleteSavedSelection = undefined
 
+	/**
+	 * Autocomplete manager instance.
+	 *
+	 * @type {import('./AutocompleteManager').default | undefined}
+	 * @private
+	 */
+	autocompleteManager = undefined
+
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	constructor() {
 		// Workaround to make this.constructor in methods to be type-checked correctly
@@ -158,6 +166,18 @@ class TextInputWidgetMixin {
 
 		const selectedText =
 			start !== null && end !== null ? element.value.substring(start, end).trim() : ''
+
+		const savedSelection = this.autocompleteSavedSelection
+		if (
+			!selectedText &&
+			savedSelection &&
+			this.autocompleteManager?.getTriggers().some((trigger) =>
+				start === savedSelection.start + trigger.length
+			)
+		) {
+			return
+		}
+
 		this.autocompleteSavedSelection =
 			selectedText.length > 0 ? { selectedText, start: /** @type {number} */ (start) } : undefined
 	}
