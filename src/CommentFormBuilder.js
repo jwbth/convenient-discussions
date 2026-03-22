@@ -472,17 +472,19 @@ class CommentFormBuilder {
 	 * @param {Promise<void>} customModulesPromise
 	 * @returns {Promise<void>}
 	 */
-	async build(initialState, customModulesPromise) {
+	build(initialState, customModulesPromise) {
 		this.buildTextInputs(initialState)
 		this.buildCheckboxes(initialState)
 		this.buildButtons()
 		this.buildElements()
-		await this.buildToolbar(customModulesPromise)
+		const buildToolbarPromise = this.buildToolbar(customModulesPromise)
 		this.buildInsertButtons()
 
 		if (this.form.deleteCheckbox?.isSelected()) {
 			this.form.updateFormOnDeleteCheckboxChange(true)
 		}
+
+		return buildToolbarPromise
 	}
 }
 
