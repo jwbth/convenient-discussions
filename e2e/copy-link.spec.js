@@ -3,14 +3,14 @@ import { test, expect } from '@playwright/test'
 
 import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
-test.describe('Copy section link', () => {
-	test('copying section link', async ({ page, context }) => {
+test.describe('Copy link', () => {
+	test.beforeEach(async ({ context }) => {
 		// Grant clipboard permissions to the browser context
 		await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+	})
 
-		await setupConvenientDiscussions(page, {
-			url: TEST_PAGES.JWBTH_TEST,
-		})
+	test('copying section link', async ({ page }) => {
+		await setupConvenientDiscussions(page, { url: TEST_PAGES.JWBTH_TEST })
 
 		const found = await page.evaluate((headline) => {
 			const section = window.convenientDiscussions.sections?.find((s) => s.headline === headline)
@@ -95,7 +95,7 @@ test.describe('Copy section link', () => {
 			if (!comment?.elements?.[0]) return null
 
 			return { index: comment.index, id: comment.id }
-		}, 'reply 1')
+		}, 'child comment of comment to test buttons')
 
 		if (!commentInfo) throw new Error('Comment not found')
 
@@ -124,35 +124,35 @@ test.describe('Copy section link', () => {
 		// Check initial fields
 		const wikilinkInput = dialog.locator('.oo-ui-fieldLayout:has-text("Wikilink") input').first()
 		await expect(wikilinkInput).toHaveValue(
-			'[[User talk:JWBTH/CD test page#c-Jack_who_built_the_house-20250827060900-Test_account_8-20241120024100]]',
+			'[[User talk:JWBTH/CD test page#c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100]]',
 		)
 
 		const wikilinkSamePageInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Wikilink from the same page") input')
 			.first()
 		await expect(wikilinkSamePageInput).toHaveValue(
-			'[[#c-Jack_who_built_the_house-20250827060900-Test_account_8-20241120024100]]',
+			'[[#c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100]]',
 		)
 
 		const permanentWikilinkInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Permanent wikilink") input')
 			.first()
 		await expect(permanentWikilinkInput).toHaveValue(
-			'[[Special:GoToComment/c-Jack_who_built_the_house-20250827060900-Test_account_8-20241120024100]]',
+			'[[Special:GoToComment/c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100]]',
 		)
 
 		const regularLinkInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Regular link") input')
 			.first()
 		await expect(regularLinkInput).toHaveValue(
-			'https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page#c-Jack_who_built_the_house-20250827060900-Test_account_8-20241120024100',
+			'https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page#c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100',
 		)
 
 		const permanentLinkInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Permanent link") input')
 			.first()
 		await expect(permanentLinkInput).toHaveValue(
-			'https://test.wikipedia.org/wiki/Special:GoToComment/c-Jack_who_built_the_house-20250827060900-Test_account_8-20241120024100',
+			'https://test.wikipedia.org/wiki/Special:GoToComment/c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100',
 		)
 
 		// Wait for the "Diff link" button to be enabled

@@ -88,7 +88,7 @@ test.describe('Section "More options" menu', () => {
 		console.log('✅ Clicked "Add subsection" menu item')
 
 		// The form should appear immediately before the next h2 heading.
-		const nextHeading = page.locator('.mw-heading2:has(#Section_for_moving)')
+		const nextHeading = page.locator('.mw-heading2:has(#Section_to_add_test_comments)')
 		await expect(nextHeading).toBeVisible()
 
 		// The "Add subsection" form is placed just before the next h2, so it should be its
@@ -105,7 +105,7 @@ test.describe('Section "More options" menu', () => {
 
 		expect(
 			formPrecedesHeading,
-			'Add subsection form should appear immediately before .mw-heading2:has(#Section_for_moving)',
+			'Add subsection form should appear immediately before .mw-heading2:has(#Section_to_add_test_comments)',
 		).toBe(true)
 		console.log('✅ Add subsection form is immediately before the next section heading')
 

@@ -2,6 +2,8 @@
  * Browser test utilities
  */
 
+import { ensureAuthenticated } from './login'
+
 /**
  * Wait for Convenient Discussions to be fully loaded
  *
@@ -106,6 +108,8 @@ async function internalSetup(page, url, injectScriptCallback, settings = {}) {
 	// Wait for page to load completely
 	await page.waitForLoadState('networkidle')
 	console.log('🌐 Page loaded')
+
+	await ensureAuthenticated(page)
 
 	// Wait for MediaWiki globals to be available
 	await page.waitForFunction(() => window.mw && window.$, { timeout: 10_000 })
