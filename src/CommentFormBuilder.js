@@ -34,10 +34,16 @@ class CommentFormBuilder {
 			this.form.headlineInputPlaceholder = this.form.target.getCommentFormHeadlineInputPlaceholder(
 				this.form.mode,
 			)
+			const sectionType =
+				this.form.mode === 'addSection' ||
+				(this.form.isSectionOpeningCommentEdited() &&
+					/** @type {import('./Section').default} */ (this.form.targetSection).level === 2)
+					? 'section'
+					: 'subsection'
 			this.form.headlineInput = new TextInputWidget({
 				value: initialState.headline ?? '',
 				placeholder: this.form.headlineInputPlaceholder,
-				classes: ['cd-commentForm-headlineInput'],
+				classes: ['cd-commentForm-headlineInput', `cd-commentForm-headlineInput-${sectionType}`],
 				tabIndex: this.form.getTabIndex(11),
 			})
 		}
