@@ -1057,11 +1057,10 @@ class Controller extends EventEmitter {
 	/**
 	 * Set the page title to use as a base for possible transformations (like adding "Replying on"
 	 * when there is a reply form and "(1)" when there is 1 new comment).
-	 *
-	 * @param {string} title
 	 */
-	updateOriginalPageTitle(title) {
-		this.originalPageTitle = title
+	resetPageTitle() {
+		this.originalPageTitle = cd.mws('pagetitle', cd.page.name)
+		document.title = this.originalPageTitle
 	}
 
 	/**
@@ -1923,9 +1922,8 @@ class Controller extends EventEmitter {
 		$('.mw-revision').remove()
 
 		$('#firstHeading').text(cd.page.name)
-		document.title = cd.mws('pagetitle', cd.page.name)
 
-		this.updateOriginalPageTitle(document.title)
+		this.resetPageTitle()
 	}
 
 	/**

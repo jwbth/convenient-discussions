@@ -874,6 +874,8 @@ class BootProcess {
 		// init. This disables it for future page refreshes.
 		mw.config.set('wgDiscussionToolsStartNewTopicTool', false)
 
+		controller.resetPageTitle()
+
 		return {
 			headline,
 			comment,
