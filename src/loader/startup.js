@@ -14,8 +14,7 @@ import defaultConfig from '../../config/default'
 import configUrls from '../../config/urls.json'
 import i18nList from '../../data/i18nList.json'
 import languageFallbacks from '../../data/languageFallbacks.json'
-import en from '../../i18n/en.json'
-import { typedKeysOf, unique } from '../shared/utils-general'
+import { unique } from '../shared/utils-general'
 
 import cd from './cd'
 
@@ -84,29 +83,10 @@ async function bootstrap() {
 
 	if (SINGLE_LANG_CODE) {
 		// A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
-		const replaceEntities = (/** @type {string} */ string) =>
-			string
-				.replace(/&nbsp;/g, '\u00A0')
-				.replace(/&#32;/g, ' ')
-				.replace(/&rlm;/g, '\u200F')
-				.replace(/&lrm;/g, '\u200E')
-
-		cd.i18n = /** @type {I18n} */ { en }
-		typedKeysOf(cd.i18n.en).forEach((name) => {
-			cd.i18n.en[name] = replaceEntities(cd.i18n.en[name])
-		})
+		cd.i18n = /** @type {I18n} */ {}
+		await loadSingleLang('en')
 		if (SINGLE_LANG_CODE !== 'en') {
-			cd.i18n[SINGLE_LANG_CODE] = await import(
-				/* @vite-ignore */ '../../i18n/' + SINGLE_LANG_CODE + '.json'
-			)
-			const langObj = cd.i18n[SINGLE_LANG_CODE]
-			Object.keys(cd.i18n[SINGLE_LANG_CODE])
-				.filter((name) => typeof langObj[name] === 'string')
-				.forEach((name) => {
-					langObj[name] = replaceEntities(langObj[name])
-				})
-			langObj.dayjsLocale = await import(/* @vite-ignore */ 'dayjs/locale/' + SINGLE_LANG_CODE)
-			langObj.dateFnsLocale = await import(/* @vite-ignore */ 'date-fns/locale/' + SINGLE_LANG_CODE)
+			await loadSingleLang(SINGLE_LANG_CODE)
 		}
 	}
 
@@ -125,6 +105,39 @@ async function bootstrap() {
 	}
 
 	cd.debug.stopTimer('bootstrap')
+}
+
+/**
+ * Replace HTML entities with their corresponding characters.
+ *
+ * @param {string} string
+ * @returns {string}
+ */
+function replaceEntities(string) {
+	return string
+		.replace(/&nbsp;/g, '\u00A0')
+		.replace(/&#32;/g, ' ')
+		.replace(/&rlm;/g, '\u200F')
+		.replace(/&lrm;/g, '\u200E')
+}
+
+/**
+ * Load the i18n file for the single language code.
+ *
+ * @param {string} lang
+ */
+async function loadSingleLang(lang) {
+	const langObj = (await import(/* @vite-ignore */ '../../i18n/' + lang + '.json')).default
+	Object.keys(langObj)
+		.filter((name) => typeof langObj[name] === 'string')
+		.forEach((name) => {
+			langObj[name] = replaceEntities(langObj[name])
+		})
+	cd.i18n[lang] = langObj
+	if (lang !== 'en') {
+		langObj.dayjsLocale = await import(/* @vite-ignore */ 'dayjs/locale/' + lang)
+		langObj.dateFnsLocale = await import(/* @vite-ignore */ 'date-fns/locale/' + lang)
+	}
 }
 
 /**
@@ -216,14 +229,18 @@ async function getStrings() {
 			.filter(unique)
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			.filter((lang) => lang !== 'en' && (!cd.i18n || !(lang in cd.i18n)))
-			.map((lang) =>
-				cd.loader.loadPreferablyFromDiskCache({
+			.map((lang) => {
+				if (IS_DEV || IS_SINGLE) {
+					return loadSingleLang(lang)
+				}
+
+				return cd.loader.loadPreferablyFromDiskCache({
 					domain: 'commons.wikimedia.org',
 					pageName: `User:Jack who built the house/convenientDiscussions-i18n/${lang}.js`,
 					ttlInDays: 1,
-				}),
-			),
-	).catch(() => {})
+				})
+			}),
+	)
 }
 
 /**
