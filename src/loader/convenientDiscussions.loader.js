@@ -138,7 +138,7 @@ class Loader {
 	 * file is certain to be loaded, we make a guess whether the modules are gonna be needed. This
 	 * guess may be wrong in both ways (e.g. if a page turned out to be blacklisted/whitelisted).
 	 *
-	 * @returns {JQuery.Promise<any>}
+	 * @returns {JQuery.Promise<any> | undefined}
 	 */
 	maybeLoadTalkPageModules() {
 		if (!this.modulesRequest) {
@@ -147,48 +147,49 @@ class Loader {
 				this.setPageTypesTalk()
 			}
 
-			const modules = [
-				'ext.checkUser.styles',
-				'ext.checkUser.userInfoCard',
-				'jquery.client',
-				'jquery.ui',
-				'mediawiki.Title',
-				'mediawiki.Uri',
-				'mediawiki.api',
-				'mediawiki.cookie',
-				'mediawiki.interface.helpers.styles',
-				'mediawiki.jqueryMsg',
-				'mediawiki.notification',
-				'mediawiki.storage',
-				'mediawiki.user',
-				'mediawiki.util',
-				'mediawiki.widgets.visibleLengthLimit',
-				'oojs',
-				'oojs-ui-core',
-				'oojs-ui-widgets',
-				'oojs-ui-windows',
-				'oojs-ui.styles.icons-alerts',
-				'oojs-ui.styles.icons-content',
-				'oojs-ui.styles.icons-editing-advanced',
-				'oojs-ui.styles.icons-editing-citation',
-				'oojs-ui.styles.icons-editing-core',
-				'oojs-ui.styles.icons-interactions',
-				'oojs-ui.styles.icons-movement',
-				'user.options',
-				mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
-					? 'ext.confirmEdit.CaptchaInputWidget'
-					: undefined,
-				// We need to instantiate our clase based on the CodeMirror class, so we load it now, not on
-				// comment form creation.
-				cd.g.isCodeMirror6Installed ? 'ext.CodeMirror.v6.WikiEditor' : undefined,
-			].filter(defined)
-
 			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
 			// gadget with preloaded dependencies, for example), so we use this trick.
-			this.modulesRequest =
-				this.pageTypes.talk && modules.some((module) => mw.loader.getState(module) !== 'ready')
+			if (this.pageTypes.talk) {
+				const modules = [
+					'ext.checkUser.styles',
+					'ext.checkUser.userInfoCard',
+					'jquery.client',
+					'jquery.ui',
+					'mediawiki.Title',
+					'mediawiki.Uri',
+					'mediawiki.api',
+					'mediawiki.cookie',
+					'mediawiki.interface.helpers.styles',
+					'mediawiki.jqueryMsg',
+					'mediawiki.notification',
+					'mediawiki.storage',
+					'mediawiki.user',
+					'mediawiki.util',
+					'mediawiki.widgets.visibleLengthLimit',
+					'oojs',
+					'oojs-ui-core',
+					'oojs-ui-widgets',
+					'oojs-ui-windows',
+					'oojs-ui.styles.icons-alerts',
+					'oojs-ui.styles.icons-content',
+					'oojs-ui.styles.icons-editing-advanced',
+					'oojs-ui.styles.icons-editing-citation',
+					'oojs-ui.styles.icons-editing-core',
+					'oojs-ui.styles.icons-interactions',
+					'oojs-ui.styles.icons-movement',
+					'user.options',
+					mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
+						? 'ext.confirmEdit.CaptchaInputWidget'
+						: undefined,
+					// We need to instantiate our clase based on the CodeMirror class, so we load it now, not on
+					// comment form creation.
+					cd.g.isCodeMirror6Installed ? 'ext.CodeMirror.v6.WikiEditor' : undefined,
+				].filter(defined)
+
+				this.modulesRequest = modules.some((module) => mw.loader.getState(module) !== 'ready')
 					? mw.loader.using(modules)
 					: $.Deferred().resolve().promise()
+			}
 		}
 
 		return this.modulesRequest
@@ -879,34 +880,18 @@ class Loader {
 
 		try {
 			await Promise.all([
-				mw.loader.using([
-					'jquery.client',
-					'mediawiki.Title',
-					'mediawiki.api',
-					'mediawiki.jqueryMsg',
-					'mediawiki.user',
-					'mediawiki.util',
-					'oojs',
-					'oojs-ui-core',
-					'oojs-ui-widgets',
-					'oojs-ui-windows',
-					'oojs-ui.styles.icons-alerts',
-					'oojs-ui.styles.icons-editing-list',
-					'oojs-ui.styles.icons-interactions',
-					'oojs-ui.styles.icons-movement',
-					'user.options',
-				]),
+				mw.loader.using(['mediawiki.Title', 'mediawiki.jqueryMsg', 'mediawiki.util']),
 				this.loadApp(),
 			])
-
-			await this.runApp()
-
-			this.addCommentLinks?.()
 
 			// See the comment above: "Additions of CSS...".
 			mw.util.addCSS(globalCss)
 
 			mw.util.addCSS(addCommentLinksCss)
+
+			await this.runApp()
+
+			this.addCommentLinks?.()
 		} catch (error) {
 			mw.notify(cd.s('error-loaddata'), { type: 'error' })
 			console.error(error)
