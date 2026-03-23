@@ -53,7 +53,6 @@ playwright/
 
 e2e/
 ├── auth.setup.js             # Playwright auth setup (follows official pattern)
-├── auth-core.js              # Legacy auth logic (can be removed)
 ├── test-wikipedia-auth.spec.js # Example authenticated test
 └── helpers/
     └── auth-state.js         # Helper functions for auth management
