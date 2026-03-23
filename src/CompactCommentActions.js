@@ -17,6 +17,21 @@ class CompactCommentActions extends CommentActions {
 	comment = this.comment
 
 	/**
+	 * Create a reply button for compact comments.
+	 *
+	 * @override
+	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 */
+	createReplyButton(action) {
+		return new CommentButton({
+			element: this.createReplyWidget().$element[0],
+			action,
+			widgetConstructor: this.createReplyWidget,
+		})
+	}
+
+	/**
 	 * Create a reply widget for compact comments.
 	 *
 	 * @returns {OO.ui.ButtonWidget}
@@ -30,17 +45,17 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
-	 * Create a reply button for compact comments.
+	 * Create an edit button for compact comments.
 	 *
 	 * @override
 	 * @param {import('./Button').Action} action The action to perform when clicked.
 	 * @returns {CommentButton} The created button.
 	 */
-	createReplyButton(action) {
+	createEditButton(action) {
 		return new CommentButton({
-			element: this.createReplyWidget().$element[0],
+			element: this.createEditWidget().$element[0],
 			action,
-			widgetConstructor: this.createReplyWidget,
+			widgetConstructor: this.createEditWidget,
 		})
 	}
 
@@ -57,17 +72,18 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
-	 * Create an edit button for compact comments.
+	 * Create a thank button for compact comments.
 	 *
 	 * @override
 	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @param {boolean} _isThanked Whether the comment is already thanked.
 	 * @returns {CommentButton} The created button.
 	 */
-	createEditButton(action) {
+	createThankButton(action, _isThanked) {
 		return new CommentButton({
-			element: this.createEditWidget().$element[0],
+			element: this.createThankWidget().$element[0],
 			action,
-			widgetConstructor: this.createEditWidget,
+			widgetConstructor: this.createThankWidget,
 		})
 	}
 
@@ -92,18 +108,18 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
-	 * Create a thank button for compact comments.
+	 * Create a copy link button for compact comments.
 	 *
 	 * @override
 	 * @param {import('./Button').Action} action The action to perform when clicked.
-	 * @param {boolean} _isThanked Whether the comment is already thanked.
 	 * @returns {CommentButton} The created button.
 	 */
-	createThankButton(action, _isThanked) {
+	createCopyLinkButton(action) {
 		return new CommentButton({
-			element: this.createThankWidget().$element[0],
+			element: this.createCopyLinkWidget().$element[0],
 			action,
-			widgetConstructor: this.createThankWidget,
+			widgetConstructor: this.createCopyLinkWidget,
+			href: this.comment.dtId && '#' + this.comment.dtId,
 		})
 	}
 
@@ -126,22 +142,6 @@ class CompactCommentActions extends CommentActions {
 				'cd-comment-button-ooui-icon-copylink',
 			],
 		})
-
-	/**
-	 * Create a copy link button for compact comments.
-	 *
-	 * @override
-	 * @param {import('./Button').Action} action The action to perform when clicked.
-	 * @returns {CommentButton} The created button.
-	 */
-	createCopyLinkButton(action) {
-		return new CommentButton({
-			element: this.createCopyLinkWidget().$element[0],
-			action,
-			widgetConstructor: this.createCopyLinkWidget,
-			href: this.comment.dtId && '#' + this.comment.dtId,
-		})
-	}
 
 	/**
 	 * Create a "Go to parent" button for compact comments.
