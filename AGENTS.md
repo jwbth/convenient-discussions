@@ -2,7 +2,7 @@
 
 **Convenient Discussions** is a JavaScript tool that provides an enhanced user experience for MediaWiki talk pages. It acts as a shell over the existing MediaWiki discussion system.
 
-## General instructions
+## Instructions
 
 - Don't run tests unless asked.
 - There is _no_ CSS class `cd-comment` because a comment often consists of multiple elements distributed across DOM. Instead, there are classes
@@ -11,11 +11,10 @@
 
   All comment parts have the attribute `data-cd-comment-index` specifying the comment's index.
 
-## Project Structure
-
-### Building
-
 - Don't run `npm run dev` (assume already running).
+- In CLI commands, in paths, use forward slashes (/).
+
+## Project Structure
 
 ### Core Application Files
 
@@ -73,5 +72,4 @@
 - Don't use the `object` type when you know a more precise type is known. If that type is now defined, define it with `@typedef` and use it.
 - Don't use tags that are already reflected in the syntax (e.g. `@static`).
 - When a class method is overriding a method of the parent class, add `@override` tag to its JSDoc comment.
-- Instead of defining JSDoc types in each file independently, aim to reuse types by importing them with `import('path').Type` from one file deemed the most appropriate to hold it.
-- Don't start every sentence on a new line. To separate different groups of information, use paragraphs.
+- Don't start every sentence on a new line. To separate different groups of information if warranted, use paragraphs.
