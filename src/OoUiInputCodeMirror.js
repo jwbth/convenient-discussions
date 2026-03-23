@@ -136,6 +136,8 @@ export default class OoUiInputCodeMirror extends codeMirrorExt {
 	 * @param {boolean} enabled
 	 */
 	updateAutocompletePreference(enabled) {
+		if (!this.extensionRegistry.isRegistered('autocomplete', this.view)) return
+
 		this.preferences.lockPreference('autocomplete', this.view, enabled)
 	}
 }

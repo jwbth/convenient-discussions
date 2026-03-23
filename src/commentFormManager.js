@@ -110,6 +110,7 @@ class CommentFormManager extends EventEmitter {
 	setupCommentForm(target, config, initialState, commentForm) {
 		if (commentForm) {
 			commentForm.setTargets(target)
+			commentForm.initAutocomplete()
 			target.addCommentFormToPage(config.mode, commentForm)
 		} else {
 			const cf = new CommentForm({ target, initialState, commentFormManager: this, ...config })
