@@ -172,8 +172,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Update the main timestamp element for compact comments.
-	 * Always updates since compact comments don't use headers.
+	 * Update the main timestamp element for compact comments. Always updates since compact comments
+	 * don't use headers.
 	 *
 	 * @param {string} timestamp
 	 * @param {string} title
@@ -188,8 +188,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Get separators for change note links in compact comments.
-	 * Uses space separators with conditional dot separator for diff link.
+	 * Get separators for change note links in compact comments. Uses space separators with
+	 * conditional dot separator for diff link.
 	 *
 	 * @param {string} stringName
 	 * @param {import('./Button').default} [refreshLink]
