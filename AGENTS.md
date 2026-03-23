@@ -10,7 +10,7 @@
 
 ### Building
 
-- Don't run `npm run start` (assume already running).
+- Don't run `npm run dev` (assume already running).
 
 ### Core Application Files
 
