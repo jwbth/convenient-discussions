@@ -1545,7 +1545,7 @@ class CommentForm extends EventEmitter {
 				}
 			})
 
-		this.commentInput.addAutocompleteListeners()
+		this.commentInput.addEventListeners()
 	}
 
 	/**
@@ -1555,11 +1555,7 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	removeEventListenersFromCommentInput() {
-		this.commentInput
-			.getEditableElement()
-			.off('.cd')
-			.off('tribute-active-true')
-			.off('tribute-active-false')
+		this.commentInput.getEditableElement().off('.cd')
 	}
 
 	/**

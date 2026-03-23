@@ -58,10 +58,6 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	construct() {
-		this.$input.on('input', () => {
-			this.emit('manualChange', this.getValue())
-		})
-
 		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin and
 		// not classes that extend it.
 		this.handleSelectionChange = () => {
@@ -248,20 +244,24 @@ class TextInputWidgetMixin {
 	 *
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	addAutocompleteListeners() {
+	addEventListeners() {
 		const $element = this.getEditableElement()
 		$element[0].cdInput = this
-		$element.on('autocomplete-attached', (_event, data) => {
-			this.autocompleteManager = data.autocompleteManager
-		})
-		$element.on('tribute-active-true', () => {
-			// Set the autocomplete menu as active to make selected text immutable
-			this.setAutocompleteMenuActive(true)
-		})
-		$element.on('tribute-active-false', () => {
-			// Set the autocomplete menu as inactive to allow selection changes again
-			this.setAutocompleteMenuActive(false)
-		})
+		$element
+			.on('input.cd', () => {
+				this.emit('manualChange', this.getValue())
+			})
+			.on('autocomplete-attached.cd', (_event, data) => {
+				this.autocompleteManager = data.autocompleteManager
+			})
+			.on('tribute-active-true.cd', () => {
+				// Set the autocomplete menu as active to make selected text immutable
+				this.setAutocompleteMenuActive(true)
+			})
+			.on('tribute-active-false.cd', () => {
+				// Set the autocomplete menu as inactive to allow selection changes again
+				this.setAutocompleteMenuActive(false)
+			})
 	}
 }
 
