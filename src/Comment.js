@@ -1975,6 +1975,7 @@ class Comment extends CommentSkeleton {
 			})
 			this.$elements.attr('data-cd-comment-index', this.index)
 
+			this.teardownOnboardOntoToggleChildThreadsPopup()
 			this.initializeCommentStructure()
 
 			mw.hook('wikipage.content').fire(this.$elements)
