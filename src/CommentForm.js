@@ -22,7 +22,7 @@ import {
 } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
 import { handleApiReject, parseCode } from './utils-api'
-import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
+import { keyCombination } from './utils-keyboard'
 import {
 	buildEditSummary,
 	isExistentAnchor,
@@ -531,6 +531,11 @@ class CommentForm extends EventEmitter {
 	}) {
 		super()
 
+		// Workaround to make this.constructor in methods to be type-checked correctly
+		/** @type {typeof CommentForm} */
+		// eslint-disable-next-line no-self-assign
+		this.constructor = this.constructor
+
 		this.commentFormManager = commentFormManager
 
 		// Unlike when changing other settings on the fly, changing this one won't alter the behavior
@@ -832,7 +837,6 @@ class CommentForm extends EventEmitter {
 	hideToolbar() {
 		this.commentInput.$element.find('.wikiEditor-ui-top').hide()
 	}
-
 
 	/**
 	 * Load the edited comment to the comment form.
@@ -3863,7 +3867,6 @@ class CommentForm extends EventEmitter {
 	 *     post: string;
 	 *   };
 	 * }}
-	 * @private
 	 */
 	static encapsulateOptions
 
