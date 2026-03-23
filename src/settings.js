@@ -984,12 +984,10 @@ class Settings extends EventEmitter {
 			message: $('<div>')
 				.append(
 					$('<img>')
-						.attr('width', 626)
-						.attr('height', 67)
-						.attr(
-							'src',
-							'//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png',
-						)
+						// Set dimensions so that the dialog is rendered with the correct size
+						.attr('width', 631)
+						.attr('height', 73)
+						.attr('src', 'http://localhost:9000/assets/commentDisplay-compact.png')
 						.addClass('cd-rcnotice-img'),
 					$('<div>')
 						.addClass('cd-rcnotice-img cd-rcnotice-arrow cd-icon')
@@ -1001,12 +999,10 @@ class Settings extends EventEmitter {
 								),
 						),
 					$('<img>')
-						.attr('width', 626)
-						.attr('height', 118)
-						.attr(
-							'src',
-							'//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png',
-						)
+						// Set dimensions so that the dialog is rendered with the correct size
+						.attr('width', 631)
+						.attr('height', 130)
+						.attr('src', 'http://localhost:9000/assets/commentDisplay-spacious.png')
 						.addClass('cd-rcnotice-img'),
 					$('<div>')
 						.addClass('cd-rcnotice-text')
