@@ -1235,14 +1235,13 @@ class CommentForm extends EventEmitter {
 		}
 
 		const $editNotices = $(result.html.replace(/<div class="cd-editnotice"><\/div>/g, ''))
-		if (!$editNotices.children().length && !$editNotices.text()) return
-
-		this.$messageArea
-			.append($editNotices)
-			.cdAddCloseButton()
+		$editNotices
 			.find(`:is(.cd-editnotice, .cd-editintro) > a.new:first-child:last-child`)
 			.parent()
 			.remove()
+		if (!$editNotices.children().length && !$editNotices.text()) return
+
+		this.$messageArea.append($editNotices).cdAddCloseButton()
 
 		// We mirror the functionality of the ext.charinsert module to keep the undo/redo
 		// functionality.
