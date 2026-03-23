@@ -4158,10 +4158,6 @@ class CommentForm extends EventEmitter {
 		// initialize it directly here as well?
 		this.commentInput.setCodeMirror(active ? this.codeMirror : undefined)
 		this.addEventListenersToCommentInput()
-
-		if (!active) {
-			this.commentInput.focus()
-		}
 	}
 
 	static counter = 0
