@@ -5,6 +5,11 @@
 ## General instructions
 
 - Don't run tests unless asked.
+- There is _no_ CSS class `cd-comment` because a comment often consists of multiple elements distributed across DOM. Instead, there are classes
+  - `cd-comment-part-first` for the first comment part
+  - `cd-comment-part` for any comment part
+
+  All comment parts have the attribute `data-cd-comment-index` specifying the comment's index.
 
 ## Project Structure
 
