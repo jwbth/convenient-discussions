@@ -491,18 +491,8 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	static initPrototypes() {
-		if (this.prototypesInitted) return
-
-		// Initialize shared layer prototypes (underlay, overlay)
-		CommentLayers.initPrototypes()
-
-		// Create header wrapper element
-		const headerElement = document.createElement('div')
-		headerElement.className = 'cd-comment-header'
-
 		const authorWrapper = document.createElement('div')
 		authorWrapper.className = 'cd-comment-author-wrapper'
-		headerElement.append(authorWrapper)
 
 		// Add user info card button
 		authorWrapper.append(Comment.createUserInfoCardButton())
@@ -532,7 +522,13 @@ class SpaciousComment extends Comment {
 		}
 
 		authorLinksWrapper.append(cd.mws('parentheses-end'))
+
 		authorWrapper.append(' ', authorLinksWrapper)
+
+		// Create header wrapper element
+		const headerElement = document.createElement('div')
+		headerElement.className = 'cd-comment-header'
+		headerElement.append(authorWrapper)
 
 		// We need a wrapper to ensure correct positioning in LTR-in-RTL situations and vice versa.
 		const headerWrapper = document.createElement('div')
@@ -540,6 +536,10 @@ class SpaciousComment extends Comment {
 		headerWrapper.append(headerElement)
 
 		this.prototypes.add('headerWrapperElement', headerWrapper)
+
+		// Don't return at the start of the function because we need to rebuild the header wrapper in
+		// case a setting changed affecting its look
+		if (this.prototypesInitted) return
 
 		// Create SVG icon prototypes for toggle child threads button
 		this.prototypes.add(
@@ -550,6 +550,9 @@ class SpaciousComment extends Comment {
 			'expandChildThreadsButtonSvg',
 			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0],
 		)
+
+		// Initialize shared layer prototypes (underlay, overlay)
+		CommentLayers.initPrototypes()
 
 		// Initialize spacious-specific action prototypes
 		SpaciousCommentActions.initPrototypes()
