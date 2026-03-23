@@ -160,7 +160,7 @@ class TextInputWidgetMixin {
 		const end = element.selectionEnd
 
 		const selectedText =
-			start !== null && end !== null ? element.value.substring(start, end).trim() : ''
+			start !== null && end !== null ? element.value.substring(start, end).trimEnd() : ''
 
 		const savedSelection = this.autocompleteSavedSelection
 		if (
