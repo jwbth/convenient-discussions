@@ -1446,7 +1446,10 @@ class Thread extends mixInObject(
 		}
 
 		if (!this.isInited) {
-			this.on('toggle', this.updateLines)
+			this.on('toggle', () => {
+				// Thread lines may get positioned wrongly if we update lines immediately
+				window.requestAnimationFrame(this.updateLines)
+			})
 			controller.on('resize', this.updateLines).on('mutate', () => {
 				// Update only on mouse move to prevent short freezings of a page when there is a comment
 				// form in the beginning of a very long page and the input is changed so that everything
@@ -1656,7 +1659,9 @@ class Thread extends mixInObject(
 	}
 
 	/**
-	 * _For internal use._ Calculate the offset and (if needed) add the thread lines to the container.
+	 * Calculate the offset and (if needed) add the thread lines to the container.
+	 *
+	 * @private
 	 */
 	static updateLines = () => {
 		if (!this.enabled || document.hidden) return
