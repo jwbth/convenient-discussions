@@ -1,10 +1,13 @@
 import Button from './Button'
 import MultilineTextInputWidget from './MultilineTextInputWidget'
+import OoUiInputCodeMirror from './OoUiInputCodeMirror'
 import TextInputWidget from './TextInputWidget'
 import TextMasker from './TextMasker'
+import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import { defined, removeDoubleSpaces } from './shared/utils-general'
+import { isCmdModifierPressed } from './utils-keyboard'
 import { createCheckboxControl } from './utils-oojs'
 import { wrapHtml } from './utils-window'
 
@@ -369,7 +372,7 @@ class CommentFormBuilder {
 	async buildToolbar(customModulesPromise) {
 		if (!cd.settings.get('showToolbar') || !mw.loader.getState('ext.wikiEditor')) {
 			if (cd.settings.get('useCodeMirror')) {
-				this.form.initCodeMirror()
+				this.initCodeMirror()
 			}
 
 			return
@@ -389,7 +392,7 @@ class CommentFormBuilder {
 
 		$toolbarPlaceholder.remove()
 
-		this.form.tweakToolbar()
+		this.tweakToolbar()
 
 		// A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
 		this.form.commentInput.$input.data('wikiEditor-context').instance = 5
@@ -404,6 +407,318 @@ class CommentFormBuilder {
 		 * @param {object} cd {@link convenientDiscussions} object.
 		 */
 		mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this.form, cd)
+	}
+
+	/**
+	 * Tweak the WikiEditor toolbar.
+	 */
+	tweakToolbar() {
+		this.setupToolbar()
+		this.removeToolbarElements()
+		this.addToolbarButtons()
+		this.addCodeMirror()
+	}
+
+	/**
+	 * @private
+	 */
+	addToolbarButtons() {
+		const $input = this.form.commentInput.$input
+		const scriptPath = mw.config.get('wgScriptPath')
+		const lang = cd.g.userLanguage
+
+		$input.wikiEditor('addToToolbar', {
+			section: 'main',
+			groups: {
+				'convenient-discussions': {},
+			},
+		})
+		$input.wikiEditor('addToToolbar', {
+			section: 'main',
+			group: 'convenient-discussions',
+			tools: {
+				smaller: {
+					label: cd.mws('wikieditor-toolbar-tool-small'),
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
+					action: {
+						type: 'encapsulate',
+						options: {
+							pre: '<small>',
+							peri: cd.mws('wikieditor-toolbar-tool-small-example'),
+							post: '</small>',
+						},
+					},
+				},
+				quote: {
+					label: `${cd.s('cf-quote-tooltip')} ${cd.mws(
+						'parentheses',
+						`Q${cd.mws('comma-separator')}${cd.g.cmdModifier}+Alt+Q`,
+					)}`,
+					type: 'button',
+					// icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
+					action: {
+						type: 'callback',
+						execute: () => {
+							this.form.quote(true, commentManager.getSelectedComment())
+						},
+					},
+				},
+				mention: {
+					label: cd.s('cf-mention-tooltip', cd.g.cmdModifier),
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
+					action: {
+						type: 'callback',
+						execute: () => {
+							// @ts-expect-error: Use deprecated window.event to avoid removing and adding a listener
+							// eslint-disable-next-line @typescript-eslint/no-deprecated
+							this.form.mention(isCmdModifierPressed(window.event))
+						},
+					},
+				},
+				commentLink: {
+					label: cd.s('cf-commentlink-tooltip'),
+					type: 'button',
+					icon:
+						cd.g.userDirection === 'ltr'
+							? `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M3 2C2.46957 2 1.96086 2.21071 1.58579 2.58579C1.21071 2.96086 1 3.46957 1 4V20L5 16H17C17.5304 16 18.0391 15.7893 18.4142 15.4142C18.7893 15.0391 19 14.5304 19 14V4C19 3.46957 18.7893 2.96086 18.4142 2.58579C18.0391 2.21071 17.5304 2 17 2H3Z" /%3E%3C/svg%3E'`
+							: `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M17 2C17.5304 2 18.0391 2.21071 18.4142 2.58579C18.7893 2.96086 19 3.46957 19 4V20L15 16H3C2.46957 16 1.96086 15.7893 1.58579 15.4142C1.21071 15.0391 1 14.5304 1 14V4C1 3.46957 1.21071 2.96086 1.58579 2.58579C1.96086 2.21071 2.46957 2 3 2H17Z" /%3E%3C/svg%3E'`,
+					action: {
+						type: 'callback',
+						execute: () => {
+							this.form.insertCommentLink()
+						},
+					},
+				},
+			},
+		})
+
+		$input.wikiEditor('addToToolbar', {
+			section: 'advanced',
+			group: 'format',
+			tools: {
+				code: {
+					label: `${cd.s('cf-code-tooltip')} ${cd.mws(
+						'parentheses',
+						`${cd.g.cmdModifier}+Shift+6`,
+					)}`,
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
+					action: {
+						type: 'encapsulate',
+						options: this.form.constructor.encapsulateOptions.code,
+					},
+				},
+				codeBlock: {
+					label: cd.s('cf-codeblock-tooltip'),
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=markup&lang=${lang}&skin=vector`,
+					action: {
+						type: 'encapsulate',
+						options: {
+							pre: '<syntaxhighlight lang="">\n',
+							peri: cd.s('cf-codeblock-placeholder'),
+							post: '\n</syntaxhighlight>',
+						},
+					},
+				},
+				underline: {
+					label: `${cd.s('cf-underline-tooltip')} ${cd.mws(
+						'parentheses',
+						`${cd.g.cmdModifier}+U`,
+					)}`,
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
+					action: {
+						type: 'encapsulate',
+						options: this.form.constructor.encapsulateOptions.underline,
+					},
+				},
+				strikethrough: {
+					label: `${cd.s('cf-strikethrough-tooltip')} ${cd.mws(
+						'parentheses',
+						`${cd.g.cmdModifier}+Shift+5`,
+					)}`,
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
+					action: {
+						type: 'encapsulate',
+						options: this.form.constructor.encapsulateOptions.strikethrough,
+					},
+				},
+			},
+		})
+
+		this.form.$element
+			.find('.tool[rel="bold"] a')
+			.attr(
+				'title',
+				`${mw.msg('wikieditor-toolbar-tool-bold')} ${cd.mws(
+					'parentheses',
+					`${cd.g.cmdModifier}+B`,
+				)}`,
+			)
+
+		this.form.$element
+			.find('.tool[rel="italic"] a')
+			.attr(
+				'title',
+				`${mw.msg('wikieditor-toolbar-tool-italic')} ${cd.mws(
+					'parentheses',
+					`${cd.g.cmdModifier}+I`,
+				)}`,
+			)
+
+		this.form.$element
+			.find('.tool[rel="link"] a')
+			.attr(
+				'title',
+				`${mw.msg('wikieditor-toolbar-tool-link')} ${cd.mws(
+					'parentheses',
+					`${cd.g.cmdModifier}+K`,
+				)}`,
+			)
+
+		this.form.$element
+			.find('.tool[rel="ulist"] a')
+			.attr(
+				'title',
+				`${mw.msg('wikieditor-toolbar-tool-ulist')} ${cd.mws(
+					'parentheses',
+					`${cd.g.cmdModifier}+Shift+8`,
+				)}`,
+			)
+
+		this.form.$element.find('.tool[rel="link"] a, .tool[rel="file"] a').on('click', (event) => {
+			// Fix text being inserted in a wrong textarea.
+			const rel = event.currentTarget.parentElement?.getAttribute('rel')
+			if (!rel) return
+
+			const $dialog = $(`#wikieditor-toolbar-${rel}-dialog`)
+			if ($dialog.length) {
+				const context = $dialog.data('context')
+				if (context) {
+					context.$textarea = context.$focusedElem = this.form.commentInput.$input
+				}
+
+				// Fix the error when trying to submit the dialog by pressing Enter after doing so by
+				// pressing a button.
+				$dialog.parent().data('dialogaction', false)
+			}
+		})
+
+		// Reuse .tool-button for correct background on hover. In case of problems replace with styles for .cd-tool-button-wrapper
+		this.form.$element
+			.find('.tool[rel="quote"]')
+			.wrap($('<span>').addClass('tool-button cd-tool-button-wrapper'))
+	}
+
+	/**
+	 * @private
+	 */
+	setupToolbar() {
+		const $input = this.form.commentInput.$input
+
+		const wikiEditorModule = mw.loader.moduleRegistry['ext.wikiEditor']
+		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+		const toolbarConfig = wikiEditorModule.packageExports['jquery.wikiEditor.toolbar.config.js']
+		$input.wikiEditor('addModule', toolbarConfig)
+		const dialogsConfig = wikiEditorModule.packageExports['jquery.wikiEditor.dialogs.config.js']
+		dialogsConfig.replaceIcons($input)
+		const dialogsDefaultConfig = dialogsConfig.getDefaultConfig()
+		if (this.form.uploadToCommons) {
+			const commentForm = this.form
+			dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons[
+				'wikieditor-toolbar-tool-file-upload'
+			] = function openUploadDialog() {
+				$(this).dialog('close')
+				commentForm.uploadImage(undefined, true)
+			}
+		}
+		$input.wikiEditor('addModule', dialogsDefaultConfig)
+	}
+
+	/**
+	 * From the toolbar, remove buttons that are irrelevant in comments.
+	 *
+	 * @private
+	 */
+	removeToolbarElements() {
+		// Monkey patch to remove WikiEditor's resizing dragbar and its traces
+		this.form.commentInput.$element.find('.ext-WikiEditor-ResizingDragBar').remove()
+		const $uiText = this.form.commentInput.$element.find('.wikiEditor-ui-text')
+		$uiText.css('height', '')
+		this.form.commentInput.$input.attr('rows', this.form.getInitialRowCount())
+		this.form.commentInput.$input.removeClass('ext-WikiEditor-resizable-textbox')
+		$uiText.closest('.wikiEditor-ui-view').removeClass('wikiEditor-ui-view-resizable')
+
+		this.form.commentInput.$element
+			.find(
+				'.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]',
+			)
+			.remove()
+		if (!this.form.isMode('addSection') && !this.form.isMode('addSubsection')) {
+			this.form.commentInput.$element.find('.group-heading').remove()
+		}
+	}
+
+	/**
+	 * Add CodeMirror's button to the toolbar and initialize CodeMirror.
+	 *
+	 * @private
+	 */
+	addCodeMirror() {
+		if (!cd.g.isCodeMirror6Installed) return
+
+		this.form.commentInput.$element
+			.children('.wikiEditor-ui')
+			.first()
+			.addClass('ext-codemirror-mediawiki')
+
+		if (cd.settings.get('useCodeMirror')) {
+			this.initCodeMirror()
+		} else {
+			this.form.commentInput.$input.wikiEditor('addToToolbar', {
+				section: 'main',
+				groups: {
+					codemirror: {
+						tools: {
+							CodeMirror: {
+								type: 'element',
+								element: () => {
+									const button = new OO.ui.ToggleButtonWidget({
+										label: mw.msg('codemirror-toggle-label-short'),
+										title: mw.msg('codemirror-toggle-label'),
+										icon: 'syntax-highlight',
+										value: false,
+										framed: false,
+										classes: ['tool', 'cm-mw-toggle-wikieditor'],
+									})
+
+									// After the button is clicked for the first time, it is replaced by the
+									// CodeMirror extension with its own, so initCodeMirror() runs only once.
+									button.on('click', this.initCodeMirror)
+
+									return button.$element
+								},
+							},
+						},
+					},
+				},
+			})
+		}
+	}
+
+	/**
+	 * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
+	 */
+	initCodeMirror = () => {
+		this.form.codeMirror = new OoUiInputCodeMirror(this.form.commentInput)
+		this.form.codeMirror.initialize(
+			undefined,
+			/** @type {string} */ (this.form.commentInput.$input.attr('placeholder')),
+		)
 	}
 
 	/**
