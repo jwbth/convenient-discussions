@@ -495,6 +495,13 @@ class CommentForm extends EventEmitter {
 	autoSummary
 
 	/**
+	 * CodeMirror instance for the comment input.
+	 *
+	 * @type {import('./OoUiInputCodeMirror').default | undefined}
+	 */
+	codeMirror
+
+	/**
 	 * @typedef {Mode extends 'addSection' ? undefined : import('./Section').default | undefined} CommentFormTargetSection
 	 */
 
@@ -1537,6 +1544,8 @@ class CommentForm extends EventEmitter {
 					}
 				}
 			})
+
+		this.commentInput.addAutocompleteListeners()
 	}
 
 	/**
@@ -1546,7 +1555,11 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	removeEventListenersFromCommentInput() {
-		this.commentInput.getEditableElement().off('.cd')
+		this.commentInput
+			.getEditableElement()
+			.off('.cd')
+			.off('tribute-active-true')
+			.off('tribute-active-false')
 	}
 
 	/**

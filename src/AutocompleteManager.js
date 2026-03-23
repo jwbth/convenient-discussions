@@ -159,17 +159,12 @@ class AutocompleteManager {
 
 			const element = input.getEditableElement()[0]
 			this.tribute.attach(element)
-			element.cdInput = input
-			input.autocompleteManager = this
-			element.addEventListener('tribute-active-true', () => {
+			$(element).trigger('autocomplete-attached.cd', { autocompleteManager: this })
+			$(element).on('tribute-active-true', () => {
 				AutocompleteManager.activeMenu = this.tribute.menu
-				// Set the autocomplete menu as active to make selected text immutable
-				input.setAutocompleteMenuActive(true)
 			})
-			element.addEventListener('tribute-active-false', () => {
+			$(element).on('tribute-active-false', () => {
 				delete AutocompleteManager.activeMenu
-				// Set the autocomplete menu as inactive to allow selection changes again
-				input.setAutocompleteMenuActive(false)
 			})
 			if (input instanceof OO.ui.MultilineTextInputWidget) {
 				input.on('resize', () => {

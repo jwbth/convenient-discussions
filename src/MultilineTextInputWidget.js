@@ -1,5 +1,4 @@
 import TextInputWidgetMixin from './TextInputWidgetMixin'
-import cd from './loader/cd'
 import { es6ClassToOoJsClass, mixInClass } from './utils-oojs-class'
 
 /**
@@ -62,7 +61,6 @@ class MultilineTextInputWidget extends mixInClass(
 
 		if (this.codeMirror) {
 			this.updateCodeMirrorPendingClass()
-			this.codeMirror.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
 		}
 	}
 

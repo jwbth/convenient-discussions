@@ -26,15 +26,14 @@ class TextInputWidgetMixin {
 	 * @type {{selectedText: string, start: number} | undefined}
 	 * @private
 	 */
-	autocompleteSavedSelection = undefined
+	autocompleteSavedSelection
 
 	/**
 	 * Autocomplete manager instance.
 	 *
 	 * @type {import('./AutocompleteManager').default | undefined}
-	 * @private
 	 */
-	autocompleteManager = undefined
+	autocompleteManager
 
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	constructor() {
@@ -171,9 +170,9 @@ class TextInputWidgetMixin {
 		if (
 			!selectedText &&
 			savedSelection &&
-			this.autocompleteManager?.getTriggers().some((trigger) =>
-				start === savedSelection.start + trigger.length
-			)
+			this.autocompleteManager
+				?.getTriggers()
+				.some((trigger) => start === savedSelection.start + trigger.length)
 		) {
 			return
 		}
@@ -242,6 +241,27 @@ class TextInputWidgetMixin {
 			'selectionchange',
 			/** @type {NonNullable<typeof this.handleSelectionChange>} */ (this.handleSelectionChange),
 		)
+	}
+
+	/**
+	 * Add autocomplete listeners.
+	 *
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	addAutocompleteListeners() {
+		const $element = this.getEditableElement()
+		$element[0].cdInput = this
+		$element.on('autocomplete-attached', (_event, data) => {
+			this.autocompleteManager = data.autocompleteManager
+		})
+		$element.on('tribute-active-true', () => {
+			// Set the autocomplete menu as active to make selected text immutable
+			this.setAutocompleteMenuActive(true)
+		})
+		$element.on('tribute-active-false', () => {
+			// Set the autocomplete menu as inactive to allow selection changes again
+			this.setAutocompleteMenuActive(false)
+		})
 	}
 }
 

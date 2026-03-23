@@ -5,7 +5,12 @@ import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './shared/utils-general'
+import {
+	defined,
+	removeFromArrayIfPresent,
+	sleep,
+	subtractDaysFromNow,
+} from './shared/utils-general'
 import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
 import { isInputFocused } from './utils-window'
 
@@ -83,6 +88,15 @@ class CommentFormManager extends EventEmitter {
 		mw.hook('ext.CodeMirror.toggle').add((enabled, codeMirror) => {
 			this.items.find((item) => item.codeMirror === codeMirror)?.setCodeMirrorActive(enabled)
 			cd.settings.saveSettingOnTheFly('useCodeMirror', enabled)
+		})
+
+		mw.hook('ext.CodeMirror.ready').add(async (codeMirror) => {
+			// Wait for codemirror.mediawiki.js in CodeMirror to register the autocomplete extension.
+			await sleep()
+
+			this.items
+				.find((item) => item.codeMirror === codeMirror)
+				?.codeMirror?.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
 		})
 	}
 
