@@ -5,10 +5,13 @@ const codeMirrorExt = /** @type {typeof import('./CodeMirrorWikiEditor').default
 			class {}
 )
 
+// HACK: Name it CodeMirrorChild instead of OoUiInputCodeMirror to prevent focusing in
+// https://github.com/wikimedia/mediawiki-extensions-CodeMirror/blob/master/resources/codemirror.js
+
 /**
  * Our CodeMirror extension for OOUI inputs.
  */
-export default class OoUiInputCodeMirror extends codeMirrorExt {
+export default class CodeMirrorChild extends codeMirrorExt {
 	/**
 	 * @param {import('./MultilineTextInputWidget').default} input
 	 */

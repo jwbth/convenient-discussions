@@ -776,9 +776,11 @@ class CommentForm extends EventEmitter {
 
 		if (!initialState.originalComment && initialState.focus !== false) {
 			this.$element.cdScrollIntoView('center', true, () => {
-				if (!this.isMode('edit')) {
-					;(this.headlineInput || this.commentInput).focus()
-				}
+				this.buildPromise.then(() => {
+					if (!this.isMode('edit')) {
+						;(this.headlineInput || this.commentInput).focus()
+					}
+				})
 			})
 		}
 
@@ -1174,6 +1176,8 @@ class CommentForm extends EventEmitter {
 
 			operation.close()
 
+			await this.buildPromise
+
 			if (initialState.focusHeadline && this.headlineInput) {
 				this.headlineInput.selectRange(this.originalHeadline.length)
 			} else {
@@ -1311,6 +1315,8 @@ class CommentForm extends EventEmitter {
 			this.originalComment = code
 
 			operation.close()
+
+			await this.buildPromise
 
 			// Dummy comment to prevent Prettier from killing the empty line
 			;(this.headlineInput || this.commentInput).focus()
@@ -1953,8 +1959,6 @@ class CommentForm extends EventEmitter {
 
 	/**
 	 * Initialize autocomplete using {@link https://github.com/zurb/tribute Tribute}.
-	 *
-	 * @private
 	 */
 	initAutocomplete() {
 		/** @type {Comment[]} */
