@@ -134,6 +134,31 @@ function licenseExtractionPlugin(buildMode) {
 }
 
 /**
+ * Custom plugin to disable full page reload on HMR failure.
+ *
+ * @returns {import('vite').Plugin}
+ */
+function disableFullReloadPlugin() {
+	return {
+		name: 'disable-full-reload',
+		configureServer(server) {
+			const hot = server.hot || server.ws
+			const originalSend = hot.send
+			hot.send = function (payload, ...args) {
+				if (
+					typeof payload === 'object' &&
+					payload !== null &&
+					payload.type === 'full-reload'
+				) {
+					return
+				}
+				return originalSend.apply(this, [payload, ...args])
+			}
+		},
+	}
+}
+
+/**
  * Custom plugin for build notifications. Matches webpack-build-notifier behavior: suppress success
  * and warning notifications, only show errors (unless it's the first successful build after an
  * error).
@@ -310,6 +335,8 @@ export default defineConfig(({ mode, command }) => {
 				return transformedCode === code ? undefined : transformedCode
 			},
 		})
+
+		plugins.push(disableFullReloadPlugin())
 	}
 
 	plugins.push(buildNotificationPlugin())
@@ -534,6 +561,7 @@ export default defineConfig(({ mode, command }) => {
 				protocol: 'ws',
 				host: 'localhost',
 				port: 9000,
+				overlay: false,
 			},
 
 			// Don't open browser automatically
