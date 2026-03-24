@@ -242,10 +242,21 @@ body:not(.skin-monobook)
 body:not(.skin-monobook)
 	.cd-comment-button-thank.cd-comment-button-thank
 	> .oo-ui-buttonElement-button
+	> .oo-ui-iconElement-icon,
+body:not(.skin-monobook)
+	.cd-comment-button-edit.cd-comment-button-edit
+	> .oo-ui-buttonElement-button
 	> .oo-ui-iconElement-icon {
 	width: 16px;
 	min-width: 16px;
 	inset-inline-start: calc(@comment-button-ooui-padding + 2px);
+}
+
+body:not(.skin-monobook)
+	.cd-comment-button-edit.cd-comment-button-edit
+	> .oo-ui-buttonElement-button
+	> .oo-ui-iconElement-icon {
+	inset-block-start: -1px;
 }
 
 .cd-commentLayersContainer {

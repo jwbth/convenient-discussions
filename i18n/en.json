@@ -16,6 +16,7 @@
 	"cm-thanked": "Thanked",
 	"cm-thanked-tooltip": "You have already thanked the user for this comment",
 	"cm-edit": "Edit",
+	"cm-edit-tooltip": "Edit the comment",
 	"cm-reply": "Reply",
 	"cm-reply-outdented-tooltip": "Can't reply to a comment that has outdented replies",
 	"cm-quote": "Quote",

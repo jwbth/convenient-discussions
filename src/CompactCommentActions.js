@@ -67,8 +67,16 @@ class CompactCommentActions extends CommentActions {
 	createEditWidget = () =>
 		new OO.ui.ButtonWidget({
 			label: cd.s('cm-edit'),
+			icon: 'edit',
+			invisibleLabel: true,
+			title: cd.s('cm-edit-tooltip'),
 			framed: false,
-			classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-edit',
+			],
 		})
 
 	/**
