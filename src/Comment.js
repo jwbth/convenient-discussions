@@ -1328,7 +1328,7 @@ class Comment extends CommentSkeleton {
 		} else {
 			const marginElement = this.thread?.$expandNote?.[0] || this.marginHighlightable
 			if (marginElement.parentElement?.classList.contains('cd-commentLevel')) {
-				startMargin = -1
+				startMargin = -1 / cd.g.pixelDeviationRatioFor1px
 			} else if (
 				this.offset &&
 				marginElement.parentElement?.parentElement?.classList.contains('cd-commentLevel')
@@ -1336,7 +1336,7 @@ class Comment extends CommentSkeleton {
 				const prop = this.getDirection() === 'ltr' ? 'left' : 'right'
 				startMargin =
 					Math.abs(this.offset[prop] - marginElement.parentElement.getBoundingClientRect()[prop]) -
-					1
+					1 / cd.g.pixelDeviationRatioFor1px
 			} else {
 				startMargin = this.level === 0 ? cd.g.commentFallbackSideMargin : cd.g.contentFontSize
 			}
