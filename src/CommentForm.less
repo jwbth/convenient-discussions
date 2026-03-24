@@ -71,10 +71,6 @@
 		mask-position: center;
 	}
 
-	.group-codemirror .oo-ui-buttonElement-button {
-		height: 2.25em;
-	}
-
 	.cd-highlight .tool-button[rel="quote"] {
 		background-color: var(--color-progressive, #36c);
 	}
@@ -182,6 +178,10 @@
 		// Proportional font size
 		font-family: monospace, monospace;
 	}
+}
+
+body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-button {
+	height: 2.25em;
 }
 
 .cd-commentForm-checkboxes {
