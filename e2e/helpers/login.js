@@ -54,42 +54,47 @@ export async function ensureAuthenticated(page) {
 
 	await page.goto(loginUrl)
 
-	// Wait for login form
-	await page.waitForSelector('#wpName1', { timeout: 10_000 })
+	// Wait for either the login form or the user menu (in case of auto-login)
+	await page.locator('#wpName1, #pt-userpage, #pt-userpage-2').first().waitFor({ timeout: 10_000 })
 
-	// Fill in credentials
-	await page.fill('#wpName1', username)
-	await page.fill('#wpPassword1', password)
+	// If already logged in (auto-login), just log it. Otherwise, perform manual login.
+	if (await page.locator('#pt-userpage, #pt-userpage-2').isVisible()) {
+		console.log('✅ Auto-authenticated after redirecting to login page')
+	} else {
+		// Fill in credentials
+		await page.fill('#wpName1', username)
+		await page.fill('#wpPassword1', password)
 
-	// Click login button
-	await page.click('#wpLoginAttempt')
+		// Click login button
+		await page.click('#wpLoginAttempt')
 
-	// Wait for redirection back or successful login indication
-	await page.waitForLoadState('networkidle', { timeout: 30_000 })
+		// Wait for redirection back or successful login indication
+		await page.waitForLoadState('networkidle', { timeout: 30_000 })
 
-	// Check for captcha
-	const captcha = page.locator('.fancycaptcha-image, .captcha, #wpCaptchaWord')
-	if ((await captcha.count()) > 0) {
-		console.log('🤖 CAPTCHA detected! Please solve it manually (test will wait up to 2 minutes)')
-		await Promise.race([
-			page.waitForSelector('#pt-userpage, #pt-userpage-2', { timeout: 120_000 }),
-			page.waitForSelector('.errorbox', { timeout: 120_000 }),
-		])
+		// Check for captcha
+		const captcha = page.locator('.fancycaptcha-image, .captcha, #wpCaptchaWord')
+		if ((await captcha.count()) > 0) {
+			console.log('🤖 CAPTCHA detected! Please solve it manually (test will wait up to 2 minutes)')
+			await Promise.race([
+				page.waitForSelector('#pt-userpage, #pt-userpage-2', { timeout: 120_000 }),
+				page.waitForSelector('.errorbox', { timeout: 120_000 }),
+			])
+		}
+
+		// Check for login errors
+		const errorBox = page.locator('.errorbox')
+		if ((await errorBox.count()) > 0) {
+			const errorText = await errorBox.textContent()
+			throw new Error(`Login failed: ${errorText}`)
+		}
+
+		// Final verification
+		if ((await page.locator('#pt-userpage, #pt-userpage-2').count()) === 0) {
+			throw new Error('Login failed - user menu not found after login attempt')
+		}
+
+		console.log('✅ Successfully logged in manually')
 	}
-
-	// Check for login errors
-	const errorBox = page.locator('.errorbox')
-	if ((await errorBox.count()) > 0) {
-		const errorText = await errorBox.textContent()
-		throw new Error(`Login failed: ${errorText}`)
-	}
-
-	// Final verification
-	if ((await page.locator('#pt-userpage, #pt-userpage-2').count()) === 0) {
-		throw new Error('Login failed - user menu not found after login attempt')
-	}
-
-	console.log('✅ Successfully logged in')
 
 	// Save the storage state so subsequent tests can use it
 	await page.context().storageState({ path: authFile })
