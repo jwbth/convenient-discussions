@@ -566,7 +566,7 @@ class UpdateChecker extends EventEmitter {
 		)
 			return
 
-		const { revisionId, comments: newComments, sections } = await this.processPage()
+		const { revisionId, comments: newComments, sections } = await this.processPage(revisions[0].revid)
 		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		const { comments: currentComments } = await this.processPage(currentRevisionId)
