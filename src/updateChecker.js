@@ -266,7 +266,7 @@ class UpdateChecker extends EventEmitter {
 	 * @param {string} [submittedCommentId]
 	 * @private
 	 */
-	async maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId) {
+	async maybeCheckPreviousVisitRevisionAtLoad(previousVisitTime, submittedCommentId) {
 		const revisions = await cd.page.getRevisions(
 			{
 				rvprop: ['ids'],
@@ -480,7 +480,7 @@ class UpdateChecker extends EventEmitter {
 	 *
 	 * @private
 	 */
-	async check() {
+	async orchestrateCheck() {
 		if (!cd.page.isActive() || cd.loader.isBooting()) return
 
 		// We need a value that wouldn't change during `await`s.
@@ -489,7 +489,7 @@ class UpdateChecker extends EventEmitter {
 		if (documentHidden && !this.isBackgroundCheckScheduled()) {
 			$(document).one('visibilitychange', () => {
 				this.unscheduleCheck()
-				this.check()
+				this.orchestrateCheck()
 			})
 
 			this.scheduleCheck(
@@ -501,7 +501,7 @@ class UpdateChecker extends EventEmitter {
 		}
 
 		try {
-			await this.performCheck()
+			await this.check()
 		} catch (error) {
 			if (!(error instanceof CdError) || error.getCode() !== 'network') {
 				cd.debug.logWarn(error)
@@ -550,7 +550,7 @@ class UpdateChecker extends EventEmitter {
 	/**
 	 * update the navigation panel, and
 	 */
-	async performCheck() {
+	async check() {
 		const revisions = await cd.page.getRevisions(
 			{
 				rvprop: ['ids'],
@@ -950,7 +950,7 @@ class UpdateChecker extends EventEmitter {
 		const message = /** @type {MessageFromWorker} */ (event.data)
 
 		if (message.task === 'wakeUp') {
-			this.check()
+			this.orchestrateCheck()
 		} else {
 			this.resolvers[message.resolverId](message)
 			delete this.resolvers[message.resolverId]
@@ -991,7 +991,7 @@ class UpdateChecker extends EventEmitter {
 		}
 		this.setAlarmViaWorker(this.updateCheckInterval * 1000)
 		if (previousVisitTime) {
-			this.maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId)
+			this.maybeCheckPreviousVisitRevisionAtLoad(previousVisitTime, submittedCommentId)
 		}
 	}
 }

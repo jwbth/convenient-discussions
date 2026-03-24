@@ -1,3 +1,4 @@
+import CdError from './CdError'
 import { isElement, isNode } from './utils-general'
 
 /**
@@ -70,7 +71,7 @@ class TreeWalker {
 			currentNode = this.nextNode(root)
 		}
 		if (!currentNode) {
-			throw new Error('Cannot create TreeWalker without a start node.')
+			throw new CdError('Cannot create TreeWalker without a start node.')
 		}
 		this.currentNode = currentNode
 

@@ -1,5 +1,6 @@
 import BaseAutocomplete from './BaseAutocomplete'
 import cd from './loader/cd'
+import CdError from './shared/CdError'
 import { defined, ucFirst } from './shared/utils-general'
 import userRegistry from './userRegistry'
 import { handleApiReject } from './utils-api'
@@ -148,7 +149,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 		}
 
 		if (!allUsersResponse.query) {
-			throw new Error('No query data in response')
+			throw new CdError({ type: 'response', message: 'No query data in response' })
 		}
 
 		return allUsersResponse.query.allusers.map((/** @type {{ name: string }} */ user) => user.name)

@@ -218,8 +218,6 @@ test.describe('Toggle Child Threads Button Duplication Fix', () => {
 				}
 			})
 
-			console.log('Comment Part Statistics:', partStats)
-
 			// Check for duplicates in comment parts
 			expect(partStats.duplicateParts.length).toBe(0)
 

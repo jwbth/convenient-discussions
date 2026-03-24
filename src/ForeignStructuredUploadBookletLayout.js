@@ -628,7 +628,7 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 		}
 
 		/**
-		 * Cancel the upload. (This method is not in the parent class - it's our own.)
+		 * Cancel the upload. (It's our own method - it's not in the parent class.)
 		 */
 		cancelUpload() {
 			this.onUploadFormChange()
