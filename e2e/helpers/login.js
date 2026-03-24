@@ -36,12 +36,23 @@ export async function ensureAuthenticated(page) {
 	}
 
 	const currentUrl = page.url()
+	const pageName = await page.evaluate(() => (window.mw ? mw.config.get('wgPageName') : null))
 
-	// Navigate to login page, preserving the return to URL if possible
-	// MediaWiki usually handles returnto automatically if we go to Special:UserLogin from a page
-	await page.goto(
-		`https://test.wikipedia.org/w/index.php?title=Special:UserLogin&returnto=${encodeURIComponent(currentUrl)}`,
-	)
+	// Navigate to login page, preserving the return to URL if possible. MediaWiki's returnto
+	// parameter expects a page title, not a full URL.
+	let loginUrl = 'https://test.wikipedia.org/w/index.php?title=Special:UserLogin'
+	if (pageName && !pageName.includes('Special:UserLogin') && !pageName.includes('Special:CreateAccount')) {
+		loginUrl += `&returnto=${encodeURIComponent(pageName)}`
+		const url = new URL(currentUrl)
+		const searchParams = new URLSearchParams(url.search)
+		searchParams.delete('title')
+		const query = searchParams.toString()
+		if (query) {
+			loginUrl += `&returntoquery=${encodeURIComponent(query)}`
+		}
+	}
+
+	await page.goto(loginUrl)
 
 	// Wait for login form
 	await page.waitForSelector('#wpName1', { timeout: 10_000 })
