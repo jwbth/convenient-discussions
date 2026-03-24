@@ -89,11 +89,27 @@ export default function getUploadDialogClass() {
 
 				data.commentForm.popPending()
 
+				if (this.uploadBooklet.upload.getApi().state() === 'rejected') {
+					try {
+						await this.uploadBooklet.upload.getApi()
+					} catch (error) {
+						if (error === 'http') {
+							this.handleError(new CdError({ type: 'network' }), 'cf-error-uploadimage', false)
+						} else {
+							this.handleError(
+								new CdError(),
+								'cf-error-uploadimage',
+								false,
+								typeof error === 'string' ? cd.mws(error) : undefined,
+							)
+						}
+					}
+
+					return
+				}
+
 				// For some reason there is no handling of network errors; the dialog just outputs "http".
-				if (
-					messagesPromise.state() === 'rejected' ||
-					this.uploadBooklet.upload.getApi().state() === 'rejected'
-				) {
+				if (messagesPromise.state() === 'rejected') {
 					this.handleError(new CdError(), 'cf-error-uploadimage', false)
 
 					return
@@ -120,7 +136,8 @@ export default function getUploadDialogClass() {
 		 */
 		getReadyProcess() {
 			return super.getReadyProcess().next(() => {
-				this.uploadBooklet.controls.title.input.focus()
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				this.uploadBooklet.controls?.title.input.focus()
 			})
 		}
 

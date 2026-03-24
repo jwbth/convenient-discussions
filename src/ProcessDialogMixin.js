@@ -70,13 +70,14 @@ class ProcessDialogMixin {
 	 * @param {unknown} error
 	 * @param {string} [messageName]
 	 * @param {boolean} [recoverable]
+	 * @param {string} [message]
 	 * @protected
 	 * @this {ProcessDialogMixin & OO.ui.ProcessDialog}
 	 */
-	handleError(error, messageName, recoverable) {
+	handleError(error, messageName, recoverable, message) {
 		let errorInstance
 		if (error instanceof CdError) {
-			let message = cd.s(/** @type {string} */ (messageName))
+			message ??= cd.s(/** @type {string} */ (messageName))
 			if (error.getType() === 'network') {
 				message += ' ' + cd.s('error-network')
 			}
