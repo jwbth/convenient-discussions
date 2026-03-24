@@ -84,9 +84,9 @@ async function bootstrap() {
 	if (SINGLE_LANG_CODE) {
 		// A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
 		cd.i18n = /** @type {I18n} */ {}
-		await loadSingleLang('en')
+		await loadSingleLangInDevOrSingleMode('en')
 		if (SINGLE_LANG_CODE !== 'en') {
-			await loadSingleLang(SINGLE_LANG_CODE)
+			await loadSingleLangInDevOrSingleMode(SINGLE_LANG_CODE)
 		}
 	}
 
@@ -122,11 +122,12 @@ function replaceEntities(string) {
 }
 
 /**
- * Load the i18n file for the single language code.
+ * Load the i18n file for the single language code. This function shouldn't run or be present in
+ * production mode.
  *
  * @param {string} lang
  */
-async function loadSingleLang(lang) {
+async function loadSingleLangInDevOrSingleMode(lang) {
 	const langObj = (await import(/* @vite-ignore */ '../../i18n/' + lang + '.json')).default
 	Object.keys(langObj)
 		.filter((name) => typeof langObj[name] === 'string')
@@ -135,8 +136,16 @@ async function loadSingleLang(lang) {
 		})
 	cd.i18n[lang] = langObj
 	if (lang !== 'en') {
-		langObj.dayjsLocale = await import(/* @vite-ignore */ 'dayjs/locale/' + lang)
-		langObj.dateFnsLocale = await import(/* @vite-ignore */ 'date-fns/locale/' + lang)
+		const dayjsLang = lang.replace(/^zh-hans$/, 'zh-cn').replace(/^zh-hant$/, 'zh-tw')
+		langObj.dayjsLocale = (
+			await import(/* @vite-ignore */ '../../node_modules/dayjs/esm/locale/' + dayjsLang + '.js')
+		).default
+
+		const dateFnsLang = dayjsLang.replace(/-.+$/, (s) => s.toUpperCase())
+		const dateFnsModule = await import(
+			/* @vite-ignore */ '../../node_modules/date-fns/locale/' + dateFnsLang + '.js'
+		)
+		langObj.dateFnsLocale = dateFnsModule.default || dateFnsModule[dateFnsLang.replace(/-/g, '')]
 	}
 }
 
@@ -231,7 +240,7 @@ async function getStrings() {
 			.filter((lang) => lang !== 'en' && (!cd.i18n || !(lang in cd.i18n)))
 			.map((lang) => {
 				if (IS_DEV || IS_SINGLE) {
-					return loadSingleLang(lang)
+					return loadSingleLangInDevOrSingleMode(lang)
 				}
 
 				return cd.loader.loadPreferablyFromDiskCache({
