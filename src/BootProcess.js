@@ -539,17 +539,17 @@ class BootProcess {
 		cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i')
 		cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i')
 
-		cd.g.contribsPages = cd.g.specialPageAliases.Contributions.concat('Contributions')
-			.filter(unique)
-			.map((alias) => `${nss[-1]}:${alias}`)
+		const contribsTitleAliases = cd.g.specialPageAliases.Contributions.concat('Contributions')
+		cd.g.contribsPages = contribsTitleAliases.filter(unique).map((alias) => `${nss[-1]}:${alias}`)
 
-		const contribsPagesLinkPattern = cd.g.contribsPages.join('|')
-		cd.g.contribsPageLinkRegexp = new RegExp(`^(?:${contribsPagesLinkPattern})/`)
+		const specialNsPattern = joinNsNames(-1)
+		const contribsPagesTitlePattern = contribsTitleAliases.join('|')
+		const contribsPagesLinkPattern = `(?:${specialNsPattern}):(?:${contribsPagesTitlePattern})/`
+		cd.g.contribsPageLinkRegexp = new RegExp(`^${contribsPagesLinkPattern}`)
 
-		const contribsPagesPattern = anySpace(contribsPagesLinkPattern)
 		cd.g.captureUserNamePattern =
 			`\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
-			`(?:${contribsPagesPattern})\\/[ _]*)([^|\\]/]+)(/)?`
+			`(?:${specialNsPattern})[ _]*:[ _]*(?:${contribsPagesTitlePattern})\\/[ _]*)([^|\\]/]+)(/)?`
 
 		cd.g.isThumbRegexp = new RegExp(
 			['thumb', 'thumbnail']
