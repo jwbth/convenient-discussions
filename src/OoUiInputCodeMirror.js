@@ -73,9 +73,12 @@ export default class CodeMirrorChild extends codeMirrorExt {
 			'ext.CodeMirror.preferences.apply',
 			(/** @type {string} */ prefName, /** @type {boolean} */ enabled) => {
 				if (enabled !== this.preferences.getPreference(prefName)) {
-					this.extensionRegistry.toggle(prefName, this.view, enabled)
-					// Only update the preferences property directly to avoid
-					// making API calls already made by the primary instance.
+					if (this.extensionRegistry.isRegistered(prefName, this.view)) {
+						this.extensionRegistry.toggle(prefName, this.view, enabled)
+					}
+
+					// Only update the preferences property directly to avoid making API calls already made by
+					// the primary instance.
 					// @ts-expect-error: the source library uses "@type {Object}"
 					this.preferences.preferences[prefName] = enabled
 				}

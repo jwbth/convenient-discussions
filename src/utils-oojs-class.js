@@ -84,7 +84,7 @@ export function mixIntoClass(Base, Mixin) {
 	}
 
 	// getMixinBaseClassPrototype() will use this name. Also makes the mixin name appear nicely in
-	// debug logs.
+	// developer tools.
 	Object.defineProperty(Class, 'name', { value: Mixin.name })
 
 	OO.mixinClass(Class, Mixin)
