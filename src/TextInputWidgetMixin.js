@@ -1,5 +1,5 @@
 import { convertHtmlToWikitext } from './utils-api'
-import { es6ClassToOoJsClass } from './utils-oojs-class'
+import { es6ClassToOoJsClass, getMixinBaseClassPrototype } from './utils-oojs-class'
 import {
 	cleanUpPasteDom,
 	getElementFromPasteHtml,
@@ -78,10 +78,11 @@ class TextInputWidgetMixin {
 		this.focus()
 		// eslint-disable-next-line @typescript-eslint/no-deprecated
 		if (!document.execCommand('insertText', false, content)) {
-			Object.getPrototypeOf(Object.getPrototypeOf(this.constructor)).prototype.insertContent.call(
+			// May be OO.ui.TextInputWidget or its subtype
+			/** @type {OO.ui.TextInputWidget} */ getMixinBaseClassPrototype(
 				this,
-				content,
-			)
+				'TextInputWidgetMixin',
+			).insertContent.call(this, content)
 		}
 
 		return this

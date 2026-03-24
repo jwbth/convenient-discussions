@@ -15,7 +15,7 @@ import {
 } from './shared/utils-general'
 import updateChecker from './updateChecker'
 import { loadUserGenders } from './utils-api'
-import { mixInObject } from './utils-oojs-class'
+import { mixIntoObject } from './utils-oojs-class'
 import {
 	getCommonGender,
 	getExtendedRect,
@@ -33,7 +33,7 @@ import {
 /**
  * A comment thread object.
  */
-class Thread extends mixInObject(
+class Thread extends mixIntoObject(
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	class {},
 	/** @type {typeof EventEmitter<EventMap>} */ (EventEmitter),

@@ -1,6 +1,7 @@
 import controller from './controller'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
+import { getMixinBaseClassPrototype } from './utils-oojs-class'
 
 /**
  * Mixin that adds process dialog functionality.
@@ -56,7 +57,10 @@ class ProcessDialogMixin {
 			controller.removePreventUnloadCondition('dialog')
 		}
 
-		return OO.ui.ProcessDialog.prototype.getActionProcess.call(this, action)
+		// May be OO.ui.ProcessDialog or its subtype
+		return /** @type {OO.ui.ProcessDialog} */ (
+			getMixinBaseClassPrototype(this, 'ProcessDialogMixin')
+		).getActionProcess.call(this, action)
 	}
 
 	/**

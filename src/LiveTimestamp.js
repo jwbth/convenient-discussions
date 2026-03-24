@@ -4,7 +4,7 @@ import EventEmitter from './EventEmitter'
 import cd from './loader/cd'
 import { removeFromArrayIfPresent } from './shared/utils-general'
 import { formatDate } from './utils-date'
-import { mixInObject } from './utils-oojs-class'
+import { mixIntoObject } from './utils-oojs-class'
 
 /**
  * @typedef {'default'|'improved'|'relative'} TimestampFormat
@@ -67,7 +67,7 @@ export const relativeTimeThresholds = [
  * An element that contains an automatically updated timestamp with relative (dependent on the
  * current date and time somehow) date and time.
  */
-class LiveTimestamp extends mixInObject(
+class LiveTimestamp extends mixIntoObject(
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	class {},
 	/** @type {typeof EventEmitter<EventMap>} */ (EventEmitter),

@@ -4,6 +4,8 @@
  * @module utilsOojsClass
  */
 
+import CdError from './shared/CdError'
+
 /**
  * @typedef {object} OoJsClassSpecificProps
  * @property {OO.ConstructorLike} [parent] The parent constructor.
@@ -58,7 +60,7 @@ export function es6ClassToOoJsClass(TargetClass) {
 }
 
 /**
- * Mix in a class into a target class.
+ * Mix a class into another class creating a new one. The base class remains unchanged.
  *
  * @template {Constructor} TBase
  * @template {Constructor} TMixin
@@ -66,7 +68,7 @@ export function es6ClassToOoJsClass(TargetClass) {
  * @param {TMixin} Mixin
  * @returns {TBase & MixinType<TMixin>}
  */
-export function mixInClass(Base, Mixin) {
+export function mixIntoClass(Base, Mixin) {
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	class Class extends Base {
 		/**
@@ -80,7 +82,13 @@ export function mixInClass(Base, Mixin) {
 			}
 		}
 	}
+
+	// getMixinBaseClassPrototype() will use this name. Also makes the mixin name appear nicely in
+	// debug logs.
+	Object.defineProperty(Class, 'name', { value: Mixin.name })
+
 	OO.mixinClass(Class, Mixin)
+	es6ClassToOoJsClass(Class)
 
 	// for...in in OO.mixinClass doesn't catch prototype properties declared with the `class` syntax
 	// (because they are not enumerable), so we set them manually. Alternatively, we could make them
@@ -99,8 +107,37 @@ export function mixInClass(Base, Mixin) {
 }
 
 /**
+ * Get the prototype of the base class of a mixin. It is like `super.` for mixins.
+ *
+ * Note: it may be at any link of the prototype chain. For example:
+ * - For {@link SettingsDialog SettingsDialog}, the chain is SettingsDialog → ProcessDialog →
+ *   ProcessDialogMixin → OoUiProcessDialog (ProcessDialogMixin is added to OoUiProcessDialog to get
+ *   ProcessDialog) - 4 links
+ * - For {@link UploadDialog UploadDialog}, the chain is UploadDialog → ProcessDialogMixin →
+ *   mw.Upload.Dialog (ProcessDialogMixin is added to mw.Upload.Dialog to get UploadDialog) - 3
+ *   links
+ *
+ * @param {any} object
+ * @param {string} mixinName
+ * @returns {any}
+ */
+export function getMixinBaseClassPrototype(object, mixinName) {
+	let proto = object
+	while ((proto = Object.getPrototypeOf(proto))) {
+		if (proto.constructor.name === mixinName) {
+			return Object.getPrototypeOf(proto)
+		}
+	}
+
+	throw new CdError({
+		type: 'internal',
+		message: `Mixin ${mixinName} not found in prototype chain`,
+	})
+}
+
+/**
  * Add a mixin's (e.g. {@link EventEmitter EventEmitter}) methods to an arbitrary object
- * itself (the static side), not its prototype.
+ * itself (the static side), not its prototype. The object is modified in place.
  *
  * @template {{}} TBase
  * @template {Constructor} TMixin
@@ -108,7 +145,7 @@ export function mixInClass(Base, Mixin) {
  * @param {TMixin} Mixin
  * @returns {TBase & InstanceType<TMixin>}
  */
-export function mixInObject(obj, Mixin) {
+export function mixIntoObject(obj, Mixin) {
 	// for...in in OO.mixinClass doesn't catch prototype properties declared with the `class` syntax
 	// (because they are not enumerable), so we set them manually. Alternatively, we could make them
 	// enumerable in es6ClassToOoJsClass().

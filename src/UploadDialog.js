@@ -2,7 +2,7 @@ import { getForeignStructuredUploadBookletLayoutClass } from './ForeignStructure
 import ProcessDialogMixin from './ProcessDialogMixin'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
-import { es6ClassToOoJsClass, mixInClass } from './utils-oojs-class'
+import { es6ClassToOoJsClass, mixIntoClass } from './utils-oojs-class'
 
 /**
  * @typedef {ReturnType<getForeignStructuredUploadBookletLayoutClass>} ForeignStructuredUploadBookletLayout
@@ -14,7 +14,7 @@ export default function getUploadDialogClass() {
 	 * Class that extends {@link mw.Upload.Dialog} and adds some logic we need. Uses
 	 * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
 	 */
-	class UploadDialog extends mixInClass(
+	class UploadDialog extends mixIntoClass(
 		/** @type {typeof mw.Upload.Dialog<ForeignStructuredUploadBookletLayout>} */ (mw.Upload.Dialog),
 		ProcessDialogMixin,
 	) {
