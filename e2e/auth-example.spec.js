@@ -49,6 +49,7 @@ test.describe('Authentication Example', () => {
 
 		await page.fill('#wpName1', 'your-username')
 		await page.fill('#wpPassword1', 'your-password')
+		await page.check('#wpRemember')
 		await page.click('#wpLoginAttempt')
 
 		// Wait for redirect after login

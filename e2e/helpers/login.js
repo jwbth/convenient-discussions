@@ -65,6 +65,9 @@ export async function ensureAuthenticated(page) {
 		await page.fill('#wpName1', username)
 		await page.fill('#wpPassword1', password)
 
+		// Check "Remember me"
+		await page.check('#wpRemember')
+
 		// Click login button
 		await page.click('#wpLoginAttempt')
 
