@@ -171,7 +171,6 @@ class AutocompleteManager {
 					this.tribute.menuEvents.windowResizeEvent?.()
 				})
 			}
-			input.addSelectionChangeListener()
 
 			return [element]
 		})
@@ -183,12 +182,7 @@ class AutocompleteManager {
 	terminate() {
 		this.elements.forEach((element) => {
 			this.tribute.detach(element)
-		})
-
-		this.inputs.forEach((input) => {
-			if (typeof input.removeSelectionChangeListener === 'function') {
-				input.removeSelectionChangeListener()
-			}
+			$(element).trigger('autocomplete-detached.cd', { autocompleteManager: this })
 		})
 
 		// Clean up autocomplete instances

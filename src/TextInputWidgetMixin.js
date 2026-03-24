@@ -254,6 +254,10 @@ class TextInputWidgetMixin {
 			})
 			.on('autocomplete-attached.cd', (_event, data) => {
 				this.autocompleteManager = data.autocompleteManager
+				this.addSelectionChangeListener()
+			})
+			.on('autocomplete-detached.cd', () => {
+				this.removeSelectionChangeListener()
 			})
 			.on('tribute-active-true.cd', () => {
 				// Set the autocomplete menu as active to make selected text immutable
