@@ -163,17 +163,6 @@ class CommentLayers {
 	destroy() {
 		this.underlay.remove()
 		this.overlay.remove()
-
-		// Note: Properties are set to undefined for cleanup, but TypeScript expects them to always exist
-		// This is acceptable since destroy() should only be called when the comment is being removed
-		const thisTyped = /** @type {any} */ (this)
-		thisTyped.underlay = undefined
-		thisTyped.overlay = undefined
-		thisTyped.line = undefined
-		thisTyped.marker = undefined
-		thisTyped.$underlay = undefined
-		thisTyped.$overlay = undefined
-		thisTyped.$marker = undefined
 	}
 
 	/**

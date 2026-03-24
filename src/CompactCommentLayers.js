@@ -169,13 +169,6 @@ class CompactCommentLayers extends CommentLayers {
 		// Clear any pending timeouts
 		this.dontHideMenu()
 
-		// Clean up compact-specific elements
-		this.overlayInnerWrapper = undefined
-		this.overlayGradient = undefined
-		this.overlayMenu = undefined
-		this.$overlayMenu = undefined
-		this.$overlayGradient = undefined
-
 		// Call parent destroy method
 		super.destroy()
 	}
