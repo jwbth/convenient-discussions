@@ -42,15 +42,15 @@ class TributeEvents {
 	 * @param {HTMLInputElement | HTMLTextAreaElement} element
 	 */
 	bind(element) {
-		const selectionChangeHandler = (event) => this.selectionchange(event, element)
-		this.selectionHandlerMap = new WeakMap()
-		this.selectionHandlerMap.set(element, selectionChangeHandler)
+		// const selectionChangeHandler = (event) => this.selectionchange(event, element)
+		// this.selectionHandlerMap = new WeakMap()
+		// this.selectionHandlerMap.set(element, selectionChangeHandler)
 
 		// Use capture to get ahead of CodeMirror's keydown handler. Note that there may be a duplicate
 		// event dispatched by the textarea in CodeMirror#domEventHandlersExtension.
 		element.addEventListener('keydown', this.keydown, { capture: true })
 		element.addEventListener('keyup', this.keyup)
-		document.addEventListener('selectionchange', selectionChangeHandler)
+		// document.addEventListener('selectionchange', selectionChangeHandler)
 		element.addEventListener('input', this.input)
 	}
 
@@ -60,9 +60,9 @@ class TributeEvents {
 	unbind(element) {
 		element.removeEventListener('keydown', this.keydown, { capture: true })
 		element.removeEventListener('keyup', this.keyup)
-		document.removeEventListener('selectionchange', this.selectionHandlerMap.get(element))
+		// document.removeEventListener('selectionchange', this.selectionHandlerMap.get(element))
 		element.removeEventListener('input', this.input)
-		this.selectionHandlerMap.delete(element)
+		// this.selectionHandlerMap.delete(element)
 	}
 
 	/**
@@ -93,15 +93,15 @@ class TributeEvents {
 		this.keyup(event)
 	}
 
-	/**
-	 * @param {Event} event
-	 * @param {HTMLInputElement | HTMLTextAreaElement} element
-	 */
-	selectionchange = (event, element) => {
-		if (document.activeElement === element) {
-			this.keyup(event, element)
-		}
-	}
+	// /**
+	//  * @param {Event} event
+	//  * @param {HTMLInputElement | HTMLTextAreaElement} element
+	//  */
+	// selectionchange = (event, element) => {
+	// 	if (document.activeElement === element) {
+	// 		this.keyup(event, element)
+	// 	}
+	// }
 
 	/**
 	 * @param {MouseEvent} event
@@ -163,7 +163,7 @@ class TributeEvents {
 		const tribute = this.tribute
 
 		// jwbth: Added this to avoid appearing-disappearing of the menu when moving the caret.
-		// if (!this.inputEvent && !tribute.isActive) return
+		if (!this.inputEvent && !tribute.isActive) return
 
 		if (this.inputEvent) {
 			this.inputEvent = false
