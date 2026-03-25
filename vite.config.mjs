@@ -228,6 +228,28 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
 }
 
 /**
+ * Custom plugin to remove redundant JS files from the styles build part.
+ *
+ * @returns {import('vite').Plugin}
+ */
+function removeEmptyStylesJsPlugin() {
+	return {
+		name: 'remove-empty-styles-js',
+		apply: 'build',
+		enforce: 'post',
+		generateBundle(_options, bundle) {
+			if (process.env.VITE_BUILD_PART === 'styles') {
+				for (const fileName in bundle) {
+					if (fileName.endsWith('.js') || fileName.endsWith('.js.map')) {
+						delete bundle[fileName]
+					}
+				}
+			}
+		},
+	}
+}
+
+/**
  * @typedef {object} BuildMode
  * @property {boolean} isStaging
  * @property {boolean} isSingle
@@ -338,7 +360,7 @@ export default defineConfig(({ mode, command }) => {
 		plugins.push(disableFullReloadPlugin())
 	}
 
-	plugins.push(buildNotificationPlugin())
+	plugins.push(buildNotificationPlugin(), removeEmptyStylesJsPlugin())
 
 	// // Add nowiki banner plugins for non-single builds
 	// if (!buildMode.isSingle) {
