@@ -697,7 +697,14 @@ class Loader {
 	 * @private
 	 */
 	async loadStyles() {
-		if (IS_DEV || IS_SINGLE) {
+		if (IS_SINGLE) {
+			const styles = (await import('../styles.less?inline')).default
+			mw.loader.addStyleTag(styles)
+
+			return
+		}
+
+		if (IS_DEV) {
 			await import('../styles.less')
 
 			return
