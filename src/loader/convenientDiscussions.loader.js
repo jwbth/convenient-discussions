@@ -772,7 +772,9 @@ class Loader {
 		)
 
 		const apiPage = apiResponse.query.pages[0]
-		if (apiPage.missing) return
+		if (apiPage.missing) {
+			throw new Error(`Couldn't load ${pageName} from ${domain}`)
+		}
 
 		const content = apiPage.revisions[0].content
 		if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
