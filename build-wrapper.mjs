@@ -14,23 +14,23 @@ const argv = yargs(hideBin(process.argv))
 	})
 	.parseSync()
 
-const isDev =
-	argv.mode === 'development' ||
-	argv.mode === 'dev' ||
-	argv.dev ||
-	process.env.VITE_DEV === '1' ||
-	process.env.NODE_ENV === 'development'
-const isStaging = argv.mode === 'staging' || argv.staging || process.env.VITE_STAGING === '1'
-const isSingle = argv.mode === 'single' || argv.single || process.env.VITE_SINGLE === '1'
+const isStaging =
+	argv.mode === 'staging' || argv.staging || process.env.VITE_STAGING === '1'
+const isSingle =
+	argv.mode === 'single' || argv.single || process.env.VITE_SINGLE === '1'
 
-const mode = isSingle ? 'single' : isStaging ? 'staging' : isDev ? 'development' : String(argv.mode || '')
+const mode = isSingle
+	? 'single'
+	: isStaging
+		? 'staging'
+		: String(argv.mode || '')
 const commandParts = ['vite build']
 
 if (mode) {
 	commandParts.push(`--mode ${mode}`)
 }
 
-const wrapperFlags = new Set(['mode', 'dev', 'staging', 'single'])
+const wrapperFlags = new Set(['mode', 'staging', 'single'])
 const extraArgs = []
 const envVars = []
 
@@ -51,7 +51,7 @@ for (const [key, value] of Object.entries(argv)) {
 	}
 }
 
-if (isDev || isSingle) {
+if (isSingle) {
 	if (envVars.length > 0) {
 		commandParts.unshift('cross-env', ...envVars)
 	}
@@ -65,14 +65,35 @@ if (isDev || isSingle) {
 		process.exitCode = error.status ?? 1
 	}
 } else {
-	const loaderCommandParts = ['cross-env', 'VITE_BUILD_PART="loader"', ...envVars, ...commandParts]
-	const loaderCommand = [...loaderCommandParts, ...extraArgs].filter(Boolean).join(' ')
+	const loaderCommandParts = [
+		'cross-env',
+		'VITE_BUILD_PART="loader"',
+		...envVars,
+		...commandParts,
+	]
+	const loaderCommand = [...loaderCommandParts, ...extraArgs]
+		.filter(Boolean)
+		.join(' ')
 
-	const stylesCommandParts = ['cross-env', 'VITE_BUILD_PART="styles"', ...envVars, ...commandParts]
-	const stylesCommand = [...stylesCommandParts, ...extraArgs].filter(Boolean).join(' ')
+	const stylesCommandParts = [
+		'cross-env',
+		'VITE_BUILD_PART="styles"',
+		...envVars,
+		...commandParts,
+	]
+	const stylesCommand = [...stylesCommandParts, ...extraArgs]
+		.filter(Boolean)
+		.join(' ')
 
-	const mainCommandParts = ['cross-env', 'VITE_BUILD_PART="main"', ...envVars, ...commandParts]
-	const mainCommand = [...mainCommandParts, ...extraArgs].filter(Boolean).join(' ')
+	const mainCommandParts = [
+		'cross-env',
+		'VITE_BUILD_PART="main"',
+		...envVars,
+		...commandParts,
+	]
+	const mainCommand = [...mainCommandParts, ...extraArgs]
+		.filter(Boolean)
+		.join(' ')
 
 	try {
 		execSync(loaderCommand, { stdio: 'inherit' })

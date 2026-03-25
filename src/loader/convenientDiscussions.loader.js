@@ -697,7 +697,7 @@ class Loader {
 	 * @private
 	 */
 	async loadStyles() {
-		if (cd.g.isDev || cd.g.isSingle) {
+		if (IS_DEV || IS_SINGLE) {
 			await import('../styles.less')
 
 			return

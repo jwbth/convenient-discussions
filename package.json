@@ -26,7 +26,6 @@
 	"browser": "src/loader/startup.js",
 	"scripts": {
 		"build": "node build-wrapper.mjs",
-		"build:dev": "node build-wrapper.mjs --mode development",
 		"build:staging": "node build-wrapper.mjs --mode staging",
 		"build:single": "node build-wrapper.mjs --mode single",
 		"configs": "node buildConfigs.mjs",

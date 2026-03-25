@@ -406,10 +406,6 @@ export default defineConfig(({ mode, command }) => {
 								__dirname,
 								'src/loader/startup.js',
 							),
-							'convenientDiscussions-styles': path.resolve(
-								__dirname,
-								'src/styles.less',
-							),
 						}
 					: process.env.VITE_BUILD_PART === 'loader'
 						? {
