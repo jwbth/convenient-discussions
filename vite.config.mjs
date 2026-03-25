@@ -247,7 +247,7 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
  */
 function determineBuildMode(env, mode) {
 	const isDev = Boolean(env.VITE_DEV || mode === 'development')
-	const isStaging = Boolean(env.VITE_STAGING)
+	const isStaging = Boolean(env.VITE_STAGING || mode === 'staging')
 	const isSingle = Boolean(env.VITE_SINGLE || mode === 'single')
 
 	let filenamePostfix = ''
@@ -444,7 +444,7 @@ export default defineConfig(({ mode, command }) => {
 							assetInfo.name?.endsWith('.css') ||
 							assetInfo.names?.some((n) => n.endsWith('.css'))
 						) {
-							return 'convenientDiscussions-styles.css'
+							return `${bundleFilename}-styles.css`
 						}
 
 						return '[name].[ext]'
