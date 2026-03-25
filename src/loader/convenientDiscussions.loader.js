@@ -30,6 +30,18 @@ class Loader {
 	modulesRequest
 
 	/**
+	 * @type {Promise<void> | undefined}
+	 * @private
+	 */
+	appRequest
+
+	/**
+	 * @type {Promise<void> | undefined}
+	 * @private
+	 */
+	runAppRequest
+
+	/**
 	 * @type {boolean | undefined}
 	 * @private
 	 */
@@ -675,19 +687,23 @@ class Loader {
 	 * @private
 	 */
 	async loadApp() {
-		// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
-		// production, load from network.
-		if (IS_DEV || IS_SINGLE) {
-			return
-		}
+		this.appRequest ??= (async () => {
+			// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
+			// production, load from network.
+			if (IS_DEV || IS_SINGLE) {
+				return
+			}
 
-		this.appCode = await this.loadPreferablyFromDiskCache({
-			domain: 'commons.wikimedia.org',
-			pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
-			ttlInDays: 365,
-			addCacheBuster: true,
-			add: false,
-		})
+			this.appCode = await this.loadPreferablyFromDiskCache({
+				domain: 'commons.wikimedia.org',
+				pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
+				ttlInDays: 365,
+				addCacheBuster: true,
+				add: false,
+			})
+		})()
+
+		return this.appRequest
 	}
 
 	/**
@@ -727,15 +743,19 @@ class Loader {
 	 * @private
 	 */
 	async runApp() {
-		// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
-		// production, load from network.
-		if (IS_DEV || IS_SINGLE) {
-			await import('../app.js')
-		} else if (this.appCode) {
-			const scriptTag = document.createElement('script')
-			scriptTag.innerHTML = this.appCode
-			document.head.append(scriptTag)
-		}
+		this.runAppRequest ??= (async () => {
+			// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
+			// production, load from network.
+			if (IS_DEV || IS_SINGLE) {
+				await import('../app.js')
+			} else if (this.appCode) {
+				const scriptTag = document.createElement('script')
+				scriptTag.innerHTML = this.appCode
+				document.head.append(scriptTag)
+			}
+		})()
+
+		return this.runAppRequest
 	}
 
 	/**
@@ -866,7 +886,8 @@ class Loader {
 	}
 
 	/**
-	 * Initialize comment links on special pages and execute the addCommentLinks function.
+	 * Initialize comment links on special pages as well sa talk pages and execute the addCommentLinks
+	 * function.
 	 *
 	 * @returns {Promise<void>}
 	 * @private
