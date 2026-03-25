@@ -39,13 +39,15 @@ export default {
 		assets: {
 			default: [
 				'convenientDiscussions.js',
+				'convenientDiscussions-main.js',
+				'convenientDiscussions.css',
 				'convenientDiscussions-generateBasicConfig.js',
-				'convenientDiscussions.js.LICENSE.js',
 				'convenientDiscussions-i18n/',
 			],
-			test: [
-				'convenientDiscussions.test.js',
-				'convenientDiscussions.test.js.LICENSE.js',
+			staging: [
+				'convenientDiscussions.staging.js',
+				'convenientDiscussions-main.staging.js',
+				'convenientDiscussions.staging.css',
 			],
 		},
 	},

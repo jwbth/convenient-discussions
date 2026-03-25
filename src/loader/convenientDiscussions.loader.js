@@ -728,7 +728,7 @@ class Loader {
 
 		await this.loadPreferablyFromDiskCache({
 			domain: 'commons.wikimedia.org',
-			pageName: `User:Jack_who_built_the_house/convenientDiscussions-styles.css`,
+			pageName: `User:Jack_who_built_the_house/convenientDiscussions.css`,
 			ttlInDays: 365,
 			addCacheBuster: true,
 			ctype: 'text/css',
@@ -783,6 +783,10 @@ class Loader {
 		addCacheBuster = false,
 		add = true,
 	}) {
+		if (IS_STAGING) {
+			pageName = pageName.replace(/\.(js|css)$/, '.staging.$1')
+		}
+
 		const ttlInMs = ttlInDays * cd.g.msInDay
 		const pageEncoded = encodeURIComponent(pageName)
 		const cacheBusterOrNot = addCacheBuster ? '&' + CACHE_BUSTER : ''

@@ -454,7 +454,7 @@ export default defineConfig(({ mode, command }) => {
 							assetInfo.name?.endsWith('.css') ||
 							assetInfo.names?.some((n) => n.endsWith('.css'))
 						) {
-							return `${bundleFilename}-styles.css`
+							return `${bundleFilename}.css`
 						}
 
 						return '[name].[ext]'

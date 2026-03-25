@@ -18,10 +18,10 @@ const execAsync = promisify(exec)
 const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
 /*
-	node deploy --test
-	npm run deploy --test
+	node deploy --staging
+	npm run deploy --staging
  */
-export const test = Boolean(argv.test || process.env.npm_config_test)
+export const staging = Boolean(argv.staging || process.env.npm_config_staging)
 
 const noI18n = Boolean(argv.noi18n || process.env.npm_config_noi18n)
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -78,7 +78,7 @@ const pathPrefix = config.main.rootPath + '/'
 
 const assets =
 	'assets' in config.main
-		? config.main.assets[test ? 'test' : 'default']
+		? config.main.assets[staging ? 'staging' : 'default']
 		: undefined
 if (!assets || !Array.isArray(assets) || !assets.length) {
 	throw error(`File list is not found in ${keyword('config.js')}`)
@@ -94,7 +94,7 @@ if (!assets || !Array.isArray(assets) || !assets.length) {
  */
 
 const configAssets = config.configs.flatMap((wikiConfig) => {
-	const wikiConfigForMode = wikiConfig[test ? 'test' : 'default']
+	const wikiConfigForMode = wikiConfig[staging ? 'staging' : 'default']
 	if (!wikiConfigForMode) {
 		return []
 	}
@@ -342,7 +342,7 @@ async function getLastDeployedCommit(commits) {
 		.map((commit) => commit.subject)
 		.filter(
 			(commit) =>
-				!/^(Merge branch|Merge pull request|Localisation updates|Bump |deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:|i18n:)/.test(
+				!/^(Merge branch|Merge pull request|Localisation updates|Bump |deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:|i18n:|style:)/.test(
 					commit,
 				),
 		)
