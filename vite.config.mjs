@@ -152,7 +152,8 @@ function disableFullReloadPlugin() {
 				) {
 					return
 				}
-				return originalSend.apply(this, [payload, ...args])
+
+				return Reflect.apply(originalSend, this, [payload, ...args])
 			}
 		},
 	}

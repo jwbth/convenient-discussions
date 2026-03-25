@@ -41,5 +41,13 @@
 	"javascript.preferences.quoteStyle": "single",
 
 	// Without this, `export {};` is changed to `export { };` by `source.organizeImports`
-	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+
+	"debug.javascript.terminalOptions": {
+		"resolveSourceMapLocations": [
+			"${workspaceFolder}/**",
+			"!**/node_modules/**",
+			"**/node_modules/.vite-temp/**"
+		]
+	}
 }
