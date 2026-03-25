@@ -6,89 +6,56 @@ import { execSync } from 'node:child_process'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-const y = yargs(hideBin(process.argv))
+const argv = yargs(hideBin(process.argv))
 	.help(false)
 	.version(false)
 	.parserConfiguration({
 		'camel-case-expansion': false,
 	})
-const args = /** @type {YargsNonAwaited} */ (y.argv)
+	.parseSync()
 
-let command = 'vite build'
-
-if (
-	args.mode === 'development' ||
-	args.mode === 'dev' ||
-	args.dev ||
+const isDev =
+	argv.mode === 'development' ||
+	argv.mode === 'dev' ||
+	argv.dev ||
 	process.env.VITE_DEV === '1' ||
 	process.env.NODE_ENV === 'development'
-) {
-	command += ' --mode development'
+const isStaging = argv.mode === 'staging' || argv.staging || process.env.VITE_STAGING === '1'
+const isSingle = argv.mode === 'single' || argv.single || process.env.VITE_SINGLE === '1'
+
+const mode = isSingle ? 'single' : isStaging ? 'staging' : isDev ? 'development' : String(argv.mode || '')
+const commandParts = ['vite build']
+
+if (mode) {
+	commandParts.push(`--mode ${mode}`)
 }
 
-if (
-	args.mode === 'staging' ||
-	args.staging ||
-	process.env.VITE_STAGING === '1'
-) {
-	command += ' --mode staging'
-}
-
-/**
- * Constructs the cross-platform command string using cross-env syntax.
- *
- * @param {Object} customEnv A key-value object of custom arguments.
- *   e.g., { ENV: 'staging', API_URL: 'https://api.com' }
- * @param {string} baseCommand The command to run after setting env vars (e.g., 'vite build').
- * @returns {string} The final command string ready for execution.
- */
-function constructCrossEnvCommand(customEnv, baseCommand) {
-	let crossEnvPrefix = ''
-
-	// 1. Iterate over the parsed arguments to build the cross-env prefix
-	for (const [key, value] of Object.entries(customEnv)) {
-		if (key === '_' || key === '$0') continue
-
-		// It's good practice to prefix with VITE_ if these are meant for client-side access
-		const envKey = key.startsWith('VITE_') ? key : `VITE_${key.toUpperCase()}`
-
-		// Add the cross-env call for each variable, ensuring value is quoted for safety
-		crossEnvPrefix += `cross-env ${envKey}="${String(value)}" `
-	}
-
-	// 2. Combine the prefix with the base command
-	const finalCommand = `${crossEnvPrefix}${baseCommand}`
-
-	return finalCommand.trim() // Trim trailing space
-}
-
-if (args.mode === 'single' || args.single || process.env.VITE_SINGLE === '1') {
-	// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-	command = constructCrossEnvCommand(args, command) + ' --mode single'
-}
-
-const wrapperArgs = new Set(['mode', 'dev', 'staging', 'single'])
+const wrapperFlags = new Set(['mode', 'dev', 'staging', 'single'])
 const extraArgs = []
+const envVars = []
 
-for (const [key, value] of Object.entries(args)) {
-	if (!wrapperArgs.has(key) && key !== '_' && key !== '$0') {
+for (const [key, value] of Object.entries(argv)) {
+	if (key === '_' || key === '$0') continue
+
+	if (isSingle) {
+		const envKey = key.startsWith('VITE_') ? key : `VITE_${key.toUpperCase()}`
+		envVars.push(`${envKey}="${String(value)}"`)
+	} else if (!wrapperFlags.has(key)) {
 		if (value === true) {
 			extraArgs.push(`--${key}`)
 		} else if (value === false) {
 			extraArgs.push(`--no-${key}`)
 		} else {
-			extraArgs.push(`--${key}=${value}`)
+			extraArgs.push(`--${key}=${String(value)}`)
 		}
 	}
 }
 
-for (const posArg of args._) {
-	extraArgs.push(String(posArg))
+if (envVars.length > 0) {
+	commandParts.unshift('cross-env', ...envVars)
 }
 
-if (extraArgs.length > 0) {
-	command += ` ${extraArgs.join(' ')}`
-}
+const command = [...commandParts, ...extraArgs].filter(Boolean).join(' ')
 
 try {
 	execSync(command, { stdio: 'inherit' })
