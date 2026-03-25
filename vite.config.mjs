@@ -395,27 +395,6 @@ export default defineConfig(({ mode, command }) => {
 				minifyIdentifiers: true,
 				minifySyntax: true,
 				minifyWhitespace: true,
-
-				// Reserve 'cd' identifier from mangling
-				// Note: esbuild doesn't support property mangling with reserved lists like Terser
-				// The 'cd' global is preserved by using IIFE format which doesn't mangle globals
-			},
-
-			// Terser minification options
-			terserOptions: {
-				compress: {
-					passes: 2,
-				},
-				mangle: {
-					// Reserve 'cd' identifier from mangling
-					reserved: ['cd'],
-				},
-				format: {
-					// ASCII-only output
-					ascii_only: true,
-					// Preserve comments with @license or @preserve
-					comments: /@license|@preserve|@cc_on/i,
-				},
 			},
 
 			// Source map configuration based on build mode
@@ -455,12 +434,6 @@ export default defineConfig(({ mode, command }) => {
 
 					// Module format (IIFE for browser global)
 					// format: 'iife',
-
-					// Inline all dynamic imports for production, allow code splitting for dev
-					inlineDynamicImports: false,
-
-					// Enable module concatenation (hoisting transitive imports)
-					// hoistTransitiveImports: true,
 				},
 
 				// Tree-shaking is enabled by default in Rollup/Vite
