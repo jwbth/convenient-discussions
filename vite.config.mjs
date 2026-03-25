@@ -397,10 +397,10 @@ export default defineConfig(({ mode, command }) => {
 			target: 'es2020',
 
 			// Minification configuration
-			minify: 'esbuild',
+			minify: 'oxc',
 
-			// esbuild minification options
-			esbuildOptions: {
+			// oxc minification options
+			oxcOptions: {
 				// Preserve class names for better debugging
 				keepNames: true,
 
@@ -478,12 +478,12 @@ export default defineConfig(({ mode, command }) => {
 			chunkSizeWarningLimit: Infinity,
 		},
 
-		// esbuild configuration for JavaScript transformation
-		esbuild: {
+		// oxc configuration for JavaScript transformation
+		oxc: {
 			// Target ES2020 for browser compatibility
 			target: 'es2020',
 
-			// esbuild natively supports all required transforms:
+			// oxc natively supports all required transforms:
 			// - class properties
 			// - class static blocks
 			// - logical assignment operators
