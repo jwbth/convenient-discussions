@@ -363,6 +363,24 @@ export default defineConfig(({ mode, command }) => {
 	//   plugins.push(customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode));
 	// }
 
+	// Remove empty JS file generated during the styles build
+	if (process.env.VITE_BUILD_PART === 'styles') {
+		/** @type {import('vite').Plugin} */
+		const removeEmptyStylesPlugin = {
+			name: 'remove-empty-styles-js',
+			apply: 'build',
+			enforce: 'post',
+			generateBundle(_options, bundle) {
+				for (const fileName of Object.keys(bundle)) {
+					if (fileName.endsWith('.js') || fileName.endsWith('.js.map')) {
+						delete bundle[fileName]
+					}
+				}
+			},
+		}
+		plugins.push(removeEmptyStylesPlugin)
+	}
+
 	return {
 		plugins,
 		define: defines,
