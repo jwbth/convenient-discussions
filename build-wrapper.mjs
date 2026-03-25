@@ -6,7 +6,13 @@ import { execSync } from 'node:child_process'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-const args = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
+const y = yargs(hideBin(process.argv))
+	.help(false)
+	.version(false)
+	.parserConfiguration({
+		'camel-case-expansion': false,
+	})
+const args = /** @type {YargsNonAwaited} */ (y.argv)
 
 let command = 'vite build'
 
@@ -41,11 +47,13 @@ function constructCrossEnvCommand(customEnv, baseCommand) {
 
 	// 1. Iterate over the parsed arguments to build the cross-env prefix
 	for (const [key, value] of Object.entries(customEnv)) {
+		if (key === '_' || key === '$0') continue
+
 		// It's good practice to prefix with VITE_ if these are meant for client-side access
 		const envKey = key.startsWith('VITE_') ? key : `VITE_${key.toUpperCase()}`
 
 		// Add the cross-env call for each variable, ensuring value is quoted for safety
-		crossEnvPrefix += `cross-env ${envKey}="${value}" `
+		crossEnvPrefix += `cross-env ${envKey}="${String(value)}" `
 	}
 
 	// 2. Combine the prefix with the base command
@@ -57,6 +65,29 @@ function constructCrossEnvCommand(customEnv, baseCommand) {
 if (args.mode === 'single' || args.single || process.env.VITE_SINGLE === '1') {
 	// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 	command = constructCrossEnvCommand(args, command) + ' --mode single'
+}
+
+const wrapperArgs = new Set(['mode', 'dev', 'staging', 'single'])
+const extraArgs = []
+
+for (const [key, value] of Object.entries(args)) {
+	if (!wrapperArgs.has(key) && key !== '_' && key !== '$0') {
+		if (value === true) {
+			extraArgs.push(`--${key}`)
+		} else if (value === false) {
+			extraArgs.push(`--no-${key}`)
+		} else {
+			extraArgs.push(`--${key}=${value}`)
+		}
+	}
+}
+
+for (const posArg of args._) {
+	extraArgs.push(String(posArg))
+}
+
+if (extraArgs.length > 0) {
+	command += ` ${extraArgs.join(' ')}`
 }
 
 try {
