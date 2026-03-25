@@ -16,7 +16,7 @@
 	"sideEffects": [
 		"./src/loader/convenientDiscussions.js",
 		"./src/loader/convenientDiscussions.loader.js",
-		"./src/loader/convenientDiscussions.util.js",
+		"./src/loader/convenientDiscussions.utils.js",
 		"./src/loader/convenientDiscussions.debug.js",
 		"./src/shared/polyfills.js",
 		"./src/worker/worker.js",
