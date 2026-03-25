@@ -20,8 +20,8 @@
 
 - **app.js**: Main application entry point
 - **loader/loader.js**: Entry point for the module loading the main app
-- **cd.js**: `cd`, core Convenient Discussions object
-- **convenientDiscussions.js**: Main initialization script
+- **loader/cd.js**: `cd`, core Convenient Discussions object
+- **loader/convenientDiscussions.js**: Main initialization script
 - **BootProcess.js**: Application bootstrap logic for talk pages
 - **controller.js**: Main controller
 
