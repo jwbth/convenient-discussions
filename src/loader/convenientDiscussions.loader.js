@@ -721,9 +721,8 @@ class Loader {
 	 */
 	async runApp() {
 		// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
-		// production, load from network. Use cd.g runtime properties to prevent Vite from optimizing
-		// away the condition.
-		if (cd.g.isDev || cd.g.isSingle) {
+		// production, load from network.
+		if (IS_DEV || IS_SINGLE) {
 			await import('../app.js')
 		} else if (this.appCode) {
 			const scriptTag = document.createElement('script')

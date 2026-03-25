@@ -51,15 +51,35 @@ for (const [key, value] of Object.entries(argv)) {
 	}
 }
 
-if (envVars.length > 0) {
-	commandParts.unshift('cross-env', ...envVars)
-}
+if (isDev || isSingle) {
+	if (envVars.length > 0) {
+		commandParts.unshift('cross-env', ...envVars)
+	}
 
-const command = [...commandParts, ...extraArgs].filter(Boolean).join(' ')
+	const command = [...commandParts, ...extraArgs].filter(Boolean).join(' ')
 
-try {
-	execSync(command, { stdio: 'inherit' })
-} catch (error) {
-	// @ts-ignore
-	process.exitCode = error.status ?? 1
+	try {
+		execSync(command, { stdio: 'inherit' })
+	} catch (error) {
+		// @ts-ignore
+		process.exitCode = error.status ?? 1
+	}
+} else {
+	const loaderCommandParts = ['cross-env', 'VITE_BUILD_PART="loader"', ...envVars, ...commandParts]
+	const loaderCommand = [...loaderCommandParts, ...extraArgs].filter(Boolean).join(' ')
+
+	const stylesCommandParts = ['cross-env', 'VITE_BUILD_PART="styles"', ...envVars, ...commandParts]
+	const stylesCommand = [...stylesCommandParts, ...extraArgs].filter(Boolean).join(' ')
+
+	const mainCommandParts = ['cross-env', 'VITE_BUILD_PART="main"', ...envVars, ...commandParts]
+	const mainCommand = [...mainCommandParts, ...extraArgs].filter(Boolean).join(' ')
+
+	try {
+		execSync(loaderCommand, { stdio: 'inherit' })
+		execSync(stylesCommand, { stdio: 'inherit' })
+		execSync(mainCommand, { stdio: 'inherit' })
+	} catch (error) {
+		// @ts-ignore
+		process.exitCode = error.status ?? 1
+	}
 }

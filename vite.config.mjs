@@ -45,8 +45,8 @@ function licenseExtractionPlugin(buildMode) {
 		apply: 'build',
 		enforce: 'post',
 		generateBundle(_options, bundle) {
-			// Only apply to production/staging builds (not dev or single)
-			if (buildMode.isDev || buildMode.isSingle) {
+			// Only apply to production/staging builds (not single)
+			if (buildMode.isSingle) {
 				return
 			}
 
@@ -203,8 +203,8 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
 		apply: 'build',
 		enforce: 'post',
 		generateBundle(_options, bundle) {
-			// Only apply to production/staging builds (not dev or single)
-			if (buildMode.isDev || buildMode.isSingle) {
+			// Only apply to production/staging builds (not single)
+			if (buildMode.isSingle) {
 				return
 			}
 
@@ -229,7 +229,6 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
 
 /**
  * @typedef {object} BuildMode
- * @property {boolean} isDev
  * @property {boolean} isStaging
  * @property {boolean} isSingle
  * @property {string} [project]
@@ -291,11 +290,10 @@ export default defineConfig(({ mode, command }) => {
 
 	// For dev server (serve command), always use dev mode settings
 	const isDevServer = command === 'serve'
-	const effectiveIsDev = isDevServer || buildMode.isDev
 
 	// Environment variable defines for build-time replacement
 	const defines = {
-		IS_DEV: JSON.stringify(effectiveIsDev),
+		IS_DEV: JSON.stringify(isDevServer),
 		IS_STAGING: JSON.stringify(buildMode.isStaging),
 		IS_SINGLE: JSON.stringify(buildMode.isSingle),
 		SINGLE_CONFIG_FILE_NAME:
@@ -356,12 +354,12 @@ export default defineConfig(({ mode, command }) => {
 	// }
 
 	// Add license extraction plugin for production/staging builds
-	if (!buildMode.isDev && !buildMode.isSingle) {
+	if (!buildMode.isSingle) {
 		// plugins.push(licenseExtractionPlugin(buildMode));
 	}
 
 	// Add custom source map URL plugin for production/staging builds
-	// if (cdConfig.sourceMapsBaseUrl && !buildMode.isDev && !buildMode.isSingle) {
+	// if (cdConfig.sourceMapsBaseUrl && !buildMode.isSingle) {
 	//   plugins.push(customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode));
 	// }
 
@@ -381,7 +379,7 @@ export default defineConfig(({ mode, command }) => {
 			target: 'es2020',
 
 			// Minification configuration
-			minify: effectiveIsDev ? false : 'esbuild',
+			minify: 'esbuild',
 
 			// esbuild minification options
 			esbuildOptions: {
@@ -398,21 +396,40 @@ export default defineConfig(({ mode, command }) => {
 			},
 
 			// Source map configuration based on build mode
-			sourcemap: buildMode.isSingle
-				? 'inline'
-				: buildMode.isDev
-					? 'inline'
-					: true,
+			sourcemap: buildMode.isSingle ? 'inline' : true,
 
 			// Entry point and output configuration
 			rollupOptions: {
-				input: {
-					[bundleFilename]: path.resolve(__dirname, 'src/loader/startup.js'),
-					'convenientDiscussions-styles': path.resolve(
-						__dirname,
-						'src/styles.less',
-					),
-				},
+				input: buildMode.isSingle
+					? {
+							[bundleFilename]: path.resolve(
+								__dirname,
+								'src/loader/startup.js',
+							),
+							'convenientDiscussions-styles': path.resolve(
+								__dirname,
+								'src/styles.less',
+							),
+						}
+					: process.env.VITE_BUILD_PART === 'loader'
+						? {
+								[bundleFilename]: path.resolve(
+									__dirname,
+									'src/loader/startup.js',
+								),
+							}
+						: process.env.VITE_BUILD_PART === 'styles'
+							? {
+									'convenientDiscussions-styles': path.resolve(
+										__dirname,
+										'src/styles.less',
+									),
+								}
+							: {
+									[`convenientDiscussions-main${buildMode.filenamePostfix}`]:
+										path.resolve(__dirname, 'src/app.js'),
+								},
+
 				output: {
 					// Output filename with mode-specific postfix
 					entryFileNames: '[name].js',
@@ -433,7 +450,7 @@ export default defineConfig(({ mode, command }) => {
 					chunkFileNames: `${bundleFilename}-[name].js`,
 
 					// Module format (IIFE for browser global)
-					// format: 'iife',
+					format: 'iife',
 				},
 
 				// Tree-shaking is enabled by default in Rollup/Vite
@@ -508,11 +525,7 @@ export default defineConfig(({ mode, command }) => {
 					entryFileNames: `convenientDiscussions.worker${buildMode.filenamePostfix}.js`,
 
 					// Source maps for workers (when not inlined)
-					sourcemap: buildMode.isSingle
-						? 'inline'
-						: buildMode.isDev
-							? 'inline'
-							: true,
+					sourcemap: buildMode.isSingle ? 'inline' : true,
 				},
 			},
 		},
