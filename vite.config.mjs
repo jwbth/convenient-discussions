@@ -390,30 +390,6 @@ export default defineConfig(({ mode, command }) => {
 		// Disable public directory to avoid conflicts with outDir
 		publicDir: false,
 		build: {
-			// Library mode for main/styles parts to ensure exports are handled correctly
-			lib:
-				process.env.VITE_BUILD_PART === 'main'
-					? {
-							entry: {
-								[`convenientDiscussions-main${buildMode.filenamePostfix}`]:
-									path.resolve(__dirname, 'src/app.js'),
-							},
-							name: 'convenientDiscussionsMain',
-							formats: ['iife'],
-						}
-					: process.env.VITE_BUILD_PART === 'styles'
-						? {
-								entry: {
-									'convenientDiscussions-styles': path.resolve(
-										__dirname,
-										'src/styles.less',
-									),
-								},
-								name: 'convenientDiscussionsStyles',
-								formats: ['iife'],
-							}
-						: undefined,
-
 			// Output directory
 			outDir: 'dist',
 
@@ -445,19 +421,39 @@ export default defineConfig(({ mode, command }) => {
 
 			// Entry point and output configuration
 			rollupOptions: {
-				input:
-					process.env.VITE_BUILD_PART === 'main' ||
-					process.env.VITE_BUILD_PART === 'styles'
-						? undefined
-						: {
+				input: buildMode.isSingle
+					? {
+							[bundleFilename]: path.resolve(
+								__dirname,
+								'src/loader/startup.js',
+							),
+						}
+					: process.env.VITE_BUILD_PART === 'loader'
+						? {
 								[bundleFilename]: path.resolve(
 									__dirname,
 									'src/loader/startup.js',
 								),
-							},
+							}
+						: process.env.VITE_BUILD_PART === 'styles'
+							? {
+									'convenientDiscussions-styles': path.resolve(
+										__dirname,
+										'src/styles.less',
+									),
+								}
+							: {
+									[`convenientDiscussions-main${buildMode.filenamePostfix}`]:
+										path.resolve(__dirname, 'src/app.js'),
+								},
 
 				output: {
-					// name and exports are handled by build.lib for main/styles
+					name:
+						process.env.VITE_BUILD_PART === 'main'
+							? 'convenientDiscussionsMain'
+							: process.env.VITE_BUILD_PART === 'styles'
+								? 'convenientDiscussionsStyles'
+								: undefined,
 
 					// Output filename with mode-specific postfix
 					entryFileNames: '[name].js',

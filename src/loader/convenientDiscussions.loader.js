@@ -39,7 +39,7 @@ class Loader {
 	 * @type {Promise<void> | undefined}
 	 * @private
 	 */
-	runAppRequest
+	importAppRequest
 
 	/**
 	 * @type {boolean | undefined}
@@ -134,14 +134,14 @@ class Loader {
 	/**
 	 * Main app function. Assigned from app.js.
 	 *
-	 * @type {((...args: any) => void) | undefined}
+	 * @type {import('../app').app}
 	 */
 	app
 
 	/**
 	 * Add comment links function. Assigned from app.js.
 	 *
-	 * @type {((...args: any) => void) | undefined}
+	 * @type {import('../app').addCommentLinks}
 	 */
 	addCommentLinks
 
@@ -418,7 +418,7 @@ class Loader {
 			 */
 			mw.hook('convenientDiscussions.preprocessed').fire(cd)
 
-			window.convenientDiscussionsMain.app()
+			this.app()
 		} catch (error) {
 			mw.notify(cd.s('error-loaddata'), { type: 'error' })
 			console.error(error)
@@ -744,11 +744,11 @@ class Loader {
 	 * @private
 	 */
 	async importApp() {
-		this.runAppRequest ??= (async () => {
+		this.importAppRequest ??= (async () => {
 			// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
 			// production, load from network.
 			if (IS_DEV || IS_SINGLE) {
-				window.convenientDiscussionsMain = await import('../app.js')
+				await import('../app.js')
 			} else if (this.appCode) {
 				const scriptTag = document.createElement('script')
 				scriptTag.innerHTML = this.appCode
@@ -756,7 +756,7 @@ class Loader {
 			}
 		})()
 
-		return this.runAppRequest
+		return this.importAppRequest
 	}
 
 	/**
@@ -923,7 +923,7 @@ class Loader {
 			mw.util.addCSS(addCommentLinksCss)
 
 			await this.importApp()
-			window.convenientDiscussionsMain.addCommentLinks()
+			this.addCommentLinks()
 		} catch (error) {
 			mw.notify(cd.s('error-loaddata'), { type: 'error' })
 			console.error(error)

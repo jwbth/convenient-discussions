@@ -8,6 +8,7 @@
 import Comment from './Comment'
 import CompactComment from './CompactComment'
 import SpaciousComment from './SpaciousComment'
+import addCommentLinks from './addCommentLinks'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -19,6 +20,10 @@ import settings from './settings'
 import updateChecker from './updateChecker'
 import { buildEditSummary, wrapDiffBody, wrapHtml } from './utils-window'
 import visits from './visits'
+
+// Assign to cd.loader so loader can call these functions
+cd.loader.app = app
+cd.loader.addCommentLinks = addCommentLinks
 
 /**
  * Main app function for talk pages. Called by {@link convenientDiscussions.loader} after modules
@@ -69,6 +74,3 @@ cd.api = {
 	rebootPage: controller.rebootPage.bind(controller),
 	getRootElement: controller.getRootElement.bind(controller),
 }
-
-export { app }
-export { default as addCommentLinks } from './addCommentLinks'
