@@ -224,14 +224,6 @@ const config = defineConfig(
 			],
 			'@typescript-eslint/no-dynamic-delete': 'off',
 
-			'@typescript-eslint/no-unused-vars': [
-				'warn',
-				{
-					argsIgnorePattern: '^_',
-					varsIgnorePattern: '^_',
-					args: 'all',
-				},
-			],
 			'@typescript-eslint/no-misused-promises': [
 				'error',
 				{
@@ -303,6 +295,9 @@ const config = defineConfig(
 			// c.h.a.i.n.match() is more readable than backwards reading with .exec(c.h.a.i.n), especially
 			// if the chain is multiline.
 			'@typescript-eslint/prefer-regexp-exec': 'off',
+
+			// Handled by unused-imports/no-unused-vars
+			'@typescript-eslint/no-unused-vars': 'off',
 
 			// Wait until enough browsers support it
 			'unicorn/prefer-string-replace-all': 'off',
