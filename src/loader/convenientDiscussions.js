@@ -142,7 +142,7 @@ const convenientDiscussionsWindow = {
 			options = lastParam
 			params.splice(-1)
 		}
-		if (options && options.language === 'content') {
+		if (options?.language === 'content') {
 			name = '(content)' + name
 		}
 		if (!params.length && mwStringsCache[name]) {
@@ -470,7 +470,7 @@ const globalProperties = {
 	 * @type {string}
 	 * @memberof convenientDiscussions.g
 	 */
-	signCode: '~~'.concat('~~'),
+	signCode: ['~~', '~~'].join(''),
 
 	/**
 	 * List of tags allowed in user input. See
