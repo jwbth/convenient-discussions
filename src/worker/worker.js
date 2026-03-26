@@ -292,20 +292,12 @@ function onMessageFromWindow(event) {
 		cd.g = message.g
 		cd.config = message.config
 
-		// Restore functions that were stringified for transfer. We have to do this dance with testing
-		// because of the issues with using `eval()` in the worker and Rollup renaming objects in some
-		// contexts, which causes the function to lose its tie to the original function and thus not
-		// work when called in the worker.
 		cd.config.rejectNode = /** @type {(typeof cd)['config']['rejectNode']} */ (
 			restoreFunc(cd.config.rejectNode?.toString())
 		)
 		cd.g.isIPv6Address = /** @type {(typeof mw)['util']['isIPv6Address']} */ (
 			restoreFunc(cd.g.isIPv6Address?.toString())
 		)
-		cd.g.makeIsTemporaryUser = /** @type {(typeof cd)['g']['makeIsTemporaryUser']} */ (
-			restoreFunc(cd.g.makeIsTemporaryUser.toString())
-		)
-		cd.g.isTemporaryUser = cd.g.makeIsTemporaryUser(cd.g.mwUtilsConfig)
 
 		self.document = parseDocument(message.text, {
 			withStartIndices: true,

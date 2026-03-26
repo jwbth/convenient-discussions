@@ -40,14 +40,6 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  */
 
 /**
- * @typedef {object} AutoCreateTempUserConfig
- * @property {boolean} enabled
- * @property {boolean} known
- * @property {string | string[] | null} matchPattern
- * @property {string} genPattern
- */
-
-/**
  * @template {LanguageTarget} LT
  * @typedef {object} Timestamp
  * @property {string} dateFormat Format of date in `LT` language, as used by MediaWiki.
@@ -118,9 +110,6 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  * @property {ReturnType<JQueryStatic['client']['profile']>} clientProfile
  * @property {'Ctrl' | 'Cmd'} cmdModifier
  * @property {(typeof mw)['util']['isIPv6Address']} [isIPv6Address]
- * @property {(config: any) => (username: string) => boolean} makeIsTemporaryUser
- * @property {(username: string) => boolean} isTemporaryUser
- * @property {{ AutoCreateTempUser: AutoCreateTempUserConfig } | undefined} mwUtilsConfig
  * @property {ApiErrorFormatHtml} apiErrorFormatHtml
  * @property {TimestampTools} timestampTools
  */
