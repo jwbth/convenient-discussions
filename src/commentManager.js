@@ -113,7 +113,7 @@ export class CommentManager extends EventEmitter {
 	 *
 	 * @returns {this is CommentManager<import('./SpaciousComment').default>}
 	 */
-	isSpaciousCommentManager() {
+	isCommentDisplaySpacious() {
 		return this.commentDisplay === 'spacious'
 	}
 
@@ -122,7 +122,7 @@ export class CommentManager extends EventEmitter {
 	 *
 	 * @returns {this is CommentManager<import('./CompactComment').default>}
 	 */
-	isCompactCommentManager() {
+	isCommentDisplayCompact() {
 		return this.commentDisplay === 'compact'
 	}
 
@@ -492,7 +492,7 @@ export class CommentManager extends EventEmitter {
 		const findVisible = (
 			/** @type {'forward' | 'backward'} */ direction,
 			startIndex = 0,
-			/** @type {number | undefined} */ endIndex = undefined,
+			/** @type {number | undefined} */ endIndex,
 		) => {
 			let comments = reorderArray(this.items, startIndex, direction === 'backward')
 			if (endIndex !== undefined) {
@@ -636,7 +636,7 @@ export class CommentManager extends EventEmitter {
 	 * @param {MouseEvent | JQuery.MouseMoveEvent | JQuery.MouseOverEvent} event
 	 */
 	maybeHighlightHovered = (event) => {
-		if (!this.isCompactCommentManager()) return
+		if (!this.isCommentDisplayCompact()) return
 
 		const isObstructingElementHovered = controller.isObstructingElementHovered()
 
@@ -704,9 +704,7 @@ export class CommentManager extends EventEmitter {
 
 		let comments = this.items.filter(
 			(comment) =>
-				comment.date &&
-				comment.date.getTime() === data.date.getTime() &&
-				comment.author.getName() === data.author,
+				comment.date?.getTime() === data.date.getTime() && comment.author.getName() === data.author,
 		)
 
 		let comment
@@ -884,7 +882,8 @@ export class CommentManager extends EventEmitter {
 	 * relevant setting is enabled.
 	 */
 	async reformatComments() {
-		if (!this.isSpaciousCommentManager()) return
+		$(document.body).removeClass('cd-reformattedComments')
+		if (!this.isCommentDisplaySpacious()) return
 
 		$(document.body).addClass('cd-reformattedComments')
 		if (!cd.page.exists()) return
@@ -1089,7 +1088,7 @@ export class CommentManager extends EventEmitter {
 	 * @private
 	 */
 	handleDtTimestampsClick = () => {
-		if (this.isSpaciousCommentManager()) return
+		if (this.isCommentDisplaySpacious()) return
 
 		this.items.forEach((comment) => {
 			comment.handleDtTimestampClick()
@@ -1112,7 +1111,7 @@ export class CommentManager extends EventEmitter {
 		const isOrHasCommentLevel = (/** @type {HTMLElement} */ el) =>
 			Boolean(
 				(el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
-					el.querySelector('.cd-commentLevel:not(ol)'),
+				el.querySelector('.cd-commentLevel:not(ol)'),
 			)
 
 		;[...levels].forEach((bottomElement) => {
