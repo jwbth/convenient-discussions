@@ -2,6 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { defineConfig } from 'vite'
+import banner from 'vite-plugin-banner'
 
 import nonNullableConfig from './config.mjs'
 import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs'
@@ -340,28 +341,30 @@ export default defineConfig(({ mode, command }) => {
 
 	plugins.push(buildNotificationPlugin())
 
-	// // Add nowiki banner plugins for non-single builds
-	// if (!buildMode.isSingle) {
-	//   // Top banner - prepend /* <nowiki> */
-	//   // Bottom banner - append /* </nowiki> */
-	//   plugins.push(
-	//     banner({
-	//       content: '/* <nowiki> */',
-	//       verify: false,
-	//     }),
-	//     appendNowikiPlugin(`${bundleFilename}.js`)
-	//   );
-	// }
-
-	// Add license extraction plugin for production/staging builds
+	// Add nowiki banner plugins for non-single builds
 	if (!buildMode.isSingle) {
-		// plugins.push(licenseExtractionPlugin(buildMode));
+		// Top banner - prepend /* <nowiki> */
+		// Bottom banner - append /* </nowiki> */
+		plugins.push(
+			banner({
+				content: '/* <nowiki> */',
+				verify: false,
+			}),
+			appendNowikiPlugin(`${bundleFilename}.js`),
+		)
 	}
 
-	// Add custom source map URL plugin for production/staging builds
-	// if (cdConfig.sourceMapsBaseUrl && !buildMode.isSingle) {
-	//   plugins.push(customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode));
+	// Add license extraction plugin for production/staging builds
+	// if (!buildMode.isSingle) {
+	// 	plugins.push(licenseExtractionPlugin(buildMode))
 	// }
+
+	// Add custom source map URL plugin for production/staging builds
+	if (cdConfig.sourceMapsBaseUrl && !buildMode.isSingle) {
+		plugins.push(
+			customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode),
+		)
+	}
 
 	// Remove empty JS file generated during the styles build
 	if (process.env.VITE_BUILD_PART === 'styles') {
