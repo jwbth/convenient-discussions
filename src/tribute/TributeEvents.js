@@ -146,8 +146,8 @@ class TributeEvents {
 
 		if (
 			tribute.current.element &&
-			!tribute.current.externalTrigger &&
-			!tribute.current.element.contains(event.target)
+			!tribute.current.externalTrigger //&&
+			//!tribute.current.element.contains(event.target)
 		) {
 			tribute.current.externalTrigger = false
 			setTimeout(() => tribute.hideMenu())
