@@ -223,8 +223,8 @@ function buildDateFnsLocales(i18nWithFallbacks) {
 
 			fs.writeFileSync(
 				`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/${lang}.js`,
-				`import { ${names.localeName} } from 'date-fns/locale/${names.dirName}';
-convenientDiscussions.i18n['${lang}'].dateFnsLocale = ${names.localeName};
+				`import lang from 'date-fns/locale/${names.dirName}';
+convenientDiscussions.i18n['${lang}'].dateFnsLocale = lang;
 `,
 			)
 		}
