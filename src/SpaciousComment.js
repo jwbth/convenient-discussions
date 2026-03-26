@@ -228,7 +228,7 @@ class SpaciousComment extends Comment {
 			// Use the bootstrap author link.
 			this.authorLink = authorLink
 			let pageName
-			if (this.author.isRegistered()) {
+			if (this.author.isRegistered() && !this.author.isTemporary()) {
 				pageName = 'User:' + this.author.getName()
 				pagesToCheckExistence.push({
 					pageName,
