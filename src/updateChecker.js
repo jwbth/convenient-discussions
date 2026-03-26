@@ -229,7 +229,7 @@ class UpdateChecker extends EventEmitter {
 					task: 'parse',
 					revisionId,
 					text,
-					g: keepClonableValues(cd.g, ['isIPv6Address']),
+					g: keepClonableValues(cd.g, ['isIPv6Address', 'makeIsTemporaryUser']),
 					config: keepClonableValues(cd.config, ['rejectNode']),
 				}),
 			)
@@ -434,8 +434,7 @@ class UpdateChecker extends EventEmitter {
 					(currentComment) =>
 						currentComment.authorName === otherComment.authorName &&
 						currentComment.date &&
-						otherComment.date &&
-						currentComment.date.getTime() === otherComment.date.getTime(),
+						currentComment.date.getTime() === otherComment.date?.getTime(),
 				)
 			)
 			const isTotalCountEqual = currentComments.length === otherComments.length
@@ -566,7 +565,11 @@ class UpdateChecker extends EventEmitter {
 		)
 			return
 
-		const { revisionId, comments: newComments, sections } = await this.processPage(revisions[0].revid)
+		const {
+			revisionId,
+			comments: newComments,
+			sections,
+		} = await this.processPage(revisions[0].revid)
 		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		const { comments: currentComments } = await this.processPage(currentRevisionId)
@@ -608,8 +611,8 @@ class UpdateChecker extends EventEmitter {
 	hasCommentChanged(olderComment, newerComment) {
 		return Boolean(
 			newerComment.textHtmlToCompare !== olderComment.textHtmlToCompare ||
-				(newerComment.headingHtmlToCompare &&
-					newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare),
+			(newerComment.headingHtmlToCompare &&
+				newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare),
 		)
 	}
 

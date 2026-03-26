@@ -19,12 +19,12 @@ export function initGlobals() {
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (cd.page) return
 
-	const script = mw.loader.moduleRegistry['mediawiki.Title'].script
+	const mwTitleScript = mw.loader.moduleRegistry['mediawiki.Title'].script
 	cd.g.phpCharToUpper =
-		(script &&
-			typeof script === 'object' &&
-			'files' in script &&
-			script.files['phpCharToUpper.json']) ||
+		(mwTitleScript &&
+			typeof mwTitleScript === 'object' &&
+			'files' in mwTitleScript &&
+			mwTitleScript.files['phpCharToUpper.json']) ||
 		{}
 
 	cd.page = pageRegistry.getCurrent()
@@ -52,6 +52,28 @@ export function initGlobals() {
 	cd.g.cmdModifier = $.client.profile().platform === 'mac' ? 'Cmd' : 'Ctrl'
 
 	cd.g.isIPv6Address = mw.util.isIPv6Address
+
+	// Pack mw.util.isTemporaryUser and its config for use in the worker, and test that it works. If
+	// it doesn't work, use a fallback implementation. We have to do this dance with packing and
+	// testing because of the issues with using `eval()` in the worker and Rollup renaming objects in
+	// some contexts, which causes the function to lose its tie to the original
+	// mw.util.isTemporaryUser and thus not work when called in the worker.
+	try {
+		cd.g.makeIsTemporaryUser = /** @type {(typeof cd)['g']['makeIsTemporaryUser']} */ (
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			new Function('config', `return (function ${mw.util.isTemporaryUser.toString()})`)
+		)
+		const mwUtilScript = mw.loader.moduleRegistry['mediawiki.util'].script
+		cd.g.mwUtilsConfig =
+			mwUtilScript && typeof mwUtilScript === 'object' && 'files' in mwUtilScript
+				? mwUtilScript.files['config.json']
+				: undefined
+		cd.g.isTemporaryUser = cd.g.makeIsTemporaryUser(cd.g.mwUtilsConfig)
+		cd.g.isTemporaryUser('test')
+	} catch {
+		cd.g.makeIsTemporaryUser = () => (/** @type {string} */ username) => username.startsWith('~2')
+		cd.g.isTemporaryUser = cd.g.makeIsTemporaryUser(cd.g.mwUtilsConfig)
+	}
 
 	cd.g.apiErrorFormatHtml = {
 		errorformat: 'html',
