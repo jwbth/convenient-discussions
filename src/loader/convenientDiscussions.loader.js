@@ -696,7 +696,7 @@ class Loader {
 
 			this.appCode = await this.loadPreferablyFromDiskCache({
 				domain: 'commons.wikimedia.org',
-				pageName: `User:Jack_who_built_the_house/convenientDiscussions-main.js`,
+				pageName: `User:Jack who built the house/convenientDiscussions-main.js`,
 				ttlInDays: 365,
 				addCacheBuster: true,
 				add: false,
@@ -728,7 +728,7 @@ class Loader {
 
 		await this.loadPreferablyFromDiskCache({
 			domain: 'commons.wikimedia.org',
-			pageName: `User:Jack_who_built_the_house/convenientDiscussions.css`,
+			pageName: `User:Jack who built the house/convenientDiscussions.css`,
 			ttlInDays: 365,
 			addCacheBuster: true,
 			ctype: 'text/css',
@@ -793,7 +793,7 @@ class Loader {
 		const cacheBusterOrNot = addCacheBuster ? '&' + CACHE_BUSTER : ''
 
 		const apiResponse = await $.get(
-			`https://${domain}/w/api.php?titles=${pageEncoded}&origin=*&format=json&formatversion=2&uselang=content&maxage=${ttlInMs}&smaxage=${ttlInMs}&action=query&prop=revisions|info&rvprop=content&rvlimit=1${cacheBusterOrNot}`,
+			`https://${domain}/w/api.php?titles=${pageEncoded}&origin=*&format=json&formatversion=2&uselang=content&maxage=${ttlInMs}&smaxage=${ttlInMs}&action=query&prop=revisions|info&rvslots=main&rvprop=content&rvlimit=1${cacheBusterOrNot}`,
 		)
 
 		const apiPage = apiResponse.query.pages[0]
@@ -801,7 +801,7 @@ class Loader {
 			throw new Error(`Couldn't load ${pageName} from ${domain}`)
 		}
 
-		const content = apiPage.revisions[0].content
+		const content = apiPage.revisions[0].slots.main.content
 		if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
 			if (add) {
 				const scriptTag = document.createElement('script')
