@@ -1986,7 +1986,7 @@ class CommentForm extends EventEmitter {
 		} else {
 			if (!this.registered) return
 
-			if (!(operation && operation.getType() === 'preview' && operation.getOptionValue('isAuto'))) {
+			if (!(operation?.getType() === 'preview' && operation.getOptionValue('isAuto'))) {
 				this.showMessage($message, {
 					type: messageType,
 					framed,
@@ -2233,9 +2233,9 @@ class CommentForm extends EventEmitter {
 		this.setNewSectionApi(
 			Boolean(
 				this.isMode('addSection') &&
-					!this.newTopicOnTop &&
-					this.headlineInput?.getValue().trim() &&
-					!commentIds.length,
+				!this.newTopicOnTop &&
+				this.headlineInput?.getValue().trim() &&
+				!commentIds.length,
 			),
 		)
 
@@ -2333,7 +2333,7 @@ class CommentForm extends EventEmitter {
 	 *   function is called from within itself, being delayed.
 	 * @fires previewReady
 	 */
-	async preview(isAuto = true, operation = undefined) {
+	async preview(isAuto = true, operation) {
 		if (
 			this.isContentBeingLoaded() ||
 			(!cd.settings.get('autopreview') && (isAuto || this.isBeingSubmitted()))
@@ -2581,6 +2581,8 @@ class CommentForm extends EventEmitter {
 
 			return
 		}
+
+		this.teardown()
 	}
 
 	/**
@@ -2701,9 +2703,8 @@ class CommentForm extends EventEmitter {
 					messageType = 'notice'
 				} else if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
 					this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(
-						/** @type {{ edit: mw.libs.confirmEdit.CaptchaData }} */ (
-							error.getApiResponse()
-						).edit.captcha,
+						/** @type {{ edit: mw.libs.confirmEdit.CaptchaData }} */ (error.getApiResponse()).edit
+							.captcha,
 					)
 					this.captchaInput.on('enter', () => {
 						this.submit()
@@ -2940,6 +2941,7 @@ class CommentForm extends EventEmitter {
 		if (this.torndown) return
 
 		this.unregister()
+		this.codeMirror?.destroy()
 		this.operations.closeAll()
 		if (this.$element[0].isConnected) {
 			this.target.cleanUpCommentFormTraces(this.mode, this)
@@ -2966,7 +2968,7 @@ class CommentForm extends EventEmitter {
 		this.teardownInputPopups()
 
 		this.terminateAutocomplete()
-		this.codeMirror?.destroy()
+
 		cd.settings.off('set', this.onSettingsUpdate)
 
 		this.registered = false
@@ -2994,10 +2996,10 @@ class CommentForm extends EventEmitter {
 		return Boolean(
 			(this.originalComment !== undefined &&
 				this.originalComment !== this.commentInput.getValue()) ||
-				this.autoSummary !== this.summaryInput.getValue() ||
-				(this.headlineInput &&
-					this.originalHeadline !== undefined &&
-					this.originalHeadline !== this.headlineInput.getValue()),
+			this.autoSummary !== this.summaryInput.getValue() ||
+			(this.headlineInput &&
+				this.originalHeadline !== undefined &&
+				this.originalHeadline !== this.headlineInput.getValue()),
 		)
 	}
 
