@@ -3,6 +3,7 @@ import { vi, test, expect } from 'vitest'
 
 import * as mock_i18n_en_json from '../i18n/en.json'
 import * as mock_src_Comment from '../src/Comment'
+import * as mock_src_CommentSkeleton from '../src/shared/CommentSkeleton'
 import * as mock_src_commentManager from '../src/commentManager'
 import * as mock_src_settings from '../src/settings'
 import * as mock_src_shared_cd from '../src/shared/cd'
@@ -147,6 +148,8 @@ function testWithSettings({
 				timestampFormat,
 				useUiTime,
 				hideTimezone,
+				// hasTimestamp is missing on the plain test object; use the skeleton helper
+				hasTimestamp: mock_src_CommentSkeleton.default.prototype.hasTimestamp,
 			}
 
 			const adaptedReformatTimestamp = (/** @type {Timestamp} */ d) => {
@@ -187,6 +190,9 @@ function testWithSettings({
 				mw.config.set('wgUserLanguage', 'en')
 				mw.messages.set(messages.en)
 			}
+
+			// Ensure hasTimestamp() passes when using the skeleton helper.
+			comment.timestamp = comment.timestampElement.textContent
 
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const originalDate = new Date()
