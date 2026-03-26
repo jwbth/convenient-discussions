@@ -222,11 +222,15 @@ class SpaciousCommentActions extends CommentActions {
 		// Create SVG icon prototypes
 		this.prototypes.add(
 			'goToParentButtonSvg',
-			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M10 5l8 10H2z" />`)[0],
+			cd.utils
+				.createSvg('1.14285714em', '1.14285714em', 20, 20)
+				.html(`<path d="M10 5l8 10H2z" />`)[0],
 		)
 		this.prototypes.add(
 			'goToChildButtonSvg',
-			cd.utils.createSvg(16, 16, 20, 20).html(`<path d="M10 15L2 5h16z" />`)[0],
+			cd.utils
+				.createSvg('1.14285714em', '1.14285714em', 20, 20)
+				.html(`<path d="M10 15L2 5h16z" />`)[0],
 		)
 
 		this.prototypesInitted = true

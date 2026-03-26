@@ -71,8 +71,8 @@ const utils = {
 	/**
 	 * Create a `<svg>` element.
 	 *
-	 * @param {number} width
-	 * @param {number} height
+	 * @param {number | string} width
+	 * @param {number | string} height
 	 * @param {number} [viewBoxWidth]
 	 * @param {number} [viewBoxHeight]
 	 * @returns {JQuery<SVGElement>}
