@@ -283,10 +283,8 @@ class CommentSkeleton {
 	 */
 	static hasTimestamp(obj) {
 		return Boolean(
-			obj?.date &&
-				obj.timestampElement &&
-				/** @type {CommentSkeleton} */ ((obj).timestamp ||
-					/** @type {import('./Parser').SignatureTarget} */ (obj).timestampText),
+			(obj?.date && obj.timestampElement && /** @type {CommentSkeleton} */ (obj).timestamp) ||
+			/** @type {import('./Parser').SignatureTarget} */ (obj).timestampText,
 		)
 	}
 
@@ -508,9 +506,7 @@ class CommentSkeleton {
 		const previousElement = element.previousElementSibling
 		const nextElement = element.nextElementSibling
 		let result =
-			(tagName === 'DL' &&
-				element.firstElementChild &&
-				element.firstElementChild.tagName === 'DT') ||
+			(tagName === 'DL' && element.firstElementChild?.tagName === 'DT') ||
 			// Cases like the first comment at
 			// https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Форум/Кандидаты#Abiyoyo.
 			// But don't affect cases like the first comment at
@@ -577,8 +573,8 @@ class CommentSkeleton {
 
 		return Boolean(
 			isElement(node) &&
-				(tagNames.includes(node.tagName) ||
-					(node.parentElement && tagNames.includes(node.parentElement.tagName))),
+			(tagNames.includes(node.tagName) ||
+				(node.parentElement && tagNames.includes(node.parentElement.tagName))),
 		)
 	}
 
@@ -809,26 +805,26 @@ class CommentSkeleton {
 					// https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=125481598#c-Oleg_Yunakov-20220830173400-Iniquity-20220830171400
 					// will be left out of the comment.
 					!isInline(node) &&
-						// Signature count. The second parameter of .getElementsByClassName() is an
-						// optimization for the worker context.
-						(node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length -
-							Number(hasCurrentSignature) >
-							0 ||
-							(firstForeignComponentAfter &&
-								this.parser.constructor.contains(node, firstForeignComponentAfter) &&
-								!(
-									// Cases like the table added at https://ru.wikipedia.org/?diff=115822931
-									(
-										node.tagName === 'TABLE' ||
-										// Cases like the welcome template at https://en.wikipedia.org/wiki/User_talk:Carver1889
-										node.getAttribute('style')?.includes('background-')
-									)
-								)) ||
-							// A heading can be wrapped into an element, like at
-							// https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
-							(precedingHeadingElement &&
-								node !== precedingHeadingElement &&
-								this.parser.constructor.contains(node, precedingHeadingElement))),
+					// Signature count. The second parameter of .getElementsByClassName() is an
+					// optimization for the worker context.
+					(node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length -
+						Number(hasCurrentSignature) >
+						0 ||
+						(firstForeignComponentAfter &&
+							this.parser.constructor.contains(node, firstForeignComponentAfter) &&
+							!(
+								// Cases like the table added at https://ru.wikipedia.org/?diff=115822931
+								(
+									node.tagName === 'TABLE' ||
+									// Cases like the welcome template at https://en.wikipedia.org/wiki/User_talk:Carver1889
+									node.getAttribute('style')?.includes('background-')
+								)
+							)) ||
+						// A heading can be wrapped into an element, like at
+						// https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
+						(precedingHeadingElement &&
+							node !== precedingHeadingElement &&
+							this.parser.constructor.contains(node, precedingHeadingElement))),
 				)
 
 				// A trace from ~~~ at the end of a line most likely means an incorrectly signed comment.
@@ -1129,7 +1125,7 @@ class CommentSkeleton {
 				this.isPartOfList(lastPartNode, true)
 			) &&
 			// Exclude lists that are parts of the comment.
-			((part.step === 'up' && (!this.parts[i - 1] || this.parts[i - 1].step !== 'back')) ||
+			((part.step === 'up' && this.parts[i - 1]?.step !== 'back') ||
 				(this.isPartOfList(lastPartNode, true) &&
 					// Cases like
 					// https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
@@ -1460,7 +1456,7 @@ class CommentSkeleton {
 			.reduce((acc, ancestors, i) => {
 				if (!ancestors.length) {
 					const lastGroup = acc.at(-1)
-					if (!lastGroup || lastGroup.at(-1) !== i) {
+					if (lastGroup?.at(-1) !== i) {
 						acc.push([])
 					}
 					acc[acc.length - 1].push(i + 1)

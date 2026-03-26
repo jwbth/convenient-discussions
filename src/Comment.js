@@ -702,13 +702,13 @@ class Comment extends CommentSkeleton {
 
 		return Boolean(
 			element?.matches(':hover') &&
-				// There is some bug with the popup positioned at 0, 0; I couldn't find the cause, so maybe
-				// checkVisibility() would help.
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				(!element.checkVisibility || element.checkVisibility()) &&
-				!cd.settings.get('toggleChildThreads-onboarded') &&
-				!this.areChildThreadsCollapsed() &&
-				!this.manager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
+			// There is some bug with the popup positioned at 0, 0; I couldn't find the cause, so maybe
+			// checkVisibility() would help.
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			(!element.checkVisibility || element.checkVisibility()) &&
+			!cd.settings.get('toggleChildThreads-onboarded') &&
+			!this.areChildThreadsCollapsed() &&
+			!this.manager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
 		)
 	}
 
@@ -1252,8 +1252,8 @@ class Comment extends CommentSkeleton {
 				// This is a error, of course, that quoted comments are treated as real, but we can't do
 				// anything here.
 				this.elements.length === 1 ||
-				this.parser.getNestingLevel(this.elements[0]) <=
-					this.parser.getNestingLevel(this.elements[this.elements.length - 1])
+					this.parser.getNestingLevel(this.elements[0]) <=
+						this.parser.getNestingLevel(this.elements[this.elements.length - 1])
 					? this.elements[0]
 					: this.elements[this.elements.length - 1],
 			)
@@ -2210,8 +2210,7 @@ class Comment extends CommentSkeleton {
 			)
 			if (
 				!diffMatches.length ||
-				(diffMatches[1] &&
-					diffMatches[0].wordOverlap === diffMatches[1].wordOverlap &&
+				(diffMatches[0].wordOverlap === diffMatches[1]?.wordOverlap &&
 					diffMatches[0].dateProximity === diffMatches[1].dateProximity)
 			) {
 				throw new CdError({
@@ -2528,7 +2527,7 @@ class Comment extends CommentSkeleton {
 
 		if (this.manager.getByIndex(this.index + 1)?.isOutdented && this.section) {
 			let replyForm = this.section.replyForm
-			if (replyForm && replyForm.targetWithOutdentedReplies === this) {
+			if (replyForm?.targetWithOutdentedReplies === this) {
 				replyForm.$element.cdScrollIntoView('center')
 				replyForm.commentInput.focus()
 			} else {
