@@ -470,9 +470,6 @@ export default defineConfig(({ mode, command }) => {
 						return '[name].[ext]'
 					},
 
-					// Chunk filename for dynamic imports
-					chunkFileNames: `${bundleFilename}-[name].js`,
-
 					// Module format (IIFE for browser global)
 					format: 'iife',
 				},
