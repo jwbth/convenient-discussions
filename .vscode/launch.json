@@ -32,7 +32,7 @@
 			"request": "launch",
 			"name": "Debug vite.config.js",
 			"program": "${workspaceFolder}/node_modules/vite/bin/vite.js",
-			"args": ["build"],
+			"args": ["build", "--configLoader", "native"],
 			"console": "integratedTerminal",
 
 			// Makes the breakpoints work
@@ -40,8 +40,7 @@
 				"${workspaceFolder}/**",
 				"!**/node_modules/**",
 				"**/node_modules/.vite-temp/**"
-			],
-			"args": ["--configLoader", "native"]
+			]
 		},
 		{
 			"type": "node",

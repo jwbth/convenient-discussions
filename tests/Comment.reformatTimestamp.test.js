@@ -3,9 +3,9 @@ import { vi, test, expect } from 'vitest'
 
 import * as mock_i18n_en_json from '../i18n/en.json'
 import * as mock_src_Comment from '../src/Comment'
-import * as mock_src_CommentSkeleton from '../src/shared/CommentSkeleton'
 import * as mock_src_commentManager from '../src/commentManager'
 import * as mock_src_settings from '../src/settings'
+import * as mock_src_CommentSkeleton from '../src/shared/CommentSkeleton'
 import * as mock_src_shared_cd from '../src/shared/cd'
 import { formatDateNative, initDayjs } from '../src/utils-date.js'
 // TODO: use some interfaces for mocks and real objects alike?
@@ -19,7 +19,7 @@ const settings = mock_src_settings.default
 const cd = mock_src_shared_cd.default
 cd.i18n.en.dateFnsLocale = enUS
 
-mw.msg = (/** @type {string} */ name) => mw.messages.values[name] || en[name] || name
+mw.msg = (/** @type {string} */ name) => mw.messages.get(name) || en[name] || name
 mw.config.set('wgContentLanguage', 'en')
 mw.config.set('wgUserLanguage', 'en')
 mw.messages.set({
@@ -194,8 +194,6 @@ function testWithSettings({
 			// Ensure hasTimestamp() passes when using the skeleton helper.
 			comment.timestamp = comment.timestampElement.textContent
 
-			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const originalDate = new Date()
 			if (nowTimestamp) {
 				vi.useFakeTimers()
 				vi.setSystemTime(new Date(nowTimestamp))

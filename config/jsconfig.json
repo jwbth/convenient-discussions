@@ -13,7 +13,7 @@
 		"../node_modules/types-mediawiki",
 		"../src/global.d.ts",
 		"../src/shared/global.d.ts",
-		"../src/shared/utilityTypes.d.ts",
+		"../src/shared/utility-types.d.tss",
 		"../src/shared/domhandler.d.ts"
 	]
 }

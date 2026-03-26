@@ -6,7 +6,7 @@ import { hideBin } from 'yargs/helpers'
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
 const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
-// node buildConfigs --test
+// node build-configs --test
 // npm run <command running this script> --test
 const testSuffix = argv.test || process.env.npm_config_test ? '.test' : ''
 
@@ -24,7 +24,7 @@ fs.readdirSync('./config/wikis/').forEach((filename) => {
 	content = `/**
  * This file was assembled automatically from the configuration at
  * https://github.com/jwbth/convenient-discussions/tree/main/config/wikis/${filename} by running
- * "node buildConfigs". The configuration might get outdated as the script evolves, so it's best
+ * "node build-configs". The configuration might get outdated as the script evolves, so it's best
  * to keep it up to date by checking for the documentation updates from time to time. See the
  * documentation at
  * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.

@@ -316,7 +316,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 			`signatureEndingRegexp: ${config.signatureEndingRegexp}`,
 		)
 
-	// When updating this code, update the code in buildConfigs.js as well.
+	// When updating this code, update the code in build-configs.js as well.
 	output = `/**
  * This configuration might get outdated as the script evolves, so it's best to keep it up to date
  * by checking for the generator script and documentation updates from time to time. See the
