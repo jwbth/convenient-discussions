@@ -88,7 +88,7 @@ function unhideText(text, hidden) {
  */
 
 /**
- * @typedef {{ dirName: string, localeName: string }} LocaleNames
+ * @typedef {{ path: string, fullPath: string }} LocaleNames
  */
 
 /**
@@ -182,48 +182,48 @@ function buildDateFnsLocales(i18nWithFallbacks) {
 	fs.mkdirSync(DATE_FNS_LOCALES_TEMP_DIR_NAME, { recursive: true })
 
 	/** @type {Record<string, LocaleNames>} */
-	const langNames = {}
+	const allLangData = {}
 	Object.keys(i18nWithFallbacks).forEach((lang) => {
-		langNames[lang] = { dirName: '', localeName: '' }
-		const names = langNames[lang]
-		names.dirName = lang
+		allLangData[lang] = { path: '', fullPath: '' }
+		const langData = allLangData[lang]
+		const dirName = lang
 			.replace(/^zh-hans$/, 'zh-cn')
 			.replace(/^zh-hant$/, 'zh-tw')
 			.replace(/-.+$/, (s) => s.toUpperCase())
-		names.localeName = names.dirName.replace(/-/g, '')
+
+		// We have to rewrite the original name to build easily
+		langData.path = `date-fns/locale/${dirName}`
+		langData.fullPath = `node_modules/` + langData.path + '.js'
 	})
 
-	for (const [, names] of Object.entries(langNames)) {
-		if (
-			fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)
-		) {
-			// We only need data for the formatDistance function.
-			let indexJsText = fs.readFileSync(
-				`node_modules/date-fns/esm/locale/${names.dirName}/index.js`,
-				'utf8',
-			)
-			indexJsText = indexJsText.replace(/\n\s+formatLong:[^}]+\}/g, '')
-			fs.writeFileSync(
-				`node_modules/date-fns/esm/locale/${names.dirName}/index.js`,
-				indexJsText,
-			)
+	fs.mkdirSync(`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist`, { recursive: true })
+
+	for (const [, langData] of Object.entries(allLangData)) {
+		const localePath = langData.fullPath
+		if (fs.existsSync(localePath)) {
+			// We only need data for the formatDistance function. We don't use day.js's method for this
+			// because this https://day.js.org/docs/en/display/from-now#list-of-breakdown-range is damn
+			// terrible.
+			let localeText = fs.readFileSync(localePath, 'utf8')
+			// The formatDistance function's data is usually at the end of the file and has a
+			// "formatDistance:" prefix, so we can just extract it with a regex and remove the rest of the
+			// locale data to make the resulting file smaller.
+			localeText = localeText.replace(/\n\s+formatLong:[^}]+\},?/g, '')
+			fs.writeFileSync(langData.fullPath, localeText)
 		}
 	}
 
 	// Add temporary language files to the temporary folder that import respective locales if they
 	// exist.
 	const langsHavingLocale = []
-	for (const [lang, names] of Object.entries(langNames)) {
+	for (const [lang, langData] of Object.entries(allLangData)) {
 		// The English locale is built-in.
-		if (
-			lang !== 'en' &&
-			fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)
-		) {
+		if (lang !== 'en' && fs.existsSync(langData.fullPath)) {
 			langsHavingLocale.push(lang)
 
 			fs.writeFileSync(
 				`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/${lang}.js`,
-				`import lang from 'date-fns/locale/${names.dirName}';
+				`import lang from '${langData.path}';
 convenientDiscussions.i18n['${lang}'].dateFnsLocale = lang;
 `,
 			)
@@ -232,8 +232,6 @@ convenientDiscussions.i18n['${lang}'].dateFnsLocale = lang;
 
 	// Build the locales.
 	if (langsHavingLocale.length) {
-		fs.mkdirSync(`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist`, { recursive: true })
-
 		// Build each locale file separately since Vite doesn't support multiple entries with IIFE
 		langsHavingLocale.forEach((lang) => {
 			fs.writeFileSync(

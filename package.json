@@ -50,8 +50,8 @@
 		"> 1%"
 	],
 	"dependencies": {
-		"date-fns": "^2.22.1",
-		"date-fns-tz": "^1.1.4",
+		"date-fns": "^4.1.0",
+		"date-fns-tz": "^3.2.0",
 		"dayjs": "^1.11.20",
 		"htmlparser2": "^10.0.0",
 		"locutus": "^2.0.15",
