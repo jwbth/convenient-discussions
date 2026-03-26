@@ -406,7 +406,7 @@ class Loader {
 				// the rest.
 			])
 
-			await this.runApp()
+			await this.importApp()
 
 			/**
 			 * The page has been preprocessed (not parsed yet, but its type has been checked and some
@@ -418,7 +418,7 @@ class Loader {
 			 */
 			mw.hook('convenientDiscussions.preprocessed').fire(cd)
 
-			this.app?.()
+			window.convenientDiscussionsMain.app()
 		} catch (error) {
 			mw.notify(cd.s('error-loaddata'), { type: 'error' })
 			console.error(error)
@@ -737,17 +737,18 @@ class Loader {
 	}
 
 	/**
-	 * Run the main app.
+	 * Import the main app (i.e. create the main app script tag and add it to the page, making its
+	 * exports available).
 	 *
 	 * @returns {Promise<void>}
 	 * @private
 	 */
-	async runApp() {
+	async importApp() {
 		this.runAppRequest ??= (async () => {
 			// In dev and single modes, use dynamic import to let Vite create a separate chunk. In
 			// production, load from network.
 			if (IS_DEV || IS_SINGLE) {
-				await import('../app.js')
+				window.convenientDiscussionsMain = await import('../app.js')
 			} else if (this.appCode) {
 				const scriptTag = document.createElement('script')
 				scriptTag.innerHTML = this.appCode
@@ -919,12 +920,10 @@ class Loader {
 
 			// See the comment above: "Additions of CSS...".
 			mw.util.addCSS(globalCss)
-
 			mw.util.addCSS(addCommentLinksCss)
 
-			await this.runApp()
-
-			this.addCommentLinks?.()
+			await this.importApp()
+			window.convenientDiscussionsMain.addCommentLinks()
 		} catch (error) {
 			mw.notify(cd.s('error-loaddata'), { type: 'error' })
 			console.error(error)

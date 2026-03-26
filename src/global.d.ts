@@ -11,6 +11,8 @@ import type CommentSource from './CommentSource'
 import type Section from './Section'
 import type SectionSource from './SectionSource'
 import type TextInputWidget from './TextInputWidget'
+import type addCommentLinks from './addCommentLinks'
+import type { app } from './app'
 import type { ConvenientDiscussions } from './loader/cd'
 
 declare global {
@@ -21,6 +23,11 @@ declare global {
 	const SINGLE_LANG_CODE: string | undefined
 	const CACHE_BUSTER: string
 	const moment: (...args: any) => any
+
+	var convenientDiscussionsMain: {
+		app: typeof app
+		addCommentLinks: typeof addCommentLinks
+	}
 
 	type Direction = 'ltr' | 'rtl'
 	type ListType = 'dl' | 'ul' | 'ol'

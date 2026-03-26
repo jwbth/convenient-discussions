@@ -448,6 +448,13 @@ export default defineConfig(({ mode, command }) => {
 								},
 
 				output: {
+					name:
+						process.env.VITE_BUILD_PART === 'main'
+							? 'convenientDiscussionsMain'
+							: process.env.VITE_BUILD_PART === 'styles'
+								? 'convenientDiscussionsStyles'
+								: undefined,
+
 					// Output filename with mode-specific postfix
 					entryFileNames: '[name].js',
 

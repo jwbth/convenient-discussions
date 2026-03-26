@@ -1,5 +1,6 @@
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
 import { build } from 'vite'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -26,9 +27,11 @@ export function inlineWorkerStringPlugin() {
 				if (importer) {
 					const importerDir = dirname(importer)
 					const resolved = resolve(importerDir, path)
+
 					return resolved + '?worker&inline-string'
 				}
 			}
+
 			return null
 		},
 
@@ -61,7 +64,7 @@ export function inlineWorkerStringPlugin() {
 						},
 						rollupOptions: {
 							output: {
-								inlineDynamicImports: true,
+								exports: 'named',
 							},
 						},
 					},
@@ -71,9 +74,10 @@ export function inlineWorkerStringPlugin() {
 					const output = result[0]
 					if ('output' in output) {
 						const chunk = output.output.find((c) => c.type === 'chunk')
-						if (chunk && chunk.type === 'chunk') {
+						if (chunk?.type === 'chunk') {
 							const workerCode = chunk.code
 							workerCodeCache.set(workerPath, workerCode)
+
 							return `export default ${JSON.stringify(workerCode)};`
 						}
 					}
