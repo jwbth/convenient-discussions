@@ -434,8 +434,7 @@ class UpdateChecker extends EventEmitter {
 					(currentComment) =>
 						currentComment.authorName === otherComment.authorName &&
 						currentComment.date &&
-						otherComment.date &&
-						currentComment.date.getTime() === otherComment.date.getTime(),
+						currentComment.date.getTime() === otherComment.date?.getTime(),
 				)
 			)
 			const isTotalCountEqual = currentComments.length === otherComments.length
@@ -551,6 +550,11 @@ class UpdateChecker extends EventEmitter {
 	 * update the navigation panel, and
 	 */
 	async check() {
+		// If the page overlay is on, it may be the Instant Diffs script that monkey-patches
+		// wgRevisionId which leads to major bugs in CD if we proceed with the check, so we just skip
+		// it. The check will be performed when the overlay is closed anyway.
+		if (cd.loader.isPageOverlayOn()) return
+
 		const revisions = await cd.page.getRevisions(
 			{
 				rvprop: ['ids'],
@@ -566,7 +570,11 @@ class UpdateChecker extends EventEmitter {
 		)
 			return
 
-		const { revisionId, comments: newComments, sections } = await this.processPage(revisions[0].revid)
+		const {
+			revisionId,
+			comments: newComments,
+			sections,
+		} = await this.processPage(revisions[0].revid)
 		if (!this.isPageStillAtRevisionAndNotBlocked(currentRevisionId)) return
 
 		const { comments: currentComments } = await this.processPage(currentRevisionId)
@@ -608,8 +616,8 @@ class UpdateChecker extends EventEmitter {
 	hasCommentChanged(olderComment, newerComment) {
 		return Boolean(
 			newerComment.textHtmlToCompare !== olderComment.textHtmlToCompare ||
-				(newerComment.headingHtmlToCompare &&
-					newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare),
+			(newerComment.headingHtmlToCompare &&
+				newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare),
 		)
 	}
 
