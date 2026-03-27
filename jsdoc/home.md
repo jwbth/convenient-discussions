@@ -1,5 +1,8 @@
 # Convenient Discussions code documentation
 
+> [!WARNING]
+> This is an outdated documentation for Convenient Discussions v7. Convenient Discussions v8 and above use TypeScript-flavored JSDoc which makes the codebase work as a TypeScript one (with all code completion in IDEs etc.). Making it generate good auto-documentation as well is out of my reach as of now.
+
 See "[Development](https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions#Development)" and "[Configuring for a wiki](https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki)" sections of the script's home page for some guidelines about developing for Convenient Discussions.
 
 This documentation is not complete. Sometimes I (Jack who built the house) am just too lazy to add JSDoc for every minor functionality or property. But it provides a good starting point.
