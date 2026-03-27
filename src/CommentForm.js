@@ -3387,7 +3387,7 @@ class CommentForm extends EventEmitter {
 		pre = '',
 		peri = '',
 		post = '',
-		selection,
+		selection: selectionParam,
 		replace = false,
 		ownline = false,
 	}) {
@@ -3396,8 +3396,18 @@ class CommentForm extends EventEmitter {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const selectionEndIndex = Math.max(range.from, range.to)
 		const value = this.commentInput.getValue()
+
+		let selection = selectionParam
+		if (selection === undefined && !replace) {
+			selection = value.substring(selectionStartIndex, selectionEndIndex)
+		}
+		selection ??= ''
+
+		const middleText = selection || peri
 		const leadingNewline =
-			ownline && !/(^|\n)$/.test(value.slice(0, selectionStartIndex)) && !peri.startsWith('\n')
+			ownline &&
+			!/(^|\n)$/.test(value.slice(0, selectionStartIndex)) &&
+			!middleText.startsWith('\n')
 				? '\n'
 				: ''
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -3405,18 +3415,10 @@ class CommentForm extends EventEmitter {
 			ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n')
 				? '\n'
 				: ''
-		let periStartIndex
-		if (!selection && !replace) {
-			periStartIndex = selectionStartIndex + leadingNewline.length + pre.length
-			selection = value.substring(range.from, range.to)
-		} else {
-			selection ??= ''
-		}
 
 		// Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
 		const [leadingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/^ */))
 		const [trailingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/ *$/))
-		const middleText = selection || peri
 
 		this.commentInput.insertContent(
 			leadingNewline +
@@ -3427,8 +3429,11 @@ class CommentForm extends EventEmitter {
 				trailingSpace +
 				trailingNewline,
 		)
-		if (periStartIndex !== undefined) {
-			this.commentInput.selectRange(periStartIndex, periStartIndex + peri.length)
+
+		if (!selection) {
+			const periStartIndex =
+				selectionStartIndex + leadingNewline.length + leadingSpace.length + pre.length
+			this.commentInput.selectRange(periStartIndex, periStartIndex + middleText.length)
 		}
 	}
 
