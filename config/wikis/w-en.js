@@ -106,8 +106,10 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			archive: "Wikipedia:Administrators' noticeboard/3RRArchive",
 		},
 
-		// Exclude paths "User talk:Σ/Testing facility/Archiver"
-		/\/Archive(?![a-rt-z])/,
+		// Exclude paths such as "User talk:Σ/Testing facility/Archiver" and "Wikipedia:Requests for
+		// comment/Archive.is RFC 5", but include "User talk:Example/Archives" and "User
+		// talk:Example/Archive. 2026"
+		/\/Archive(?![a-rt-z]|\.[A-Za-z])/,
 	],
 
 	archivingConfig: {
