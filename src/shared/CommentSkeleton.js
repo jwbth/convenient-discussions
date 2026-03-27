@@ -447,10 +447,18 @@ class CommentSkeleton {
 	 * @private
 	 */
 	isElementEligible(element, treeWalker, step) {
+		const elementHasAnyClass = (/** @type {string[]} */ classes) =>
+			classes.some((/** @type {string} */ name) => element.classList.contains(name))
+
 		return !(
 			element === treeWalker.root ||
-			(step !== 'up' &&
-				(this.parser.rejectClasses.some((name) => element.classList.contains(name)) ||
+			// When the parser "moves out" of a closed discussion, it should stop the comment at the
+			// discussion boundary (e.g.
+			// https://en.wikipedia.org/wiki/Project:Requests_for_comment/Archive.is_RFC_5). A closed
+			// discussion may not be a comment part altogether. Other elements with reject classes (e.g.
+			// `ombox`), however, may be parts of the comment altogether.
+			((step !== 'up' || elementHasAnyClass(cd.config.closedDiscussionClasses)) &&
+				(elementHasAnyClass(this.parser.rejectClasses) ||
 					// Talk page message box
 					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox')))) ||
 			(element.tagName === 'META' && element.getAttribute('property') === 'mw:PageProp/toc') ||
