@@ -40,13 +40,17 @@ export default {
 			default: [
 				'convenientDiscussions.js',
 				'convenientDiscussions-main.js',
+				'convenientDiscussions-main.LICENSE.js',
 				'convenientDiscussions.css',
 				'convenientDiscussions-generateBasicConfig.js',
+				'convenientDiscussions.js.LICENSE.js',
 				'convenientDiscussions-i18n/',
 			],
 			staging: [
 				'convenientDiscussions.staging.js',
+				'convenientDiscussions.staging.LICENSE.js',
 				'convenientDiscussions-main.staging.js',
+				'convenientDiscussions-main.staging.LICENSE.js',
 				'convenientDiscussions.staging.css',
 			],
 		},

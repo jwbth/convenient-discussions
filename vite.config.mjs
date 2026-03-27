@@ -52,8 +52,43 @@ function licenseExtractionPlugin(buildMode) {
 			}
 
 			const licensePattern = /@preserve|@license|@cc_on/i
-			const commentPattern = /\/\*!?\s*([\s\S]*?)\s*\*\//g
+			const commentPattern = /\/\*+\s*([\s\S]*?)\s*\*\//g
 			const extractedLicenses = new Map()
+
+			/**
+			 * Generate banner text with the given URL.
+			 *
+			 * @param {string} url
+			 * @returns {string}
+			 */
+			const generateBannerText = (url) =>
+				url
+					? `
+ * For documentation and feedback, see the script's homepage:
+ * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
+ *
+ * For license information, see
+ * ${url}
+ `
+					: ''
+
+			let mainLicenseUrl = ''
+			if (
+				cdConfig.main?.server &&
+				cdConfig.main.rootPath &&
+				cdConfig.protocol &&
+				cdConfig.articlePath
+			) {
+				mainLicenseUrl =
+					cdConfig.protocol +
+					'://' +
+					cdConfig.main.server +
+					cdConfig.articlePath.replace(
+						'$1',
+						cdConfig.main.rootPath + '/convenientDiscussions.js.LICENSE.js',
+					)
+			}
+			const customBannerText = generateBannerText(mainLicenseUrl)
 
 			// Extract licenses from all chunks
 			for (const [fileName, chunk] of Object.entries(bundle)) {
@@ -78,6 +113,11 @@ function licenseExtractionPlugin(buildMode) {
 							modifiedCode = modifiedCode.replace(license, '')
 						}
 						chunk.code = modifiedCode
+
+						// Add license banner to main bundle
+						if (!fileName.includes('worker') && customBannerText) {
+							chunk.code = '/*' + customBannerText + '*/\n\n' + chunk.code
+						}
 					}
 				}
 			}
@@ -105,21 +145,20 @@ function licenseExtractionPlugin(buildMode) {
 					if (
 						cdConfig.main?.server &&
 						cdConfig.main.rootPath &&
-						cdConfig.protocol
+						cdConfig.protocol &&
+						cdConfig.articlePath
 					) {
 						licenseUrl =
 							cdConfig.protocol +
 							'://' +
 							cdConfig.main.server +
-							cdConfig.main.rootPath +
-							'/' +
-							licenseFileName
+							cdConfig.articlePath.replace(
+								'$1',
+								cdConfig.main.rootPath + '/' + licenseFileName,
+							)
 					}
 
-					const customBanner =
-						"\n  * For documentation and feedback, see the script's homepage:\n  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions\n  *\n  * For license information, see\n  * " +
-						licenseUrl +
-						'\n  '
+					const customBanner = generateBannerText(licenseUrl)
 					licenseContent = '/*' + customBanner + '*/\n\n' + licenseContent
 				}
 
@@ -355,9 +394,9 @@ export default defineConfig(({ mode, command }) => {
 	}
 
 	// Add license extraction plugin for production/staging builds
-	// if (!buildMode.isSingle) {
-	// 	plugins.push(licenseExtractionPlugin(buildMode))
-	// }
+	if (!buildMode.isSingle) {
+		plugins.push(licenseExtractionPlugin(buildMode))
+	}
 
 	// Add custom source map URL plugin for production/staging builds
 	if (cdConfig.sourceMapsBaseUrl && !buildMode.isSingle) {
@@ -409,6 +448,11 @@ export default defineConfig(({ mode, command }) => {
 
 				// ASCII-only output
 				charset: 'ascii',
+
+				// Preserve comments
+				compress: {
+					comments: true,
+				},
 
 				// Minify options
 				minifyIdentifiers: true,
@@ -469,6 +513,9 @@ export default defineConfig(({ mode, command }) => {
 
 						return '[name].[ext]'
 					},
+
+					// Preserve comments for license extraction
+					comments: true,
 
 					// Module format (IIFE for browser global)
 					format: 'iife',
