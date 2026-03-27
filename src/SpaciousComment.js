@@ -239,6 +239,9 @@ class SpaciousComment extends Comment {
 			}
 			this.authorLink.title = pageName
 			this.authorLink.href = mw.util.getUrl(pageName)
+			if (this.author.isTemporary()) {
+				this.authorLink.classList.add('mw-tempuserlink')
+			}
 		}
 
 		if (this.authorTalkLink) {
