@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import CommentForm from '../src/CommentForm'
+
 // We'll mock the minimal environment needed for the function
 const mockCommentInput = {
   getRange: vi.fn(),
@@ -8,57 +10,11 @@ const mockCommentInput = {
   selectRange: vi.fn(),
 }
 
-// The function we want to test, copied from src/CommentForm.js after my fix
-function encapsulateSelection({
-  pre = '',
-  peri = '',
-  post = '',
-  selection: selectionParam,
-  replace = false,
-  ownline = false,
-}, commentInput) {
-  const range = commentInput.getRange()
-  const selectionStartIndex = Math.min(range.from, range.to)
-  const selectionEndIndex = Math.max(range.from, range.to)
-  const value = commentInput.getValue()
-
-  let selection = selectionParam
-  if (selection === undefined && !replace) {
-    selection = value.substring(selectionStartIndex, selectionEndIndex)
-  }
-  selection ??= ''
-
-  const middleText = selection || peri
-  const leadingNewline =
-    ownline &&
-    !/(^|\n)$/.test(value.slice(0, selectionStartIndex)) &&
-    !middleText.startsWith('\n')
-      ? '\n'
-      : ''
-  const trailingNewline =
-    ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n')
-      ? '\n'
-      : ''
-
-  // Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
-  const [leadingSpace] = selection.match(/^ */)
-  const [trailingSpace] = selection.match(/ *$/)
-
-  commentInput.insertContent(
-    leadingNewline +
-      leadingSpace +
-      pre +
-      middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
-      post +
-      trailingSpace +
-      trailingNewline,
-  )
-
-  if (!selection) {
-    const periStartIndex =
-      selectionStartIndex + leadingNewline.length + leadingSpace.length + pre.length
-    commentInput.selectRange(periStartIndex, periStartIndex + middleText.length)
-  }
+/**
+ * Helper to call the actual encapsulateSelection method with a mock context.
+ */
+function encapsulateSelection(options, commentInput) {
+  CommentForm.prototype.encapsulateSelection.call({ commentInput }, options)
 }
 
 describe('encapsulateSelection logic', () => {
