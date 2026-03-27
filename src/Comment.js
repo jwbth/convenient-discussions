@@ -3127,8 +3127,8 @@ class Comment extends CommentSkeleton {
 
 		let $note
 		for (let t = this.collapsedThread; t; t = t.rootComment.getParent()?.collapsedThread) {
-			$note = /** @type {JQuery} */ (t.$expandNote)
-			if ($note.is(':visible')) break
+			$note = t.$expandNote
+			if ($note?.is(':visible')) break
 		}
 
 		return $note
