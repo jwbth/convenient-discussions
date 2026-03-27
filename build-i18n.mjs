@@ -398,7 +398,10 @@ if (Object.keys(i18n).length) {
 
 		if (lang === 'en') {
 			// Prevent creating "</nowiki>" character sequences when building the main script file.
-			jsonText = jsonText.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>')
+			jsonText = jsonText.replace(
+				/<\/nowiki>/g,
+				'</" + "".repeat(1) + "nowiki>',
+			)
 		}
 
 		let text = `window.convenientDiscussions = /** @type {import('../../src/loader/cd').ConvenientDiscussions} */ (window.convenientDiscussions || {});

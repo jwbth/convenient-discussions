@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 16
       - run: npm ci
-      - run: node buildI18n
+      - run: node build-i18n
       - name: Create a SSH tunnel and deploy
         env:
           SSH_USER: ${{ secrets.TOOLFORGE_USER }}

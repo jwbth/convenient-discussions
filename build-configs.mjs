@@ -6,9 +6,10 @@ import { hideBin } from 'yargs/helpers'
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
 const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
-// node build-configs --test
-// npm run <command running this script> --test
-const testSuffix = argv.test || process.env.npm_config_test ? '.test' : ''
+// node build-configs --staging
+// npm run <command running this script> --staging
+const stagingSuffix =
+	argv.staging || process.env.npm_config_staging ? '.staging' : ''
 
 fs.readdirSync('./config/wikis/').forEach((filename) => {
 	const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || []
@@ -24,7 +25,7 @@ fs.readdirSync('./config/wikis/').forEach((filename) => {
 	content = `/**
  * This file was assembled automatically from the configuration at
  * https://github.com/jwbth/convenient-discussions/tree/main/config/wikis/${filename} by running
- * "node build-configs". The configuration might get outdated as the script evolves, so it's best
+ * \`node build-configs\`. The configuration might get outdated as the script evolves, so it's best
  * to keep it up to date by checking for the documentation updates from time to time. See the
  * documentation at
  * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
@@ -65,7 +66,7 @@ convenientDiscussions.config = ${content}
 
 if (!convenientDiscussions.isRunning) {
 	convenientDiscussions.getStringsPromise = getStrings();
-	mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${testSuffix}.js&action=raw&ctype=text/javascript')
+	mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${stagingSuffix}.js&action=raw&ctype=text/javascript')
 		.catch(function (e) {
 			console.warn('Couldn\\'t load Convenient Discussions.', e);
 		});
@@ -77,7 +78,7 @@ if (!convenientDiscussions.isRunning) {
 `
 	fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true })
 	fs.writeFileSync(
-		`dist/convenientDiscussions-config/${name}${testSuffix}.js`,
+		`dist/convenientDiscussions-config/${name}${stagingSuffix}.js`,
 		content,
 	)
 })

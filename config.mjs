@@ -2,7 +2,7 @@
  * @typedef {object} Config
  * @property {string} server
  * @property {WikiConfig} [default]
- * @property {WikiConfig} [test]
+ * @property {WikiConfig} [staging]
  * @property {string} [protocol]
  * @property {string} [scriptPath]
  * @property {string} [articlePath]
@@ -94,10 +94,10 @@ export default {
 					'user.options',
 				],
 			},
-			test: {
-				source: 'w-ru.test.js',
+			staging: {
+				source: 'w-ru.staging.js',
 				targets: [
-					'User:Jack who built the house/convenientDiscussions.test.js',
+					'User:Jack who built the house/convenientDiscussions.staging.js',
 				],
 			},
 		},

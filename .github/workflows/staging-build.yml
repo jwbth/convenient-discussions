@@ -1,4 +1,4 @@
-name: Deploy test build and configs
+name: Deploy staging build and configs
 
 on:
   workflow_dispatch:
@@ -11,10 +11,9 @@ jobs:
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v3
-        with:
-          node-version: 16
       - run: npm ci
-      - run: npm run build16 --test
+      - run: npm run configs --staging
+      - run: npm run build --staging
       - run: npm test
       - name: Create a SSH tunnel and deploy
         env:
@@ -46,7 +45,7 @@ jobs:
           rm ~/.ssh/id_rsa
 
           # Run own script to login and publish the build results to pages.
-          npm run deploy --test --noi18n
+          npm run deploy --staging --noi18n
       - name: Create source maps folder
         run: cd dist && mkdir source-maps && cp *.map.json source-maps
       - name: Deploy source maps

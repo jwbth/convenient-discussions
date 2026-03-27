@@ -1400,8 +1400,8 @@ class CommentForm extends EventEmitter {
 				regexp: /<pre[ >]/,
 				message: cd.sParse(
 					'cf-reaction-pre',
-					'<code><nowiki><pre></'.concat('nowiki></code>'),
-					'<code><nowiki><syntaxhighlight lang="wikitext"></'.concat('nowiki></code>'),
+					['<code><nowiki><pre></', 'nowiki></code>'].join(''),
+					['<code><nowiki><syntaxhighlight lang="wikitext"></', 'nowiki></code>'].join(''),
 				),
 				name: 'dontUsePre',
 				type: 'warning',
@@ -3889,7 +3889,7 @@ class CommentForm extends EventEmitter {
 			code: {
 				pre: '<code><nowiki>',
 				peri: cd.s('cf-code-placeholder'),
-				post: '</'.concat('nowiki></code>'),
+				post: ['</', 'nowiki></code>'].join(''),
 			},
 			underline: {
 				pre: '<u>',

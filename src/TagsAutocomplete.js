@@ -24,9 +24,9 @@ class TagsAutocomplete extends BaseAutocomplete {
 			// the caret.
 			['br', '<br>'],
 
-			// Use .concat() because otherwise the closing </nowiki> would get onto the wiki page and have
+			// Use .join() because otherwise the closing </nowiki> would get onto the wiki page and have
 			// undesirable effects
-			['codenowiki', '<code><nowiki>', '</'.concat('nowiki></code>')],
+			['codenowiki', '<code><nowiki>', ['</', 'nowiki></code>'].join('')],
 
 			['hr', '<hr>'],
 			['wbr', '<wbr>'],
