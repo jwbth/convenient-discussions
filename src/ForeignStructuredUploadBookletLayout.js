@@ -58,6 +58,9 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 		/** @type {string | undefined} */
 		preset
 
+		/** @type {string | undefined} */
+		defaultDescription
+
 		/**
 		 * Create a booklet layout for foreign structured upload.
 		 *
@@ -442,7 +445,9 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 						}
 
 						this.filenameWidget.setValue(`${filenameMainPart} ${filenameDate}`)
-						this.descriptionWidget.setValue(`Screenshot of ${pageNameOrProjectName}`)
+						const description = `Screenshot of ${pageNameOrProjectName}`
+						this.descriptionWidget.setValue(description)
+						this.defaultDescription = description
 						this.controls.source.input.setValue('Screenshot')
 						this.controls.author.input.setValue(`${projectNameOrPageLink} authors${historyText}`)
 						this.controls.license.input.setValue(
@@ -509,7 +514,9 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 					} else {
 						// this.preset === 'mediawikiScreenshot'
 						this.filenameWidget.setValue(`MediaWiki ${filenameDate}`)
-						this.descriptionWidget.setValue(`Screenshot of MediaWiki`)
+						const description = 'Screenshot of MediaWiki'
+						this.descriptionWidget.setValue(description)
+						this.defaultDescription = description
 						this.controls.source.input.setValue('Screenshot')
 						this.controls.author.input.setValue(`[[Special:Version|MediaWiki contributors]]`)
 						this.controls.license.input.setValue('{{MediaWiki-screenshot}}')
@@ -599,7 +606,21 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 			this.upload.setUser(this.controls.author.input.getValue())
 			this.upload.setLicense(this.controls.license.input.getValue())
 
-			return super.getText()
+			// Here goes overriden
+			// mediawiki/resources/src/mediawiki.ForeignStructuredUpload.BookletLayout/BookletLayout.js
+			const currentDescription = this.descriptionWidget.getValue()
+			const language =
+				this.defaultDescription !== undefined && currentDescription === this.defaultDescription
+					? 'en'
+					: mw.config.get('wgContentLanguage')
+			const categories = this.categoriesWidget.getItems().map((item) => item.data)
+			this.upload.clearDescriptions()
+			this.upload.addDescription(language, currentDescription)
+			this.upload.setDate(this.dateWidget.getValue())
+			this.upload.clearCategories()
+			this.upload.addCategories(categories)
+
+			return this.upload.getText()
 		}
 
 		/**
@@ -654,6 +675,7 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 			this.progressBarWidget.setProgress(0)
 			this.filenameWidget.setValue('').setValidityFlag(true)
 			this.descriptionWidget.setValue('').setValidityFlag(true)
+			this.defaultDescription = undefined
 			this.categoriesWidget.setValue([])
 			if (!this.dateWidget.getValue()) {
 				this.dateWidget.setValidityFlag(true)
