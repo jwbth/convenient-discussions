@@ -469,21 +469,21 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Autocomplete object for the comment input.
 	 *
-	 * @type {AutocompleteManager}
+	 * @type {AutocompleteManager | undefined}
 	 */
 	autocomplete
 
 	/**
 	 * Autocomplete object for the headline input.
 	 *
-	 * @type {AutocompleteManager|undefined}
+	 * @type {AutocompleteManager | undefined}
 	 */
 	headlineAutocomplete
 
 	/**
 	 * Autocomplete object for the summary input.
 	 *
-	 * @type {AutocompleteManager}
+	 * @type {AutocompleteManager | undefined}
 	 */
 	summaryAutocomplete
 
@@ -673,6 +673,11 @@ class CommentForm extends EventEmitter {
 		this.builder = new CommentFormBuilder(this)
 		this.buildPromise = this.builder.build(initialState, this.loadCustomModules()).then(() => {
 			this.addEventListeners()
+
+			// Init autocomplete after adding event listeners, so the "autocomplete-attached" event is
+			// fired after all listeners are added and the autocomplete manager is set up. This allows
+			// the listeners to react to the autocomplete being attached before it is initialized.
+			this.initAutocomplete()
 		})
 
 		cd.settings.on('set', this.onSettingsUpdate)
@@ -797,8 +802,6 @@ class CommentForm extends EventEmitter {
 
 		this.onboardOntoMultipleForms()
 		this.onboardOntoUpload()
-
-		this.initAutocomplete()
 	}
 
 	/**
@@ -1762,9 +1765,9 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	terminateAutocomplete() {
-		this.autocomplete.terminate()
+		this.autocomplete?.terminate()
 		this.headlineAutocomplete?.terminate()
-		this.summaryAutocomplete.terminate()
+		this.summaryAutocomplete?.terminate()
 	}
 
 	/**

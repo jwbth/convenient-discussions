@@ -157,22 +157,23 @@ class AutocompleteManager {
 				return []
 			}
 
-			const element = input.getEditableElement()[0]
-			this.tribute.attach(element)
-			$(element).trigger('autocomplete-attached.cd', { autocompleteManager: this })
-			$(element).on('tribute-active-true', () => {
-				AutocompleteManager.activeMenu = this.tribute.menu
-			})
-			$(element).on('tribute-active-false', () => {
-				delete AutocompleteManager.activeMenu
-			})
+			const $element = input.getEditableElement()
+			this.tribute.attach($element[0])
+			$element
+				.trigger('autocomplete-attached', { autocompleteManager: this })
+				.on('tribute-active-true', () => {
+					AutocompleteManager.activeMenu = this.tribute.menu
+				})
+				.on('tribute-active-false', () => {
+					delete AutocompleteManager.activeMenu
+				})
 			if (input instanceof OO.ui.MultilineTextInputWidget) {
 				input.on('resize', () => {
 					this.tribute.menuEvents.windowResizeEvent?.()
 				})
 			}
 
-			return [element]
+			return [$element[0]]
 		})
 	}
 
