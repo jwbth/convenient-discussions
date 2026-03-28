@@ -13,7 +13,7 @@ import cd from './loader/cd'
 import navPanel from './navPanel'
 import notifications from './notifications'
 import pageNav from './pageNav'
-import processFragment from './processUrl'
+import processUrlOnLoad from './processUrl'
 import sectionManager from './sectionManager'
 import Parser from './shared/Parser'
 import {
@@ -311,7 +311,7 @@ class BootProcess {
 			// collapsed thread.
 			if (this.firstRun) {
 				this.deactivateDtHighlight()
-				processFragment()
+				processUrlOnLoad()
 			}
 			this.processPassedTargets()
 

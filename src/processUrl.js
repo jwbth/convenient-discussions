@@ -177,8 +177,8 @@ function markCommentAsLinked(comment, scroll = true) {
 /**
  * _For internal use._ Perform URL fragment-related tasks.
  */
-export default function processFragment() {
-	const { fragment, comment, date, author } = handleComments()
+export default function processUrlOnLoad() {
+	const { fragment, comment, date, author } = processCommentReferencesInUrl()
 
 	if (
 		fragment &&
@@ -199,12 +199,12 @@ export default function processFragment() {
 }
 
 /**
- * _For internal use._ Handle URL parts related to comments.
+ * Handle URL parts related to comments.
  *
  * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
  * @returns {ParsedFragment}
  */
-function handleComments(noScroll = false) {
+export function processCommentReferencesInUrl(noScroll = false) {
 	const { fragment, comment, date, author } = parseFragment()
 
 	if (comment) {
@@ -215,15 +215,6 @@ function handleComments(noScroll = false) {
 	}
 
 	return { fragment, comment, date, author }
-}
-
-/**
- * _For internal use._ Handle URL parameters for highlighting comments (e.g., on popstate).
- *
- * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
- */
-export function processUrlParameters(noScroll = false) {
-	handleComments(noScroll)
 }
 
 /**

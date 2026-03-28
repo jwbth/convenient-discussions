@@ -4,7 +4,7 @@ import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
-import { processUrlParameters } from './processUrl'
+import { processCommentReferencesInUrl } from './processUrl'
 import TreeWalker from './shared/TreeWalker'
 import {
 	definedAndNotNull,
@@ -1425,7 +1425,7 @@ export class CommentManager extends EventEmitter {
 
 		if (history.state?.cdTargetComment) return
 
-		processUrlParameters(true)
+		processCommentReferencesInUrl(true)
 	}
 
 	/**
