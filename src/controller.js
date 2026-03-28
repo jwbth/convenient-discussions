@@ -727,8 +727,8 @@ class Controller extends EventEmitter {
 				]
 					.filter(definedAndNotNull)
 					.some((el) => el.matches(':hover')) ||
-					// WikiEditor dialog
-					$(document.body).children('.ui-dialog').not('[style*="display: none"]').length,
+				// WikiEditor dialog
+				$(document.body).children('.ui-dialog').not('[style*="display: none"]').length,
 			)
 		}, 100)()
 
@@ -808,7 +808,11 @@ class Controller extends EventEmitter {
 		// Use `popstate`, not `hashchange`, because we need to handle cases when the user clicks a link
 		// with the same fragment as is in the URL.
 		try {
-			this.emit('popState', decodeURIComponent(location.hash.slice(1)))
+			const fragment = decodeURIComponent(location.hash.slice(1))
+			this.emit('popState', fragment)
+
+			// Clear linked state from all comments if fragment changed
+			this.clearLinkedComments(fragment)
 		} catch (error) {
 			cd.debug.logError(error)
 		}
@@ -893,6 +897,27 @@ class Controller extends EventEmitter {
 	}
 
 	/**
+	 * Clear the linked state from comments when the URL fragment changes.
+	 *
+	 * @param {string} currentFragment Current URL fragment
+	 * @private
+	 */
+	clearLinkedComments(currentFragment) {
+		commentManager.query((comment) => {
+			if (comment.isLinked) {
+				const commentFragment = comment.getUrlFragment()
+				// Clear linked state if the fragment no longer matches this comment
+				if (!currentFragment || currentFragment !== commentFragment) {
+					comment.isLinked = false
+					comment.updateClassesForFlag('linked', false)
+				}
+			}
+
+			return false // Don't collect, just iterate
+		})
+	}
+
+	/**
 	 * _For internal use._ Add event listeners to `window`, `document`, hooks.
 	 */
 	addEventListeners() {
@@ -964,7 +989,7 @@ class Controller extends EventEmitter {
 			.filter((_, el) =>
 				Boolean(
 					!el.classList.contains('cd-clickHandled') &&
-						commentManager.getByAnyId(extractCommentId(el), true),
+					commentManager.getByAnyId(extractCommentId(el), true),
 				),
 			)
 			.on('click', function onCommentLinkClick(event) {
@@ -1193,7 +1218,7 @@ class Controller extends EventEmitter {
 	 * @param {boolean} [smooth]
 	 * @param {AnyFunction} [callback]
 	 */
-	scrollToY(y, smooth = true, callback = undefined) {
+	scrollToY(y, smooth = true, callback) {
 		const onComplete = () => {
 			this.toggleAutoScrolling(false)
 			this.handleScroll()

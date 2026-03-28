@@ -20,6 +20,15 @@
 		#fdf2d5
 	);
 	--cd-comment-target-hovered-background-color: #fcecc2;
+	--cd-comment-linked-marker-color: var(--color-progressive, #36c);
+	--cd-comment-linked-background-color: var(
+		--background-color-progressive-subtle,
+		#e8eeff
+	);
+	--cd-comment-linked-hovered-background-color: var(
+		--background-color-progressive-subtle--hover,
+		#d9e2ff
+	);
 	--cd-comment-new-marker-color: #00af89;
 	--cd-comment-new-background-color: #e8fff1;
 	--cd-comment-new-hovered-background-color: #d6ffe7;
@@ -60,11 +69,12 @@
 /*
  * The hierarchy of layer types (starting with the highest priority):
  * 1. Target
- * 2. Changed (quick flash with green)
- * 3. Deleted
- * 4. Own
- * 5. New
- * 6. Hovered (but each hovered subtype has more priority than non-hovered)
+ * 2. Linked
+ * 3. Changed (quick flash with green)
+ * 4. Deleted
+ * 5. Own
+ * 6. New
+ * 7. Hovered (but each hovered subtype has more priority than non-hovered)
  */
 
 .cd-comment-underlay-hovered,
@@ -112,6 +122,9 @@
 	height: 100%;
 	z-index: 2;
 
+	// NOTE: the order of these is not random: the latter flags have a priority (so, e.g. it a comment
+	// id target and new, it's highlighted as target).
+
 	.cd-comment-overlay-new &,
 	.cd-comment-overlay-changed.cd-comment-overlay-changed & {
 		background-color: var(--cd-comment-new-marker-color);
@@ -123,6 +136,10 @@
 
 	.cd-comment-overlay-deleted & {
 		background-color: var(--cd-comment-deleted-marker-color);
+	}
+
+	.cd-comment-overlay-linked.cd-comment-overlay-linked & {
+		background-color: var(--cd-comment-linked-marker-color);
 	}
 
 	.cd-comment-overlay-target.cd-comment-overlay-target & {
@@ -175,6 +192,14 @@
 	// Gradient can't be animated. Not with jquery.ui and jquery.color.
 	.cd-comment-overlay-target.cd-comment-overlay-target & {
 		background-image: none;
+	}
+
+	.cd-comment-overlay-linked.cd-comment-overlay-linked & {
+		background-image: linear-gradient(
+			var(--cd-gradient-user-start),
+			var(--cd-comment-linked-hovered-background-color),
+			rgba(255, 255, 255, 0)
+		);
 	}
 }
 

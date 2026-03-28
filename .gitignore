@@ -1,5 +1,5 @@
 .idea/
-.kiro/debug/
+.kiro
 *.sublime-workspace
 backup/
 credentials.*

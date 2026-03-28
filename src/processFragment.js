@@ -77,7 +77,11 @@ export default function processFragment() {
 			comment.scrollTo({
 				smooth: false,
 				expandThreads: true,
+				flash: false,
 			})
+
+			// Mark the comment as linked instead of flashing it as target
+			comment.markAsLinked()
 
 			// Replace CD's comment ID in the fragment with DiscussionTools' if available.
 			history.replaceState(

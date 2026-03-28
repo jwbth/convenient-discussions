@@ -203,6 +203,13 @@ class Comment extends CommentSkeleton {
 	isTarget = false
 
 	/**
+	 * Is the comment currently highlighted as a linked comment (opened via URL fragment).
+	 *
+	 * @type {boolean}
+	 */
+	isLinked = false
+
+	/**
 	 * Has the comment changed since the previous visit.
 	 *
 	 * @type {boolean | undefined}
@@ -1414,7 +1421,7 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * @typedef {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed'} CommentFlag
+	 * @typedef {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed' | 'linked'} CommentFlag
 	 */
 
 	/**
@@ -1505,6 +1512,33 @@ class Comment extends CommentSkeleton {
 		this.flash('target', 1500, () => {
 			this.isTarget = false
 		})
+	}
+
+	/**
+	 * Mark the comment as linked (opened via URL fragment) with persistent highlighting.
+	 */
+	markAsLinked() {
+		this.isLinked = true
+		this.configureLayers()
+		this.updateClassesForFlag('linked', true)
+
+		// Set up one-time body click handler to clear the linked state
+		const clearLinkedState = () => {
+			this.isLinked = false
+			this.updateClassesForFlag('linked', false)
+
+			// Remove the fragment from URL
+			if (location.hash) {
+				history.pushState(history.state, '', location.pathname + location.search)
+			}
+
+			document.body.removeEventListener('click', clearLinkedState)
+		}
+
+		// Use setTimeout to avoid immediate triggering if this was called from a click event
+		setTimeout(() => {
+			document.body.addEventListener('click', clearLinkedState, { once: true })
+		}, 0)
 	}
 
 	/**

@@ -185,7 +185,7 @@ class CommentLayers {
 	/**
 	 * Set classes to the underlay, overlay, and other elements according to a comment flag.
 	 *
-	 * @param {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed'} flag
+	 * @param {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed' | 'linked'} flag
 	 * @param {boolean} add Whether to add or remove the class.
 	 */
 	updateClassesForFlag(flag, add) {
