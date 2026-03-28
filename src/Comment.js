@@ -1521,12 +1521,14 @@ class Comment extends CommentSkeleton {
 		this.isLinked = true
 		this.configureLayers()
 
-		// Set up one-time body click handler to clear the linked state
 		const clearLinkedState = () => {
-			// Remove the fragment from URL
-			if (location.hash) {
-				history.pushState(history.state, '', location.pathname + location.search)
-			}
+			const url = new URL(location.href)
+			url.searchParams.delete('dtnewcomments')
+			url.searchParams.delete('dtnewcommentssince')
+			url.searchParams.delete('dtinthread')
+			url.searchParams.delete('dtsincethread')
+			url.hash = ''
+			history.pushState(null, '', url)
 
 			this.manager.clearLinkedComments()
 		}

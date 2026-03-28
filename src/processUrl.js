@@ -45,9 +45,75 @@ let searchQuery
 let searchResults
 
 /**
- * _For internal use._ Perform URL fragment-related tasks.
+ * Highlight new comments based on URL parameters.
+ *
+ * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
+ * @private
  */
-export default function processFragment() {
+function highlightNewComments(noScroll = false) {
+	const url = new URL(location.href)
+	const newCommentIds = url.searchParams.get('dtnewcomments')?.split('|') || []
+	const newCommentsSinceId = url.searchParams.get('dtnewcommentssince')
+	const inThread = url.searchParams.get('dtinthread')
+	const sinceThread = url.searchParams.get('dtsincethread')
+
+	/** @type {Comment[]} */
+	const commentsToHighlight = []
+
+	if (newCommentsSinceId) {
+		const newCommentsSince = commentManager.getByDtId(newCommentsSinceId)
+		if (newCommentsSince?.date) {
+			const sinceTimestamp = newCommentsSince.date.getTime()
+			const commentsToCheck = inThread
+				? newCommentsSince.section
+					? newCommentsSince.section.comments
+					: [newCommentsSince, ...newCommentsSince.getChildren(true)]
+				: commentManager.getAll()
+
+			commentsToCheck.forEach((comment) => {
+				if (comment.date && comment.date.getTime() >= sinceTimestamp) {
+					if (sinceThread) {
+						// Check that we are in a thread that is newer than sinceTimestamp
+						// Thread age is determined by looking at the oldest comment
+						const section = comment.section
+						if (section) {
+							const oldestComment = section.oldestComment
+							if (!(oldestComment?.date && oldestComment.date.getTime() >= sinceTimestamp)) {
+								return
+							}
+						}
+					}
+					commentsToHighlight.push(comment)
+				}
+			})
+		}
+	}
+
+	// Add explicitly specified comment IDs
+	if (newCommentIds.length) {
+		newCommentIds.forEach((id) => {
+			const comment = commentManager.getByDtId(id)
+			if (comment && !commentsToHighlight.includes(comment)) {
+				commentsToHighlight.push(comment)
+			}
+		})
+	}
+
+	// Highlight and scroll to the first comment
+	if (commentsToHighlight.length) {
+		commentsToHighlight.forEach((comment, index) => {
+			markCommentAsLinked(comment, !noScroll && index === 0)
+		})
+	}
+}
+
+/**
+ * Get a comment from the URL fragment.
+ *
+ * @returns {{ comment: Comment | undefined, date: Date | undefined, author: string | undefined }}
+ * @private
+ */
+function getCommentFromFragment() {
 	const value = location.hash.slice(1)
 	let commentId
 	try {
@@ -70,26 +136,51 @@ export default function processFragment() {
 		;({ comment, date, author } = commentManager.getByDtId(decodedValue, true) || {})
 	}
 
-	if (comment) {
-		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
-		// incorrectly. (TODO: does it still? Need to check.)
-		sleep().then(() => {
+	return { comment, date, author }
+}
+
+/**
+ * Mark a comment as linked and scroll to it.
+ *
+ * @param {Comment} comment
+ * @param {boolean} [scroll] Whether to scroll to the comment.
+ * @private
+ */
+function markCommentAsLinked(comment, scroll = true) {
+	// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
+	// incorrectly. (TODO: does it still? Need to check.)
+	sleep().then(() => {
+		if (scroll) {
 			comment.scrollTo({
 				smooth: false,
 				expandThreads: true,
 				flash: false,
 			})
+		}
 
-			// Mark the comment as linked instead of flashing it as target
-			comment.markAsLinked()
+		comment.markAsLinked()
 
-			// Replace CD's comment ID in the fragment with DiscussionTools' if available.
-			history.replaceState(
-				{ ...history.state, cdTargetComment: false, cdLinkedComment: true },
-				'',
-				comment.dtId ? `#${comment.dtId}` : undefined,
-			)
-		})
+		// Replace CD's comment ID in the fragment with DiscussionTools' if available. In any case,
+		// add the state.
+		history.replaceState(
+			{ ...history.state, cdTargetComment: false, cdLinkedComment: true },
+			'',
+			comment.dtId ? `#${comment.dtId}` : undefined,
+		)
+	})
+}
+
+/**
+ * _For internal use._ Perform URL fragment-related tasks.
+ */
+export default function processFragment() {
+	const { comment } = getCommentFromFragment()
+
+	if (comment) {
+		markCommentAsLinked(comment)
+	} else {
+		// Handle URL parameters for highlighting multiple comments
+		highlightNewComments()
 	}
 
 	if (
@@ -102,12 +193,21 @@ export default function processFragment() {
 			// `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
 			/^\/media\/|^noticeApplied-|^h-/.test(decodedValue) ||
 			$(':target').length ||
-			isExistentAnchor(value) ||
+			isExistentAnchor(location.hash.slice(1)) ||
 			isExistentAnchor(decodedValue)
 		)
 	) {
 		maybeNotifyNotFound()
 	}
+}
+
+/**
+ * _For internal use._ Handle URL parameters for highlighting comments (e.g., on popstate).
+ *
+ * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
+ */
+export function processUrlParameters(noScroll = false) {
+	highlightNewComments(noScroll)
 }
 
 /**
