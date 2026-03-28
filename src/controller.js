@@ -909,7 +909,7 @@ class Controller extends EventEmitter {
 				// Clear linked state if the fragment no longer matches this comment
 				if (!currentFragment || currentFragment !== commentFragment) {
 					comment.isLinked = false
-					comment.updateClassesForFlag('linked', false)
+					comment.configureLayers()
 				}
 			}
 

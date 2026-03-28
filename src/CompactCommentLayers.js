@@ -102,17 +102,12 @@ class CompactCommentLayers extends CommentLayers {
 
 	/**
 	 * Update layer styles for compact comments.
-	 * Compact comments have specific positioning and styling requirements.
 	 *
 	 * @param {boolean} wereJustCreated Whether the layers were just created.
 	 * @override
 	 */
 	updateStyles(wereJustCreated = false) {
-		// Call parent updateStyles for common styling
 		super.updateStyles(wereJustCreated)
-
-		// Compact-specific styling would go here
-		// For now, the base implementation handles the common styling needs
 	}
 
 	/**

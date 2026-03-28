@@ -1520,7 +1520,6 @@ class Comment extends CommentSkeleton {
 	markAsLinked() {
 		this.isLinked = true
 		this.configureLayers()
-		this.updateClassesForFlag('linked', true)
 
 		// Set up one-time body click handler to clear the linked state
 		const clearLinkedState = () => {
@@ -1535,10 +1534,7 @@ class Comment extends CommentSkeleton {
 			document.body.removeEventListener('click', clearLinkedState)
 		}
 
-		// Use setTimeout to avoid immediate triggering if this was called from a click event
-		setTimeout(() => {
-			document.body.addEventListener('click', clearLinkedState, { once: true })
-		}, 0)
+		document.body.addEventListener('click', clearLinkedState, { once: true })
 	}
 
 	/**

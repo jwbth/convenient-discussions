@@ -105,7 +105,6 @@ class CommentLayers {
 
 	/**
 	 * Create the layer elements (underlay, overlay, line, marker).
-	 * Uses template method pattern - subclasses can override getOverlayPrototype() for customization.
 	 */
 	create() {
 		// Create underlay (same for all comment types)
@@ -138,7 +137,6 @@ class CommentLayers {
 
 	/**
 	 * Get the overlay prototype for this comment type.
-	 * Subclasses can override this to provide custom overlay elements.
 	 *
 	 * @returns {HTMLElement} The overlay prototype element.
 	 * @protected
@@ -149,6 +147,7 @@ class CommentLayers {
 
 	/**
 	 * Set up additional elements after basic layers are created.
+	 *
 	 * Subclasses can override this to add custom elements and event listeners.
 	 *
 	 * @protected
@@ -167,6 +166,7 @@ class CommentLayers {
 
 	/**
 	 * Update layer styles and positioning.
+	 *
 	 * This method should be overridden by subclasses for specific styling needs.
 	 *
 	 * @param {boolean} wereJustCreated Whether the layers were just created.
@@ -176,6 +176,7 @@ class CommentLayers {
 		this.updateClassesForFlag('new', Boolean(this.comment.isNew))
 		this.updateClassesForFlag('own', this.comment.isOwn)
 		this.updateClassesForFlag('deleted', this.comment.isDeleted)
+		this.updateClassesForFlag('linked', this.comment.isLinked)
 
 		if (wereJustCreated && this.comment.isLineGapped) {
 			this.line.classList.add('cd-comment-overlay-line-gapCloser')
