@@ -606,19 +606,19 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 			this.upload.setUser(this.controls.author.input.getValue())
 			this.upload.setLicense(this.controls.license.input.getValue())
 
-			// Here goes overriden
 			// mediawiki/resources/src/mediawiki.ForeignStructuredUpload.BookletLayout/BookletLayout.js
+			super.getText()
+
+			// Override the description set by the parent method as it believes the description is in the
+			// content language, but if the user hasn't changed it, it's actually in English (as we set it
+			// that way in the upload step).
 			const currentDescription = this.descriptionWidget.getValue()
 			const language =
 				this.defaultDescription !== undefined && currentDescription === this.defaultDescription
 					? 'en'
 					: mw.config.get('wgContentLanguage')
-			const categories = this.categoriesWidget.getItems().map((item) => item.data)
 			this.upload.clearDescriptions()
 			this.upload.addDescription(language, currentDescription)
-			this.upload.setDate(this.dateWidget.getValue())
-			this.upload.clearCategories()
-			this.upload.addCategories(categories)
 
 			return this.upload.getText()
 		}
