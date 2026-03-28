@@ -1,9 +1,9 @@
 /**
- * Module for URL fragment-related tasks on page load, including scrolling to the target comment if
- * needed, and showing a notification if the target comment or section is not found, optionally
- * searching in the archive.
+ * Module for URL-related tasks on page load, including scrolling to the target comment if needed,
+ * and showing a notification if the target comment or section is not found, optionally searching in
+ * the archive.
  *
- * @module processFragment
+ * @module processUrl
  */
 
 import Comment from './Comment'

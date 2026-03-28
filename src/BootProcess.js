@@ -13,7 +13,7 @@ import cd from './loader/cd'
 import navPanel from './navPanel'
 import notifications from './notifications'
 import pageNav from './pageNav'
-import processFragment from './processFragment'
+import processFragment from './processUrl'
 import sectionManager from './sectionManager'
 import Parser from './shared/Parser'
 import {

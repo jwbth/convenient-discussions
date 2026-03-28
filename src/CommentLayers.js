@@ -339,7 +339,7 @@ class CommentLayers {
 	/**
 	 * Animate the comment's background and marker color back from the colors of a given comment flag.
 	 *
-	 * @param {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed'} flag
+	 * @param {import('./Comment').CommentFlag} flag
 	 * @param {() => void} [callback]
 	 */
 	animateBack(flag, callback) {

@@ -80,6 +80,10 @@ import {
  */
 
 /**
+ * @typedef {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed' | 'linked'} CommentFlag
+ */
+
+/**
  * A comment (any signed, and in some cases unsigned, text on a wiki talk page) in the window (not
  * the web worker) context.
  *
@@ -1421,10 +1425,6 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * @typedef {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed' | 'linked'} CommentFlag
-	 */
-
-	/**
 	 * _For internal use._ Add the (already existent) comment's layers to the DOM.
 	 */
 	addLayers() {
@@ -1523,17 +1523,12 @@ class Comment extends CommentSkeleton {
 
 		// Set up one-time body click handler to clear the linked state
 		const clearLinkedState = () => {
-			this.isLinked = false
-			this.configureLayers()
-
 			// Remove the fragment from URL
 			if (location.hash) {
 				history.pushState(history.state, '', location.pathname + location.search)
 			}
 
-			this.manager.clearLinkedComments('')
-
-			document.body.removeEventListener('click', clearLinkedState)
+			this.manager.clearLinkedComments()
 		}
 
 		document.body.addEventListener('click', clearLinkedState, { once: true })

@@ -1433,7 +1433,7 @@ export class CommentManager extends EventEmitter {
 	/**
 	 * Clear the linked state from comments when the URL fragment changes.
 	 *
-	 * @param {string} currentFragment Current URL fragment
+	 * @param {string} [currentFragment] Current URL fragment
 	 */
 	clearLinkedComments(currentFragment) {
 		for (const comment of this.items) {
