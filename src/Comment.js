@@ -1524,12 +1524,14 @@ class Comment extends CommentSkeleton {
 		// Set up one-time body click handler to clear the linked state
 		const clearLinkedState = () => {
 			this.isLinked = false
-			this.updateClassesForFlag('linked', false)
+			this.configureLayers()
 
 			// Remove the fragment from URL
 			if (location.hash) {
 				history.pushState(history.state, '', location.pathname + location.search)
 			}
+
+			this.manager.clearLinkedComments('')
 
 			document.body.removeEventListener('click', clearLinkedState)
 		}
@@ -2049,7 +2051,11 @@ class Comment extends CommentSkeleton {
 
 		const id = this.getUrlFragment()
 		if (pushState && id) {
-			history.pushState({ ...history.state, cdJumpedToComment: true }, '', `#${id}`)
+			history.pushState(
+				{ ...history.state, cdLinkedComment: false, cdTargetComment: true },
+				'',
+				`#${id}`,
+			)
 		}
 
 		if (this.isCollapsed) {

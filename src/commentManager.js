@@ -156,31 +156,9 @@ export class CommentManager extends EventEmitter {
 			.on('mutate', this.maybeRedrawLayers)
 			.on('resize', this.maybeRedrawLayers)
 			.on('mouseMove', this.maybeHighlightHovered)
-			.on('popState', (fragment) => {
-				// Don't jump to the comment if the user pressed "Back"/"Forward" in the browser - in that
-				// case they are unlikely to want the comment to be highlighted and may want to get back to
-				// their previous viewport position after clicking some anchor link. This also applied to
-				// cases when history.pushState() is called from Comment#scrollTo() (after clicks on added
-				// (gray) items in the TOC). A marginal state of this happening is when a page with a
-				// comment ID in the fragment is opened and then a link with the same fragment is clicked.
-				if (!this.CommentClass.isAnyId(fragment) || history.state?.cdJumpedToComment) return
-
-				this.getByAnyId(fragment, true)?.scrollTo()
-			})
+			.on('popState', this.handlePopState)
 			.on('selectionChange', this.getSelectedComment)
-			.on('beforeReboot', (passedData) => {
-				// Stop all animations, clear all timeouts.
-				this.items.forEach((comment) => {
-					comment.stopAnimations()
-				})
-
-				// If the page is reloaded externally, its content is already replaced, so we won't break
-				// anything if we remove the layers containers early. And we better do so to avoid comment
-				// layers hanging around without their owner comments.
-				if (passedData.isPageReloadedExternally) {
-					this.resetLayers()
-				}
-			})
+			.on('beforeReboot', this.handleBeforeReboot)
 			.on('startReboot', this.resetLayers)
 			.on('desktopNotificationClick', () => {
 				this.maybeRedrawLayers(true)
@@ -1425,6 +1403,69 @@ export class CommentManager extends EventEmitter {
 	 */
 	getCommentClass() {
 		return this.CommentClass
+	}
+
+	/**
+	 * Handle the popstate event - manage linked comment highlighting and navigation.
+	 *
+	 * @param {string} fragment Current URL fragment
+	 * @private
+	 */
+	handlePopState = (fragment) => {
+		// Don't jump to the comment if the user pressed "Back"/"Forward" in the browser - in that
+		// case they are unlikely to want the comment to be highlighted and may want to get back to
+		// their previous viewport position after clicking some anchor link. This also applied to
+		// cases when history.pushState() is called from Comment#scrollTo() (after clicks on added
+		// (gray) items in the TOC). A marginal state of this happening is when a page with a
+		// comment ID in the fragment is opened and then a link with the same fragment is clicked.
+
+		// Clear linked state from comments that don't match the current fragment
+		this.clearLinkedComments(fragment)
+
+		if (history.state?.cdTargetComment) return
+
+		const comment = this.getByAnyId(fragment, true)
+		if (!comment) return
+
+		comment.markAsLinked()
+	}
+
+	/**
+	 * Clear the linked state from comments when the URL fragment changes.
+	 *
+	 * @param {string} currentFragment Current URL fragment
+	 */
+	clearLinkedComments(currentFragment) {
+		for (const comment of this.items) {
+			if (comment.isLinked) {
+				const commentFragment = comment.getUrlFragment()
+				// Clear linked state if the fragment no longer matches this comment
+				if (!currentFragment || currentFragment !== commentFragment) {
+					comment.isLinked = false
+					comment.configureLayers()
+				}
+			}
+		}
+	}
+
+	/**
+	 * Handle the beforeReboot event - stop animations and clean up layers.
+	 *
+	 * @param {import('./BootProcess').PassedData} passedData
+	 * @private
+	 */
+	handleBeforeReboot = (passedData) => {
+		// Stop all animations, clear all timeouts.
+		this.items.forEach((comment) => {
+			comment.stopAnimations()
+		})
+
+		// If the page is reloaded externally, its content is already replaced, so we won't break
+		// anything if we remove the layers containers early. And we better do so to avoid comment
+		// layers hanging around without their owner comments.
+		if (passedData.isPageReloadedExternally) {
+			this.resetLayers()
+		}
 	}
 }
 

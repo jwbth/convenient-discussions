@@ -810,9 +810,6 @@ class Controller extends EventEmitter {
 		try {
 			const fragment = decodeURIComponent(location.hash.slice(1))
 			this.emit('popState', fragment)
-
-			// Clear linked state from all comments if fragment changed
-			this.clearLinkedComments(fragment)
 		} catch (error) {
 			cd.debug.logError(error)
 		}
@@ -897,27 +894,6 @@ class Controller extends EventEmitter {
 	}
 
 	/**
-	 * Clear the linked state from comments when the URL fragment changes.
-	 *
-	 * @param {string} currentFragment Current URL fragment
-	 * @private
-	 */
-	clearLinkedComments(currentFragment) {
-		commentManager.query((comment) => {
-			if (comment.isLinked) {
-				const commentFragment = comment.getUrlFragment()
-				// Clear linked state if the fragment no longer matches this comment
-				if (!currentFragment || currentFragment !== commentFragment) {
-					comment.isLinked = false
-					comment.configureLayers()
-				}
-			}
-
-			return false // Don't collect, just iterate
-		})
-	}
-
-	/**
 	 * _For internal use._ Add event listeners to `window`, `document`, hooks.
 	 */
 	addEventListeners() {
@@ -970,7 +946,7 @@ class Controller extends EventEmitter {
 	 *
 	 * This method exists in addition to {@link Controller#handlePopState}. It's preferable to
 	 * have click events handled by this method instead of `.handlePopState()` because that method, if
-	 * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
+	 * encounters `cdTargetComment` in the history state, doesn't scroll to the comment which is a
 	 * wrong behavior when the user clicks a link.
 	 *
 	 * @param {JQuery} $content

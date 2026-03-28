@@ -85,7 +85,7 @@ export default function processFragment() {
 
 			// Replace CD's comment ID in the fragment with DiscussionTools' if available.
 			history.replaceState(
-				{ ...history.state, cdJumpedToComment: true },
+				{ ...history.state, cdTargetComment: false, cdLinkedComment: true },
 				'',
 				comment.dtId ? `#${comment.dtId}` : undefined,
 			)
