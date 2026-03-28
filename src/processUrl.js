@@ -109,10 +109,16 @@ function getFragment() {
 /**
  * Get a comment from the URL fragment.
  *
- * @param {string} fragment
- * @returns {{ comment: Comment | undefined, date: Date | undefined, author: string | undefined }}
+ * @returns {{
+ *   fragment: string | undefined,
+ * 	 comment: Comment | undefined,
+ *   date: Date | undefined,
+ *   author: string | undefined
+ * }}
  */
-function getCommentFromFragment(fragment) {
+function parseFragment() {
+	const fragment = getFragment()
+
 	let commentId
 	let date
 	let author
@@ -131,7 +137,7 @@ function getCommentFromFragment(fragment) {
 		;({ comment, date, author } = commentManager.getByDtId(fragment, true) || {})
 	}
 
-	return { comment, date, author }
+	return { fragment, comment, date, author }
 }
 
 /**
@@ -169,13 +175,7 @@ function markCommentAsLinked(comment, scroll = true) {
  * _For internal use._ Perform URL fragment-related tasks.
  */
 export default function processFragment() {
-	const fragment = getFragment()
-	let comment
-	let date
-	let author
-	if (fragment) {
-		;({ comment, date, author } = getCommentFromFragment(fragment))
-	}
+	const { fragment, comment, date, author } = parseFragment()
 	handleComments(comment)
 
 	if (
@@ -200,13 +200,14 @@ export default function processFragment() {
  * _For internal use._ Handle URL parts related to comments.
  *
  * @param {Comment} [comment]
+ * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
  */
-function handleComments(comment) {
+function handleComments(comment, noScroll = false) {
 	if (comment) {
 		markCommentAsLinked(comment)
 	} else {
 		// Handle URL parameters for highlighting multiple comments
-		highlightNewComments()
+		highlightNewComments(noScroll)
 	}
 }
 
@@ -216,7 +217,7 @@ function handleComments(comment) {
  * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
  */
 export function processUrlParameters(noScroll = false) {
-	highlightNewComments(noScroll)
+	handleComments(parseFragment().comment, noScroll)
 }
 
 /**
