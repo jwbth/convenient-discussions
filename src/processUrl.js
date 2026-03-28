@@ -15,25 +15,6 @@ import { removeWikiMarkup } from './shared/utils-wikitext'
 import { formatDateNative } from './utils-date'
 import { isExistentAnchor, wrapHtml } from './utils-window'
 
-/** @type {string} */
-let decodedValue
-/** @type {Date | undefined} */
-let date
-/** @type {string | undefined} */
-let author
-/** @type {string} */
-let guessedCommentText
-/** @type {string} */
-let guessedSectionText
-/** @type {string} */
-let sectionName
-/** @type {string} */
-let sectionNameDotDecoded
-/** @type {string} */
-let token
-/** @type {string} */
-let searchQuery
-
 /**
  * @typedef {object} SearchResult
  * @property {string} snippet
@@ -110,19 +91,33 @@ function highlightNewComments(noScroll = false) {
 /**
  * Get a comment from the URL fragment.
  *
- * @returns {{ comment: Comment | undefined, date: Date | undefined, author: string | undefined }}
+ * @returns {string | undefined}
  * @private
  */
-function getCommentFromFragment() {
+function getFragment() {
 	const value = location.hash.slice(1)
-	let commentId
+	let decodedValue
 	try {
 		decodedValue = decodeURIComponent(value)
-		if (Comment.isId(value)) {
-			commentId = decodedValue
-		}
 	} catch (error) {
 		cd.debug.logError(error)
+	}
+
+	return decodedValue
+}
+
+/**
+ * Get a comment from the URL fragment.
+ *
+ * @param {string} fragment
+ * @returns {{ comment: Comment | undefined, date: Date | undefined, author: string | undefined }}
+ */
+function getCommentFromFragment(fragment) {
+	let commentId
+	let date
+	let author
+	if (Comment.isId(fragment)) {
+		commentId = fragment
 	}
 
 	/**
@@ -132,8 +127,8 @@ function getCommentFromFragment() {
 	if (commentId) {
 		;({ date, author } = Comment.parseId(commentId) || {})
 		comment = commentManager.getById(commentId, true)
-	} else if (decodedValue) {
-		;({ comment, date, author } = commentManager.getByDtId(decodedValue, true) || {})
+	} else if (fragment) {
+		;({ comment, date, author } = commentManager.getByDtId(fragment, true) || {})
 	}
 
 	return { comment, date, author }
@@ -174,30 +169,44 @@ function markCommentAsLinked(comment, scroll = true) {
  * _For internal use._ Perform URL fragment-related tasks.
  */
 export default function processFragment() {
-	const { comment } = getCommentFromFragment()
+	const fragment = getFragment()
+	let comment
+	let date
+	let author
+	if (fragment) {
+		;({ comment, date, author } = getCommentFromFragment(fragment))
+	}
+	handleComments(comment)
 
+	if (
+		fragment &&
+		!cd.page.isArchive() &&
+		// Try to find the target
+		!(
+			comment ||
+			cd.config.idleFragments.some((regexp) => fragment.match(regexp)) ||
+			// `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
+			/^\/media\/|^noticeApplied-|^h-/.test(fragment) ||
+			$(':target').length ||
+			isExistentAnchor(location.hash.slice(1)) ||
+			isExistentAnchor(fragment)
+		)
+	) {
+		maybeNotifyNotFound({ fragment, date, author })
+	}
+}
+
+/**
+ * _For internal use._ Handle URL parts related to comments.
+ *
+ * @param {Comment} [comment]
+ */
+function handleComments(comment) {
 	if (comment) {
 		markCommentAsLinked(comment)
 	} else {
 		// Handle URL parameters for highlighting multiple comments
 		highlightNewComments()
-	}
-
-	if (
-		decodedValue &&
-		!cd.page.isArchive() &&
-		// Try to find the target
-		!(
-			comment ||
-			cd.config.idleFragments.some((regexp) => decodedValue.match(regexp)) ||
-			// `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
-			/^\/media\/|^noticeApplied-|^h-/.test(decodedValue) ||
-			$(':target').length ||
-			isExistentAnchor(location.hash.slice(1)) ||
-			isExistentAnchor(decodedValue)
-		)
-	) {
-		maybeNotifyNotFound()
 	}
 }
 
@@ -215,12 +224,18 @@ export function processUrlParameters(noScroll = false) {
  * link to the section/comment if it was found automatically, and/or a link to a section found
  * with a similar name or a comment found with the closest date in the past.
  *
+ * @param {object} options
+ * @param {string} options.fragment
+ * @param {Date} [options.date]
+ * @param {string} [options.author]
  * @private
  */
-function maybeNotifyNotFound() {
+function maybeNotifyNotFound({ fragment, date, author }) {
 	let label
-	guessedCommentText = ''
-	guessedSectionText = ''
+	let guessedCommentText = ''
+	let guessedSectionText = ''
+	/** @type {string | undefined} */
+	let sectionName
 
 	if (date && author) {
 		label = cd.sParse('deadanchor-comment-lead')
@@ -234,7 +249,7 @@ function maybeNotifyNotFound() {
 			label += guessedCommentText
 		}
 	} else {
-		sectionName = underlinesToSpaces(decodedValue)
+		sectionName = underlinesToSpaces(fragment)
 		label =
 			cd.sParse('deadanchor-section-lead', sectionName) +
 			' ' +
@@ -251,7 +266,7 @@ function maybeNotifyNotFound() {
 	}
 
 	if (cd.page.canHaveArchives()) {
-		searchForNotFoundItem()
+		searchForNotFoundItem({ fragment, sectionName, date, guessedCommentText, guessedSectionText })
 	} else {
 		mw.notify(wrapHtml(label), {
 			type: 'warn',
@@ -263,24 +278,40 @@ function maybeNotifyNotFound() {
 /**
  * Make a search request and show an "Item not found" notification.
  *
+ * @param {object} options
+ * @param {string} options.fragment
+ * @param {Date} [options.date]
+ * @param {string} [options.sectionName]
+ * @param {string} options.guessedCommentText
+ * @param {string} options.guessedSectionText
  * @private
  */
-async function searchForNotFoundItem() {
-	token = date
+async function searchForNotFoundItem({
+	fragment,
+	date,
+	sectionName,
+	guessedCommentText,
+	guessedSectionText,
+}) {
+	const token = date
 		? formatDateNative(date, false, cd.g.timestampTools.content.timezone)
-		: sectionName.replace(/"/g, '')
-	searchQuery = `"${token}"`
+		: /** @type {string} */ (sectionName).replace(/"/g, '')
+	let searchQuery = `"${token}"`
 
-	if (!date) {
+	/** @type {string | undefined} */
+	let sectionNameDotDecoded
+
+	if (sectionName) {
 		try {
 			sectionNameDotDecoded = decodeURIComponent(sectionName.replace(/\.([0-9A-F]{2})/g, '%$1'))
 		} catch {
 			// Empty
 		}
-	}
-	if (sectionName && sectionName !== sectionNameDotDecoded) {
-		const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '')
-		searchQuery += ` OR "${tokenDotDecoded}"`
+
+		if (sectionNameDotDecoded && sectionName !== sectionNameDotDecoded) {
+			const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '')
+			searchQuery += ` OR "${tokenDotDecoded}"`
+		}
 	}
 
 	if (date) {
@@ -313,21 +344,48 @@ async function searchForNotFoundItem() {
 	})
 	searchResults = response.query?.search
 
-	notifyAboutSearchResults()
+	notifyAboutSearchResults({
+		fragment,
+		date,
+		sectionName,
+		sectionNameDotDecoded,
+		token,
+		searchQuery,
+		guessedCommentText,
+		guessedSectionText,
+	})
 }
 
 /**
  * Show an "Item not found" notification.
  *
+ * @param {object} options
+ * @param {string} options.fragment
+ * @param {string} [options.sectionName]
+ * @param {string} [options.sectionNameDotDecoded]
+ * @param {string} options.token
+ * @param {string} options.searchQuery
+ * @param {Date | undefined} options.date
+ * @param {string} options.guessedCommentText
+ * @param {string} options.guessedSectionText
  * @private
  */
-function notifyAboutSearchResults() {
+function notifyAboutSearchResults({
+	fragment,
+	sectionName,
+	sectionNameDotDecoded,
+	token,
+	searchQuery,
+	date,
+	guessedCommentText,
+	guessedSectionText,
+}) {
 	const searchUrl =
 		cd.g.server +
 		mw.util.getUrl('Special:Search', {
 			search: searchQuery,
 			sort: 'create_timestamp_desc',
-			cdcomment: date && decodedValue,
+			cdcomment: date && fragment,
 		})
 
 	if (searchResults.length === 0) {
@@ -339,7 +397,7 @@ function notifyAboutSearchResults() {
 							cd.sParse('deadanchor-comment-notfound', searchUrl) +
 							guessedCommentText
 					: cd.sParse('deadanchor-section-lead', sectionName) +
-							(guessedSectionText && sectionName.includes('{{')
+							(guessedSectionText && /** @type {string} */ (sectionName).includes('{{')
 								? // Use of a template in the section title. In such a case, it's almost always the real
 									// match, so we don't show any fail messages.
 									''
@@ -385,8 +443,8 @@ function notifyAboutSearchResults() {
 
 		let label
 		if (exactMatchPageTitle) {
-			const fragment = date ? decodedValue : sectionNameFound
-			const wikilink = `${exactMatchPageTitle}#${fragment}`
+			const targetFragment = /** @type {string} */ (date ? fragment : sectionNameFound)
+			const wikilink = `${exactMatchPageTitle}#${targetFragment}`
 			label = date
 				? cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) + guessedCommentText
 				: cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl)
