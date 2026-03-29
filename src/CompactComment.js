@@ -241,12 +241,11 @@ class CompactComment extends Comment {
 		}
 
 		// Animation will be directed to wrong properties if we keep it going.
-		this.layers?.$animatedBackground?.stop(true, true)
+		this.stopAnimations()
 
 		// Update classes if the comment is visible and wasn't displaced. If it was, the layers are
 		// removed and created again when the next event fires.
 		if (this.configureLayers() !== false) return
-
 
 		this.flags.add('hovered')
 		this.updateClassesForFlag('hovered', true)
@@ -262,7 +261,7 @@ class CompactComment extends Comment {
 		if (!this.flags.has('hovered') || (this.toggleChildThreadsPopup && !force)) return
 
 		// Animation will be directed to wrong properties if we keep it going.
-		this.layers?.$animatedBackground?.stop(true, true)
+		this.stopAnimations()
 
 		this.layers?.dontHideMenu()
 

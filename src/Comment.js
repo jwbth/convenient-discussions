@@ -1459,7 +1459,7 @@ class Comment extends CommentSkeleton {
 	removeLayers() {
 		if (!this.layers) return
 
-		this.layers.$marker.stop(true, true)
+		this.stopAnimations()
 		this.handleUnhover(true)
 
 		// TODO: add add/remove methods to commentManager.underlays
@@ -1562,7 +1562,8 @@ class Comment extends CommentSkeleton {
 	stopAnimations() {
 		if (!this.layers) return
 
-		this.layers.$animatedBackground?.add(this.layers.$marker).stop(true, true)
+		this.layers.$animatedBackground?.stop(true, true)
+		this.layers.$marker.stop(true, true)
 	}
 
 	/**

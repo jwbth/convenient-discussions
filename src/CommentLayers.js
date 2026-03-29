@@ -402,7 +402,7 @@ class CommentLayers {
 		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
 
 		// Reset animations
-		this.$animatedBackground.add(this.$marker).stop(true, true)
+		this.comment.stopAnimations()
 
 		this.updateClassesForFlag(flag, true)
 
