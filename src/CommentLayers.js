@@ -186,7 +186,7 @@ class CommentLayers {
 	/**
 	 * Set classes to the underlay, overlay, and other elements according to a comment flag.
 	 *
-	 * @param {import('./Comment').CommentFlag} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {boolean} add Whether to add or remove the class.
 	 */
 	updateClassesForFlag(flag, add) {
@@ -339,7 +339,7 @@ class CommentLayers {
 	/**
 	 * Animate the comment's background and marker color back from the colors of a given comment flag.
 	 *
-	 * @param {import('./Comment').CommentFlag} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {() => void} [callback]
 	 */
 	animateBack(flag, callback) {
@@ -391,7 +391,7 @@ class CommentLayers {
 	 * Change the comment's background and marker color to a color of the provided comment flag for
 	 * the given number of milliseconds, then smoothly change it back.
 	 *
-	 * @param {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed'} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {number} delay
 	 * @param {() => void} [callback]
 	 */

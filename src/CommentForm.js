@@ -2336,7 +2336,8 @@ class CommentForm extends EventEmitter {
 	 *   function is called from within itself, being delayed.
 	 * @fires previewReady
 	 */
-	async preview(isAuto = true, operation) {
+	// eslint-disable-next-line @typescript-eslint/no-useless-default-assignment
+	async preview(isAuto = true, operation = undefined) {
 		if (
 			this.isContentBeingLoaded() ||
 			(!cd.settings.get('autopreview') && (isAuto || this.isBeingSubmitted()))

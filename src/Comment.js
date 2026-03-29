@@ -1,5 +1,5 @@
 import Button from './Button'
-import CommentFlags from './CommentFlags'
+import CommentFlagSet from './CommentFlagSet'
 import CommentSource from './CommentSource'
 import CommentSubitemList from './CommentSubitemList'
 import LiveTimestamp from './LiveTimestamp'
@@ -82,10 +82,6 @@ import {
  */
 
 /**
- * @typedef {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed' | 'linked'} CommentFlag
- */
-
-/**
  * A comment (any signed, and in some cases unsigned, text on a wiki talk page) in the window (not
  * the web worker) context.
  *
@@ -99,7 +95,7 @@ class Comment extends CommentSkeleton {
 	/**
 	 * Flags helper for comment state that is used by styling logic.
 	 *
-	 * @type {CommentFlags}
+	 * @type {CommentFlagSet}
 	 */
 	flags
 
@@ -218,7 +214,7 @@ class Comment extends CommentSkeleton {
 	/**
 	 * Adds a comment flag.
 	 *
-	 * @param {CommentFlag} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 */
 	addFlag(flag) {
 		this.flags.add(flag)
@@ -228,7 +224,7 @@ class Comment extends CommentSkeleton {
 	/**
 	 * Removes a comment flag.
 	 *
-	 * @param {CommentFlag} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 */
 	removeFlag(flag) {
 		this.flags.remove(flag)
@@ -238,7 +234,7 @@ class Comment extends CommentSkeleton {
 	/**
 	 * Returns whether a comment has a specific flag.
 	 *
-	 * @param {CommentFlag} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @returns {boolean}
 	 */
 	hasFlag(flag) {
@@ -371,14 +367,14 @@ class Comment extends CommentSkeleton {
 	 *   {@link Parser#findSignatures}.
 	 * @param {import('./shared/Parser').Target<Node>[]} targets Sorted target objects returned by
 	 *   {@link Parser#findSignatures} + {@link Parser#findHeadings}.
-	 * @param {import('./commentManager').CommentManager} commentManager
+	 * @param {import('./commentManager').CommentManager} manager
 	 */
-	constructor(parser, signature, targets, commentManager) {
+	constructor(parser, signature, targets, manager) {
 		super(parser, signature, targets)
 
-		this.manager = commentManager
+		this.manager = manager
 
-		this.flags = new CommentFlags()
+		this.flags = new CommentFlagSet()
 		if (this.isOwn) {
 			this.addFlag('own')
 		}
@@ -1449,36 +1445,12 @@ class Comment extends CommentSkeleton {
 	/**
 	 * Set classes to the underlay, overlay, and other elements according to a comment flag.
 	 *
-	 * @param {CommentFlag} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {boolean} add
 	 * @protected
 	 */
 	updateClassesForFlag(flag, add) {
 		this.layers?.updateClassesForFlag(flag, add)
-	}
-
-	/**
-	 * Animate the comment's background and marker color to the provided colors. (Called from
-	 * {@link Comment#animateBack}.)
-	 *
-	 * @param {string} markerColor
-	 * @param {string} backgroundColor
-	 * @param {() => void} [callback] Function to run when the animation is concluded.
-	 * @private
-	 */
-	animateToColors(markerColor, backgroundColor, callback) {
-		this.layers?.animateToColors(markerColor, backgroundColor, callback)
-	}
-
-	/**
-	 * Animate the comment's background and marker color back from the colors of a given comment flag.
-	 *
-	 * @param {CommentFlag} flag
-	 * @param {() => void} [callback]
-	 * @private
-	 */
-	animateBack(flag, callback) {
-		this.layers?.animateBack(flag, callback)
 	}
 
 	/**
@@ -1502,7 +1474,7 @@ class Comment extends CommentSkeleton {
 	 * Change the comment's background and marker color to a color of the provided comment flag for
 	 * the given number of milliseconds, then smoothly change it back.
 	 *
-	 * @param {CommentFlag} flag
+	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {number} delay
 	 * @param {() => void} [callback]
 	 */
@@ -3404,12 +3376,13 @@ class Comment extends CommentSkeleton {
 	}
 
 	/**
-	 * Set the {@link Comment#isNew} and {@link Comment#isSeen} properties for the comment given the
-	 * list of the current page visits.
+	 * Set the `new` {@link CommentFlagSet comment} and {@link Comment#isSeen} property for the
+	 * comment given the list of the current page visits.
 	 *
 	 * @param {string[]} currentPageVisits
 	 * @param {number} currentTime
-	 * @param {Comment} [unseenComment] Unseen comment passed from the previous session.
+	 * @param {Comment} [unseenComment] Unseen comment with the same ID as this one passed from the
+	 *   previous session.
 	 * @returns {boolean} Whether there is a time conflict.
 	 */
 	initNewAndSeen(currentPageVisits, currentTime, unseenComment) {
@@ -3429,7 +3402,7 @@ class Comment extends CommentSkeleton {
 
 		// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
 		// has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
-		// it's a changed old comment.
+		// it's a *changed* old comment.
 		if (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment?.hasFlag('new')) {
 			this.addFlag('new')
 		} else {

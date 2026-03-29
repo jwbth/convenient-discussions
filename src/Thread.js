@@ -956,7 +956,8 @@ class Thread extends mixIntoObject(
 	 *   scrolling or updating the parent comment's "Toggle child threads" button look).
 	 * @param {Promise.<void>} [loadUserGendersPromise]
 	 */
-	collapse(auto = false, isBatchOperation = auto, loadUserGendersPromise = undefined) {
+	// eslint-disable-next-line jsdoc/require-jsdoc
+	collapse(auto = false, isBatchOperation = auto, loadUserGendersPromise) {
 		if (this.isCollapsed) return
 
 		this.collapsedRange = getRangeContents(
@@ -1143,12 +1144,10 @@ class Thread extends mixIntoObject(
 		const isFinalChild = (parent, child) =>
 			Boolean(
 				parent &&
-					child &&
-					(parent.lastElementChild === child ||
-						(parent.lastElementChild === child.nextElementSibling &&
-							/** @type {HTMLElement} */ (child.nextElementSibling).classList.contains(
-								'mw-notalk',
-							))),
+				child &&
+				(parent.lastElementChild === child ||
+					(parent.lastElementChild === child.nextElementSibling &&
+						/** @type {HTMLElement} */ (child.nextElementSibling).classList.contains('mw-notalk'))),
 			)
 		/** @type {(el: HTMLElement | undefined) => HTMLElement | undefined} */
 		const getParentIfItsFinalChild = (el) =>
@@ -1261,8 +1260,7 @@ class Thread extends mixIntoObject(
 
 			// Find the top comment that has its offset changed and stop at it.
 			if (
-				this.clickAreaOffset &&
-				top === this.clickAreaOffset.top &&
+				top === this.clickAreaOffset?.top &&
 				left === this.clickAreaOffset.left &&
 				height === this.clickAreaOffset.height
 			) {
@@ -1551,7 +1549,9 @@ class Thread extends mixIntoObject(
 			if (thread.rootComment.level >= /** @type {number} */ (this.collapseThreadsLevel)) {
 				// Exclude threads where the user participates at any level up and down the tree or that
 				// the user has specifically expanded.
-				if (![...thread.rootComment.getAncestors(), ...thread.comments].some((c) => c.hasFlag('own'))){
+				if (
+					![...thread.rootComment.getAncestors(), ...thread.comments].some((c) => c.hasFlag('own'))
+				) {
 					thread.isAutocollapseTarget = true
 
 					if (!thread.wasManuallyExpanded) {
@@ -1649,7 +1649,7 @@ class Thread extends mixIntoObject(
 		// "Reply in section", "There are new comments in this thread" button container
 		for (
 			let n = endElement.nextElementSibling;
-			n && n.tagName === 'DL' && n.classList.contains('cd-section-button-container');
+			n?.tagName === 'DL' && n.classList.contains('cd-section-button-container');
 			n = n.nextElementSibling
 		) {
 			endElement = /** @type {HTMLElement} */ (n)

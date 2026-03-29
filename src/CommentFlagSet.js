@@ -7,7 +7,7 @@
  *
  * @private
  */
-export default class CommentFlags {
+export default class CommentFlagSet {
 	/**
 	 * Flags that affect the comment overlay/underlay styles.
 	 *
@@ -77,7 +77,7 @@ export default class CommentFlags {
 	 * @returns {Array<{name: CommentFlag, value: boolean}>}
 	 */
 	getStyleFlags() {
-		return CommentFlags.styleFlagNames.map((flagName) => ({
+		return CommentFlagSet.styleFlagNames.map((flagName) => ({
 			name: flagName,
 			value: this.has(flagName),
 		}))

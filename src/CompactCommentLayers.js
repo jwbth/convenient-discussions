@@ -101,16 +101,6 @@ class CompactCommentLayers extends CommentLayers {
 	}
 
 	/**
-	 * Update layer styles for compact comments.
-	 *
-	 * @param {boolean} wereJustCreated Whether the layers were just created.
-	 * @override
-	 */
-	updateStyles(wereJustCreated = false) {
-		super.updateStyles(wereJustCreated)
-	}
-
-	/**
 	 * Show the overlay menu.
 	 */
 	showMenu() {
