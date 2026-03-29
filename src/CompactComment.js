@@ -34,8 +34,6 @@ class CompactComment extends Comment {
 	// @ts-expect-error: Narrowing parent type
 	actions
 
-	isHovered = false
-
 	/**
 	 * Create the comment's underlay and overlay with contents for compact comments.
 	 *
@@ -223,7 +221,7 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	handleHover = (event) => {
-		if (this.isHovered || cd.loader.isPageOverlayOn()) return
+		if (this.flags.has('hovered') || cd.loader.isPageOverlayOn()) return
 
 		if (event?.type === 'touchstart') {
 			if (this.layers?.wasMenuHidden) {
@@ -236,7 +234,7 @@ class CompactComment extends Comment {
 			const commentManagerTyped =
 				/** @type {import('./commentManager').default<CompactComment>} */ (commentManager)
 			commentManagerTyped
-				.query((comment) => comment.isHovered)
+				.query((comment) => comment.flags.has('hovered'))
 				.forEach((comment) => {
 					comment.handleUnhover()
 				})
@@ -249,7 +247,8 @@ class CompactComment extends Comment {
 		// removed and created again when the next event fires.
 		if (this.configureLayers() !== false) return
 
-		this.isHovered = true
+
+		this.flags.add('hovered')
 		this.updateClassesForFlag('hovered', true)
 	}
 
@@ -260,14 +259,14 @@ class CompactComment extends Comment {
 	 * @override
 	 */
 	handleUnhover(force = false) {
-		if (!this.isHovered || (this.toggleChildThreadsPopup && !force)) return
+		if (!this.flags.has('hovered') || (this.toggleChildThreadsPopup && !force)) return
 
 		// Animation will be directed to wrong properties if we keep it going.
 		this.layers?.$animatedBackground?.stop(true, true)
 
 		this.layers?.dontHideMenu()
 
-		this.isHovered = false
+		this.flags.remove('hovered')
 		this.updateClassesForFlag('hovered', false)
 
 		this.teardownOnboardOntoToggleChildThreadsPopup()
