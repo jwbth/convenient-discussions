@@ -3730,33 +3730,36 @@ class Comment extends CommentSkeleton {
 	 * @param {boolean} [scroll] Whether to scroll to the first comment.
 	 * @param {boolean} [replaceState] Whether to replace the URL fragment with the first comment's dtId.
 	 */
-	static markAsLinkedOnLoad(comments, scroll = true, replaceState = true) {
+	static async markAsLinkedOnLoad(comments, scroll = true, replaceState = true) {
+		if (!comments.length) return
+
 		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
 		// incorrectly. (TODO: does it still? Need to check.)
-		sleep().then(() => {
-			if (scroll && comments.length > 0) {
-				comments[0].scrollTo({
-					smooth: false,
-					expandThreads: true,
-					flash: false,
-				})
-			}
+		await sleep()
 
-			comments.forEach((comment) => comment.markAsLinked())
-
-			// Replace CD's comment ID in the fragment with DiscussionTools' if available. In any case,
-			// add the state.
-			if (replaceState) {
-				const firstWithDtId = comments.find((c) => c.dtId)
-				history.replaceState(
-					{ ...history.state, cdTargetComment: false, cdLinkedComment: true },
-					'',
-					firstWithDtId ? `#${firstWithDtId.dtId}` : undefined,
-				)
-			}
-
-			document.body.addEventListener('click', this.clearLinkedState, { once: true })
+		comments.forEach((comment) => {
+			comment.markAsLinked()
 		})
+
+		if (scroll) {
+			comments[0].scrollTo({
+				smooth: false,
+				expandThreads: true,
+				flash: false,
+			})
+		}
+
+		// Replace CD's comment ID in the fragment with DiscussionTools' if available. In any case, add
+		// the state.
+		if (replaceState) {
+			history.replaceState(
+				{ ...history.state, cdTargetComment: false, cdLinkedComment: true },
+				'',
+				comments[0].dtId ? `#${comments[0].dtId}` : undefined,
+			)
+		}
+
+		document.body.addEventListener('click', this.clearLinkedState, { once: true })
 	}
 
 	/**
