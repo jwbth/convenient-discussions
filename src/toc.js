@@ -506,12 +506,15 @@ class Toc {
 		}
 
 		const comment = commentManager.getByAnyId(id)
+
 		if (comment) {
+			// Existing ("new") comment - scroll to it
 			comment.scrollTo({
 				smooth: false,
 				pushState: true,
 			})
 		} else {
+			// Not yet rendered ("added") comment - reboot the page with the comment ID in the URL
 			controller.rebootPage({
 				commentIds: [id],
 				pushState: true,
@@ -661,10 +664,10 @@ class Toc {
 					// When unrendered (in gray) comments are added. (Boot process is also not specified at
 					// those times.)
 					!bootProcess ||
-						bootProcess.isFirstRun() ||
-						// When the comment or section is opened by a link from the TOC
-						bootProcess.passedData.commentIds ||
-						bootProcess.passedData.sectionId,
+					bootProcess.isFirstRun() ||
+					// When the comment or section is opened by a link from the TOC
+					bootProcess.passedData.commentIds ||
+					bootProcess.passedData.sectionId,
 				),
 			)
 		}
@@ -700,8 +703,8 @@ class Toc {
 		if (this.floating === undefined) {
 			this.floating = Boolean(
 				!this.isInSidebar() &&
-					this.isPresent() &&
-					this.$element.closest($(controller.getFloatingElements())).length,
+				this.isPresent() &&
+				this.$element.closest($(controller.getFloatingElements())).length,
 			)
 		}
 

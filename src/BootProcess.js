@@ -889,17 +889,16 @@ class BootProcess {
 	 *
 	 * @private
 	 */
-	processPassedTargets() {
+	async processPassedTargets() {
 		const commentIds = this.passedData.commentIds
 		if (commentIds) {
 			const comments = commentIds.map((id) => commentManager.getById(id)).filter(definedAndNotNull)
 			if (comments.length) {
-				// sleep() for Firefox, as above
-				sleep().then(() => {
-					Comment.scrollToFirstFlashAll(comments, {
-						smooth: false,
-						pushState: this.passedData.pushState,
-					})
+				// sleep() for Firefox, as in Comment.markAsLinkedOnLoad()
+				await sleep()
+				Comment.scrollToFirstFlashAll(comments, {
+					smooth: false,
+					pushState: this.passedData.pushState,
 				})
 			}
 		} else if (this.passedData.sectionId) {
@@ -909,10 +908,9 @@ class BootProcess {
 					history.pushState(history.state, '', `#${section.id}`)
 				}
 
-				// sleep() for Firefox, as above
-				sleep().then(() => {
-					section.$heading.cdScrollTo('top', false)
-				})
+				// sleep() for Firefox, as in Comment.markAsLinkedOnLoad()
+				await sleep()
+				section.$heading.cdScrollTo('top', false)
 			}
 		}
 	}
