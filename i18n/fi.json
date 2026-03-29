@@ -90,6 +90,7 @@
 	"es-delete-comment": "poista kommentti",
 	"es-new-topic": "uusi ketju",
 	"cf-headline-topic": "Aihe",
+	"cf-comment-placeholder": "Teksti",
 	"cf-summary-placeholder": "Yhteenveto",
 	"cf-summary-preview": "Yhteenvedon esikatselu",
 	"cf-save": "Tallenna",

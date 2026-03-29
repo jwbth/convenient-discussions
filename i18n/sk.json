@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Jack who built the house",
+			"Luky001",
 			"Yardom78"
 		]
 	},
@@ -213,6 +214,7 @@
 	"rc-suggestion": "<p>Pohodlné diskusie majú možnosť zmeniť formátovanie komentárov, posunúť autora a časovú pečiatku nahor a tlačidlá odpovedať a poďakovať nadol. To umožňuje rýchlo vidieť autora a dátum komentárov a ľahšie s nimi pracovať. Chcete to povoliť? (Vždy to môžete vypnúť v nastaveniach.)</p> \n\n<p> Pozrite si tiež<span class=\"cd-notification-settings\">nastavenia</span> rôznych nových funkcií, ako je napríklad prispôsobiteľné formátovanie časových pečiatok (ktoré sa mimochodom štandardne zobrazujú v časovom pásme nastavenom vo vašich preferenciách wiki).</p>",
 	"rc-suggestion-yes": "Povoliť nové formátovanie",
 	"rc-suggestion-no": "Zachovať obvyklé formátovanie",
+	"newtopicssubscription-notify-subscribed-body": "Keď na tejto stránke budú pridané nové témy, {{GENDER:|dostanete}} upozornenie.",
 	"navpanel-refresh": "Aktualizovať stránku",
 	"navpanel-previous": "Ísť na predošlý nový komentár",
 	"navpanel-next": "Ísť na nasledovný nový komentár",
