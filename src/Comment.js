@@ -4,6 +4,7 @@ import CommentSubitemList from './CommentSubitemList'
 import LiveTimestamp from './LiveTimestamp'
 import StorageItemWithKeys from './StorageItemWithKeys'
 import commentFormManager from './commentFormManager'
+import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
@@ -1520,20 +1521,6 @@ class Comment extends CommentSkeleton {
 	markAsLinked() {
 		this.isLinked = true
 		this.configureLayers()
-
-		const clearLinkedState = () => {
-			const url = new URL(location.href)
-			url.searchParams.delete('dtnewcomments')
-			url.searchParams.delete('dtnewcommentssince')
-			url.searchParams.delete('dtinthread')
-			url.searchParams.delete('dtsincethread')
-			url.hash = ''
-			history.pushState(null, '', url)
-
-			this.manager.clearLinkedComments()
-		}
-
-		document.body.addEventListener('click', clearLinkedState, { once: true })
 	}
 
 	/**
@@ -3683,6 +3670,63 @@ class Comment extends CommentSkeleton {
 				`(?:-(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern})|(.+?))` +
 				`(?:-(\\d+))?)?$`,
 		)
+	}
+
+	/**
+	 * Clear the linked state by removing URL parameters and clearing linked comments.
+	 */
+	static clearLinkedState = () => {
+		const url = new URL(location.href)
+		if (
+			url.hash ||
+			url.searchParams.has('dtnewcomments') ||
+			url.searchParams.has('dtnewcommentssince')
+		) {
+			url.searchParams.delete('dtnewcomments')
+			url.searchParams.delete('dtnewcommentssince')
+			url.searchParams.delete('dtinthread')
+			url.searchParams.delete('dtsincethread')
+			url.hash = ''
+			history.pushState(null, '', url)
+		}
+
+		commentManager.clearLinkedComments()
+	}
+
+	/**
+	 * Mark a group of comments as linked on load, optionally scrolling to the first and replacing the URL state.
+	 *
+	 * @param {Comment[]} comments The comments to mark as linked.
+	 * @param {boolean} [scroll] Whether to scroll to the first comment.
+	 * @param {boolean} [replaceState] Whether to replace the URL fragment with the first comment's dtId.
+	 */
+	static markAsLinkedOnLoad(comments, scroll = true, replaceState = true) {
+		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
+		// incorrectly. (TODO: does it still? Need to check.)
+		sleep().then(() => {
+			if (scroll && comments.length > 0) {
+				comments[0].scrollTo({
+					smooth: false,
+					expandThreads: true,
+					flash: false,
+				})
+			}
+
+			comments.forEach((comment) => comment.markAsLinked())
+
+			// Replace CD's comment ID in the fragment with DiscussionTools' if available. In any case,
+			// add the state.
+			if (replaceState) {
+				const firstWithDtId = comments.find((c) => c.dtId)
+				history.replaceState(
+					{ ...history.state, cdTargetComment: false, cdLinkedComment: true },
+					'',
+					firstWithDtId ? `#${firstWithDtId.dtId}` : undefined,
+				)
+			}
+
+			document.body.addEventListener('click', this.clearLinkedState, { once: true })
+		})
 	}
 
 	/**

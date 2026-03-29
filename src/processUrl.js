@@ -10,7 +10,7 @@ import Comment from './Comment'
 import commentManager from './commentManager'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import { defined, sleep, underlinesToSpaces } from './shared/utils-general'
+import { defined, underlinesToSpaces } from './shared/utils-general'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import { formatDateNative } from './utils-date'
 import { isExistentAnchor, wrapHtml } from './utils-window'
@@ -82,9 +82,7 @@ function highlightNewComments(noScroll = false) {
 
 	// Highlight and scroll to the first comment
 	if (commentsToHighlight.length) {
-		commentsToHighlight.forEach((comment, index) => {
-			markCommentAsLinked(comment, !noScroll && index === 0)
-		})
+		Comment.markAsLinkedOnLoad(commentsToHighlight, !noScroll, false)
 	}
 }
 
@@ -144,37 +142,6 @@ function parseFragment() {
 }
 
 /**
- * Mark a comment as linked and scroll to it.
- *
- * @param {Comment} comment
- * @param {boolean} [scroll] Whether to scroll to the comment.
- * @private
- */
-function markCommentAsLinked(comment, scroll = true) {
-	// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
-	// incorrectly. (TODO: does it still? Need to check.)
-	sleep().then(() => {
-		if (scroll) {
-			comment.scrollTo({
-				smooth: false,
-				expandThreads: true,
-				flash: false,
-			})
-		}
-
-		comment.markAsLinked()
-
-		// Replace CD's comment ID in the fragment with DiscussionTools' if available. In any case,
-		// add the state.
-		history.replaceState(
-			{ ...history.state, cdTargetComment: false, cdLinkedComment: true },
-			'',
-			comment.dtId ? `#${comment.dtId}` : undefined,
-		)
-	})
-}
-
-/**
  * _For internal use._ Perform URL fragment-related tasks.
  */
 export default function processUrlOnLoad() {
@@ -208,7 +175,7 @@ export function processCommentReferencesInUrl(noScroll = false) {
 	const { fragment, comment, date, author } = parseFragment()
 
 	if (comment) {
-		markCommentAsLinked(comment)
+		Comment.markAsLinkedOnLoad([comment])
 	} else {
 		// Handle URL parameters for highlighting multiple comments
 		highlightNewComments(noScroll)
