@@ -340,14 +340,9 @@ class CommentLayers {
 	 * Animate the comment's background and marker color back from the colors of a given comment flag.
 	 *
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
-	 * @param {() => void} [callback]
 	 */
-	animateBack(flag, callback) {
-		if (!this.$underlay.parent().length) {
-			callback?.()
-
-			return
-		}
+	animateBack(flag) {
+		if (!this.$underlay.parent().length) return
 
 		// Get the current colors
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -384,7 +379,9 @@ class CommentLayers {
 			thisTyped.$overlayGradient.css({ backgroundImage: 'none' })
 		}
 
-		this.animateToColors(finalMarkerColor, finalBackgroundColor, callback)
+		this.animateToColors(finalMarkerColor, finalBackgroundColor, () => {
+			this.comment.removeFlag(flag)
+		})
 	}
 
 	/**
@@ -393,22 +390,22 @@ class CommentLayers {
 	 *
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {number} delay
-	 * @param {() => void} [callback]
 	 */
-	flash(flag, delay, callback) {
-		// If there was an animation scheduled, cancel it
+	flash(flag, delay) {
+		// If there was an animation scheduled, cancel it and animate back immediately. Then that
+		// animation is stopped which triggers the callback removing the flag.
 		this.unhighlightDeferred?.reject()
+		this.comment.stopAnimations()
+
+		// TODO: This should better reside in Comment, but we need to add the flag *after* rejecting the
+		// deferred and stopping the animation because that would remove the flag.
+		this.comment.addFlag(flag)
 
 		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
 
-		// Reset animations
-		this.comment.stopAnimations()
-
-		this.updateClassesForFlag(flag, true)
-
 		const deferred = (this.unhighlightDeferred = $.Deferred())
 		deferred.always(() => {
-			this.animateBack(flag, callback)
+			this.animateBack(flag)
 		})
 
 		sleep(delay).then(() => {

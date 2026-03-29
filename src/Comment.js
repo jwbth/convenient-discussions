@@ -1476,17 +1476,12 @@ class Comment extends CommentSkeleton {
 	 *
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {number} delay
-	 * @param {() => void} [callback]
 	 */
-	flash(flag, delay, callback) {
+	flash(flag, delay) {
 		this.configureLayers()
-		if (!this.layers) {
-			callback?.()
+		if (!this.layers) return
 
-			return
-		}
-
-		this.layers.flash(flag, delay, callback)
+		this.layers.flash(flag, delay)
 	}
 
 	/**
@@ -1494,11 +1489,7 @@ class Comment extends CommentSkeleton {
 	 * buttons, is scrolled to after pressing a navigation panel button, etc.).
 	 */
 	flashTarget() {
-		this.addFlag('target')
-
-		this.flash('target', 1500, () => {
-			this.removeFlag('target')
-		})
+		this.flash('target', 1500)
 	}
 
 	/**
