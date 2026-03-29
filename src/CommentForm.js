@@ -3091,7 +3091,7 @@ class CommentForm extends EventEmitter {
 
 			target.maybeRequestAuthorGender(this.updateAutoSummary)
 
-			return target.isOwn
+			return target.hasFlag('own')
 				? cd.s('es-addition')
 				: removeDoubleSpaces(cd.s('es-reply-to', target.author.getName(), target.author))
 		} else if (this.isMode('edit')) {
@@ -3101,14 +3101,14 @@ class CommentForm extends EventEmitter {
 				let subject
 				/** @type {Comment} */
 				let realTarget = this.target
-				if (this.target.isOwn) {
+				if (this.target.hasFlag('own')) {
 					const targetParent = this.target.getParent()
 					if (targetParent) {
 						if (targetParent.level === 0) {
 							subject = 'reply'
 						} else {
 							targetParent.maybeRequestAuthorGender(this.updateAutoSummary)
-							subject = targetParent.isOwn ? 'addition' : 'reply-to'
+							subject = targetParent.hasFlag('own') ? 'addition' : 'reply-to'
 							realTarget = targetParent
 						}
 					} else if (this.isTargetOpeningSection()) {

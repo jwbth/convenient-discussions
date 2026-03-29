@@ -297,7 +297,7 @@ class CommentSource {
 		// here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
 		movePartsToSignature(
 			[
-				this.comment.isOwn ? cd.g.userSignaturePrefixRegexp : undefined,
+				this.comment.hasFlag('own') ? cd.g.userSignaturePrefixRegexp : undefined,
 				/'+$/,
 				cd.config.signaturePrefixRegexp || undefined,
 				tagRegexp,

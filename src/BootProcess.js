@@ -300,7 +300,7 @@ class BootProcess {
 			// after the addition of comment forms.
 			commentManager.configureAndAddLayers(
 				(c) =>
-					c.isOwn ||
+					c.hasFlag('own') ||
 					// Need to generate a gray line to close the gaps between adjacent list item elements. Do it
 					// here, not after processing comments, to group all operations requiring reflow
 					// together for performance reasons.

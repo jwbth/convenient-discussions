@@ -1,4 +1,5 @@
 import Button from './Button'
+import CommentFlags from './CommentFlags'
 import CommentSource from './CommentSource'
 import CommentSubitemList from './CommentSubitemList'
 import LiveTimestamp from './LiveTimestamp'
@@ -96,11 +97,11 @@ class Comment extends CommentSkeleton {
 	TYPE = 'comment'
 
 	/**
-	 * List of flag names that indicate special comment states.
+	 * Flags helper for comment state that is used by styling logic.
 	 *
-	 * @type {string[]}
+	 * @type {CommentFlags}
 	 */
-	static flagNames = ['isNew', 'isOwn', 'isTarget', 'isDeleted', 'isLinked']
+	flags
 
 	/**
 	 * @override
@@ -208,20 +209,6 @@ class Comment extends CommentSkeleton {
 	isSeen
 
 	/**
-	 * Is the comment currently highlighted as a target comment.
-	 *
-	 * @type {boolean}
-	 */
-	isTarget = false
-
-	/**
-	 * Is the comment currently highlighted as a linked comment (opened via URL fragment).
-	 *
-	 * @type {boolean}
-	 */
-	isLinked = false
-
-	/**
 	 * Has the comment changed since the previous visit.
 	 *
 	 * @type {boolean | undefined}
@@ -229,19 +216,34 @@ class Comment extends CommentSkeleton {
 	isChangedSincePreviousVisit
 
 	/**
-	 * Has the comment changed while the page was idle. (The new version may be rendered and may be
-	 * not, if the layout is too complex.)
+	 * Adds a comment flag.
 	 *
-	 * @type {boolean}
+	 * @param {CommentFlag} flag
 	 */
-	isChanged = false
+	addFlag(flag) {
+		this.flags.add(flag)
+		this.updateClassesForFlag(flag, true)
+	}
 
 	/**
-	 * Was the comment deleted while the page was idle.
+	 * Removes a comment flag.
 	 *
-	 * @type {boolean}
+	 * @param {CommentFlag} flag
 	 */
-	isDeleted = false
+	removeFlag(flag) {
+		this.flags.remove(flag)
+		this.updateClassesForFlag(flag, false)
+	}
+
+	/**
+	 * Returns whether a comment has a specific flag.
+	 *
+	 * @param {CommentFlag} flag
+	 * @returns {boolean}
+	 */
+	hasFlag(flag) {
+		return this.flags.has(flag)
+	}
 
 	/**
 	 * Should the comment be flashed as changed when it appears in sight.
@@ -376,6 +378,11 @@ class Comment extends CommentSkeleton {
 
 		this.manager = commentManager
 
+		this.flags = new CommentFlags()
+		if (this.isOwn) {
+			this.addFlag('own')
+		}
+
 		this.showContribsLink = cd.settings.get('showContribsLink')
 		this.hideTimezone = cd.settings.get('hideTimezone')
 		this.timestampFormat = cd.settings.get('timestampFormat')
@@ -408,7 +415,7 @@ class Comment extends CommentSkeleton {
 			!controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
 
 		this.isEditable =
-			this.isActionable && (this.isOwn || cd.settings.get('allowEditOthersComments'))
+			this.isActionable && (this.hasFlag('own') || cd.settings.get('allowEditOthersComments'))
 
 		// Delay bindEvents call until after construction is complete
 		setTimeout(() => {
@@ -1515,10 +1522,10 @@ class Comment extends CommentSkeleton {
 	 * buttons, is scrolled to after pressing a navigation panel button, etc.).
 	 */
 	flashTarget() {
-		this.isTarget = true
+		this.addFlag('target')
 
 		this.flash('target', 1500, () => {
-			this.isTarget = false
+			this.removeFlag('target')
 		})
 	}
 
@@ -1526,7 +1533,7 @@ class Comment extends CommentSkeleton {
 	 * Mark the comment as linked (opened via URL fragment) with persistent highlighting.
 	 */
 	markAsLinked() {
-		this.isLinked = true
+		this.addFlag('linked')
 		this.configureLayers()
 	}
 
@@ -1552,7 +1559,7 @@ class Comment extends CommentSkeleton {
 		 * @typedef {{ [commentId: string]: SeenRenderedChange }} SeenRenderedChanges
 		 */
 
-		if (this.isChanged && this.id) {
+		if (this.hasFlag('changed') && this.id) {
 			const seenStorageItem = /** @type {StorageItemWithKeys<SeenRenderedChanges>} */ (
 				new StorageItemWithKeys('seenRenderedChanges')
 			)
@@ -1762,7 +1769,7 @@ class Comment extends CommentSkeleton {
 		switch (type) {
 			case 'changed':
 			default:
-				this.isChanged = true
+				this.addFlag('changed')
 				stringName = 'comment-changed'
 				break
 
@@ -1772,7 +1779,7 @@ class Comment extends CommentSkeleton {
 				break
 
 			case 'deleted':
-				this.isDeleted = true
+				this.addFlag('deleted')
 				stringName = 'comment-deleted'
 				break
 		}
@@ -1890,10 +1897,10 @@ class Comment extends CommentSkeleton {
 		switch (type) {
 			case 'changed':
 			default:
-				this.isChanged = false
+				this.removeFlag('changed')
 				break
 			case 'deleted':
-				this.isDeleted = false
+				this.removeFlag('deleted')
 
 				// commentManager.maybeRedrawLayers(), that is called on DOM updates, could circumvent
 				// this comment if it has no property signalling that it should be highlighted, so we update
@@ -2759,7 +2766,10 @@ class Comment extends CommentSkeleton {
 				this.section.hideBar()
 			}
 
-			commentForm.$element.toggleClass('cd-commentForm-highlighted', this.isNew || this.isOwn)
+			commentForm.$element.toggleClass(
+				'cd-commentForm-highlighted',
+				this.hasFlag('new') || this.hasFlag('own'),
+			)
 
 			let $outermostElement
 			const $first = this.$elements.first()
@@ -3409,7 +3419,7 @@ class Comment extends CommentSkeleton {
 			// Is the comment date in the future?
 			this.date.getTime() > Date.now() + cd.g.msInMin * 3
 		) {
-			this.isNew = false
+			this.removeFlag('new')
 			this.isSeen = true
 
 			return false
@@ -3420,9 +3430,14 @@ class Comment extends CommentSkeleton {
 		// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
 		// has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
 		// it's a changed old comment.
-		this.isNew = Boolean(commentTime + 60 > Number(currentPageVisits[0]) || unseenComment?.isNew)
+		if (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment?.hasFlag('new')) {
+			this.addFlag('new')
+		} else {
+			this.removeFlag('new')
+		}
 		this.isSeen =
-			(commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) || this.isOwn) &&
+			(commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) ||
+				this.hasFlag('own')) &&
 			!unseenComment
 
 		if (unseenComment?.isChangedSincePreviousVisit && unseenComment.$changeNote) {
@@ -3669,7 +3684,7 @@ class Comment extends CommentSkeleton {
 	 * @returns {boolean}
 	 */
 	hasAnyFlag() {
-		return Comment.flagNames.some((flag) => this[flag]) || ('isHovered' in this && this.isHovered)
+		return this.flags.hasAny()
 	}
 
 	/**
@@ -3678,12 +3693,7 @@ class Comment extends CommentSkeleton {
 	 * @returns {Array<{name: string, value: boolean | undefined}>}
 	 */
 	getStyleFlags() {
-		return [
-			{ name: 'new', value: this.isNew },
-			{ name: 'own', value: this.isOwn },
-			{ name: 'deleted', value: this.isDeleted },
-			{ name: 'linked', value: this.isLinked },
-		]
+		return this.flags.getStyleFlags()
 	}
 
 	/** @type {RegExp} */

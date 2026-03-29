@@ -188,7 +188,7 @@ class CommentActions {
 			!cd.user.isRegistered() ||
 			!this.comment.author.isRegistered() ||
 			!this.comment.date ||
-			this.comment.isOwn
+			this.comment.hasFlag('own')
 		)
 			return
 

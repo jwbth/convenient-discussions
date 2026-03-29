@@ -726,7 +726,7 @@ class UpdateChecker extends EventEmitter {
 				comment = commentManager.getById(currentComment.id)
 				if (!comment) return
 
-				if (comment.isDeleted) {
+				if (comment.hasFlag('deleted')) {
 					comment.unmarkAsChanged('deleted')
 					events.undeleted = true
 				}
@@ -742,14 +742,14 @@ class UpdateChecker extends EventEmitter {
 						})
 						events.changed = { updateSuccess }
 					}
-				} else if (comment.isChanged) {
+				} else if (comment.hasFlag('changed')) {
 					comment.liveUpdate(currentComment, newComment)
 					comment.unmarkAsChanged('changed')
 					events.unchanged = true
 				}
 			} else if (!currentComment.hasPoorMatch) {
 				comment = commentManager.getById(currentComment.id)
-				if (!comment || comment.isDeleted) return
+				if (!comment || comment.hasFlag('deleted')) return
 
 				comment.markAsChanged('deleted')
 				events.deleted = true

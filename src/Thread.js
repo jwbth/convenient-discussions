@@ -1551,7 +1551,7 @@ class Thread extends mixIntoObject(
 			if (thread.rootComment.level >= /** @type {number} */ (this.collapseThreadsLevel)) {
 				// Exclude threads where the user participates at any level up and down the tree or that
 				// the user has specifically expanded.
-				if (![...thread.rootComment.getAncestors(), ...thread.comments].some((c) => c.isOwn)) {
+				if (![...thread.rootComment.getAncestors(), ...thread.comments].some((c) => c.hasFlag('own'))){
 					thread.isAutocollapseTarget = true
 
 					if (!thread.wasManuallyExpanded) {

@@ -294,7 +294,7 @@ export class CommentManager extends EventEmitter {
 			timeConflict ||= commentTimeConflict
 		})
 
-		this.configureAndAddLayers((comment) => Boolean(comment.isNew))
+		this.configureAndAddLayers((comment) => comment.hasFlag('new'))
 
 		return timeConflict
 	}
@@ -1326,7 +1326,7 @@ export class CommentManager extends EventEmitter {
 			this.getAll(),
 			commentInViewport.index,
 			direction === 'backward',
-		).filter((comment) => comment.isNew && !comment.isInViewport())
+		).filter((comment) => comment.hasFlag('new') && !comment.isInViewport())
 		const comment = candidates.find((c) => c.isInViewport() === false) || candidates.at(0)
 		if (comment) {
 			comment.scrollTo({
@@ -1431,11 +1431,11 @@ export class CommentManager extends EventEmitter {
 	 */
 	clearLinkedComments(currentFragment) {
 		for (const comment of this.items) {
-			if (comment.isLinked) {
+			if (comment.hasFlag('linked')) {
 				const commentFragment = comment.getUrlFragment()
 				// Clear linked state if the fragment no longer matches this comment
 				if (!currentFragment || currentFragment !== commentFragment) {
-					comment.isLinked = false
+					comment.removeFlag('linked')
 					comment.configureLayers()
 				}
 			}

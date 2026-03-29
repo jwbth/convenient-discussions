@@ -241,7 +241,7 @@ class NavPanel {
 	fill = () => {
 		if (!this.state) return
 
-		if (commentManager.getAll().some((comment) => comment.isNew)) {
+		if (commentManager.getAll().some((comment) => comment.hasFlag('new')) ) {
 			this.updateRefreshButtonTooltip(0)
 			this.state.previousButton.show()
 			this.state.nextButton.show()
@@ -311,7 +311,7 @@ class NavPanel {
 
 		/** @type {string} */
 		let tooltipText
-		const areThereNew = commentManager.getAll().some((comment) => comment.isNew)
+		const areThereNew = commentManager.getAll().some((comment) => comment.hasFlag('new'))
 		if (commentCount) {
 			tooltipText =
 				cd.s('navpanel-newcomments-count', String(commentCount)) +
