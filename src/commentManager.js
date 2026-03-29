@@ -353,11 +353,7 @@ export class CommentManager extends EventEmitter {
 			.some((comment) => {
 				const shouldBeHighlighted =
 					!comment.isCollapsed &&
-					(comment.isNew ||
-						comment.isOwn ||
-						comment.isTarget ||
-						('isHovered' in comment && comment.isHovered) ||
-						comment.isDeleted ||
+					(comment.hasAnyFlag() ||
 						// Need to generate a gray line to close the gaps between adjacent list item elements.
 						comment.isLineGapped)
 

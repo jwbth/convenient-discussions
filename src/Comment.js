@@ -96,6 +96,13 @@ class Comment extends CommentSkeleton {
 	TYPE = 'comment'
 
 	/**
+	 * List of flag names that indicate special comment states.
+	 *
+	 * @type {string[]}
+	 */
+	static flagNames = ['isNew', 'isOwn', 'isTarget', 'isDeleted', 'isLinked']
+
+	/**
 	 * @override
 	 * @type {HTMLElement}
 	 */
@@ -3654,6 +3661,29 @@ class Comment extends CommentSkeleton {
 	 */
 	isOpeningSection() {
 		return this.openingSection
+	}
+
+	/**
+	 * Check if the comment has any flags that indicate it should be highlighted.
+	 *
+	 * @returns {boolean}
+	 */
+	hasAnyFlag() {
+		return Comment.flagNames.some((flag) => this[flag]) || ('isHovered' in this && this.isHovered)
+	}
+
+	/**
+	 * Get the flags that affect the comment's visual styling.
+	 *
+	 * @returns {Array<{name: string, value: boolean | undefined}>}
+	 */
+	getStyleFlags() {
+		return [
+			{ name: 'new', value: this.isNew },
+			{ name: 'own', value: this.isOwn },
+			{ name: 'deleted', value: this.isDeleted },
+			{ name: 'linked', value: this.isLinked },
+		]
 	}
 
 	/** @type {RegExp} */

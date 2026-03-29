@@ -173,10 +173,10 @@ class CommentLayers {
 	 */
 	updateStyles(wereJustCreated = false) {
 		// Apply common layer styling
-		this.updateClassesForFlag('new', Boolean(this.comment.isNew))
-		this.updateClassesForFlag('own', this.comment.isOwn)
-		this.updateClassesForFlag('deleted', this.comment.isDeleted)
-		this.updateClassesForFlag('linked', this.comment.isLinked)
+		const styleFlags = this.comment.getStyleFlags()
+		styleFlags.forEach(({ name, value }) => {
+			this.updateClassesForFlag(name, Boolean(value))
+		})
 
 		if (wereJustCreated && this.comment.isLineGapped) {
 			this.line.classList.add('cd-comment-overlay-line-gapCloser')
@@ -186,7 +186,7 @@ class CommentLayers {
 	/**
 	 * Set classes to the underlay, overlay, and other elements according to a comment flag.
 	 *
-	 * @param {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed' | 'linked'} flag
+	 * @param {import('./Comment').CommentFlag} flag
 	 * @param {boolean} add Whether to add or remove the class.
 	 */
 	updateClassesForFlag(flag, add) {
