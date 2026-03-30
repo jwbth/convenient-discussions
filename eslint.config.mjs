@@ -470,7 +470,6 @@ const config = defineConfig(
 		files: ['src/**/*'],
 		ignores: ['src/tribute/**'],
 		plugins: {
-			// @ts-expect-error - Type definition mismatch with flat config
 			'es-x': esX,
 		},
 		rules: {
