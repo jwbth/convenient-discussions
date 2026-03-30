@@ -73,7 +73,7 @@ async function downloadAndExtractMessages() {
 	})
 
 	// Clean up temp file
-	// await unlink(tempFile)
+	await unlink(tempFile)
 
 	console.log('Messages extracted successfully!')
 }

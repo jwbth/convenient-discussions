@@ -6,8 +6,8 @@ import cd from './loader/cd'
  */
 
 /**
- * Base class for managing comment action buttons and functionality.
- * This class handles the creation and management of action buttons like reply, edit, thank, etc.
+ * Base class for managing comment action buttons and functionality. This class handles the creation
+ * and management of action buttons like reply, edit, thank, etc.
  */
 class CommentActions {
 	/**
