@@ -43,7 +43,7 @@
 	--cd-comment-deleted-hovered-background-color: #fddbd9;
 }
 
-.darkTheme-commentVars() {
+.darkTheme() {
 	--cd-comment-target-hovered-background-color: #3d2500;
 	--cd-comment-new-marker-color: #008000;
 	--cd-comment-new-background-color: #002600;
@@ -52,17 +52,21 @@
 	--cd-comment-own-background-color: #2e0d38;
 	--cd-comment-own-hovered-background-color: #3c1149;
 	--cd-comment-deleted-hovered-background-color: #521615;
+
+	.cd-commentLayersContainer.cd-commentLayersContainer.cd-commentLayersContainer {
+		background: initial !important;
+	}
 }
 
 @media screen {
 	html.skin-theme-clientpref-night {
-		.darkTheme-commentVars();
+		.darkTheme();
 	}
 }
 
 @media screen and (prefers-color-scheme: dark) {
 	html.skin-theme-clientpref-os {
-		.darkTheme-commentVars();
+		.darkTheme();
 	}
 }
 
