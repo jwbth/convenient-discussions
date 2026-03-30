@@ -523,7 +523,7 @@ class CommentSource {
 				code = brsToNewlines(code, '\u0001\n')
 					// Templates occupying a whole line with <br> at the end get a special treatment.
 					.replace(
-						/^((?:\u0001\d+_template.*\u0002) *)\u0001$/gm,
+						/^((?:\u0001\d+_template[^\u0001\u0002]*\u0002) *)(?=\u0001$)/gm,
 						/** @type {ReplaceCallback} */ (_s, m1) => m1 + '<br>',
 					)
 
@@ -531,7 +531,7 @@ class CommentSource {
 					// workaround; may need to look specifically for paragraph templates and mark them as
 					// such.
 					.replace(
-						/((?:\u0001\d+_template.*\u0002){2} *)\u0001/g,
+						/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001)/g,
 						/** @type {ReplaceCallback} */ (s, m1) =>
 							cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
 					)
