@@ -1,16 +1,27 @@
+interface Comment {
+	index: number
+	getText?: () => string
+	getChildren: () => Comment[]
+}
+
+interface TestConsoleMessage {
+	type: string
+	text: string
+}
+
 declare global {
 	interface Window {
 		mw: any
 		$: any
 		convenientDiscussions: {
 			isRunning?: boolean
-			comments?: any[]
+			comments?: Comment[]
 			commentForms?: any[]
 			sections?: any[]
 			settings?: any
 			g?: any
 		}
-		_testConsoleMessages?: { type: string; text: string }[]
+		_testConsoleMessages?: TestConsoleMessage[]
 	}
 }
 

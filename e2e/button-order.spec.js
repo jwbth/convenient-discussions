@@ -13,28 +13,32 @@ test.describe('Button order – spacious mode', () => {
 
 	test('buttons are ordered correctly in header and footer', async ({ page }) => {
 		// Find the parent comment index
-		const parentCommentIndex = await page.evaluate(() => {
-			const cd = window.convenientDiscussions
-			if (!cd.comments) return undefined
-			const comment = cd.comments.find((c) => c.getText?.()?.includes('comment to test buttons'))
+		const parentCommentIndex = /** @type {number | undefined} */ (
+			await page.evaluate(() => {
+				const cd = window.convenientDiscussions
+				if (!cd.comments) return undefined
+				const comment = cd.comments.find((c) => c.getText?.().includes('comment to test buttons'))
 
-			return comment?.index
-		})
+				return comment?.index
+			})
+		)
 
 		if (parentCommentIndex === undefined) {
 			throw new Error('Could not find the parent comment "comment to test buttons"')
 		}
 
 		// Find a child comment that has its own children (to have toggleChildThreads button)
-		const childCommentIndex = await page.evaluate((parentIndex) => {
-			const cd = window.convenientDiscussions
-			if (!cd.comments) return undefined
-			const parent = cd.comments[parentIndex]
-			const children = parent.getChildren()
-			const childWithChildren = children.find((c) => c.getChildren().length > 0)
+		const childCommentIndex = /** @type {number | undefined} */ (
+			await page.evaluate((parentIndex) => {
+				const cd = window.convenientDiscussions
+				if (!cd.comments) return undefined
+				const parent = cd.comments[parentIndex]
+				const children = parent.getChildren()
+				const childWithChildren = children.find((c) => c.getChildren().length > 0)
 
-			return childWithChildren?.index ?? children[0]?.index
-		}, parentCommentIndex)
+				return childWithChildren?.index ?? children[0]?.index
+			}, parentCommentIndex)
+		)
 
 		if (childCommentIndex === undefined) {
 			throw new Error('Could not find a child comment of "comment to test buttons"')
@@ -80,10 +84,6 @@ test.describe('Button order – spacious mode', () => {
 		const menu = lastPart.locator('.cd-comment-menu')
 		await expect(menu).toBeVisible()
 
-		await expect(menu.locator('.cd-comment-button')).toHaveText([
-			'Reply',
-			'Edit',
-			'Thank',
-		])
+		await expect(menu.locator('.cd-comment-button')).toHaveText(['Reply', 'Edit', 'Thank'])
 	})
 })
