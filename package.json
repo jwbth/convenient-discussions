@@ -54,7 +54,7 @@
 		"date-fns-tz": "^3.2.0",
 		"dayjs": "^1.11.20",
 		"htmlparser2": "^10.0.0",
-		"locutus": "^2.0.15",
+		"locutus": "^3.0.25",
 		"lz-string": "^1.4.4",
 		"mwn": "^3.0.1",
 		"oojs": "^7.0.1"
