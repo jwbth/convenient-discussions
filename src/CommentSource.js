@@ -529,9 +529,9 @@ class CommentSource {
 
 					// Two templates in a row is likely a paragraph template + other template. This is a
 					// workaround; may need to look specifically for paragraph templates and mark them as
-					// such.
+					// such. Don't match if there are 3+ templates in a row (e.g. all paragraph templates).
 					.replace(
-						/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001)/g,
+						/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001(?!\d+_template))/g,
 						/** @type {ReplaceCallback} */ (s, m1) =>
 							cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
 					)

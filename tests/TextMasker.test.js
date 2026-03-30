@@ -87,7 +87,7 @@ describe('TextMasker', () => {
 	})
 
 	describe('Bug: Three consecutive paragraph templates', () => {
-		test('should properly mask and unmask three pb templates', () => {
+		test('should properly mask and unmask three pb templates WITHOUT adding <br>', () => {
 			const code = '{{pb}}{{pb}}{{pb}}'
 			const masker = new TextMasker(code)
 
@@ -101,8 +101,9 @@ describe('TextMasker', () => {
 
 			// Simulate the regex from CommentSource.toInput() with the fix
 			// Using lookahead to not consume the \u0001 marker
+			// AND negative lookahead to NOT match when there are 3+ templates
 			const transformedText = maskedText.replace(
-				/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001)/g,
+				/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001(?!\d+_template))/g,
 				(s, m1) => m1 + '<br>',
 			)
 
@@ -111,7 +112,10 @@ describe('TextMasker', () => {
 
 			// Should not contain any leftover markers like "3_template"
 			expect(result).not.toMatch(/\d+_template/)
-			expect(result).toMatch(/\{\{pb\}\}/)
+			// Should not have <br> added
+			expect(result).not.toContain('<br>')
+			// Should be exactly the original
+			expect(result).toBe('{{pb}}{{pb}}{{pb}}')
 		})
 
 		test('should handle the exact scenario from CommentSource.toInput()', () => {
@@ -130,20 +134,26 @@ describe('TextMasker', () => {
 					/^((?:\u0001\d+_template[^\u0001\u0002]*\u0002) *)(?=\u0001$)/gm,
 					(_s, m1) => m1 + '<br>',
 				)
-				.replace(/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001)/g, (s, m1) =>
-					cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
+				.replace(
+					/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001(?!\d+_template))/g,
+					(s, m1) => (cd.config.paragraphTemplates.length ? m1 + '<br>' : s),
 				)
 
 			// Unmask
 			const result = masker.unmaskText(text)
 
-			// The bug would leave something like "{{pb}}{{pb}}<br>3_template"
-			// We want to ensure all templates are properly unmasked
+			// Should not contain any leftover markers
 			expect(result).not.toMatch(/\d+_template/)
+
+			// Should NOT have <br> for 3 consecutive paragraph templates
+			expect(result).not.toContain('<br>')
 
 			// All three templates should be present
 			const templateCount = (result.match(/\{\{pb\}\}/g) || []).length
 			expect(templateCount).toBe(3)
+
+			// Should be exactly the original
+			expect(result).toBe('{{pb}}{{pb}}{{pb}}')
 		})
 	})
 })
