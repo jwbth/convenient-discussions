@@ -6,7 +6,7 @@
  * @module utilsGeneral
  */
 
-import html_entity_decode from 'locutus/php/strings/html_entity_decode'
+import { html_entity_decode } from 'locutus/php/strings/html_entity_decode'
 
 import CdError from './CdError'
 import cd from './cd'

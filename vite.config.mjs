@@ -285,7 +285,6 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
  * @returns {BuildMode}
  */
 function determineBuildMode(env, mode) {
-	const isDev = Boolean(env.VITE_DEV || mode === 'development')
 	const isStaging = Boolean(env.VITE_STAGING || mode === 'staging')
 	const isSingle = Boolean(env.VITE_SINGLE || mode === 'single')
 
@@ -301,14 +300,11 @@ function determineBuildMode(env, mode) {
 			? `${project}-${lang}`
 			: project
 		filenamePostfix = `.single.${wiki}`
-	} else if (isDev) {
-		filenamePostfix = '.dev'
 	} else if (isStaging) {
 		filenamePostfix = '.staging'
 	}
 
 	return {
-		isDev,
 		isStaging,
 		isSingle,
 		project,
