@@ -43,7 +43,9 @@ async function downloadAndExtractMessages() {
 			.get(url, options, (response) => {
 				const statusCode = response.statusCode ?? 0
 				if (statusCode !== 200) {
-					reject(new Error(`Failed to download: ${statusCode}`))
+					const retryAfter = response.headers['retry-after']
+					const retryMsg = retryAfter ? ` Retry-After: ${retryAfter}` : ''
+					reject(new Error(`Failed to download: ${statusCode}${retryMsg}`))
 
 					return
 				}
@@ -67,7 +69,7 @@ async function downloadAndExtractMessages() {
 	})
 
 	// Clean up temp file
-	await unlink(tempFile)
+	// await unlink(tempFile)
 
 	console.log('Messages extracted successfully!')
 }
@@ -104,10 +106,16 @@ readdirSync(messagesDir).forEach((file) => {
 				.split(',')
 				.filter(Boolean)
 		} else if (matchValue.startsWith("'")) {
-			// Single fallback: 'ru'
-			value = [matchValue.replace(/'/g, '')]
+			// Single fallback: 'ru', or quoted comma-separated: 'zh-hans, zh-cn, zh'
+			const unquoted = matchValue.replace(/'/g, '')
+			value = unquoted.includes(',')
+				? unquoted
+						.split(',')
+						.map((s) => s.trim())
+						.filter(Boolean)
+				: [unquoted]
 		} else if (matchValue.includes(',')) {
-			// Comma-separated string: 'skr, ur, en'. NEEDTOFIX: forgot quotes
+			// Array: '["skr", "ur", "en"]'
 			value = matchValue
 				.replace(/'/g, '')
 				.split(',')

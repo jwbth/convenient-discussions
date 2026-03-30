@@ -6,7 +6,8 @@
     "ru"
   ],
   "abr": [
-    "tw, fr"
+    "tw",
+    "fr"
   ],
   "abs": [
     "id"
@@ -39,7 +40,10 @@
   ],
   "am": [],
   "ami": [
-    "zh-tw, zh-hant, zh, zh-hans"
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "an": [
     "es"
@@ -75,7 +79,9 @@
     "ru"
   ],
   "avk": [
-    "fr, es, ru"
+    "fr",
+    "es",
+    "ru"
   ],
   "awa": [
     "hi"
@@ -177,13 +183,28 @@
   ],
   "ccp": [],
   "cdo": [
-    "cdo-latn, cdo-hant, nan-hant, zh-hant, zh, zh-hans"
+    "cdo-latn",
+    "cdo-hant",
+    "nan-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "cdo-hant": [
-    "cdo, cdo-latn, nan-hant, zh-hant, zh, zh-hans"
+    "cdo",
+    "cdo-latn",
+    "nan-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "cdo-latn": [
-    "cdo, cdo-hant, nan-hant, zh-hant, zh, zh-hans"
+    "cdo",
+    "cdo-hant",
+    "nan-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "ce": [
     "ru"
@@ -196,16 +217,35 @@
   ],
   "cop": [],
   "cpx": [
-    "cpx-hant, cpx-hans, cpx-latn, cdo, zh-hant, zh, zh-hans"
+    "cpx-hant",
+    "cpx-hans",
+    "cpx-latn",
+    "cdo",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "cpx-hans": [
-    "cpx, cpx-hant, cpx-latn, cdo, zh-hans, zh, zh-hant"
+    "cpx",
+    "cpx-hant",
+    "cpx-latn",
+    "cdo",
+    "zh-hans",
+    "zh",
+    "zh-hant"
   ],
   "cpx-hant": [
-    "cpx, cpx-hans, cpx-latn, cdo, zh-hant, zh, zh-hans"
+    "cpx",
+    "cpx-hans",
+    "cpx-latn",
+    "cdo",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "crh": [
-    "crh-latn, tr"
+    "crh-latn",
+    "tr"
   ],
   "crh-cyrl": [
     "tr"
@@ -244,7 +284,8 @@
     "ru"
   ],
   "dsb": [
-    "hsb, de"
+    "hsb",
+    "de"
   ],
   "dtp": [
     "ms"
@@ -317,13 +358,25 @@
     "tr"
   ],
   "gan": [
-    "gan-hant, gan-hans, zh-hant, zh, zh-hans"
+    "gan-hant",
+    "gan-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "gan-hans": [
-    "gan, gan-hant, zh-hans, zh, zh-hant"
+    "gan",
+    "gan-hant",
+    "zh-hans",
+    "zh",
+    "zh-hant"
   ],
   "gan-hant": [
-    "gan, gan-hans, zh-hant, zh, zh-hans"
+    "gan",
+    "gan-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "gcf": [
     "fr"
@@ -345,7 +398,8 @@
     "es"
   ],
   "gom": [
-    "gom-deva, gom-latn"
+    "gom-deva",
+    "gom-latn"
   ],
   "gom-deva": [
     "gom-latn"
@@ -370,16 +424,36 @@
   "gv": [],
   "ha": [],
   "hak": [
-    "hak-latn, hak-hant, hak-hans, zh-hant, zh, zh-hans"
+    "hak-latn",
+    "hak-hant",
+    "hak-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "hak-hans": [
-    "hak, hak-hant, hak-latn, zh-hant, zh, zh-hans"
+    "hak",
+    "hak-hant",
+    "hak-latn",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "hak-hant": [
-    "hak, hak-hans, hak-latn, zh-hant, zh, zh-hans"
+    "hak",
+    "hak-hans",
+    "hak-latn",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "hak-latn": [
-    "hak, hak-hant, hak-hans, zh-hant, zh, zh-hans"
+    "hak",
+    "hak-hant",
+    "hak-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "haw": [],
   "he": [],
@@ -398,10 +472,13 @@
     "de"
   ],
   "hsb": [
-    "dsb, de"
+    "dsb",
+    "de"
   ],
   "hsn": [
-    "zh-hant, zh, zh-hans"
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "ht": [
     "fr"
@@ -424,7 +501,10 @@
   "ig": [],
   "igl": [],
   "ii": [
-    "zh-cn, zh-hans, zh, zh-hant"
+    "zh-cn",
+    "zh-hans",
+    "zh",
+    "zh-hant"
   ],
   "ik": [],
   "ike-cans": [
@@ -442,13 +522,16 @@
   ],
   "is": [],
   "isv": [
-    "isv-latn, isv-cyrl"
+    "isv-latn",
+    "isv-cyrl"
   ],
   "isv-cyrl": [
-    "isv, isv-latn"
+    "isv",
+    "isv-latn"
   ],
   "isv-latn": [
-    "isv, isv-cyrl"
+    "isv",
+    "isv-cyrl"
   ],
   "it": [],
   "iu": [
@@ -470,7 +553,8 @@
   ],
   "ka": [],
   "kaa": [
-    "kk-latn, kk-cyrl"
+    "kk-latn",
+    "kk-cyrl"
   ],
   "kab": [
     "fr"
@@ -508,22 +592,29 @@
     "kk-cyrl"
   ],
   "kk-arab": [
-    "kk, kk-cyrl"
+    "kk",
+    "kk-cyrl"
   ],
   "kk-cn": [
-    "kk-arab, kk, kk-cyrl"
+    "kk-arab",
+    "kk",
+    "kk-cyrl"
   ],
   "kk-cyrl": [
     "kk"
   ],
   "kk-kz": [
-    "kk-cyrl, kk"
+    "kk-cyrl",
+    "kk"
   ],
   "kk-latn": [
-    "kk, kk-cyrl"
+    "kk",
+    "kk-cyrl"
   ],
   "kk-tr": [
-    "kk-latn, kk, kk-cyrl"
+    "kk-latn",
+    "kk",
+    "kk-cyrl"
   ],
   "kl": [
     "da"
@@ -566,7 +657,8 @@
   ],
   "kus": [],
   "ku-arab": [
-    "ku, ckb"
+    "ku",
+    "ckb"
   ],
   "ku-latn": [
     "ku"
@@ -607,10 +699,16 @@
     "fa"
   ],
   "lld": [
-    "it, rm, fur"
+    "it",
+    "rm",
+    "fur"
   ],
   "lmo": [
-    "pms, eml, lij, vec, it"
+    "pms",
+    "eml",
+    "lij",
+    "vec",
+    "it"
   ],
   "ln": [
     "fr"
@@ -631,7 +729,9 @@
   ],
   "lv": [],
   "lzh": [
-    "zh-hant, zh, zh-hans"
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "lzz": [
     "tr"
@@ -646,7 +746,8 @@
     "hi"
   ],
   "map-bms": [
-    "jv, id"
+    "jv",
+    "id"
   ],
   "mdf": [
     "ru"
@@ -706,22 +807,49 @@
     "es"
   ],
   "nan": [
-    "nan-latn-pehoeji, nan-latn-tailo, nan-hant, cdo-hant, zh-hant, zh, zh-hans"
+    "nan-latn-pehoeji",
+    "nan-latn-tailo",
+    "nan-hant",
+    "cdo-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "nan-hant": [
-    "nan, nan-latn-pehoeji, nan-latn-tailo, cdo-hant, zh-hant, zh, zh-hans"
+    "nan",
+    "nan-latn-pehoeji",
+    "nan-latn-tailo",
+    "cdo-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "nan-latn-pehoeji": [
-    "nan-latn, nan-latn-tailo, nan, nan-hant, cdo-hant, zh-hant, zh, zh-hans"
+    "nan-latn",
+    "nan-latn-tailo",
+    "nan",
+    "nan-hant",
+    "cdo-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "nan-latn-tailo": [
-    "nan-latn, nan-latn-pehoeji, nan, nan-hant, cdo, zh-hant, zh, zh-hans"
+    "nan-latn",
+    "nan-latn-pehoeji",
+    "nan",
+    "nan-hant",
+    "cdo",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "nap": [
     "it"
   ],
   "nb": [
-    "no, nn"
+    "no",
+    "nn"
   ],
   "nds": [
     "de"
@@ -741,27 +869,34 @@
   ],
   "nmz": [],
   "nn": [
-    "no, nb"
+    "no",
+    "nb"
   ],
   "no": [
-    "nb, nn"
+    "nb",
+    "nn"
   ],
   "nod": [],
   "nog": [],
   "nqo": [],
   "nr": [],
   "nrm": [
-    "nrf, fr"
+    "nrf",
+    "fr"
   ],
   "nso": [],
   "nup": [],
   "nv": [],
   "ny": [],
   "nyo": [
-    "ttj, nyn, lg, sw"
+    "ttj",
+    "nyn",
+    "lg",
+    "sw"
   ],
   "oc": [
-    "ca, fr"
+    "ca",
+    "fr"
   ],
   "ojb": [],
   "olo": [
@@ -816,13 +951,18 @@
     "pt"
   ],
   "pwn": [
-    "zh-tw, zh-hant, zh, zh-hans"
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "qu": [
-    "qug, es"
+    "qug",
+    "es"
   ],
   "qug": [
-    "qu, es"
+    "qu",
+    "es"
   ],
   "rgn": [
     "it"
@@ -841,17 +981,20 @@
     "it"
   ],
   "rsk": [
-    "sr-ec, sr-cyrl"
+    "sr-ec",
+    "sr-cyrl"
   ],
   "ru": [],
   "rue": [
-    "uk, ru"
+    "uk",
+    "ru"
   ],
   "rup": [
     "ro"
   ],
   "ruq": [
-    "ruq-latn, ro"
+    "ruq-latn",
+    "ro"
   ],
   "ruq-cyrl": [
     "mk"
@@ -885,22 +1028,29 @@
     "it"
   ],
   "sdh": [
-    "ckb, fa"
+    "ckb",
+    "fa"
   ],
   "se": [
-    "nb, fi"
+    "nb",
+    "fi"
   ],
   "ses": [
     "fr"
   ],
   "se-fi": [
-    "se, fi, sv"
+    "se",
+    "fi",
+    "sv"
   ],
   "se-no": [
-    "se, nb, nn"
+    "se",
+    "nb",
+    "nn"
   ],
   "se-se": [
-    "se, sv"
+    "se",
+    "sv"
   ],
   "sg": [
     "fr"
@@ -909,10 +1059,18 @@
     "lt"
   ],
   "sh": [
-    "sh-latn, bs, hr, sr-latn, sr-el, sh-cyrl, sr-cyrl, sr-ec"
+    "sh-latn",
+    "bs",
+    "hr",
+    "sr-latn",
+    "sr-el",
+    "sh-cyrl",
+    "sr-cyrl",
+    "sr-ec"
   ],
   "shi": [
-    "shi-latn, fr"
+    "shi-latn",
+    "fr"
   ],
   "shn": [],
   "shy": [
@@ -922,10 +1080,24 @@
     "fr"
   ],
   "sh-cyrl": [
-    "sr-cyrl, sr-ec, sr-latn, sr-el, sh, sh-latn, bs, hr"
+    "sr-cyrl",
+    "sr-ec",
+    "sr-latn",
+    "sr-el",
+    "sh",
+    "sh-latn",
+    "bs",
+    "hr"
   ],
   "sh-latn": [
-    "sh, bs, hr, sr-latn, sr-el, sh-cyrl, sr-cyrl, sr-ec"
+    "sh",
+    "bs",
+    "hr",
+    "sr-latn",
+    "sr-el",
+    "sh-cyrl",
+    "sr-cyrl",
+    "sr-ec"
   ],
   "si": [],
   "sjd": [
@@ -946,7 +1118,8 @@
     "de"
   ],
   "sma": [
-    "sv, nb"
+    "sv",
+    "nb"
   ],
   "smn": [
     "fi"
@@ -954,7 +1127,10 @@
   "sms": [],
   "sq": [],
   "sr": [
-    "sr-ec, sr-cyrl, sr-el, sr-latn"
+    "sr-ec",
+    "sr-cyrl",
+    "sr-el",
+    "sr-latn"
   ],
   "srn": [
     "nl"
@@ -963,10 +1139,12 @@
     "it"
   ],
   "sr-ec": [
-    "sr-cyrl, sr"
+    "sr-cyrl",
+    "sr"
   ],
   "sr-el": [
-    "sr-latn, sr"
+    "sr-latn",
+    "sr"
   ],
   "ss": [],
   "st": [],
@@ -986,11 +1164,17 @@
     "pl"
   ],
   "szy": [
-    "zh-tw, zh-hant, zh, zh-hans"
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "ta": [],
   "tay": [
-    "zh-tw, zh-hant, zh, zh-hans"
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "tcy": [
     "kn"
@@ -1021,14 +1205,21 @@
   "tpi": [],
   "tr": [],
   "trv": [
-    "zh-tw, zh-hant, zh, zh-hans"
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "trw": [],
   "tt": [
-    "tt-cyrl, ru"
+    "tt-cyrl",
+    "ru"
   ],
   "ttj": [
-    "nyo, nyn, lg, sw"
+    "nyo",
+    "nyn",
+    "lg",
+    "sw"
   ],
   "tt-cyrl": [
     "ru"
@@ -1088,13 +1279,25 @@
     "fr"
   ],
   "wuu": [
-    "wuu-hans, wuu-hant, zh-hans, zh, zh-hant"
+    "wuu-hans",
+    "wuu-hant",
+    "zh-hans",
+    "zh",
+    "zh-hant"
   ],
   "wuu-hans": [
-    "wuu, wuu-hant, zh-hans, zh, zh-hant"
+    "wuu",
+    "wuu-hant",
+    "zh-hans",
+    "zh",
+    "zh-hant"
   ],
   "wuu-hant": [
-    "wuu, wuu-hans, zh-hant, zh, zh-hans"
+    "wuu",
+    "wuu-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
   ],
   "xal": [
     "ru"
@@ -1113,46 +1316,79 @@
     "es"
   ],
   "yue": [
-    "yue-hant, yue-hans"
+    "yue-hant",
+    "yue-hans"
   ],
   "yue-hans": [
-    "yue, yue-hant"
+    "yue",
+    "yue-hant"
   ],
   "yue-hant": [
-    "yue, yue-hans"
+    "yue",
+    "yue-hans"
   ],
   "za": [
-    "zh-hans, zh, zh-hant"
+    "zh-hans",
+    "zh",
+    "zh-hant"
   ],
   "zea": [
     "nl"
   ],
   "zgh": [],
   "zh": [
-    "zh-hans, zh-hant, zh-cn, zh-tw, zh-hk"
+    "zh-hans",
+    "zh-hant",
+    "zh-cn",
+    "zh-tw",
+    "zh-hk"
   ],
   "zh-cn": [
-    "zh-hans, zh, zh-hant"
+    "zh-hans",
+    "zh",
+    "zh-hant"
   ],
   "zh-hans": [
-    "zh-cn, zh, zh-hant"
+    "zh-cn",
+    "zh",
+    "zh-hant"
   ],
   "zh-hant": [
-    "zh-tw, zh-hk, zh, zh-hans"
+    "zh-tw",
+    "zh-hk",
+    "zh",
+    "zh-hans"
   ],
   "zh-hk": [
-    "zh-hant, zh-tw, zh, zh-hans"
+    "zh-hant",
+    "zh-tw",
+    "zh",
+    "zh-hans"
   ],
   "zh-mo": [
-    "zh-hk, zh-hant, zh-tw, zh, zh-hans"
+    "zh-hk",
+    "zh-hant",
+    "zh-tw",
+    "zh",
+    "zh-hans"
   ],
   "zh-my": [
-    "zh-sg, zh-hans, zh-cn, zh, zh-hant"
+    "zh-sg",
+    "zh-hans",
+    "zh-cn",
+    "zh",
+    "zh-hant"
   ],
   "zh-sg": [
-    "zh-hans, zh-cn, zh, zh-hant"
+    "zh-hans",
+    "zh-cn",
+    "zh",
+    "zh-hant"
   ],
   "zh-tw": [
-    "zh-hant, zh-hk, zh, zh-hans"
+    "zh-hant",
+    "zh-hk",
+    "zh",
+    "zh-hans"
   ]
 }
