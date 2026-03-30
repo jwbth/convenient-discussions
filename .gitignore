@@ -9,6 +9,7 @@ i18nList.json
 node_modules/
 playwright-report/
 sandbox/
+scripts/messages/
 src/test*
 test-results/
 playwright/.auth/

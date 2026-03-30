@@ -97,6 +97,7 @@
 		"react": "^16.14.0",
 		"react-dom": "^16.14.0",
 		"rimraf": "^6.1.2",
+		"tar": "^7.5.13",
 		"terser": "^5.44.1",
 		"types-mediawiki": "^1.10.1",
 		"typescript": "^5.9.2",
