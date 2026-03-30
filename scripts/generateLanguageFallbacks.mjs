@@ -9,6 +9,7 @@ import path from 'node:path'
 
 const messagesDir = path.join(__dirname, 'messages') // https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+/HEAD/languages/messages
 const outputFile = path.join(__dirname, 'data/languageFallbacks.mediawiki.json')
+/** @type {Record<string, string[]>} */
 const output = {}
 
 const fallbackRegex = /\$fallback\s*=\s*([^;]+);/
@@ -25,19 +26,21 @@ readdirSync(messagesDir).forEach((file) => {
 	const match = content.match(fallbackRegex)
 
 	if (match) {
-		let value = match[1].trim()
-		if (value.startsWith('[')) {
+		const matchValue = match[1].trim()
+		/** @type {string[]} */
+		let value
+		if (matchValue.startsWith('[')) {
 			// Array fallback: [ 'skr', 'ur' ]
-			value = value
+			value = matchValue
 				.replace(/\[|\]|'|\s/g, '')
 				.split(',')
 				.filter(Boolean)
-		} else if (value.startsWith("'")) {
+		} else if (matchValue.startsWith("'")) {
 			// Single fallback: 'ru'
-			value = [value.replace(/'/g, '')]
-		} else if (value.includes(',')) {
+			value = [matchValue.replace(/'/g, '')]
+		} else if (matchValue.includes(',')) {
 			// Comma-separated string: 'skr, ur, en'. NEEDTOFIX: forgot quotes
-			value = value
+			value = matchValue
 				.replace(/'/g, '')
 				.split(',')
 				.map((s) => s.trim())
