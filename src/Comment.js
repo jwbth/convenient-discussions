@@ -188,14 +188,6 @@ class Comment extends CommentSkeleton {
 	layersContainer
 
 	/**
-	 * Is the comment new. Is set to a boolean only on active pages (not archived pages, not old
-	 * diffs) excluding pages that are visited for the first time.
-	 *
-	 * @type {boolean | undefined}
-	 */
-	isNew
-
-	/**
 	 * Has the comment been seen if it is new. Is set only on active pages (not archived, not old
 	 * diffs) excluding pages that are visited for the first time. Check using `=== false` if you
 	 * need to know if the comment is highlighted as new and unseen.

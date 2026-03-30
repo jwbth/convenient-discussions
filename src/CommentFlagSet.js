@@ -1,4 +1,15 @@
 /**
+ * Comment flag types:
+ * - `new`: The comment is new. Set to a boolean only on active pages (not archived pages, not old
+ *   diffs) excluding pages that are visited for the first time.
+ * - `own`: The comment is authored by the current user.
+ * - `target`: The comment is currently highlighted as a target comment.
+ * - `hovered`: The comment is currently being hovered over.
+ * - `deleted`: The comment was deleted while the page was idle.
+ * - `changed`: The comment has changed while the page was idle. (The new version may be rendered
+ *   and may be not, if the layout is too complex.)
+ * - `linked`: The comment is currently highlighted as a linked comment (opened via URL fragment).
+ *
  * @typedef {'new' | 'own' | 'target' | 'hovered' | 'deleted' | 'changed' | 'linked'} CommentFlag
  */
 
