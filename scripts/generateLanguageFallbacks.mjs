@@ -24,13 +24,6 @@ const __dirname = new URL('.', import.meta.url).pathname.replace(
 async function downloadAndExtractMessages() {
 	const messagesDir = path.join(__dirname, 'messages')
 
-	// Skip if messages directory already exists
-	if (existsSync(messagesDir)) {
-		console.log('Messages directory already exists, skipping download.')
-
-		return
-	}
-
 	console.log('Downloading language messages from Wikimedia...')
 
 	const url =
@@ -65,9 +58,7 @@ async function downloadAndExtractMessages() {
 	console.log('Extracting messages...')
 
 	// Create messages directory
-	if (!existsSync(messagesDir)) {
-		mkdirSync(messagesDir, { recursive: true })
-	}
+	mkdirSync(messagesDir, { recursive: true })
 
 	// Extract directly to messages directory
 	await extract({
@@ -85,7 +76,7 @@ await downloadAndExtractMessages()
 
 // https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+/HEAD/languages/messages → tgz
 const messagesDir = path.join(__dirname, 'messages')
-const outputFile = path.join(__dirname, 'data/languageFallbacks.mediawiki.json')
+const outputFile = path.join(__dirname, '../data/languageFallbacks.json')
 /** @type {Record<string, string[]>} */
 const output = {}
 
@@ -136,4 +127,4 @@ if (!existsSync(path.join(__dirname, 'data'))) {
 }
 
 writeFileSync(outputFile, JSON.stringify(output, null, 2), 'utf8')
-console.log('languageFallbacks.mediawiki.json generated!')
+console.log('languageFallbacks.json generated!')
