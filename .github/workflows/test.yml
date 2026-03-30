@@ -20,5 +20,6 @@ jobs:
         with:
           cache: 'npm'
       - run: npm ci
+      - run: npm run i18n
       - run: npm run build
       - run: npm test

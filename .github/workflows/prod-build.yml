@@ -15,6 +15,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v3
       - run: npm ci
+      - run: npm run i18n
       - run: npm run configs
       - run: npm run build
       - run: npm test
