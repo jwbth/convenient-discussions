@@ -24,38 +24,42 @@ const __dirname = new URL('.', import.meta.url).pathname.replace(
 async function downloadAndExtractMessages() {
 	const messagesDir = path.join(__dirname, 'messages')
 
-	console.log('Downloading language messages from Wikimedia...')
-
 	const url =
 		'https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+archive/HEAD/languages/messages.tar.gz'
 	const tempFile = path.join(__dirname, 'languages.tar.gz')
 
-	// Download the file
-	await new Promise((resolve, reject) => {
-		const options = {
-			headers: {
-				'User-Agent':
-					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-			},
-		}
+	if (existsSync(tempFile)) {
+		console.log('Archive already exists, skipping download.')
+	} else {
+		console.log('Downloading language messages from Wikimedia...')
 
-		https
-			.get(url, options, (response) => {
-				const statusCode = response.statusCode ?? 0
-				if (statusCode !== 200) {
-					const retryAfter = response.headers['retry-after']
-					const retryMsg = retryAfter ? ` Retry-After: ${retryAfter}` : ''
-					reject(new Error(`Failed to download: ${statusCode}${retryMsg}`))
+		// Download the file
+		await new Promise((resolve, reject) => {
+			const options = {
+				headers: {
+					'User-Agent':
+						'Convenient Discussions language fallback collector/0.0 (https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions; User:Jack who built the house)',
+				},
+			}
 
-					return
-				}
+			https
+				.get(url, options, (response) => {
+					const statusCode = response.statusCode ?? 0
+					if (statusCode !== 200) {
+						const retryAfter = response.headers['retry-after']
+						const retryMsg = retryAfter ? ` Retry-After: ${retryAfter}` : ''
+						reject(new Error(`Failed to download: ${statusCode}${retryMsg}`))
 
-				pipeline(response, createWriteStream(tempFile))
-					.then(resolve)
-					.catch(reject)
-			})
-			.on('error', reject)
-	})
+						return
+					}
+
+					pipeline(response, createWriteStream(tempFile))
+						.then(resolve)
+						.catch(reject)
+				})
+				.on('error', reject)
+		})
+	}
 
 	console.log('Extracting messages...')
 
