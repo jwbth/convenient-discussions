@@ -92,7 +92,7 @@ class TextMasker {
 	 */
 	unmaskText(text, type) {
 		const regexp = type
-			? new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type}[^\\x02\\x04]*)?(?:\\x02|\\x04)`, 'g')
+			? new RegExp(`(?:\\u0001|\\u0003)(\\d+)(?:_${type}[^\\u0002\\u0004]*)?(?:\\u0002|\\u0004)`, 'g')
 			: /(?:\u0001|\u0003)(\d+)[^\u0002\u0004]*(?:\u0002|\u0004)/g
 		while (regexp.test(text)) {
 			text = text.replace(regexp, (_s, num) => this.maskedTexts[num - 1])

@@ -241,7 +241,7 @@ class CommentFormInputTransformer extends TextMasker {
 
 		code = code.replace(
 			// Lines with list and table markup as well as lines wholly occupied by file markup
-			new RegExp(`(\\n+)([:*#;\\x03]|${CommentFormInputTransformer.filePatternEnd})`, 'gmi'),
+			new RegExp(`(\\n+)([:*#;\\u0003]|${CommentFormInputTransformer.filePatternEnd})`, 'gmi'),
 
 			// Add indentation characters. File markup is tricky because, depending on the alignment and
 			// line breaks, the result can be very different. The safest way to fight that is to use
@@ -312,8 +312,8 @@ class CommentFormInputTransformer extends TextMasker {
 	}
 
 	/**
-	 * Process newlines by adding or not adding `<br>` and keeping or not keeping the newline. `\x01`
-	 * and `\x02` mean the beginning and ending of sensitive code except for tables. `\x03` and `\x04`
+	 * Process newlines by adding or not adding `<br>` and keeping or not keeping the newline. \u0001
+	 * and \u0002 mean the beginning and ending of sensitive code except for tables. \u0003 and \u0004
 	 * mean the beginning and ending of a table. Note: This should be kept coordinated with the
 	 * reverse transformation code in {@link CommentSource#toInput}.
 	 *
@@ -334,7 +334,7 @@ class CommentFormInputTransformer extends TextMasker {
 		}
 		const paragraphTemplatePattern = mw.util.escapeRegExp(`{{${cd.config.paragraphTemplates[0]}}}`)
 		const currentLineEndingRegexp = new RegExp(
-			`(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x01\\d+_block\\x02|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$`,
+			`(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\u0001\\d+_block\\u0002|\\u0004|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$`,
 			'i',
 		)
 		const nextLineBeginningRegexp = new RegExp(

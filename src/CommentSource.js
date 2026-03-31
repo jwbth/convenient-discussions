@@ -486,15 +486,15 @@ class CommentSource {
 			.withText((code) => {
 				if (this.comment.level === 0) {
 					// Collapse random line breaks that do not affect text rendering but would otherwise
-					// transform into <br> on posting. \x01 and \x02 mean the beginning and ending of
-					// sensitive code except for tables. \x03 and \x04 mean the beginning and ending of a
+					// transform into <br> on posting. \u0001 and \u0002 mean the beginning and ending of
+					// sensitive code except for tables. \u0003 and \u0004 mean the beginning and ending of a
 					// table. Note: This should be kept coordinated with the reverse transformation code in
 					// CommentForm#inputToCode. Some more comments are there.
 					const entireLineRegexp = /^(?:\u0001\d+_(block|template[^\u0002]*)\u0002) *$/
 
 					const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i')
 					const currentLineEndingRegexp = new RegExp(
-						`(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$`,
+						`(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\u0004) *$`,
 						'i',
 					)
 					const nextLineBeginningRegexp = new RegExp(
@@ -606,17 +606,17 @@ class CommentSource {
 			cd.g.timestampTools.content.regexp.source +
 			'.*' +
 			(cd.g.unsignedTemplatesPattern ? `|${cd.g.unsignedTemplatesPattern}.*` : '') +
-			// \x01 is from hiding closed discussions and HTML comments. TODO: Line can start with a
+			// \u0001 is from hiding closed discussions and HTML comments. TODO: Line can start with a
 			// HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
 			// need to change wikitext.maskDistractingCode.
-			String.raw`|(?:^|\n)\x01.+)\n)\n*`
+			String.raw`|(?:^|\n)\u0001.+)\n)\n*`
 		const maxIndentationLength = this.replyIndentation.length - 1
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const endOfThreadPattern =
 			'(' +
-			// \n is here to prevent putting the reply on a casual empty line. \x01 is from hiding closed
+			// \n is here to prevent putting the reply on a casual empty line. \u0001 is from hiding closed
 			// discussions.
-			String.raw`(?![:*#\x01\n])` +
+			String.raw`(?![:*#\u0001\n])` +
 			/*
 				This excludes cases where:
 				1. `#` is starting a numbered list inside a comment (reply put in a wrong place:
@@ -625,7 +625,7 @@ class CommentSource {
 					 position can't be an indentation character; it can only start a line.
 				2. An indentation character is followed by a newline (`\\n` removed).
 			 */
-			(maxIndentationLength > 0 ? `|[:*#\\x01]{1,${maxIndentationLength}}(?![:*\\x01])` : '') +
+			(maxIndentationLength > 0 ? `|[:*#\\u0001]{1,${maxIndentationLength}}(?![:*\\u0001])` : '') +
 			')'
 
 		const properPlaceMatch =
@@ -923,7 +923,7 @@ class CommentSource {
 				'g',
 			)
 
-			// \x01 are later used in CommentSource#matchProperPlaceRegexps. \x02 is not used, it's
+			// \u0001 are later used in CommentSource#matchProperPlaceRegexps. \u0002 is not used, it's
 			// just for consistency
 			const makeIndentationMarkers = (
 				/** @type {number} */ indentationLength,

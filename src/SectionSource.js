@@ -235,7 +235,7 @@ class SectionSource {
 						mw.util.escapeRegExp(fullHeadingMatch) +
 						String.raw`[^]*?\n)` +
 						`={1,${sectionHeadingMatch[2].length}}` +
-						String.raw`[^=].*=+[ \t\x01\x02]*\n`,
+						String.raw`[^=].*=+[ \t\u0001\u0002]*\n`,
 				),
 			) ||
 			adjustedCodeFromSection.match(
@@ -254,7 +254,7 @@ class SectionSource {
 						String.raw`[^]*?\n)\n*` +
 						// Any next heading.
 						'={1,6}' +
-						String.raw`[^=].*=+[ \t\x01\x02]*\n`,
+						String.raw`[^=].*=+[ \t\u0001\u0002]*\n`,
 				),
 			) ||
 			adjustedCodeFromSection.match(

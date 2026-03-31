@@ -50,7 +50,7 @@ function unique(item, i, arr) {
  */
 function replaceEntitiesInI18n(string) {
 	return string
-		.replace(/&nbsp;/g, '\xa0')
+		.replace(/&nbsp;/g, '\u00a0')
 		.replace(/&#32;/g, ' ')
 		.replace(/&rlm;/g, '\u200f')
 		.replace(/&lrm;/g, '\u200e')
