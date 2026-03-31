@@ -3,6 +3,23 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import CommentForm from '../src/CommentForm'
 
 // We'll mock the minimal environment needed for the function
+/**
+ * @typedef {import('vitest').MockInstance & ((...args: any[]) => any)} Mock
+ */
+
+/**
+ * @typedef {object} WidgetMockExtension
+ * @property {Mock} getRange
+ * @property {Mock} getValue
+ * @property {Mock} insertContent
+ * @property {Mock} selectRange
+ */
+
+/**
+ * @typedef {Partial<import('../src/MultilineTextInputWidget').default> & WidgetMockExtension} WidgetMock
+ */
+
+/** @type {WidgetMock} */
 const mockCommentInput = {
 	getRange: vi.fn(),
 	getValue: vi.fn(),
@@ -22,7 +39,7 @@ const mockCommentInput = {
  *   instead of leaving it alone.
  * @param {string} [options.selection] Selected text. Use if the selection is outside of the input.
  * @param {boolean} [options.ownline] Put the inserted text on a line of its own.
- * @param {import('../src/MultilineTextInputWidget').default} commentInput
+ * @param {import('../src/MultilineTextInputWidget').default | WidgetMock} commentInput
  */
 function encapsulateSelection(options, commentInput) {
 	CommentForm.prototype.encapsulateSelection.call({ commentInput }, options)
@@ -30,7 +47,7 @@ function encapsulateSelection(options, commentInput) {
 
 describe('encapsulateSelection logic', () => {
 	beforeEach(() => {
-		vi.clearAllMocks()
+		vi.resetAllMocks()
 	})
 
 	it('Scenario 1: No selection, no peri -> caret between pre and post', () => {
@@ -84,5 +101,35 @@ describe('encapsulateSelection logic', () => {
 
 		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('<code>provided</code>')
 		expect(mockCommentInput.selectRange).not.toHaveBeenCalled()
+	})
+
+	it('Scenario 6: ownline: true -> adds newlines if needed', () => {
+		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 5 })
+		mockCommentInput.getValue.mockReturnValue('Some text.')
+
+		encapsulateSelection(
+			{ pre: '<code>', post: '</code>', peri: 'example', ownline: true },
+			mockCommentInput,
+		)
+
+		// value.slice(0, 5) is "Some ", no trailing newline.
+		// middleText is "example", no leading newline.
+		// value.slice(5) is "text.", no leading newline.
+		// post is "</code>", no trailing newline.
+		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('\n<code>example</code>\n')
+		expect(mockCommentInput.selectRange).toHaveBeenCalledWith(5 + 1 + 6, 5 + 1 + 6 + 7)
+	})
+
+	it('Scenario 7: replace: true -> peri replaces selection', () => {
+		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 8 }) // selecting "tex"
+		mockCommentInput.getValue.mockReturnValue('Some text.')
+
+		encapsulateSelection(
+			{ pre: '<code>', post: '</code>', peri: 'replaced', replace: true },
+			mockCommentInput,
+		)
+
+		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('<code>replaced</code>')
+		expect(mockCommentInput.selectRange).toHaveBeenCalledWith(5 + 6, 5 + 6 + 8)
 	})
 })
