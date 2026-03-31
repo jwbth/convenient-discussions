@@ -490,7 +490,7 @@ class CommentSource {
 					// sensitive code except for tables. \x03 and \x04 mean the beginning and ending of a
 					// table. Note: This should be kept coordinated with the reverse transformation code in
 					// CommentForm#inputToCode. Some more comments are there.
-					const entireLineRegexp = /^(?:\u0001\d+_(block|template[^\u0001\u0002]*)\u0002) *$/
+					const entireLineRegexp = /^(?:\u0001\d+_(block|template[^\u0002]*)\u0002) *$/
 
 					const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i')
 					const currentLineEndingRegexp = new RegExp(
@@ -952,7 +952,7 @@ class CommentSource {
 						.withText((code) =>
 							code.replace(
 								// No global flag - we only need the first occurrence
-								new RegExp(`\\u0001\\d+_template(?:_[${cd.g.letterPattern}0-9_]+)?_(\\d+)\\u0002`),
+								/\u0001\d+_template[^\u0002]*_(\d+)\u0002/,
 
 								(_m, n) =>
 									makeIndentationMarkers(

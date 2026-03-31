@@ -92,8 +92,8 @@ class TextMasker {
 	 */
 	unmaskText(text, type) {
 		const regexp = type
-			? new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type}(?:_[${cd.g.letterPattern}0-9_]+)*)?(?:\\x02|\\x04)`, 'g')
-			: /(?:\u0001|\u0003)(\d+)(?:_\w+)?(?:\u0002|\u0004)/g
+			? new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type}[^\\x02\\x04]*)?(?:\\x02|\\x04)`, 'g')
+			: /(?:\u0001|\u0003)(\d+)[^\u0002\u0004]*(?:\u0002|\u0004)/g
 		while (regexp.test(text)) {
 			text = text.replace(regexp, (_s, num) => this.maskedTexts[num - 1])
 		}
@@ -176,12 +176,9 @@ class TextMasker {
 					(addLengths
 						? '_' +
 							String(
-								template
-									.replace(
-										new RegExp(`\\u0001\\d+_template(?:_[${cd.g.letterPattern}0-9_]+)*?_(\\d+)\\u0002`, 'g'),
-										(_m, n) => ' '.repeat(n),
-									)
-									.length,
+								template.replace(/\u0001\d+_template[^\u0002]*?_(\d+)\u0002/g, (_m, n) =>
+									' '.repeat(n),
+								).length,
 							)
 						: '') +
 					'\u0002' +
