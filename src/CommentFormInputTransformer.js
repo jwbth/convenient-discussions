@@ -626,6 +626,8 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	static listMarkupToTags(code) {
+		code = code.replace(/^([:*#;].*?)(\}\}[ \t]*)$/gm, '$1\n$2')
+
 		return CommentFormInputTransformer.listsToTags(
 			CommentFormInputTransformer.linesToLists(code.split('\n').map((line) => ({ text: line }))),
 		)
