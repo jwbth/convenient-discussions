@@ -10,6 +10,7 @@ describe('TextMasker', () => {
 			paragraphTemplates: ['pb'],
 		}
 		cd.g = {
+			letterPattern: String.raw`a-zA-Z\xC0-\uFFFF`,
 			piePattern: 'br|p|span|div',
 			pniePattern:
 				'BLOCKQUOTE|DD|DIV|DL|DT|FORM|H1|H2|H3|H4|H5|H6|HR|INPUT|LI|LINK|OL|P|PRE|STYLE|TABLE|TBODY|TR|TH|TD|UL',
@@ -99,12 +100,28 @@ describe('TextMasker', () => {
 			const markers = maskedText.match(/\u0001\d+_template[^\u0002]*\u0002/g)
 			expect(markers).toHaveLength(3)
 
+			// TODO: this looks like the AI agent's hardcoded something, gotta clean up
+
 			// Simulate the regex from CommentSource.toInput() with the fix
 			// Using lookahead to not consume the \u0001 marker
 			// AND negative lookahead to NOT match when there are 3+ templates
-			const transformedText = maskedText.replace(
+			let transformedText = maskedText.replace(
 				/((?:\u0001\d+_template.*?\u0002){2} *)(?=\u0001(?!\d+_template))/g,
 				(s, m1) => m1 + '<br>',
+			)
+
+			const paragraphTemplatesPattern = cd.config.paragraphTemplates
+				.map((template) => template.replace(/[^a-zA-Z]+/g, ''))
+				.map((template) => {
+					const firstChar = template.charAt(0)
+
+					return `[${firstChar.toUpperCase()}${firstChar.toLowerCase()}]${template.slice(1)}`
+				})
+				.join('|')
+			const pattern = `\\u0001\\d+_template_(?:${paragraphTemplatesPattern})\\u0002`
+			const regexp = new RegExp(pattern, 'g')
+			transformedText = transformedText.replace(new RegExp(`^(?![:*#]).*${pattern}`, 'gm'), (s) =>
+				s.replace(regexp, '\n\n'),
 			)
 
 			// Unmask
@@ -114,8 +131,8 @@ describe('TextMasker', () => {
 			expect(result).not.toMatch(/\d+_template/)
 			// Should not have <br> added
 			expect(result).not.toContain('<br>')
-			// Should be exactly the original
-			expect(result).toBe('{{pb}}{{pb}}{{pb}}')
+			// Should be exactly the original newlines
+			expect(result).toBe('\n\n\n\n\n\n')
 		})
 
 		test('should handle the exact scenario from CommentSource.toInput()', () => {
@@ -128,12 +145,28 @@ describe('TextMasker', () => {
 
 			let text = masker.getText()
 
+			// TODO: this looks like the AI agent's hardcoded something, gotta clean up
+
 			// Apply the transformations from toInput() with the fix
 			text = text
 				.replace(/^((?:\u0001\d+_template.*?\u0002) *)(?=\u0001$)/gm, (_s, m1) => m1 + '<br>')
 				.replace(/((?:\u0001\d+_template.*?\u0002){2} *)(?=\u0001(?!\d+_template))/g, (s, m1) =>
 					cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
 				)
+
+			const paragraphTemplatesPattern = cd.config.paragraphTemplates
+				.map((template) => template.replace(/[^a-zA-Z]+/g, ''))
+				.map((template) => {
+					const firstChar = template.charAt(0)
+
+					return `[${firstChar.toUpperCase()}${firstChar.toLowerCase()}]${template.slice(1)}`
+				})
+				.join('|')
+			const pattern = `\\u0001\\d+_template_(?:${paragraphTemplatesPattern})\\u0002`
+			const regexp = new RegExp(pattern, 'g')
+			text = text.replace(new RegExp(`^(?![:*#]).*${pattern}`, 'gm'), (s) =>
+				s.replace(regexp, '\n\n'),
+			)
 
 			// Unmask
 			const result = masker.unmaskText(text)
@@ -144,12 +177,8 @@ describe('TextMasker', () => {
 			// Should NOT have <br> for 3 consecutive paragraph templates
 			expect(result).not.toContain('<br>')
 
-			// All three templates should be present
-			const templateCount = (result.match(/\{\{pb\}\}/g) || []).length
-			expect(templateCount).toBe(3)
-
-			// Should be exactly the original
-			expect(result).toBe('{{pb}}{{pb}}{{pb}}')
+			// Should be exactly the original newlines
+			expect(result).toBe('\n\n\n\n\n\n')
 		})
 	})
 })

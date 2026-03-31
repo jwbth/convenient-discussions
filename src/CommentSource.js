@@ -6,6 +6,7 @@ import {
 	countOccurrences,
 	defined,
 	generatePageNamePattern,
+	removeNonLetters,
 } from './shared/utils-general'
 import {
 	brsToNewlines,
@@ -561,9 +562,10 @@ class CommentSource {
 
 				if (cd.config.paragraphTemplates.length) {
 					const paragraphTemplatesPattern = cd.config.paragraphTemplates
+						.map(removeNonLetters)
 						.map(generatePageNamePattern)
 						.join('|')
-					const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`
+					const pattern = `\\u0001\\d+_template_(?:${paragraphTemplatesPattern})\\u0002`
 					const regexp = new RegExp(pattern, 'g')
 					code = code.replace(
 						// Line regexp
