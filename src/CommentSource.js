@@ -952,7 +952,7 @@ class CommentSource {
 						.withText((code) =>
 							code.replace(
 								// No global flag - we only need the first occurrence
-								/\u0001\d+_template_(\d+)\u0002/,
+								new RegExp(`\\u0001\\d+_template(?:_[${cd.g.letterPattern}0-9_]+)?_(\\d+)\\u0002`),
 
 								(_m, n) =>
 									makeIndentationMarkers(
