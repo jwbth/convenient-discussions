@@ -153,7 +153,6 @@ const config = defineConfig(
 			'one-var': ['error', 'never'],
 			'no-promise-executor-return': 'error',
 			'no-constructor-return': 'error',
-			'default-param-last': 'error',
 			'object-shorthand': 'error',
 			'no-lonely-if': 'warn',
 			'func-style': [
@@ -206,6 +205,11 @@ const config = defineConfig(
 
 			// Overridden by @typescript-eslint/no-unused-vars
 			'no-unused-vars': 'off',
+
+			// Yells when it sees a parameter with `=` before a parameter without `=`, even though the
+			// latter can be optional, i.e. `undefined` by default, and we don't use `undefined` as a
+			// value for parameters with `=` per rule unicorn/no-useless-undefined.
+			'default-param-last': 'off',
 
 			// Impractical strict rules
 			'@typescript-eslint/no-explicit-any': 'off',

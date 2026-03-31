@@ -241,7 +241,7 @@ class NavPanel {
 	fill = () => {
 		if (!this.state) return
 
-		if (commentManager.getAll().some((comment) => comment.hasFlag('new')) ) {
+		if (commentManager.getAll().some((comment) => comment.hasFlag('new'))) {
 			this.updateRefreshButtonTooltip(0)
 			this.state.previousButton.show()
 			this.state.nextButton.show()

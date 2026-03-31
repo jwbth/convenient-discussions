@@ -48,7 +48,7 @@ declare global {
 					api?: mw.Api
 				}
 
-				interface EventMap extends OO.ui.TextInputWidget.EventMap {}
+				type EventMap = OO.ui.TextInputWidget.EventMap
 			}
 
 			interface TitleWidget extends OO.ui.Widget {
@@ -125,6 +125,7 @@ declare global {
 			abstract class TitleWidget extends OO.ui.Widget {
 				/**
 				 * Create an instance of mw.widgets.TitleWidget.
+				 *
 				 * @param config Configuration options
 				 */
 				constructor(config?: TitleWidget.ConfigOptions)
@@ -172,22 +173,22 @@ declare global {
 				/** Function for comparing two strings */
 				compare: (a: string, b: string) => number
 				/** Cache for section suggestions */
-				sectionsCache: { [key: string]: JQuery.Promise<any> }
+				sectionsCache: Record<string, JQuery.Promise<any>>
 
 				/** Static cache for interwiki prefixes promises */
-				static interwikiPrefixesPromiseCache: { [key: string]: JQuery.Promise<string[]> }
+				static interwikiPrefixesPromiseCache: Record<string, JQuery.Promise<string[]>>
 
 				/**
 				 * Get the current value of the search query.
 				 *
-				 * @return {string} Search query
+				 * @returns {string} Search query
 				 */
 				abstract getQueryValue(): string
 
 				/**
 				 * Get the namespace to prepend to titles in suggestions, if any.
 				 *
-				 * @return {number | null}
+				 * @returns {number | null}
 				 */
 				getNamespace(): number | null
 
@@ -195,14 +196,14 @@ declare global {
 				 * Set the namespace to prepend to titles in suggestions, if any.
 				 *
 				 * @param namespace {number | null} Namespace number
-				 * @return {void}
+				 * @returns {void}
 				 */
 				setNamespace(namespace: number | null): void
 
 				/**
 				 * Get interwiki prefixes promise.
 				 *
-				 * @return {JQuery.Promise<string[]>} Promise resolving with an array of interwiki prefixes.
+				 * @returns {JQuery.Promise<string[]>} Promise resolving with an array of interwiki prefixes.
 				 */
 				getInterwikiPrefixesPromise(): JQuery.Promise<string[]>
 
@@ -211,7 +212,7 @@ declare global {
 				 *
 				 * @param title {string} Title, extracted from the user input
 				 * @param fragmentQuery {string} Partial link fragment, from the user input
-				 * @return {JQuery.Promise<{ query: { pages: any[] } }>} Suggestions promise
+				 * @returns {JQuery.Promise<{ query: { pages: any[] } }>} Suggestions promise
 				 */
 				getSectionSuggestions(
 					title: string,
@@ -221,7 +222,7 @@ declare global {
 				/**
 				 * Get a promise which resolves with an API response for suggested links for the current query.
 				 *
-				 * @return {JQuery.Promise<any> & { abort(): void }} Suggestions promise
+				 * @returns {JQuery.Promise<any> & { abort(): void }} Suggestions promise
 				 */
 				getSuggestionsPromise(): JQuery.Promise<any> & { abort(): void }
 
@@ -230,7 +231,7 @@ declare global {
 				 *
 				 * @param apiResponse {object} The API result set to search in.
 				 * @param title {string} The page title to search for.
-				 * @return {boolean}
+				 * @returns {boolean}
 				 */
 				responseContainsNonExistingTitle(apiResponse: object, title: string): boolean
 
@@ -238,14 +239,14 @@ declare global {
 				 * Get API params for a given query.
 				 *
 				 * @param query {string} User query
-				 * @return {object} API params
+				 * @returns {object} API params
 				 */
 				getApiParams(query: string): object
 
 				/**
 				 * Get the API object for title requests.
 				 *
-				 * @return {mw.Api} MediaWiki API
+				 * @returns {mw.Api} MediaWiki API
 				 */
 				getApi(): mw.Api
 
@@ -253,7 +254,7 @@ declare global {
 				 * Get option widgets from the server response.
 				 *
 				 * @param data {object} Query result
-				 * @return {OO.ui.OptionWidget[]} Menu items
+				 * @returns {OO.ui.OptionWidget[]} Menu items
 				 */
 				getOptionsFromData(data: object): OO.ui.OptionWidget[]
 
@@ -261,7 +262,7 @@ declare global {
 				 * Create a menu option widget with specified data.
 				 *
 				 * @param data {object} Data for option widget
-				 * @return {OO.ui.MenuOptionWidget} Menu option widget
+				 * @returns {OO.ui.MenuOptionWidget} Menu option widget
 				 */
 				createOptionWidget(data: object): OO.ui.MenuOptionWidget
 
@@ -270,7 +271,7 @@ declare global {
 				 *
 				 * @param title {string} Title object
 				 * @param data {object} Page data
-				 * @return {object} Data for option widget
+				 * @returns {object} Data for option widget
 				 */
 				getOptionWidgetData(title: string, data: object): object
 
@@ -278,14 +279,14 @@ declare global {
 				 * Get title object corresponding to given value, or getQueryValue if not given.
 				 *
 				 * @param value {string} [Optional] Value to get a title for
-				 * @return {mw.Title | null} Title object, or null if value is invalid
+				 * @returns {mw.Title | null} Title object, or null if value is invalid
 				 */
 				getMWTitle(value?: string): mw.Title | null
 
 				/**
 				 * Check if the query is valid.
 				 *
-				 * @return {boolean} The query is valid
+				 * @returns {boolean} The query is valid
 				 */
 				isQueryValid(): boolean
 			}

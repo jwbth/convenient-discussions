@@ -80,7 +80,7 @@ export function formatDate(date, addTimezone = false) {
  * @param {string} [timezone] Use the specified time zone no matter user settings.
  * @returns {string}
  */
-export function formatDateNative(date, addTimezone = false, timezone = undefined) {
+export function formatDateNative(date, addTimezone = false, timezone) {
 	const timestampToolsUser = cd.g.timestampTools.user
 	let timezoneOffset
 	let year

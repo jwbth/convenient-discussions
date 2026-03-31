@@ -536,7 +536,7 @@ export function getHeadingLevel(node) {
  * @returns {node is TextLike}
  */
 export function isText(node) {
-	return Boolean(node && node.nodeType === Node.TEXT_NODE)
+	return Boolean(node?.nodeType === Node.TEXT_NODE)
 }
 
 /**
@@ -564,7 +564,7 @@ export function isText(node) {
  * @returns {node is ElementLike}
  */
 export function isElement(node) {
-	return Boolean(node && node.nodeType === Node.ELEMENT_NODE)
+	return Boolean(node?.nodeType === Node.ELEMENT_NODE)
 }
 
 /**
@@ -584,7 +584,7 @@ export function isNode(node) {
  * @returns {node is Element}
  */
 export function isNativeElement(node) {
-	return Boolean(node && node.nodeType === Node.ELEMENT_NODE && !isDomHandlerElement(node))
+	return Boolean(node?.nodeType === Node.ELEMENT_NODE && !isDomHandlerElement(node))
 }
 
 /**

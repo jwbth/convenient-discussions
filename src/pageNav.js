@@ -323,7 +323,7 @@ class PageNav {
 			.reverse()
 			.forEach((sectionInTree, level) => {
 				const $item =
-					this.$sectionWithBackLink && this.$sectionWithBackLink.data('section') === sectionInTree
+					this.$sectionWithBackLink?.data('section') === sectionInTree
 						? this.$sectionWithBackLink
 						: $('<li>')
 								.addClass(`cd-pageNav-item cd-pageNav-item-level-${level}`)

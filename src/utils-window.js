@@ -436,7 +436,7 @@ export function cleanUpPasteDom(element, containerElement) {
 			if (!href) return
 
 			const urlData = parseWikiUrl(href)
-			if (urlData && urlData.hostname === location.hostname) {
+			if (urlData?.hostname === location.hostname) {
 				el.setAttribute('href', mw.util.getUrl(urlData.pageName))
 			}
 		})
@@ -566,8 +566,7 @@ export function getRangeContents(start, end, rootElement) {
 		while (
 			(parent = end.parentElement) &&
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			parent &&
-			parent.lastChild === end &&
+			parent?.lastChild === end &&
 			treeWalker.currentNode.contains(parent)
 		) {
 			end = parent

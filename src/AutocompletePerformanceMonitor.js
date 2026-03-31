@@ -107,7 +107,7 @@ class AutocompletePerformanceMonitor {
 		}
 
 		return {
-			end: (resultCount = 0, cacheHit = false) => {
+			end: (resultCount, cacheHit) => {
 				this.endOperation(context, resultCount, cacheHit)
 			},
 		}

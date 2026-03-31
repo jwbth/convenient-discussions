@@ -90,7 +90,7 @@ export async function runBasicLoadingTest(page, url, options = {}) {
 
 	// Wait for isRunning to become true
 	await page.waitForFunction(
-		() => window.convenientDiscussions && window.convenientDiscussions.isRunning === true,
+		() => window.convenientDiscussions?.isRunning === true,
 		{ timeout: 10_000 },
 	)
 	console.log('✅ cd.isRunning is true')

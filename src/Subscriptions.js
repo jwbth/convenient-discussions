@@ -111,7 +111,7 @@ class Subscriptions extends EventEmitter {
 	 * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
 	 *   time).
 	 */
-	async subscribe(subscribeId, id, quiet = false, unsubscribeHeadline = undefined) {
+	async subscribe(subscribeId, id, quiet = false, unsubscribeHeadline) {
 		await this.actuallySubscribe(subscribeId, id, unsubscribeHeadline)
 
 		if (!quiet) {

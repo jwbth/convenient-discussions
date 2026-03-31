@@ -291,7 +291,7 @@ export class SectionManager {
 	 * @param {number} [tocOffset]
 	 * @returns {number | undefined}
 	 */
-	getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset = undefined) {
+	getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset) {
 		if (scrollY <= controller.getBodyScrollPaddingTop()) return
 
 		return this.items.reduce((result, section) => {

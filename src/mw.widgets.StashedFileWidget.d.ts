@@ -50,7 +50,7 @@ declare global {
 				/**
 				 * Returns the current filekey.
 				 *
-				 * @return {string|null} The filekey.
+				 * @returns {string|null} The filekey.
 				 */
 				getValue(): string | null
 
@@ -73,7 +73,7 @@ declare global {
 				 * On success, the promise is resolved with a tuple containing the thumbnail URL and MIME type.
 				 * If no filekey is present, the promise is rejected with the string "No filekey".
 				 *
-				 * @return {JQuery.Promise<[thumbUrl: string, mime?: string]>} A promise that resolves with the thumbnail URL and MIME type.
+				 * @returns {JQuery.Promise<[thumbUrl: string, mime?: string]>} A promise that resolves with the thumbnail URL and MIME type.
 				 */
 				loadAndGetImageUrl(): JQuery.Promise<[string, string?]>
 			}

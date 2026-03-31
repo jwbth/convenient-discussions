@@ -38,11 +38,11 @@ import type CodeMirrorPreferences from '../../mediawiki-extensions-CodeMirror/re
  *
  * ## Lifecycle
  *
- * * {@link CodeMirror#initialize initialize}
- * * {@link CodeMirror#activate activate}
- * * {@link CodeMirror#toggle toggle}
- * * {@link CodeMirror#deactivate deactivate}
- * * {@link CodeMirror#destroy destroy}
+ * - {@link CodeMirror#initialize initialize}
+ * - {@link CodeMirror#activate activate}
+ * - {@link CodeMirror#toggle toggle}
+ * - {@link CodeMirror#deactivate deactivate}
+ * - {@link CodeMirror#destroy destroy}
  */
 declare class CodeMirror {
 	/**

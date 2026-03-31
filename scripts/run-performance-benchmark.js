@@ -17,19 +17,19 @@ async function main() {
 		console.log('\n✅ Benchmarks completed successfully!')
 
 		// Check if we have previous results to compare against
-		const fs = await import('fs')
-		const path = await import('path')
+		const fs = await import('node:fs')
+		const path = await import('node:path')
 
 		const resultsFile = 'benchmark-results.json'
 		if (fs.existsSync(resultsFile)) {
 			const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'))
 			const thresholdsPassed = checkPerformanceThresholds(results.results)
 
-			if (!thresholdsPassed) {
+			if (thresholdsPassed) {
+				console.log('\n✅ All performance thresholds met!')
+			} else {
 				console.log('\n⚠️  Some performance thresholds were not met. Consider optimizing the code.')
 				process.exit(1)
-			} else {
-				console.log('\n✅ All performance thresholds met!')
 			}
 		}
 	} catch (error) {
@@ -39,8 +39,8 @@ async function main() {
 }
 
 // Handle command line arguments
-const args = process.argv.slice(2)
-if (args.includes('--help') || args.includes('-h')) {
+const args = new Set(process.argv.slice(2))
+if (args.has('--help') || args.has('-h')) {
 	console.log(`
 Usage: node scripts/run-performance-benchmark.js [options]
 

@@ -49,7 +49,7 @@ test.describe('Reply to comment – compact mode (CompactComment / CompactCommen
 
 		// Wait for the overlay to become visible.
 		const overlay = page.locator(`.cd-comment-overlay[data-cd-comment-index="${commentIndex}"]`)
-		await expect(overlay).toBeVisible({ timeout: 5_000 })
+		await expect(overlay).toBeVisible({ timeout: 5000 })
 
 		// Click the "Reply" button via its element reference — avoids matching against
 		// the localized label text.

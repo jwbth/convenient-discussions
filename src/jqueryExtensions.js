@@ -47,11 +47,7 @@ export default {
 	 * @memberof JQuery.fn
 	 * @this {JQuery}
 	 */
-	cdScrollTo(
-		alignment = 'top',
-		smooth = true,
-		/** @type {() => void | undefined} */ callback = undefined,
-	) {
+	cdScrollTo(alignment = 'top', smooth = true, /** @type {() => void | undefined} */ callback) {
 		const defaultScrollPaddingTop = 7
 		const $elements = this.cdRemoveNonElementNodes()
 
@@ -179,7 +175,7 @@ export default {
 	 * @memberof JQuery.fn
 	 * @this {JQuery}
 	 */
-	cdScrollIntoView(alignment = 'top', smooth = true, callback = undefined) {
+	cdScrollIntoView(alignment = 'top', smooth = true, callback) {
 		if (this.cdIsInViewport()) {
 			callback?.()
 		} else if (callback) {

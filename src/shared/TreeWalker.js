@@ -61,7 +61,7 @@ class TreeWalker {
 	 *   to have `currentNode` never be `null` to simplify type checking.)
 	 * @throws {Error}
 	 */
-	constructor(root, acceptNode, elementsOnly = false, startNode = undefined) {
+	constructor(root, acceptNode, elementsOnly = false, startNode) {
 		this.acceptNode = acceptNode || /** @type {AcceptNode} */ (elementsOnly ? isElement : isNode)
 
 		this.root = root

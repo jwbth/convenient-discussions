@@ -21,7 +21,7 @@ declare global {
 			/** The creation date for the upload. */
 			date?: Date
 			/** Array of description objects. Each has a language code and text. */
-			descriptions: { language: string; text: string }[]
+			descriptions: { language: string, text: string }[]
 			/** Array of category names for the upload. */
 			categories: string[]
 			/** Configuration for uploads (loaded from config.json or via loadConfig). */

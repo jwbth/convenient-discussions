@@ -1,5 +1,6 @@
-import { Document as DomHandlerDocument, Node as DomHandlerNode } from 'domhandler'
-import { ConvenientDiscussionsWorker } from '../shared/cd'
+import type { Document as DomHandlerDocument, Node as DomHandlerNode } from 'domhandler'
+
+import type { ConvenientDiscussionsWorker } from '../shared/cd'
 
 declare global {
 	interface WorkerGlobalScope {

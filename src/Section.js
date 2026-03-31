@@ -641,8 +641,7 @@ class Section extends SectionSkeleton {
 			this.isActionable &&
 			// Is the first chunk closed
 			!(
-				this.commentsInFirstChunk[0] &&
-				this.commentsInFirstChunk[0].level === 0 &&
+				this.commentsInFirstChunk[0]?.level === 0 &&
 				this.commentsInFirstChunk.every((comment) => !comment.isActionable)
 			) &&
 			// Is the first chunk empty and precedes a subsection
@@ -675,8 +674,7 @@ class Section extends SectionSkeleton {
 			this.level <= 5 &&
 			// Is closed
 			!(
-				this.comments[0] &&
-				this.comments[0].level === 0 &&
+				this.comments[0]?.level === 0 &&
 				this.comments.every((comment) => !comment.isActionable)
 			) &&
 			// While the "Reply" button is added to the end of the first chunk, the "Add subsection"

@@ -149,14 +149,10 @@ const convenientDiscussionsWindow = {
 			return mwStringsCache[name]
 		}
 
-		let message
-		if (/^(discussiontools|visualeditor)-/.test(name)) {
-			message = mw.messages.exists(name)
-				? mw.message(name, ...params).parse()
-				: cd.sParse(name.slice(name.indexOf('-') + 1))
-		} else {
-			message = mw.message(name, ...params).parse()
-		}
+		const message =
+			/^(discussiontools|visualeditor)-/.test(name) && !mw.messages.exists(name)
+				? cd.sParse(name.slice(name.indexOf('-') + 1))
+				: mw.message(name, ...params).parse()
 		if (!params.length && !message.startsWith('⧼')) {
 			// Use cache since in some places a message could be requested very frequently. Don't cache
 			// missing messages (they can come from dialogs opened with a network error, like

@@ -49,14 +49,14 @@ declare global {
 
 				/**
 				 * @override
-				 * @return {this} The widget instance.
+				 * @returns {this} The widget instance.
 				 */
 				focus(): this
 
 				/**
 				 * @override
 				 * @param {string} value Input value.
-				 * @return {string} Cleaned value.
+				 * @returns {string} Cleaned value.
 				 */
 				cleanUpValue(value: string): string
 			}
@@ -81,7 +81,7 @@ declare global {
 					validate?: RegExp | string | ((value: string) => boolean | JQuery.Promise<boolean>)
 				}
 
-				interface EventMap extends TitleWidget.EventMap {}
+				type EventMap = TitleWidget.EventMap
 			}
 
 			interface TitleInputWidget
