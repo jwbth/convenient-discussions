@@ -139,7 +139,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	processAndMaskSensitiveCode() {
-		return /** @type {this} */ (this.maskSensitiveCode((code) => this.processCode(code, true)))
+		return this.maskSensitiveCode((code) => this.processCode(code, true))
 	}
 
 	/**

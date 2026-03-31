@@ -523,15 +523,17 @@ class CommentSource {
 				code = brsToNewlines(code, '\u0001\n')
 					// Templates occupying a whole line with <br> at the end get a special treatment.
 					.replace(
-						/^((?:\u0001\d+_template[^\u0001\u0002]*\u0002) *)(?=\u0001$)/gm,
+						/^((?:\u0001\d+_template.*?\u0002) *)(?=\u0001$)/gm,
 						/** @type {ReplaceCallback} */ (_s, m1) => m1 + '<br>',
 					)
 
-					// Two templates in a row is likely a paragraph template + other template. This is a
-					// workaround; may need to look specifically for paragraph templates and mark them as
-					// such. Don't match if there are 3+ templates in a row (e.g. all paragraph templates).
+					// Two templates in a row is likely a paragraph template + another template. FIXME: This
+					// is a workaround; may need to look specifically for paragraph templates and mark them as
+					// such. Don't match if there are 3+ templates in a row (e.g. paragraph template → another
+					// template → paragraph template, like in
+					// https://en.wikipedia.org/wiki/Special:GoToComment/c-Aaron_Liu-20250403194400-AMCPhoenix-20250304083600).
 					.replace(
-						/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001(?!\d+_template))/g,
+						/((?:\u0001\d+_template.*?\u0002){2} *)(?=\u0001(?!\d+_template))/g,
 						/** @type {ReplaceCallback} */ (s, m1) =>
 							cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
 					)
@@ -949,7 +951,9 @@ class CommentSource {
 						.maskTemplatesRecursively(undefined, true)
 						.withText((code) =>
 							code.replace(
-								/\u0001\d+_template_(\d+)\u0002/, // No global flag - we only need the first occurrence
+								// No global flag - we only need the first occurrence
+								/\u0001\d+_template_(\d+)\u0002/,
+
 								(_m, n) =>
 									makeIndentationMarkers(
 										/** @type {RegExpMatchArray} */ (match)[1].length,

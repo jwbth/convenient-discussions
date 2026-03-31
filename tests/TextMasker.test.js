@@ -103,7 +103,7 @@ describe('TextMasker', () => {
 			// Using lookahead to not consume the \u0001 marker
 			// AND negative lookahead to NOT match when there are 3+ templates
 			const transformedText = maskedText.replace(
-				/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001(?!\d+_template))/g,
+				/((?:\u0001\d+_template.*?\u0002){2} *)(?=\u0001(?!\d+_template))/g,
 				(s, m1) => m1 + '<br>',
 			)
 
@@ -130,13 +130,9 @@ describe('TextMasker', () => {
 
 			// Apply the transformations from toInput() with the fix
 			text = text
-				.replace(
-					/^((?:\u0001\d+_template[^\u0001\u0002]*\u0002) *)(?=\u0001$)/gm,
-					(_s, m1) => m1 + '<br>',
-				)
-				.replace(
-					/((?:\u0001\d+_template[^\u0001\u0002]*\u0002){2} *)(?=\u0001(?!\d+_template))/g,
-					(s, m1) => (cd.config.paragraphTemplates.length ? m1 + '<br>' : s),
+				.replace(/^((?:\u0001\d+_template.*?\u0002) *)(?=\u0001$)/gm, (_s, m1) => m1 + '<br>')
+				.replace(/((?:\u0001\d+_template.*?\u0002){2} *)(?=\u0001(?!\d+_template))/g, (s, m1) =>
+					cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
 				)
 
 			// Unmask

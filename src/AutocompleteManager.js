@@ -266,7 +266,8 @@ class AutocompleteManager {
 	 * @returns {import('./tribute/Tribute').InsertData | string}
 	 */
 	onOptionChoose = (option) => {
-		if (!option?.original.autocomplete) {
+		const autocomplete = option?.original.autocomplete
+		if (!autocomplete) {
 			return ''
 		}
 
@@ -279,12 +280,15 @@ class AutocompleteManager {
 		let selectedText
 		if (
 			savedSelection &&
-			savedSelection.start === option.original.autocomplete.manager?.tribute.current.triggerPos
+			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos
 		) {
 			selectedText = savedSelection.selectedText
 		}
 
-		return option.original.autocomplete.getInsertionFromEntry(option.original.entry, selectedText)
+		return autocomplete.getInsertionFromEntry(
+			/** @type {NonNullable<typeof option>} */ (option).original.entry,
+			selectedText,
+		)
 	}
 
 	/**
