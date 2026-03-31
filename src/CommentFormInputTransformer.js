@@ -322,7 +322,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {string} code
 	 */
 	processNewlines(code, isInTemplate = false) {
-		const entireLineRegexp = new RegExp(/^\u0001\d+_(block|template)\u0002 *$/)
+		const entireLineRegexp = new RegExp(/^\u0001\d+_(block|template[^\u0002]*)\u0002 *$/)
 		const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/
 		const fileRegexp = new RegExp('^' + CommentFormInputTransformer.filePatternEnd, 'i')
 

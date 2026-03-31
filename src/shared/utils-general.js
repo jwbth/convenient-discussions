@@ -182,6 +182,16 @@ export function removeDoubleSpaces(string) {
 }
 
 /**
+ * Remove everything but letters from a string.
+ *
+ * @param {string} string
+ * @returns {string}
+ */
+export function removeNonLetters(string) {
+	return string.replace(new RegExp(`[^${cd.g.letterPattern}]`, 'g'), '')
+}
+
+/**
  * Like
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charAt String#charAt},
  * but returns the pair of UTF-16 surrogates for characters outside of BMP.

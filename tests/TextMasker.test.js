@@ -22,7 +22,7 @@ describe('TextMasker', () => {
 			masker.maskTemplatesRecursively()
 			const text = masker.getText()
 
-			expect(text).toMatch(/Text \u0001\d+_template\u0002 more text/)
+			expect(text).toMatch(/Text \u0001\d+_template[^\u0002]*\u0002 more text/)
 		})
 
 		test('should mask nested templates', () => {
@@ -30,7 +30,7 @@ describe('TextMasker', () => {
 			masker.maskTemplatesRecursively()
 			const text = masker.getText()
 
-			expect(text).toMatch(/\u0001\d+_template\u0002/)
+			expect(text).toMatch(/\u0001\d+_template[^\u0002]*\u0002/)
 		})
 
 		test('should mask three consecutive templates', () => {
@@ -39,7 +39,7 @@ describe('TextMasker', () => {
 			const text = masker.getText()
 
 			// Should have three separate markers
-			const markers = text.match(/\u0001\d+_template\u0002/g)
+			const markers = text.match(/\u0001\d+_template[^\u0002]*\u0002/g)
 			expect(markers).toHaveLength(3)
 		})
 
@@ -96,7 +96,7 @@ describe('TextMasker', () => {
 			const maskedText = masker.getText()
 
 			// Verify we have three markers
-			const markers = maskedText.match(/\u0001\d+_template\u0002/g)
+			const markers = maskedText.match(/\u0001\d+_template[^\u0002]*\u0002/g)
 			expect(markers).toHaveLength(3)
 
 			// Simulate the regex from CommentSource.toInput() with the fix
