@@ -1,5 +1,5 @@
+// Auto-pick up .env
 import 'dotenv/config'
-// @ts-check
 
 import fs from 'node:fs'
 import path from 'node:path'
