@@ -1,0 +1,14 @@
+{
+	"extends": "../../jsconfig-base.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"target": "es2022",
+		"moduleResolution": "bundler",
+		"lib": ["ES2023", "WebWorker"],
+
+		// Something drags Node's types in (e.g. setTimeout starts to return NodeJS.Timeout), no idea
+		// what. Reset the types to empty to avoid this.
+		"types": []
+	},
+	"include": ["**/*", "../shared/**/*"]
+}

@@ -2,30 +2,34 @@
 
 // Override `.skin-vector .cd-parsed dd`
 .cd-replyButtonWrapper.cd-replyButtonWrapper.cd-replyButtonWrapper {
-  margin-block: 0.5em;
+	margin-block: 0.5em;
+
+	.cd-reformattedComments & {
+		margin-block: 0.75em;
+	}
 }
 
 // Don't show a number in front of the button in a numbered list if there is no comment form inside
 // the list item.
 ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
-  list-style-type: none;
+	list-style-type: none;
 }
 
 ol .cd-section-button {
-  margin-top: -2px;
+	margin-top: -2px;
 }
 
 // Override the default styles to make the section menu appear correctly on RTL wikis with LTR
 // interface and vice versa, when the .mw-editsection block stretches across multiple lines. TODO:
 // do it upstream?
 .mw-editsection::before {
-  .ltr.sitedir-rtl & {
-    content: '\200B\200E';
-  }
+	.ltr.sitedir-rtl & {
+		content: '\200B\200E';
+	}
 
-  .rtl.sitedir-ltr & {
-    content: '\200B\200F';
-  }
+	.rtl.sitedir-ltr & {
+		content: '\200B\200F';
+	}
 }
 
 // Fix MediaWiki. `margin-inline` seems to be inapplicable here, because we don't have the right
@@ -33,159 +37,163 @@ ol .cd-section-button {
 // upstream. This already exists in VisualEditor.
 .ltr.sitedir-rtl,
 .rtl.sitedir-ltr {
-  .mw-editsection-bracket:first-of-type {
-    margin-right: 0.25em;
-    margin-left: 0;
-  }
+	.mw-editsection-bracket:first-of-type {
+		margin-right: 0.25em;
+		margin-left: 0;
+	}
 
-  .mw-editsection-bracket:last-of-type {
-    margin-left: 0.25em;
-    margin-right: 0;
-  }
+	.mw-editsection-bracket:last-of-type {
+		margin-left: 0.25em;
+		margin-right: 0;
+	}
 }
 
 .cd-dialog-moveSection {
-  &-code {
-    margin: 1em 0;
+	&-code {
+		margin: 1em 0;
 
-    &-note {
-      font-size: 95%;
-    }
-  }
+		&-note {
+			font-size: 95%;
+		}
+	}
 }
 
 .cd-section-bar {
-  margin: 0.25em 0 0.75em;
-  display: flex;
-  flex-wrap: wrap;
-  direction: var(--cd-direction-user);
+	margin: 0.25em 0 0.75em;
+	display: flex;
+	flex-wrap: wrap;
+	direction: var(--cd-direction-user);
 
-  .ext-discussiontools-visualenhancements-enabled .ext-discussiontools-init-section + & {
-    margin-top: -10px;
-  }
+	.ext-discussiontools-visualenhancements-enabled
+		.ext-discussiontools-init-section
+		+ & {
+		margin-top: -10px;
+	}
 
-  &-item {
-    display: block;
+	&-item {
+		display: block;
 
-    // We add nearly the same properties as OOUI buttons in the actions block have to make sure the
-    // elements are vertically aligned.
-    box-sizing: border-box;
-    min-height: 30px;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid transparent;
-    color: var(--color-subtle, #54595d);
+		// We add nearly the same properties as OOUI buttons in the actions block have to make sure the
+		// elements are vertically aligned.
+		box-sizing: border-box;
+		min-height: 30px;
+		border-top: 1px solid transparent;
+		border-bottom: 1px solid transparent;
+		color: var(--color-subtle, #54595d);
 
-    // Like the section buttons on the right - to have the metadata aligned with them
-    padding: 5px 0;
-    line-height: 1.42857143em;
+		// Like the section buttons on the right - to have the metadata aligned with them
+		padding: 5px 0;
+		line-height: 1.4285714em;
 
-    white-space: nowrap;
+		white-space: nowrap;
 
-    // To have "+7 new" rendered correctly in English on RTL sites
-    unicode-bidi: plaintext;
+		// To have "+7 new" rendered correctly in English on RTL sites
+		unicode-bidi: plaintext;
 
-    &-authorCount-innerWrapper {
-      cursor: default;
-    }
+		&-authorCount-innerWrapper {
+			cursor: default;
+		}
 
-    margin-inline: 0 2em;
+		margin-inline: 0 2em;
 
-    &:last-child {
-      margin-inline-end: 0;
-    }
-  }
+		&:last-child {
+			margin-inline-end: 0;
+		}
+	}
 
-  &-button {
-    > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon,
-    .oo-ui-optionWidget > .oo-ui-iconElement-icon.oo-ui-iconElement-icon {
-      min-width: 16px;
-      min-height: 16px;
-    }
+	&-button {
+		> .oo-ui-buttonElement-button > .oo-ui-iconElement-icon,
+		.oo-ui-optionWidget > .oo-ui-iconElement-icon.oo-ui-iconElement-icon {
+			min-width: 16px;
+			min-height: 16px;
+		}
 
-    &.cd-section-bar-button > .oo-ui-buttonElement-button {
-      min-width: 30px;
-      min-height: 30px;
-      font-weight: normal;
+		&.cd-section-bar-button > .oo-ui-buttonElement-button {
+			min-width: 30px;
+			min-height: 30px;
 
-      // For legacy subscriptions in Vector
-      .skin-vector h1 & {
-        font-family: sans-serif;
-      }
-    }
-  }
-
-  &-moremenu > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon.oo-ui-iconElement-icon {
-    background-size: 16px 16px;
-  }
+			// For legacy subscriptions in Vector
+			.skin-vector h1 & {
+				font-family: sans-serif;
+			}
+		}
+	}
 }
 
 .cd-section-metadata {
-  display: flex;
-  flex-wrap: wrap;
-  direction: var(--cd-direction-user);
+	display: flex;
+	flex-wrap: wrap;
+	direction: var(--cd-direction-user);
 }
 
 .cd-popup-authors {
-  font-size: 0.8125rem;
+	font-size: 0.9285714em;
 
-  > .oo-ui-popupWidget-popup > .oo-ui-popupWidget-body {
-    // Need to override the `style` attribute
-    width: max-content !important;
-    max-width: 30em !important;
+	> .oo-ui-popupWidget-popup > .oo-ui-popupWidget-body {
+		// Override the `style` attribute
+		width: max-content !important;
+		max-width: 30em !important;
 
-    // Make sure the buttons fit
-    min-width: min-content;
-  }
+		// Make sure the buttons fit
+		min-width: min-content;
+	}
 
-  &-sort {
-    display: flex;
-    justify-content: center;
-    margin: 0.5em 0;
-  }
+	&-sort {
+		display: flex;
+		justify-content: center;
+		margin: 0.5em 0;
+	}
 }
-
 
 .cd-section-actions {
-  white-space: nowrap;
+	white-space: nowrap;
 }
 
-.cd-topic-actions {
-  margin-inline-start: auto;
-  margin-inline-end: -0.4615385em;
-  padding-inline-start: 1.5em;
+.cd-section-actions-block {
+	margin-inline-start: auto;
+	margin-inline-end: -0.4615385em;
+	padding-inline-start: 1.5em;
 }
 
 // `margin-inline` and `padding-inline` are inapplicable here.
-.cd-subsection-actions {
-  font-size: var(--cd-content-metadata-font-size);
-  font-weight: normal;
+.cd-section-actions-inline {
+	font-size: var(--cd-content-metadata-font-size);
+	font-weight: normal;
 
-  .mw-content-ltr &,
-  .mw-content-rtl .mw-content-ltr & {
-    margin-left: auto;
-    margin-right: -0.4615385em;
-    padding-left: 1.5em;
-  }
+	.mw-content-ltr &,
+	.mw-content-rtl .mw-content-ltr & {
+		margin-left: auto;
+		margin-right: -0.4615385em;
+		padding-left: 1.5em;
+	}
 
-  .mw-content-rtl &,
-  .mw-content-ltr .mw-content-rtl & {
-    margin-left: -0.4615385em;
-    margin-right: auto;
-    padding-right: 1.5em;
-  }
+	.mw-content-rtl &,
+	.mw-content-ltr .mw-content-rtl & {
+		margin-left: -0.4615385em;
+		margin-right: auto;
+		padding-right: 1.5em;
+	}
 }
 
-.cd-subsection-heading {
-  display: flex;
-  align-items: baseline;
-  overflow: unset;
+.cd-section-actions-heading {
+	display: flex;
+	align-items: baseline;
+	overflow: unset;
 }
 
 .cd-section-hidden {
-  visibility: hidden;
+	visibility: hidden;
 }
 
-.ext-discussiontools-visualenhancements-enabled .cd-commentLayersContainer + .ext-discussiontools-init-section {
-  margin-top: 0;
-  border-top: 0;
+.ext-discussiontools-visualenhancements-enabled .cd-commentLayersContainer {
+	+ .ext-discussiontools-init-section,
+	+ meta + .ext-discussiontools-init-section {
+		margin-top: 0;
+		border-top: 0;
+	}
+}
+
+// "Add to subsection" buttons
+.cd-section-button + .cd-section-button {
+	margin-top: 0.5em;
 }

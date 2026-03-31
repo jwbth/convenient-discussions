@@ -1,0 +1,34 @@
+diff --git a/node_modules/types-mediawiki/mw/config.d.ts b/node_modules/types-mediawiki/mw/config.d.ts
+index c28faf2..2b75a89 100644
+--- a/node_modules/types-mediawiki/mw/config.d.ts
++++ b/node_modules/types-mediawiki/mw/config.d.ts
+@@ -360,7 +360,29 @@ declare global {
+              * @see https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Interface/JavaScript#wgDiffNewId
+              */
+             wgDiffNewId?: number;
++
++            wgDiscussionToolsPageThreads?: DiscussionToolsPageThread[];
+         }>;
++
++        export interface DiscussionToolsPageThread {
++            type: 'heading' | 'comment';
++            level: number;
++            id: string;
++            replies: Reply[];
++        }
++
++        export interface DiscussionToolsHeading extends DiscussionToolsPageThread {
++            type: 'heading';
++            headingLevel: number;
++            name: string;
++        }
++
++        export interface DiscussionToolsReply extends DiscussionToolsPageThread {
++            type: 'comment';
++            timestamp: string;
++            author: string;
++            displayName?: string;
++        }
+     }
+ }
+ 

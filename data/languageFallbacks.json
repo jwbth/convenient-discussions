@@ -1,449 +1,1198 @@
 {
-  "aae": ["it"],
-  "ab": ["ru"],
-  "abs": ["id"],
-  "ace": ["id"],
+  "aae": [
+    "it"
+  ],
+  "ab": [
+    "ru"
+  ],
+  "abr": [
+    "tw",
+    "fr"
+  ],
+  "abs": [
+    "id"
+  ],
+  "ace": [
+    "id"
+  ],
   "acf": [],
-  "acm": ["ar"],
-  "ady": ["ady-cyrl"],
+  "acm": [
+    "ar"
+  ],
+  "ady": [
+    "ady-cyrl"
+  ],
   "ady-cyrl": [],
-  "aeb": ["aeb-arab"],
-  "aeb-arab": ["ar"],
+  "aeb": [
+    "aeb-arab"
+  ],
+  "aeb-arab": [
+    "ar"
+  ],
   "af": [],
   "aig": [],
   "aii": [],
-  "aln": ["sq"],
-  "alt": ["ru"],
+  "aln": [
+    "sq"
+  ],
+  "alt": [
+    "ru"
+  ],
   "am": [],
-  "ami": ["zh-tw", "zh-hant", "zh", "zh-hans"],
-  "an": ["es"],
+  "ami": [
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "an": [
+    "es"
+  ],
   "ang": [],
   "ann": [],
-  "anp": ["hi"],
-  "apc": ["ar"],
+  "anp": [
+    "hi"
+  ],
+  "apc": [
+    "ar"
+  ],
   "ar": [],
   "arc": [],
-  "arn": ["es"],
-  "arq": ["ar"],
-  "ary": ["ar"],
-  "arz": ["ar"],
+  "arn": [
+    "es"
+  ],
+  "arq": [
+    "ar"
+  ],
+  "ary": [
+    "ar"
+  ],
+  "arz": [
+    "ar"
+  ],
   "as": [],
-  "ast": ["es"],
-  "atj": ["fr"],
-  "av": ["ru"],
-  "avk": ["fr", "es", "ru"],
-  "awa": ["hi"],
-  "ay": ["es"],
+  "ast": [],
+  "atj": [
+    "fr"
+  ],
+  "av": [
+    "ru"
+  ],
+  "avk": [
+    "fr",
+    "es",
+    "ru"
+  ],
+  "awa": [
+    "hi"
+  ],
+  "ay": [
+    "es"
+  ],
   "ayh": [],
   "az": [],
-  "azb": ["fa"],
-  "ba": ["ru"],
-  "ban": ["id"],
-  "ban-bali": ["ban"],
-  "bar": ["de"],
-  "bbc": ["bbc-latn"],
-  "bbc-latn": ["id"],
-  "bcc": ["fa"],
-  "bci": ["fr"],
+  "azb": [
+    "fa"
+  ],
+  "ba": [
+    "ru"
+  ],
+  "ban": [
+    "id"
+  ],
+  "ban-bali": [
+    "ban"
+  ],
+  "bar": [
+    "de"
+  ],
+  "bbc": [
+    "bbc-latn"
+  ],
+  "bbc-latn": [
+    "id"
+  ],
+  "bcc": [
+    "fa"
+  ],
+  "bci": [
+    "fr"
+  ],
   "bcl": [],
-  "bdr": ["ms"],
+  "bdr": [
+    "ms"
+  ],
   "be": [],
-  "bew": ["id"],
-  "be-tarask": ["be"],
+  "bew": [
+    "id"
+  ],
+  "be-tarask": [
+    "be"
+  ],
   "bft": [],
   "bg": [],
   "bgc": [],
   "bgc-arab": [],
-  "bgn": ["fa"],
-  "bh": ["bho"],
+  "bgn": [
+    "fa"
+  ],
+  "bh": [
+    "bho"
+  ],
   "bho": [],
-  "bi": ["en"],
-  "bjn": ["id"],
-  "blk": ["my"],
-  "bm": ["fr"],
+  "bi": [
+    "en"
+  ],
+  "bjn": [
+    "id"
+  ],
+  "blk": [
+    "my"
+  ],
+  "bm": [
+    "fr"
+  ],
   "bn": [],
   "bo": [],
-  "bpy": ["bn"],
-  "bqi": ["fa"],
+  "bol": [],
+  "bpy": [
+    "bn"
+  ],
+  "bqi": [
+    "fa"
+  ],
   "br": [],
   "bs": [],
-  "btm": ["id"],
-  "bug": ["id"],
-  "bug-bugi": ["id"],
-  "bxr": ["ru"],
-  "ca": ["oc"],
-  "cbk-zam": ["es"],
+  "btm": [
+    "id"
+  ],
+  "bug": [
+    "id"
+  ],
+  "bug-bugi": [
+    "id"
+  ],
+  "bxr": [
+    "ru"
+  ],
+  "ca": [
+    "oc"
+  ],
+  "cbk-zam": [
+    "es"
+  ],
   "ccp": [],
-  "cdo": ["cdo-latn", "cdo-hant", "nan-hant", "zh-hant", "zh", "zh-hans"],
-  "cdo-hant": ["cdo", "cdo-latn", "nan-hant", "zh-hant", "zh", "zh-hans"],
-  "cdo-latn": ["cdo", "cdo-hant", "nan-hant", "zh-hant", "zh", "zh-hans"],
-  "ce": ["ru"],
+  "cdo": [
+    "cdo-latn",
+    "cdo-hant",
+    "nan-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "cdo-hant": [
+    "cdo",
+    "cdo-latn",
+    "nan-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "cdo-latn": [
+    "cdo",
+    "cdo-hant",
+    "nan-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "ce": [
+    "ru"
+  ],
   "ceb": [],
   "ch": [],
   "ckb": [],
-  "co": ["it"],
+  "co": [
+    "it"
+  ],
   "cop": [],
-  "cpx": ["cpx-hant", "cpx-hans", "cpx-latn", "cdo", "zh-hant", "zh", "zh-hans"],
-  "cpx-hans": ["cpx", "cpx-hant", "cpx-latn", "cdo", "zh-hans", "zh", "zh-hant"],
-  "cpx-hant": ["cpx", "cpx-hans", "cpx-latn", "cdo", "zh-hant", "zh", "zh-hans"],
-  "crh": ["crh-latn", "tr"],
-  "crh-cyrl": ["tr"],
-  "crh-latn": ["tr"],
+  "cpx": [
+    "cpx-hant",
+    "cpx-hans",
+    "cpx-latn",
+    "cdo",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "cpx-hans": [
+    "cpx",
+    "cpx-hant",
+    "cpx-latn",
+    "cdo",
+    "zh-hans",
+    "zh",
+    "zh-hant"
+  ],
+  "cpx-hant": [
+    "cpx",
+    "cpx-hans",
+    "cpx-latn",
+    "cdo",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "crh": [
+    "crh-latn",
+    "tr"
+  ],
+  "crh-cyrl": [
+    "tr"
+  ],
+  "crh-latn": [
+    "tr"
+  ],
   "crh-ro": [],
-  "cs": ["sk"],
-  "csb": ["pl"],
+  "cs": [
+    "sk"
+  ],
+  "csb": [
+    "pl"
+  ],
   "cu": [],
-  "cv": ["ru"],
+  "cv": [
+    "ru"
+  ],
   "cy": [],
   "da": [],
   "dag": [],
   "de": [],
-  "de-at": ["de"],
-  "de-ch": ["de"],
-  "de-formal": ["de"],
+  "de-at": [
+    "de"
+  ],
+  "de-ch": [
+    "de"
+  ],
+  "de-formal": [
+    "de"
+  ],
   "dga": [],
   "din": [],
   "diq": [],
-  "dlg": ["ru"],
-  "dsb": ["hsb", "de"],
-  "dtp": ["ms"],
-  "dty": ["ne"],
-  "dua": ["fr"],
+  "dlg": [
+    "ru"
+  ],
+  "dsb": [
+    "hsb",
+    "de"
+  ],
+  "dtp": [
+    "ms"
+  ],
+  "dty": [
+    "ne"
+  ],
+  "dua": [
+    "fr"
+  ],
   "dv": [],
   "dz": [],
   "ee": [],
   "efi": [],
-  "egl": ["it"],
+  "egl": [
+    "it"
+  ],
   "el": [],
-  "eml": ["it"],
+  "eml": [
+    "it"
+  ],
   "en": [],
-  "en-ca": ["en"],
-  "en-gb": ["en"],
+  "en-ca": [
+    "en"
+  ],
+  "en-gb": [
+    "en"
+  ],
   "en-rtl": [],
   "eo": [],
   "es": [],
-  "es-formal": ["es"],
+  "es-formal": [
+    "es"
+  ],
   "et": [],
   "eu": [],
-  "ext": ["es"],
+  "ext": [
+    "es"
+  ],
   "fa": [],
   "fat": [],
   "ff": [],
   "fi": [],
-  "fit": ["fi"],
+  "fit": [
+    "fi"
+  ],
   "fo": [],
-  "fon": ["fr"],
+  "fon": [
+    "fr"
+  ],
   "fr": [],
-  "frc": ["fr"],
-  "frp": ["fr"],
-  "frr": ["de"],
+  "frc": [
+    "fr"
+  ],
+  "frp": [
+    "fr"
+  ],
+  "frr": [
+    "de"
+  ],
   "fuc": [],
-  "fur": ["it"],
+  "fur": [
+    "it"
+  ],
   "fvr": [],
   "fy": [],
   "ga": [],
   "gaa": [],
-  "gag": ["tr"],
-  "gan": ["gan-hant", "gan-hans", "zh-hant", "zh", "zh-hans"],
-  "gan-hans": ["gan", "gan-hant", "zh-hans", "zh", "zh-hant"],
-  "gan-hant": ["gan", "gan-hans", "zh-hant", "zh", "zh-hans"],
-  "gcf": ["fr"],
-  "gcr": ["fr"],
+  "gag": [
+    "tr"
+  ],
+  "gan": [
+    "gan-hant",
+    "gan-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "gan-hans": [
+    "gan",
+    "gan-hant",
+    "zh-hans",
+    "zh",
+    "zh-hant"
+  ],
+  "gan-hant": [
+    "gan",
+    "gan-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "gcf": [
+    "fr"
+  ],
+  "gcr": [
+    "fr"
+  ],
   "gd": [],
-  "gl": ["pt"],
-  "gld": ["ru"],
-  "glk": ["fa"],
-  "gn": ["es"],
-  "gom": ["gom-deva", "gom-latn"],
-  "gom-deva": ["gom-latn"],
-  "gor": ["id"],
+  "gl": [
+    "pt"
+  ],
+  "gld": [
+    "ru"
+  ],
+  "glk": [
+    "fa"
+  ],
+  "gn": [
+    "es"
+  ],
+  "gom": [
+    "gom-deva",
+    "gom-latn"
+  ],
+  "gom-deva": [
+    "gom-latn"
+  ],
+  "gor": [
+    "id"
+  ],
   "got": [],
-  "gpe": ["en"],
+  "gpe": [
+    "en"
+  ],
   "grc": [],
-  "gsw": ["de"],
+  "gsw": [
+    "de"
+  ],
   "gu": [],
-  "guc": ["es"],
+  "guc": [
+    "es"
+  ],
   "gur": [],
   "guw": [],
   "gv": [],
   "ha": [],
-  "hak": ["hak-latn", "hak-hant", "hak-hans", "zh-hant", "zh", "zh-hans"],
-  "hak-hans": ["hak", "hak-hant", "hak-latn", "zh-hant", "zh", "zh-hans"],
-  "hak-hant": ["hak", "hak-hans", "hak-latn", "zh-hant", "zh", "zh-hans"],
-  "hak-latn": ["hak", "hak-hant", "hak-hans", "zh-hant", "zh", "zh-hans"],
+  "hak": [
+    "hak-latn",
+    "hak-hant",
+    "hak-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "hak-hans": [
+    "hak",
+    "hak-hant",
+    "hak-latn",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "hak-hant": [
+    "hak",
+    "hak-hans",
+    "hak-latn",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "hak-latn": [
+    "hak",
+    "hak-hant",
+    "hak-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
   "haw": [],
   "he": [],
   "hi": [],
-  "hif": ["hif-latn"],
+  "hif": [
+    "hif-latn"
+  ],
   "hif-latn": [],
-  "hke": ["fr"],
+  "hke": [
+    "fr"
+  ],
   "hno": [],
   "hoc-latn": [],
   "hr": [],
-  "hrx": ["de"],
-  "hsb": ["dsb", "de"],
-  "hsn": ["zh-hant", "zh", "zh-hans"],
-  "ht": ["fr"],
+  "hrx": [
+    "de"
+  ],
+  "hsb": [
+    "dsb",
+    "de"
+  ],
+  "hsn": [
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "ht": [
+    "fr"
+  ],
   "hu": [],
-  "hu-formal": ["hu"],
+  "hu-formal": [
+    "hu"
+  ],
   "hy": [],
-  "hyw": ["hy"],
+  "hyw": [
+    "hy"
+  ],
   "ia": [],
-  "iba": ["ms"],
+  "iba": [
+    "ms"
+  ],
   "ibb": [],
   "id": [],
   "ie": [],
   "ig": [],
   "igl": [],
-  "ii": ["zh-cn", "zh-hans", "zh", "zh-hant"],
+  "ii": [
+    "zh-cn",
+    "zh-hans",
+    "zh",
+    "zh-hant"
+  ],
   "ik": [],
-  "ike-cans": ["iu"],
-  "ike-latn": ["iu"],
+  "ike-cans": [
+    "iu"
+  ],
+  "ike-latn": [
+    "iu"
+  ],
   "ilo": [],
-  "inh": ["ru"],
-  "io": ["eo"],
+  "inh": [
+    "ru"
+  ],
+  "io": [
+    "eo"
+  ],
   "is": [],
-  "isv-cyrl": [],
-  "isv-latn": [],
+  "isv": [
+    "isv-latn",
+    "isv-cyrl"
+  ],
+  "isv-cyrl": [
+    "isv",
+    "isv-latn"
+  ],
+  "isv-latn": [
+    "isv",
+    "isv-cyrl"
+  ],
   "it": [],
-  "iu": ["ike-cans"],
+  "iu": [
+    "ike-cans"
+  ],
   "ja": [],
-  "jam": ["en"],
+  "jam": [
+    "en"
+  ],
   "jbo": [],
-  "jut": ["da"],
-  "jv": ["id"],
+  "jut": [
+    "da"
+  ],
+  "jv": [
+    "id"
+  ],
+  "jv-java": [
+    "jv"
+  ],
   "ka": [],
-  "kaa": ["kk-latn", "kk-cyrl"],
-  "kab": ["fr"],
+  "kaa": [
+    "kk-latn",
+    "kk-cyrl"
+  ],
+  "kab": [
+    "fr"
+  ],
   "kai": [],
-  "kbd": ["kbd-cyrl"],
+  "kaj": [],
+  "kbd": [
+    "kbd-cyrl"
+  ],
   "kbd-cyrl": [],
-  "kbp": ["fr"],
+  "kbp": [
+    "fr"
+  ],
   "kcg": [],
-  "kea": ["pt"],
+  "kea": [
+    "pt"
+  ],
   "kg": [],
-  "kge": ["id"],
-  "khw": ["ur"],
-  "kiu": ["tr"],
-  "kjh": ["ru"],
-  "kjp": ["my"],
-  "kk": ["kk-cyrl"],
-  "kk-arab": ["kk", "kk-cyrl"],
-  "kk-cn": ["kk-arab", "kk", "kk-cyrl"],
-  "kk-cyrl": ["kk"],
-  "kk-kz": ["kk-cyrl", "kk"],
-  "kk-latn": ["kk", "kk-cyrl"],
-  "kk-tr": ["kk-latn", "kk", "kk-cyrl"],
-  "kl": ["da"],
+  "kge": [
+    "id"
+  ],
+  "khw": [
+    "ur"
+  ],
+  "kiu": [
+    "tr"
+  ],
+  "kjh": [
+    "ru"
+  ],
+  "kjp": [
+    "my"
+  ],
+  "kk": [
+    "kk-cyrl"
+  ],
+  "kk-arab": [
+    "kk",
+    "kk-cyrl"
+  ],
+  "kk-cn": [
+    "kk-arab",
+    "kk",
+    "kk-cyrl"
+  ],
+  "kk-cyrl": [
+    "kk"
+  ],
+  "kk-kz": [
+    "kk-cyrl",
+    "kk"
+  ],
+  "kk-latn": [
+    "kk",
+    "kk-cyrl"
+  ],
+  "kk-tr": [
+    "kk-latn",
+    "kk",
+    "kk-cyrl"
+  ],
+  "kl": [
+    "da"
+  ],
   "km": [],
   "kn": [],
   "knc": [],
   "ko": [],
-  "koi": ["ru"],
-  "ko-kp": ["ko"],
-  "kr": ["knc"],
-  "krc": ["ru"],
-  "krl": ["fi"],
+  "koi": [
+    "ru"
+  ],
+  "ko-kp": [
+    "ko"
+  ],
+  "kr": [
+    "knc"
+  ],
+  "krc": [
+    "ru"
+  ],
+  "krl": [
+    "fi"
+  ],
   "ks": [],
-  "ksh": ["de"],
-  "ksw": ["my"],
-  "ks-arab": ["ks"],
+  "ksh": [
+    "de"
+  ],
+  "ksw": [
+    "my"
+  ],
+  "ks-arab": [
+    "ks"
+  ],
   "ks-deva": [],
-  "ku": ["ku-latn"],
-  "kum": ["ru"],
+  "ku": [
+    "ku-latn"
+  ],
+  "kum": [
+    "ru"
+  ],
   "kus": [],
-  "ku-arab": ["ku", "ckb"],
-  "ku-latn": ["ku"],
-  "kv": ["ru"],
+  "ku-arab": [
+    "ku",
+    "ckb"
+  ],
+  "ku-latn": [
+    "ku"
+  ],
+  "kv": [
+    "ru"
+  ],
   "kw": [],
   "ky": [],
   "la": [],
-  "lad": ["es"],
+  "lad": [
+    "es"
+  ],
   "lad-hebr": [],
-  "lb": ["de"],
-  "lbe": ["ru"],
-  "lez": ["ru", "az"],
+  "lb": [
+    "de"
+  ],
+  "lbe": [
+    "ru"
+  ],
+  "lez": [
+    "ru"
+  ],
   "lfn": [],
-  "li": ["nl"],
-  "lij": ["it"],
-  "liv": ["et"],
-  "ljp": ["id"],
-  "lki": ["fa"],
-  "lld": ["it", "rm", "fur"],
-  "lmo": ["pms", "eml", "lij", "vec", "it"],
-  "ln": ["fr"],
+  "li": [
+    "nl"
+  ],
+  "lij": [
+    "it"
+  ],
+  "liv": [
+    "et"
+  ],
+  "ljp": [
+    "id"
+  ],
+  "lki": [
+    "fa"
+  ],
+  "lld": [
+    "it",
+    "rm",
+    "fur"
+  ],
+  "lmo": [
+    "pms",
+    "eml",
+    "lij",
+    "vec",
+    "it"
+  ],
+  "ln": [
+    "fr"
+  ],
   "lo": [],
-  "lrc": ["fa"],
+  "lrc": [
+    "fa"
+  ],
   "lt": [],
-  "ltg": ["lv"],
-  "lua": ["fr"],
-  "luz": ["fa"],
+  "ltg": [
+    "lv"
+  ],
+  "lua": [
+    "fr"
+  ],
+  "luz": [
+    "fa"
+  ],
   "lv": [],
-  "lzh": ["zh-hant", "zh", "zh-hans"],
-  "lzz": ["tr"],
-  "mad": ["id"],
-  "mag": ["hi"],
-  "mai": ["hi"],
-  "map-bms": ["jv", "id"],
-  "mdf": ["myv", "ru"],
+  "lzh": [
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "lzz": [
+    "tr"
+  ],
+  "mad": [
+    "id"
+  ],
+  "mag": [
+    "hi"
+  ],
+  "mai": [
+    "hi"
+  ],
+  "map-bms": [
+    "jv",
+    "id"
+  ],
+  "mdf": [
+    "ru"
+  ],
   "mey": [],
-  "mg": ["fr"],
-  "mhr": ["mrj", "ru"],
-  "min": ["id"],
+  "mg": [
+    "fr"
+  ],
+  "mhr": [
+    "ru"
+  ],
+  "min": [
+    "id"
+  ],
   "mk": [],
   "ml": [],
   "mn": [],
   "mnc": [],
-  "mnc-latn": ["mnc"],
-  "mnc-mong": ["mnc"],
+  "mnc-latn": [
+    "mnc"
+  ],
+  "mnc-mong": [
+    "mnc"
+  ],
   "mni": [],
-  "mnw": ["my"],
-  "mo": ["ro"],
+  "mnw": [
+    "my"
+  ],
+  "mo": [
+    "ro"
+  ],
   "mos": [],
   "mr": [],
   "mrh": [],
-  "mrj": ["mhr", "ru"],
+  "mrj": [
+    "ru"
+  ],
   "ms": [],
-  "ms-arab": ["ms"],
+  "ms-arab": [
+    "ms"
+  ],
   "mt": [],
-  "mui": ["id"],
-  "mwl": ["pt"],
+  "mui": [
+    "id"
+  ],
+  "mwl": [
+    "pt"
+  ],
   "my": [],
-  "myv": ["mdf", "ru"],
-  "mzn": ["fa"],
-  "nah": ["es"],
-  "nan": ["nan-latn-pehoeji", "nan-latn-tailo", "nan-hant", "cdo-hant", "zh-hant", "zh", "zh-hans"],
-  "nan-hant": ["nan", "nan-latn-pehoeji", "nan-latn-tailo", "cdo-hant", "zh-hant", "zh", "zh-hans"],
-  "nan-latn-pehoeji": ["nan-latn", "nan-latn-tailo", "nan", "nan-hant", "cdo-hant", "zh-hant", "zh", "zh-hans"],
-  "nan-latn-tailo": ["nan-latn", "nan-latn-pehoeji", "nan", "nan-hant", "cdo", "zh-hant", "zh", "zh-hans"],
-  "nap": ["it"],
-  "nb": ["no", "nn"],
-  "nds": ["de"],
-  "nds-nl": ["nl"],
+  "myv": [
+    "ru"
+  ],
+  "mzn": [
+    "fa"
+  ],
+  "nah": [
+    "es"
+  ],
+  "nan": [
+    "nan-latn-pehoeji",
+    "nan-latn-tailo",
+    "nan-hant",
+    "cdo-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "nan-hant": [
+    "nan",
+    "nan-latn-pehoeji",
+    "nan-latn-tailo",
+    "cdo-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "nan-latn-pehoeji": [
+    "nan-latn",
+    "nan-latn-tailo",
+    "nan",
+    "nan-hant",
+    "cdo-hant",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "nan-latn-tailo": [
+    "nan-latn",
+    "nan-latn-pehoeji",
+    "nan",
+    "nan-hant",
+    "cdo",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "nap": [
+    "it"
+  ],
+  "nb": [
+    "no",
+    "nn"
+  ],
+  "nds": [
+    "de"
+  ],
+  "nds-nl": [
+    "nl"
+  ],
   "ne": [],
   "new": [],
-  "nia": ["id"],
+  "nia": [
+    "id"
+  ],
   "nit": [],
   "nl": [],
-  "nl-informal": ["nl"],
+  "nl-informal": [
+    "nl"
+  ],
   "nmz": [],
-  "nn": ["no", "nb"],
-  "no": ["nb", "nn"],
+  "nn": [
+    "no",
+    "nb"
+  ],
+  "no": [
+    "nb",
+    "nn"
+  ],
   "nod": [],
   "nog": [],
   "nqo": [],
   "nr": [],
-  "nrm": ["nrf", "fr"],
+  "nrm": [
+    "nrf",
+    "fr"
+  ],
   "nso": [],
   "nup": [],
   "nv": [],
   "ny": [],
-  "nyo": ["ttj", "nyn", "lg", "sw"],
-  "oc": ["ca", "fr"],
+  "nyo": [
+    "ttj",
+    "nyn",
+    "lg",
+    "sw"
+  ],
+  "oc": [
+    "ca",
+    "fr"
+  ],
   "ojb": [],
-  "olo": ["fi"],
+  "olo": [
+    "fi"
+  ],
   "or": [],
-  "os": ["ru"],
+  "os": [
+    "ru"
+  ],
   "ota": [],
   "pa": [],
   "pap": [],
-  "pap-aw": ["pap"],
-  "pcd": ["fr"],
+  "pap-aw": [
+    "pap"
+  ],
+  "pcd": [
+    "fr"
+  ],
   "pcm": [],
-  "pdc": ["de"],
-  "pdt": ["de"],
-  "pfl": ["de"],
+  "pdc": [
+    "de"
+  ],
+  "pdt": [
+    "de"
+  ],
+  "pfl": [
+    "de"
+  ],
   "phr": [],
   "pi": [],
-  "pih": ["en"],
+  "pih": [
+    "en"
+  ],
   "pl": [],
-  "pms": ["it"],
+  "pms": [
+    "it"
+  ],
   "pnb": [],
-  "pnt": ["el"],
+  "pnt": [
+    "el"
+  ],
+  "ppl": [
+    "es"
+  ],
   "prg": [],
   "prs": [],
   "ps": [],
-  "pt": ["pt-br"],
-  "pt-br": ["pt"],
-  "pwn": ["zh-tw", "zh-hant", "zh", "zh-hans"],
-  "qu": ["qug", "es"],
-  "qug": ["qu", "es"],
-  "rgn": ["it"],
+  "pt": [
+    "pt-br"
+  ],
+  "pt-br": [
+    "pt"
+  ],
+  "pwn": [
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "qu": [
+    "qug",
+    "es"
+  ],
+  "qug": [
+    "qu",
+    "es"
+  ],
+  "rgn": [
+    "it"
+  ],
   "rki": [],
-  "rm": ["de"],
+  "rm": [
+    "de"
+  ],
   "rmc": [],
-  "rmy": ["ro"],
+  "rmy": [
+    "ro"
+  ],
   "rn": [],
   "ro": [],
-  "roa-tara": ["it"],
-  "rsk": ["sr-ec", "sr-cyrl"],
+  "roa-tara": [
+    "it"
+  ],
+  "rsk": [
+    "sr-ec",
+    "sr-cyrl"
+  ],
   "ru": [],
-  "rue": ["uk", "ru"],
-  "rup": ["ro"],
-  "ruq": ["ruq-latn", "ro"],
-  "ruq-cyrl": ["mk"],
-  "ruq-latn": ["ro"],
-  "rut": ["ru"],
+  "rue": [
+    "uk",
+    "ru"
+  ],
+  "rup": [
+    "ro"
+  ],
+  "ruq": [
+    "ruq-latn",
+    "ro"
+  ],
+  "ruq-cyrl": [
+    "mk"
+  ],
+  "ruq-latn": [
+    "ro"
+  ],
+  "rut": [
+    "ru"
+  ],
   "rw": [],
-  "sa": ["hi"],
-  "sah": ["ru"],
+  "sa": [
+    "hi"
+  ],
+  "sah": [
+    "ru"
+  ],
+  "sas": [
+    "id"
+  ],
   "sat": [],
   "sc": [],
-  "scn": ["it"],
-  "sco": ["en"],
+  "scn": [
+    "it"
+  ],
+  "sco": [
+    "en"
+  ],
   "sd": [],
-  "sdc": ["it"],
-  "sdh": ["ckb", "fa"],
-  "se": ["nb", "fi"],
-  "ses": ["fr"],
-  "se-fi": ["se", "fi", "sv"],
-  "se-no": ["se", "nb", "nn"],
-  "se-se": ["se", "sv"],
-  "sg": ["fr"],
-  "sgs": ["lt"],
-  "sh": ["sh-latn", "bs", "hr", "sr-latn", "sr-el", "sh-cyrl", "sr-cyrl", "sr-ec"],
-  "shi": ["shi-latn", "fr"],
+  "sdc": [
+    "it"
+  ],
+  "sdh": [
+    "ckb",
+    "fa"
+  ],
+  "se": [
+    "nb",
+    "fi"
+  ],
+  "ses": [
+    "fr"
+  ],
+  "se-fi": [
+    "se",
+    "fi",
+    "sv"
+  ],
+  "se-no": [
+    "se",
+    "nb",
+    "nn"
+  ],
+  "se-se": [
+    "se",
+    "sv"
+  ],
+  "sg": [
+    "fr"
+  ],
+  "sgs": [
+    "lt"
+  ],
+  "sh": [
+    "sh-latn",
+    "bs",
+    "hr",
+    "sr-latn",
+    "sr-el",
+    "sh-cyrl",
+    "sr-cyrl",
+    "sr-ec"
+  ],
+  "shi": [
+    "shi-latn",
+    "fr"
+  ],
   "shn": [],
-  "shy": ["shy-latn"],
-  "shy-latn": ["fr"],
-  "sh-cyrl": ["sr-cyrl", "sr-ec", "sr-latn", "sr-el", "sh", "sh-latn", "bs", "hr"],
-  "sh-latn": ["sh", "bs", "hr", "sr-latn", "sr-el", "sh-cyrl", "sr-cyrl", "sr-ec"],
+  "shy": [
+    "shy-latn"
+  ],
+  "shy-latn": [
+    "fr"
+  ],
+  "sh-cyrl": [
+    "sr-cyrl",
+    "sr-ec",
+    "sr-latn",
+    "sr-el",
+    "sh",
+    "sh-latn",
+    "bs",
+    "hr"
+  ],
+  "sh-latn": [
+    "sh",
+    "bs",
+    "hr",
+    "sr-latn",
+    "sr-el",
+    "sh-cyrl",
+    "sr-cyrl",
+    "sr-ec"
+  ],
   "si": [],
-  "sjd": ["ru"],
+  "sjd": [
+    "ru"
+  ],
   "sje": [],
-  "sk": ["cs"],
-  "skr": ["skr-arab"],
-  "skr-arab": ["skr"],
+  "sk": [
+    "cs"
+  ],
+  "skr": [
+    "skr-arab"
+  ],
+  "skr-arab": [
+    "skr"
+  ],
   "sl": [],
-  "sli": ["de"],
-  "sma": ["sv", "nb"],
-  "smn": ["fi"],
+  "sli": [
+    "de"
+  ],
+  "sma": [
+    "sv",
+    "nb"
+  ],
+  "smn": [
+    "fi"
+  ],
   "sms": [],
   "sq": [],
-  "sr": ["sr-ec", "sr-cyrl", "sr-el", "sr-latn"],
-  "srn": ["nl"],
-  "sro": ["it"],
-  "sr-ec": ["sr-cyrl", "sr"],
-  "sr-el": ["sr-latn", "sr"],
+  "sr": [
+    "sr-ec",
+    "sr-cyrl",
+    "sr-el",
+    "sr-latn"
+  ],
+  "srn": [
+    "nl"
+  ],
+  "sro": [
+    "it"
+  ],
+  "sr-ec": [
+    "sr-cyrl",
+    "sr"
+  ],
+  "sr-el": [
+    "sr-latn",
+    "sr"
+  ],
   "ss": [],
   "st": [],
-  "stq": ["de"],
-  "sty": ["ru"],
-  "su": ["id"],
+  "stq": [
+    "de"
+  ],
+  "sty": [
+    "ru"
+  ],
+  "su": [
+    "id"
+  ],
   "sv": [],
   "sw": [],
   "syl": [],
-  "szl": ["pl"],
-  "szy": ["zh-tw", "zh-hant", "zh", "zh-hans"],
+  "szl": [
+    "pl"
+  ],
+  "szy": [
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
   "ta": [],
-  "tay": ["zh-tw", "zh-hant", "zh", "zh-hans"],
-  "tcy": ["kn"],
+  "tay": [
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "tcy": [
+    "kn"
+  ],
   "tdd": [],
   "te": [],
-  "tet": ["pt"],
-  "tg": ["tg-cyrl"],
-  "tg-cyrl": ["tg"],
-  "tg-latn": ["tg"],
+  "tet": [
+    "pt"
+  ],
+  "tg": [
+    "tg-cyrl"
+  ],
+  "tg-cyrl": [
+    "tg"
+  ],
+  "tg-latn": [
+    "tg"
+  ],
   "th": [],
   "ti": [],
   "tig": [],
@@ -452,63 +1201,194 @@
   "tly": [],
   "tmr": [],
   "tn": [],
+  "tok": [],
   "tpi": [],
   "tr": [],
-  "trv": ["zh-tw", "zh-hant", "zh", "zh-hans"],
+  "trv": [
+    "zh-tw",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
   "trw": [],
-  "tt": ["tt-cyrl", "ru"],
-  "ttj": ["nyo", "nyn", "lg", "sw"],
-  "tt-cyrl": ["ru"],
+  "tt": [
+    "tt-cyrl",
+    "ru"
+  ],
+  "ttj": [
+    "nyo",
+    "nyn",
+    "lg",
+    "sw"
+  ],
+  "tt-cyrl": [
+    "ru"
+  ],
   "tt-latn": [],
   "tum": [],
   "tw": [],
-  "ty": ["fr"],
-  "tyv": ["ru"],
-  "udm": ["ru"],
-  "ug": ["ug-arab"],
+  "ty": [
+    "fr"
+  ],
+  "tyv": [
+    "ru"
+  ],
+  "udm": [
+    "ru"
+  ],
+  "ug": [
+    "ug-arab"
+  ],
   "ug-arab": [],
   "uk": [],
   "ur": [],
   "uz": [],
-  "vec": ["it"],
-  "vep": ["et"],
+  "vec": [
+    "it"
+  ],
+  "vep": [
+    "et"
+  ],
   "vi": [],
-  "vls": ["nl"],
-  "vmf": ["de"],
-  "vmw": ["pt"],
+  "vls": [
+    "nl"
+  ],
+  "vmf": [
+    "de"
+  ],
+  "vmw": [
+    "pt"
+  ],
   "vo": [],
-  "vot": ["fi"],
-  "vro": ["et"],
-  "wa": ["fr"],
+  "vot": [
+    "fi"
+  ],
+  "vro": [
+    "et"
+  ],
+  "wa": [
+    "fr"
+  ],
   "wal": [],
   "war": [],
-  "wls": ["fr"],
+  "wls": [
+    "fr"
+  ],
   "wlx": [],
-  "wo": ["fr"],
-  "wuu": ["wuu-hans", "wuu-hant", "zh-hans", "zh", "zh-hant"],
-  "wuu-hans": ["wuu", "wuu-hant", "zh-hans", "zh", "zh-hant"],
-  "wuu-hant": ["wuu", "wuu-hans", "zh-hant", "zh", "zh-hans"],
-  "xal": ["ru"],
+  "wo": [
+    "fr"
+  ],
+  "wuu": [
+    "wuu-hans",
+    "wuu-hant",
+    "zh-hans",
+    "zh",
+    "zh-hant"
+  ],
+  "wuu-hans": [
+    "wuu",
+    "wuu-hant",
+    "zh-hans",
+    "zh",
+    "zh-hant"
+  ],
+  "wuu-hant": [
+    "wuu",
+    "wuu-hans",
+    "zh-hant",
+    "zh",
+    "zh-hans"
+  ],
+  "xal": [
+    "ru"
+  ],
   "xh": [],
-  "xmf": ["ka"],
+  "xmf": [
+    "ka"
+  ],
   "xsy": [],
-  "yi": ["he"],
+  "yi": [
+    "he"
+  ],
   "yo": [],
   "yrl": [],
-  "yua": ["es"],
-  "yue": ["yue-hant", "yue-hans"],
-  "yue-hans": ["yue", "yue-hant"],
-  "yue-hant": ["yue", "yue-hans"],
-  "za": ["zh-hans", "zh", "zh-hant"],
-  "zea": ["nl"],
+  "yua": [
+    "es"
+  ],
+  "yue": [
+    "yue-hant",
+    "yue-hans"
+  ],
+  "yue-hans": [
+    "yue",
+    "yue-hant"
+  ],
+  "yue-hant": [
+    "yue",
+    "yue-hans"
+  ],
+  "za": [
+    "zh-hans",
+    "zh",
+    "zh-hant"
+  ],
+  "zea": [
+    "nl"
+  ],
   "zgh": [],
-  "zh": ["zh-hans", "zh-hant", "zh-cn", "zh-tw", "zh-hk"],
-  "zh-cn": ["zh-hans", "zh", "zh-hant"],
-  "zh-hans": ["zh-cn", "zh", "zh-hant"],
-  "zh-hant": ["zh-tw", "zh-hk", "zh", "zh-hans"],
-  "zh-hk": ["zh-hant", "zh-tw", "zh", "zh-hans"],
-  "zh-mo": ["zh-hk", "zh-hant", "zh-tw", "zh", "zh-hans"],
-  "zh-my": ["zh-sg", "zh-hans", "zh-cn", "zh", "zh-hant"],
-  "zh-sg": ["zh-hans", "zh-cn", "zh", "zh-hant"],
-  "zh-tw": ["zh-hant", "zh-hk", "zh", "zh-hans"]
+  "zh": [
+    "zh-hans",
+    "zh-hant",
+    "zh-cn",
+    "zh-tw",
+    "zh-hk"
+  ],
+  "zh-cn": [
+    "zh-hans",
+    "zh",
+    "zh-hant"
+  ],
+  "zh-hans": [
+    "zh-cn",
+    "zh",
+    "zh-hant"
+  ],
+  "zh-hant": [
+    "zh-tw",
+    "zh-hk",
+    "zh",
+    "zh-hans"
+  ],
+  "zh-hk": [
+    "zh-hant",
+    "zh-tw",
+    "zh",
+    "zh-hans"
+  ],
+  "zh-mo": [
+    "zh-hk",
+    "zh-hant",
+    "zh-tw",
+    "zh",
+    "zh-hans"
+  ],
+  "zh-my": [
+    "zh-sg",
+    "zh-hans",
+    "zh-cn",
+    "zh",
+    "zh-hant"
+  ],
+  "zh-sg": [
+    "zh-hans",
+    "zh-cn",
+    "zh",
+    "zh-hant"
+  ],
+  "zh-tw": [
+    "zh-hant",
+    "zh-hk",
+    "zh",
+    "zh-hans"
+  ]
 }

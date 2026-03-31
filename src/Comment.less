@@ -1,100 +1,125 @@
 .cd-comment-header,
 .cd-comment-menu {
-  font-size: 0.9285714em;
-  line-height: 1.6153846;
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 1em;
-  align-items: baseline;
-  direction: var(--cd-direction-user);
+	font-size: 0.9285714em;
+	line-height: 1.6153846;
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 1em;
+	align-items: baseline;
+	direction: var(--cd-direction-user);
 
-  // Prevent overlapping floating elements, e.g.
-  // https://en.wikipedia.org/wiki/Project:Village_pump_(WMF)#c-Valereee-20241103105700-Contacted_by_one_of_the_editors
-  min-width: min-content;
+	// Prevent overlapping floating elements, e.g.
+	// https://en.wikipedia.org/wiki/Project:Village_pump_(WMF)#c-Valereee-20241103105700-Contacted_by_one_of_the_editors
+	min-width: min-content;
 }
 
 .cd-comment-header {
-  margin-bottom: 0.2307692em;
+	margin-bottom: 0.2307692em;
 }
 
 .cd-comment-menu {
-  margin-top: 0.3076923em;
-  -moz-user-select: none;
-  user-select: none;
+	margin-top: 0.3076923em;
+	margin-inline-start: -1px;
+	-moz-user-select: none;
+	user-select: none;
 
-  &:empty {
-    margin-top: 0;
-  }
+	&:empty {
+		margin-top: 0;
+	}
 }
 
 .cd-comment-author {
-  font-weight: bold;
-  font-size: 1.0769231em;
+	font-weight: bold;
+	font-size: 1.0769231em;
 
-  &-links {
-    -moz-user-select: none;
-    user-select: none;
-  }
+	&-links {
+		-moz-user-select: none;
+		user-select: none;
+	}
 
-  &-wrapper {
-    display: inline;
-  }
+	&-wrapper {
+		display: inline;
+	}
+
+	&-userInfoCard-button {
+		margin-left: -7px;
+	}
 }
 
-.cd-comment-button {
-  &-label.cd-comment-button-label.cd-comment-button-label {
-    color: var(--color-subtle, #54595d);
-    text-decoration: none;
+// Override native MediaWiki styles
+.cd-comment-button.cd-comment-button.cd-comment-button {
+	text-decoration: none;
+	color: var(--color-subtle, #54595d);
+	border-color: var(--border-color-transparent, transparent);
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 2px;
+	-webkit-touch-callout: none;
 
-    &:hover {
-      color: var(--color-progressive, #36c);
-    }
+	&-labeled,
+	&-icon {
+		&:hover {
+			background-color: var(
+				--background-color-button-quiet--hover,
+				rgba(0, 24, 73, 0.027)
+			);
+		}
 
-    &:active {
-      color: var(--cd-link-active-color);
-    }
-  }
+		// Override .cd-button-progressive.cd-button-progressive.cd-button-progressive.cd-button-progressive
+		&:active:active {
+			background-color: var(
+				--background-color-button-quiet--active,
+				rgba(0, 24, 73, 0.082)
+			);
+			border-color: var(--border-color-interactive, #72777d);
+			color: var(--color-emphasized, #000);
+		}
+	}
 
-  &-icon {
-    display: inline-block;
-    align-self: center;
-    margin-bottom: -1px;
-    color: var(--border-color-base, #a2a9b1);
-
-    &:hover {
-      color: var(--color-progressive, #36c);
-    }
-
-    &:active {
-      // TODO: replace with a CSS variable once it becomes available
-      color: #faa700;
-    }
-  }
+	&-icon {
+		display: inline-block;
+		align-self: center;
+		margin-bottom: -1px;
+	}
 }
 
-.cd-comment-part-first {
-  margin-top: 0.5em;
+// Paragraph-like margins
+li.cd-comment-part:not(.cd-comment-part-last) + .cd-comment-part,
+dd.cd-comment-part:not(.cd-comment-part-last) + .cd-comment-part,
+li.cd-comment-part:not(.cd-comment-part-last)
+	+ .cd-connectToPreviousItem
+	> .cd-comment-part,
+dd.cd-comment-part:not(.cd-comment-part-last)
+	+ .cd-connectToPreviousItem
+	> .cd-comment-part {
+	margin-top: 0.5em;
+}
 
-  .cd-reformattedComments & {
-    margin-top: 0.75em;
-  }
+// Override `.ns-talk .mw-body-content dd` present in many wikis
+// https://global-search.toolforge.org/?q=%22.ns-talk+.mw-body-content+dd%22&namespaces=8&title=.*%5C.css
+.cd-comment-part-first.cd-comment-part-first.cd-comment-part-first {
+	margin-top: 0.5em;
+
+	.cd-reformattedComments & {
+		margin-top: 0.75em;
+	}
 }
 
 // Override `.skin-vector .cd-parsed dd`
 .cd-comment-part-last.cd-comment-part-last.cd-comment-part-last {
-  margin-bottom: 0.5em;
+	margin-bottom: 0.5em;
 
-  // Compensate Vector 2022 style for paragraphs
-  padding-bottom: 0;
+	// Compensate Vector 2022 style for paragraphs
+	padding-bottom: 0;
 
-  .cd-reformattedComments & {
-    margin-bottom: 0.75em;
-  }
+	.cd-reformattedComments & {
+		margin-bottom: 0.75em;
+	}
 }
 
 ol > li.cd-comment-part-first.cd-comment-part-first,
 ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
-  margin-top: 0;
+	margin-top: 0;
 }
 
 // Because irregular gaps between list items are annoying, especially between numbered list items
@@ -102,26 +127,26 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 .skin-vector .cd-parsed li,
 .skin-vector .cd-parsed dd,
 .skin-vector .cd-parsed ol > li.cd-comment-part-last.cd-comment-part-last {
-  margin-bottom: 0.14285714em;
+	margin-bottom: 0.14285714em;
 }
 
 // Repeat the class to gain specificity in the Minerva Neue skin
 .cd-commentLevel.cd-commentLevel:not(ol) {
-  list-style-type: none;
-  list-style-image: none;
-  margin: 0;
+	list-style-type: none;
+	list-style-image: none;
+	margin: 0;
 }
 
 // Note cases with LTR content in RTL wikis and vice versa. For example:
 // https://he.wikipedia.org/w/index.php?title=ויקיפדיה:חדשות&oldid=32116639#Desktop_improvements._A_new_change!
 .cd-commentLevel:not(ol) > li,
 .cd-commentLevel:not(ol) > dd {
-  padding-inline: 1em 0;
-  margin-inline: 1em 0;
-  border-inline-start-color: var(--border-color-subtle, #c8ccd1);
-  border-inline-start-style: solid;
-  border-inline-start-width: 1px;
-  border-inline-end: 0;
+	padding-inline: 1em 0;
+	margin-inline: 1em 0;
+	border-inline-start-color: var(--border-color-subtle, #c8ccd1);
+	border-inline-start-style: solid;
+	border-inline-start-width: 1px;
+	border-inline-end: 0;
 }
 
 // Workaround for close a visual gap to the previous item. The unfortunate reason for it is that we
@@ -130,97 +155,61 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 // times to override
 // .cd-thread-button-container.cd-thread-button-container.cd-thread-button-container.
 .cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem {
-  margin-top: -0.5em;
-  padding-top: 0.5em;
+	margin-top: -0.5em;
+	padding-top: 0.5em;
 
-  .cd-reformattedComments & {
-    margin-top: -0.75em;
-    padding-top: 0.75em;
-  }
+	.cd-reformattedComments & {
+		margin-top: -0.75em;
+		padding-top: 0.75em;
+	}
 
-  > :first-child {
-    margin-top: 0;
+	// As for :not(.cd-comment-part), see
+	// `li.cd-comment-part:not(.cd-comment-part-last) + .cd-connectToPreviousItem > .cd-comment-part`
+	// above
+	> :first-child:not(.cd-comment-part) {
+		margin-top: 0;
 
-    > :first-child {
-      margin-top: 0;
+		> :first-child {
+			margin-top: 0;
 
-      > :first-child {
-        margin-top: 0;
-      }
-    }
-  }
+			> :first-child {
+				margin-top: 0;
+			}
+		}
+	}
 
-  // Spacing after the edit form
-  > .cd-hidden:first-child + * {
-    margin-top: 0;
+	// Spacing after the edit form
+	> .cd-hidden:first-child + * {
+		margin-top: 0;
 
-    > :first-child {
-      margin-top: 0;
+		> :first-child {
+			margin-top: 0;
 
-      > :first-child {
-        margin-top: 0;
-      }
-    }
-  }
-}
-
-.cd-thread-clickArea {
-  position: absolute;
-
-  // Above the page navigation (.cd-pageNav)
-  z-index: 2;
-
-  width: calc(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio));
-  padding-left: var(--cd-thread-line-side-padding);
-  padding-right: var(--cd-thread-line-side-padding);
-
-  &-hovered {
-    cursor: pointer;
-
-    .cd-thread-line {
-      background-color: var(--border-color-interactive, #72777d);
-      opacity: 1;
-      transition: opacity 0.2s ease-in;
-
-      &-extended::after {
-        background-image: linear-gradient(to bottom, var(--border-color-interactive, #72777d), transparent);
-      }
-    }
-  }
-}
-
-.cd-thread-line {
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-
-  &-extended::after {
-    display: block;
-    content: '';
-    height: 10px;
-    top: 100%;
-    position: relative;
-  }
+			> :first-child {
+				margin-top: 0;
+			}
+		}
+	}
 }
 
 .cd-changeNote {
-  font-size: 85%;
-  color: var(--color-subtle, #54595d);
+	font-size: 85%;
+	color: var(--color-subtle, #54595d);
 
-  .cd-reformattedComments & {
-    font-size: 100%;
-  }
+	.cd-reformattedComments & {
+		font-size: 100%;
+	}
 
-  &-before {
-    margin-inline: auto 0.75em;
-  }
+	&-before {
+		margin-inline: auto 0.75em;
+	}
 }
 
 // Reset the default. There can be navboxes in discussion threads.
 .cd-commentLevel .mw-collapsible-toggle {
-  float: var(--cd-float-content-end);
+	float: var(--cd-float-content-end);
 }
 
 .cd-signature .cd-timestamp:not(a .cd-timestamp) {
-  color: var(--color-subtle, #54595d);
+	color: var(--color-subtle, #54595d);
 }

@@ -1,0 +1,14 @@
+{
+	"extends": "../../jsconfig-base.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"target": "es2020",
+		"moduleResolution": "bundler",
+		"lib": ["ES2023", "DOM", "DOM.Iterable"],
+
+		// Something drags Node's types in (e.g. .at() starts to show a Node function), no idea what.
+		// Reset the types to empty to avoid this.
+		"types": []
+	},
+	"include": ["**/*"]
+}

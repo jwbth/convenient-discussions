@@ -1,182 +1,187 @@
-import CdError from './CdError';
-import cd from './cd';
-import settings from './settings';
-import { wrapHtml } from './utils-window';
+import EventEmitter from './EventEmitter'
+import cd from './loader/cd'
+import CdError from './shared/CdError'
+import { wrapHtml } from './utils-window'
+
+/**
+ * @typedef {{ [sectionId: string]: boolean }} SubscriptionsData
+ */
+
+/**
+ * @typedef {object} EventMap
+ * @property {[]} process
+ */
 
 /**
  * Implementation of the subscriptions feature in general terms. It is extended by
- * {@link DtSubscriptions DisussionTools' topic subscription} and
- * {@link LegacySubscriptions CD's legacy section watching}.
+ * {@link DtSubscriptions DisussionTools' topic subscription}.
+ *
+ * @augments EventEmitter<EventMap>
  */
-class Subscriptions {
-  /**
-   * Create a subscriptions instance. It is supposed to be used as a singleton returned by
-   * {@link controller.getSubscriptionsInstance}.
-   */
-  constructor() {
-    // Mixin constructor
-    OO.EventEmitter.call(this);
-  }
+class Subscriptions extends EventEmitter {
+	/** @type {SubscriptionsData} */
+	data
 
-  /**
-   * Do everything {@link .load} does and also perform manipulations with the talk page.
-   *
-   * @param {import('./BootProcess').default} [bootProcess]
-   * @param {...*} [args]
-   */
-  async loadToTalkPage(bootProcess, ...args) {
-    await this.load(bootProcess, ...args);
+	/** @type {string|undefined} */
+	type
 
-    this.processOnTalkPage(bootProcess);
-  }
+	/**
+	 * Do everything {@link .load} does and also perform manipulations with the talk page.
+	 *
+	 * @param {import('./BootProcess').default} [bootProcess]
+	 * @param {...*} args
+	 */
+	async loadToTalkPage(bootProcess, ...args) {
+		await this.load(bootProcess, ...args)
 
-  /**
-   * Process subscriptions when they are {@link Subscriptions#loadToTalkPage loaded to a talk page}.
-   */
-  processOnTalkPage() {
-    this.emit('process');
-  }
+		this.processOnTalkPage(bootProcess)
+	}
 
-  /**
-   * Update the subscription list by adding or removing a subscription, without saving anything to
-   * the server.
-   *
-   * @param {string} subscribeId Section's subscribe ID (modern or legacy format).
-   * @param {boolean} subscribe Subscribe or unsubscribe.
-   * @protected
-   */
-  updateLocally(subscribeId, subscribe) {
-    if (subscribeId === undefined) return;
+	/**
+	 * @param {...*} _args
+	 * @abstract
+	 */
+	// eslint-disable-next-line no-unused-vars
+	async load(..._args) {
+		// This method is defined in subclasses.
+	}
 
-    // this.data can be not set on newly created pages with DT subscriptions enabled.
-    this.data ||= {};
+	/**
+	 * @param {...*} _args
+	 * @abstract
+	 * @returns {boolean}
+	 */
+	// eslint-disable-next-line no-unused-vars
+	areLoaded(..._args) {
+		// This method is defined in subclasses.
+		return true
+	}
 
-    this.data[subscribeId] = Boolean(subscribe);
-  }
+	/**
+	 * @param {...*} _args
+	 * @abstract
+	 * @protected
+	 */
+	// eslint-disable-next-line no-unused-vars
+	async actuallySubscribe(..._args) {
+		// This method is defined in subclasses.
+	}
 
-  /**
-   * Subscribe to a section.
-   *
-   * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string} id Section's ID.
-   * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
-   * time).
-   * @param {boolean} [quiet=false] Don't show a success notification.
-   */
-  async subscribe(subscribeId, id, unsubscribeHeadline, quiet = false) {
-    await this.actuallySubscribe(subscribeId, id, unsubscribeHeadline);
+	/**
+	 * @param {...*} _args
+	 * @abstract
+	 * @protected
+	 */
+	// eslint-disable-next-line no-unused-vars
+	async actuallyUnsubscribe(..._args) {
+		// This method is defined in subclasses.
+	}
 
-    if (!quiet) {
-      let body = subscribeId.startsWith('p-') ?
-        cd.mws('discussiontools-newtopicssubscription-notify-subscribed-body') :
-        cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
-      let autoHideSeconds;
-      if (!settings.get('useTopicSubscription')) {
-        body += ' ' + cd.sParse('section-watch-openpages');
-        if ($('#ca-watch').length) {
-          body += ' ' + cd.sParse('section-watch-pagenotwatched');
-          autoHideSeconds = 'long';
-        }
-      }
-      mw.notify(wrapHtml(body), {
-        title: subscribeId.startsWith('p-') ?
-          cd.mws('discussiontools-newtopicssubscription-notify-subscribed-title') :
-          cd.mws('discussiontools-topicsubscription-notify-subscribed-title'),
-        autoHideSeconds,
-      });
-    }
-  }
+	/**
+	 * Process subscriptions when they are {@link Subscriptions#loadToTalkPage loaded to a talk page}.
+	 *
+	 * @param {import('./BootProcess').default} [_bootProcess]
+	 */
+	processOnTalkPage(_bootProcess) {
+		this.emit('process')
+	}
 
-  /**
-   * Unsubscribe from a section.
-   *
-   * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string} id Section's ID.
-   * @param {boolean} [quiet=false] Don't show a success notification.
-   * @param {import('./Section').default} [section] Section being unsubscribed from, if any, for
-   *   legacy subscriptions.
-   */
-  async unsubscribe(subscribeId, id, quiet = false, section) {
-    await this.actuallyUnsubscribe(subscribeId, id);
+	/**
+	 * Update the subscription list by adding or removing a subscription, without saving anything to
+	 * the server.
+	 *
+	 * @param {string} subscribeId Section's subscribe ID (modern or legacy format).
+	 * @param {boolean} subscribe Subscribe or unsubscribe.
+	 * @protected
+	 */
+	updateLocally(subscribeId, subscribe) {
+		// this.data can be not set on newly created pages with DT subscriptions enabled.
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		this.data ??= {}
 
-    const ancestorSubscribedTo = section?.getClosestSectionSubscribedTo();
-    if (!quiet || ancestorSubscribedTo) {
-      const title = subscribeId.startsWith('p-') ?
-        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-title') :
-        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title');
-      let body = subscribeId.startsWith('p-') ?
-        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-body') :
-        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
-      let autoHideSeconds;
-      if (ancestorSubscribedTo) {
-        body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
-        autoHideSeconds = 'long';
-      }
-      mw.notify(wrapHtml(body), { title, autoHideSeconds });
-    }
-  }
+		this.data[subscribeId] = subscribe
+	}
 
-  /**
-   * Get the subscription state of a section or the page.
-   *
-   * @param {string} subscribeId
-   * @returns {?boolean}
-   * @throws {CdError}
-   */
-  getState(subscribeId) {
-    if (!cd.user.isRegistered()) {
-      return null;
-    }
+	/**
+	 * Subscribe to a section.
+	 *
+	 * @param {string} subscribeId Section's DiscussionTools ID.
+	 * @param {string} [id] Section's ID. Not required for DiscussionTools subscriptions.
+	 * @param {boolean} [quiet] Don't show a success notification.
+	 * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
+	 *   time).
+	 */
+	async subscribe(subscribeId, id, quiet = false, unsubscribeHeadline = undefined) {
+		await this.actuallySubscribe(subscribeId, id, unsubscribeHeadline)
 
-    if (!this.areLoaded()) {
-      throw new CdError();
-    }
+		if (!quiet) {
+			const body = subscribeId.startsWith('p-')
+				? cd.mws('discussiontools-newtopicssubscription-notify-subscribed-body')
+				: cd.mws('discussiontools-topicsubscription-notify-subscribed-body')
+			mw.notify(wrapHtml(body), {
+				title: subscribeId.startsWith('p-')
+					? cd.mws('discussiontools-newtopicssubscription-notify-subscribed-title')
+					: cd.mws('discussiontools-topicsubscription-notify-subscribed-title'),
+			})
+		}
+	}
 
-    if (this.data[subscribeId] === undefined) {
-      return null;
-    }
+	/**
+	 * Unsubscribe from a section.
+	 *
+	 * @param {string} subscribeId Section's DiscussionTools ID.
+	 * @param {string} [id] Section's ID. Not required for DiscussionTools subscriptions.
+	 * @param {boolean} [quiet] Don't show a success notification.
+	 */
+	async unsubscribe(subscribeId, id, quiet = false) {
+		await this.actuallyUnsubscribe(subscribeId, id)
 
-    return this.data[subscribeId];
-  }
+		if (!quiet) {
+			const body = subscribeId.startsWith('p-')
+				? cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-body')
+				: cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body')
+			mw.notify(wrapHtml(body), {
+				title: subscribeId.startsWith('p-')
+					? cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-title')
+					: cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title'),
+			})
+		}
+	}
 
-  /**
-   * Update the page subscription button label and tooltip.
-   *
-   * @protected
-   */
-  updatePageSubscribeButton() {
-    this.pageSubscribeButton
-      .setLabel(
-        this.getState(this.pageSubscribeId) ?
-          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label') :
-          cd.mws('discussiontools-newtopicssubscription-button-subscribe-label')
-      )
-      .setTooltip(
-        this.getState(this.pageSubscribeId) ?
-          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip') :
-          cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
-      );
-  }
+	/**
+	 * Get the subscription state of a section or the page.
+	 *
+	 * @param {string} subscribeId
+	 * @returns {boolean | undefined}
+	 * @throws {CdError}
+	 */
+	getState(subscribeId) {
+		if (!cd.user.isRegistered()) {
+			return
+		}
 
-  /**
-   * _For internal use._ Convert the subscription list to the standard format, with section IDs as
-   * keys instead of array elements, to store it.
-   *
-   * @param {string[]} arr Array of section IDs.
-   * @returns {object[]}
-   */
-  itemsToKeys(arr) {
-    return Object.assign({}, ...arr.map((page) => ({ [page]: true })));
-  }
+		if (!this.areLoaded()) {
+			throw new CdError()
+		}
 
-  /**
-   * Get the subscriptions type. In practice, returns `'dt'` or `'legacy'` based on the used class.
-   *
-   * @returns {string}
-   */
-  getType() {
-    return this.type;
-  }
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!this.data || !(subscribeId in this.data)) {
+			return
+		}
+
+		return this.data[subscribeId]
+	}
+
+	/**
+	 * _For internal use._ Convert the subscription list to the standard format, with section IDs as
+	 * keys instead of array elements, to store it.
+	 *
+	 * @param {string[]} arr Array of section IDs.
+	 * @returns {SubscriptionsData}
+	 */
+	itemsToKeys(arr) {
+		return Object.assign({}, ...arr.map((page) => ({ [page]: true })))
+	}
 }
 
-export default Subscriptions;
+export default Subscriptions

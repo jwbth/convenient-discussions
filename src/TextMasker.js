@@ -1,4 +1,6 @@
-import { generateTagsRegexp } from './utils-wikitext';
+import cd from './loader/cd'
+import { removeNonLetters } from './shared/utils-general'
+import { generateTagsRegexp } from './shared/utils-wikitext'
 
 /**
  * Class for replacing parts of a text that shouldn't be modified, with a placeholder, in order to
@@ -18,219 +20,237 @@ import { generateTagsRegexp } from './utils-wikitext';
  * in one chain.
  */
 class TextMasker {
-  /**
-   * Create a text masker.
-   *
-   * @param {string} text
-   * @param {string[]} [maskedTexts] Array of masked texts to reuse. Use this when you are using the
-   *   class with a string that already has masked parts, or you will run into problems.
-   */
-  constructor(text, maskedTexts) {
-    /**
-     * Text parts of which are masked.
-     *
-     * @type {string}
-     */
-    this.text = text;
+	/**
+	 * Create a text masker.
+	 *
+	 * @param {string} text
+	 * @param {string[]} [maskedTexts] Array of masked texts to reuse. Use this when you are using the
+	 *   class with a string that already has masked parts, or you will run into problems.
+	 */
+	constructor(text, maskedTexts) {
+		/**
+		 * Text parts of which are masked.
+		 *
+		 * @type {string}
+		 * @protected
+		 */
+		this.text = text
 
-    /**
-     * Array of masked texts. Its indexes correspond to marker indexes.
-     *
-     * @type {string[]}
-     */
-    this.maskedTexts = maskedTexts || [];
-  }
+		/**
+		 * Array of masked texts. Its indexes correspond to marker indexes.
+		 *
+		 * @type {string[]}
+		 * @protected
+		 */
+		this.maskedTexts = maskedTexts || []
+	}
 
-  /**
-   * Replace text matched by a regexp with placeholders.
-   *
-   * @param {RegExp} regexp
-   * @param {string} [type] Should consist only of alphanumeric characters.
-   * @param {boolean} [useGroups=false] Use the first two capturing groups in the regexp as the
-   *   `preText` and `textToMask` parameters. (Used for processing table code.)
-   * @returns {TextMasker}
-   */
-  mask(regexp, type, useGroups = false) {
-    if (type && !type.match(/^\w+$/)) {
-      console.warn('TextMasker.mask: the `type` argument should match `^\\w+$/`. Proceeding nevertheless.');
-    }
+	/**
+	 * Replace text matched by a regexp with placeholders.
+	 *
+	 * @param {RegExp} regexp
+	 * @param {string} [type] Should consist only of alphanumeric characters.
+	 * @param {boolean} [useGroups] Use the first two capturing groups in the regexp as the
+	 *   `preText` and `textToMask` parameters. (Used for processing table code.)
+	 * @returns {this}
+	 */
+	mask(regexp, type, useGroups = false) {
+		if (type && !type.match(/^\w+$/)) {
+			cd.debug.logWarn(
+				'TextMasker.mask: the `type` argument should match `^\\w+$/`. Proceeding nevertheless.',
+			)
+		}
 
-    this.text = this.text.replace(regexp, (s, preText, textToMask) => {
-      if (!useGroups) {
-        preText = null;
-        textToMask = null;
-      }
+		this.text = this.text.replace(
+			regexp,
+			/** @type {ReplaceCallback<3>} */ (s, preText, textToMask) => {
+				if (!useGroups) {
+					preText = ''
+					textToMask = ''
+				}
 
-      // Handle tables separately.
-      return (
-        (preText || '') +
-        (type === 'table' ? '\x03' : '\x01') +
-        this.maskedTexts.push(textToMask || s) +
-        (type ? '_' + type : '') +
-        (type === 'table' ? '\x04' : '\x02')
-      );
-    });
-    return this;
-  }
+				// Handle tables separately.
+				return (
+					(preText || '') +
+					(type === 'table' ? '\u0003' : '\u0001') +
+					String(this.maskedTexts.push(textToMask || s)) +
+					(type ? '_' + type : '') +
+					(type === 'table' ? '\u0004' : '\u0002')
+				)
+			},
+		)
 
-  /**
-   * In a provided string, replace placeholders added by {@link TextMasker#mask} with their text.
-   *
-   * @param {string} text
-   * @param {string} [type]
-   * @returns {string}
-   */
-  unmaskText(text, type) {
-    const regexp = type ?
-      new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type}(?:_\\d+)?)?(?:\\x02|\\x04)`, 'g') :
-      /(?:\x01|\x03)(\d+)(?:_\w+)?(?:\x02|\x04)/g;
-    while (regexp.test(text)) {
-      text = text.replace(regexp, (s, num) => this.maskedTexts[num - 1]);
-    }
-    return text;
-  }
+		return this
+	}
 
-  /**
-   * Replace placeholders added by {@link TextMasker#mask} with their text.
-   *
-   * @param {string} type
-   * @returns {TextMasker}
-   */
-  unmask(type) {
-    this.text = this.unmaskText(this.text, type);
-    return this;
-  }
+	/**
+	 * In a provided string, replace placeholders added by {@link TextMasker#mask} with their text.
+	 *
+	 * @param {string} text
+	 * @param {string} [type]
+	 * @returns {string}
+	 */
+	unmaskText(text, type) {
+		const regexp = type
+			? new RegExp(`(?:\\u0001|\\u0003)(\\d+)(?:_${type}[^\\u0002\\u0004]*)?(?:\\u0002|\\u0004)`, 'g')
+			: /(?:\u0001|\u0003)(\d+)[^\u0002\u0004]*(?:\u0002|\u0004)/g
+		while (regexp.test(text)) {
+			text = text.replace(regexp, (_s, num) => this.maskedTexts[num - 1])
+		}
 
-  /**
-   * Mask templates taking into account nested ones.
-   *
-   * Borrowed from
-   * https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
-   *
-   * @param {Function} [handler] Function that processes the template code.
-   * @param {boolean} [addLengths=false] Add lengths of the masked templates to markers.
-   * @returns {TextMasker}
-   * @author Putnik
-   * @author Jack who built the house
-   */
-  maskTemplatesRecursively(handler, addLengths = false) {
-    let pos = 0;
-    const stack = [];
-    while (true) {
-      let left = this.text.indexOf('{{', pos);
-      let right = this.text.indexOf('}}', pos);
+		return text
+	}
 
-      if (left !== -1 && left < right) {
-        // Memorize the wrapper's start position; will search the wrapped next
-        stack.push(left);
-        pos = left + 2;
-      } else {
-        // Nothing more found _inside_ the wrapper; time to go up the hierarchy
+	/**
+	 * Replace placeholders added by {@link TextMasker#mask} with their text.
+	 *
+	 * @param {string} [type]
+	 * @returns {this}
+	 */
+	unmask(type) {
+		this.text = this.unmaskText(this.text, type)
 
-        // No wrappers left - we're at the outermost level
-        if (!stack.length) break;
+		return this
+	}
 
-        // Get back to the wrapper
-        left = stack.pop();
+	/**
+	 * Mask templates taking into account nested ones.
+	 *
+	 * Borrowed from
+	 * https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
+	 *
+	 * @param {(code: string) => string} [handler] Function that processes the template code.
+	 * @param {boolean} [addLengths] Add lengths of the masked templates to markers.
+	 * @returns {this}
+	 * @author Putnik
+	 * @author Jack who built the house
+	 */
+	maskTemplatesRecursively(handler, addLengths = false) {
+		let pos = 0
+		const stack = []
+		while (true) {
+			const left = this.text.indexOf('{{', pos)
+			let right = this.text.indexOf('}}', pos)
 
-        // Handle unclosed `{{` and unopened `}}`
-        if (typeof left === 'undefined') {
-          if (right === -1) {
-            pos += 2;
-            continue;
-          } else {
-            left = 0;
-          }
-        }
-        if (right === -1) {
-          right = this.text.length;
-        }
+			if (left !== -1 && left < right) {
+				// Memorize the wrapper's start position; will search the wrapped next
+				stack.push(left)
+				pos = left + 2
+			} else {
+				// Nothing more found _inside_ the wrapper; time to go up the hierarchy
 
-        // Mask the template
-        right += 2;
-        let template = this.text.substring(left, right);
-        if (handler) {
-          template = handler(template);
-        }
-        const lengthOrNot = addLengths ?
-          '_' + template.replace(/\x01\d+_template_(\d+)\x02/g, (m, n) => ' '.repeat(n)).length :
-          '';
-        this.text = (
-          this.text.substring(0, left) +
-          '\x01' +
-          this.maskedTexts.push(template) +
-          '_template' +
-          lengthOrNot +
-          '\x02' +
-          this.text.substr(right)
-        );
+				// Get back to the wrapper
+				let stackLeft = stack.pop()
 
-        // Synchronize the position
-        pos = right - template.length;
-      }
-    }
+				// No wrappers left - we're at the outermost level
+				if (stackLeft === undefined) break
 
-    return this;
-  }
+				// Handle unclosed `{{` and unopened `}}`
+				if (typeof stackLeft === 'undefined') {
+					if (right === -1) {
+						pos += 2
+						continue
+					} else {
+						stackLeft = 0
+					}
+				}
+				if (right === -1) {
+					right = this.text.length
+				}
 
-  /**
-   * Mask HTML tags in the text.
-   *
-   * @param {string[]} tags
-   * @param {string} type
-   * @returns {TextMasker}
-   */
-  maskTags(tags, type) {
-    return this.mask(generateTagsRegexp(tags), type);
-  }
+				// Mask the template
+				right += 2
+				let template = this.text.substring(stackLeft, right)
+				if (handler) {
+					template = handler(template)
+				}
+				const templateName = template.match(/^\{\{\s*([^|{}]+)/)?.[1]?.trim()
+				const cleanedTemplateName = templateName ? removeNonLetters(templateName) : ''
+				this.text =
+					this.text.substring(0, stackLeft) +
+					'\u0001' +
+					String(this.maskedTexts.push(template)) +
+					'_template' +
+					(cleanedTemplateName ? '_' + cleanedTemplateName : '') +
+					// Length if needed
+					(addLengths
+						? '_' +
+							String(
+								template.replace(/\u0001\d+_template[^\u0002]*?_(\d+)\u0002/g, (_m, n) =>
+									' '.repeat(n),
+								).length,
+							)
+						: '') +
+					'\u0002' +
+					this.text.slice(right)
 
-  /**
-   * Replace code, that should not be modified when processing it, with placeholders.
-   *
-   * @param {Function} [templateHandler]
-   * @returns {TextMasker}
-   */
-  maskSensitiveCode(templateHandler) {
-    return this
-      .maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
-      .maskTags(['gallery', 'poem'], 'gallery')
-      .maskTags(['nowiki'], 'inline')
-      .maskTemplatesRecursively(templateHandler)
-      .mask(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true)
+				// Synchronize the position
+				pos = right - template.length
+			}
+		}
 
-      // Tables with a signature inside that are clipped on comment editing.
-      .mask(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true);
-  }
+		return this
+	}
 
-  /**
-   * Run a certain function for the text.
-   *
-   * @param {Function} func Function that should accept and return a string. It can also accept the
-   *   {@link TextMasker} object as a second parameter.
-   * @returns {TextMasker}
-   */
-  withText(func) {
-    this.text = func(this.text, this);
-    return this;
-  }
+	/**
+	 * Mask HTML tags in the text.
+	 *
+	 * @param {string[]} tags
+	 * @param {string} type
+	 * @returns {this}
+	 */
+	maskTags(tags, type) {
+		return this.mask(generateTagsRegexp(tags), type)
+	}
 
-  /**
-   * Get the text in its current (masked/unmasked) state.
-   *
-   * @returns {string}
-   */
-  getText() {
-    return this.text;
-  }
+	/**
+	 * Replace code, that should not be modified when processing it, with placeholders.
+	 *
+	 * @param {(code: string) => string} [templateHandler]
+	 * @returns {this}
+	 */
+	maskSensitiveCode(templateHandler) {
+		return (
+			this.maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
+				.maskTags(['gallery', 'poem'], 'gallery')
+				.maskTags(['nowiki'], 'inline')
+				.maskTemplatesRecursively(templateHandler)
+				.mask(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true)
 
-  /**
-   * Get the masked texts.
-   *
-   * @returns {string[]}
-   */
-  getMaskedTexts() {
-    return this.maskedTexts;
-  }
+				// Tables with a signature inside that are clipped on comment editing.
+				.mask(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true)
+		)
+	}
+
+	/**
+	 * Run a certain function for the text.
+	 *
+	 * @param {(text: string, masker: this) => string} func
+	 * @returns {this}
+	 */
+	withText(func) {
+		this.text = func(this.text, this)
+
+		return this
+	}
+
+	/**
+	 * Get the text in its current (masked/unmasked) state.
+	 *
+	 * @returns {string}
+	 */
+	getText() {
+		return this.text
+	}
+
+	/**
+	 * Get the masked texts.
+	 *
+	 * @returns {string[]}
+	 */
+	getMaskedTexts() {
+		return this.maskedTexts
+	}
 }
 
-export default TextMasker;
+export default TextMasker

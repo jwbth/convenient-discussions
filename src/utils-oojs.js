@@ -4,8 +4,11 @@
  * @module utilsOoui
  */
 
-import cd from './cd';
-import controller from './controller';
+import CheckboxInputWidget from './CheckboxInputWidget'
+import RadioOptionWidget from './RadioOptionWidget'
+import TextInputWidget from './TextInputWidget'
+import cd from './loader/cd'
+import { copyText } from './utils-window'
 
 /**
  * OOjs namespace.
@@ -19,7 +22,7 @@ import controller from './controller';
  * Namespace for all classes, static methods and static properties of OOUI.
  *
  * @namespace ui
- * @memberof external:OO
+ * @memberof OO
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui
  */
 
@@ -27,7 +30,7 @@ import controller from './controller';
  * OOjs event emitter.
  *
  * @namespace EventEmitter
- * @memberof external:OO
+ * @memberof OO
  * @see https://doc.wikimedia.org/oojs/master/OO.EventEmitter.html
  */
 
@@ -35,7 +38,7 @@ import controller from './controller';
  * OOUI window manager.
  *
  * @class WindowManager
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowManager
  */
 
@@ -43,7 +46,7 @@ import controller from './controller';
  * OOUI field layout.
  *
  * @class FieldLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
  */
 
@@ -51,7 +54,7 @@ import controller from './controller';
  * OOUI checkbox input widget.
  *
  * @class CheckboxInputWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
  */
 
@@ -59,7 +62,7 @@ import controller from './controller';
  * OOUI radio select widget.
  *
  * @class RadioSelectWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
  */
 
@@ -67,7 +70,7 @@ import controller from './controller';
  * OOUI radio option widget.
  *
  * @class RadioOptionWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioOptionWidget
  */
 
@@ -75,7 +78,7 @@ import controller from './controller';
  * OOUI copy text layout.
  *
  * @class CopyTextLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CopyTextLayout
  */
 
@@ -83,7 +86,7 @@ import controller from './controller';
  * OOUI text input widget.
  *
  * @class TextInputWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
  */
 
@@ -91,7 +94,7 @@ import controller from './controller';
  * OOUI process dialog.
  *
  * @class ProcessDialog
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
  */
 
@@ -99,7 +102,7 @@ import controller from './controller';
  * OOUI process.
  *
  * @class Process
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Process
  */
 
@@ -107,7 +110,7 @@ import controller from './controller';
  * OOUI page layout.
  *
  * @class PageLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout
  */
 
@@ -115,7 +118,7 @@ import controller from './controller';
  * OOUI horizontal layout.
  *
  * @class HorizontalLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
  */
 
@@ -123,7 +126,7 @@ import controller from './controller';
  * OOUI button widget.
  *
  * @class ButtonWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
  */
 
@@ -131,7 +134,7 @@ import controller from './controller';
  * OOUI popup button widget.
  *
  * @class PopupButtonWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupButtonWidget
  */
 
@@ -139,7 +142,7 @@ import controller from './controller';
  * OOUI popup widget.
  *
  * @class PopupWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupWidget
  */
 
@@ -147,7 +150,7 @@ import controller from './controller';
  * OOUI button menu select widget.
  *
  * @class ButtonMenuSelectWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonMenuSelectWidget
  */
 
@@ -157,306 +160,381 @@ import controller from './controller';
  * action string, not a boolean (which helps to differentiate between more than two types of answer
  * and also a window close by pressing Esc).
  *
- * @param {external:jQuery|string} message
- * @param {object} [options={}]
- * @returns {Promise.<Array>}
+ * @param {string|JQuery} message
+ * @param {AnyByKey} [options]
+ * @returns {Promise.<'accept' | 'reject' | undefined>} `undefined` is possible when pressing Esc, I
+ *   think.
  */
 export async function showConfirmDialog(message, options = {}) {
-  const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
-  controller.getWindowManager().addWindows([dialog]);
-  const win = controller.getWindowManager().openWindow(
-    dialog,
-    Object.assign(
-      // Default options
-      {
-        message,
+	const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] })
+	cd.getWindowManager().addWindows([dialog])
+	const win = cd.getWindowManager().openWindow(dialog, { message, ...options })
+	win.opened.then(() => {
+		if (message instanceof $) {
+			mw.hook('wikipage.content').fire(message)
+		}
+	})
+	const closeData = await win.closed
 
-        // OO.ui.MessageDialog standard
-        actions: [
-          {
-            action: 'accept',
-            label: OO.ui.deferMsg('ooui-dialog-message-accept'),
-            flags: 'primary',
-          },
-          {
-            action: 'reject',
-            label: OO.ui.deferMsg('ooui-dialog-message-reject'),
-            flags: 'safe',
-          },
-        ],
-      },
-      options
-    )
-  );
-  win.opened.then(() => {
-    if (message instanceof $) {
-      mw.hook('wikipage.content').fire(message);
-    }
-  });
-
-  return (await win.closed)?.action;
+	return closeData?.action
 }
 
 /**
- * @typedef {object} CreateTextFieldReturn
- * @property {external:OO.ui.FieldLayout} field
- * @property {external:OO.ui.TextInputWidget} input
+ * @typedef {object} ControlOptionsBase
+ * @property {string} [name]
+ * @property {ControlType} [type]
+ * @property {string|JQuery} [label]
+ * @property {string|JQuery} [help]
+ * @property {string[]} [classes]
+ * @property {boolean} [required]
+ * @property {boolean} [disabled]
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   flags?: string[];
+ *   buttonLabel?: string;
+ * }} ButtonControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   value: string;
+ *   selected?: boolean;
+ *   title?: string;
+ *   tabIndex?: number;
+ * }} CheckboxControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   value: string;
+ *   copyCallback: (successful: boolean, input: OO.ui.TextInputWidget) => void;
+ * }} CopyTextControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   selected?: string[];
+ *   options: Array<{
+ *     data: any,
+ *     label: string,
+ *     help?: string|JQuery,
+ *     selected?: boolean,
+ *   }>;
+ *   classes?: string[];
+ * }} MulticheckboxControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   value: string;
+ *   maxLength: number;
+ *   rows?: number;
+ * }} MultilineTextControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   selected?: string[];
+ *   tagLimit?: number;
+ *   placeholder?: string;
+ *   dataToUi?: (value: Array<string|string[]>) => string[];
+ *   uiToData?: (value: string[]) => (string|string[])[];
+ * }} MultitagControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   value: string;
+ *   min: number;
+ *   max: number;
+ *   buttonStep?: number;
+ * }} NumberControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   selected?: string;
+ *   options: (import('./RadioOptionWidget').RadioOptionWidgetConfig)[];
+ * }} RadioControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   value?: string;
+ *   maxLength?: number;
+ * }} TextControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & mw.widgets.TitleInputWidget.ConfigOptions & {
+ *   label?: string;
+ *   help?: string|JQuery;
+ *   classes?: string[];
+ * }} TitleControlOptions
  */
 
 /**
  * Create a text input field.
  *
- * @param {object} options
- * @param {string} [options.value]
- * @param {string} options.label
- * @param {string} [options.required]
- * @param {string} [options.classes]
- * @param {string} [options.maxLength]
- * @param {string} [options.help]
- * @returns {CreateTextFieldReturn}
+ * @param {TextControlOptions} options
+ * @returns {TextControl}
  */
-export function createTextField({
-  value,
-  maxLength,
-  required,
-  classes,
-  label,
-  help,
-}) {
-  const input = new (require('./TextInputWidget').default)({ value, maxLength, required, classes });
-  const field = new OO.ui.FieldLayout(input, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-  });
-  return { field, input };
+export function createTextControl({ value, maxLength, required, classes, label, help }) {
+	return createGenericControl(
+		'text',
+		new TextInputWidget({ value, maxLength, required, classes }),
+		{ label, help },
+	)
 }
-
-/**
- * @typedef {object} CreateNumberFieldReturn
- * @property {external:OO.ui.FieldLayout} field
- * @property {external:OO.ui.TextInputWidget} input
- */
 
 /**
  * Create a number input field.
  *
- * @param {object} options
- * @param {string} options.value
- * @param {string} options.label
- * @param {string} [options.min]
- * @param {string} [options.max]
- * @param {string} [options.buttonStep]
- * @param {string} [options.help]
- * @param {string[]} [options.classes]
- * @returns {CreateNumberFieldReturn}
+ * @param {NumberControlOptions} options
+ * @returns {NumberControl}
  */
-export function createNumberField({
-  value,
-  label,
-  min,
-  max,
-  buttonStep = 1,
-  help,
-  classes,
-}) {
-  const input = new OO.ui.NumberInputWidget({
-    input: { value },
-    step: 1,
-    buttonStep,
-    min,
-    max,
-    classes: ['cd-numberInput'],
-  });
-  const field = new OO.ui.FieldLayout(input, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-    classes,
-  });
-  return { field, input };
-}
+export function createNumberControl({ value, label, min, max, buttonStep = 1, help, classes }) {
+	return createGenericControl(
+		'number',
 
-/**
- * @typedef {object} CreateCheckboxFieldReturn
- * @property {external:OO.ui.FieldLayout} field
- * @property {import('./CheckboxInputWidget').default} input
- */
+		// See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
+		// why we need type casting here.
+		/** @type {OO.ui.TextInputWidget} */ (
+			/** @type {unknown} */ (
+				new OO.ui.NumberInputWidget({
+					input: { value },
+					step: 1,
+					buttonStep,
+					min,
+					max,
+					classes: ['cd-numberInput'],
+				})
+			)
+		),
+		{ label, help, classes },
+	)
+}
 
 /**
  * Create a checkbox field.
  *
- * @param {object} options
- * @param {string} options.value
- * @param {string} options.label
- * @param {boolean} [options.selected]
- * @param {boolean} [options.disabled]
- * @param {string} [options.help]
- * @param {string} [options.tabIndex]
- * @param {string[]} [options.classes]
- * @returns {CreateCheckboxFieldReturn}
+ * @param {CheckboxControlOptions} options
+ * @returns {CheckboxControl}
  */
-export function createCheckboxField({
-  value,
-  selected,
-  disabled,
-  label,
-  help,
-  tabIndex,
-  classes,
+export function createCheckboxControl({
+	value,
+	selected,
+	disabled,
+	label,
+	title,
+	help,
+	tabIndex,
+	classes,
 }) {
-  const input = new (require('./CheckboxInputWidget').default)({
-    value,
-    selected,
-    disabled,
-    tabIndex,
-  });
-  const field = new OO.ui.FieldLayout(input, {
-    label,
-    align: 'inline',
-    help,
-    helpInline: true,
-    classes,
-  });
-  return { field, input };
+	return createGenericControl(
+		'checkbox',
+		new CheckboxInputWidget({
+			value,
+			selected,
+			disabled,
+			tabIndex,
+		}),
+		{
+			label,
+			title,
+			help,
+			classes,
+			align: 'inline',
+		},
+	)
 }
-
-/**
- * @typedef {object} CreateRadioFieldReturn
- * @property {external:OO.ui.FieldLayout} field
- * @property {external:OO.ui.RadioSelectWidget} select
- * @property {RadioOptionWidget[]} items
- */
 
 /**
  * Create a radio select field.
  *
- * @param {object} options
- * @param {string} options.label
- * @param {string} [options.selected]
- * @param {string} [options.help]
- * @param {object[]} options.options
- * @returns {CreateRadioFieldReturn}
+ * @param {RadioControlOptions} options
+ * @returns {RadioControl}
  */
-export function createRadioField({ label, selected, help, options }) {
-  const items = options.map((config) => new (require('./RadioOptionWidget').default)(config));
-  const select = new OO.ui.RadioSelectWidget({ items });
+export function createRadioControl({ label, selected, help, options }) {
+	const input = new OO.ui.RadioSelectWidget({
+		items: options.map((config) => new RadioOptionWidget(config)),
+	})
 
-  // Workarounds for T359920
-  select.$element.off('mousedown');
-  select.$focusOwner = $();
+	// Workarounds for T359920
+	input.$element.off('mousedown')
+	input.$focusOwner = $()
 
-  const field = new OO.ui.FieldLayout(select, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-  });
+	if (selected !== undefined) {
+		input.selectItemByData(selected)
+	}
 
-  if (selected !== undefined) {
-    select.selectItemByData(selected);
-  }
-
-  return { field, select, items };
+	return createGenericControl('radio', input, { label, help })
 }
 
 /**
  * Create an action field for copying text from an input.
  *
- * @param {object} options
- * @param {object} options.label
- * @param {object} options.value
- * @param {object} [options.disabled]
- * @param {object} [options.help]
- * @param {object} options.copyCallback
- * @returns {external:OO.ui.CopyTextLayout|external:OO.ui.ActionFieldLayout}
+ * @param {CopyTextControlOptions} options
+ * @returns {CopyTextControl}
  */
-export function createCopyTextField({ label, value, disabled = false, help, copyCallback }) {
-  let field;
-  if (OO.ui.CopyTextLayout) {
-    field = new OO.ui.CopyTextLayout({
-      align: 'top',
-      label,
-      copyText: value,
-      button: { disabled },
-      textInput: { disabled },
-      help,
-      helpInline: Boolean(help),
-    });
-    field.on('copy', (successful) => {
-      copyCallback(successful, field);
-    });
-  } else {
-    // Older MediaWiki versions
-    const input = new OO.ui.TextInputWidget({ value, disabled });
-    const button = new OO.ui.ButtonWidget({
-      label: cd.s('copy'),
-      icon: 'copy',
-      disabled,
-    });
-    button.on('click', () => {
-      copyCallback(input.getValue());
-    });
-    field = new OO.ui.ActionFieldLayout(input, button, {
-      align: 'top',
-      label,
-      help,
-      helpInline: Boolean(help),
-    });
-  }
-  return field;
+export function createCopyTextControl({ label, value, disabled = false, help, copyCallback }) {
+	if ('CopyTextLayout' in OO.ui) {
+		const field = new OO.ui.CopyTextLayout({
+			align: 'top',
+			label,
+			copyText: value,
+			button: { disabled },
+			textInput: { disabled },
+			help,
+			helpInline: Boolean(help),
+		})
+		field.on('copy', (successful) => {
+			copyCallback(successful, field.textInput)
+		})
+
+		return { type: 'copyText', field, input: field.textInput }
+	}
+
+	// MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout instead
+	const input = new OO.ui.TextInputWidget({ value, disabled })
+	const button = new OO.ui.ButtonWidget({
+		label: cd.s('copy'),
+		icon: 'copy',
+		disabled,
+	})
+	button.on('click', () => {
+		copyCallback(copyText(input.getValue()), input)
+	})
+
+	return {
+		type: 'copyText',
+		field: new OO.ui.ActionFieldLayout(input, button, {
+			align: 'top',
+			label,
+			help,
+			helpInline: Boolean(help),
+		}),
+		input,
+	}
 }
 
 /**
- * Add some properties to the inheritor class that the (ES5)
- * {@link https://www.mediawiki.org/wiki/OOjs/Inheritance OOUI inheritance mechanism} uses. It
- * partly replicates the operations made in
- * {@link https://doc.wikimedia.org/oojs/master/OO.html#.inheritClass OO.inheritClass}.
+ * Create a checkbox multiselect field.
  *
- * @param {Function} targetClass Inheritor class.
- * @returns {Function}
+ * @param {MulticheckboxControlOptions} options
+ * @returns {MulticheckboxControl}
  */
-export function tweakUserOoUiClass(targetClass) {
-  const originClass = Object.getPrototypeOf(targetClass);
-  OO.initClass(originClass);
-  targetClass.static = Object.create(originClass.static);
-  Object.keys(targetClass)
-    .filter((key) => key !== 'static')
-    .forEach((key) => {
-      targetClass.static[key] = targetClass[key];
-    });
-  targetClass.parent = targetClass.super = originClass;
-  return targetClass;
+export function createMulticheckboxControl({ label, options, selected, classes }) {
+	return createGenericControl(
+		'multicheckbox',
+		new OO.ui.CheckboxMultiselectWidget({
+			items: options.map(
+				(option) =>
+					new OO.ui.CheckboxMultioptionWidget({
+						data: option.data,
+						selected: selected ? selected.includes(option.data) : option.selected,
+						label: option.label,
+					}),
+			),
+			classes,
+		}),
+		{ label },
+	)
 }
 
 /**
- * Mix in a user class into a target OOUI class.
+ * Create a tag multiselect field.
  *
- * @param {Function} targetClass
- * @param {Function} originClass
+ * @param {MultitagControlOptions} options
+ * @returns {MultitagControl}
  */
-export function mixinUserOoUiClass(targetClass, originClass) {
-  OO.mixinClass(targetClass, originClass);
-
-  Object.getOwnPropertyNames(originClass.prototype)
-    .filter((key) => key !== 'constructor')
-    .forEach((key) => {
-      targetClass.prototype[key] = originClass.prototype[key];
-    });
+export function createMultitagControl({
+	label,
+	placeholder,
+	tagLimit,
+	selected,
+	help,
+	dataToUi,
+	uiToData,
+}) {
+	return createGenericControl(
+		'multitag',
+		new OO.ui.TagMultiselectWidget({
+			placeholder,
+			allowArbitrary: true,
+			inputPosition: 'outline',
+			tagLimit,
+			selected: (dataToUi || ((val) => val)).call(null, selected || []),
+		}),
+		{ label, help },
+		{ uiToData },
+	)
 }
 
 /**
- * Add {@link external:OO.EventEmitter OO.EventEmitter}'s methods to an arbitrary object itself, not
- * its prototype. Can be used for singletons or classes. In the latter case, the methods will be
- * added as static.
+ * Create a button field.
  *
- * @param {object} obj
+ * @param {ButtonControlOptions} options
+ * @returns {ButtonControl}
  */
-export function mixEventEmitterInObject(obj) {
-  const dummy = { prototype: {} };
-  OO.mixinClass(dummy, OO.EventEmitter);
-  Object.assign(obj, dummy.prototype);
-  OO.EventEmitter.call(obj);
+export function createButtonControl({ label, flags, buttonLabel, help }) {
+	return createGenericControl('button', new OO.ui.ButtonWidget({ label: buttonLabel, flags }), {
+		label,
+		help,
+	})
+}
+
+/**
+ * Create a title input field (using
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.widgets.TitleInputWidget.html mw.widgets.TitleInputWidget}).
+ *
+ * @param {TitleControlOptions} options
+ * @returns {TitleControl}
+ */
+export function createTitleControl(options) {
+	const { label, help, classes, ...titleInputOptions } = options
+
+	return createGenericControl('title', new mw.widgets.TitleInputWidget(titleInputOptions), {
+		label,
+		help,
+		classes,
+	})
+}
+
+/**
+ * @typedef {object} GenericFieldOptions
+ * @property {string|JQuery} [label]
+ * @property {'top'|'inline'} [align='top']
+ * @property {string|JQuery} [help]
+ * @property {boolean} [helpInline]
+ * @property {string[]} [classes]
+ * @property {string} [title]
+ */
+
+/**
+ * Create a generic control with a field layout.
+ *
+ * @template {ControlType} T
+ * @param {T} type Control type identifier
+ * @param {ControlTypeToWidget[T]} input The input widget
+ * @param {GenericFieldOptions} [fieldOptions] Configuration for the field layout
+ * @param {AnyByKey} [data] Additional data to attach to the control
+ * @returns {GenericControl<T>}
+ */
+export function createGenericControl(type, input, fieldOptions = {}, data = {}) {
+	const field = /** @type {OO.ui.FieldLayout<ControlTypeToWidget[T]>} */ (
+		new OO.ui.FieldLayout(input, {
+			align: 'top',
+			helpInline: true,
+			...fieldOptions,
+		})
+	)
+
+	if (!fieldOptions.label) {
+		field.$element.addClass('cd-field-labelless')
+	}
+
+	return { type, field, input, ...data }
 }

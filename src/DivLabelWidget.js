@@ -1,10 +1,10 @@
-import { tweakUserOoUiClass } from './utils-oojs';
+import { es6ClassToOoJsClass } from './utils-oojs-class'
 
 /**
  * OOUI label widget.
  *
  * @class LabelWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.LabelWidget
  */
 
@@ -13,12 +13,12 @@ import { tweakUserOoUiClass } from './utils-oojs';
  * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.LabelWidget.html OO.ui.LabelWidget} and
  * uses `<div>` tag instead of `<label>`.
  *
- * @augments external:OO.ui.LabelWidget
+ * @augments OO.ui.LabelWidget
  */
 class DivLabelWidget extends OO.ui.LabelWidget {
-  static tagName = 'div';
+	static tagName = 'div'
 }
 
-tweakUserOoUiClass(DivLabelWidget);
+es6ClassToOoJsClass(DivLabelWidget)
 
-export default DivLabelWidget;
+export default DivLabelWidget

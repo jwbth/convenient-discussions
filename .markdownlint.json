@@ -1,0 +1,12 @@
+{
+	"line-length": false,
+	"no-duplicate-heading": {
+		"siblings_only": true
+	},
+	"blanks-around-headings": false,
+	"blanks-around-fences": false,
+	"blanks-around-lists": false,
+	"no-bare-urls": false,
+	"fenced-code-language": false,
+	"single-trailing-newline": false
+}

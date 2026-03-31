@@ -4,15 +4,25 @@
  * @module utilsWindow
  */
 
-import Button from './Button';
-import ElementsTreeWalker from './ElementsTreeWalker';
-import Parser from './Parser';
-import cd from './cd';
-import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined } from './utils-general';
+import Button from './Button'
+import cd from './loader/cd'
+import ElementsTreeWalker from './shared/ElementsTreeWalker'
+import Parser from './shared/Parser'
+import {
+	decodeHtmlEntities,
+	defined,
+	generatePageNamePattern,
+	isInline,
+	parseWikiUrl,
+	removeDirMarks,
+	spacesToUnderlines,
+} from './shared/utils-general'
+import { parseTimestamp } from './shared/utils-timestamp'
+import { maskDistractingCode } from './shared/utils-wikitext'
+import userRegistry from './userRegistry'
 
 /**
- * @typedef {object} WrapCallbacks
- * @property {Function} *
+ * @typedef {{ [key: string]: import('./Button').Action }} WrapCallbacks
  */
 
 /**
@@ -21,78 +31,63 @@ import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined } from './uti
  * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.HtmlSnippet.html OO.ui.HtmlSnippet}, but
  * works not only with OOUI widgets. Optionally, attach callback functions and `target="_blank"`
  * attribute to links with the provided class names. See also
- * {@link external:jQuery.cdMerge jQuery.cdMerge}.
+ * {@link mergeJquery}.
  *
  * @param {string} html
- * @param {object} [options={}]
+ * @param {object} [options]
  * @param {WrapCallbacks} [options.callbacks]
- * @param {string} [options.tagName='span']
+ * @param {string} [options.tagName]
  * @param {boolean} [options.targetBlank]
- * @returns {external:jQuery}
+ * @returns {JQuery}
  */
 export function wrapHtml(html, options = {}) {
-  const tagName = options.tagName || 'span';
-  const $wrapper = $($.parseHTML(html)).wrapAll(`<${tagName}>`).parent();
-  if (options.callbacks) {
-    Object.keys(options.callbacks).forEach((className) => {
-      const $linkWrapper = $wrapper.find(`.${className}`);
-      let $link = $linkWrapper.find('a');
-      if (/\$\d$/.test($link.attr('href'))) {
-        // Handle dummy links we put into strings for translation so that translators understand
-        // this will be a link.
-        $link.removeAttr('href').removeAttr('title');
-      } else if (!$link.length) {
-        $link = $linkWrapper.wrapInner('<a>').children().first();
-      }
-      new Button({
-        element: $link[0],
-        action: options.callbacks[className],
-      });
-    });
-  }
-  if (options.targetBlank) {
-    $wrapper.find('a[href]').attr('target', '_blank');
-  }
-  return $wrapper;
+	const tagName = options.tagName || 'span'
+	const $wrapper = $($.parseHTML(html)).wrapAll(`<${tagName}>`).parent()
+	const callbacks = options.callbacks
+	if (callbacks) {
+		Object.keys(callbacks).forEach((className) => {
+			const $linkWrapper = $wrapper.find(`.${className}`)
+			let $link = /** @type {JQuery} */ ($linkWrapper.find('a'))
+			const href = $link.attr('href')
+			if (href && /\$\d$/.test(href)) {
+				// Handle dummy links we put into strings for translation so that translators understand
+				// this will be a link.
+				$link.removeAttr('href').removeAttr('title')
+			} else if (!$link.length) {
+				$link = $linkWrapper.wrapInner('<a>').children().first()
+			}
+			new Button({ buttonElement: $link[0] }).setAction(callbacks[className])
+		})
+	}
+	if (options.targetBlank) {
+		$wrapper.find('a[href]').attr('target', '_blank')
+	}
 
+	return $wrapper
 }
 
 /**
- * Wrap the response to the "compare" API request in a table.
+ * Wrap the response to the `compare` API request in a table.
  *
  * @param {string} body
  * @returns {string}
  */
 export function wrapDiffBody(body) {
-  const className = [
-    'diff',
-    mw.user.options.get('editfont') === 'monospace' ? 'diff-editfont-monospace' : undefined,
-    'diff-contentalign-' + (cd.g.contentDirection === 'ltr' ? 'left' : 'right'),
-  ].filter(defined).join(' ');
-  return (
-    `<table class="${className}">` +
-    '<col class="diff-marker"><col class="diff-content">' +
-    '<col class="diff-marker"><col class="diff-content">' +
-    body +
-    '</table>'
-  );
-}
+	const className = [
+		'diff',
+		mw.user.options.get('editfont') === 'monospace' ? 'diff-editfont-monospace' : undefined,
+		'diff-contentalign-' + (cd.g.contentDirection === 'ltr' ? 'left' : 'right'),
+	]
+		.filter(defined)
+		.join(' ')
 
-/**
- * Generate a transparent color for the given color to use it in a gradient.
- *
- * @param {string} color
- * @returns {string}
- */
-export function transparentize(color) {
-  const dummyElement = document.createElement('span');
-  dummyElement.style.color = color;
-  color = dummyElement.style.color;
-  return color.includes('rgba') ?
-    color.replace(/\d+(?=\))/, '0') :
-    color
-      .replace('rgb', 'rgba')
-      .replace(')', ', 0)');
+	return (
+		`<table class="${className}">` +
+		'<col class="diff-marker"><col class="diff-content">' +
+		'<col class="diff-marker"><col class="diff-content">' +
+		body +
+		'</table>'
+	)
 }
 
 /**
@@ -101,107 +96,132 @@ export function transparentize(color) {
  * @returns {boolean}
  */
 export function isInputFocused() {
-  if (!document.activeElement) {
-    return false;
-  }
+	// Use document.activeElement instead of $(':input') for performance reasons - this runs very
+	// often
+	if (!document.activeElement) {
+		return false
+	}
 
-  const $active = $(document.activeElement);
-  return $active.is(':input') || $active.prop('isContentEditable');
+	const $active = $(document.activeElement)
+
+	return Boolean(
+		$active.is(':input') || ('isContentEditable' in $active[0] && $active[0].isContentEditable),
+	)
 }
+
+/**
+ * @typedef {object} ExtendedDOMRect
+ * @property {number} top
+ * @property {number} bottom
+ * @property {number} left
+ * @property {number} right
+ * @property {number} width
+ * @property {number} height
+ * @property {number} outerTop
+ * @property {number} outerBottom
+ * @property {number} outerLeft
+ * @property {number} outerRight
+ */
+
+/**
+ * @typedef {DOMRect | ExtendedDOMRect} AnyDOMRect
+ */
 
 /**
  * Get the bounding client rectangle of an element, setting values that include margins to the
  * `outerTop`, `outerBottom`, `outerLeft`, and `outerRight` properties. The margins are cached.
  *
  * @param {Element} el
- * @returns {object}
+ * @returns {ExtendedDOMRect}
  */
 export function getExtendedRect(el) {
-  if (el.cdMarginTop === undefined) {
-    const style = window.getComputedStyle(el);
-    el.cdMarginTop = parseFloat(style.marginTop);
-    el.cdMarginBottom = parseFloat(style.marginBottom);
-    el.cdMarginLeft = parseFloat(style.marginLeft);
-    el.cdMarginRight = parseFloat(style.marginRight);
-  }
-  const rect = el.getBoundingClientRect();
-  const isVisible = getVisibilityByRects(rect);
-  return $.extend({
-    outerTop: rect.top - (isVisible ? el.cdMarginTop : 0),
-    outerBottom: rect.bottom + (isVisible ? el.cdMarginBottom : 0),
-    outerLeft: rect.left - (isVisible ? el.cdMarginLeft : 0),
-    outerRight: rect.right + (isVisible ? el.cdMarginRight : 0),
-  }, rect);
+	if (el.cdMargin === undefined) {
+		const style = window.getComputedStyle(el)
+		el.cdMargin = {
+			top: Number.parseFloat(style.marginTop),
+			bottom: Number.parseFloat(style.marginBottom),
+			left: Number.parseFloat(style.marginLeft),
+			right: Number.parseFloat(style.marginRight),
+		}
+	}
+	const rect = el.getBoundingClientRect()
+	const visible = isVisible(el)
+
+	return $.extend(
+		{
+			outerTop: rect.top - (visible ? el.cdMargin.top : 0),
+			outerBottom: rect.bottom + (visible ? el.cdMargin.bottom : 0),
+			outerLeft: rect.left - (visible ? el.cdMargin.left : 0),
+			outerRight: rect.right + (visible ? el.cdMargin.right : 0),
+		},
+		rect,
+	)
 }
 
 /**
- * Given bounding client rectangle(s), determine whether the element is visible.
+ * Given bounding client rectangle(s), determine whether the element is fully visible (not
+ * necessarily in the viewport).
  *
- * @param {...object} rects
+ * @param {...AnyDOMRect} rects
  * @returns {boolean} `true` if visible, `false` if not.
  */
 export function getVisibilityByRects(...rects) {
-  // If the element has 0 as the left position and height, it's probably invisible for some reason.
-  return !rects.some((rect) => rect.left === 0 && rect.height === 0);
+	// If the element has 0 as the left position and height, it's probably invisible for some reason.
+	return rects.every((rect) => rect.left !== 0 || rect.height !== 0)
 }
 
 /**
- * Check if the provided key combination is pressed given an event.
+ * Check if elements are visible, using modern checkVisibility API when available, falling back to
+ * rectangle-based and hidden="until-found" checks.
  *
- * @param {Event} e
- * @param {number} keyCode
- * @param {Array.<'cmd'|'shift'|'alt'|'meta'>} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
+ * @param {...Element} elements
+ * @returns {boolean} `true` if all elements are visible, `false` otherwise.
+ */
+export function isVisible(...elements) {
+	return elements.every((element) => {
+		// Use modern checkVisibility API if available
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (element?.checkVisibility) {
+			return element.checkVisibility()
+		}
+
+		// Fallback: check rectangles first
+		const rect = element.getBoundingClientRect()
+		if (!getVisibilityByRects(rect)) {
+			return false
+		}
+
+		// Then check for hidden="until-found" ancestors
+		return !isHiddenByUntilFound(element)
+	})
+}
+
+/**
+ * Check if an element is hidden by a `hidden="until-found"` ancestor.
+ *
+ * @param {Element} element The element to check
  * @returns {boolean}
  */
-export function keyCombination(e, keyCode, modifiers = []) {
-  if (modifiers.includes('cmd')) {
-    removeFromArrayIfPresent(modifiers, 'cmd');
-    // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
-    // platform.
-    modifiers.push($.client.profile().platform === 'mac' ? 'meta' : 'ctrl');
-  }
-  return (
-    e.keyCode === keyCode &&
-    ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modifiers.includes(mod) === e[mod + 'Key'])
-  );
+export function isHiddenByUntilFound(element) {
+	let current = element.parentElement
+
+	while (current) {
+		if (current.getAttribute('hidden') === 'until-found') {
+			return true
+		}
+
+		current = current.parentElement
+	}
+
+	return false
 }
 
 /**
- * Whether a command modifier is pressed. On Mac, this means the Cmd key. On Windows, this means the
- * Ctrl key.
- *
- * @param {Event} e
- * @returns {boolean}
+ * @typedef {{
+ *   higherNode: Node;
+ *   higherOffset: number;
+ * }} HigherNodeAndOffsetInSelection
  */
-export function isCmdModifierPressed(e) {
-  // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
-  // platform.
-  return $.client.profile().platform === 'mac' ? e.metaKey : e.ctrlKey;
-}
-
-/**
- * Get elements using the right selector for the current skin given an object with skin names as
- * keys and selectors as values. If no value for the skin is provided, the `default` value is used.
- *
- * @param {object} selectors
- * @returns {external:jQuery}
- */
-export function skin$(selectors) {
-  return $(selectors[cd.g.skin] || selectors.default || selectors.vector);
-}
-
-/**
- * Get the footer element.
- *
- * @returns {external:jQuery}
- */
-export function getFooter() {
-  return skin$({
-    monobook: '#f-list',
-    modern: '#footer-info',
-    default: '#footer-places',
-  });
-}
 
 /**
  * Given a {@link https://developer.mozilla.org/en-US/docs/Web/API/Selection selection}, get a
@@ -209,61 +229,77 @@ export function getFooter() {
  * focus node.
  *
  * @param {Selection} selection
- * @returns {object}
+ * @returns {HigherNodeAndOffsetInSelection | undefined}
  */
 export function getHigherNodeAndOffsetInSelection(selection) {
-  if (!selection.anchorNode) {
-    return null;
-  }
+	if (!selection.anchorNode) {
+		return
+	}
 
-  const isAnchorHigher = (
-    selection.anchorNode.compareDocumentPosition(selection.focusNode) &
-    Node.DOCUMENT_POSITION_FOLLOWING
-  );
-  return {
-    higherNode: isAnchorHigher ? selection.anchorNode : selection.focusNode,
-    higherOffset: isAnchorHigher ? selection.anchorOffset : selection.focusOffset,
-  };
+	const isAnchorHigher =
+		selection.anchorNode.compareDocumentPosition(/** @type {Node} */ (selection.focusNode)) &
+		Node.DOCUMENT_POSITION_FOLLOWING
+
+	return {
+		higherNode: isAnchorHigher ? selection.anchorNode : /** @type {Node} */ (selection.focusNode),
+		higherOffset: isAnchorHigher ? selection.anchorOffset : selection.focusOffset,
+	}
 }
+
+/**
+ * @typedef {object} SuccessAndFailMessages
+ * @property {string|JQuery} success Success message.
+ * @property {string|JQuery} fail Fail message.
+ */
+
+/**
+ * @overload
+ * @param {string} text Text to copy.
+ * @param {SuccessAndFailMessages} messages
+ * @returns {void}
+ *
+ * @overload
+ * @param {string} text Text to copy.
+ * @returns {boolean}
+ */
 
 /**
  * Copy text and notify whether the operation was successful.
  *
  * @param {string} text Text to copy.
- * @param {object} messages
- * @param {string|external:jQuery} messages.success Success message.
- * @param {string|external:jQuery} messages.fail Fail message.
+ * @param {SuccessAndFailMessages} [messages]
+ * @returns {boolean|undefined}
  * @private
  */
-export function copyText(text, { success, fail }) {
-  const $textarea = $('<textarea>')
-    .val(text)
-    .appendTo(document.body)
-    .select();
-  const successful = document.execCommand('copy');
-  $textarea.remove();
+export function copyText(text, messages) {
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const $textarea = $('<textarea>').val(text).appendTo(document.body).trigger('select')
+	// eslint-disable-next-line @typescript-eslint/no-deprecated
+	const successful = document.execCommand('copy')
+	$textarea.remove()
 
-  if (text && successful) {
-    mw.notify(success);
-  } else {
-    mw.notify(fail, { type: 'error' });
-  }
+	if (messages) {
+		if (text && successful) {
+			mw.notify(messages.success)
+		} else {
+			mw.notify(messages.fail, { type: 'error' })
+		}
+	} else {
+		return successful
+	}
 }
 
 /**
  * Check whether there is something in the HTML that can be converted to wikitext.
  *
  * @param {string} html
- * @param {Element} containerElement
+ * @param {HTMLElement} containerElement
  * @returns {boolean}
  */
 export function isHtmlConvertibleToWikitext(html, containerElement) {
-  return isElementConvertibleToWikitext(
-    cleanUpPasteDom(
-      getElementFromPasteHtml(html),
-      containerElement
-    ).element
-  );
+	return isElementConvertibleToWikitext(
+		cleanUpPasteDom(getElementFromPasteHtml(html), containerElement).element,
+	)
 }
 
 /**
@@ -273,294 +309,745 @@ export function isHtmlConvertibleToWikitext(html, containerElement) {
  * @returns {boolean}
  */
 export function isElementConvertibleToWikitext(element) {
-  return Boolean(
-    element.childElementCount &&
-    !(
-      [...element.querySelectorAll('*')].length === 1 &&
-      element.childNodes.length === 1 &&
-      ['P', 'LI', 'DD'].includes(element.children[0].tagName)
-    ) &&
-    ![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR')
-  );
+	return Boolean(
+		element.childElementCount &&
+			!(
+				[...element.querySelectorAll('*')].length === 1 &&
+				element.childNodes.length === 1 &&
+				['P', 'LI', 'DD'].includes(element.children[0].tagName)
+			) &&
+			![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR'),
+	)
 }
+
+/**
+ * @typedef {object} CleanUpPasteDomReturn
+ * @property {HTMLElement} element
+ * @property {string} text
+ * @property {(string|undefined)[]} syntaxHighlightLanguages
+ */
 
 /**
  * Clean up the contents of an element created based on the HTML code of a paste.
  *
- * @param {Element} element
- * @param {Element} containerElement
- * @returns {object}
+ * @param {HTMLElement} element
+ * @param {HTMLElement} containerElement
+ * @returns {CleanUpPasteDomReturn}
  */
 export function cleanUpPasteDom(element, containerElement) {
-  // Get all styles (such as `user-select: none`) from classes applied when the element is added
-  // to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
-  // elements themselves in the text/html format), but won't hurt.
-  element.className = 'cd-commentForm-dummyElement';
-  containerElement.appendChild(element);
+	// Get all styles (such as `user-select: none`) from classes applied when the element is added
+	// to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
+	// elements themselves in the text/html format), but won't hurt.
+	element.className = 'cd-commentForm-dummyElement'
+	containerElement.append(element)
 
-  [...element.querySelectorAll('[style]:not(pre [style])')]
-    .forEach((el) => {
-      if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
-        $(el).wrapInner('<u>');
-      }
-      if (el.style.textDecoration === 'line-through' && !['STRIKE', 'S', 'DEL'].includes(el.tagName)) {
-        $(el).wrapInner('<s>');
-      }
-      if (el.style.fontStyle === 'italic' && !['I', 'EM'].includes(el.tagName)) {
-        $(el).wrapInner('<i>');
-      }
-      if (['bold', '700'].includes(el.style.fontWeight) && !['B', 'STRONG'].includes(el.tagName)) {
-        $(el).wrapInner('<b>');
-      }
-      el.removeAttribute('style');
-    });
+	const styledElements = /** @type {HTMLElement[]} */ ([
+		...element.querySelectorAll('[style]:not(pre [style])'),
+	])
+	styledElements.forEach((el) => {
+		if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
+			$(el).wrapInner('<u>')
+		}
+		if (
+			el.style.textDecoration === 'line-through' &&
+			!['STRIKE', 'S', 'DEL'].includes(el.tagName)
+		) {
+			$(el).wrapInner('<s>')
+		}
+		if (el.style.fontStyle === 'italic' && !['I', 'EM'].includes(el.tagName)) {
+			$(el).wrapInner('<i>')
+		}
+		if (['bold', '700'].includes(el.style.fontWeight) && !['B', 'STRONG'].includes(el.tagName)) {
+			$(el).wrapInner('<b>')
+		}
+		el.removeAttribute('style')
+	})
 
-  const removeElement = (el) => el.remove();
-  const replaceWithChildren = (el) => {
-    if (
-      ['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
-      (
-        el.nextElementSibling ||
+	const removeElement = (/** @type {Element} */ el) => {
+		el.remove()
+	}
+	const replaceWithChildren = (/** @type {Element} */ el) => {
+		if (
+			['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
+			(el.nextElementSibling ||
+				// Cases like `<div><div>Quote</div>Text</div>`, e.g. created by
+				// https://ru.wikipedia.org/wiki/Template:Цитата_сообщения
+				el.nextSibling?.textContent.trim())
+		) {
+			el.after('\n')
+		}
+		el.replaceWith(...el.childNodes)
+	}
 
-        // Cases like "<div><div>Quote</div>Text</div>", e.g. created by
-        // https://ru.wikipedia.org/wiki/Template:Цитата_сообщения
-        el.nextSibling?.textContent?.trim()
-      )
-    ) {
-      el.after('\n');
-    }
-    el.replaceWith(...el.childNodes);
-  };
+	;[...element.querySelectorAll('*')]
+		.filter((el) => window.getComputedStyle(el).userSelect === 'none')
+		.forEach(removeElement)
 
-  [...element.querySelectorAll('*')]
-    .filter((el) => window.getComputedStyle(el).userSelect === 'none')
-    .forEach(removeElement);
+	// Should run after removing elements with `user-select: none`, to remove their wrappers that
+	// now have no content.
+	;[...element.querySelectorAll('*')]
+		.filter(
+			(el) =>
+				(!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
+				// Need to keep non-breaking spaces.
+				!el.textContent.replace(/[ \n]+/g, ''),
+		)
 
-  // Should run after removing elements with `user-select: none`, to remove their wrappers that
-  // now have no content.
-  [...element.querySelectorAll('*')]
-    // Need to keep non-breaking spaces.
-    .filter((el) => (
-      (!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
-      !el.textContent.replace(/[ \n]+/g, ''))
-    )
+		.forEach(removeElement)
+	;[...element.querySelectorAll('style')].forEach(removeElement)
 
-    .forEach(removeElement);
+	const topElements = /** @type {Element[]} */ (
+		Parser.prototype.getTopElementsWithText(
+			element,
+			true,
+			Parser.prototype.getChildElements.bind({ context: { childElementsProp: 'children' } }),
+		).nodes
+	)
+	if (topElements[0] !== element) {
+		element.innerHTML = ''
+		element.append(...topElements)
+	}
 
-  [...element.querySelectorAll('style')]
-    .forEach(removeElement);
+	;[...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
+		// eslint-disable-next-line no-self-assign
+		el.textContent = el.textContent
+	})
 
-  const topElements = new Parser({ childElementsProp: 'children' })
-    .getTopElementsWithText(element, true).nodes;
-  if (topElements[0] !== element) {
-    element.innerHTML = '';
-    element.append(...topElements);
-  }
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map(
+		(el) =>
+			((el.tagName === 'PRE' ? /** @type {HTMLElement} */ (el.parentElement) : el).className.match(
+				'mw-highlight-lang-([0-9a-z_-]+)',
+			) || [])[1],
+	)
 
-  [...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
-    // eslint-disable-next-line no-self-assign
-    el.textContent = el.textContent;
-  });
+	;[...element.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren)
+	;[...element.querySelectorAll('p > br')].forEach((el) => {
+		el.after('\n')
+		el.remove()
+	})
 
-  const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map((el) => (
-    (
-      (el.tagName === 'PRE' ? el.parentNode : el).className
-        .match('mw-highlight-lang-([0-9a-z_-]+)') ||
-      []
-    )[1]
-  ));
+	// This will turn links to unexistent pages to actual red links. Should be above the removal of
+	// classes.
+	;[...element.querySelectorAll('a')]
+		.filter((el) => el.classList.contains('new'))
+		.forEach((el) => {
+			const href = el.getAttribute('href')
+			if (!href) return
 
-  [...element.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')]
-    .forEach(replaceWithChildren);
-  [...element.querySelectorAll('p > br')]
-    .forEach((el) => {
-      el.after('\n');
-      el.remove();
-    });
+			const urlData = parseWikiUrl(href)
+			if (urlData && urlData.hostname === location.hostname) {
+				el.setAttribute('href', mw.util.getUrl(urlData.pageName))
+			}
+		})
 
-  // This will turn links to unexistent pages to actual red links. Should be above the removal of
-  // classes.
-  [...element.querySelectorAll('a')]
-    .filter((el) => el.classList.contains('new'))
-    .forEach((el) => {
-      const urlData = parseWikiUrl(el.getAttribute('href'))
-      if (urlData && urlData.hostname === location.hostname) {
-        el.setAttribute('href', mw.util.getUrl(urlData.pageName));
-      }
-    });
+	const allowedTags = new Set(cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt'))
+	;[...element.querySelectorAll('*')].forEach((el) => {
+		if (!allowedTags.has(el.tagName.toLowerCase())) {
+			replaceWithChildren(el)
 
-  const allowedTags = cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt');
-  [...element.querySelectorAll('*')]
-    .forEach((el) => {
-      if (!allowedTags.includes(el.tagName.toLowerCase())) {
-        replaceWithChildren(el);
-        return;
-      }
+			return
+		}
 
-      [...el.attributes]
-        .filter((attr) => attr.name === 'class' || /^data-/.test(attr.name))
-        .forEach((attr) => {
-          el.removeAttribute(attr.name);
-        });
-    });
+		;[...el.attributes]
+			.filter((attr) => attr.name === 'class' || attr.name.startsWith('data-'))
+			.forEach((attr) => {
+				el.removeAttribute(attr.name)
+			})
+	})
+	;[...element.children]
+		// <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
+		// don't create `*` markup in the API.)
+		.filter((el) => el.tagName === 'DD')
 
-  [...element.children]
-    // <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
-    // don't create `*` markup in the API.)
-    .filter((el) => el.tagName === 'DD')
+		.forEach(replaceWithChildren)
 
-    .forEach(replaceWithChildren);
+	getAllTextNodes(element)
+		.filter((node) => /** @type {HTMLElement} */ (node.parentElement).tagName !== 'PRE')
+		.forEach((node) => {
+			// Firefox adds newlines of unclear nature
+			node.textContent = node.textContent.replace(/\n/g, ' ')
+		})
 
-  getAllTextNodes(element)
-    .filter((node) => !node.parentNode.tagName === 'PRE')
-    .forEach((node) => {
-      // Firefox adds newlines of unclear nature
-      node.textContent = node.textContent.replace(/\n/g, ' ');
-    });
+	// Need to do it before removing the element; if we do it later, the literal textual content of
+	// the elements equivalent to .textContent will be used instead of the rendered appearance.
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const text = element.innerText
 
-  // Need to do it before removing the element; if we do it later, the literal textual content of
-  // the elements equivalent to .textContent will be used instead of the rendered appearance.
-  const text = element.innerText;
+	element.remove()
 
-  element.remove();
-
-  return { element, text, syntaxHighlightLanguages };
+	return { element, text, syntaxHighlightLanguages }
 }
 
 /**
  * Turn HTML code of a paste into an element.
  *
  * @param {string} html
- * @returns {Element}
+ * @returns {HTMLElement}
  */
 export function getElementFromPasteHtml(html) {
-  const div = document.createElement('div');
-  div.innerHTML = html
-    .replace(/^[^]*<!-- *StartFragment *-->/, '')
-    .replace(/<!-- *EndFragment *-->[^]*$/, '');
-  return div;
+	const div = document.createElement('div')
+	div.innerHTML = html
+		.replace(/^[^]*<!-- *StartFragment *-->/, '')
+		.replace(/<!-- *EndFragment *-->[^]*$/, '')
+
+	return div
 }
 
 /**
  * Get all nodes between the two specified, including them. This works equally well if they are at
  * different nesting levels. Descendants of nodes that are already included are not included.
  *
- * @param {Element} start
- * @param {Element} end
- * @param {Element} rootElement
- * @returns {?Element[]}
+ * For simplicity, consider the results `HTMLElement`s – we have yet to encounter a case where one
+ * of the elements in a range is simply an `Element`.
+ *
+ * @param {HTMLElement} start
+ * @param {?HTMLElement} end
+ * @param {HTMLElement} rootElement
+ * @returns {HTMLElement[] | undefined}
  */
 export function getRangeContents(start, end, rootElement) {
-  // It makes more sense to place this function in the `utils` module, but we can't import
-  // `controller` there because of issues with the worker build and a cyclic dependency that
-  // emerges.
+	// Fight infinite loops
+	if (!end || start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) {
+		return
+	}
 
-  // Fight infinite loops
-  if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) {
-    return null;
-  }
+	let commonAncestor
+	for (let /** @type {HTMLElement | null} */ el = start; el; el = el.parentElement) {
+		if (el.contains(end)) {
+			commonAncestor = el
+			break
+		}
+	}
 
-  let commonAncestor;
-  for (let el = start; el; el = el.parentNode) {
-    if (el.contains(end)) {
-      commonAncestor = el;
-      break;
-    }
-  }
+	/*
+		Here we should equally account for all cases of the start and end item relative position.
 
-  /*
-    Here we should equally account for all cases of the start and end item relative position.
+			<ul>         <!-- Say, may start anywhere from here... -->
+				<li></li>
+				<li>
+					<div></div>
+				</li>
+				<li></li>
+			</ul>
+			<div></div>  <!-- ...to here. And, may end anywhere from here... -->
+			<ul>
+				<li></li>
+				<li>
+					<div></div>
+				</li>
+				<li></li>  <-- ...to here. -->
+			</ul>
+	*/
+	const rangeContents = [start]
 
-      <ul>         <!-- Say, may start anywhere from here... -->
-        <li></li>
-        <li>
-          <div></div>
-        </li>
-        <li></li>
-      </ul>
-      <div></div>  <!-- ...to here. And, may end anywhere from here... -->
-      <ul>
-        <li></li>
-        <li>
-          <div></div>
-        </li>
-        <li></li>  <-- ...to here. -->
-      </ul>
-  */
-  const rangeContents = [start];
+	// The start container could contain the end container and be different from it in the case with
+	// adjusted end items.
+	if (!start.contains(end)) {
+		const treeWalker = new ElementsTreeWalker(rootElement, start)
 
-  // The start container could contain the end container and be different from it in the case with
-  // adjusted end items.
-  if (!start.contains(end)) {
-    const treeWalker = new ElementsTreeWalker(start, rootElement);
+		while (treeWalker.currentNode.parentNode !== commonAncestor) {
+			while (treeWalker.nextSibling()) {
+				rangeContents.push(treeWalker.currentNode)
+			}
+			treeWalker.parentNode()
+		}
+		treeWalker.nextSibling()
+		while (!treeWalker.currentNode.contains(end)) {
+			rangeContents.push(treeWalker.currentNode)
+			treeWalker.nextSibling()
+		}
 
-    while (treeWalker.currentNode.parentNode !== commonAncestor) {
-      while (treeWalker.nextSibling()) {
-        rangeContents.push(treeWalker.currentNode);
-      }
-      treeWalker.parentNode();
-    }
-    treeWalker.nextSibling();
-    while (!treeWalker.currentNode.contains(end)) {
-      rangeContents.push(treeWalker.currentNode);
-      treeWalker.nextSibling();
-    }
+		// This step fixes some issues with .cd-connectToPreviousItem like wrong margins below the
+		// expand note of the comment
+		// https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=678031044#c-Example-2021-10-02T05:14:00.000Z-Example-2021-10-02T05:13:00.000Z
+		// if you collapse its thread.
+		let parent
+		while (
+			(parent = end.parentElement) &&
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			parent &&
+			parent.lastChild === end &&
+			treeWalker.currentNode.contains(parent)
+		) {
+			end = parent
+		}
 
-    // This step fixes some issues with .cd-connectToPreviousItem like wrong margins below the
-    // expand note of the comment
-    // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=678031044#c-Example-2021-10-02T05:14:00.000Z-Example-2021-10-02T05:13:00.000Z
-    // if you collapse its thread.
-    while (end.parentNode.lastChild === end && treeWalker.currentNode.contains(end.parentNode)) {
-      end = end.parentNode;
-    }
+		while (treeWalker.currentNode !== end) {
+			treeWalker.firstChild()
+			while (!treeWalker.currentNode.contains(end)) {
+				rangeContents.push(treeWalker.currentNode)
+				treeWalker.nextSibling()
+			}
+		}
+		rangeContents.push(end)
+	}
 
-    while (treeWalker.currentNode !== end) {
-      treeWalker.firstChild();
-      while (!treeWalker.currentNode.contains(end)) {
-        rangeContents.push(treeWalker.currentNode);
-        treeWalker.nextSibling();
-      }
-    }
-    rangeContents.push(end);
-  }
-
-  return rangeContents;
-}
-
-/**
- * Create a `<svg>` element.
- *
- * @param {number} width
- * @param {number} height
- * @param {number} [viewBoxWidth=width]
- * @param {number} [viewBoxHeight=height]
- * @returns {external:jQuery}
- */
-export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = height) {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  return $(svg)
-    .attr('width', width)
-    .attr('height', height)
-    .attr('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
-    .attr('aria-hidden', 'true')
-
-    // https://en.wikipedia.org/wiki/Project:Dark_mode_(gadget)
-    .addClass('mw-invert');
+	return rangeContents
 }
 
 /**
  * Get all text nodes under the root element in the window (not worker) context.
  *
  * @param {Element} rootNode
- * @returns {Node[]}
+ * @returns {Text[]}
  * @private
  */
 export function getAllTextNodes(rootNode) {
-  const treeWalker = document.createNodeIterator(rootNode, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  let node;
-  while ((node = treeWalker.nextNode())) {
-    nodes.push(node);
-  }
-  return nodes;
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const treeWalker = document.createNodeIterator(rootNode, NodeFilter.SHOW_TEXT)
+	const nodes = []
+	let node
+	while ((node = /** @type {?Text} */ (treeWalker.nextNode()))) {
+		nodes.push(node)
+	}
+
+	return nodes
+}
+
+/**
+ * Check if an anchor is existent on the page (in an element ID or the `name` of an `<a>` element).
+ *
+ * @param {string} anchor
+ * @param {boolean} [isWikilink] The anchor is part of a wikilink string (e.g. [[#test
+ *   test]]). If so, we will replace spaces with underlines.
+ * @returns {boolean | undefined}
+ */
+export function isExistentAnchor(anchor, isWikilink = false) {
+	if (!anchor) {
+		return
+	}
+
+	if (isWikilink) {
+		anchor = spacesToUnderlines(anchor)
+	}
+	const escaped = CSS.escape(anchor)
+
+	return Boolean($(`*[id="${escaped}"], a[name="${escaped}"]`).length)
+}
+
+/**
+ * Merge many jQuery objects into one. Works like {@link https://api.jquery.com/add/ .add()}, but
+ * accepts many parameters and is faster. Unlike `.add()`, only accepts jQuery objects though and
+ * doesn't reorder elements based on their relative position in the DOM.
+ *
+ * @param {Array.<JQuery|undefined>} arrayOfJquery jQuery objects. Undefined values will be
+ *   omitted.
+ * @returns {JQuery} jQuery
+ */
+export function mergeJquery(...arrayOfJquery) {
+	return $($.map(arrayOfJquery.filter(defined), ($object) => $object.get()))
+}
+
+/**
+ * Get the name of the anchor in the `href` attribute of an anchor element. If anything is not
+ * right, returns `null`.
+ *
+ * @param {HTMLAnchorElement} element
+ * @returns {string | undefined}
+ */
+export function getLinkedAnchor(element) {
+	const href = element.getAttribute('href')
+
+	return href?.startsWith('#') ? href.slice(1) : undefined
+}
+
+/**
+ * The object returned from `extractSignatures()`.
+ *
+ * @typedef {object} SignatureInWikitext
+ * @property {import('./User').default} author The author name.
+ * @property {number} index The array index of the signature (not the index of the signature's text
+ *   in the code - excuse me the ambiguity here).
+ * @property {string} [timestamp] The timestamp of the signature.
+ * @property {Date} [date] The timestamp parsed to a Date object.
+ * @property {number} startIndex The start index of the signature in the code.
+ * @property {number} endIndex The end index of the signature in the code.
+ * @property {number} commentStartIndex The start index of the signature's comment in the code.
+ * @property {number} [nextCommentStartIndex] The start index of the next signature's comment in the
+ *   code. This is temporary and deleted in `extractSignatures()`.
+ * @property {string} dirtyCode The whole signature with all the wikitext.
+ */
+
+/**
+ * @typedef {MakeOptional<
+ *   Omit<SignatureInWikitext, 'commentStartIndex' | 'index' | 'date'> & {
+ *     nextCommentStartIndex: NonNullable<SignatureInWikitext['nextCommentStartIndex']>
+ *   },
+ *   'author'
+ * >} SignatureInWikitextDraft
+ */
+
+/**
+ * Extract signatures from wikitext.
+ *
+ * Only basic signature parsing is performed here; more precise signature text identification is
+ * performed in `CommentSource#adjustSignature()`. See also `CommentSource#adjust()`.
+ *
+ * @param {string} code Code to extract signatures from.
+ * @returns {SignatureInWikitext[]}
+ */
+export function extractSignatures(code) {
+	// TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
+	// templates and tags?
+	// But keep in mind that this code may still be part of comments.
+	const noSignatureClassesPattern = cd.g.noSignatureClasses.join(String.raw`\b|\b`)
+	const commentAntipatternsPatternParts = [
+		`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`,
+	]
+	if (cd.config.noSignatureTemplates.length) {
+		const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|')
+		commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`)
+	}
+	commentAntipatternsPatternParts.push(
+		...cd.config.commentAntipatterns.map((regexp) => regexp.source),
+	)
+	const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|')
+
+	// Hide HTML comments, quotes and lines containing antipatterns.
+	const adjustedCode = maskDistractingCode(code)
+		.replace(
+			cd.g.quoteRegexp,
+			/** @type {ReplaceCallback<4>} */
+			(_, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending,
+		)
+		.replace(new RegExp(`^.*(?:${commentAntipatternsPattern}).*$`, 'mg'), (s) =>
+			' '.repeat(s.length),
+		)
+
+	const signatureDrafts = extractRegularSignatures(adjustedCode, code)
+	const unsigneds = extractUnsigneds(adjustedCode, code, signatureDrafts)
+	signatureDrafts.push(...unsigneds)
+
+	// This is for the procedure adding anchors to comments linked from the comment in
+	// CommentForm#addAnchorsToComments().
+	const signatureIndex = adjustedCode.indexOf(cd.g.signCode)
+	if (signatureIndex !== -1) {
+		// Dummy signature
+		signatureDrafts.push({
+			author: cd.user,
+			startIndex: signatureIndex,
+			nextCommentStartIndex: signatureIndex + adjustedCode.slice(signatureIndex).indexOf('\n') + 1,
+
+			// These are not used. Purely for the sake of type checking.
+			endIndex: signatureIndex + cd.g.signCode.length,
+			dirtyCode: cd.g.signCode,
+			timestamp: '',
+		})
+	}
+
+	if (unsigneds.length || signatureIndex !== -1) {
+		signatureDrafts.sort((sig1, sig2) => (sig1.startIndex > sig2.startIndex ? 1 : -1))
+	}
+
+	const signatures = /** @type {SignatureInWikitext[]} */ (
+		signatureDrafts.filter((sig) => sig.author)
+	)
+	signatures.forEach((sig, i) => {
+		sig.commentStartIndex =
+			i === 0 ? 0 : /** @type {number} */ (signatures[i - 1].nextCommentStartIndex)
+	})
+	signatures.forEach((sig, i) => {
+		const { date } = (sig.timestamp && parseTimestamp(sig.timestamp)) || {}
+		sig.index = i
+		sig.date = date
+		delete sig.nextCommentStartIndex
+	})
+
+	return signatures
+}
+
+/**
+ * Extract signatures that don't come from the unsigned templates from wikitext.
+ *
+ * @param {string} adjustedCode Adjusted page code.
+ * @param {string} code Page code.
+ * @returns {SignatureInWikitextDraft[]}
+ * @private
+ */
+function extractRegularSignatures(adjustedCode, code) {
+	const timestampToolsContent = cd.g.timestampTools.content
+	const ending = `(?:\\n*|$)`
+	const afterTimestamp = `(?!["»])(?:\\}\\}|</small>)?`
+
+	// Use (?:^|[^=]) to filter out timestamps in a parameter (in quote templates)
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const timestampRegexp = new RegExp(
+		`^((.*?(?:^|[^=]))(${timestampToolsContent.regexp.source})${afterTimestamp}).*${ending}`,
+		'igm',
+	)
+
+	// After capturing the first signature with `.*?` we make another capture (with authorLinkRegexp)
+	// to make sure we take the first link to the same author as the author in the last link. 251 is
+	// not arbitrary: it's 255 (maximum allowed signature length) minus `'[[u:a'.length` plus
+	// `' '.length` (the space before the timestamp).
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const signatureScanLimit = 251
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const signatureRegexp = new RegExp(
+		/*
+			Captures:
+			1 - the whole line with the signature
+			2 - text before the timestamp
+			3 - text before the first user link
+			4 - author name (inside `cd.g.captureUserNamePattern`)
+			5 - sometimes, a slash appears here (inside `cd.g.captureUserNamePattern`)
+			6 - timestamp
+		 */
+		`^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit - 1}}?[^=])` +
+			`(${timestampToolsContent.regexp.source})${afterTimestamp}.*)${ending}`,
+		'im',
+	)
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const lastAuthorLinkRegexp = new RegExp(`^.*${cd.g.captureUserNamePattern}`, 'i')
+	const authorLinkRegexp = new RegExp(cd.g.captureUserNamePattern, 'ig')
+
+	const signatures = []
+	let timestampMatch
+	while ((timestampMatch = timestampRegexp.exec(adjustedCode))) {
+		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+		const line = timestampMatch[0]
+		const lineStartIndex = timestampMatch.index
+		const authorTimestampMatch = line.match(signatureRegexp)
+
+		let author
+		let timestamp
+		let startIndex
+		let endIndex
+		let nextCommentStartIndex
+		let dirtyCode
+		if (authorTimestampMatch) {
+			// Extract the timestamp data
+			const timestampStartIndex = lineStartIndex + authorTimestampMatch[2].length
+			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+			const timestampEndIndex = timestampStartIndex + authorTimestampMatch[6].length
+			timestamp = removeDirMarks(code.slice(timestampStartIndex, timestampEndIndex))
+
+			// Extract the signature data
+			startIndex = lineStartIndex + authorTimestampMatch[3].length
+			endIndex = lineStartIndex + authorTimestampMatch[1].length
+			dirtyCode = code.slice(startIndex, endIndex)
+
+			nextCommentStartIndex = lineStartIndex + authorTimestampMatch[0].length
+
+			// Find the first link to this author in the preceding text.
+
+			let authorLinkMatch
+			authorLinkRegexp.lastIndex = 0
+			const commentEndingStartIndex = Math.max(0, timestampStartIndex - lineStartIndex - 255)
+			const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex)
+
+			const [, lastAuthorLink] = commentEnding.match(lastAuthorLinkRegexp) || []
+
+			// Locically it should always be non-empty. There is an unclear problem with
+			// https://az.wikipedia.org/w/index.php?title=Vikipediya:Kənd_meydanı&diff=prev&oldid=7223881,
+			// probably having something to do with difference between regular length and byte length.
+			if (!lastAuthorLink) continue
+
+			author = userRegistry.get(decodeHtmlEntities(lastAuthorLink))
+
+			// Rectify the author name if needed.
+			while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {
+				// Slash can be present in authorLinkMatch[2]. It often indicates a link to a page in the
+				// author's userspace that is not part of the signature (while some such links are, and we
+				// don't want to eliminate those cases).
+				if (authorLinkMatch[2]) continue
+
+				if (userRegistry.get(decodeHtmlEntities(authorLinkMatch[1])) === author) {
+					startIndex = lineStartIndex + commentEndingStartIndex + authorLinkMatch.index
+					dirtyCode = code.slice(startIndex, endIndex)
+					break
+				}
+			}
+		} else {
+			startIndex = lineStartIndex + timestampMatch[2].length
+			endIndex = lineStartIndex + timestampMatch[1].length
+			dirtyCode = code.slice(startIndex, endIndex)
+
+			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+			const timestampEndIndex = startIndex + timestampMatch[3].length
+			timestamp = removeDirMarks(code.slice(startIndex, timestampEndIndex))
+
+			nextCommentStartIndex = lineStartIndex + timestampMatch[0].length
+		}
+
+		signatures.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex })
+	}
+
+	return signatures
+}
+
+/**
+ * Extract signatures that come from the unsigned templates from wikitext.
+ *
+ * @param {string} adjustedCode Adjusted page code.
+ * @param {string} code Page code.
+ * @param {SignatureInWikitextDraft[]} signatures Existing signatures.
+ * @returns {SignatureInWikitextDraft[]}
+ * @private
+ */
+function extractUnsigneds(adjustedCode, code, signatures) {
+	if (!cd.g.unsignedTemplatesPattern) {
+		return []
+	}
+
+	const timestampTools = cd.g.timestampTools.content
+
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const unsigneds = /** @type {SignatureInWikitextDraft[]} */ ([])
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const unsignedTemplatesRegexp = new RegExp(cd.g.unsignedTemplatesPattern + String.raw`.*\n`, 'g')
+	let match
+	while ((match = unsignedTemplatesRegexp.exec(adjustedCode))) {
+		let authorString
+		let timestamp
+		if (timestampTools.noTzRegexp.test(match[2])) {
+			timestamp = match[2]
+			authorString = match[3]
+		} else if (timestampTools.noTzRegexp.test(match[3])) {
+			timestamp = match[3]
+			authorString = match[2]
+		} else {
+			authorString = match[2]
+		}
+
+		// Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The timezone
+		// could be not UTC, but currently the timezone offset is taken from the wiki configuration, so
+		// it doesn't have effect.
+		if (timestamp && !cd.g.timestampTools.content.regexp.test(timestamp)) {
+			timestamp += ' (UTC)'
+
+			// Workaround for "undated" templates. I think (need to recheck) in most cases that signature
+			// would qualify as a regular signature, not an unsigned one, just with the timestamp in a
+			// template. But when there is no author, we need to fill the author field.
+			authorString ??= '<undated>'
+		}
+
+		// Double spaces
+		timestamp = timestamp?.replace(/ +/g, ' ')
+
+		const startIndex = match.index
+		const endIndex = match.index + match[1].length
+		const nextCommentStartIndex = match.index + match[0].length
+
+		unsigneds.push({
+			// A situation is also possible when we could parse neither the author nor the timestamp. (If
+			// we could parse the timestamp, the author becomes `<undated>`). Let's assume that the
+			// template still contains a signature and is not a "stray" template and still include it
+			// (we'll filter out authorless signatures later anyway, but we need them now to figure out
+			// where comments start).
+			author: authorString ? userRegistry.get(decodeHtmlEntities(authorString)) : undefined,
+
+			timestamp,
+			startIndex,
+			endIndex,
+			dirtyCode: code.slice(startIndex, endIndex),
+			nextCommentStartIndex,
+		})
+
+		// `[5 tildes] {{unsigned|...}}` cases. In these cases, both the signature and
+		// {{unsigned|...}} are considered signatures and added to the array. We could combine them
+		// but that would need corresponding code in Parser.js which could be tricky, so for now we just
+		// remove the duplicate. That still allows to reply to the comment.
+		const relevantSignatureIndex = signatures.findIndex(
+			(sig) => sig.nextCommentStartIndex === nextCommentStartIndex,
+		)
+		if (relevantSignatureIndex !== -1) {
+			signatures.splice(relevantSignatureIndex, 1)
+		}
+	}
+
+	return unsigneds
+}
+
+/**
+ * Find the first timestamp related to a comment in the code.
+ *
+ * @param {string} code
+ * @returns {string | undefined}
+ */
+export function findFirstTimestamp(code) {
+	return extractSignatures(code)[0]?.timestamp
+}
+
+/**
+ * Get the gender that is common for a list of users (`'unknown'` is treated as `'male'`) or
+ * `'unknown'` if there is no such.
+ *
+ * @param {import('./User').default[]} users
+ * @returns {string}
+ */
+export function getCommonGender(users) {
+	const genders = users.map((user) => user.getGender())
+	let commonGender
+	if (genders.every((gender) => gender === 'female')) {
+		commonGender = 'female'
+	} else if (genders.every((gender) => gender !== 'female')) {
+		commonGender = 'male'
+	} else {
+		commonGender = 'unknown'
+	}
+
+	return commonGender
+}
+
+/**
+ * Provided an end boundary element, make sure the selection doesn't go beyond it.
+ *
+ * @param {Element} endBoundary
+ */
+export function limitSelectionAtEndBoundary(endBoundary) {
+	const selection = window.getSelection()
+	if (selection.containsNode(endBoundary, true)) {
+		const { higherNode, higherOffset } = /** @type {HigherNodeAndOffsetInSelection} */ (
+			getHigherNodeAndOffsetInSelection(selection)
+		)
+		selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0)
+	}
+}
+
+/**
+ * Combine the section headline, summary text, and, optionally, summary postfix to create an edit
+ * summary.
+ *
+ * @param {object} options
+ * @param {string} options.text Summary text. Can be clipped if there is not enough space.
+ * @param {string} [options.optionalText] Optional text added to the end of the summary if there is
+ *   enough space. Ignored if there is not.
+ * @param {string} [options.section] Section name.
+ * @param {boolean} [options.addPostfix] Whether to add `cd.g.summaryPostfix` to the summary.
+ * @returns {string}
+ */
+export function buildEditSummary({ text, optionalText, section, addPostfix = true }) {
+	let fullText = (section ? `/* ${section} */ ` : '') + text.trim()
+
+	let wasOptionalTextAdded
+	if (optionalText) {
+		let projectedText = fullText + optionalText
+
+		if (cd.config.transformSummary) {
+			projectedText = cd.config.transformSummary(projectedText)
+		}
+
+		if (projectedText.length <= cd.g.summaryLengthLimit) {
+			fullText = projectedText
+			wasOptionalTextAdded = true
+		}
+	}
+
+	if (!wasOptionalTextAdded) {
+		if (cd.config.transformSummary) {
+			fullText = cd.config.transformSummary(fullText)
+		}
+
+		if (fullText.length > cd.g.summaryLengthLimit) {
+			fullText = fullText.slice(0, cd.g.summaryLengthLimit - 1) + '…'
+		}
+	}
+
+	if (addPostfix) {
+		fullText += cd.g.summaryPostfix
+	}
+
+	return fullText
 }

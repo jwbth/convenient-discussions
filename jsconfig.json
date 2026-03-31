@@ -1,13 +1,14 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "checkJs": false,
-    "noEmit": true,
-    "types": [
-      "./node_modules/types-mediawiki",
-      "./node_modules/@types/oojs",
-      "./node_modules/@types/oojs-ui",
-      "./node_modules/@types/jquery"
-    ]
-  }
+	"extends": "./jsconfig-base.json",
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "nodenext",
+		"types": [
+			// For typescript-eslint
+			"prompts"
+		]
+	},
+
+	// No subdirectories
+	"include": ["*", "scripts/**/*"]
 }

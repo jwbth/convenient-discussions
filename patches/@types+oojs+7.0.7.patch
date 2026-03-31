@@ -1,0 +1,19 @@
+diff --git a/node_modules/@types/oojs/utils.d.ts b/node_modules/@types/oojs/utils.d.ts
+index 2f49f0b..4392ba8 100644
+--- a/node_modules/@types/oojs/utils.d.ts
++++ b/node_modules/@types/oojs/utils.d.ts
+@@ -44,13 +44,7 @@ declare namespace OO {
+ 
+     type NodesOf<T, D extends number> = {
+         done: T;
+-        recur:
+-            | T
+-            | ValueOf<T>
+-            | NodesOf<
+-                Exclude<ValueOf<T>, NonPlainObject>,
+-                [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][D]
+-            >;
++        recur: any;
+     }[D extends -1 ? "done" : T extends NonPlainObject ? "done" : "recur"];
+ 
+     type LeavesOf<T, D extends number> = T extends NonPlainObject ? T : Extract<NodesOf<T, D>, NonPlainObject>;

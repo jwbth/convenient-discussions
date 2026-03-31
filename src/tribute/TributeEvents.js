@@ -1,354 +1,393 @@
 class TributeEvents {
-  constructor(tribute) {
-    this.tribute = tribute;
-    this.tribute.events = this;
-  }
+	/**
+	 * @param {import('./Tribute').default} tribute
+	 */
+	constructor(tribute) {
+		/** @type {import('./Tribute').default} */
+		this.tribute = tribute
+	}
 
-  /*
-    jwbth: Removed:
-    - "space" - it causes the menu not to change or hide when a space was typed;
-    - "delete" - it causes the menu not to appear when backspace is pressed and a character
-      preventing the menu to appear is removed (for example, ">" in "<small>").
-   */
-  static keys() {
-    return [
-      {
-        key: 9,
-        value: "TAB"
-      },
-      {
-        key: 13,
-        value: "ENTER"
-      },
-      {
-        key: 27,
-        value: "ESCAPE"
-      },
-      {
-        key: 38,
-        value: "UP"
-      },
-      {
-        key: 40,
-        value: "DOWN"
-      }
-    ];
-  }
+	/*
+		jwbth: Removed:
+		- "space" - it causes the menu not to change or hide when a space was typed;
+		- "delete" - it causes the menu not to appear when backspace is pressed and a character
+			preventing the menu to appear is removed (for example, ">" in "<small>").
+	 */
+	static keys() {
+		return [
+			{
+				key: 9,
+				value: 'TAB',
+			},
+			{
+				key: 13,
+				value: 'ENTER',
+			},
+			{
+				key: 27,
+				value: 'ESCAPE',
+			},
+			{
+				key: 38,
+				value: 'UP',
+			},
+			{
+				key: 40,
+				value: 'DOWN',
+			},
+		]
+	}
 
-  bind(element) {
-    element.boundKeydown = this.keydown.bind(element, this);
-    element.boundKeyup = this.keyup.bind(element, this);
-    element.boundInput = this.input.bind(element, this);
+	/**
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 */
+	bind(element) {
+		// const selectionChangeHandler = (event) => this.selectionchange(event, element)
+		// this.selectionHandlerMap = new WeakMap()
+		// this.selectionHandlerMap.set(element, selectionChangeHandler)
 
-    element.addEventListener("keydown", element.boundKeydown, false);
-    element.addEventListener("keyup", element.boundKeyup, false);
-    element.addEventListener("input", element.boundInput, false);
-  }
+		// Use capture to get ahead of CodeMirror's keydown handler. Note that there may be a duplicate
+		// event dispatched by the textarea in CodeMirror#domEventHandlersExtension.
+		element.addEventListener('keydown', this.keydown, { capture: true })
+		element.addEventListener('keyup', this.keyup)
+		// document.addEventListener('selectionchange', selectionChangeHandler)
+		element.addEventListener('input', this.input)
+	}
 
-  unbind(element) {
-    element.removeEventListener("keydown", element.boundKeydown, false);
-    element.removeEventListener("keyup", element.boundKeyup, false);
-    element.removeEventListener("input", element.boundInput, false);
+	/**
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 */
+	unbind(element) {
+		element.removeEventListener('keydown', this.keydown, { capture: true })
+		element.removeEventListener('keyup', this.keyup)
+		// document.removeEventListener('selectionchange', this.selectionHandlerMap.get(element))
+		element.removeEventListener('input', this.input)
+		// this.selectionHandlerMap.delete(element)
+	}
 
-    delete element.boundKeydown;
-    delete element.boundKeyup;
-    delete element.boundInput;
-  }
+	/**
+	 * @param {Event} event
+	 */
+	keydown = (event) => {
+		const element = event.currentTarget
 
-  keydown(instance, event) {
-    // jwbth: Removed shouldDeactivate() fixing the disappearing of the menu when a part of a
-    // mention is typed and the user presses any command key.
+		// jwbth: Removed shouldDeactivate() fixing the disappearing of the menu when a part of a
+		// mention is typed and the user presses any command key.
 
-    let element = this;
-    instance.commandEvent = false;
+		this.commandEvent = false
 
-    TributeEvents.keys().forEach(o => {
-      if (o.key === event.keyCode) {
-        instance.commandEvent = true;
-        instance.callbacks()[o.value.toLowerCase()](event, element);
-      }
-    });
-  }
+		TributeEvents.keys().forEach((o) => {
+			if (o.key === event.keyCode) {
+				this.commandEvent = true
+				this.callbacks()[o.value.toLowerCase()](event, element)
+			}
+		})
+	}
 
-  input(instance, event) {
-    instance.inputEvent = true;
-    instance.keyup.call(this, instance, event);
-  }
+	/**
+	 * @param {Event} event
+	 */
+	input = (event) => {
+		this.inputEvent = true
 
-  click(instance, event) {
-    // jwbth: Ignore other than left button clicks.
-    if (event.which !== 1) return;
+		this.keyup(event)
+	}
 
-    let tribute = instance.tribute;
-    if (tribute.menu && tribute.menu.contains(event.target)) {
-      let li = event.target;
-      event.preventDefault();
-      event.stopPropagation();
-      while (li.nodeName.toLowerCase() !== "li") {
-        li = li.parentNode;
-        if (!li || li === tribute.menu) {
-          // jwbth: Replaced the error throw with return, as there is nothing wrong when a user
-          // clicks the scroll bar.
-          return;
-        }
-      }
+	// /**
+	//  * @param {Event} event
+	//  * @param {HTMLInputElement | HTMLTextAreaElement} element
+	//  */
+	// selectionchange = (event, element) => {
+	// 	if (document.activeElement === element) {
+	// 		this.keyup(event, element)
+	// 	}
+	// }
 
-      // jwbth: Added this.
-      if (li.classList.contains('tribute-label')) return;
+	/**
+	 * @param {MouseEvent} event
+	 */
+	click = (event) => {
+		// jwbth: Ignore non-left button clicks.
+		if (event.which !== 1) return
 
-      tribute.selectItemAtIndex(li.getAttribute("data-index"), event);
-      tribute.hideMenu();
+		let tribute = this.tribute
+		if (tribute.menu && tribute.menu.contains(event.target)) {
+			let li = event.target
+			event.preventDefault()
+			event.stopPropagation()
+			while (li.nodeName.toLowerCase() !== 'li') {
+				li = li.parentNode
+				if (!li || li === tribute.menu) {
+					// jwbth: Replaced the error throw with return, as there is nothing wrong when a user
+					// clicks the scroll bar.
+					return
+				}
+			}
 
-      // TODO: should fire with externalTrigger and target is outside of menu
-    } else if (tribute.current.element && !tribute.current.externalTrigger) {
-      tribute.current.externalTrigger = false;
-      setTimeout(() => tribute.hideMenu());
-    }
-  }
+			// jwbth: Added this.
+			if (li.classList.contains('tribute-label')) return
 
-  keyup(instance, event) {
-    // jwbth: Added this and replaces the usages below.
-    const tribute = instance.tribute;
+			tribute.selectItemAtIndex(li.getAttribute('data-index'), event)
+			tribute.hideMenu()
 
-    // jwbth: Added this to avoid appearing-disappearing of the menu when moving the caret.
-    if (!instance.inputEvent && !tribute.isActive) return;
+			// TODO: should fire with externalTrigger and target is outside of menu
+		}
+	}
 
-    if (instance.inputEvent) {
-      instance.inputEvent = false;
-    }
-    instance.updateSelection(this);
+	/**
+	 * @param {MouseEvent} event
+	 */
+	mousedown = (event) => {
+		// jwbth: Ignore non-left button clicks.
+		if (event.which !== 1) return
 
-    // Esc
-    if (event.keyCode === 27) return;
+		let tribute = this.tribute
+		if (tribute.menu && tribute.menu.contains(event.target)) return
 
-    // jwbth: Added this.
-    if (
-      tribute.lastCanceledTriggerChar &&
-      tribute.current.triggerPos === tribute.lastCanceledTriggerPos &&
-      tribute.current.triggerChar === tribute.lastCanceledTriggerChar
-    ) {
-      return;
-    }
-    tribute.lastCanceledTriggerPos = null;
-    tribute.lastCanceledTriggerChar = null;
+		if (
+			tribute.current.element &&
+			!tribute.current.externalTrigger //&&
+			//!tribute.current.element.contains(event.target)
+		) {
+			tribute.current.externalTrigger = false
+			setTimeout(() => tribute.hideMenu())
+		}
+	}
 
-    if (!tribute.allowSpaces && tribute.hasTrailingSpace) {
-      tribute.hasTrailingSpace = false;
-      instance.commandEvent = true;
-      return;
-    }
+	/**
+	 * @param {Event} event
+	 * @param {HTMLInputElement | HTMLTextAreaElement} element
+	 */
+	keyup = (event, element = event.currentTarget) => {
+		// jwbth: Added this and replaces the usages below.
+		const tribute = this.tribute
 
-    // jwbth: Added this block (search for dropMenu for the explanation).
-    if (tribute.dropMenu || tribute.current.mentionText === undefined) {
-      tribute.isActive = false;
-      tribute.hideMenu();
-      tribute.dropMenu = false;
-      return;
-    }
+		// jwbth: Added this to avoid appearing-disappearing of the menu when moving the caret.
+		if (!this.inputEvent && !tribute.isActive) return
 
-    if (!tribute.isActive) {
-      // jwbth: Removed the block and made `trigger` be filled from tribute.current.triggerChar to
-      // account for triggers with the same first character.
-      let trigger = tribute.current.triggerChar;
+		if (this.inputEvent) {
+			this.inputEvent = false
+		}
+		this.updateSelection(element)
 
-      if (typeof trigger !== "undefined") {
-        instance.callbacks().triggerChar(event, this, trigger);
-      }
-    }
+		// Esc
+		if (event.keyCode === 27) return
 
-    if (tribute.current.mentionText.length < tribute.current.collection.menuShowMinLength) return;
+		// jwbth: Added this.
+		if (
+			tribute.lastCanceledTriggerChar &&
+			tribute.current.triggerPos === tribute.lastCanceledTriggerPos &&
+			tribute.current.triggerChar === tribute.lastCanceledTriggerChar
+		) {
+			return
+		}
+		tribute.lastCanceledTriggerPos = null
+		tribute.lastCanceledTriggerChar = null
 
-    if (
-      /*
-        jwbth: "=== false" is replaced with "!== true" to fix the issue with the autocomplete menu
-        not appearing. This issue appears because of the check
-        "triggerChar !== this.tribute.current.trigger" I added to TributeRange.js to fix another
-        issue.
-          Steps to reproduce in Convenient Discussions: open a reply form, paste a wikilink using
-        the context menu, press "@".
-          Expected: An autocomplete menu appears.
-          Actual: Does not.
-          This is because "instance.commandEvent = false" is executed only on keydown event that
-        lacks when pasting from the context menu.
-       */
-      (tribute.current.trigger && instance.commandEvent !== true) ||
-      (tribute.isActive && event.keyCode === 8)
-    ) {
-      tribute.showMenuFor(this, true);
-    }
-  }
+		if (!tribute.allowSpaces && tribute.hasTrailingSpace) {
+			tribute.hasTrailingSpace = false
+			this.commandEvent = true
+			return
+		}
 
-  shouldDeactivate(event) {
-    if (!this.tribute.isActive) return false;
+		// jwbth: Added this block (search for willHideMenu for the explanation).
+		if (tribute.willHideMenu || tribute.current.mentionText === undefined) {
+			tribute.isActive = false
+			tribute.hideMenu()
+			tribute.willHideMenu = false
+			return
+		}
 
-    if (this.tribute.current.mentionText.length === 0) {
-      let eventKeyPressed = false;
-      TributeEvents.keys().forEach(o => {
-        if (event.keyCode === o.key) eventKeyPressed = true;
-      });
+		if (!tribute.isActive) {
+			// jwbth: Removed the block and made `trigger` be filled from tribute.current.triggerChar to
+			// account for triggers with the same first character.
+			let trigger = tribute.current.triggerChar
 
-      return !eventKeyPressed;
-    }
+			if (typeof trigger !== 'undefined') {
+				this.callbacks().triggerChar(event, element, trigger)
+			}
+		}
 
-    return false;
-  }
+		if (tribute.current.mentionText.length < tribute.current.collection.menuShowMinLength) return
 
-  // jwbth: Removed getKeyCode as it is redundant.
+		if (
+			/*
+				jwbth: "=== false" is replaced with "!== true" to fix the issue with the autocomplete menu
+				not appearing. This issue appears because of the check
+				"triggerChar !== this.tribute.current.trigger" I added to TributeRange.js to fix another
+				issue.
+					Steps to reproduce in Convenient Discussions: open a reply form, paste a wikilink using
+				the context menu, press "@".
+					Expected: An autocomplete menu appears.
+					Actual: Does not.
+					This is because "this.commandEvent = false" is executed only on keydown event that
+				lacks when pasting from the context menu.
+			 */
+			(tribute.current.trigger && this.commandEvent !== true) ||
+			(tribute.isActive && event.keyCode === 8)
+		) {
+			tribute.showMenuFor(element, true)
+		}
+	}
 
-  updateSelection(el) {
-    this.tribute.current.element = el;
-    let info = this.tribute.range.getTriggerInfo(false, this.tribute.hasTrailingSpace, true, this.tribute.allowSpaces);
+	// jwbth: Removed shouldDeactivate, getKeyCode as it is redundant.
 
-    if (info) {
-      this.tribute.current.selectedPath = info.mentionSelectedPath;
-      this.tribute.current.mentionText = info.mentionText;
-      this.tribute.current.selectedOffset = info.mentionSelectedOffset;
+	updateSelection(el) {
+		this.tribute.current.element = el
+		let info = this.tribute.range.getTriggerInfo(
+			false,
+			this.tribute.hasTrailingSpace,
+			true,
+			this.tribute.allowSpaces,
+		)
 
-      // jwbth: Added this line to use this property in keyup().
-      this.tribute.current.triggerChar = info.mentionTriggerChar;
+		if (info) {
+			this.tribute.current.selectedPath = info.mentionSelectedPath
+			this.tribute.current.mentionText = info.mentionText
+			this.tribute.current.selectedOffset = info.mentionSelectedOffset
 
-      const current = this.tribute.current;
-      const pre = current.element.value.slice(0, current.element.selectionStart);
-      current.triggerPos = pre.lastIndexOf(current.triggerChar);
-    } else {
-      // jwbth: Added this block.
-      const current = this.tribute.current;
-      delete current.selectedPath;
-      delete current.mentionText;
-      delete current.selectedOffset;
-      delete current.triggerChar;
-      delete current.triggerPos;
-    }
-  }
+			// jwbth: Added this line to use this property in keyup().
+			this.tribute.current.triggerChar = info.mentionTriggerChar
 
-  callbacks() {
-    // jwbth: Removed `delete` and `space` keys from here, see keys().
-    return {
-      triggerChar: (e, el, trigger) => {
-        let tribute = this.tribute;
-        tribute.current.trigger = trigger;
+			const current = this.tribute.current
+			const pre = current.element.value.slice(0, current.element.selectionStart)
+			current.triggerPos = pre.lastIndexOf(current.triggerChar)
+		} else {
+			// jwbth: Added this block.
+			const current = this.tribute.current
+			delete current.selectedPath
+			delete current.mentionText
+			delete current.selectedOffset
+			delete current.triggerChar
+			delete current.triggerPos
+		}
+	}
 
-        let collectionItem = tribute.collection.find(item => {
-          return item.trigger === trigger;
-        });
+	callbacks() {
+		// jwbth: Removed `delete` and `space` keys from here, see keys().
+		return {
+			triggerChar: (_, el, trigger) => {
+				let tribute = this.tribute
+				tribute.current.trigger = trigger
 
-        tribute.current.collection = collectionItem;
+				let collectionItem = tribute.collection.find((item) => {
+					return item.trigger === trigger
+				})
 
-        if (
-          tribute.current.mentionText.length >=
-            tribute.current.collection.menuShowMinLength &&
-          tribute.inputEvent
-        ) {
-          tribute.showMenuFor(el, true);
-        }
-      },
-      enter: (e) => {
-        // choose selection
-        if (this.tribute.isActive && this.tribute.current.filteredItems) {
-          e.preventDefault();
-          e.stopPropagation();
+				tribute.current.collection = collectionItem
 
-          // jwbth: Removed setTimeout, as for that period filteredItems could reset.
-          this.tribute.selectItemAtIndex(this.tribute.menuSelected, e);
-          this.tribute.hideMenu();
-        }
-      },
-      escape: (e) => {
-        if (this.tribute.isActive) {
-          e.preventDefault();
-          e.stopPropagation();
+				if (
+					tribute.current.mentionText.length >= tribute.current.collection.menuShowMinLength &&
+					tribute.inputEvent
+				) {
+					tribute.showMenuFor(el, true)
+				}
+			},
+			enter: (e) => {
+				// choose selection
+				if (this.tribute.isActive && this.tribute.current.filteredItems) {
+					e.preventDefault()
+					e.stopPropagation()
 
-          // jwbth: Added this block.
-          this.tribute.lastCanceledTriggerPos = this.tribute.current.triggerPos;
-          this.tribute.lastCanceledTriggerChar = this.tribute.current.triggerChar;
+					// jwbth: Removed setTimeout, as for that period filteredItems could reset.
+					this.tribute.selectItemAtIndex(this.tribute.menuSelected, e)
+					this.tribute.hideMenu()
+				}
+			},
+			escape: (e) => {
+				if (this.tribute.isActive) {
+					e.preventDefault()
+					e.stopPropagation()
 
-          this.tribute.isActive = false;
-          this.tribute.hideMenu();
-        }
-      },
-      tab: (e, el) => {
-        // choose first match
-        this.callbacks().enter(e, el);
-      },
-      up: (e) => {
-        // navigate up ul
-        if (this.tribute.isActive && this.tribute.current.filteredItems) {
-          e.preventDefault();
-          e.stopPropagation();
-          let count = this.tribute.current.filteredItems.length,
-            selected = this.tribute.menuSelected;
+					// jwbth: Added this block.
+					this.tribute.lastCanceledTriggerPos = this.tribute.current.triggerPos
+					this.tribute.lastCanceledTriggerChar = this.tribute.current.triggerChar
 
-          if (count > selected && selected > 0) {
-            this.tribute.menuSelected--;
-            this.setActiveLi();
-          } else if (selected === 0) {
-            this.tribute.menuSelected = count - 1;
-            this.setActiveLi();
-            this.tribute.menu.scrollTop = this.tribute.menu.scrollHeight;
-          }
-        }
-      },
-      down: (e) => {
-        // navigate down ul
-        if (this.tribute.isActive && this.tribute.current.filteredItems) {
-          e.preventDefault();
-          e.stopPropagation();
-          let count = this.tribute.current.filteredItems.length - 1,
-            selected = this.tribute.menuSelected;
+					this.tribute.isActive = false
+					this.tribute.hideMenu()
+				}
+			},
+			tab: (e, el) => {
+				// choose first match
+				this.callbacks().enter(e, el)
+			},
+			up: (e) => {
+				// navigate up ul
+				if (this.tribute.isActive && this.tribute.current.filteredItems) {
+					e.preventDefault()
+					e.stopPropagation()
+					let count = this.tribute.current.filteredItems.length,
+						selected = this.tribute.menuSelected
 
-          if (count > selected) {
-            this.tribute.menuSelected++;
-            this.setActiveLi();
-          } else if (count === selected) {
-            this.tribute.menuSelected = 0;
-            this.setActiveLi();
-            this.tribute.menu.scrollTop = 0;
-          }
-        }
-      },
-    };
-  }
+					if (count > selected && selected > 0) {
+						this.tribute.menuSelected--
+						this.setActiveLi()
+					} else if (selected === 0) {
+						this.tribute.menuSelected = count - 1
+						this.setActiveLi()
+						this.tribute.menu.scrollTop = this.tribute.menu.scrollHeight
+					}
+				}
+			},
+			down: (e) => {
+				// navigate down ul
+				if (this.tribute.isActive && this.tribute.current.filteredItems) {
+					e.preventDefault()
+					e.stopPropagation()
+					let count = this.tribute.current.filteredItems.length - 1,
+						selected = this.tribute.menuSelected
 
-  setActiveLi(index) {
-    // jwbth: Replaced this part.
-    let lis = this.tribute.menu.getElementsByClassName("tribute-item"),
-      length = lis.length >>> 0;
+					if (count > selected) {
+						this.tribute.menuSelected++
+						this.setActiveLi()
+					} else if (count === selected) {
+						this.tribute.menuSelected = 0
+						this.setActiveLi()
+						this.tribute.menu.scrollTop = 0
+					}
+				}
+			},
+		}
+	}
 
-    if (index) this.tribute.menuSelected = parseInt(index);
+	setActiveLi(index) {
+		// jwbth: Replaced this part.
+		let lis = this.tribute.menu.getElementsByClassName('tribute-item'),
+			length = lis.length >>> 0
 
-    for (let i = 0; i < length; i++) {
-      let li = lis[i];
-      if (i === this.tribute.menuSelected) {
-        li.classList.add(this.tribute.current.collection.selectClass);
+		if (index) this.tribute.menuSelected = parseInt(index)
 
-        let liClientRect = li.getBoundingClientRect();
-        let menuClientRect = this.tribute.menu.getBoundingClientRect();
+		for (let i = 0; i < length; i++) {
+			let li = lis[i]
+			if (i === this.tribute.menuSelected) {
+				li.classList.add(this.tribute.current.collection.selectClass)
 
-        if (liClientRect.bottom > menuClientRect.bottom) {
-          let scrollDistance = liClientRect.bottom - menuClientRect.bottom;
-          this.tribute.menu.scrollTop += scrollDistance;
-        } else if (liClientRect.top < menuClientRect.top) {
-          let scrollDistance = menuClientRect.top - liClientRect.top;
-          this.tribute.menu.scrollTop -= scrollDistance;
-        }
-      } else {
-        li.classList.remove(this.tribute.current.collection.selectClass);
-      }
-    }
-  }
+				let liClientRect = li.getBoundingClientRect()
+				let menuClientRect = this.tribute.menu.getBoundingClientRect()
 
-  getFullHeight(elem, includeMargin) {
-    let height = elem.getBoundingClientRect().height;
+				if (liClientRect.bottom > menuClientRect.bottom) {
+					let scrollDistance = liClientRect.bottom - menuClientRect.bottom
+					this.tribute.menu.scrollTop += scrollDistance
+				} else if (liClientRect.top < menuClientRect.top) {
+					let scrollDistance = menuClientRect.top - liClientRect.top
+					this.tribute.menu.scrollTop -= scrollDistance
+				}
+			} else {
+				li.classList.remove(this.tribute.current.collection.selectClass)
+			}
+		}
+	}
 
-    if (includeMargin) {
-      let style = elem.currentStyle || window.getComputedStyle(elem);
-      return (
-        height + parseFloat(style.marginTop) + parseFloat(style.marginBottom)
-      );
-    }
+	getFullHeight(elem, includeMargin) {
+		let height = elem.getBoundingClientRect().height
 
-    return height;
-  }
+		if (includeMargin) {
+			let style = elem.currentStyle || window.getComputedStyle(elem)
+			return height + parseFloat(style.marginTop) + parseFloat(style.marginBottom)
+		}
+
+		return height
+	}
 }
 
-export default TributeEvents;
+export default TributeEvents

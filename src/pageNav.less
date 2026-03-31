@@ -1,96 +1,116 @@
 .cd-pageNav {
-  position: fixed;
-  z-index: 1;
-  font-size: 12px;
-  color: var(--color-base, #202122);
-  overflow-wrap: break-word;
-  background-repeat: no-repeat;
-  direction: var(--cd-direction-user);
-  inset-inline-start: 0;
+	position: fixed;
+	z-index: 1;
+	font-size: 12px;
+	color: var(--color-base, #202122);
+	overflow-wrap: break-word;
+	background-repeat: no-repeat;
+	direction: var(--cd-direction-user);
+	inset-inline-start: 0;
 }
 
 .cd-pageNav,
 .cd-pageNav-list {
-  line-height: 1.2;
+	line-height: 1.2;
 }
 
 #cd-pageNav-top {
-  top: 0;
-  padding: 7px 9px 9px;
-  background-image:
-    linear-gradient(to bottom, var(--cd-sidebar-color), var(--cd-sidebar-color)),
-    linear-gradient(to bottom, var(--cd-sidebar-color), var(--cd-sidebar-transparent-color));
-  background-size: 100% calc(100% - 5px), 100% 5px;
-  background-position: left top, left bottom;
+	top: 0;
+	padding: 7px 9px 9px;
+	background-image:
+		linear-gradient(
+			to bottom,
+			var(--cd-sidebar-color),
+			var(--cd-sidebar-color)
+		),
+		linear-gradient(
+			to bottom,
+			var(--cd-sidebar-color),
+			var(--cd-sidebar-transparent-color)
+		);
+	background-size:
+		100% calc(100% - 5px),
+		100% 5px;
+	background-position:
+		left top,
+		left bottom;
 
-  &:empty {
-    padding: 0;
-  }
+	&:empty {
+		padding: 0;
+	}
 }
 
 #cd-pageNav-bottom {
-  bottom: 0;
-  padding: 12px 9px 4px;
-  background-image:
-    linear-gradient(to top, var(--cd-sidebar-color), var(--cd-sidebar-color)),
-    linear-gradient(to top, var(--cd-sidebar-color), var(--cd-sidebar-transparent-color));
-  background-size: 100% calc(100% - 5px), 100% 5px;
-  background-position: left bottom, left top;
+	bottom: 0;
+	padding: 12px 9px 4px;
+	background-image:
+		linear-gradient(to top, var(--cd-sidebar-color), var(--cd-sidebar-color)),
+		linear-gradient(
+			to top,
+			var(--cd-sidebar-color),
+			var(--cd-sidebar-transparent-color)
+		);
+	background-size:
+		100% calc(100% - 5px),
+		100% 5px;
+	background-position:
+		left bottom,
+		left top;
 
-  &:empty {
-    padding: 0;
-  }
+	&:empty {
+		padding: 0;
+	}
 }
 
 .cd-pageNav-list {
-  list-style-type: none;
-  list-style-image: none;
-  margin: 0;
+	list-style-type: none;
+	list-style-image: none;
+	margin: 0;
 }
 
 .cd-pageNav-item.cd-pageNav-item {
-  margin: 0 0 0.25em;
+	margin: 0 0 0.25em;
 
-  a {
-    color: inherit;
-    text-decoration: inherit;
+	a {
+		color: inherit;
+		text-decoration: inherit;
 
-    &:hover {
-      color: var(--color-progressive, #36c);
-    }
+		&:hover {
+			color: var(--color-progressive, #36c);
+		}
 
-    &:active {
-      color: var(--cd-link-active-color);
-    }
-  }
+		&:active {
+			color: var(--cd-link-active-color);
+		}
+	}
 }
 
 .cd-pageNav-link {
-  display: block;
+	display: block;
 
-  &.cd-pageNav-link-inline {
-    display: inline;
-  }
+	&.cd-pageNav-link-inline {
+		display: inline;
+	}
 }
 
 .cd-pageNav-item.cd-pageNav-item-level {
-  &-1 {
-    margin-inline-start: 1em;
-  }
+	&-1 {
+		margin-inline-start: 1em;
+	}
 
-  &-2 {
-    margin-inline-start: 2em;
-  }
+	&-2 {
+		margin-inline-start: 2em;
+	}
 
-  &-3 {
-    margin-inline-start: 3em;
-  }
+	&-3 {
+		margin-inline-start: 3em;
+	}
 
-  &-4 {
-    margin-inline-start: 4em;
-  }
+	&-4 {
+		margin-inline-start: 4em;
+	}
 
-  &-5 {
-    margin-inline-start: 5em;
-  }
+	&-5 {
+		margin-inline-start: 5em;
+	}
 }

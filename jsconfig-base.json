@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		// The default in jsconfig.json
+		// "allowJs": true,
+		"checkJs": true,
+
+		// The default in jsconfig.json
+		// "noEmit": true,
+		"strict": true,
+		"isolatedModules": true,
+		// The default in jsconfig.json
+		// "resolveJsonModule": true,
+		"noImplicitOverride": true,
+		"strictPropertyInitialization": false,
+		"noUncheckedSideEffectImports": true,
+		// The default in jsconfig.json
+		// "skipLibCheck": true,
+		"moduleDetection": "force",
+
+		// Handled by typescript-eslint
+		"noUnusedLocals": false,
+		"noUnusedParameters": false
+	}
+}

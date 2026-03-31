@@ -1,12 +1,53 @@
 {
-  "editor.rulers": [
-    100
-  ],
-  "editor.wordWrapColumn": 100,
-  "editor.tabSize": 2,
-  "files.trimTrailingWhitespace": true,
-  "javascript.preferences.quoteStyle": "single",
-  "vs-docblockr.alignTags": false,
-  "vs-docblockr.columnSpacing": 1,
-  "vs-docblockr.newLinesBetweenTags": false
+	"editor.rulers": [100],
+	"editor.wordWrapColumn": 100,
+	"editor.tabSize": 2,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+
+		// Moves `eslint/config` under `eslint-` plugins instead of directly below eslint
+		// "source.organizeImports": "explicit",
+	},
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.formatOnPaste": true,
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"eslint.codeActionsOnSave.rules": [
+		"!unicorn/prefer-ternary",
+		"!unicorn/prefer-switch",
+		"!no-one-time-vars/no-one-time-vars",
+		"!@typescript-eslint/no-unnecessary-condition",
+		"!@stylistic/newline-per-chained-call",
+
+		// Tries to replace `return this.method();` with `this.method(); return;` if method() returns
+		// void while under construction.
+		"!@typescript-eslint/no-confusing-void-expression",
+
+		"*"
+	],
+	"files.trimTrailingWhitespace": true,
+	"files.trimFinalNewlines": true,
+	"files.eol": "\n",
+	"typescript.preferences.importModuleSpecifierEnding": "minimal",
+	"typescript.preferences.quoteStyle": "single",
+	"javascript.preferences.quoteStyle": "single",
+
+	// Without this, `export {};` is changed to `export { };` by `source.organizeImports`
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+
+	"debug.javascript.terminalOptions": {
+		"resolveSourceMapLocations": [
+			"${workspaceFolder}/**",
+			"!**/node_modules/**",
+			"**/node_modules/.vite-temp/**"
+		]
+	}
 }

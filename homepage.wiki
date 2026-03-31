@@ -1,0 +1,324 @@
+<languages />
+<div style="margin-top: 1em;"></div>
+{{shortcut2|User:JWBTH/CD}}
+[[{{Localized media|Convenient Discussions logo color|svg}}|400px|<translate><!--T:1--> The script's logo. The colors represent the backgrounds of comments of different types</translate>]]
+[[{{Localized media|Convenient Discussions screenshot|png}}|thumb|400px|<translate><!--T:2--> A page that uses Convenient Discussions</translate>]]
+[[{{Localized media|Convenient Discussions watchlist|png}}|thumb|400px|<translate><!--T:3--> Convenient Discussions adds a number of elements to the watchlist: the "CD" button group to the left of the watchlist settings button and the "comment" links to the right of edit summaries.</translate>]]
+[[File:Convenient Discussions thread navigation.webm|thumb|<translate><!--T:101--> Navigating sibling threads by holding the middle mouse button</translate><translate></translate>]]
+{{2021 Coolest tool award|Convenient Discussions|Versatile|float=right}}
+<translate>
+<!--T:4-->
+'''Convenient Discussions''' ('''CD''') is a JavaScript tool providing a shell over the existing MediaWiki discussion system that enhances user experience with talk pages in multiple ways.
+
+== Features == <!--T:96-->
+
+<!--T:5-->
+* Posting and editing comments without switching to a separate page
+** @mentions, <nowiki>[[#comment links]], [[wikilinks]], {{templates}}, and <tags></nowiki> autocomplete
+** Quoting comments with formatting preserved
+** Autofilling the edit summary with indication of the addressee of the comment
+** Saving comment drafts to restore the forms' content after unexpected events such as browser crashes
+** Uploading screenshots to Commons in three clicks
+* Creating topics and subsections
+* Redesigned talk pages, with author and date displayed on top of comments (opt-in) and thin lines denoting threads
+* Handling "outdent" templates
+* Collapsible (and autocollapsible) threads
+* Navigating sibling threads by holding the middle mouse button (''see video'')
+* Comment timestamps in local time and arbitrary format, including relative
+* Highlighting and navigating new comments (via the [[#Navigation panel|navigation panel]] or the table of contents)
+* Highlighting own comments
+* Checking for new comments in the background and automatically rendering simple comment edits
+* Subscribing to topics, which affects notifications and highlighting topics in several places (based on [[mw:Help:DiscussionTools#Topic_subscriptions|DiscussionTools]])
+* Desktop notifications about replies to the user's comments and comments in topics the user subscribed to on open pages (opt-in)
+* Moving topics between talk pages
+* Thanking for edits that added comments
+* Copying links to comments
+* Jumping to a specific comment from the watchlist and other pages that list revisions
+* Always seeing the current section's name and navigating page parts in one click
+* Searching for comments and sections in the archive
+
+<!--T:6-->
+The script makes the user forget about:
+* the need to search the code for a place for a comment, count colons, type tildes and other markup;
+* edit conflicts;
+* reading talk pages through diffs;
+* the need to completely reload the page and look for new comments with eyes, or even check the watchlist;
+* the need to convert UTC dates to local time.
+
+== Installation == <!--T:9-->
+
+<!--T:10-->
+To install the script for all Wikimedia wikis, add this to your [[<tvar name="my-global">meta:Special:MyPage/global.js</tvar>|global.js on Meta]]:
+</translate>
+<syntaxhighlight lang="js" copy>
+mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript');
+</syntaxhighlight>
+<translate>
+<!--T:11-->
+To install the script on a specific wiki where it's not a gadget, add the same code to your common.js. If the wiki has the script as a gadget, activate it in user preferences. Even if you have the script installed globally, it would make sense to add the gadget—the script would load faster on that wiki.
+
+<!--T:12-->
+Every wiki has its own peculiarities that the script can address in the configuration file. Those are individual for each wiki and created by volunteers. If you know JavaScript and your wiki doesn't have one, see {{section link||Configuring for a wiki}}. Having a configuration file for the wiki will also speed up the execution of the script.
+
+=== Compatibility === <!--T:13-->
+
+</translate>
+[[File:Convenient Discussion with deactivated timestamp settings.png|thumb|<translate><!--T:102--> Make sure to deactivate timestamp transforming by changing CD's timestamps settings to what's in the screenshot.</translate>]]
+<translate>
+<!--T:14-->
+Convenient Discussions shows timestamps in local time by default. However, you can use another user script for this purpose. To make Convenient Discussions compatible with the script displaying time in the local time zone (<tvar name="comments-in-local-time">[[w:User:Gary/comments in local time.js]]</tvar> or <tvar name=2>[[w:User:Mxn/CommentsInLocalTime]]</tvar>), call the latter like this:
+</translate>
+<syntaxhighlight lang="js" style="background: transparent;" copy>
+mw.hook( 'convenientDiscussions.commentsReady' ).add( function () {
+	// Import the script here
+} );
+</syntaxhighlight>
+<translate>
+<!--T:103-->
+Note that this will not load the script if Convenient Discussions doesn't load. To make the script also load for pages Convenient Discussions won't load on, call it like this:
+</translate>
+<syntaxhighlight lang="js" style="background: transparent;" copy>
+if (
+	mw.config.get( 'wgNamespaceNumber' ) % 2 !== 1 &&
+	!mw.config.get( 'wgExtraSignatureNamespaces' ).includes( mw.config.get( 'wgNamespaceNumber' ) )
+) {
+	// Import the script here
+}
+</syntaxhighlight>
+<translate>
+<!--T:104-->
+For Gary's script specifically, an additional line of code is needed to disable its feature of not loading twice:
+</translate>
+<syntaxhighlight lang="js" style="background: transparent;" copy>
+mw.hook( 'convenientDiscussions.commentsReady' ).add( function () {
+	window.commentsInLocalTimeWasRun = false;
+	mw.loader.load( '//en.wikipedia.org/w/index.php?title=User:Gary/comments in local time.js&action=raw&ctype=text/javascript' ); // [[w:en:User:Mxn/CommentsInLocalTime]]
+}
+</syntaxhighlight>
+<translate>
+<!--T:95-->
+Be sure to disable the "Comments in Local Time" gadget in your preferences if it is present in your wiki (e.g. the English Wikipedia). Also remember to stop Convenient Discussions from
+
+== Usage == <!--T:15-->
+</translate>
+[[{{Localized media|Convenient Discussions settings - comment form|png}}|thumb|400px|<translate><!--T:90--> Settings dialog</translate>]]
+<translate>
+<!--T:16-->
+You can adjust the script according to your preferences in the settings dialog. It is available at the click of the gear icon [[<tvar name="gear-icon">File:OOjs UI icon advanced.svg</tvar>|OOjs UI icon advanced]] which can be found in the "CD" section of the watchlist and under any comment form.
+
+<!--T:17-->
+The hotkeys can be found at the click of the "?" button under any comment form and on hover over the navigation panel buttons.
+
+=== Comment types === <!--T:18-->
+</translate>
+<div style="overflow: hidden;">
+* <div style="display: inline-block; background-color: #edffed; padding: 0 5px; border-left: 3px solid #00af89;><translate><!--T:21--> New comment (a comment is considered new if the page was loaded within 15 minutes since the comment was loaded first time)</translate></div>
+* <div style="display: inline-block; background-color: #faf3fc; padding: 0 5px; border-left: 3px solid #9f33cc;"><translate><!--T:22--> Own comment</translate></div>
+* <div style="display: inline-block; background-color: #fef6e7; padding: 0 5px; border-left: 3px solid #edab00;"><translate><!--T:20--> Target comment (opened by a link or has been jumped to)</translate></div>
+* <div style="display: inline-block; background-color: #fee7e6; padding: 0 5px; border-left: 3px solid #d73333;"><translate><!--T:89--> Deleted comment</translate></div>
+</div>
+<translate>
+
+=== Navigation panel === <!--T:23-->
+</translate>
+<div style="margin-top: 1em;"></div>
+[[{{Localized media|Convenient Discussions navigation panel info|svg}}]]
+<translate>
+
+== FAQ == <!--T:24-->
+
+<!--T:25-->
+; The script doesn't work on a page where it should work / works on a page where it shouldn't work. How to fix it?
+: The script uses a number of factors to determine whether it should process a certain page, such as the presence of the "Add topic" tab and the <tvar name=wgExtraSignatureNamespaces><code>wgExtraSignatureNamespaces</code></tvar> config value. The simplest way to make it process/not process a page is to click "Run Convenient Discussions on this page once" in the page footer. But that will work only for one time. You should contact the user maintaining the configuration file on your wiki or create your own configuration file according to the [[#Configuring for a wiki|instructions below]]. In that file, [[w:en:Regular expression|regular expressions]] to match page names should be added to/removed from the <tvar name=pageWhitelist><code>pageWhitelist</code></tvar> / <tvar name=pageBlacklist><code>pageBlacklist</code></tvar> values. A worse way to deal with it is to add an element with <tvar name=talkPage><code>class="cd-talkPage"</code></tvar> or <tvar name=notTalkPage><code>class="cd-notTalkPage"</code></tvar> to the source code of the page. In that case, the page will still be classified incorrectly on log pages (the watchlist, history pages etc.).
+
+<!--T:26-->
+; What does "(-)" after the comment text in an edit summary mean?
+: It means that the whole text of the comment is displayed in the edit summary, and there is no more text in the comment other than that is displayed, so no point to open the page if you only want to see the contents of this edit. It's a notation that was used on some old Internet forums.
+
+<!--T:28-->
+; The comment menu (Reply/Edit/Thank/...) overlaps a user link, and I can't click it.
+: Make a long click/tap or right click on the block; it will disappear.
+
+<!--T:29-->
+; How to set settings for one wiki, not for all wikis?
+: Use <tvar name="local-code"><code>var cdLocal''SettingName'' = ''value'';</code></tvar> in your common.js on that wiki. You can get the names of the settings [<tvar name="github-boot">https://github.com/jwbth/convenient-discussions/blob/47636aacdb904c8ec7acb2d62abb2b7ec71fa8ef/src/js/settings.js#L67</tvar> here] (the first letter should be in upper case, for example <tvar name=autopreview><code>autopreview</code></tvar> → <tvar name=cdLocalAutopreview><code>cdLocalAutopreview</code></tvar>).
+
+<!--T:30-->
+; I would like to have <tvar name=colon1><code>:&nbsp;</code></tvar> inserted after a user mention like in the <tvar name="ping-template">{{tl|ping}}</tvar> template.
+: Hold <tvar name=ctrl1>{{key press|Ctrl}}</tvar> while choosing the name you want to mention. You can also press the mention icon while holding <tvar name=ctrl2>{{key press|Ctrl}}</tvar> — if you're replying to a comment, a mention of the target comment's author with <tvar name=colon2><code>:&nbsp;</code></tvar> will appear at the beginning of your comment.
+
+== Data == <!--T:31-->
+
+<!--T:32-->
+Here's what the script stores, why, how, and how to delete the data. Note that you can delete all the data associated with the script in one click, by opening the script settings and pressing the button "Remove all script data" on the "Data removal" tab. Note that while the settings (except for a few) are global, visits and watched sections are stored individually for each wiki, so you'll have to remove them separately.
+</translate>
+{| class="wikitable wide"
+! <translate><!--T:33--> What</translate> !! <translate><!--T:34--> Why</translate> !! <translate><!--T:35--> How</translate> !! <translate><!--T:36--> How to delete</translate>{{ref|1}}
+|-
+| <translate><!--T:37--> Settings</translate>
+| <translate><!--T:38--> To allow tuning the script according to the user's preferences.</translate>
+| <translate><!--T:39--> On the Wikimedia servers as a user option named <tvar name="cd-settings"><code>userjs-convenientDiscussions-settings</code></tvar>.</translate>
+|
+<translate><!--T:40--> Global settings:</translate>
+<syntaxhighlight lang="js">
+new mw.Api().postWithEditToken({
+	action: 'globalpreferences',
+	optionname: 'userjs-convenientDiscussions-settings',
+});
+</syntaxhighlight>
+<translate><!--T:41--> Local settings:</translate>
+<syntaxhighlight lang="js">
+new mw.Api().saveOption('userjs-convenientDiscussions-localSettings', null);
+</syntaxhighlight>
+|-
+| <translate><!--T:42--> Last talk page visits</translate>
+| <translate><!--T:43--> To detect new comments on talk pages.</translate>
+| <translate><!--T:44--> In [[w:en:Lempel–Ziv–Welch|compressed]] form, on the Wikimedia servers as a user option named <tvar name="cd-visits"><code>userjs-convenientDiscussions-visits</code></tvar>.</translate>{{ref|2}}
+| <syntaxhighlight lang="js">
+new mw.Api().saveOption('userjs-convenientDiscussions-visits', null);
+</syntaxhighlight>
+|-
+| <translate><!--T:45--> Watched sections</translate>
+| <translate><!--T:46--> (Only when enabled in the settings instead of the standard topic subscription.) To show notifications and highlight comments on pages that list revisions: the watchlist, recent changes page, history pages, user contributions pages.</translate>
+| <translate><!--T:47--> In compressed form, on the Wikimedia servers as a user option named <tvar name="cd-watchedSections"><code>userjs-convenientDiscussions-watchedSections</code></tvar>.</translate>{{ref|2}}
+|
+<translate><!--T:48--> Using the "Edit watched sections list" dialog accessible from the watchlist, or</translate>
+<syntaxhighlight lang="js">
+new mw.Api().saveOption('userjs-convenientDiscussions-watchedSections', null);
+</syntaxhighlight>
+|-
+| <translate><!--T:49--> Unsent comment forms' content</translate>
+| <translate><!--T:50--> To restore comment drafts after page reloads, browser crashes, accidental jumps to a different page etc.</translate>
+| <translate><!--T:51--> For no longer than 60 days, in the browser's [<tvar name="docs-localStorage">https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage</tvar> local storage].</translate>
+| <syntaxhighlight lang="js">
+localStorage.removeItem('convenientDiscussions-commentForms');
+</syntaxhighlight>
+|-
+| <translate><!--T:52--> Edits thanked via CD</translate>
+| <translate><!--T:53--> To reflect in the interface that a comment has already been thanked for.</translate>
+| <translate><!--T:54--> For no longer than 60 days, in the browser's local storage.</translate>
+| <syntaxhighlight lang="js">
+localStorage.removeItem('convenientDiscussions-thanks');
+</syntaxhighlight>
+|-
+| <translate><!--T:92--> Seen comment changes</translate>
+| <translate><!--T:93--> When a comment is updated, its new version is sometimes rendered immediately. If the user has seen the update, this fact is saved in the memory, so that there is no notification the next time the user sees it.</translate>
+| <translate><!--T:94--> For no longer than 60 days, in the browser's local storage.</translate>
+| <syntaxhighlight lang="js">
+localStorage.removeItem('convenientDiscussions-seenRenderedChanges');
+</syntaxhighlight>
+|}
+# {{note|1}}<translate><!--T:57--> To execute the code in the "How to delete" column, open the browser's developer tools (done by pressing <tvar name=f12>{{key press|F12}}</tvar> in most browsers), switch to the "Console" tab, paste the code into the input and press <tvar name=enter>{{key press|Enter}}</tvar>.</translate>
+# {{note|2}}<translate><!--T:55--> In Russian Wikipedia, for historical reasons, the option names use <tvar name="cd-name"><code>cd</code></tvar> instead of <tvar name="convenientDiscussions-name"><code>convenientDiscussions</code></tvar>, and <tvar name="cd-watchedTopics"><code>userjs-cd-watchedTopics</code></tvar> is used for the watched sections option.</translate>
+
+<translate>
+<!--T:56-->
+Note that other scripts that you use on wiki pages, as well as side-wide scripts, have access to this data too.
+
+== Feedback == <!--T:58-->
+
+<!--T:59-->
+It's best to post bug reports and proposals on Phabricator under [<tvar name="phab-project">https://phabricator.wikimedia.org/tag/convenient-discussions/</tvar> the "convenient-discussions" tag]. If you don't have an account there and don't want to create one, post to the [[<tvar name="talk-page">User talk:Jack who built the house/Convenient Discussions</tvar>|talk page]].
+
+== Credits == <!--T:97-->
+
+<!--T:8-->
+Convenient Discussions started in 2018 as Russian Wikipedia's user script. It is being developed by <tvar name="jack-link">[[:ru:Участник:Jack who built the house|Jack who built the house]]</tvar>, enriched by the contributions and feedback from the global Wikimedia tech community and users. It also borrows the code for parsing timestamps in different formats from <tvar name="matma-rex-link">[[meta:User:Matma Rex|Matma Rex]]</tvar> and uses solutions and ideas from the Wikimedia engineering and design teams.
+
+== Configuring for a wiki == <!--T:60-->
+</translate>
+[[File:Convenient Discussions project structure.svg|thumb|595px|<translate><!--T:61--> Structure of the project</translate>]]
+<translate>
+<!--T:62-->
+The scheme of loading the script on a wiki is the following: There is [[<tvar name="script-page">User:Jack who built the house/convenientDiscussions.js</tvar>|the main script file]] on Commons and a configuration file on the wiki (if somebody has created it). The configuration file can be a gadget or a user script (a gadget will load faster).
+* The configuration file requests the main script file if it is not loaded yet.
+* Conversely, if the main file is loaded first, it requests the configuration file if the URL of the configuration file is specified [<tvar name="github-urls">https://github.com/jwbth/convenient-discussions/blob/main/config/urls.json</tvar> in it].
+So, there is no difference which file is loaded first.
+
+<!--T:63-->
+To configure the script for a wiki, you may use the configuration generator as described below and then supplement it with configuration values you want. If you want the configuration file to be loaded when users load the script from Commons, you should contact the [<tvar name="github-repo">https://github.com/jwbth/convenient-discussions</tvar> repository] [[<tvar name="jack-page">User:Jack who built the house</tvar>|owner]]. If it proves safe, he will add the URL of the configuration to [<tvar name="github-urls">https://github.com/jwbth/convenient-discussions/blob/master/config/urls.json</tvar> config/urls.json] (you can make a pull request too).
+
+<!--T:83-->
+To generate a configuration, run '''[[<tvar name="generator-script">User:Jack who built the house/convenientDiscussions-generateBasicConfig.js</tvar>|the generator script]]''' in your browser's console on any page of the wiki you want the configuration for. You can do it by executing <tvar name="generator-script-code"><syntaxhighlight lang="js" copy>mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js&action=raw&ctype=text/javascript');</syntaxhighlight></tvar> in the console. The result will contain a configuration object with values that can be automatically retrieved (system messages, some site info, template names) wrapped in the universal wrapping code. You then should create a configuration file with that content.
+
+<!--T:84-->
+The meaningful part of the configuration is contained in the <tvar name="config-prop"><code>convenientDiscussions.config</code></tvar> object. Its possible properties are documented [<tvar name="docs-defaultConfig">https://tools-static.wmflabs.org/convenient-discussions/docs/module-defaultConfig.html</tvar> here] with default values, alphabetically. [<tvar name="github-defaultConfig">https://github.com/jwbth/convenient-discussions/blob/master/config/default.js</tvar> The source code] of that documentation has them in a more logical order.
+
+<!--T:75-->
+It is recommended to keep only those properties that differ from the default ones.
+
+<!--T:85-->
+You can also add any additional instuctions (for example hooks) you need below the object.
+
+=== Examples === <!--T:76-->
+</translate>
+* [[w:en:User:Jack who built the house/convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/wikis/w-en.js <translate><!--T:87--> source in the repository</translate>])
+* [[w:ru:MediaWiki:Gadget-convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/wikis/w-ru.js <translate><!--T:88--> source in the repository</translate>])
+
+<translate>
+=== How do I turn off the "Reply" buttons? === <!--T:98-->
+</translate>
+{{see also|mw:Help:DiscussionTools/Magic words and markup}}
+<translate>
+<!--T:99-->
+To prevent the "Reply" buttons and the rest of the comment layout from showing up in certain templates used on talk pages (e.g. in the "Moved discussion" template after the mover's signature), add the <tvar name="mw-notalk"><code>mw-notalk</code></tvar> class to those templates.
+
+<!--T:100-->
+To prevent the "Reply" buttons from showing up in closed discussions, add the <tvar name="mw-archivedtalk"><code>mw-archivedtalk</code></tvar> class to the template.
+
+=== Debugging using Node.js and Git === <!--T:86-->
+
+<!--T:65-->
+If you want to debug your configuration more closely in the browser's development tools and you're familiar with [[w:en:Node.js|Node.js]] and [[w:en:Git|Git]] and have them installed, clone [<tvar name="github-repo">https://github.com/jwbth/convenient-discussions</tvar> the script's repository], run <tvar name="npm-install"><code>npm install</code></tvar> while in the script's directory to install the dependencies, create a <tvar name="js-ext"><code>.js</code></tvar> file in the <tvar name="config-folder"><code>config</code></tvar> folder named using pattern <tvar name="config-pattern"><code>''project_code''[-''language_code''].js</code></tvar> (for example, <tvar name="w-en"><code>w-en.js</code></tvar>, <tvar name="wikt-de"><code>wikt-de.js</code></tvar>, <tvar name=mw><code>mw.js</code></tvar>), and put the following code into it:</translate>
+<syntaxhighlight lang="js">
+export default {
+	// List of properties
+};
+
+// Any additional code, e.g. hooks
+</syntaxhighlight>
+
+<translate>
+<!--T:66-->
+Then you will need to add the code as described above. After the configuration is ready, you will need to build an actual configuration file that you will put in your wiki. Do it by running <tvar name="npm-run-configs"><code>npm run configs</code></tvar>. The resulting file will be named <tvar name="dist-config"><code>dist/convenientDiscussions-config/''filename''</code></tvar>.
+
+<!--T:91-->
+Test your configuration file by running <tvar name="npm-run-single"><code>npm run single -- project=''project_code'' lang=''language_code''</code></tvar>. A file named <tvar name="serve-url-single"><code>convenientDiscussions-single-''project_code''[-''language_code''].js</code></tvar> will be created (and updated on code changes) in the <tvar name=dist><code>dist</code></tvar> folder. Load it to the wiki using <tvar name="load-localhost-single"><code>mw.loader.load('<nowiki>http://</nowiki>localhost:9000/''filename''<nowiki />')</code></tvar>.
+
+<!--T:68-->
+It will be best if you make a pull request to include your configuration in the CD repository. This way, if something in the script environment changes that affects your configuration file (the format of a property changes, for instance, or a default value, that your value is based on, is updated), other people including the maintainer of the script would be able to notice it and inform you and/or make changes themselves.
+
+== Development == <!--T:77-->
+
+<!--T:78-->
+* [<tvar name="github-repo">https://github.com/jwbth/convenient-discussions</tvar> GitHub repository] is used to store code. GitHub Actions is used to build and deploy the resulting files to wikis, as well as docs to Toolforge.
+* [<tvar name="phabricator-project">https://phabricator.wikimedia.org/tag/convenient-discussions/</tvar> Phabricator tag] is used to coordinate efforts. (Post bug reports and proposals there, not at GitHub.)
+* [<tvar name="toolforge-docs">https://tools-static.wmflabs.org/convenient-discussions/docs/</tvar> Toolforge] has automatically generated code documentation.
+* [<tvar name=translatewiki>https://translatewiki.net/wiki/Translating:Convenient_Discussions</tvar> Translatewiki] has localization strings. Please suggest improvements to the English source through a pull request to [<tvar name="github-en">https://github.com/jwbth/convenient-discussions/blob/main/i18n/en.json</tvar> en.json].
+
+<!--T:79-->
+Your contributions are welcome! You can either improve the script itself or write plugins for it. Some notes:
+* The global object of the script is <tvar name="script-object">[https://tools-static.wmflabs.org/convenient-discussions/docs/module-cd-convenientDiscussions.html <code>convenientDiscussions</code>]</tvar> (the modules use the <tvar name="cd-alias"><code>cd</code></tvar> alias).
+* <tvar name="cd-strings-link"><code>[https://tools-static.wmflabs.org/convenient-discussions/docs/convenientDiscussions.html#.s convenientDiscussions.s()]</code></tvar> is an analog of <tvar name="mw-strings"><code>mw.msg()</code></tvar> for the script's language strings. <tvar name="cd-strings-parse-link"><code>[https://tools-static.wmflabs.org/convenient-discussions/docs/convenientDiscussions.html#.sParse convenientDiscussions.sParse()]</code></tvar> is an analog of <tvar name="mw-strings-parse"><code>mw.message(...).parse()</code></tvar>. Please make sure all strings that have their raw HTML inserted into the page use <tvar name="cd-strings-parse"><code>convenientDiscussions.sParse()</code></tvar> to prevent introducing [[w:en:XSS|XSS]] vulnerabilities. (All code from untrusted sources is sanitized at earlier stages, but a double check won't hurt.)
+* The "events" in the left panel of the [<tvar name="toolforge-docs">https://tools-static.wmflabs.org/convenient-discussions/docs/</tvar> documentation] correspond to the names used by <tvar name="mw-hook"><code>mw.hook</code></tvar>. For example, to attach a handler to the <tvar name=commentFormCreated><code>commentFormCreated</code></tvar> event, you need the code <tvar name="mw-hook-commentFormCreated"><code>mw.hook('convenientDiscussions.commentFormCreated').add(''handler'');</code></tvar>.
+* To see message names instead of messages themselves on a page, add the ''<tvar name="uselang-qqx">uselang=qqx</tvar>'' parameter to the end of the URL (just like with MediaWiki).
+* If you write a plugin and need some internal method to be available publicly via the global object, contact the [[<tvar name="jack-page">User:Jack who built the house</tvar>|script's maintainer]] (or just make a relevant pull request).
+* So far there are very few automatic tests (although it would be great to have more); most testing should be carried out manually. Some common test cases for comment detection and adding/editing comments are collected at [[User talk:Jack who built the house/CD test cases]].
+
+=== Building === <!--T:80-->
+
+<!--T:81-->
+Use:
+* <tvar name="npm-run-start"><code>npm run start</code></tvar> to serve the script from <tvar name="serve-url"><nowiki>http://localhost:9000/convenientDiscussions.dev.js</nowiki></tvar> and automatically rebuild on updates. Wiki configuration and translation will still be loaded from web.
+* <tvar name="npm-run-single"><code>npm run single -- project=''project_code'' lang=''language_code''</code></tvar> to serve the script as a single file. Useful to debug configuration and translation.
+* <tvar name="npm-run-build"><code>npm run build</code></tvar> to build the main file, source maps, [[#Configuring for a wiki|project configuration]] files, translation files, and license file. Use <tvar name="test-param1"><code>--test</code></tvar> to build the files with the <tvar name="test-postfix1"><code>-test</code></tvar> postfix.
+* <tvar name="npm-run-docs"><code>npm run docs</code></tvar> to generate documentation from [[w:en:JSDoc|JSDoc]] comments.
+* <tvar name="npm-run-configs"><code>npm run configs</code></tvar> to generate [[#Configuring for a wiki|wiki configuration]] files. Use <tvar name="test-param2"><code>--test</code></tvar> to generate the files with the <tvar name="test-postfix2"><code>-test</code></tvar> postfix.
+* <tvar name="npm-run-deploy"><code>npm run deploy</code></tvar> to deploy the built files (including wiki configurations) to wikis as configured in <tvar name=json5><code>config.json5</code></tvar>. Use <tvar name="test-param3"><code>--test</code></tvar> to deploy the test versions.
+
+== See also == <!--T:82-->
+</translate>
+* [[:mw:Extension:DiscussionTools|Extension:DiscussionTools]]
+* [[:mw:Extension:StructuredDiscussions|Extension:StructuredDiscussions]] (Flow)
+
+[[Category:Convenient Discussions]]

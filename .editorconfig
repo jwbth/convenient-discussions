@@ -1,0 +1,28 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+indent_style = tab
+tab_width = 2
+indent_size = tab
+trim_trailing_whitespace = true
+
+[*.{js,ts,jsx,tsx}]
+max_line_length = 100
+
+# Ensure text editors don't turn leading spaces into tabs,
+# e.g. in multi-line bullet list items
+[*.{md,mdc}]
+indent_style = space
+indent_size = 2
+
+# Tabs may not be valid YAML
+# @see https://yaml.org/spec/1.2/spec.html#id2777534
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[.git/**]
+indent_style = space
+indent_size = 2

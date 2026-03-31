@@ -1,0 +1,160 @@
+diff --git a/node_modules/@types/oojs-ui/CheckboxInputWidget.d.ts b/node_modules/@types/oojs-ui/CheckboxInputWidget.d.ts
+index f898ec5..647554b 100644
+--- a/node_modules/@types/oojs-ui/CheckboxInputWidget.d.ts
++++ b/node_modules/@types/oojs-ui/CheckboxInputWidget.d.ts
+@@ -39,7 +39,7 @@ declare namespace OO.ui {
+     namespace CheckboxInputWidget {
+         // HACK: See SelectWidget.d.ts
+         interface EventMap {
+-            change: [selected: boolean | string, indeterminate?: boolean];
++            change: [selected: boolean, indeterminate?: boolean];
+             disable: [disabled: boolean];
+             toggle: [visible: boolean];
+         }
+diff --git a/node_modules/@types/oojs-ui/MessageDialog.d.ts b/node_modules/@types/oojs-ui/MessageDialog.d.ts
+index 8edb265..071162a 100644
+--- a/node_modules/@types/oojs-ui/MessageDialog.d.ts
++++ b/node_modules/@types/oojs-ui/MessageDialog.d.ts
+@@ -58,7 +58,7 @@ declare namespace OO.ui {
+             message: JQuery | Deferrable<string> | null;
+         }
+ 
+-        type Props = Dialog.Props;
++        interface Props extends Dialog.Props {}
+ 
+         interface Prototype extends Dialog.Prototype {
+             getSetupProcess(data?: SetupDataMap & Record<string, any>): Process;
+diff --git a/node_modules/@types/oojs-ui/PageLayout.d.ts b/node_modules/@types/oojs-ui/PageLayout.d.ts
+index f028bd2..ed85114 100644
+--- a/node_modules/@types/oojs-ui/PageLayout.d.ts
++++ b/node_modules/@types/oojs-ui/PageLayout.d.ts
+@@ -24,7 +24,7 @@ declare namespace OO.ui {
+ 
+         type Static = PanelLayout.Static;
+ 
+-        type Props = PanelLayout.Props;
++        interface Props extends PanelLayout.Props {}
+ 
+         interface Prototype extends PanelLayout.Prototype {
+             /**
+diff --git a/node_modules/@types/oojs-ui/ProcessDialog.d.ts b/node_modules/@types/oojs-ui/ProcessDialog.d.ts
+index 6de242c..c9e1067 100644
+--- a/node_modules/@types/oojs-ui/ProcessDialog.d.ts
++++ b/node_modules/@types/oojs-ui/ProcessDialog.d.ts
+@@ -65,9 +65,9 @@ declare namespace OO.ui {
+ 
+         type Static = Dialog.Static;
+ 
+-        type Props = Dialog.Props;
++        interface Props extends Dialog.Props {}
+ 
+-        type Prototype = Dialog.Prototype;
++        interface Prototype extends Dialog.Prototype {}
+ 
+         interface Constructor {
+             /** @param config Configuration options */
+diff --git a/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts b/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts
+index 39599da..44bfb2a 100644
+--- a/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts
++++ b/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts
+@@ -16,7 +16,7 @@ declare namespace OO.ui {
+ 
+         type Static = OptionWidget.Static;
+ 
+-        type Props = OptionWidget.Props;
++        interface Props extends OptionWidget.Props {}
+ 
+         type Prototype = OptionWidget.Prototype;
+ 
+diff --git a/node_modules/@types/oojs-ui/WindowInstance.d.ts b/node_modules/@types/oojs-ui/WindowInstance.d.ts
+index b62f0d1..62071f0 100644
+--- a/node_modules/@types/oojs-ui/WindowInstance.d.ts
++++ b/node_modules/@types/oojs-ui/WindowInstance.d.ts
+@@ -12,14 +12,20 @@ declare namespace OO.ui {
+      *
+      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowInstance
+      */
+-    interface WindowInstance extends WindowInstance.Props, WindowInstance.Prototype {}
++    interface WindowInstance<A extends string | undefined = undefined>
++        extends WindowInstance.Props<A>, WindowInstance.Prototype
++    {}
+ 
+     namespace WindowInstance {
+-        interface Props {
+-            opening: JQuery.Promise<void>;
+-            opened: JQuery.Promise<void>;
+-            closing: JQuery.Promise<void>;
+-            closed: JQuery.Promise<void>;
++        // We can't just check for `string extends T` in the condition, because strings may be
++        // constant (e.g. 'accept')
++        type PromiseReturn<T> = Extract<T, string> extends never ? unknown : { action: T } | undefined;
++
++        interface Props<A = undefined> {
++            opening: JQuery.Promise<unknown>;
++            opened: JQuery.Promise<unknown>;
++            closing: JQuery.Promise<PromiseReturn<A>>;
++            closed: JQuery.Promise<PromiseReturn<A>>;
+         }
+ 
+         interface Prototype {
+@@ -53,7 +59,7 @@ declare namespace OO.ui {
+         }
+ 
+         interface Constructor {
+-            new(): WindowInstance;
++            new<A extends string | undefined = string | undefined>(): WindowInstance<A>;
+             prototype: Prototype;
+             static: {};
+         }
+diff --git a/node_modules/@types/oojs-ui/WindowManager.d.ts b/node_modules/@types/oojs-ui/WindowManager.d.ts
+index 5549427..a67859a 100644
+--- a/node_modules/@types/oojs-ui/WindowManager.d.ts
++++ b/node_modules/@types/oojs-ui/WindowManager.d.ts
+@@ -58,12 +58,17 @@ declare namespace OO.ui {
+             state: "hold" | "teardown";
+         }
+ 
+-        interface WindowOpeningData {
++        interface WindowOpeningData<A extends string = string> {
+             /**
+              * Element to which the window will return focus when closed. Defaults the current
+              * activeElement. If set to null, focus isn't changed on close.
+              */
+             $returnFocusTo?: JQuery | null;
++            actions?: Array<{
++                action: A;
++
++                [x: string]: any;
++            }>;
+ 
+             [x: string]: any;
+         }
+@@ -243,15 +248,22 @@ declare namespace OO.ui {
+              *  closing starts. This behaviour is deprecated and is not compatible with jQuery 3,
+              *  see T163510.
+              */
+-            openWindow(
+-                win: Window | string,
+-                data?: WindowOpeningData,
+-            ): WindowInstance & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
++            openWindow<D extends Window | string, A extends string = 'accept' | 'reject'>(
++                win: D,
++                data?: A[] extends WindowOpeningData['actions']
++                    ? WindowOpeningData<A>
++                    : WindowOpeningData,
++            // `undefined` accounts for when a window is closed by pressing Escape, without taking
++            // any action.
++            ):
++                & (D extends MessageDialog ? WindowInstance<A | undefined> : WindowInstance)
++                & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
+             openWindow<T>(
+                 win: Window | string,
+                 data?: T extends object ? never : T,
+-            ): WindowInstance & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
+-
++            ):
++                & WindowInstance
++                & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
+             /**
+              * Close a window.
+              *

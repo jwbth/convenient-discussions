@@ -1,0 +1,313 @@
+.cd-section-button.cd-section-button.cd-section-button,
+.cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
+	// Compensation for the 1px border
+	margin-inline-start: -1px;
+
+	margin-inline-end: 0;
+
+	> .oo-ui-buttonElement-button {
+		padding: 0;
+	}
+}
+
+.cd-section-button.cd-section-button.cd-section-button,
+.cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
+	direction: var(--cd-direction-user);
+
+	// Use `flex`, not `block`, to prevent overlapping with floating elements, e.g. with the year list
+	// in https://ru.wikipedia.org/w/index.php?title=Обсуждение_проекта:Музыка&oldid=138075138. An
+	// alternative would be to set `overflow: hidden` or `display: flow-root` to
+	// .cd-section-button-container and .cd-replyButtonWrapper (just as like for
+	// .cd-thread-button-container), but need to deal with disappeared margin collapsing then.
+	display: flex;
+
+	> .oo-ui-buttonElement-button {
+		white-space: normal;
+	}
+}
+
+// Multiline thread buttons misaligned with the number
+ol > .cd-thread-button-container > .cd-thread-button {
+	vertical-align: top;
+
+	> .oo-ui-buttonElement-button {
+		// Seems to work without this, but to be sure
+		vertical-align: top;
+	}
+}
+
+.cd-section-button-container,
+.cd-replyButtonWrapper.cd-replyButtonWrapper.cd-replyButtonWrapper,
+
+// Three times to override `.skin-vector .cd-parsed dd` etc..
+.cd-thread-button-container.cd-thread-button-container.cd-thread-button-container {
+	margin-block: 0.5em;
+
+	.cd-reformattedComments & {
+		margin-block: 0.75em;
+	}
+}
+
+// Override `ol > li.cd-comment-part-first.cd-comment-part-first`
+.skin-vector ol > li.cd-thread-button-container.cd-thread-button-container {
+	margin-block: 0.14285714em;
+}
+
+.cd-thread-button-container {
+	overflow: hidden;
+
+	// Make a bit of space for the button in the focus/active state
+	div& {
+		padding-inline-start: 1px;
+	}
+}
+
+// Override OOUI's default 32px
+.cd-button-ooui.cd-button-ooui.oo-ui-buttonElement
+	> .oo-ui-buttonElement-button {
+	min-height: unset;
+}
+
+// #cd-dummyId is used to override other possibly set `display` properties.
+.cd-hidden:not(#cd-dummyId),
+
+// .cd-hide and .cd-show classes are supposed to be used by users to mark elements on wiki pages
+// that should be hidden/shown in CD (for example, texts in edit intros that are irrelevant/relevant
+// for CD).
+.action-view .cd-hide {
+	display: none !important;
+}
+
+// Override
+// `.cd-reformattedComments .cd-comment-part-first.cd-comment-part-first.cd-comment-part-first`
+// and also
+// `.cd-reformattedComments .cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem` ~~(I hate myself)~~
+.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound {
+	margin: 0;
+	padding: 0;
+}
+
+// Hotfix Vector's `margin-top: -0.5em;` for `p + ul` etc.
+.mw-body [hidden] + ul,
+.mw-body [hidden] + ol,
+.mw-body [hidden] + table,
+.mw-body [hidden] + dl,
+.mw-body [hidden] + blockquote {
+	margin-top: 1em;
+}
+
+// Allow headings to have the top pixel visible to make active section highlighting in the TOC
+// work
+.mw-heading.cd-hidden:not(#cd-dummyId) {
+	display: block !important;
+	height: 0;
+
+	// For Timeless
+	> * {
+		visibility: hidden;
+	}
+}
+
+.cd-show {
+	div&,
+	p& {
+		display: block !important;
+	}
+
+	span& {
+		display: inline !important;
+	}
+}
+
+.cd-bootingOverlay {
+	position: fixed;
+	bottom: 0;
+	width: 10em;
+	inset-inline-start: 0;
+
+	// `z-index` of OOUI windows + 10
+	z-index: 111;
+
+	// A bit more complex logic here than just flipping left/right
+	.sitedir-ltr.ltr & {
+		direction: ltr;
+	}
+
+	.sitedir-ltr.rtl &,
+	.sitedir-rtl & {
+		direction: rtl;
+	}
+
+	.skin-vector-2022 & {
+		width: 0;
+		margin-inline-start: 2em;
+	}
+
+	&-logo {
+		display: block;
+		margin: 0 auto 2em;
+		width: 3.4375rem;
+		position: relative;
+
+		&-partBackground {
+			position: absolute;
+			left: 0.5rem;
+			top: 0.375rem;
+			width: 1.6875rem;
+			height: 1.3125rem;
+			z-index: -1;
+			background-color: var(--cd-sidebar-color);
+		}
+	}
+}
+
+@media screen and (min-width: 982px) {
+	.cd-bootingOverlay {
+		width: 11em;
+	}
+}
+
+.cd-button-disabled.cd-button-disabled {
+	cursor: default;
+
+	// Override .cd-comment-button-labeled.cd-comment-button-labeled.cd-comment-button-labeled:hover
+	&.cd-button-disabled.cd-button-disabled.cd-button-disabled {
+		color: var(--color-disabled, #72777d);
+	}
+}
+
+.cd-button-pending.cd-button-pending,
+.cd-button-pending.cd-button-pending.cd-button-pending
+	.oo-ui-buttonElement-button {
+	cursor: wait;
+}
+
+// Override .cd-comment-button-labeled.cd-comment-button-labeled.cd-comment-button-labeled
+.cd-button-progressive.cd-button-progressive.cd-button-progressive.cd-button-progressive {
+	color: var(--color-progressive, #36c);
+
+	&:active {
+		color: var(--color-progressive--active, #233566);
+	}
+}
+
+.cd-dialog-copyLink {
+	.oo-ui-actionFieldLayout.oo-ui-fieldLayout-align-top,
+	.oo-ui-fieldLayout.oo-ui-labelElement.oo-ui-fieldLayout-align-top
+		> .oo-ui-fieldLayout-body
+		> .oo-ui-fieldLayout-header,
+	.oo-ui-textInputWidget,
+	.oo-ui-copyTextLayout > .oo-ui-fieldLayout-body > .oo-ui-fieldLayout-field {
+		max-width: 60em;
+	}
+
+	&-linkTypeSelect.cd-dialog-copyLink-linkTypeSelect {
+		display: flex;
+		justify-content: center;
+		margin: 0.5em 0;
+	}
+}
+
+.cd-diffView {
+	&-diff {
+		margin: 1em 0;
+	}
+
+	&-nextDiffLink {
+		margin-inline-start: 1em;
+		float: var(--cd-float-user-end);
+	}
+}
+
+.cd-commentDiffView-below {
+	margin: 0.5em 0 0;
+	text-align: center;
+}
+
+:root {
+	--cd-current-user-link-color: #f0def7;
+}
+
+.cd-currentUserLink {
+	background-color: var(--cd-current-user-link-color, #f0def7);
+}
+
+.darkTheme-talkPage() {
+	--cd-current-user-link-color: #5c1a70;
+
+	.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote
+		> .oo-ui-iconElement-icon {
+		background-image: url('data:image/svg+xml,%3Csvg width="7" height="12" viewBox="0 0 7 12" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M1.27273 -4.13261e-07L-4.66255e-07 1.33333L4.45455 6L-5.82819e-08 10.6667L1.27273 12L7 6L1.27273 -4.13261e-07Z" fill="%23f8f9fa" /%3E%3C/svg%3E');
+	}
+}
+
+@media screen {
+	html.skin-theme-clientpref-night {
+		.darkTheme-talkPage();
+	}
+}
+
+@media screen and (prefers-color-scheme: dark) {
+	html.skin-theme-clientpref-os {
+		.darkTheme-talkPage();
+	}
+}
+
+.cd-rcnotice-text {
+	margin-top: 1em;
+}
+
+.cd-rcnotice-img {
+	display: block;
+	margin: 0 auto;
+}
+
+.cd-rcnotice-arrow {
+	margin: 0.5em auto;
+	width: fit-content;
+}
+
+.cd-skip {
+	list-style-type: none;
+}
+
+// T295107
+.oo-ui-buttonSelectWidget.oo-ui-widget-enabled
+	.oo-ui-buttonElement.oo-ui-widget-disabled.cd-dialog-copyLink-diffButton
+	> .oo-ui-buttonElement-button {
+	z-index: 0;
+}
+
+// Increase the vertical margins a bit from 5px
+.cd-popupOverlay .oo-ui-popupWidget-body {
+	margin-top: 7px;
+	margin-bottom: 7px;
+}
+
+.cd-popup-onboarding {
+	font-size: var(--font-size-medium, 0.875rem);
+	z-index: 10;
+
+	.oo-ui-labelElement-label {
+		font-weight: bold;
+	}
+}
+
+// T313332
+.cd-dialog-copyLink .oo-ui-textInputWidget input {
+	height: auto;
+}
+
+// Make the area between lines of a link clickable.
+.mw-notification a {
+	padding: 0.125rem 0;
+	position: relative;
+}
+
+.cd-addTopicButton-container.cd-addTopicButton-container {
+	margin-top: 1.5em;
+}
+
+.cd-closeButton.cd-closeButton {
+	color: var(--color-base, #202122);
+}

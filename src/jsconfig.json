@@ -1,0 +1,16 @@
+{
+	"extends": "../jsconfig-base.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"target": "es2022",
+		"moduleResolution": "bundler",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
+	},
+	"include": [
+		"**/*",
+		"../config/**/*",
+		"../data/**/*",
+		"../node_modules/types-mediawiki"
+	]
+}

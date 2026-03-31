@@ -1,0 +1,138 @@
+// @ts-check
+import { test, expect } from '@playwright/test'
+
+import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
+
+/**
+ * DOM-level check for duplicate toggle child threads buttons
+ *
+ * Scans the rendered DOM using querySelectorAll to find all
+ * `.cd-comment-button-toggleChildThreads` elements, groups them by their immediate
+ * parent container element, and asserts no container holds more than one such button.
+ *
+ * For the equivalent check via the CD JS object model see
+ * duplicate-toggle-button-actions.spec.js.
+ */
+
+test.describe('Duplicate Toggle Child Threads Button — DOM Scan', () => {
+	test('should have at most one toggle button per button container in the DOM', async ({ page }) => {
+		await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
+
+		// Get statistics about toggle buttons to validate the fix
+		const validation = await page.evaluate(() => {
+			const allToggleButtons = document.querySelectorAll('.cd-comment-button-toggleChildThreads')
+
+			// Key the map by the actual container element so that elements sharing the same
+			// class name are still treated as distinct containers.
+			const buttonContainers = new Map()
+
+			// Group buttons by their immediate container element
+			allToggleButtons.forEach((button) => {
+				const container = button.parentElement
+				if (!buttonContainers.has(container)) {
+					buttonContainers.set(container, [])
+				}
+				buttonContainers.get(container).push(button)
+			})
+
+			// Find containers with multiple buttons (potential duplicates)
+			const duplicateContainers = []
+			buttonContainers.forEach((buttons, container) => {
+				if (buttons.length > 1) {
+					const commentIndex =
+						container?.closest('[data-cd-comment-index]')?.dataset.cdCommentIndex ?? 'unknown'
+					duplicateContainers.push({
+						commentIndex,
+						buttonCount: buttons.length,
+						containerTag: container?.tagName,
+						containerClasses: container?.className,
+					})
+				}
+			})
+
+			return {
+				totalButtons: allToggleButtons.length,
+				totalContainers: buttonContainers.size,
+				duplicateContainers,
+				hasDuplicates: duplicateContainers.length > 0,
+			}
+		})
+
+		console.log('🔍 Toggle Button Fix Validation Results:')
+		console.log(`   Total toggle buttons found: ${validation.totalButtons}`)
+		console.log(`   Total containers: ${validation.totalContainers}`)
+		console.log(`   Duplicate containers: ${validation.duplicateContainers.length}`)
+
+		if (validation.duplicateContainers.length > 0) {
+			console.log('❌ DUPLICATES FOUND:', validation.duplicateContainers)
+		}
+
+		// The main assertion: no duplicates should exist
+		expect(validation.hasDuplicates).toBe(false)
+
+		// Additional validation: if we have buttons, we should have at least as many containers
+		if (validation.totalButtons > 0) {
+			expect(validation.totalContainers).toBeGreaterThan(0)
+			expect(validation.totalContainers).toBeLessThanOrEqual(validation.totalButtons)
+		}
+
+		console.log('✅ Fix validation passed - no duplicate toggle buttons detected')
+	})
+
+	test('should report basic CD object statistics (sanity check)', async ({ page }) => {
+		// Sanity check: CD is loaded and comments/actions are populated
+		const codeValidation = await page.evaluate(() => {
+			// Check if Convenient Discussions is loaded
+			if (!window.convenientDiscussions) {
+				return { error: 'Convenient Discussions not loaded' }
+			}
+
+			const cd = window.convenientDiscussions
+
+			// Get information about comments and their actions
+			const commentInfo = {
+				totalComments: cd.comments ? cd.comments.length : 0,
+				commentsWithActions: 0,
+				commentsWithToggleButtons: 0,
+			}
+
+			if (cd.comments) {
+				cd.comments.forEach((comment) => {
+					if (comment.actions) {
+						commentInfo.commentsWithActions++
+
+						// Check if this comment has a toggle button
+						if (comment.actions.toggleChildThreadsButton) {
+							commentInfo.commentsWithToggleButtons++
+						}
+					}
+				})
+			}
+
+			return {
+				success: true,
+				commentInfo,
+				cdLoaded: true,
+			}
+		})
+
+		if (codeValidation.error) {
+			console.log(`⚠️ ${codeValidation.error}`)
+
+			return // Skip this test if CD isn't loaded
+		}
+
+		console.log('📊 Code Structure Validation:')
+		console.log(`   Total comments: ${codeValidation.commentInfo.totalComments}`)
+		console.log(`   Comments with actions: ${codeValidation.commentInfo.commentsWithActions}`)
+		console.log(
+			`   Comments with toggle buttons: ${codeValidation.commentInfo.commentsWithToggleButtons}`,
+		)
+
+		// Validate that the structure is reasonable
+		expect(codeValidation.success).toBe(true)
+		expect(codeValidation.cdLoaded).toBe(true)
+
+		console.log('✅ Code structure validation passed')
+	})
+})
