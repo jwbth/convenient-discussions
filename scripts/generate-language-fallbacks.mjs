@@ -139,7 +139,7 @@ readdirSync(messagesDir).forEach((file) => {
 	}
 })
 
-writeFileSync(outputFile, JSON.stringify(output, null, 2), 'utf8')
+writeFileSync(outputFile, JSON.stringify(output, null, 2) + '\n', 'utf8')
 console.log('languageFallbacks.json generated in data directory!')
 
 await rm(messagesDir, { recursive: true, force: true })
