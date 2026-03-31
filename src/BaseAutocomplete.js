@@ -116,6 +116,13 @@ class BaseAutocomplete {
 			ttl: config.cacheTtl || 5 * 60_000,
 			maxMemory: config.cacheMaxMemory || 5 * 1024 * 1024, // 5MB
 		})
+
+		/**
+		 * Whether this autocomplete type allows nesting of the same trigger.
+		 *
+		 * @type {boolean}
+		 */
+		this.allowNesting = false
 	}
 
 	/**

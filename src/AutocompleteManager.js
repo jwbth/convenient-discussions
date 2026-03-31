@@ -280,7 +280,8 @@ class AutocompleteManager {
 		let selectedText
 		if (
 			savedSelection &&
-			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos
+			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos &&
+			(!savedSelection.selectedText.includes(autocomplete.getTrigger()) || autocomplete.allowNesting)
 		) {
 			selectedText = savedSelection.selectedText
 		}
