@@ -6,7 +6,7 @@ import {
 	writeFileSync,
 	createWriteStream,
 } from 'node:fs'
-import { unlink } from 'node:fs/promises'
+import { rm } from 'node:fs/promises'
 import https from 'node:https'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
@@ -26,7 +26,7 @@ async function downloadAndExtractMessages() {
 
 	const url =
 		'https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+archive/HEAD/languages/messages.tar.gz'
-	const tempFile = path.join(__dirname, 'languages.tar.gz')
+	const tempFile = path.join(__dirname, 'messages.tar.gz')
 
 	if (existsSync(tempFile)) {
 		console.log('Archive already exists, skipping download.')
@@ -48,7 +48,11 @@ async function downloadAndExtractMessages() {
 					if (statusCode !== 200) {
 						const retryAfter = response.headers['retry-after']
 						const retryMsg = retryAfter ? ` Retry-After: ${retryAfter}` : ''
-						reject(new Error(`Failed to download: ${statusCode}${retryMsg}`))
+						reject(
+							new Error(
+								`Failed to download: ${statusCode}${retryMsg}. If you always get this error, download messages.tar.gz manually from https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+archive/HEAD/languages/messages.tar.gz and put it into the scripts directory.`,
+							),
+						)
 
 						return
 					}
@@ -73,7 +77,8 @@ async function downloadAndExtractMessages() {
 	})
 
 	// Clean up temp file
-	await unlink(tempFile)
+	// await unlink(tempFile)
+	// console.log('messages.tar.gz removed.')
 
 	console.log('Messages extracted successfully!')
 }
@@ -134,9 +139,8 @@ readdirSync(messagesDir).forEach((file) => {
 	}
 })
 
-if (!existsSync(path.join(__dirname, 'data'))) {
-	mkdirSync(path.join(__dirname, 'data'))
-}
-
 writeFileSync(outputFile, JSON.stringify(output, null, 2), 'utf8')
-console.log('languageFallbacks.json generated!')
+console.log('languageFallbacks.json generated in data directory!')
+
+await rm(messagesDir, { recursive: true, force: true })
+console.log('Messages directory removed. You may delete messages.tar.gz.')
