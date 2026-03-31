@@ -703,6 +703,8 @@ class CommentSource {
 			cd.settings.get('outdent') &&
 			cd.settings.get('outdentLevel') &&
 			this.replyIndentation.length >= cd.settings.get('outdentLevel') &&
+			// This line inserted by AI; may be meaningless
+			indentationAfter !== undefined &&
 			this.indentation.length > indentationAfter.length &&
 			isNextLine
 		) {

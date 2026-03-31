@@ -208,7 +208,7 @@ const config = defineConfig(
 
 			// Yells when it sees a parameter with `=` before a parameter without `=`, even though the
 			// latter can be optional, i.e. `undefined` by default, and we don't use `undefined` as a
-			// value for parameters with `=` per rule unicorn/no-useless-undefined.
+			// value for parameters with `=` per rule @typescript-eslint/no-useless-default-assignment.
 			'default-param-last': 'off',
 
 			// Impractical strict rules

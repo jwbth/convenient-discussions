@@ -3647,7 +3647,7 @@ class Comment extends CommentSkeleton {
 	/**
 	 * Get the flags that affect the comment's visual styling.
 	 *
-	 * @returns {Array<{name: string, value: boolean | undefined}>}
+	 * @returns {Array<{name: import('./CommentFlagSet').CommentFlag, value: boolean}>}
 	 */
 	getStyleFlags() {
 		return this.flags.getStyleFlags()

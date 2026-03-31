@@ -466,11 +466,15 @@ export class CommentManager extends EventEmitter {
 
 			return Boolean(comment.roughOffset)
 		}
-		const findVisible = (
-			/** @type {'forward' | 'backward'} */ direction,
-			startIndex = 0,
-			/** @type {number | undefined} */ endIndex,
-		) => {
+		/**
+		 * Find any one comment inside the viewport.
+		 *
+		 * @param {'forward' | 'backward'} direction
+		 * @param {number} [startIndex]
+		 * @param {number} [endIndex]
+		 * @returns {C | undefined}
+		 */
+		const findVisible = (direction, startIndex = 0, endIndex) => {
 			let comments = reorderArray(this.items, startIndex, direction === 'backward')
 			if (endIndex !== undefined) {
 				comments = comments.filter((comment) =>

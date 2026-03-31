@@ -69,8 +69,7 @@ describe('TextMasker', () => {
 
 	describe('unmaskText', () => {
 		test('should unmask text with markers', () => {
-			const masker = new TextMasker('dummy')
-			masker.maskedTexts = ['{{template1}}', '{{template2}}']
+			const masker = new TextMasker('dummy', ['{{template1}}', '{{template2}}'])
 
 			const result = masker.unmaskText('\u00011_template\u0002 and \u00012_template\u0002')
 
@@ -78,8 +77,7 @@ describe('TextMasker', () => {
 		})
 
 		test('should handle markers with additional suffixes', () => {
-			const masker = new TextMasker('dummy')
-			masker.maskedTexts = ['{{template}}']
+			const masker = new TextMasker('dummy', ['{{template}}'])
 
 			const result = masker.unmaskText('\u00011_template_123\u0002')
 

@@ -1,3 +1,5 @@
+import cd from './loader/cd'
+
 // See StorageItemWithKeysAndSaveTime.js for the structure of storage items.
 
 /**
