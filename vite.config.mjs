@@ -35,6 +35,30 @@ function appendNowikiPlugin(bundleFilename) {
 }
 
 /**
+ * Custom plugin to preserve control character escape sequences in strings.
+ *
+ * @returns {import('vite').Plugin}
+ */
+function preserveControlEscapesPlugin() {
+	return {
+		name: 'preserve-control-escapes',
+		apply: 'build',
+		enforce: 'post',
+		generateBundle(_options, bundle) {
+			for (const chunk of Object.values(bundle)) {
+				if (chunk.type === 'chunk' && chunk.code) {
+					chunk.code = chunk.code.replace(
+						/[\u0001-\u0004\u001F]/g,
+						(match) =>
+							`\\u${(match.codePointAt(0) || 0).toString(16).padStart(4, '0')}`,
+					)
+				}
+			}
+		},
+	}
+}
+
+/**
  * Custom plugin to extract license comments to separate files.
  *
  * @param {BuildMode} buildMode
@@ -350,31 +374,32 @@ export default defineConfig(({ mode, command }) => {
 
 	// Add define plugin for dev server (Vite's define only works in build mode)
 	if (isDevServer) {
-		plugins.push({
-			name: 'define-env-vars',
-			/**
-			 * @param {string} code
-			 * @param {string} id
-			 * @returns {string | undefined}
-			 */
-			transform(code, id) {
-				if (id.includes('node_modules')) return
+		plugins.push(
+			{
+				name: 'define-env-vars',
+				/**
+				 * @param {string} code
+				 * @param {string} id
+				 * @returns {string | undefined}
+				 */
+				transform(code, id) {
+					if (id.includes('node_modules')) return
 
-				// Replace environment defines in source code
-				let transformedCode = code
-				for (const [key, value] of Object.entries(defines)) {
-					const regex = new RegExp(`\\b${key}\\b`, 'g')
-					transformedCode = transformedCode.replace(regex, value)
-				}
+					// Replace environment defines in source code
+					let transformedCode = code
+					for (const [key, value] of Object.entries(defines)) {
+						const regex = new RegExp(`\\b${key}\\b`, 'g')
+						transformedCode = transformedCode.replace(regex, value)
+					}
 
-				return transformedCode === code ? undefined : transformedCode
+					return transformedCode === code ? undefined : transformedCode
+				},
 			},
-		})
-
-		plugins.push(disableFullReloadPlugin())
+			disableFullReloadPlugin(),
+		)
 	}
 
-	plugins.push(buildNotificationPlugin())
+	plugins.push(buildNotificationPlugin(), preserveControlEscapesPlugin())
 
 	// Add nowiki banner plugins for non-single builds
 	if (!buildMode.isSingle) {
@@ -516,9 +541,6 @@ export default defineConfig(({ mode, command }) => {
 					// Module format (IIFE for browser global)
 					format: 'iife',
 				},
-
-				// Tree-shaking is enabled by default in Rollup/Vite
-				treeshake: true,
 			},
 
 			// Disable code splitting
