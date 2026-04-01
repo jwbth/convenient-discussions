@@ -395,8 +395,9 @@ class Parser {
 						// extremely rare).
 						(['S', 'STRIKE', 'DEL'].includes(node.tagName) && node.textContent.length >= 30) ||
 						// Cases like
-						// https://ru.wikipedia.org/?diff=141883529#c-Супер-Вики-Патруль-20241204140000-Stjn-20241204123400
-						node.textContent.length >= cd.config.signatureScanLimit))
+						// https://ru.wikipedia.org/?diff=141883529#c-Супер-Вики-Патруль-20241204140000-Stjn-20241204123400.
+						// But should be false for https://zh.wikipedia.org/wiki/Special:GoToComment/c-%E7%92%83%E8%8C%97%E7%86%92%E9%9F%B3-20260329053900-SuperGrey-20260329034700 where authorData.name is not yet populated!
+						(node.textContent.length >= cd.config.signatureScanLimit && authorData.name)))
 			)
 		)
 
