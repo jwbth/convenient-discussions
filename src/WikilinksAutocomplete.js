@@ -1,4 +1,5 @@
 import BaseAutocomplete from './BaseAutocomplete'
+import CrossSiteMwTitle from './CrossSiteMwTitle'
 import cd from './loader/cd'
 import { charAt, phpCharToUpper } from './shared/utils-general'
 import { handleApiReject } from './utils-api'
@@ -14,8 +15,15 @@ import { handleApiReject } from './utils-api'
  */
 
 /**
+ * @typedef {object} InterwikiResolution
+ * @property {string} hostname The resolved remote hostname
+ * @property {string} pageName The page name without the interwiki prefix
+ */
+
+/**
  * Autocomplete class for wikilinks (page links). Handles page name validation, OpenSearch API
- * integration, colon prefixes, namespace logic, case sensitivity, and section autocomplete.
+ * integration, colon prefixes, namespace logic, case sensitivity, section autocomplete, and
+ * interwiki prefix resolution.
  *
  * @augments BaseAutocomplete
  */
@@ -85,6 +93,11 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	validatePageName(text) {
 		const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter(Boolean).join('|')
 
+		// A candidate interwiki prefix: matches `prefix:rest` where prefix is not a known namespace.
+		// These are allowed through so that interwiki resolution can be attempted.
+		const isCandidateInterwiki =
+			/^[a-z-]\w*:/.test(text) && !new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)
+
 		const valid =
 			text &&
 			text !== ':' &&
@@ -94,10 +107,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				.length <= 9 &&
 			// Forbidden characters
 			!/[#<>[\]|{}]/.test(text) &&
-			// Interwikis
+			// Interwikis: allow candidate interwiki prefixes through; only reject colon-prefixed
+			// non-namespace strings that aren't candidate interwikis.
+			!(text.startsWith(':') && !new RegExp(`^:?(?:${allNssPattern}):`, 'i').test(text)) &&
+			// Reject explicit non-namespace colon prefixes that aren't interwiki candidates
 			!(
-				(text.startsWith(':') || /^[a-z-]\w*:/.test(text)) &&
-				!new RegExp(`^:?(?:${allNssPattern}):`, 'i').test(text)
+				!isCandidateInterwiki &&
+				/^[a-z-]\w*:/.test(text) &&
+				!new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)
 			)
 
 		return Boolean(valid)
@@ -136,6 +153,60 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
+	 * Attempt to resolve a candidate interwiki prefix in the given text using
+	 * `getUrlFromInterwikiLink`. Returns the resolved hostname and the page name portion (after all
+	 * interwiki prefixes), or `undefined` if the text is not an interwiki link or resolution fails.
+	 *
+	 * @param {string} text The input text potentially containing an interwiki prefix
+	 * @returns {Promise<InterwikiResolution | undefined>}
+	 * @private
+	 */
+	async resolveInterwikiPrefix(text) {
+		if (!window.getUrlFromInterwikiLink) {
+			return undefined
+		}
+
+		const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter(Boolean).join('|')
+		const isCandidateInterwiki =
+			/^[a-z-]\w*:/.test(text) && !new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)
+
+		if (!isCandidateInterwiki) {
+			return undefined
+		}
+
+		// Find the last prefix boundary to separate all prefixes from the page name.
+		// e.g. "de:wikt:Test" → prefixes "de:wikt:", pageName "Test"
+		const prefixMatch = text.match(/^(?:[a-z-]\w*:)+/)
+		if (!prefixMatch) {
+			return undefined
+		}
+
+		const prefixPart = prefixMatch[0]
+		const pageName = text.slice(prefixPart.length)
+
+		let url
+		try {
+			// Pass the full text; getUrlFromInterwikiLink expands all prefixes and appends the page name
+			url = await window.getUrlFromInterwikiLink(text)
+		} catch {
+			return undefined
+		}
+
+		if (!url) {
+			return undefined
+		}
+
+		const resolvedHostname = new URL(url, cd.g.server).hostname
+
+		// If it resolves to the current wiki, it's not a cross-site link
+		if (resolvedHostname === mw.config.get('wgServerName')) {
+			return undefined
+		}
+
+		return { hostname: resolvedHostname, pageName }
+	}
+
+	/**
 	 * Get page name suggestions using OpenSearch API.
 	 *
 	 * @param {string} text The search text
@@ -149,18 +220,23 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			colonPrefix = true
 		}
 
+		// Attempt interwiki resolution for candidate prefixes
+		const interwiki = await this.resolveInterwikiPrefix(text)
+
+		if (interwiki) {
+			return await this.getCrossSitePageSuggestions(text, interwiki)
+		}
+
 		const response = await BaseAutocomplete.makeOpenSearchRequest({
 			search: text,
 			redirects: 'return',
 		})
 
 		return response[1].map((/** @type {string} */ name) => {
-			if (mw.config.get('wgCaseSensitiveNamespaces').length) {
-				const title = mw.Title.newFromText(name)
-				if (
-					!title ||
-					!mw.config.get('wgCaseSensitiveNamespaces').includes(title.getNamespaceId())
-				) {
+			const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
+			if (caseSensitiveNamespaces.length) {
+				const title = CrossSiteMwTitle.newFromText(name)
+				if (!title || !caseSensitiveNamespaces.includes(title.getNamespaceId())) {
 					name = this.useOriginalFirstCharCase(name, text)
 				}
 			} else {
@@ -168,6 +244,59 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			}
 
 			return name.replace(/^/, colonPrefix ? ':' : '')
+		})
+	}
+
+	/**
+	 * Get page suggestions from a remote wiki using a ForeignApi OpenSearch request.
+	 *
+	 * @param {string} text The full input text including interwiki prefix(es)
+	 * @param {InterwikiResolution} interwiki Resolved interwiki data
+	 * @returns {Promise<string[]>} Page name suggestions preserving the original interwiki prefix
+	 * @private
+	 */
+	async getCrossSitePageSuggestions(text, interwiki) {
+		const { hostname, pageName } = interwiki
+		const wgScriptPath = mw.config.get('wgScriptPath')
+		const foreignApi = new mw.ForeignApi(`https://${hostname}${wgScriptPath}/api.php`, {
+			anonymous: true,
+		})
+
+		await CrossSiteMwTitle.loadHostData(hostname, foreignApi)
+
+		const response = /** @type {import('./AutocompleteManager').OpenSearchResults} */ (
+			await BaseAutocomplete.createDelayedPromise(async (resolve) => {
+				const apiResponse = await foreignApi
+					.get({
+						action: 'opensearch',
+						search: pageName,
+						redirects: 'return',
+						limit: 10,
+					})
+					.catch(handleApiReject)
+
+				if (BaseAutocomplete.currentPromise) {
+					BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
+				}
+				resolve(apiResponse)
+			})
+		)
+
+		// Reconstruct the full interwiki-prefixed name from the result
+		const prefixPart = text.slice(0, text.length - pageName.length)
+
+		return response[1].map((/** @type {string} */ name) => {
+			const caseSensitiveNamespaces = CrossSiteMwTitle.getHostData(hostname).caseSensitiveNamespaces
+			if (caseSensitiveNamespaces.length) {
+				const title = CrossSiteMwTitle.newFromText(name, undefined, hostname)
+				if (!title || !caseSensitiveNamespaces.includes(title.getNamespaceId())) {
+					name = this.useOriginalFirstCharCase(name, pageName)
+				}
+			} else {
+				name = this.useOriginalFirstCharCase(name, pageName)
+			}
+
+			return prefixPart + name
 		})
 	}
 
@@ -180,14 +309,36 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	async getSectionSuggestions(pageName, fragmentQuery) {
-		// Normalize page title
-		const title = mw.Title.newFromText(pageName)
-		if (!title) {
-			// Invalid page name, return user's input as-is
-			return [pageName + '#' + fragmentQuery]
-		}
+		// Attempt interwiki resolution for cross-site pages
+		const interwiki = await this.resolveInterwikiPrefix(pageName)
 
-		const normalizedPageName = title.getPrefixedText()
+		/** @type {string} */
+		let normalizedPageName
+		/** @type {mw.ForeignApi | undefined} */
+		let foreignApi
+
+		if (interwiki) {
+			const { hostname, pageName: remotePageName } = interwiki
+			const wgScriptPath = mw.config.get('wgScriptPath')
+			foreignApi = new mw.ForeignApi(`https://${hostname}${wgScriptPath}/api.php`, {
+				anonymous: true,
+			})
+			await CrossSiteMwTitle.loadHostData(hostname, foreignApi)
+
+			const title = CrossSiteMwTitle.newFromText(remotePageName, undefined, hostname)
+			if (!title) {
+				return [pageName + '#' + fragmentQuery]
+			}
+
+			normalizedPageName = title.getPrefixedText()
+		} else {
+			const title = CrossSiteMwTitle.newFromText(pageName)
+			if (!title) {
+				return [pageName + '#' + fragmentQuery]
+			}
+
+			normalizedPageName = title.getPrefixedText()
+		}
 
 		// Check cache for sections of this page
 		const cacheKey = `sections:${normalizedPageName}`
@@ -197,10 +348,10 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 		if (!sections) {
 			try {
-				// Fetch sections from API
+				// Fetch sections from API (local or foreign)
 				const response = await BaseAutocomplete.createDelayedPromise(async (resolve) => {
-					const apiResponse = await cd
-						.getApi(BaseAutocomplete.apiConfig)
+					const api = foreignApi || cd.getApi(BaseAutocomplete.apiConfig)
+					const apiResponse = await api
 						.get({
 							action: 'parse',
 							page: normalizedPageName,

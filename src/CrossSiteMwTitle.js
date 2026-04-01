@@ -46,13 +46,13 @@ export default class CrossSiteMwTitle extends mw.Title {
 	static mwString = mw.loader.require('mediawiki.String')
 
 	/** @type {number} */
-	namespace
+	namespace = this.namespace
 
 	/** @type {string} */
-	title
+	title = this.title
 
 	/** @type {string} */
-	hostname
+	hostname = this.hostname
 
 	/**
 	 * @param {string} title
@@ -88,6 +88,17 @@ export default class CrossSiteMwTitle extends mw.Title {
 	 */
 	static isKnownNamespace(namespace, hostname = mw.config.get('wgServerName')) {
 		return namespace === 0 || namespace in this.hostData[hostname].formattedNamespaces
+	}
+
+	/**
+	 * Get the host data for a given hostname. The hostname must have been loaded via
+	 * {@link loadHostData} first.
+	 *
+	 * @param {string} [hostname]
+	 * @returns {HostData}
+	 */
+	static getHostData(hostname = mw.config.get('wgServerName')) {
+		return this.hostData[hostname]
 	}
 
 	/**
