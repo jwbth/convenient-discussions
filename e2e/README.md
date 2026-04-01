@@ -1,10 +1,8 @@
-# Playwright Browser Testing
+# Playwright Browser Tests
 
-This directory contains Playwright browser tests for Convenient Discussions, specifically testing visual layers, hover behaviors, and UI interactions that require a real browser environment.
+This directory contains Playwright end-to-end tests for Convenient Discussions, covering UI interactions, visual layers, hover behaviors, and other features that require a real browser environment.
 
 ## Setup
-
-### Prerequisites
 
 1. Install dependencies:
 
@@ -13,177 +11,84 @@ This directory contains Playwright browser tests for Convenient Discussions, spe
    ```
 
 2. Install Playwright browsers:
+
    ```bash
    npx playwright install
    ```
 
-### Running Tests
-
-#### All Browser Tests
+## Running Tests
 
 ```bash
-npm run test:browser
-```
+# All tests
+npx playwright test
 
-#### Specific Test File
+# Specific file
+npx playwright test e2e/comment-layers.spec.js
 
-```bash
-npx playwright test comment-layers.spec.js
-```
-
-#### Debug Mode
-
-```bash
+# Debug mode (Playwright Inspector)
 npx playwright test --debug
-```
 
-#### Headed Mode (See Browser)
-
-```bash
+# Headed mode
 npx playwright test --headed
 ```
 
-## Test Structure
+## How It Works
 
-### Test Files
+Tests run against live Wikipedia pages with the Convenient Discussions script injected from the local dev server (`http://localhost:9000`). Make sure the dev server is running before executing tests.
 
-- **comment-layers.spec.js** - Tests visual layers, positioning, and hover behaviors
-- **comment-actions.spec.js** - Tests action buttons and menu interactions
-- **comment-visual.spec.js** - Tests visual appearance and consistency
+Each test calls `setupConvenientDiscussions(page)` from `helpers/test-utils.js`, which:
 
-### Test Utilities
-
-- **helpers/test-utils.js** - Common utilities for browser testing
-
-## Test Requirements
-
-These tests validate the requirements from the Comment class refactoring spec:
-
-### Requirement 1: Class Hierarchy Restructuring
-
-- Tests that SpaciousComment and CompactComment are created correctly
-- Validates polymorphic behavior in browser environment
-
-### Requirement 2: Layers Composition Pattern
-
-- Tests layer creation, positioning, and destruction
-- Validates hover behaviors for CompactComment overlay menus
-- Tests layer style updates and responsiveness
-
-### Requirement 6: Backward Compatibility
-
-- Visual regression testing to ensure comments look identical
-- Interaction testing to ensure all behaviors work as expected
-
-### Requirement 8: Testing Coverage
-
-- Browser-specific testing for UI functionality
-- Visual validation that unit tests cannot provide
-
-## Test Environment
-
-The tests run against live Wikipedia pages with your Convenient Discussions script injected:
-
-1. **Script Building**: Automatically builds your script before tests run
-2. **Script Injection**: Injects `dist/convenientDiscussions.js` into Wikipedia pages
-3. **Test Pages**: Uses live Wikipedia talk pages (e.g., Talk:Main_Page)
-4. **Browser Support**: Tests run on Chromium, Firefox, and WebKit
-
-### How It Works
-
-1. **Global Setup**: Runs `npm run build` to create `dist/convenientDiscussions.js`
-2. **Test Setup**: Each test calls `setupConvenientDiscussions(page)` which:
-   - Navigates to a Wikipedia talk page
-   - Waits for page and MediaWiki to load completely
-   - Injects your built script using `page.addScriptTag()`
-   - Waits for Convenient Discussions to initialize
-   - Provides console logging for each step
-
-### Centralized Setup
-
-All test preparation is handled by a single function in `helpers/test-utils.js`:
+1. Navigates to a Wikipedia talk page
+2. Waits for MediaWiki globals to be available
+3. Injects the script from the dev server
+4. Waits for CD to initialize
 
 ```javascript
-const {
-  setupConvenientDiscussions,
-  TEST_PAGES,
-} = require('./helpers/test-utils')
+import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
 test.beforeEach(async ({ page }) => {
-  // Uses default test page (Talk:Main_Page)
+  // Uses the default test page
   await setupConvenientDiscussions(page)
 
-  // Or specify a different test page
+  // Or specify a different page
   await setupConvenientDiscussions(page, TEST_PAGES.CD_TEST_CASES)
+
+  // Or pass settings to apply before injection
+  await setupConvenientDiscussions(page, {
+    settings: { commentDisplay: 'compact' },
+  })
 })
 ```
 
-## Configuration
+## Authentication
 
-### Test Pages
+Most tests work without login. For features that require authentication (editing, thanking, etc.), see `AUTH_SETUP_GUIDE.md`.
 
-The tests are configured to use live Wikipedia talk pages:
+Set credentials via environment variables — never hardcode them:
 
-- **Default**: `https://en.wikipedia.org/wiki/Talk:Main_Page`
-- **Alternative**: Any Wikipedia talk page with comments
+```bash
+export WIKIPEDIA_USERNAME=YourTestUsername
+export WIKIPEDIA_PASSWORD=YourTestPassword
+```
 
-### Authentication
+## Helpers
 
-For testing features that require login:
+`helpers/test-utils.js` exports utilities for common operations:
 
-- See `AUTH_SETUP_GUIDE.md` for complete authentication setup
-- See `auth-example.spec.js` for cookie-based authentication examples
-- Most Comment functionality works without login
-- Login is only needed for actions like editing, thanking, etc.
+- `setupConvenientDiscussions(page, urlOrOptions)` — main setup function
+- `TEST_PAGES` — map of commonly used test page URLs
+- `getCommentByIndex(page, index)` — get a comment locator by index
+- `toggleCommentDisplay(page, display)` — switch between `'spacious'` and `'compact'`
+- `openSectionMoreMenu(page, headline)` — open the "More options" menu for a section
+- `getSectionButtonContainer(page, headline)` — get the button container for a section
 
 ## Debugging
 
-### VS Code Integration
+### Screenshots and Traces
 
-Use the "Debug Playwright Tests" launch configuration in VS Code to debug tests with breakpoints.
-
-### Playwright Inspector
-
-Run with `--debug` flag to use Playwright's built-in inspector:
-
-```bash
-npx playwright test --debug comment-layers.spec.js
-```
-
-### Screenshots and Videos
-
-Playwright automatically captures screenshots on failure. Enable video recording in `playwright.config.js` if needed.
-
-## CI/CD Integration
-
-The tests are configured to:
-
-- Run in headless mode on CI
-- Retry failed tests automatically
-- Generate HTML reports
-- Capture traces for debugging failures
-
-## Troubleshooting
+Playwright captures screenshots on failure. To enable video or trace recording, update `playwright.config.js`.
 
 ### Common Issues
 
-1. **Tests timeout waiting for CD to load**
-   - Check that the development server is running
-   - Verify the test page has Convenient Discussions enabled
-   - Check browser console for JavaScript errors
-
-2. **Elements not found**
-   - Verify CSS selectors match your implementation
-   - Check that comments are actually rendered on the test page
-   - Use `page.pause()` to inspect the page state
-
-3. **Flaky tests**
-   - Add appropriate `waitFor` calls
-   - Use `page.waitForLoadState('networkidle')` if needed
-   - Increase timeouts for slow operations
-
-### Getting Help
-
-- Check Playwright documentation: https://playwright.dev/
-- Review test output and screenshots in `test-results/`
-- Use browser dev tools during `--headed` runs
+- **Elements not found**: Use `page.pause()` or `--headed` to inspect the page state.
+- **Flaky tests**: Add `waitFor` calls or increase timeouts for slow operations.
