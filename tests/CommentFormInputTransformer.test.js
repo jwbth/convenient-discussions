@@ -635,3 +635,60 @@ describe('Alternative config', () => {
 		config: { defaultIndentationChar: '*' },
 	})
 })
+
+describe('Outdent', () => {
+	/** @type {CommentFormMock} */
+	const outdentReplyForm = {
+		mode: 'reply',
+		target: {
+			TYPE: 'comment',
+			level: 13,
+			source: {
+				indentation: ':',
+				replyIndentation: '::',
+				isReplyOutdented: true,
+			},
+			isOpeningSection: () => false,
+		},
+	}
+
+	/** @type {CommentFormMock} */
+	const outdentReplyFormWithList = {
+		mode: 'reply',
+		target: {
+			TYPE: 'comment',
+			level: 13,
+			source: {
+				indentation: ':',
+				replyIndentation: '::',
+				isReplyOutdented: true,
+			},
+			isOpeningSection: () => false,
+		},
+	}
+
+	testWithData({
+		label: 'Reply with outdent, simple text',
+		code: 'test',
+		expected: ':: {{outdent|11}} test ~~~~\n',
+		commentForm: outdentReplyForm,
+		config: { outdentTemplates: ['outdent'] },
+	})
+
+	testWithData({
+		label: 'Reply with outdent, bulleted list',
+		code: '* test\n* test\n* test',
+		expected: ':: {{outdent|11}}\n::* test\n::* test\n::* test\n:: ~~~~\n',
+		commentForm: outdentReplyFormWithList,
+		config: { outdentTemplates: ['outdent'] },
+	})
+
+	testWithData({
+		label: 'Reply with outdent, preview mode (no outdent)',
+		code: 'test',
+		expected: ': test<span class="cd-commentForm-signature"> ~~~~</span>\n',
+		commentForm: outdentReplyForm,
+		action: 'preview',
+		config: { outdentTemplates: ['outdent'] },
+	})
+})

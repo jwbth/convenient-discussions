@@ -521,7 +521,8 @@ class CommentFormInputTransformer extends TextMasker {
 		const outdentDifference = this.target.level - this.target.source.replyIndentation.length
 		this.text =
 			`{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
-			(/^[:*#]+/.test(this.text) ? '\n' : ' ') +
+			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+			(/^[:*#]+/.test(this.text) ? '\n' + this.restLinesIndentation : ' ') +
 			this.text
 
 		return this
