@@ -840,15 +840,6 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Removing the toolbar altogether is likely tedious and buggy. Just hide.
-	 *
-	 * @private
-	 */
-	hideToolbar() {
-		this.commentInput.$element.find('.wikiEditor-ui-top').hide()
-	}
-
-	/**
 	 * Load the edited comment to the comment form.
 	 *
 	 * @this {CommentForm<'edit'>}
@@ -1325,20 +1316,20 @@ class CommentForm extends EventEmitter {
 
 				// Ctrl+U
 				if (keyCombination(event, 85, ['cmd'])) {
-					this.encapsulateSelection(CommentForm.encapsulateOptions.underline)
+					this.encapsulateSelection(CommentForm.getEncapsulateOptions('underline'))
+					event.preventDefault()
+				}
+
+				// Ctrk+Shift+6
+				if (keyCombination(event, 54, ['cmd', 'shift'])) {
+					this.encapsulateSelection(CommentForm.getEncapsulateOptions('code'))
 					event.preventDefault()
 				}
 			}
 
 			// Ctrk+Shift+5
 			if (keyCombination(event, 53, ['cmd', 'shift'])) {
-				this.encapsulateSelection(CommentForm.encapsulateOptions.strikethrough)
-				event.preventDefault()
-			}
-
-			// Ctrk+Shift+6
-			if (keyCombination(event, 54, ['cmd', 'shift'])) {
-				this.encapsulateSelection(CommentForm.encapsulateOptions.code)
+				this.encapsulateSelection(CommentForm.getEncapsulateOptions('strikethrough'))
 				event.preventDefault()
 			}
 
@@ -1370,8 +1361,12 @@ class CommentForm extends EventEmitter {
 		this.previewButton.toggle(!cd.settings.get('autopreview'))
 		this.viewChangesButton.toggle(cd.settings.get('autopreview'))
 
-		if (cd.settings.get('showToolbar') && !this.toolbarLoaded) {
-			this.builder.buildToolbar(this.loadCustomModules())
+		if (cd.settings.get('showToolbar')) {
+			if (this.toolbarLoaded) {
+				this.showToolbar()
+			} else {
+				this.builder.buildToolbar(this.loadCustomModules())
+			}
 		} else if (!cd.settings.get('showToolbar') && this.toolbarLoaded) {
 			this.hideToolbar()
 		}
@@ -1380,6 +1375,24 @@ class CommentForm extends EventEmitter {
 		this.builder.buildInsertButtons()
 
 		this.codeMirror?.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
+	}
+
+	/**
+	 * Show the toolbar if it was previously hidden.
+	 *
+	 * @private
+	 */
+	showToolbar() {
+		this.commentInput.$element.find('.wikiEditor-ui-top').show()
+	}
+
+	/**
+	 * Removing the toolbar altogether is likely tedious and buggy. Just hide.
+	 *
+	 * @private
+	 */
+	hideToolbar() {
+		this.commentInput.$element.find('.wikiEditor-ui-top').hide()
 	}
 
 	/**
@@ -3880,37 +3893,31 @@ class CommentForm extends EventEmitter {
 	static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
 
 	/**
-	 * @type {{
-	 *   [key: string]: {
-	 *     pre: string;
-	 *     peri: string;
-	 *     post: string;
-	 *   };
-	 * }}
+	 * Get the options for encapsulating the selection for a specific tool.
+	 *
+	 * @param {string} toolName
+	 * @returns {Parameters<typeof CommentForm.prototype.encapsulateSelection>[0]}
 	 */
-	static encapsulateOptions
-
-	/**
-	 * Initialize the class.
-	 */
-	static init() {
-		this.encapsulateOptions = {
-			code: {
-				pre: '<code><nowiki>',
-				peri: cd.s('cf-code-placeholder'),
-				post: ['</', 'nowiki></code>'].join(''),
-			},
-			underline: {
-				pre: '<u>',
-				peri: cd.s('cf-underline-placeholder'),
-				post: '</u>',
-			},
-			strikethrough: {
-				pre: '<s>',
-				peri: cd.s('cf-strikethrough-placeholder'),
-				post: '</s>',
-			},
-		}
+	static getEncapsulateOptions(toolName) {
+		return /** @type {Parameters<typeof CommentForm.prototype.encapsulateSelection>[0]} */ (
+			{
+				code: {
+					pre: '<code>',
+					peri: cd.s('cf-code-placeholder'),
+					post: '</code>',
+				},
+				underline: {
+					pre: '<u>',
+					peri: cd.s('cf-underline-placeholder'),
+					post: '</u>',
+				},
+				strikethrough: {
+					pre: '<s>',
+					peri: cd.s('cf-strikethrough-placeholder'),
+					post: '</s>',
+				},
+			}[toolName]
+		)
 	}
 
 	/**

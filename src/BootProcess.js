@@ -436,7 +436,6 @@ class BootProcess {
 			toc.init(this.subscriptions)
 			commentFormManager.init()
 			commentManager.init()
-			CommentForm.init()
 			CommentFormInputTransformer.init()
 			notifications.init()
 			Parser.init()

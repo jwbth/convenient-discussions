@@ -120,8 +120,8 @@ class CommentFormBuilder {
 						value: 'subscribe',
 						selected: Boolean(
 							initialState.subscribe ??
-								((cd.settings.get('subscribeOnReply') && !this.form.isMode('edit')) ||
-									subscribableSection?.subscriptionState),
+							((cd.settings.get('subscribeOnReply') && !this.form.isMode('edit')) ||
+								subscribableSection?.subscriptionState),
 						),
 						label: cd.s(
 							this.form.useTopicSubscription ||
@@ -498,18 +498,6 @@ class CommentFormBuilder {
 			section: 'advanced',
 			group: 'format',
 			tools: {
-				code: {
-					label: `${cd.s('cf-code-tooltip')} ${cd.mws(
-						'parentheses',
-						`${cd.g.cmdModifier}+Shift+6`,
-					)}`,
-					type: 'button',
-					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
-					action: {
-						type: 'encapsulate',
-						options: this.form.constructor.encapsulateOptions.code,
-					},
-				},
 				codeBlock: {
 					label: cd.s('cf-codeblock-tooltip'),
 					type: 'button',
@@ -532,7 +520,7 @@ class CommentFormBuilder {
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
 					action: {
 						type: 'encapsulate',
-						options: this.form.constructor.encapsulateOptions.underline,
+						options: this.form.constructor.getEncapsulateOptions('underline'),
 					},
 				},
 				strikethrough: {
@@ -544,7 +532,7 @@ class CommentFormBuilder {
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
 					action: {
 						type: 'encapsulate',
-						options: this.form.constructor.encapsulateOptions.strikethrough,
+						options: this.form.constructor.getEncapsulateOptions('strikethrough'),
 					},
 				},
 			},
