@@ -184,36 +184,50 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			return undefined
 		}
 
-		// Find the last prefix boundary to separate all prefixes from the page name.
-		// e.g. "de:wikt:Test" → prefixes "de:wikt:", pageName "Test"
-		const prefixMatch = text.match(/^(?:[a-z-]\w*:)+/)
-		if (!prefixMatch) {
+		// Collect all prefix boundary positions (e.g. "ru:wikt:Foo" → ["ru:", "ru:wikt:"]).
+		// We try each from shortest to longest: the first one that resolves to a different host is
+		// the actual interwiki prefix. Everything after it is the page name (which may itself contain
+		// namespace prefixes valid on the target wiki, e.g. "ru:mediawiki:Foo" → pageName
+		// "mediawiki:Foo" on ru.wikipedia.org).
+		const prefixBoundaries = []
+		const prefixRe = /[a-z-]\w*:/gi
+		let m
+		while ((m = prefixRe.exec(text)) !== null) {
+			const boundary = m.index + m[0].length
+			// Stop once we've consumed non-prefix characters
+			if (m.index !== (prefixBoundaries.length === 0 ? 0 : prefixBoundaries.at(-1))) {
+				break
+			}
+			prefixBoundaries.push(boundary)
+		}
+
+		if (!prefixBoundaries.length) {
 			return undefined
 		}
 
-		const prefixPart = prefixMatch[0]
-		const pageName = text.slice(prefixPart.length)
+		const currentHostname = mw.config.get('wgServerName')
 
-		let url
-		try {
-			// Pass the full text; getUrlFromInterwikiLink expands all prefixes and appends the page name
-			url = await window.getUrlFromInterwikiLink(text)
-		} catch {
-			return undefined
+		for (const boundary of prefixBoundaries) {
+			const candidate = text.slice(0, boundary)
+			let url
+			try {
+				// Use a sentinel page name so getUrlFromInterwikiLink can resolve the prefix
+				url = await window.getUrlFromInterwikiLink(`${candidate}X`)
+			} catch {
+				continue
+			}
+
+			if (!url) {
+				continue
+			}
+
+			const resolvedHostname = new URL(url, cd.g.server).hostname
+			if (resolvedHostname !== currentHostname) {
+				return { hostname: resolvedHostname, pageName: text.slice(boundary) }
+			}
 		}
 
-		if (!url) {
-			return undefined
-		}
-
-		const resolvedHostname = new URL(url, cd.g.server).hostname
-
-		// If it resolves to the current wiki, it's not a cross-site link
-		if (resolvedHostname === mw.config.get('wgServerName')) {
-			return undefined
-		}
-
-		return { hostname: resolvedHostname, pageName }
+		return undefined
 	}
 
 	/**
