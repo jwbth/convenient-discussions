@@ -394,6 +394,7 @@ if (Object.keys(i18n).length) {
 
 	// Create i18n files that combine translations with dayjs locales.
 	for (const [lang, json] of Object.entries(i18nWithFallbacks)) {
+		delete json['@metadata']
 		let jsonText = replaceEntitiesInI18n(JSON.stringify(json, null, '\t'))
 
 		if (lang === 'en') {
