@@ -50,7 +50,7 @@ async function downloadAndExtractMessages() {
 						const retryMsg = retryAfter ? ` Retry-After: ${retryAfter}` : ''
 						reject(
 							new Error(
-								`Failed to download: ${statusCode}${retryMsg}. If you always get this error, download messages.tar.gz manually from https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+archive/HEAD/languages/messages.tar.gz and put it into the scripts directory.`,
+								`Failed to download: ${statusCode}${retryMsg}. If you always get this error, download messages.tar.gz manually from https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+archive/HEAD/languages/messages.tar.gz and put it into the directory with the script.`,
 							),
 						)
 
