@@ -221,3 +221,15 @@ export function extractNumeralAndConvertToNumber(string, digits = '0123456789') 
 			.replace(new RegExp(`[${digits}]`, 'g'), (s) => String(digits.indexOf(s))),
 	)
 }
+
+/**
+ * Escape equals signs in text by replacing them with `{{=}}` template syntax.
+ * This is used when passing text as template parameters to prevent equals signs
+ * from being interpreted as parameter separators.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+export function escapeEqualsInTemplate(text) {
+	return text.replace(/=/g, '{{=}}')
+}

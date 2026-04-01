@@ -7,7 +7,7 @@ import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
 import { defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './shared/utils-general'
-import { encodeWikilink, endWithTwoNewlines } from './shared/utils-wikitext'
+import { encodeWikilink, endWithTwoNewlines, escapeEqualsInTemplate } from './shared/utils-wikitext'
 import { createCheckboxControl, createTitleControl } from './utils-oojs'
 import { es6ClassToOoJsClass } from './utils-oojs-class'
 import { buildEditSummary, findFirstTimestamp, wrapHtml } from './utils-window'
@@ -530,8 +530,8 @@ export default function getMoveSectionDialogClass() {
 			let codeEnding
 			if (this.controls.keepLink.input.isSelected()) {
 				const code = cd.config.getMoveTargetPageCode(
-					source.sectionWikilink.replace(/=/g, '{{=}}'),
-					cd.g.userSignature.replace(/=/g, '{{=}}'),
+					escapeEqualsInTemplate(source.sectionWikilink),
+					escapeEqualsInTemplate(cd.g.userSignature),
 				)
 				if (Array.isArray(code)) {
 					codeBeginning = code[0] + '\n'
@@ -616,8 +616,8 @@ export default function getMoveSectionDialogClass() {
 						(this.controls.keepLink.input.isSelected()
 							? sectionCode.slice(0, source.sectionSource.relativeContentStartIndex) +
 								cd.config.getMoveSourcePageCode(
-									target.sectionWikilink,
-									cd.g.userSignature,
+									escapeEqualsInTemplate(target.sectionWikilink),
+									escapeEqualsInTemplate(cd.g.userSignature),
 									findFirstTimestamp(sectionCode) || cd.g.signCode + '~',
 								) +
 								'\n'
