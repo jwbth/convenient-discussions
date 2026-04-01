@@ -243,13 +243,11 @@ function restoreFunc(code) {
 		return
 	}
 
-	if (code) {
-		if (!/^ *function\b/.test(code) && !/^.+=>/.test(code)) {
-			code = `function ${code}`
-		}
-		if (/^ *function\b/.test(code)) {
-			code = `(${code})`
-		}
+	if (!/^ *function\b/.test(code) && !/^.+=>/.test(code)) {
+		code = `function ${code}`
+	}
+	if (/^ *function\b/.test(code)) {
+		code = `(${code})`
 	}
 
 	// Use indirect eval so that bundlers don't treat this as a direct (local-scope) eval. See
