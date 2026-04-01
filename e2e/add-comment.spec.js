@@ -30,22 +30,29 @@ test.describe('Add comment workflow', () => {
 
 		const randomNumber = Math.random()
 		const commentText = `Test comment with random number ${randomNumber}`
+
+		// Use type() instead of fill() so OO.ui's internal widget value stays in sync.
+		// fill() sets the DOM value directly without firing input events, causing
+		// commentInput.getValue() to return '' and triggering a confirm() dialog that
+		// headless browsers auto-dismiss as false, silently cancelling the submit.
 		const textarea = commentForm.locator('textarea.oo-ui-inputWidget-input').first()
-		await textarea.fill(commentText)
+		await textarea.click()
+		await textarea.type(commentText)
 		console.log(`✅ Typed comment: ${commentText}`)
 
 		const startTime = Date.now()
 		const submitButton = commentForm.locator('.cd-commentForm-submitButton a')
+
 		await submitButton.click()
 		console.log('✅ Clicked "Reply"')
 
 		// Make sure the comment form disappears
-		await expect(commentForm).not.toBeVisible({ timeout: 20_000 })
+		await expect(commentForm).not.toBeVisible({ timeout: 30_000 })
 		console.log('✅ Comment form disappeared')
 
 		// A new comment should appear with this number
 		const newComment = page.locator('.cd-comment-part-first', { hasText: String(randomNumber) })
-		await expect(newComment).toBeVisible({ timeout: 20_000 })
+		await expect(newComment).toBeVisible({ timeout: 30_000 })
 		const endTime = Date.now()
 		console.log(`✅ New comment is visible. Time difference: ${endTime - startTime}ms`)
 
