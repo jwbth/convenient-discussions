@@ -404,7 +404,7 @@ export default function getMoveSectionDialogClass() {
 		 * Load the source page code.
 		 *
 		 * @returns {Promise<Source>}
-		 * @throws {Array.<string|boolean>}
+		 * @throws {CdError}
 		 * @protected
 		 */
 		async loadSourcePage() {
@@ -444,18 +444,19 @@ export default function getMoveSectionDialogClass() {
 				if (error instanceof CdError) {
 					const editUrl = cd.g.server + cd.page.getUrl({ action: 'edit' })
 					throw new CdError({
-						details: [
-							cd.sParse(
-								error.getCode() === 'locateSection' ? 'error-locatesection' : 'error-unknown',
-								editUrl,
-								cd.page.name,
-							),
-							true,
-						],
+						message: cd.sParse(
+							error.getCode() === 'locateSection' ? 'error-locatesection' : 'error-unknown',
+							editUrl,
+							cd.page.name,
+						),
+						details: { recoverable: true },
 					})
 				} else {
 					cd.debug.logWarn(error)
-					throw new CdError({ details: [cd.sParse('error-javascript'), false] })
+					throw new CdError({
+						message: cd.sParse('error-javascript'),
+						details: { recoverable: false },
+					})
 				}
 			}
 
@@ -483,7 +484,7 @@ export default function getMoveSectionDialogClass() {
 		 *
 		 * @param {import('./Page').default} targetPage
 		 * @returns {Promise<Target>}
-		 * @throws {Array.<string|boolean>}
+		 * @throws {CdError}
 		 * @protected
 		 */
 		async loadTargetPage(targetPage) {
@@ -494,14 +495,26 @@ export default function getMoveSectionDialogClass() {
 					if (error.getType() === 'api') {
 						throw error.getCode() === 'invalid'
 							? // Should be filtered before submit anyway.
-								new CdError({ details: [cd.sParse('msd-error-invalidpagename'), false] })
-							: new CdError({ details: [cd.sParse('error-api', error.getCode()), true] })
+								new CdError({
+									message: cd.sParse('msd-error-invalidpagename'),
+									details: { recoverable: false },
+								})
+							: new CdError({
+									message: cd.sParse('error-api', error.getCode()),
+									details: { recoverable: true },
+								})
 					} else if (error.getType() === 'network') {
-						throw new CdError({ details: [cd.sParse('error-network'), true] })
+						throw new CdError({
+							message: cd.sParse('error-network'),
+							details: { recoverable: true },
+						})
 					}
 				} else {
 					cd.debug.logWarn(error)
-					throw new CdError({ details: [cd.sParse('error-javascript'), false] })
+					throw new CdError({
+						message: cd.sParse('error-javascript'),
+						details: { recoverable: false },
+					})
 				}
 			}
 			const realName = /** @type {NonNullable<typeof targetPage.realName>} */ (targetPage.realName)
@@ -522,7 +535,7 @@ export default function getMoveSectionDialogClass() {
 		 *
 		 * @param {Source} source
 		 * @param {Target} target
-		 * @throws {Array.<string|boolean>}
+		 * @throws {CdError}
 		 * @protected
 		 */
 		async editTargetPage(source, target) {
@@ -576,7 +589,8 @@ export default function getMoveSectionDialogClass() {
 				if (error instanceof CdError) {
 					if (error.getType() === 'network') {
 						throw new CdError({
-							details: [genericMessage + ' ' + cd.sParse('error-network'), true],
+							message: genericMessage + ' ' + cd.sParse('error-network'),
+							details: { recoverable: true },
 						})
 					} else {
 						let message = /** @type {string} */ (error.getMessage())
@@ -584,12 +598,16 @@ export default function getMoveSectionDialogClass() {
 							// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 							message += ' ' + cd.sParse('msd-error-editconflict-retry')
 						}
-						throw new CdError({ details: [genericMessage + ' ' + message, true] })
+						throw new CdError({
+							message: genericMessage + ' ' + message,
+							details: { recoverable: true },
+						})
 					}
 				} else {
 					cd.debug.logWarn(error)
 					throw new CdError({
-						details: [genericMessage + ' ' + cd.sParse('error-javascript'), false],
+						message: genericMessage + ' ' + cd.sParse('error-javascript'),
+						details: { recoverable: false },
 					})
 				}
 			}
@@ -600,7 +618,7 @@ export default function getMoveSectionDialogClass() {
 		 *
 		 * @param {Source} source
 		 * @param {Target} target
-		 * @throws {Array.<string|boolean>}
+		 * @throws {CdError}
 		 */
 		async editSourcePage(source, target) {
 			const sectionCode = source.sectionSource.code
@@ -637,20 +655,19 @@ export default function getMoveSectionDialogClass() {
 				const genericMessage = cd.sParse('msd-error-editingsourcepage')
 				if (error instanceof CdError) {
 					throw new CdError({
-						details: [
+						message:
 							genericMessage +
-								' ' +
-								(error.getType() === 'network'
-									? cd.sParse('error-network')
-									: /** @type {string} */ (error.getMessage())),
-							false,
-							true,
-						],
+							' ' +
+							(error.getType() === 'network'
+								? cd.sParse('error-network')
+								: /** @type {string} */ (error.getMessage())),
+						details: { recoverable: false, closeDialog: true },
 					})
 				} else {
 					cd.debug.logWarn(error)
 					throw new CdError({
-						details: [genericMessage + ' ' + cd.sParse('error-javascript'), false, true],
+						message: genericMessage + ' ' + cd.sParse('error-javascript'),
+						details: { recoverable: false, closeDialog: true },
 					})
 				}
 			}
