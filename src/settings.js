@@ -459,13 +459,13 @@ class Settings extends EventEmitter {
 						label: wrapHtml(cd.sParse('sd-outdentlevel', outdentTemplateUrl), {
 							targetBlank: true,
 						}),
+						help: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
 					},
 					{
 						name: 'outdentLevel',
 						type: this.scheme.controlTypes.outdentLevel,
 						min: 0,
 						max: 999,
-						help: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
 						classes: ['cd-setting--indented'],
 					},
 					{
