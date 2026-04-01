@@ -95,7 +95,7 @@ export default class CrossSiteMwTitle extends mw.Title {
 	 * {@link loadHostData} first.
 	 *
 	 * @param {string} [hostname]
-	 * @returns {HostData}
+	 * @returns {{ formattedNamespaces: Record<number, string>, namespaceIds: Record<string, number>, caseSensitiveNamespaces: number[], contentNamespaces: number[] }}
 	 */
 	static getHostData(hostname = mw.config.get('wgServerName')) {
 		return this.hostData[hostname]

@@ -163,6 +163,16 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	async resolveInterwikiPrefix(text) {
 		if (!window.getUrlFromInterwikiLink) {
+			try {
+				await mw.loader.getScript(
+					'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
+				)
+			} catch {
+				return undefined
+			}
+		}
+
+		if (!window.getUrlFromInterwikiLink) {
 			return undefined
 		}
 
