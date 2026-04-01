@@ -86,6 +86,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			'{{GENDER:|You}} have unsubscribed.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
 			'{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
+		'checkuser-userinfocard-toggle-button-aria-label': 'Open {{GENDER:$1|user}} info card',
 	},
 
 	specialPageAliases: {

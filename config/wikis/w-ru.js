@@ -83,6 +83,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
 			'{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
+		'checkuser-userinfocard-toggle-button-aria-label':
+			'Открыть информационную карточку {{GENDER:$1|участника|участницы}}',
 	},
 
 	specialPageAliases: {
@@ -425,7 +427,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 				/(\n?\n)$/,
 				(newlines) =>
 					'\n' +
-					/** @type {string} */ ((cd.settings.get('closerTemplate')) || '{{'.concat('subst:ПИ}}')) +
+					/** @type {string} */ (cd.settings.get('closerTemplate') || '{{'.concat('subst:ПИ}}')) +
 					newlines,
 			);
 		}
