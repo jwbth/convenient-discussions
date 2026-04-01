@@ -1,11 +1,6 @@
 /**
  * Web worker entry point.
  *
- * Note that currently there may be difficulties in testing the web worker in the "single" mode with
- * custom config functions such as {@link module:defaultConfig.rejectNode} due to the (unfortunate)
- * use of `eval()` here and the fact that webpack renames some objects in some contexts resulting in
- * a lost tie between them.
- *
  * @module worker
  */
 
@@ -257,8 +252,9 @@ function restoreFunc(code) {
 		}
 	}
 
-	// FIXME: Any idea how to avoid using eval() here?
-	return eval(code)
+	// Use indirect eval so that bundlers don't treat this as a direct (local-scope) eval. See
+	// https://rolldown.rs/guide/troubleshooting#avoiding-direct-eval.
+	return (0, eval)(code)
 }
 
 /**
