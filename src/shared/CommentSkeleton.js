@@ -655,7 +655,10 @@ class CommentSkeleton {
 				// Note: Text nodes are filtered out as of stage 2.
 				(node.nodeType === Node.TEXT_NODE &&
 					isElement(node.previousSibling) &&
-					['DL', 'UL', 'OL'].includes(node.previousSibling.tagName) &&
+					// Example for 'DIV':
+					// https://ru.wikipedia.org/wiki/Служебная:GoToComment/c-MBH-20260330165900-Siradan-20260330102900
+					// (hider template before a text node). However, not sure DIV won't break other cases here.
+					['DL', 'UL', 'OL', 'DIV'].includes(node.previousSibling.tagName) &&
 					!this.isIntroList(node.previousSibling, false, lastPartNode)) ||
 				(lastPartNode && !this.isPartOfList(lastPartNode, false))
 			) &&
