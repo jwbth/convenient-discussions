@@ -462,25 +462,6 @@ export default defineConfig(({ mode, command }) => {
 			// Minification configuration
 			minify: 'oxc',
 
-			// oxc minification options
-			oxcOptions: {
-				// Preserve class names for better debugging
-				keepNames: true,
-
-				// ASCII-only output
-				charset: 'ascii',
-
-				// Preserve comments
-				compress: {
-					comments: true,
-				},
-
-				// Minify options
-				minifyIdentifiers: true,
-				minifySyntax: true,
-				minifyWhitespace: true,
-			},
-
 			// Source map configuration based on build mode
 			sourcemap: buildMode.isSingle ? 'inline' : true,
 
@@ -540,6 +521,10 @@ export default defineConfig(({ mode, command }) => {
 
 					// Module format (IIFE for browser global)
 					format: 'iife',
+
+					// Preserve class names for better debugging. We also use it in
+					// getMixinBaseClassPrototype()
+					keepNames: true,
 				},
 			},
 
