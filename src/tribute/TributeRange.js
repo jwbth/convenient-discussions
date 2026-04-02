@@ -82,8 +82,16 @@ class TributeRange {
 			data.content = isTab
 				? ''
 				: (!(data.omitContentCheck?.() && !originalEvent.shiftKey) && data.content) || ''
-			if (!isTab && originalEvent.altKey && data.altModify) {
-				data.altModify()
+			if (!isTab) {
+				if (originalEvent.altKey && data.altModify) {
+					data.altModify()
+				}
+				let isCmdModifierPressed = navigator.platform.includes('Mac')
+					? originalEvent.metaKey
+					: originalEvent.ctrlKey
+				if (isCmdModifierPressed && data.cmdModify) {
+					data.cmdModify()
+				}
 			}
 
 			let myField = /** @type {HTMLElement} */ (this.tribute.current.element)

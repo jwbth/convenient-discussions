@@ -136,8 +136,9 @@ import tributeCss from './tribute.less?inline'
  *   trick (e.g. `[[User:Example|]]` that would be saved as `[[User:Example|Example]]`)
  * @property {boolean} [selectContent] Whether to select content, or put caret at its place if it's
  *   empty (this is done automatically when Shift is held)
- * @property {() => void} [altModify] Function that modifies this data if the Command key is held
+ * @property {() => void} [altModify] Function that modifies this data if the Alt key is held
  * @property {() => void} [shiftModify] Function that modifies this data if the Shift key is held
+ * @property {() => void} [cmdModify] Function that modifies this data if the Command key is held
  */
 
 /**
