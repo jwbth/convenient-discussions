@@ -163,10 +163,19 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	async resolveInterwikiPrefix(text) {
 		if (!window.getUrlFromInterwikiLink) {
+			if (!WikilinksAutocomplete.getUrlFromInterwikiLinkPromise) {
+				WikilinksAutocomplete.getUrlFromInterwikiLinkPromise = mw.loader
+					.getScript(
+						'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
+					)
+					.catch((/** @type {unknown} */ error) => {
+						delete WikilinksAutocomplete.getUrlFromInterwikiLinkPromise
+						throw error
+					})
+			}
+
 			try {
-				await mw.loader.getScript(
-					'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
-				)
+				await WikilinksAutocomplete.getUrlFromInterwikiLinkPromise
 			} catch {
 				return undefined
 			}
@@ -492,6 +501,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			firstChar,
 		)
 	}
+
+	/**
+	 * Cached promise for loading the getUrlFromInterwikiLink script. Shared across all instances to
+	 * avoid parallel requests. Cleared on rejection to allow retrying.
+	 *
+	 * @type {JQuery.Promise<void> | undefined}
+	 */
+	static getUrlFromInterwikiLinkPromise
 }
 
 export default WikilinksAutocomplete
