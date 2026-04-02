@@ -282,6 +282,7 @@ export default class CrossSiteMwTitle extends mw.Title {
 
 	/**
 	 * @returns {void}
+	 * @private
 	 */
 	static doesntWork() {
 		console.warn(`This method doesn\`t work in the ${this.name} subclass.`)
