@@ -10,5 +10,5 @@
 	},
 
 	// No subdirectories
-	"include": ["*", "scripts/**/*"]
+	"include": ["*", "misc/**/*"]
 }

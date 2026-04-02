@@ -13,7 +13,6 @@ const config = defineConfig(
 	{
 		ignores: [
 			'dist/**',
-			'misc/**',
 			'*.json5',
 			'*.jsonc',
 			'config/**/*',
