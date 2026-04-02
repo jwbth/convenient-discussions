@@ -76,9 +76,13 @@ class TributeRange {
 			if (typeof data !== 'object') {
 				data = { start: data }
 			}
-			data.end = data.end || ''
-			data.content = (!(data.omitContentCheck?.() && !originalEvent.shiftKey) && data.content) || ''
-			if (originalEvent.altKey && data.altModify) {
+			// jwbth: When Tab is pressed, only insert data.start (no content/end wrapping).
+			const isTab = originalEvent.key === 'Tab'
+			data.end = isTab ? '' : data.end || ''
+			data.content = isTab
+				? ''
+				: (!(data.omitContentCheck?.() && !originalEvent.shiftKey) && data.content) || ''
+			if (!isTab && originalEvent.altKey && data.altModify) {
 				data.altModify()
 			}
 
@@ -89,7 +93,7 @@ class TributeRange {
 			let endPos = info.mentionPosition + info.mentionText.length + info.mentionTriggerChar.length
 			let ending = myField.value.substring(endPos, myField.value.length)
 
-			if ((originalEvent.shiftKey || data.content) && data.shiftModify) {
+			if (!isTab && (originalEvent.shiftKey || data.content) && data.shiftModify) {
 				data.shiftModify()
 			}
 
@@ -132,7 +136,7 @@ class TributeRange {
 			// jwbth: Start offset is calculated from the start position of the inserted text.
 			// Absent value means the selection start position should match with the end position
 			// (i.e., no text should be selected).
-			if (originalEvent.shiftKey || (data.selectContent && !data.content)) {
+			if (!isTab && (originalEvent.shiftKey || (data.selectContent && !data.content))) {
 				$myField.textSelection('setSelection', {
 					start: startPos + data.start.length,
 					end: startPos + text.length - data.end.length,
