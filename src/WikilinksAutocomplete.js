@@ -1,7 +1,7 @@
 import BaseAutocomplete from './BaseAutocomplete'
 import CrossSiteMwTitle from './CrossSiteMwTitle'
 import cd from './loader/cd'
-import { charAt, phpCharToUpper } from './shared/utils-general'
+import { charAt, parseWikiUrl, phpCharToUpper } from './shared/utils-general'
 import { handleApiReject } from './utils-api'
 
 /**
@@ -176,58 +176,32 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			return undefined
 		}
 
+		if (!/^[a-z-]\w*:/.test(text)) {
+			return undefined
+		}
+
 		const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter(Boolean).join('|')
-		const isCandidateInterwiki =
-			/^[a-z-]\w*:/.test(text) && !new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)
-
-		if (!isCandidateInterwiki) {
+		if (new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)) {
 			return undefined
 		}
 
-		// Collect all prefix boundary positions (e.g. "ru:wikt:Foo" → ["ru:", "ru:wikt:"]).
-		// We try each from shortest to longest: the first one that resolves to a different host is
-		// the actual interwiki prefix. Everything after it is the page name (which may itself contain
-		// namespace prefixes valid on the target wiki, e.g. "ru:mediawiki:Foo" → pageName
-		// "mediawiki:Foo" on ru.wikipedia.org).
-		const prefixBoundaries = []
-		const prefixRe = /[a-z-]\w*:/gi
-		let m
-		while ((m = prefixRe.exec(text)) !== null) {
-			const boundary = m.index + m[0].length
-			// Stop once we've consumed non-prefix characters
-			if (m.index !== (prefixBoundaries.length === 0 ? 0 : prefixBoundaries.at(-1))) {
-				break
-			}
-			prefixBoundaries.push(boundary)
-		}
-
-		if (!prefixBoundaries.length) {
+		let url
+		try {
+			url = await window.getUrlFromInterwikiLink(text)
+		} catch {
 			return undefined
 		}
 
-		const currentHostname = mw.config.get('wgServerName')
-
-		for (const boundary of prefixBoundaries) {
-			const candidate = text.slice(0, boundary)
-			let url
-			try {
-				// Use a sentinel page name so getUrlFromInterwikiLink can resolve the prefix
-				url = await window.getUrlFromInterwikiLink(`${candidate}X`)
-			} catch {
-				continue
-			}
-
-			if (!url) {
-				continue
-			}
-
-			const resolvedHostname = new URL(url, cd.g.server).hostname
-			if (resolvedHostname !== currentHostname) {
-				return { hostname: resolvedHostname, pageName: text.slice(boundary) }
-			}
+		if (!url) {
+			return undefined
 		}
 
-		return undefined
+		const parsed = parseWikiUrl(url)
+		if (!parsed || parsed.hostname === mw.config.get('wgServerName')) {
+			return undefined
+		}
+
+		return { hostname: parsed.hostname, pageName: parsed.pageName }
 	}
 
 	/**
