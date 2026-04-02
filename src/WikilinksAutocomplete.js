@@ -380,6 +380,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 							action: 'parse',
 							page: normalizedPageName,
 							prop: 'sections',
+							redirects: true,
 						})
 						.catch(handleApiReject)
 
