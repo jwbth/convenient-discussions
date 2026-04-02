@@ -60,8 +60,8 @@
   ```
 
 - Use functional patterns where possible.
-- Don't introduce new `null` values. Use `undefined` instead, but don't assign any values to variables that don't have a value yet so that they stay `undefined`. Avoid returning `null` from functions instead of `undefined`.
-- Add an empty line before `return` statements at the end of blocks (function, `if` statement, etc.) unless it's the only statement in that block.
+- Don't introduce new `null` values. Use `undefined` instead, but best of all, omit it where the value is `undefined` anyway. Avoid returning `null` from functions instead of `undefined`.
+- Add an empty line before `return` statements at the end of blocks (functions, `if` statements, etc.) unless it's the first statement in that block.
 - When a function parameter is not used in the function, put an underscore in front of it.
 - When a class method is overriding a method of the parent class, add `@override` tag to its JSDoc comment.
 - If ESLint reports wrong import order, unused imports, or wrong indentation, don't fix it. ESLint will apply automatic fixes.
