@@ -76,8 +76,9 @@ class TributeRange {
 			if (typeof data !== 'object') {
 				data = { start: data }
 			}
-			// jwbth: When Tab is pressed, only insert data.start (no content/end wrapping).
-			const isTab = originalEvent.key === 'Tab'
+			// jwbth: When Tab is pressed and the collection opts into it, only insert data.start
+			// (no content/end wrapping).
+			const isTab = originalEvent.key === 'Tab' && context.collection.tabSelectsStartOnly
 			data.end = isTab ? '' : data.end || ''
 			data.content = isTab
 				? ''

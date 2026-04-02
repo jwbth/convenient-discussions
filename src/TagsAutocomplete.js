@@ -45,9 +45,6 @@ class TagsAutocomplete extends BaseAutocomplete {
 			.sort((item1, item2) => (ensureArray(item1)[0] > ensureArray(item2)[0] ? 1 : -1))
 	}
 
-	/** @override */
-	allowNesting = true
-
 	/**
 	 * Get the display label for tags autocomplete.
 	 *
@@ -156,6 +153,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 		return {
 			keepAsEnd: /^>/,
 			replaceEnd: false,
+			allowNesting: true,
 		}
 	}
 }

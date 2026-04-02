@@ -281,7 +281,8 @@ class AutocompleteManager {
 		if (
 			savedSelection &&
 			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos &&
-			(!savedSelection.selectedText.includes(autocomplete.getTrigger()) || autocomplete.allowNesting)
+			(!savedSelection.selectedText.includes(autocomplete.getTrigger()) ||
+				autocomplete.manager.tribute.current.collection?.allowNesting)
 		) {
 			selectedText = savedSelection.selectedText
 		}

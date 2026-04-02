@@ -39,13 +39,13 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	validateInput(text) {
 		return Boolean(
 			text &&
-				text.length <= 255 &&
-				!/[#<>[\]|{}]/.test(text) &&
-				// 10 spaces in a page name seems too many.
-				(text.match(new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')) || [])
-					.length <= 9 &&
-				// Don't allow nested templates
-				!text.includes('{{'),
+			text.length <= 255 &&
+			!/[#<>[\]|{}]/.test(text) &&
+			// 10 spaces in a page name seems too many.
+			(text.match(new RegExp(cd.mws('word-separator', { language: 'content' }), 'g')) || [])
+				.length <= 9 &&
+			// Don't allow nested templates
+			!text.includes('{{'),
 		)
 	}
 
@@ -109,6 +109,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	getCollectionProperties() {
 		return {
 			keepAsEnd: /^(?:\||\}\})/,
+			tabSelectsStartOnly: true,
 			selectTemplate: (option, event) => {
 				if (!option) {
 					return ''

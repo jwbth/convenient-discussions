@@ -64,13 +64,18 @@ import tributeCss from './tribute.less?inline'
  *   objects to search across or a function that takes a query text and calls a callback provided to
  *   it with that array
  * @property {RegExp} [keepAsEnd] Custom regex for end matching behavior
+ * @property {boolean} [tabSelectsStartOnly] Whether Tab inserts only `data.start` (no content/end
+ *   wrapping), unlike Enter which inserts the full text
  * @property {(searchResults: TributeSearchResults<Value>) => string} [menuItemTemplate] Template
  *   for displaying item in menu
  * @property {boolean} [replaceEnd] Whether to replace text at the end
  * @property {boolean} [requireLeadingSpace] Specify whether a space is required before the trigger
  *   string
- * @property {(item: TributeSearchResults<Value> | undefined, event: KeyboardEvent | MouseEvent) => string | InsertData} [selectTemplate]
- *   Function called on select that returns the content to insert
+ * @property {(item: TributeSearchResults<Value> | undefined, event: KeyboardEvent | MouseEvent) =>
+ *   string | InsertData} [selectTemplate] Function called on select that returns the content to
+ *   insert
+ * @property {boolean} [allowNesting=false] Whether this autocomplete type allows nesting of the
+ *   same trigger
  */
 
 /**
@@ -166,6 +171,8 @@ class Tribute {
 			menuItemLimit = null,
 			menuShowMinLength = 0,
 			direction = 'ltr',
+			allowNesting = false,
+			tabSelectsStartOnly = false,
 		},
 	) {
 		if (!Tribute.cssInjected) {
@@ -236,6 +243,8 @@ class Tribute {
 				menuItemLimit: item.menuItemLimit || menuItemLimit,
 				menuShowMinLength: item.menuShowMinLength || menuShowMinLength,
 				label: item.label,
+				allowNesting: item.allowNesting || allowNesting,
+				tabSelectsStartOnly: item.tabSelectsStartOnly || tabSelectsStartOnly,
 			}
 		})
 

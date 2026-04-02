@@ -162,7 +162,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	async resolveInterwikiPrefix(text) {
-		if (!window.getUrlFromInterwikiLink) {
+		if (!window.getUrlFromInterwikiLink && cd.g.isProbablyWmfSulWiki) {
 			if (!WikilinksAutocomplete.getUrlFromInterwikiLinkPromise) {
 				WikilinksAutocomplete.getUrlFromInterwikiLinkPromise = mw.loader
 					.getScript(
@@ -177,38 +177,28 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			try {
 				await WikilinksAutocomplete.getUrlFromInterwikiLinkPromise
 			} catch {
-				return undefined
+				return
 			}
 		}
 
-		if (!window.getUrlFromInterwikiLink) {
-			return undefined
-		}
+		if (!window.getUrlFromInterwikiLink) return
 
-		if (!/^[a-z-]\w*:/.test(text)) {
-			return undefined
-		}
+		if (!/^[a-z-]\w*:/.test(text)) return
 
 		const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter(Boolean).join('|')
-		if (new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)) {
-			return undefined
-		}
+		if (new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)) return
 
 		let url
 		try {
 			url = await window.getUrlFromInterwikiLink(text)
 		} catch {
-			return undefined
+			return
 		}
 
-		if (!url) {
-			return undefined
-		}
+		if (!url) return
 
 		const parsed = parseWikiUrl(url)
-		if (!parsed || parsed.hostname === mw.config.get('wgServerName')) {
-			return undefined
-		}
+		if (!parsed || parsed.hostname === mw.config.get('wgServerName')) return
 
 		return { hostname: parsed.hostname, pageName: parsed.pageName }
 	}
@@ -436,6 +426,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	getCollectionProperties() {
 		return {
 			keepAsEnd: /^(?:\||\]\])/,
+			tabSelectsStartOnly: true,
 		}
 	}
 
@@ -448,15 +439,13 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	detectSectionFragment(text) {
 		const hashIndex = text.indexOf('#')
-		if (hashIndex === -1) return undefined
+		if (hashIndex === -1) return
 
 		const pageName = text.slice(0, hashIndex)
 		const fragment = text.slice(hashIndex + 1)
 
 		// Only treat as section if page name is valid
-		if (!pageName || !this.validatePageName(pageName)) {
-			return undefined
-		}
+		if (!pageName || !this.validatePageName(pageName)) return
 
 		return { pageName, fragment }
 	}
