@@ -7,6 +7,7 @@ import { handleApiReject } from './utils-api'
 /**
  * @typedef {object} WikilinkEntry
  * @property {CrossSiteMwTitle} title The resolved title object
+ * @property {string} [pageName] The page name as returned from the API (for insertion)
  * @property {string} [fragment] Section fragment (without the `#`)
  * @property {boolean} [colonPrefix] Whether the user typed a leading `:` (e.g. `:Category:Foo`)
  * @property {string} [interwikiPrefix] The interwiki prefix portion (e.g. `"en:"` or `"w:en:"`)
@@ -63,14 +64,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {import('./tribute/Tribute').InsertData & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
-		const { title, fragment, colonPrefix, interwikiPrefix = '' } = entry
-		const pageName = title.getPrefixedText()
+		const { title, pageName, fragment, colonPrefix, interwikiPrefix = '' } = entry
+		const pageNameForInsertion = pageName ?? title.getPrefixedText()
 		const needsColon = !colonPrefix && this.needsColonPrefix(title)
 		const colonStr = colonPrefix ? ':' : needsColon ? ':' : ''
 		const fragmentStr = fragment === undefined ? '' : '#' + fragment
 
 		return {
-			start: '[[' + colonStr + interwikiPrefix + pageName + fragmentStr,
+			start: '[[' + colonStr + interwikiPrefix + pageNameForInsertion + fragmentStr,
 			end: ']]',
 			content: selectedText,
 			shiftModify() {
@@ -276,7 +277,8 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 		return response[1].flatMap((/** @type {string} */ name) => {
 			const parsedTitle = CrossSiteMwTitle.newFromText(name)
-			if (!parsedTitle || parsedTitle.getNamespaceId() === 0) {
+			const hasNamespacePrefix = parsedTitle && parsedTitle.getNamespaceId() !== 0
+			if (!hasNamespacePrefix) {
 				const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
 				if (caseSensitiveNamespaces.length) {
 					if (!parsedTitle || !caseSensitiveNamespaces.includes(parsedTitle.getNamespaceId())) {
@@ -292,7 +294,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 			const label = (colonPrefix ? ':' : '') + name
 
-			return /** @type {WikilinkEntry} */ ({ title, colonPrefix, label })
+			return /** @type {WikilinkEntry} */ ({
+				title,
+				pageName: name,
+				colonPrefix,
+				label,
+			})
 		})
 	}
 
@@ -340,7 +347,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 			const label = interwikiPrefix + name
 
-			return /** @type {WikilinkEntry} */ ({ title, interwikiPrefix, label })
+			return /** @type {WikilinkEntry} */ ({ title, pageName: name, interwikiPrefix, label })
 		})
 	}
 
