@@ -67,7 +67,7 @@ export default {
 				],
 				editGadgetsDefinition: true,
 				modules: [
-					'ext.CodeMirror.v6.WikiEditor',
+					// 'ext.CodeMirror.v6.WikiEditor',
 					'ext.checkUser.styles',
 					'ext.checkUser.userInfoCard',
 					'ext.confirmEdit.CaptchaInputWidget',
