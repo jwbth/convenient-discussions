@@ -7,6 +7,7 @@
 import controller from './controller'
 import cd from './loader/cd'
 import { isMetadataNode, sleep } from './shared/utils-general'
+import { isHiddenByUntilFound } from './utils-window'
 
 /**
  * jQuery. See {@link JQuery.fn jQuery.fn} for extensions.
@@ -152,6 +153,11 @@ export default {
 
 		if (wasHidden) {
 			$elements.hide()
+		}
+
+		// The element is inside a hidden="until-found" ancestor.
+		if (isHiddenByUntilFound($elements.first()[0])) {
+			return false
 		}
 
 		const scrollTop = /** @type {number} */ ($(window).scrollTop())
