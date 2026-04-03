@@ -36,9 +36,6 @@ class Toc {
 	/** @type {boolean | undefined} */
 	floating
 
-	/** @type {boolean} */
-	canBeModified = false
-
 	/** @type {Promise<void> | undefined} */
 	visitsPromise
 

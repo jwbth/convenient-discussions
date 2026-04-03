@@ -29,7 +29,6 @@ export default class TocItem {
 	 */
 	constructor(a, toc) {
 		this.toc = toc
-		this.canBeModified = this.toc.canBeModified
 
 		const textSpan = /** @type {HTMLElement | null} */ (
 			a.querySelector(this.toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
@@ -79,7 +78,7 @@ export default class TocItem {
 	 * @param {JQuery} $headline
 	 */
 	replaceText($headline) {
-		if (!this.canBeModified) return
+		if (!cd.settings.get('modifyToc')) return
 
 		this.$text
 			.contents()
@@ -120,7 +119,7 @@ export default class TocItem {
 	 * @param {?boolean} subscriptionState
 	 */
 	updateSubscriptionState(subscriptionState) {
-		if (!this.canBeModified) return
+		if (!cd.settings.get('modifyToc')) return
 
 		if (subscriptionState) {
 			this.$link.find(this.toc.isInSidebar() ? '.vector-toc-text' : '.toctext').append(
