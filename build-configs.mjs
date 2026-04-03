@@ -18,7 +18,7 @@ fs.readdirSync('./config/wikis/').forEach((filename) => {
 	let content = fs
 		.readFileSync(`config/wikis/${filename}`, 'utf8')
 		.trim()
-		.replace(/[^]*?export default .*(?=\{\n(?: {2}|\t))/, '')
+		.replace(/[^]*?export default .*(?=\(\{\n(?: {2}|\t))/, '')
 
 	// When updating this code, update the code in misc/convenientDiscussions-generateBasicConfig.js
 	// as well.
