@@ -389,6 +389,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			checkFunc(commentForm) {
 				return (
 					'couldBeCloserClosing' in commentForm &&
+					commentForm.couldBeCloserClosing &&
 					commentForm.headlineInput &&
 					commentForm.headlineInput.getValue().trim() === 'Итог'
 				);
