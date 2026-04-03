@@ -192,7 +192,7 @@ class BaseAutocomplete {
 	 *
 	 * @abstract
 	 * @param {string} _text The search text
-	 * @returns {Promise<string[]>} Promise resolving to array of suggestions
+	 * @returns {Promise<any[]>} Promise resolving to array of suggestions
 	 */
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async makeApiRequest(_text) {

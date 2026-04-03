@@ -5,7 +5,12 @@ import { charAt, parseWikiUrl, phpCharToUpper } from './shared/utils-general'
 import { handleApiReject } from './utils-api'
 
 /**
- * @typedef {string} WikilinkEntry
+ * @typedef {object} WikilinkEntry
+ * @property {CrossSiteMwTitle} title The resolved title object
+ * @property {string} [fragment] Section fragment (without the `#`)
+ * @property {boolean} [colonPrefix] Whether the user typed a leading `:` (e.g. `:Category:Foo`)
+ * @property {string} [interwikiPrefix] The interwiki prefix portion (e.g. `"en:"` or `"w:en:"`)
+ * @property {string} label The display string shown in the menu and used for searching
  */
 
 /**
@@ -45,18 +50,27 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
-	 * Transform a page name entry into insertion data for the Tribute library.
+	 * Transform a wikilink entry into insertion data for the Tribute library.
+	 *
+	 * Inserts a leading `:` after `[[` when:
+	 * - the page is in the Category namespace (namespace 14), or
+	 * - the page is on a different hostname that shares the same top-level domain as the current wiki
+	 *   (e.g. en.wikipedia.org → fr.wikipedia.org, but not en.wikipedia.org → fr.wiktionary.org).
 	 *
 	 * @override
-	 * @param {string} entry The page name to transform
+	 * @param {WikilinkEntry} entry The wikilink entry to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
 	 * @returns {import('./tribute/Tribute').InsertData & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
-		const pageName = entry.trim()
+		const { title, fragment, colonPrefix, interwikiPrefix = '' } = entry
+		const pageName = title.getPrefixedText()
+		const needsColon = !colonPrefix && this.needsColonPrefix(title)
+		const colonStr = colonPrefix ? ':' : needsColon ? ':' : ''
+		const fragmentStr = fragment === undefined ? '' : '#' + fragment
 
 		return {
-			start: '[[' + pageName,
+			start: '[[' + colonStr + interwikiPrefix + pageName + fragmentStr,
 			end: ']]',
 			content: selectedText,
 			shiftModify() {
@@ -64,6 +78,37 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				this.start += '|'
 			},
 		}
+	}
+
+	/**
+	 * Determine whether a leading `:` should be inserted after `[[` for the given title.
+	 *
+	 * Returns `true` when:
+	 * - the namespace is 14 (Category), or
+	 * - the title's hostname differs from the current wiki's hostname but shares the same
+	 *   second-level + top-level domain (e.g. en.wikipedia.org vs fr.wikipedia.org).
+	 *
+	 * @param {CrossSiteMwTitle} title
+	 * @returns {boolean}
+	 * @private
+	 */
+	needsColonPrefix(title) {
+		if (title.getNamespaceId() === 14) {
+			return true
+		}
+
+		const currentHostname = mw.config.get('wgServerName')
+		const titleHostname = title.getHostname()
+		if (titleHostname === currentHostname) {
+			return false
+		}
+
+		// Compare the effective domain (everything after the first subdomain label).
+		// e.g. "en.wikipedia.org" → "wikipedia.org", "fr.wikipedia.org" → "wikipedia.org"
+		const effectiveDomain = (/** @type {string} */ hostname) =>
+			hostname.split('.').slice(1).join('.')
+
+		return effectiveDomain(titleHostname) === effectiveDomain(currentHostname)
 	}
 
 	/**
@@ -140,7 +185,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	/**
 	 * @override
 	 * @param {string} text The search text
-	 * @returns {Promise<string[]>} Promise resolving to array of page name or section suggestions
+	 * @returns {Promise<WikilinkEntry[]>} Promise resolving to array of page name or section suggestions
 	 */
 	async makeApiRequest(text) {
 		const sectionData = this.detectSectionFragment(text)
@@ -207,7 +252,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * Get page name suggestions using OpenSearch API.
 	 *
 	 * @param {string} text The search text
-	 * @returns {Promise<string[]>} Promise resolving to array of page name suggestions
+	 * @returns {Promise<WikilinkEntry[]>} Promise resolving to array of page name suggestions
 	 * @private
 	 */
 	async getPageSuggestions(text) {
@@ -229,7 +274,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			redirects: 'return',
 		})
 
-		return response[1].map((/** @type {string} */ name) => {
+		return response[1].flatMap((/** @type {string} */ name) => {
 			const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
 			if (caseSensitiveNamespaces.length) {
 				const title = CrossSiteMwTitle.newFromText(name)
@@ -240,7 +285,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				name = this.useOriginalFirstCharCase(name, text)
 			}
 
-			return name.replace(/^/, colonPrefix ? ':' : '')
+			const title = CrossSiteMwTitle.newFromText(name)
+			if (!title) return []
+
+			const label = (colonPrefix ? ':' : '') + name
+
+			return /** @type {WikilinkEntry} */ ({ title, colonPrefix, label })
 		})
 	}
 
@@ -249,7 +299,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 *
 	 * @param {string} text The full input text including interwiki prefix(es)
 	 * @param {InterwikiResolution} interwiki Resolved interwiki data
-	 * @returns {Promise<string[]>} Page name suggestions preserving the original interwiki prefix
+	 * @returns {Promise<WikilinkEntry[]>} Page name suggestions preserving the original interwiki prefix
 	 * @private
 	 */
 	async getCrossSitePageSuggestions(text, interwiki) {
@@ -279,10 +329,10 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			})
 		)
 
-		// Reconstruct the full interwiki-prefixed name from the result
-		const prefixPart = text.slice(0, text.length - pageName.length)
+		// The interwiki prefix is everything before the remote page name in the original input
+		const interwikiPrefix = text.slice(0, text.length - pageName.length)
 
-		return response[1].map((/** @type {string} */ name) => {
+		return response[1].flatMap((/** @type {string} */ name) => {
 			const caseSensitiveNamespaces = CrossSiteMwTitle.getHostData(hostname).caseSensitiveNamespaces
 			if (caseSensitiveNamespaces.length) {
 				const title = CrossSiteMwTitle.newFromText(name, undefined, hostname)
@@ -293,7 +343,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				name = this.useOriginalFirstCharCase(name, pageName)
 			}
 
-			return prefixPart + name
+			const title = CrossSiteMwTitle.newFromText(name, undefined, hostname)
+			if (!title) return []
+
+			const label = interwikiPrefix + name
+
+			return /** @type {WikilinkEntry} */ ({ title, interwikiPrefix, label })
 		})
 	}
 
@@ -302,7 +357,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 *
 	 * @param {string} pageName The page to get sections from
 	 * @param {string} fragmentQuery The partial section name to search
-	 * @returns {Promise<string[]>} Section suggestions in format "PageName#Section"
+	 * @returns {Promise<WikilinkEntry[]>} Section suggestions
 	 * @private
 	 */
 	async getSectionSuggestions(pageName, fragmentQuery) {
@@ -313,6 +368,8 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		let normalizedPageName
 		/** @type {mw.ForeignApi | undefined} */
 		let foreignApi
+		/** @type {CrossSiteMwTitle | null} */
+		let pageTitle
 
 		if (interwiki) {
 			const { hostname, pageName: remotePageName } = interwiki
@@ -322,20 +379,25 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			})
 			await CrossSiteMwTitle.loadHostData(hostname, foreignApi)
 
-			const title = CrossSiteMwTitle.newFromText(remotePageName, undefined, hostname)
-			if (!title) {
-				return [pageName + '#' + fragmentQuery]
+			pageTitle = CrossSiteMwTitle.newFromText(remotePageName, undefined, hostname)
+			if (!pageTitle) {
+				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
 			}
 
-			normalizedPageName = title.getPrefixedText()
+			normalizedPageName = pageTitle.getPrefixedText()
 		} else {
-			const title = CrossSiteMwTitle.newFromText(pageName)
-			if (!title) {
-				return [pageName + '#' + fragmentQuery]
+			pageTitle = CrossSiteMwTitle.newFromText(pageName)
+			if (!pageTitle) {
+				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
 			}
 
-			normalizedPageName = title.getPrefixedText()
+			normalizedPageName = pageTitle.getPrefixedText()
 		}
+
+		// The interwiki prefix is everything before the remote page name in the original pageName
+		const interwikiPrefix = interwiki
+			? pageName.slice(0, pageName.length - interwiki.pageName.length)
+			: undefined
 
 		// Check cache for sections of this page
 		const cacheKey = `sections:${normalizedPageName}`
@@ -376,13 +438,13 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				this.cache.set(cacheKey, /** @type {any[]} */ (parsedSections))
 			} catch {
 				// API error or page doesn't exist, return user's input as-is
-				return [pageName + '#' + fragmentQuery]
+				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
 			}
 		}
 
 		// At this point sections is guaranteed to be defined
 		if (!sections) {
-			return [pageName + '#' + fragmentQuery]
+			return this.makeFallbackSectionEntry(pageName, fragmentQuery)
 		}
 
 		// Filter and format results
@@ -396,25 +458,114 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 				return Number(bStarts) - Number(aStarts)
 			})
-			.map((section) => `${pageName}#${section.anchor}`)
+			.map((section) => {
+				const label = (interwikiPrefix ?? '') + normalizedPageName + '#' + section.anchor
+
+				return /** @type {WikilinkEntry} */ ({
+					title: /** @type {CrossSiteMwTitle} */ (pageTitle),
+					fragment: section.anchor,
+					interwikiPrefix,
+					label,
+				})
+			})
 
 		// If no matches or empty query, show all sections (up to limit)
 		if (results.length === 0 && fragmentQuery === '') {
-			results = sections.slice(0, 10).map((section) => `${pageName}#${section.anchor}`)
+			results = sections.slice(0, 10).map((section) => {
+				const label = (interwikiPrefix ?? '') + normalizedPageName + '#' + section.anchor
+
+				return /** @type {WikilinkEntry} */ ({
+					title: /** @type {CrossSiteMwTitle} */ (pageTitle),
+					fragment: section.anchor,
+					interwikiPrefix,
+					label,
+				})
+			})
 		}
 
 		return results
 	}
 
 	/**
+	 * Create a fallback entry for when a page title can't be resolved, using a plain string label.
+	 * The title is constructed from the page name as a best-effort local title.
+	 *
+	 * @param {string} pageName
+	 * @param {string} fragment
+	 * @returns {WikilinkEntry[]}
+	 * @private
+	 */
+	makeFallbackSectionEntry(pageName, fragment) {
+		const title =
+			CrossSiteMwTitle.newFromText(pageName) || CrossSiteMwTitle.newFromText('Main_Page')
+		if (!title) return []
+
+		return [{ title, fragment, label: pageName + '#' + fragment }]
+	}
+
+	/**
 	 * Extract the display label from a wikilink entry.
 	 *
 	 * @override
-	 * @param {string} entry The wikilink entry to extract label from
+	 * @param {WikilinkEntry} entry The wikilink entry to extract label from
 	 * @returns {string} The display label
 	 */
 	getLabelFromEntry(entry) {
-		return entry
+		return entry.label
+	}
+
+	/**
+	 * Search local entries by label. Overrides the base class to handle `WikilinkEntry` objects.
+	 *
+	 * @override
+	 * @param {string} text Search text
+	 * @param {WikilinkEntry[]} list List to search in
+	 * @returns {WikilinkEntry[]} Matching entries
+	 * @protected
+	 */
+	searchLocal(text, list) {
+		if (list.length === 0) return []
+
+		const containsRegexp = new RegExp(mw.util.escapeRegExp(text), 'i')
+		const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i')
+
+		return list
+			.filter((entry) => containsRegexp.test(entry.label))
+			.sort(
+				(a, b) => Number(startsWithRegexp.test(b.label)) - Number(startsWithRegexp.test(a.label)),
+			)
+	}
+
+	/**
+	 * Process raw entries into {@link import('./BaseAutocomplete').Option} objects for Tribute.
+	 * Deduplicates by label since entries are objects (not primitives). Also handles plain strings
+	 * (e.g. the user-typed fallback from the base class) by converting them to `WikilinkEntry`
+	 * objects on the fly.
+	 *
+	 * @override
+	 * @param {Array<WikilinkEntry | string>} entries Raw entries to process
+	 * @returns {import('./BaseAutocomplete').Option<WikilinkEntry>[]} Processed options
+	 */
+	getOptionsFromEntries(entries) {
+		/** @type {Set<string>} */
+		const seen = new Set()
+
+		return entries.filter(Boolean).flatMap((entry) => {
+			/** @type {WikilinkEntry} */
+			let wikilinkEntry
+			if (typeof entry === 'string') {
+				const title = CrossSiteMwTitle.newFromText(entry)
+				if (!title) return []
+				wikilinkEntry = { title, label: entry }
+			} else {
+				wikilinkEntry = entry
+			}
+
+			if (seen.has(wikilinkEntry.label)) return []
+			seen.add(wikilinkEntry.label)
+
+			return [{ label: wikilinkEntry.label, entry: wikilinkEntry, autocomplete: this }]
+		})
 	}
 
 	/**
