@@ -342,7 +342,7 @@ async function getLastDeployedCommit(commits) {
 		.map((commit) => commit.subject)
 		.filter(
 			(commit) =>
-				!/^(Merge branch|Merge pull request|Localisation updates|Bump |deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:|i18n:|style:)/.test(
+				!/^(Merge branch|Merge pull request|Localisation updates|Bump |(deploy|ci|build|configs?|tests?|jsdoc|chore|docs|i18n|style|refactor)[(:])/.test(
 					commit,
 				),
 		)
