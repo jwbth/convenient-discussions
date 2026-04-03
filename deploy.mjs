@@ -482,7 +482,7 @@ async function getConfigsEdits() {
 		const modulesString = /** @type {string[]} */ (asset.modules).join(', ')
 
 		// Make sure we don't break anything in MediaWiki:Gadgets-definition.
-		const illegalMatch = modulesString.match(/[^a-z., -]/gi)
+		const illegalMatch = modulesString.match(/[^a-z0-9., -]/gi)
 		if (illegalMatch) {
 			const matchesString = illegalMatch.map((char) => code(char)).join(' ')
 			throw error(
