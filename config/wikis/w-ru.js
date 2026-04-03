@@ -448,7 +448,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	beforeAuthorLinkParse(authorLink, authorLinkPrototype) {
 		// https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
 		const nextElement = authorLink.nextElementSibling;
-		if (nextElement?.classList.contains('userflags-wrapper')) {
+		if (nextElement && nextElement.classList.contains('userflags-wrapper')) {
 			/** @type {HTMLElement} */ (authorLinkPrototype.parentNode).insertBefore(
 				nextElement,
 				authorLinkPrototype.nextSibling,
