@@ -21,8 +21,12 @@ import cd from './cd'
 // Dummy comment to prevent Prettier from killing the empty line
 // eslint-disable-next-line unicorn/prefer-top-level-await
 ;(async () => {
-	await bootstrap()
-	$(start)
+	try {
+		await bootstrap()
+		$(start)
+	} catch {
+		// Empty
+	}
 })()
 
 /**
@@ -34,7 +38,7 @@ async function bootstrap() {
 	if (cd.isRunning) {
 		console.warn('One instance of Convenient Discussions is already running.')
 
-		return
+		throw new Error()
 	}
 
 	/**
@@ -55,7 +59,7 @@ async function bootstrap() {
 		$('.lqt-talkpage').length ||
 		mw.config.get('wgIsMainPage')
 	) {
-		return
+		throw new Error()
 	}
 
 	cd.debug.init()
@@ -101,7 +105,7 @@ async function bootstrap() {
 	} catch (error) {
 		console.error(error)
 
-		return
+		throw new Error()
 	}
 
 	cd.debug.stopTimer('bootstrap')
