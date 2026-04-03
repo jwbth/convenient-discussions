@@ -1,7 +1,7 @@
 import BaseAutocomplete from './BaseAutocomplete'
 import CrossSiteMwTitle from './CrossSiteMwTitle'
 import cd from './loader/cd'
-import { charAt, parseWikiUrl, phpCharToUpper } from './shared/utils-general'
+import { parseWikiUrl } from './shared/utils-general'
 import { handleApiReject } from './utils-api'
 
 /**
@@ -610,36 +610,6 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	normalizeSectionName(name) {
 		return name.toLowerCase().replace(/_/g, ' ')
-	}
-
-	/**
-	 * Use the original first character case from the query in the result.
-	 *
-	 * @param {string} result The result from API
-	 * @param {string} query The original query
-	 * @returns {string} Result with corrected first character case
-	 * @private
-	 */
-	useOriginalFirstCharCase(result, query) {
-		// But ignore cases with all caps in the first word like ABBA
-		const firstWord = result.split(' ')[0]
-		if (firstWord.length > 1 && firstWord.toUpperCase() === firstWord) {
-			return result
-		}
-
-		const firstChar = charAt(query, 0)
-		const firstCharUpperCase = phpCharToUpper(firstChar)
-
-		return result.replace(
-			new RegExp(
-				// First character pattern
-				'^' +
-					(firstCharUpperCase === firstChar
-						? mw.util.escapeRegExp(firstChar)
-						: '[' + firstCharUpperCase + firstChar + ']'),
-			),
-			firstChar,
-		)
 	}
 
 	/**

@@ -1,7 +1,6 @@
 import BaseAutocomplete from './BaseAutocomplete'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
-import { charAt, phpCharToUpper } from './shared/utils-general'
 import { handleApiReject } from './utils-api'
 
 /**
@@ -145,35 +144,6 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				return this.getInsertionFromEntry(option.original.entry, selectedText)
 			},
 		}
-	}
-
-	/**
-	 * Use the original first character case from the query in the result.
-	 * This preserves user's intended capitalization for template names.
-	 *
-	 * @param {string} result The result string
-	 * @param {string} query The original query
-	 * @returns {string} Result with corrected first character case
-	 */
-	useOriginalFirstCharCase(result, query) {
-		// But ignore cases with all caps in the first word like ABBA
-		const firstWord = result.split(' ')[0]
-		if (firstWord.length > 1 && firstWord.toUpperCase() === firstWord) {
-			return result
-		}
-
-		const firstChar = charAt(query, 0)
-		const firstCharUpperCase = phpCharToUpper(firstChar)
-
-		return result.replace(
-			new RegExp(
-				// First character pattern
-				'^' + firstCharUpperCase === firstChar
-					? mw.util.escapeRegExp(firstChar)
-					: '[' + firstCharUpperCase + firstChar + ']',
-			),
-			firstChar,
-		)
 	}
 
 	/**

@@ -563,6 +563,34 @@ class BaseAutocomplete {
 	}
 
 	/**
+	 * Use the original first character case from the query in the result.
+	 *
+	 * @param {string} result
+	 * @param {string} query
+	 * @returns {string}
+	 */
+	useOriginalFirstCharCase(result, query) {
+		// But ignore cases with all caps in the first word like ABBA
+		const firstWord = result.split(' ')[0]
+		if (firstWord.length > 1 && firstWord.toUpperCase() === firstWord) {
+			return result
+		}
+
+		const firstChar = charAt(query, 0)
+		const firstCharUpperCase = phpCharToUpper(firstChar)
+
+		return result.replace(
+			new RegExp(
+				'^' +
+					(firstCharUpperCase === firstChar
+						? mw.util.escapeRegExp(firstChar)
+						: '[' + firstCharUpperCase + firstChar + ']'),
+			),
+			firstChar,
+		)
+	}
+
+	/**
 	 * Destroy the autocomplete instance and clean up resources.
 	 */
 	destroy() {

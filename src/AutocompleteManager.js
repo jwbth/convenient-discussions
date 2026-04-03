@@ -378,26 +378,6 @@ class AutocompleteManager {
 	}
 
 	/**
-	 * Use the original first character case if the result is not a redirect.
-	 *
-	 * @param {string} result
-	 * @param {string} query
-	 * @returns {string}
-	 */
-	static useOriginalFirstCharCase(result, query) {
-		// But ignore cases with all caps in the first word like ABBA
-		const firstWord = result.split(' ')[0]
-		if (
-			firstWord.toUpperCase() !== firstWord &&
-			result.charAt(0).toLowerCase() === query.charAt(0).toLowerCase()
-		) {
-			result = query.charAt(0) + result.slice(1)
-		}
-
-		return result
-	}
-
-	/**
 	 * @typedef {object} CombinedPerformanceMetrics
 	 * @property {object} manager
 	 * @property {number} manager.instanceCount
