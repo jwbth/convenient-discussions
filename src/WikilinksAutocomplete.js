@@ -275,31 +275,24 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			redirects: 'return',
 		})
 
-		return response[1].flatMap((/** @type {string} */ name) => {
-			const parsedTitle = CrossSiteMwTitle.newFromText(name)
-			const hasNamespacePrefix = parsedTitle && parsedTitle.getNamespaceId() !== 0
-			if (!hasNamespacePrefix) {
+		return response[1].flatMap((/** @type {string} */ apiName) => {
+			const title = CrossSiteMwTitle.newFromText(apiName)
+			if (!title) return []
+
+			// Only apply case fix for main namespace (no prefix)
+			let pageName = apiName
+			if (title.getNamespaceId() === 0) {
 				const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
-				if (caseSensitiveNamespaces.length) {
-					if (!parsedTitle || !caseSensitiveNamespaces.includes(parsedTitle.getNamespaceId())) {
-						name = this.useOriginalFirstCharCase(name, text)
-					}
-				} else {
-					name = this.useOriginalFirstCharCase(name, text)
+				const isCaseSensitive =
+					caseSensitiveNamespaces.length && caseSensitiveNamespaces.includes(0)
+				if (!isCaseSensitive) {
+					pageName = this.useOriginalFirstCharCase(apiName, text)
 				}
 			}
 
-			const title = CrossSiteMwTitle.newFromText(name)
-			if (!title) return []
+			const label = (colonPrefix ? ':' : '') + pageName
 
-			const label = (colonPrefix ? ':' : '') + name
-
-			return /** @type {WikilinkEntry} */ ({
-				title,
-				pageName: name,
-				colonPrefix,
-				label,
-			})
+			return /** @type {WikilinkEntry} */ ({ title, pageName, colonPrefix, label })
 		})
 	}
 
@@ -341,13 +334,19 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		// The interwiki prefix is everything before the remote page name in the original input
 		const interwikiPrefix = text.slice(0, text.length - pageName.length)
 
-		return response[1].flatMap((/** @type {string} */ name) => {
-			const title = CrossSiteMwTitle.newFromText(name, undefined, hostname)
+		return response[1].flatMap((/** @type {string} */ apiName) => {
+			const title = CrossSiteMwTitle.newFromText(apiName, undefined, hostname)
 			if (!title) return []
 
-			const label = interwikiPrefix + name
+			// For interwiki links, never apply case fix - use API name as-is
+			const label = interwikiPrefix + apiName
 
-			return /** @type {WikilinkEntry} */ ({ title, pageName: name, interwikiPrefix, label })
+			return /** @type {WikilinkEntry} */ ({
+				title,
+				pageName: apiName,
+				interwikiPrefix,
+				label,
+			})
 		})
 	}
 
@@ -458,10 +457,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				return Number(bStarts) - Number(aStarts)
 			})
 			.map((section) => {
-				const label = (interwikiPrefix ?? '') + normalizedPageName + '#' + section.anchor
+				const pageNamePart = (interwikiPrefix ?? '') + normalizedPageName
+				const label = pageNamePart + '#' + section.anchor
 
 				return /** @type {WikilinkEntry} */ ({
 					title: /** @type {CrossSiteMwTitle} */ (pageTitle),
+					pageName: normalizedPageName,
 					fragment: section.anchor,
 					interwikiPrefix,
 					label,
@@ -471,10 +472,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		// If no matches or empty query, show all sections (up to limit)
 		if (results.length === 0 && fragmentQuery === '') {
 			results = sections.slice(0, 10).map((section) => {
-				const label = (interwikiPrefix ?? '') + normalizedPageName + '#' + section.anchor
+				const pageNamePart = (interwikiPrefix ?? '') + normalizedPageName
+				const label = pageNamePart + '#' + section.anchor
 
 				return /** @type {WikilinkEntry} */ ({
 					title: /** @type {CrossSiteMwTitle} */ (pageTitle),
+					pageName: normalizedPageName,
 					fragment: section.anchor,
 					interwikiPrefix,
 					label,
@@ -499,7 +502,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			CrossSiteMwTitle.newFromText(pageName) || CrossSiteMwTitle.newFromText('Main_Page')
 		if (!title) return []
 
-		return [{ title, fragment, label: pageName + '#' + fragment }]
+		return [
+			{
+				title,
+				pageName,
+				fragment,
+				label: pageName + '#' + fragment,
+			},
+		]
 	}
 
 	/**
@@ -555,7 +565,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			if (typeof entry === 'string') {
 				const title = CrossSiteMwTitle.newFromText(entry)
 				if (!title) return []
-				wikilinkEntry = { title, label: entry }
+				wikilinkEntry = { title, pageName: entry, label: entry }
 			} else {
 				wikilinkEntry = entry
 			}
