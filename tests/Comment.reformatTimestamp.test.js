@@ -1,5 +1,43 @@
+import { vi } from 'vitest'
+
+// Mock mw global before imports
+const mwConfig = new Map()
+const mwMessages = new Map()
+
+globalThis.mw = {
+  Title: class MockTitle {},
+  config: {
+    set: (key, value) => mwConfig.set(key, value),
+    get: (key) => mwConfig.get(key),
+  },
+  messages: {
+    set: (messages) => {
+      for (const [key, value] of Object.entries(messages)) {
+        mwMessages.set(key, value)
+      }
+    },
+    get: (key) => mwMessages.get(key),
+  },
+  user: {
+    options: {
+      get: vi.fn(() => ({})),
+    },
+  },
+  loader: {
+    require: vi.fn(),
+  },
+}
+
+vi.mock('../src/CrossSiteMwTitle', () => ({
+  default: class MockCrossSiteMwTitle {
+    constructor(title) {
+      this.title = title
+    }
+  }
+}))
+
 import { enUS } from 'date-fns/locale'
-import { vi, test, expect } from 'vitest'
+import { test, expect } from 'vitest'
 
 import * as mock_i18n_en_json from '../i18n/en.json'
 import * as mock_src_Comment from '../src/Comment'

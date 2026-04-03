@@ -1,4 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+// Mock mw global before imports
+globalThis.mw = {
+  Title: class MockTitle {},
+}
+
+import { vi } from 'vitest'
+
+vi.mock('../src/CrossSiteMwTitle', () => ({
+  default: class MockCrossSiteMwTitle {
+    constructor(title) {
+      this.title = title
+    }
+  }
+}))
+
+import { describe, it, expect, beforeEach } from 'vitest'
 
 import CommentForm from '../src/CommentForm'
 
