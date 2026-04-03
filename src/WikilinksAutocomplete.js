@@ -275,14 +275,16 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		})
 
 		return response[1].flatMap((/** @type {string} */ name) => {
-			const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
-			if (caseSensitiveNamespaces.length) {
-				const title = CrossSiteMwTitle.newFromText(name)
-				if (!title || !caseSensitiveNamespaces.includes(title.getNamespaceId())) {
+			const parsedTitle = CrossSiteMwTitle.newFromText(name)
+			if (!parsedTitle || parsedTitle.getNamespaceId() === 0) {
+				const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
+				if (caseSensitiveNamespaces.length) {
+					if (!parsedTitle || !caseSensitiveNamespaces.includes(parsedTitle.getNamespaceId())) {
+						name = this.useOriginalFirstCharCase(name, text)
+					}
+				} else {
 					name = this.useOriginalFirstCharCase(name, text)
 				}
-			} else {
-				name = this.useOriginalFirstCharCase(name, text)
 			}
 
 			const title = CrossSiteMwTitle.newFromText(name)
@@ -333,16 +335,6 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		const interwikiPrefix = text.slice(0, text.length - pageName.length)
 
 		return response[1].flatMap((/** @type {string} */ name) => {
-			const caseSensitiveNamespaces = CrossSiteMwTitle.getHostData(hostname).caseSensitiveNamespaces
-			if (caseSensitiveNamespaces.length) {
-				const title = CrossSiteMwTitle.newFromText(name, undefined, hostname)
-				if (!title || !caseSensitiveNamespaces.includes(title.getNamespaceId())) {
-					name = this.useOriginalFirstCharCase(name, pageName)
-				}
-			} else {
-				name = this.useOriginalFirstCharCase(name, pageName)
-			}
-
 			const title = CrossSiteMwTitle.newFromText(name, undefined, hostname)
 			if (!title) return []
 
