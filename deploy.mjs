@@ -120,22 +120,28 @@ const configAssets = config.configs.flatMap((wikiConfig) => {
 
 /** @type {string} */
 let version
-if (process.env.CI) {
-	// HTTP proxy to use with the http-proxy-to-socks module, while the SOCKS proxy is created by the
-	// `ssh -D [port]` command as part of the SSH tunnel to Toolforge.
-	config.proxy = 'http://localhost:8080'
+//if (process.env.CI) {
+// HTTP proxy to use with the http-proxy-to-socks module, while the SOCKS proxy is created by the
+// `ssh -D [port]` command as part of the SSH tunnel to Toolforge.
+config.proxy = 'http://localhost:8080'
 
-	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const eventJson = JSON.parse(
-		fs.readFileSync(
-			/** @type {string} */ (process.env.GITHUB_EVENT_PATH),
-			'utf8',
-		),
-	)
+// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+const eventJson = JSON.parse(
+	fs.readFileSync(
+		/** @type {string} */ (process.env.GITHUB_EVENT_PATH),
+		'utf8',
+	),
+)
 
-	// Will be undefined if the event is workflow_dispatch.
-	version = eventJson.release?.tag_name
-}
+// Will be undefined if the event is workflow_dispatch.
+version = eventJson.release?.tag_name
+//}
+
+console.log(
+	process.env.CI
+		? `Running in CI mode. Version: ${version || 'unknown'}`
+		: 'Running in interactive mode.',
+)
 
 const clients = {
 	[config.main.server]: new Mwn({
