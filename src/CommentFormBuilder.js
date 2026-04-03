@@ -437,19 +437,6 @@ class CommentFormBuilder {
 			section: 'main',
 			group: 'convenient-discussions',
 			tools: {
-				smaller: {
-					label: cd.mws('wikieditor-toolbar-tool-small'),
-					type: 'button',
-					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
-					action: {
-						type: 'encapsulate',
-						options: {
-							pre: '<small>',
-							peri: cd.mws('wikieditor-toolbar-tool-small-example'),
-							post: '</small>',
-						},
-					},
-				},
 				quote: {
 					label: `${cd.s('cf-quote-tooltip')} ${cd.mws(
 						'parentheses',
@@ -641,9 +628,10 @@ class CommentFormBuilder {
 		this.form.commentInput.$input.removeClass('ext-WikiEditor-resizable-textbox')
 		$uiText.closest('.wikiEditor-ui-view').removeClass('wikiEditor-ui-view-resizable')
 
+		// Elements irrelevant for a comment editor
 		this.form.commentInput.$element
 			.find(
-				'.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]',
+				'.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"], .tab[rel="help"]',
 			)
 			.remove()
 		if (!this.form.isMode('addSection') && !this.form.isMode('addSubsection')) {
