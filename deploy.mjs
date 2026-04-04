@@ -12,6 +12,7 @@ import { hideBin } from 'yargs/helpers'
 
 import config from './config.mjs'
 import { getUrl, unique } from './misc/utils.mjs'
+import { sleep } from 'mwn/build/utils.js'
 
 const execAsync = promisify(exec)
 
@@ -143,10 +144,13 @@ console.log(
 		: 'Running in interactive mode.',
 )
 
+const userAgent =
+	'Convenient Discussions deployer/0.0 (https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions; User:Jack who built the house)'
 const clients = {
 	[config.main.server]: new Mwn({
 		apiUrl: `${config.protocol}://${config.main.server}${config.scriptPath}/api.php`,
 		silent: !debug,
+		userAgent,
 	}),
 	...config.configs.reduce((obj, wikiConfig) => {
 		const protocol =
@@ -160,6 +164,7 @@ const clients = {
 		obj[wikiConfig.server] = new Mwn({
 			apiUrl: `${protocol}://${wikiConfig.server}${scriptPath}/api.php`,
 			silent: !debug,
+			userAgent,
 		})
 
 		return obj
@@ -611,6 +616,9 @@ async function deployToServer(serverEdits) {
 			edit.content,
 			edit.summary,
 		)
+
+		// To avoid hitting the edit rate limit
+		await sleep(1500)
 
 		if (response.nochange) {
 			success(`No changes in ${edit.url}`)
