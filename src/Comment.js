@@ -2398,7 +2398,7 @@ class Comment extends CommentSkeleton {
 		}
 
 		if (accepted) {
-			mw.notify(cd.s('thank-success'), { type: 'success' })
+			mw.notify(cd.s('thank-success'), { type: 'success', autoHide: true })
 			this.setThanked()
 
 			this.manager
