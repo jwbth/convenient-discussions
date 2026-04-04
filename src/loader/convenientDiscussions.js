@@ -224,8 +224,6 @@ const convenientDiscussionsWindow = {
 	tests: {},
 }
 
-Object.assign(cd, convenientDiscussionsWindow)
-
 /**
  * Collection of properties accessible from anywhere in the script that are not grouped in any other
  * way. This is an incomplete list. "g" is for "global".
@@ -670,10 +668,13 @@ const globalProperties = {
 	},
 }
 
-Object.assign(cd.g, globalProperties)
+if (!('g' in cd)) {
+	Object.assign(cd, convenientDiscussionsWindow)
+	Object.assign(cd.g, globalProperties)
 
-if (cd.g.debug) {
-	window.cd = cd
+	if (cd.g.debug) {
+		window.cd = cd
+	}
 }
 
 export { convenientDiscussionsWindow, globalProperties }

@@ -1033,6 +1033,6 @@ class Loader {
 }
 
 // Export a singleton instance
-cd.loader = new Loader()
+cd.loader ??= new Loader()
 
 export { Loader }

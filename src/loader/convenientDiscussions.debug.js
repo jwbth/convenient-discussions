@@ -258,6 +258,6 @@ class Debug {
 	}
 }
 
-cd.debug = new Debug()
+cd.debug ??= new Debug()
 
 export { Debug }
