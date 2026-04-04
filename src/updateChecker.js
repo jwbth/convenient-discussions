@@ -242,7 +242,7 @@ class UpdateChecker extends EventEmitter {
 		// Clean up revisionData from values that can't be reused as it may grow really big. (The newest
 		// revision could be reused as a current revision; the current revision could be reused as a
 		// previous visit revision.)
-		this.revisionData.keys().forEach((revId) => {
+		;[...this.revisionData.keys()].forEach((revId) => {
 			if (
 				revId !== message.revisionId &&
 				revId !== this.lastCheckedRevisionId &&
