@@ -102,11 +102,6 @@ function licenseExtractionPlugin(buildMode) {
 		apply: 'build',
 		enforce: 'post',
 		generateBundle(_options, bundle) {
-			// Only apply to production/staging builds (not single)
-			if (buildMode.isSingle) {
-				return
-			}
-
 			const licensePattern = /@preserve|@license|@cc_on/i
 			const commentPattern = /\/\*+\s*([\s\S]*?)\s*\*\//g
 			const extractedLicenses = new Map()
@@ -448,19 +443,15 @@ export default defineConfig(({ mode, command }) => {
 
 	plugins.push(buildNotificationPlugin(), preserveControlEscapesPlugin())
 
-	// Add nowiki banner plugins for non-single builds
 	if (!buildMode.isSingle) {
-		// Top banner - prepend /* <nowiki> */
-		// Bottom banner - append /* </nowiki> */
 		plugins.push(
-			prependNowikiPlugin(`${bundleFilename}.js`),
+			// Append closing nowiki first so it ends up at the very bottom after all prepends
 			appendNowikiPlugin(`${bundleFilename}.js`),
+			// Extract licenses and add documentation banner
+			licenseExtractionPlugin(buildMode),
+			// Prepend opening nowiki last so it sits above the license banner
+			prependNowikiPlugin(`${bundleFilename}.js`),
 		)
-	}
-
-	// Add license extraction plugin for production/staging builds
-	if (!buildMode.isSingle) {
-		plugins.push(licenseExtractionPlugin(buildMode))
 	}
 
 	// Add custom source map URL plugin for production/staging builds
