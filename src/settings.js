@@ -43,6 +43,7 @@ import { wrapHtml } from './utils-window'
  * @property {number} outdentLevel
  * @property {'compact'|'spacious'|null} commentDisplay
  * @property {boolean} showContribsLink
+ * @property {boolean} skipThankConfirmation
  * @property {boolean} showToolbar
  * @property {string} signaturePrefix
  * @property {boolean} subscribeOnReply
@@ -230,6 +231,7 @@ class Settings extends EventEmitter {
 			commentDisplay: 'radio',
 			removeData: 'button',
 			showContribsLink: 'checkbox',
+			skipThankConfirmation: 'checkbox',
 			showToolbar: 'checkbox',
 			signaturePrefix: 'text',
 			subscribeOnReply: 'checkbox',
@@ -295,6 +297,7 @@ class Settings extends EventEmitter {
 			'outdent': true,
 			'outdentLevel': 15,
 			'showContribsLink': false,
+			'skipThankConfirmation': false,
 			'showToolbar': true,
 			'signaturePrefix': cd.config.defaultSignaturePrefix,
 			'subscribeOnReply': true,
@@ -367,6 +370,11 @@ class Settings extends EventEmitter {
 						type: this.scheme.controlTypes.showContribsLink,
 						label: cd.s('sd-showcontribslink'),
 						help: cd.s('sd-showcontribslink-help'),
+					},
+					{
+						name: 'skipThankConfirmation',
+						type: this.scheme.controlTypes.skipThankConfirmation,
+						label: cd.s('sd-skipthankconfirmation'),
 					},
 					{
 						name: 'allowEditOthersComments',
@@ -879,8 +887,10 @@ class Settings extends EventEmitter {
 	 * local ones and make two respective requests.
 	 *
 	 * @param {Partial<DocumentedSettingsValues>} [settings] Settings to save.
+	 * @param {'global' | 'local'} [scope] Only save the specified preference scope when global
+	 *   preferences are enabled.
 	 */
-	async save(settings = this.values) {
+	async save(settings = this.values, scope) {
 		if (!cd.user.isRegistered()) return
 
 		if (cd.config.useGlobalPreferences) {
@@ -893,6 +903,16 @@ class Settings extends EventEmitter {
 					globalSettings[key] = /** @type {any} */ (settings[key])
 				}
 			})
+
+			if (scope === 'local') {
+				await saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings))
+				return
+			}
+
+			if (scope === 'global') {
+				await saveGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings))
+				return
+			}
 
 			await Promise.all([
 				saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings)),
@@ -917,7 +937,8 @@ class Settings extends EventEmitter {
 		const settings = await this.load()
 		settings[key] = value
 
-		this.save(settings)
+		const scope = cd.config.useGlobalPreferences && this.scheme.local.includes(key) ? 'local' : 'global'
+		this.save(settings, scope)
 	}
 
 	/**

@@ -2442,8 +2442,9 @@ class Comment extends CommentSkeleton {
 		$question.find('a').attr('data-instantdiffs-link', 'event')
 		const $diffView = await this.generateDiffView()
 
-		const answer = await showConfirmDialog(mergeJquery($question, $diffView), { size: 'larger' })
-		const accepted = answer === 'accept'
+		const accepted =
+			cd.settings.get('skipThankConfirmation') ||
+			(await showConfirmDialog(mergeJquery($question, $diffView), { size: 'larger' })) === 'accept'
 		if (accepted) {
 			await cd
 				.getApi()
@@ -2473,8 +2474,9 @@ class Comment extends CommentSkeleton {
 	 * @returns {Promise<boolean>}
 	 */
 	async thankStandard() {
-		const answer = await showConfirmDialog(wrapHtml(cd.mws('thanks-confirmation2', mw.user)))
-		const accepted = answer === 'accept'
+		const accepted =
+			cd.settings.get('skipThankConfirmation') ||
+			(await showConfirmDialog(wrapHtml(cd.mws('thanks-confirmation2', mw.user)))) === 'accept'
 		if (accepted) {
 			/**
 			 * @typedef {object} ApiResponseDtThank
