@@ -2005,11 +2005,7 @@ class Comment extends CommentSkeleton {
 
 		const id = this.getUrlFragment()
 		if (pushState && id) {
-			history.pushState(
-				{ ...history.state, cdLinkedComment: false, cdTargetComment: true },
-				'',
-				`#${id}`,
-			)
+			history.pushState({ ...history.state, cdLinkedComment: false, cdTargetComment: true }, '')
 		}
 
 		if (this.isCollapsed) {
