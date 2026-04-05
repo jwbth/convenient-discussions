@@ -157,7 +157,10 @@
 	.cm-focused .cm-scroller {
 		border: 1px solid var(--border-color-progressive--focus, #36c);
 		outline: 1px solid var(--color-progressive, #36c);
-		outline-offset: -2px;
+
+		// Fix for Firefox on Windows, e.g. with font size 112% where there appears a gap between the
+		// border and the outline
+		outline-offset: calc(-2px / var(--cd-pixel-deviation-ratio));
 	}
 
 	.cm-gutters {
