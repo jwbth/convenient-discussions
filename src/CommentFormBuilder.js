@@ -725,7 +725,7 @@ class CommentFormBuilder {
 		this.form.commentInput.$input.wikiEditor('addToToolbar', {
 			section: 'main',
 			groups: {
-				panels: {
+				sections: {
 					tools: {
 						specialCharacters: {
 							type: 'element',
@@ -734,16 +734,20 @@ class CommentFormBuilder {
 									label: mw.msg('wikieditor-toolbar-section-characters'),
 									title: mw.msg('wikieditor-toolbar-section-characters'),
 									icon: 'specialCharacter',
-									value: false,
+									value: $specialCharactersTab.attr('aria-expanded') === 'true',
+									flags:
+										$specialCharactersTab.attr('aria-expanded') === 'true'
+											? 'progressive'
+											: undefined,
 									framed: false,
 									invisibleLabel: true,
 									classes: ['tool', 'cd-specialCharacters-toggle'],
 								})
 
-								this.form.panelButtons.push(button)
+								this.form.sectionButtons.push(button)
 								button.on('click', () => {
 									$specialCharactersTab.trigger('click')
-									this.updatePanelButtons(button)
+									this.updateSectionButtons(button)
 								})
 
 								return button.$element
@@ -756,7 +760,8 @@ class CommentFormBuilder {
 									label: mw.msg('wikieditor-toolbar-section-advanced'),
 									title: mw.msg('wikieditor-toolbar-section-advanced'),
 									icon: 'ellipsis',
-									value: false,
+									value: $advancedTab.attr('aria-expanded') === 'true',
+									flags: $advancedTab.attr('aria-expanded') === 'true' ? 'progressive' : undefined,
 									framed: false,
 									invisibleLabel: true,
 									classes: ['tool', 'cd-advanced-toggle'],
@@ -764,10 +769,10 @@ class CommentFormBuilder {
 
 								button.on('click', () => {
 									$advancedTab.trigger('click')
-									this.updatePanelButtons(button)
+									this.updateSectionButtons(button)
 								})
 
-								this.form.panelButtons.push(button)
+								this.form.sectionButtons.push(button)
 
 								return button.$element
 							},
@@ -795,20 +800,20 @@ class CommentFormBuilder {
 			.find('.oo-ui-labelElement-label')
 			.addClass('oo-ui-labelElement-invisible')
 
-		// Move the CodeMirror element after the panels container
+		// Move the CodeMirror element after the sections container
 		this.form.$element
 			.find('.group-codemirror')
 			.first()
-			.insertBefore(this.form.$element.find('.group-panels'))
+			.insertBefore(this.form.$element.find('.group-sections'))
 	}
 
 	/**
-	 * Update the flags of all panel buttons after one is toggled.
+	 * Update the flags of all section buttons after one is toggled.
 	 *
 	 * @param {OO.ui.ToggleButtonWidget} button
 	 */
-	updatePanelButtons(button) {
-		this.form.panelButtons.forEach((btn) => {
+	updateSectionButtons(button) {
+		this.form.sectionButtons.forEach((btn) => {
 			if (btn !== button) {
 				btn.setValue(false)
 			}
