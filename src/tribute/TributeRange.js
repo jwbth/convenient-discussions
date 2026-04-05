@@ -134,13 +134,12 @@ class TributeRange {
 					? /** @type {HTMLElement} */ (myField.parentElement.parentElement.previousSibling)
 					: myField,
 			)
-			$myField.focus()
-			if (!document.execCommand('insertText', false, text)) {
-				$myField.textSelection(
+			$myField
+				.focus()
+				.textSelection(
 					'setContents',
 					$myField.textSelection('getContents').substring(0, startPos) + text + ending,
 				)
-			}
 
 			// jwbth: Start offset is calculated from the start position of the inserted text.
 			// Absent value means the selection start position should match with the end position
