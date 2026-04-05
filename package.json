@@ -85,6 +85,7 @@
 		"eslint-plugin-unicorn": "^60.0.0",
 		"eslint-plugin-unused-imports": "^4.3.0",
 		"http-proxy-to-socks": "^1.1.2",
+		"https-proxy-agent": "^9.0.0",
 		"jsdoc": "^3.6.6",
 		"jsdom": "^27.4.0",
 		"json5": "^2.2.3",

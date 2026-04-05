@@ -3,7 +3,9 @@ import fs from 'node:fs'
 import { promisify } from 'node:util'
 
 import chalk from 'chalk'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 import { Mwn } from 'mwn'
+import { sleep } from 'mwn/build/utils.js'
 // https://github.com/import-js/eslint-plugin-import/issues/1594
 // eslint-disable-next-line import/no-named-as-default
 import prompts from 'prompts'
@@ -12,7 +14,6 @@ import { hideBin } from 'yargs/helpers'
 
 import config from './config.mjs'
 import { getUrl, unique } from './misc/utils.mjs'
-import { sleep } from 'mwn/build/utils.js'
 
 const execAsync = promisify(exec)
 
@@ -138,6 +139,10 @@ if (process.env.CI) {
 	version = eventJson.release?.tag_name
 }
 
+const proxyAgent = config.proxy ? new HttpsProxyAgent(config.proxy) : undefined
+const proxyParams = proxyAgent && {
+	requestOptions: { httpsAgent: proxyAgent, httpAgent: proxyAgent },
+}
 const userAgent =
 	'Convenient Discussions deployer/0.0 (https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions; User:Jack who built the house)'
 const clients = {
@@ -145,6 +150,7 @@ const clients = {
 		apiUrl: `${config.protocol}://${config.main.server}${config.scriptPath}/api.php`,
 		silent: !debug,
 		userAgent,
+		...proxyParams,
 	}),
 	...config.configs.reduce((obj, wikiConfig) => {
 		const protocol =
@@ -159,6 +165,7 @@ const clients = {
 			apiUrl: `${protocol}://${wikiConfig.server}${scriptPath}/api.php`,
 			silent: !debug,
 			userAgent,
+			...proxyParams,
 		})
 
 		return obj
