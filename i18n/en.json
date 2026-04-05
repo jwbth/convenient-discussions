@@ -377,7 +377,7 @@
 	"sd-commentdisplay-radio-compact-help": "Traditional layout with overlay menu for actions",
 	"sd-showcontribslink": "Show a contributions link after the user name in comments",
 	"sd-showcontribslink-help": "\"Spacious\" comment display should be enabled.",
-	"sd-skipthankconfirmation": "Don't ask for confirmation when thanking",
+	"sd-confirmthanks": "Confirm thanks",
 	"sd-showtoolbar": "Show the editing toolbar",
 	"sd-signatureprefix": "Signature prefix",
 	"sd-signatureprefix-help": "Text that is added before the signature, <em>including</em> a space at the beginning if needed.",

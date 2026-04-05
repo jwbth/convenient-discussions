@@ -2439,7 +2439,7 @@ class Comment extends CommentSkeleton {
 		const $diffView = await this.generateDiffView()
 
 		const accepted =
-			cd.settings.get('skipThankConfirmation') ||
+			!cd.settings.get('confirmThanks') ||
 			(await showConfirmDialog(mergeJquery($question, $diffView), { size: 'larger' })) === 'accept'
 		if (accepted) {
 			await cd
@@ -2471,7 +2471,7 @@ class Comment extends CommentSkeleton {
 	 */
 	async thankStandard() {
 		const accepted =
-			cd.settings.get('skipThankConfirmation') ||
+			!cd.settings.get('confirmThanks') ||
 			(await showConfirmDialog(wrapHtml(cd.mws('thanks-confirmation2', mw.user)))) === 'accept'
 		if (accepted) {
 			/**

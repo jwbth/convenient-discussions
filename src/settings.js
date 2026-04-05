@@ -43,7 +43,7 @@ import { wrapHtml } from './utils-window'
  * @property {number} outdentLevel
  * @property {'compact'|'spacious'|null} commentDisplay
  * @property {boolean} showContribsLink
- * @property {boolean} skipThankConfirmation
+ * @property {boolean} confirmThanks
  * @property {boolean} showToolbar
  * @property {string} signaturePrefix
  * @property {boolean} subscribeOnReply
@@ -231,7 +231,7 @@ class Settings extends EventEmitter {
 			commentDisplay: 'radio',
 			removeData: 'button',
 			showContribsLink: 'checkbox',
-			skipThankConfirmation: 'checkbox',
+			confirmThanks: 'checkbox',
 			showToolbar: 'checkbox',
 			signaturePrefix: 'text',
 			subscribeOnReply: 'checkbox',
@@ -297,7 +297,7 @@ class Settings extends EventEmitter {
 			'outdent': true,
 			'outdentLevel': 15,
 			'showContribsLink': false,
-			'skipThankConfirmation': false,
+			'confirmThanks': true,
 			'showToolbar': true,
 			'signaturePrefix': cd.config.defaultSignaturePrefix,
 			'subscribeOnReply': true,
@@ -372,9 +372,9 @@ class Settings extends EventEmitter {
 						help: cd.s('sd-showcontribslink-help'),
 					},
 					{
-						name: 'skipThankConfirmation',
-						type: this.scheme.controlTypes.skipThankConfirmation,
-						label: cd.s('sd-skipthankconfirmation'),
+						name: 'confirmThanks',
+						type: this.scheme.controlTypes.confirmThanks,
+						label: cd.s('sd-confirmthanks'),
 					},
 					{
 						name: 'allowEditOthersComments',
@@ -937,7 +937,8 @@ class Settings extends EventEmitter {
 		const settings = await this.load()
 		settings[key] = value
 
-		const scope = cd.config.useGlobalPreferences && this.scheme.local.includes(key) ? 'local' : 'global'
+		const scope =
+			cd.config.useGlobalPreferences && this.scheme.local.includes(key) ? 'local' : 'global'
 		this.save(settings, scope)
 	}
 
