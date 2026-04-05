@@ -150,9 +150,11 @@ class Loader {
 	 * file is certain to be loaded, we make a guess whether the modules are gonna be needed. This
 	 * guess may be wrong in both ways (e.g. if a page turned out to be blacklisted/whitelisted).
 	 *
+	 * @param {boolean} [preload=false] Is it the preload stage (where we should look at
+	 * pageTypes.talk before loading)?
 	 * @returns {JQuery.Promise<any> | undefined}
 	 */
-	maybeLoadTalkPageModules() {
+	maybeLoadTalkPageModules(preload = false) {
 		if (!this.modulesRequest) {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (!this.pageTypes) {
@@ -161,7 +163,7 @@ class Loader {
 
 			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
 			// gadget with preloaded dependencies, for example), so we use this trick.
-			if (this.pageTypes.talk) {
+			if (this.pageTypes.talk || !preload) {
 				const modules = [
 					'ext.checkUser.styles',
 					'ext.checkUser.userInfoCard',

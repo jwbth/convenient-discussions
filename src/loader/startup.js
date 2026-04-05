@@ -95,7 +95,7 @@ async function bootstrap() {
 	}
 
 	setLanguages()
-	cd.loader.maybeLoadTalkPageModules()
+	cd.loader.maybeLoadTalkPageModules(true)
 
 	try {
 		await Promise.all([
