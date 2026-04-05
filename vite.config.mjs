@@ -2,7 +2,6 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { defineConfig } from 'vite'
-import banner from 'vite-plugin-banner'
 
 import nonNullableConfig from './config.mjs'
 import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs'
@@ -11,6 +10,39 @@ import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs
 const cdConfig = nonNullableConfig
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+/**
+ * Custom plugin to prepend opening nowiki tag to the bundle, updating the source map to keep it
+ * aligned.
+ *
+ * @param {string} bundleFilename
+ * @returns {import('vite').Plugin}
+ */
+function prependNowikiPlugin(bundleFilename) {
+	const bannerText = '/* <nowiki> */\n'
+	const bannerLineCount = (bannerText.match(/\n/g) ?? []).length
+	return {
+		name: 'prepend-nowiki',
+		apply: 'build',
+		enforce: 'post',
+		generateBundle(_options, bundle) {
+			for (const [fileName, chunk] of Object.entries(bundle)) {
+				if (chunk.type === 'chunk' && fileName === bundleFilename) {
+					chunk.code = bannerText + chunk.code
+					const mapChunk = bundle[`${fileName}.map`]
+					if (
+						mapChunk?.type === 'asset' &&
+						typeof mapChunk.source === 'string'
+					) {
+						const map = JSON.parse(mapChunk.source)
+						map.mappings = ';'.repeat(bannerLineCount) + map.mappings
+						mapChunk.source = JSON.stringify(map)
+					}
+				}
+			}
+		},
+	}
+}
 
 /**
  * Custom plugin to append closing nowiki tag to the bundle.
@@ -131,16 +163,31 @@ function licenseExtractionPlugin(buildMode) {
 					if (licenses.length > 0) {
 						extractedLicenses.set(fileName, licenses)
 
-						// Remove license comments from the source code
+						// Replace license comments with blank lines to preserve line count,
+						// keeping source map line numbers aligned.
 						let modifiedCode = chunk.code
 						for (const license of licenses) {
-							modifiedCode = modifiedCode.replace(license, '')
+							modifiedCode = modifiedCode.replace(
+								license,
+								'\n'.repeat((license.match(/\n/g) ?? []).length),
+							)
 						}
 						chunk.code = modifiedCode
 
 						// Add license banner to main bundle
 						if (!fileName.includes('worker') && customBannerText) {
-							chunk.code = '/*' + customBannerText + '*/\n\n' + chunk.code
+							const bannerText = '/*' + customBannerText + '*/\n\n'
+							chunk.code = bannerText + chunk.code
+							const bannerLineCount = (bannerText.match(/\n/g) ?? []).length
+							const mapChunk = bundle[`${fileName}.map`]
+							if (
+								mapChunk?.type === 'asset' &&
+								typeof mapChunk.source === 'string'
+							) {
+								const map = JSON.parse(mapChunk.source)
+								map.mappings = ';'.repeat(bannerLineCount) + map.mappings
+								mapChunk.source = JSON.stringify(map)
+							}
 						}
 					}
 				}
@@ -406,10 +453,7 @@ export default defineConfig(({ mode, command }) => {
 		// Top banner - prepend /* <nowiki> */
 		// Bottom banner - append /* </nowiki> */
 		plugins.push(
-			banner({
-				content: '/* <nowiki> */',
-				verify: false,
-			}),
+			prependNowikiPlugin(`${bundleFilename}.js`),
 			appendNowikiPlugin(`${bundleFilename}.js`),
 		)
 	}
