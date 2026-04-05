@@ -913,10 +913,7 @@ class Loader {
 		}
 
 		try {
-			await Promise.all([
-				mw.loader.using(['mediawiki.Title', 'mediawiki.jqueryMsg', 'mediawiki.util']),
-				this.loadApp(),
-			])
+			await Promise.all([this.maybeLoadTalkPageModules(), this.loadApp()])
 
 			// See the comment above: "Additions of CSS...".
 			mw.util.addCSS(globalCss)
