@@ -329,12 +329,13 @@ async function getLastDeployedCommit(commits) {
 	}
 
 	const lastDeployedCommitOrVersion = revisions
-		.map(
-			(/** @type {{ comment: string }} */ revision) =>
-				(/[uU]pdate to (?:([0-9a-f]{8})(?= @ )|v\d+\.\d+\.\d+\b)/.exec(
+		.map((/** @type {{ comment: string }} */ revision) => {
+			const match =
+				/[uU]pdate to (?:([0-9a-f]{8})(?= @ )|(v\d+\.\d+\.\d+)\b)/.exec(
 					revision.comment,
-				) || [])[1],
-		)
+				) || []
+			return match[1] || match[2]
+		})
 		.find(Boolean)
 
 	if (!lastDeployedCommitOrVersion) {
