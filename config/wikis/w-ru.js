@@ -420,6 +420,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		// Add a closer template
 		if (
 			'couldBeCloserClosing' in commentForm &&
+			commentForm.couldBeCloserClosing &&
 			commentForm.headlineInput &&
 			commentForm.headlineInput.getValue().trim() === 'Итог' &&
 			!/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code)
