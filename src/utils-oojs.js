@@ -203,6 +203,7 @@ export async function showConfirmDialog(message, options = {}) {
  *   selected?: boolean;
  *   title?: string;
  *   tabIndex?: number;
+ *   accessKey?: string;
  * }} CheckboxControlOptions
  */
 
@@ -332,6 +333,7 @@ export function createCheckboxControl({
 	help,
 	tabIndex,
 	classes,
+	accessKey,
 }) {
 	return createGenericControl(
 		'checkbox',
@@ -340,6 +342,7 @@ export function createCheckboxControl({
 			selected,
 			disabled,
 			tabIndex,
+			accessKey,
 		}),
 		{
 			label,

@@ -75,6 +75,9 @@ class CommentFormBuilder {
 			placeholder: cd.s('cf-summary-placeholder'),
 			classes: ['cd-commentForm-summaryInput'],
 			tabIndex: this.form.getTabIndex(13),
+
+			// As on the regular edit page
+			accessKey: 'b',
 		})
 		this.form.summaryInput.$input.codePointLimit(cd.g.summaryLengthLimit)
 		mw.widgets.visibleCodePointLimit(this.form.summaryInput, cd.g.summaryLengthLimit)
@@ -94,6 +97,9 @@ class CommentFormBuilder {
 					selected: initialState.minor ?? true,
 					label: cd.s('cf-minor'),
 					tabIndex: this.form.getTabIndex(20),
+
+					// As on the regular edit page
+					accessKey: 'i',
 				}))
 			}
 
@@ -106,6 +112,9 @@ class CommentFormBuilder {
 						mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')),
 				label: cd.s('cf-watch'),
 				tabIndex: this.form.getTabIndex(21),
+
+				// As on the regular edit page
+				accessKey: 'w',
 			}))
 
 			const subscribableSection = this.form.useTopicSubscription
@@ -246,6 +255,9 @@ class CommentFormBuilder {
 			label: cd.s('cf-viewchanges'),
 			classes: ['cd-commentForm-viewChangesButton'],
 			tabIndex: this.form.getTabIndex(34),
+
+			// As on the regular edit page
+			accessKey: 'v',
 		})
 		this.form.viewChangesButton.on('toggle', this.form.adjustLabels)
 
@@ -253,6 +265,9 @@ class CommentFormBuilder {
 			label: cd.s('cf-preview'),
 			classes: ['cd-commentForm-previewButton'],
 			tabIndex: this.form.getTabIndex(35),
+
+			// As on the regular edit page
+			accessKey: 'p',
 		})
 		if (cd.settings.get('autopreview')) {
 			this.form.previewButton.toggle(!cd.settings.get('autopreview'))
@@ -264,6 +279,9 @@ class CommentFormBuilder {
 			flags: ['progressive', 'primary'],
 			classes: ['cd-commentForm-submitButton'],
 			tabIndex: this.form.getTabIndex(36),
+
+			// As on the regular edit page
+			accessKey: 's',
 		})
 	}
 
