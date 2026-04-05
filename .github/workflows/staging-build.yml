@@ -16,7 +16,7 @@ jobs:
       - run: npm ci
       - run: npm run i18n
       - run: npm run configs --staging
-      - run: npm run build --staging
+      - run: npm run build -- --staging
       - run: npm test
       - name: Create a SSH tunnel and deploy
         env:
