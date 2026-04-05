@@ -904,20 +904,16 @@ class Settings extends EventEmitter {
 				}
 			})
 
-			if (scope === 'local') {
-				await saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings))
-				return
-			}
-
-			if (scope === 'global') {
-				await saveGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings))
-				return
-			}
-
-			await Promise.all([
-				saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings)),
-				saveGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings)),
-			])
+			await Promise.all(
+				/** @type {Promise<void>[]} */ ([]).concat(
+					scope === 'local' || scope === undefined
+						? saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings))
+						: [],
+					scope === 'global' || scope === undefined
+						? saveGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings))
+						: [],
+				),
+			)
 		} else {
 			await saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings))
 		}

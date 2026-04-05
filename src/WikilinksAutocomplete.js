@@ -98,27 +98,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			return true
 		}
 
-		/*
-			To generate a new list, use this. See *interlanguage* prefixes at
-			https://en.wikipedia.org/wiki/Special:Interwiki for the generated list.
-
-			```
-			const response = await fetch(
-			    '/w/api.php?action=query&meta=siteinfo&siprop=interwikimap&format=json&formatversion=2'
-			)
-			const data = await response.json()
-			const interlanguagePrefixes = data.query.interwikimap
-			    .filter(entry => entry.language !== undefined)
-			    .map(entry => entry.prefix)
-			  // Couldn't figure out the logic why 'en-simple' is also an interlanguage prefix
-			  .concat('en-simple')
-			console.log(JSON.stringify(interlanguagePrefixes))
-			```
-		*/
-
-		return interwikiPrefix
-			.split(':')
-			.some((segment) => WikilinksAutocomplete.iwPrefixes.has(segment))
+		return WikilinksAutocomplete.interwikiPrefixes.has(interwikiPrefix.split(':')[0])
 	}
 
 	/**
@@ -638,7 +618,24 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	static getUrlFromInterwikiLinkPromise
 
-	static iwPrefixes = new Set([
+	/*
+		To generate a new list, use this. See *interlanguage* prefixes at
+		https://en.wikipedia.org/wiki/Special:Interwiki for the generated list.
+
+		```
+		const response = await fetch(
+				'/w/api.php?action=query&meta=siteinfo&siprop=interwikimap&format=json&formatversion=2'
+		)
+		const data = await response.json()
+		const interlanguagePrefixes = data.query.interwikimap
+				.filter(entry => entry.language !== undefined)
+				.map(entry => entry.prefix)
+			// Couldn't figure out the logic why 'en-simple' is also an interlanguage prefix
+			.concat('en-simple')
+		console.log(JSON.stringify(interlanguagePrefixes))
+		```
+	*/
+	static interwikiPrefixes = new Set([
 		'aa',
 		'ab',
 		'ace',
