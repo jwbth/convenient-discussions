@@ -502,6 +502,13 @@ class CommentForm extends EventEmitter {
 	codeMirror
 
 	/**
+	 * Toggle buttons replacing panels like "Special characters", "Advanced"
+	 *
+	 * @type {OO.ui.ToggleButtonWidget[]}
+	 */
+	panelButtons = []
+
+	/**
 	 * @typedef {Mode extends 'addSection' ? undefined : import('./Section').default | undefined} CommentFormTargetSection
 	 */
 

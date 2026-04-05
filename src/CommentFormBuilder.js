@@ -417,6 +417,7 @@ class CommentFormBuilder {
 		this.removeToolbarElements()
 		this.addToolbarButtons()
 		this.addCodeMirror()
+		this.tweakTabs()
 	}
 
 	/**
@@ -451,19 +452,6 @@ class CommentFormBuilder {
 						},
 					},
 				},
-				mention: {
-					label: cd.s('cf-mention-tooltip', cd.g.cmdModifier),
-					type: 'button',
-					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
-					action: {
-						type: 'callback',
-						execute: () => {
-							// @ts-expect-error: Use deprecated window.event to avoid removing and adding a listener
-							// eslint-disable-next-line @typescript-eslint/no-deprecated
-							this.form.mention(isCmdModifierPressed(window.event))
-						},
-					},
-				},
 				commentLink: {
 					label: cd.s('cf-commentlink-tooltip'),
 					type: 'button',
@@ -475,6 +463,20 @@ class CommentFormBuilder {
 						type: 'callback',
 						execute: () => {
 							this.form.insertCommentLink()
+						},
+					},
+				},
+				mention: {
+					label: cd.s('cf-mention-tooltip', 'Alt'),
+					type: 'button',
+					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
+					action: {
+						type: 'callback',
+						execute: () => {
+							// @ts-expect-error: Use deprecated window.event to avoid removing and adding a
+							// listener
+							// eslint-disable-next-line @typescript-eslint/no-deprecated
+							this.form.mention(isCmdModifierPressed(window.event) || window.event.altKey)
 						},
 					},
 				},
@@ -669,6 +671,7 @@ class CommentFormBuilder {
 										icon: 'syntax-highlight',
 										value: false,
 										framed: false,
+										invisibleLabel: true,
 										classes: ['tool', 'cm-mw-toggle-wikieditor'],
 									})
 
@@ -687,6 +690,77 @@ class CommentFormBuilder {
 	}
 
 	/**
+	 * Add special characters toggle button and hide the special characters tab.
+	 *
+	 * @private
+	 */
+	tweakTabs() {
+		const $specialCharactersTab = this.form.$element.find('.tab-characters a')
+		if (!$specialCharactersTab.length) return
+
+		const $advancedTab = this.form.$element.find('.tab-advanced a')
+		if (!$advancedTab.length) return
+
+		$specialCharactersTab.hide()
+		$advancedTab.hide()
+
+		this.form.commentInput.$input.wikiEditor('addToToolbar', {
+			section: 'main',
+			groups: {
+				panels: {
+					tools: {
+						specialCharacters: {
+							type: 'element',
+							element: () => {
+								const button = new OO.ui.ToggleButtonWidget({
+									label: mw.msg('wikieditor-toolbar-section-characters'),
+									title: mw.msg('wikieditor-toolbar-section-characters'),
+									icon: 'specialCharacter',
+									value: false,
+									framed: false,
+									invisibleLabel: true,
+									classes: ['tool', 'cd-specialCharacters-toggle'],
+								})
+
+								this.form.panelButtons.push(button)
+								button.on('click', () => {
+									$specialCharactersTab.trigger('click')
+									this.updatePanelButtons(button)
+								})
+
+								return button.$element
+							},
+						},
+						advanced: {
+							type: 'element',
+							element: () => {
+								const button = new OO.ui.ToggleButtonWidget({
+									label: mw.msg('wikieditor-toolbar-section-advanced'),
+									title: mw.msg('wikieditor-toolbar-section-advanced'),
+									icon: 'ellipsis',
+									value: false,
+									framed: false,
+									invisibleLabel: true,
+									classes: ['tool', 'cd-advanced-toggle'],
+								})
+
+								button.on('click', () => {
+									$advancedTab.trigger('click')
+									this.updatePanelButtons(button)
+								})
+
+								this.form.panelButtons.push(button)
+
+								return button.$element
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+
+	/**
 	 * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
 	 */
 	initCodeMirror = () => {
@@ -695,6 +769,33 @@ class CommentFormBuilder {
 			undefined,
 			/** @type {string} */ (this.form.commentInput.$input.attr('placeholder')),
 		)
+
+		// Hide the label
+		this.form.commentInput.$element
+			.find('.cm-mw-toggle-wikieditor')
+			.removeClass('oo-ui-labelElement')
+			.find('.oo-ui-labelElement-label')
+			.addClass('oo-ui-labelElement-invisible')
+
+		// Move the CodeMirror element after the panels container
+		this.form.$element
+			.find('.group-codemirror')
+			.first()
+			.insertBefore(this.form.$element.find('.group-panels'))
+	}
+
+	/**
+	 * Update the flags of all panel buttons after one is toggled.
+	 *
+	 * @param {OO.ui.ToggleButtonWidget} button
+	 */
+	updatePanelButtons(button) {
+		this.form.panelButtons.forEach((btn) => {
+			if (btn !== button) {
+				btn.setValue(false)
+			}
+			btn.setFlags({ progressive: btn.isActive() })
+		})
 	}
 
 	/**
