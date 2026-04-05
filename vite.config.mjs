@@ -405,13 +405,13 @@ export default defineConfig(({ mode, command }) => {
 	if (!buildMode.isSingle) {
 		// Top banner - prepend /* <nowiki> */
 		// Bottom banner - append /* </nowiki> */
-		// plugins.push(
-		// 	banner({
-		// 		content: '/* <nowiki> */',
-		// 		verify: false,
-		// 	}),
-		// 	appendNowikiPlugin(`${bundleFilename}.js`),
-		// )
+		plugins.push(
+			banner({
+				content: '/* <nowiki> */',
+				verify: false,
+			}),
+			// 	appendNowikiPlugin(`${bundleFilename}.js`),
+		)
 	}
 
 	// Add license extraction plugin for production/staging builds
