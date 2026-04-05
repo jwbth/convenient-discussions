@@ -3225,7 +3225,7 @@ class CommentForm extends EventEmitter {
 				data.content = ''
 			}
 			const altModifyTyped = /** @type {NonNullable<typeof data.altModify>} */ (data.altModify)
-			altModifyTyped()
+			altModifyTyped.call(data)
 			const text = data.start + (data.content || '') + (data.end || '')
 			this.commentInput
 				.selectRange(0)
@@ -3383,6 +3383,14 @@ class CommentForm extends EventEmitter {
 		}
 
 		this.encapsulateSelection({ pre: content })
+
+		// Trigger the autocomplete menu
+		this.commentInput.getEditableElement()[0].dispatchEvent(
+			new Event('input', {
+				bubbles: true,
+				cancelable: true,
+			}),
+		)
 	}
 
 	/**
