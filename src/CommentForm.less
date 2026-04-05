@@ -180,6 +180,10 @@
 		// Proportional font size
 		font-family: monospace, monospace;
 	}
+
+	.group-panels.group-panels {
+		border-inline-end: none;
+	}
 }
 
 body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-button {
@@ -370,7 +374,7 @@ body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-
 	margin-block: 0.214286em;
 
 	&:empty {
-		margin-bottom: 0;
+		margin-block: 0;
 	}
 }
 
@@ -486,7 +490,6 @@ body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-
 	border: 1px solid var(--border-color-base, #a2a9b1);
 	border-bottom: 0;
 	height: 2.2857143em;
-	margin: 1px 0 -1px;
 
 	.cd-commentForm-pending & {
 		// To match the color of the rest of the borders while the form is the pending state.
