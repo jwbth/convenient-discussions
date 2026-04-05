@@ -43,9 +43,6 @@ export default async function addCommentLinks() {
 	// This could have been executed from app() already.
 	initGlobals()
 
-	// We need timestamp tools to be able to parse timestamps.
-	initTimestampTools()
-
 	try {
 		await bootstrap()
 	} catch (error) {
@@ -79,6 +76,9 @@ async function bootstrap() {
 	} catch (error) {
 		throw new Error(`Couldn't load the data required for the script.`, { cause: error })
 	}
+
+	// We need timestamp tools to be able to parse timestamps.
+	initTimestampTools()
 
 	mw.loader.addStyleTag(`:root {
 		--cd-parentheses-start: '${cd.mws('parentheses-start')}';
@@ -477,8 +477,8 @@ function processDiff($diff) {
 function isCommentEdit(summary) {
 	return Boolean(
 		summary &&
-			(summary.includes(`${cd.s('es-edit')} ${cd.s('es-reply-genitive')}`) ||
-				summary.includes(`${cd.s('es-edit')} ${cd.s('es-addition-genitive')}`)),
+		(summary.includes(`${cd.s('es-edit')} ${cd.s('es-reply-genitive')}`) ||
+			summary.includes(`${cd.s('es-edit')} ${cd.s('es-addition-genitive')}`)),
 	)
 }
 
@@ -492,7 +492,7 @@ function isCommentEdit(summary) {
 function isMoved(summary) {
 	return Boolean(
 		(moveFromStringStart && summary.includes(': ' + moveFromStringStart)) ||
-			(moveToStringStart && summary.includes(': ' + moveToStringStart)),
+		(moveToStringStart && summary.includes(': ' + moveToStringStart)),
 	)
 }
 
@@ -506,7 +506,7 @@ function isMoved(summary) {
 function isWikidataItem(linkElement) {
 	return Boolean(
 		cd.g.serverName === 'www.wikidata.org' &&
-			linkElement.firstElementChild?.classList.contains('wb-itemlink'),
+		linkElement.firstElementChild?.classList.contains('wb-itemlink'),
 	)
 }
 
