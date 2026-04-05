@@ -132,16 +132,16 @@ function licenseExtractionPlugin(buildMode) {
 						extractedLicenses.set(fileName, licenses)
 
 						// Remove license comments from the source code
-						let modifiedCode = chunk.code
-						for (const license of licenses) {
-							modifiedCode = modifiedCode.replace(license, '')
-						}
-						chunk.code = modifiedCode
+						// let modifiedCode = chunk.code
+						// for (const license of licenses) {
+						// 	modifiedCode = modifiedCode.replace(license, '')
+						// }
+						// chunk.code = modifiedCode
 
-						// Add license banner to main bundle
-						if (!fileName.includes('worker') && customBannerText) {
-							chunk.code = '/*' + customBannerText + '*/\n\n' + chunk.code
-						}
+						// // Add license banner to main bundle
+						// if (!fileName.includes('worker') && customBannerText) {
+						// 	chunk.code = '/*' + customBannerText + '*/\n\n' + chunk.code
+						// }
 					}
 				}
 			}
