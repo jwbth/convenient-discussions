@@ -15,10 +15,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
  * Custom plugin to prepend opening nowiki tag to the bundle, updating the source map to keep it
  * aligned.
  *
- * @param {string} bundleFilename
  * @returns {import('vite').Plugin}
  */
-function prependNowikiPlugin(bundleFilename) {
+function prependNowikiPlugin() {
 	const bannerText = '/* <nowiki> */\n'
 	const bannerLineCount = (bannerText.match(/\n/g) ?? []).length
 	return {
@@ -27,7 +26,7 @@ function prependNowikiPlugin(bundleFilename) {
 		enforce: 'post',
 		generateBundle(_options, bundle) {
 			for (const [fileName, chunk] of Object.entries(bundle)) {
-				if (chunk.type === 'chunk' && fileName === bundleFilename) {
+				if (chunk.type === 'chunk' && fileName.endsWith('.js')) {
 					chunk.code = bannerText + chunk.code
 					const mapChunk = bundle[`${fileName}.map`]
 					if (
@@ -47,18 +46,16 @@ function prependNowikiPlugin(bundleFilename) {
 /**
  * Custom plugin to append closing nowiki tag to the bundle.
  *
- * @param {string} bundleFilename
  * @returns {import('vite').Plugin}
  */
-function appendNowikiPlugin(bundleFilename) {
+function appendNowikiPlugin() {
 	return {
 		name: 'append-nowiki',
 		apply: 'build',
 		enforce: 'post',
 		generateBundle(_options, bundle) {
-			// Only apply to the main bundle (not worker)
 			for (const [fileName, chunk] of Object.entries(bundle)) {
-				if (chunk.type === 'chunk' && fileName === bundleFilename) {
+				if (chunk.type === 'chunk' && fileName.endsWith('.js')) {
 					chunk.code = chunk.code + '\n/* </nowiki> */'
 				}
 			}
@@ -93,10 +90,9 @@ function preserveControlEscapesPlugin() {
 /**
  * Custom plugin to extract license comments to separate files.
  *
- * @param {BuildMode} buildMode
  * @returns {import('vite').Plugin}
  */
-function licenseExtractionPlugin(buildMode) {
+function licenseExtractionPlugin() {
 	return {
 		name: 'license-extraction',
 		apply: 'build',
@@ -446,11 +442,11 @@ export default defineConfig(({ mode, command }) => {
 	if (!buildMode.isSingle) {
 		plugins.push(
 			// Append closing nowiki first so it ends up at the very bottom after all prepends
-			appendNowikiPlugin(`${bundleFilename}.js`),
+			appendNowikiPlugin(),
 			// Extract licenses and add documentation banner
-			licenseExtractionPlugin(buildMode),
+			licenseExtractionPlugin(),
 			// Prepend opening nowiki last so it sits above the license banner
-			prependNowikiPlugin(`${bundleFilename}.js`),
+			prependNowikiPlugin(),
 		)
 	}
 
