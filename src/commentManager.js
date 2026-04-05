@@ -793,7 +793,7 @@ export class CommentManager extends EventEmitter {
 		if (!childComments.length) return
 
 		const descendantComments =
-			parent instanceof Comment
+			parent instanceof this.CommentClass
 				? childComments.reduce(
 						(arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
 						/** @type {import('./updateChecker').CommentWorkerNew[]} */ ([]),
