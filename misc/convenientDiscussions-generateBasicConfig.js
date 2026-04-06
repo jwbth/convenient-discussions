@@ -111,11 +111,12 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		['Contributions', 'Diff', 'PermanentLink'].includes(obj.realname),
 	)
 	if (specialPageAliases.length) {
-		config.specialPageAliases = {
+		config.specialPageAliases = Object.assign(
+			{},
 			...specialPageAliases.map((page) => ({
 				[page.realname]: page.aliases.slice(0, page.aliases.indexOf(page.realname) + 1),
 			})),
-		}
+		)
 	}
 
 	const substAliases = siteInfoResponse.query.magicwords
