@@ -467,7 +467,9 @@ class Settings extends EventEmitter {
 						label: wrapHtml(cd.sParse('sd-outdentlevel', outdentTemplateUrl), {
 							targetBlank: true,
 						}),
-						help: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
+						help: outdentTemplateUrl
+							? undefined
+							: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
 					},
 					{
 						name: 'outdentLevel',
