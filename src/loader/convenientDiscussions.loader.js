@@ -134,14 +134,14 @@ class Loader {
 	/**
 	 * Main app function. Assigned from app.js.
 	 *
-	 * @type {import('../app').app}
+	 * @type {() => Promise<void>}
 	 */
 	app
 
 	/**
 	 * Add comment links function. Assigned from app.js.
 	 *
-	 * @type {import('../app').addCommentLinks}
+	 * @type {() => Promise<void>}
 	 */
 	addCommentLinks
 
@@ -192,7 +192,6 @@ class Loader {
 					'oojs-ui.styles.icons-interactions',
 					'oojs-ui.styles.icons-movement',
 					'user.options',
-					,
 				].filter(defined)
 
 				// Non-blocking modules that we need to load for comment forms. We load them in parallel with
@@ -1080,7 +1079,11 @@ class Loader {
 	}
 }
 
-// Export a singleton instance
-cd.loader ??= new Loader()
+// Export a singleton instance. This is defensive in case the module is loaded multiple times in
+// non-standard environments.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (!cd.loader) {
+	cd.loader = new Loader()
+}
 
 export { Loader }

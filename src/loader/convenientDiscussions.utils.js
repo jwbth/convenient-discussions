@@ -102,17 +102,21 @@ const utils = {
 	},
 }
 
-cd.utils = utils
+// This is defensive in case the module is loaded multiple times in non-standard environments.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (!cd.utils) {
+	cd.utils = utils
 
-// people might try to use `cd.util` as an analogy of `mw.util`, hehe
-Object.defineProperty(cd, 'util', {
-	configurable: true,
-	enumerable: false,
-	get() {
-		console.error('cd.util is not a thing. Did you mean cd.utils?')
+	// people might try to use `cd.util` as an analogy of `mw.util`, hehe
+	Object.defineProperty(cd, 'util', {
+		configurable: true,
+		enumerable: false,
+		get() {
+			console.error('cd.util is not a thing. Did you mean cd.utils?')
 
-		return cd.utils
-	},
-})
+			return cd.utils
+		},
+	})
+}
 
 export { utils }
