@@ -332,10 +332,12 @@ function customSourceMapUrlPlugin(baseUrl, buildMode) {
 
 					// Check if source map exists
 					if (mapFileName in bundle) {
-						// Replace the default sourceMappingURL comment with custom URL
+						// Replace the default sourceMappingURL comment with custom URL.
+						// No "m" flag: $ must anchor to the true end of the file, not to the
+						// end of any line inside the inlined worker string.
 						const customUrl = `${baseUrl}${mapFileName}`
 						chunk.code = chunk.code.replace(
-							/\/\/# sourceMappingURL=.*$/m,
+							/\/\/# sourceMappingURL=.*$/,
 							`//# sourceMappingURL=${customUrl}`,
 						)
 					}
@@ -424,7 +426,14 @@ export default defineConfig(({ mode, command }) => {
 	const plugins = []
 
 	// Add inline worker string plugin (must be early in pipeline)
-	plugins.push(inlineWorkerStringPlugin())
+	plugins.push(
+		inlineWorkerStringPlugin({
+			sourceMapsBaseUrl: buildMode.isSingle
+				? undefined
+				: cdConfig.sourceMapsBaseUrl,
+			workerMapFileName: `convenientDiscussions.worker${buildMode.filenamePostfix}.js.map`,
+		}),
+	)
 
 	// Add define plugin for dev server (Vite's define only works in build mode)
 	if (isDevServer) {
@@ -456,6 +465,14 @@ export default defineConfig(({ mode, command }) => {
 	plugins.push(buildNotificationPlugin(), preserveControlEscapesPlugin())
 
 	if (!buildMode.isSingle) {
+		// Must run before the nowiki plugins so that //# sourceMappingURL= is still the last
+		// line when the regex runs (appendNowikiPlugin appends /* </nowiki> */ after it).
+		if (cdConfig.sourceMapsBaseUrl) {
+			plugins.push(
+				customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode),
+			)
+		}
+
 		// TODO: Rolldown has native options for banners and license http://rolldown.rs/reference/, but
 		// our parameters are tricky, and we need to make sure they work and don't break source maps.
 		plugins.push(
@@ -465,13 +482,6 @@ export default defineConfig(({ mode, command }) => {
 			licenseExtractionPlugin(),
 			// Prepend opening nowiki last so it sits above the license banner
 			prependNowikiPlugin(),
-		)
-	}
-
-	// Add custom source map URL plugin for production/staging builds
-	if (cdConfig.sourceMapsBaseUrl && !buildMode.isSingle) {
-		plugins.push(
-			customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode),
 		)
 	}
 

@@ -6,12 +6,25 @@ import { build } from 'vite'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 /**
+ * @typedef {object} InlineWorkerStringPluginOptions
+ * @property {string} [sourceMapsBaseUrl] Base URL for source map files. When provided, the worker
+ *   sub-build emits a separate .map file and appends a `//# sourceMappingURL=` comment pointing to
+ *   it. When absent, the source map is inlined as a data URI instead.
+ * @property {string} [workerMapFileName] Output filename for the emitted .map file, including any
+ *   build mode postfix (e.g. `convenientDiscussions.worker.staging.js.map`).
+ */
+
+/**
  * Vite plugin to inline worker code as a string literal.
  * This allows creating workers using Blob URLs to comply with CSP policies.
  *
+ * @param {InlineWorkerStringPluginOptions} [options]
  * @returns {import('vite').Plugin}
  */
-export function inlineWorkerStringPlugin() {
+export function inlineWorkerStringPlugin({
+	sourceMapsBaseUrl,
+	workerMapFileName = 'convenientDiscussions.worker.js.map',
+} = {}) {
 	/** @type {Map<string, string>} */
 	const workerCodeCache = new Map()
 
@@ -52,6 +65,9 @@ export function inlineWorkerStringPlugin() {
 					configFile: false,
 					build: {
 						write: false,
+						// When a base URL is provided, emit a separate .map file (true).
+						// Otherwise (dev/single builds), embed the map as a data URI (inline).
+						sourcemap: sourceMapsBaseUrl ? true : 'inline',
 						minify: 'terser',
 						terserOptions: {
 							compress: { passes: 2 },
@@ -75,7 +91,29 @@ export function inlineWorkerStringPlugin() {
 					if ('output' in output) {
 						const chunk = output.output.find((c) => c.type === 'chunk')
 						if (chunk?.type === 'chunk') {
-							const workerCode = chunk.code
+							let workerCode = chunk.code
+
+							if (sourceMapsBaseUrl) {
+								const mapAsset = output.output.find(
+									(c) => c.type === 'asset' && c.fileName.endsWith('.map'),
+								)
+								if (mapAsset?.type === 'asset') {
+									const map = JSON.parse(
+										/** @type {string} */ (mapAsset.source),
+									)
+									map.file = 'convenientDiscussions.worker.js'
+									this.emitFile({
+										type: 'asset',
+										fileName: workerMapFileName,
+										source: JSON.stringify(map),
+									})
+									workerCode = workerCode.replace(
+										/\/\/#\s*sourceMappingURL=.*$/m,
+										`//# sourceMappingURL=${sourceMapsBaseUrl + workerMapFileName}`,
+									)
+								}
+							}
+
 							workerCodeCache.set(workerPath, workerCode)
 
 							return `export default ${JSON.stringify(workerCode)};`
