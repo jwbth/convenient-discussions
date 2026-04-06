@@ -124,7 +124,11 @@ export default class CodeMirrorChild extends codeMirrorExt {
 	 * @override
 	 */
 	destroy() {
-		super.destroy()
+		try {
+			super.destroy()
+		} catch {
+			// Empty
+		}
 
 		// Monkey-patch an error in CodeMirror in codemirror.wikieditor.js on line `button.setValue(
 		// searchPanelOpen( this.view.state ) );` when closing a *second* comment form on the page (so
