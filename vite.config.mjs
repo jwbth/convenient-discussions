@@ -20,6 +20,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 function prependNowikiPlugin() {
 	const bannerText = '/* <nowiki> */\n'
 	const bannerLineCount = (bannerText.match(/\n/g) ?? []).length
+
 	return {
 		name: 'prepend-nowiki',
 		apply: 'build',
@@ -236,7 +237,12 @@ function licenseExtractionPlugin() {
 }
 
 /**
- * Custom plugin to disable full page reload on HMR failure.
+ * Custom plugin to disable full page reload on HMR failure or server restart.
+ *
+ * Blocks two reload paths in Vite's client:
+ * 1. "full-reload" WS messages — intercepted on the server's WS send.
+ * 2. WebSocket disconnect/reconnect (server restart) — patched by transforming the Vite client
+ *    source to replace `location.reload()` with a no-op console log.
  *
  * @returns {import('vite').Plugin}
  */
@@ -257,6 +263,16 @@ function disableFullReloadPlugin() {
 
 				return Reflect.apply(originalSend, this, [payload, ...args])
 			}
+		},
+		transform(code, id) {
+			// Patch Vite's own client to suppress location.reload() calls
+			if (!id.includes('@vite/client') && !id.includes('vite/dist/client'))
+				return
+
+			return code.replace(
+				/location\.reload\(\)/g,
+				'console.info("[CD Dev] Full reload suppressed.")',
+			)
 		},
 	}
 }
