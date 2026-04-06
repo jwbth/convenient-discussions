@@ -62,10 +62,10 @@ export default function getMoveSectionDialogClass() {
 
 		/**
 		 * @typedef {object} MoveSectionDialogControlTypes
-		 * @prop {'title'} title
-		 * @prop {'checkbox'} keepLink
-		 * @prop {'checkbox'} chronologicalOrder
-		 * @prop {'text'} summaryEnding
+		 * @property {'title'} title
+		 * @property {'checkbox'} keepLink
+		 * @property {'checkbox'} chronologicalOrder
+		 * @property {'text'} summaryEnding
 		 */
 		controls = /** @type {ControlTypesByName<MoveSectionDialogControlTypes>} */ ({})
 

@@ -668,10 +668,14 @@ const globalProperties = {
 	},
 }
 
+// This is defensive in case the module is loaded multiple times.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (!('g' in cd)) {
 	Object.assign(cd, convenientDiscussionsWindow)
+	// @ts-ignore
 	Object.assign(cd.g, globalProperties)
 
+	// @ts-ignore
 	if (cd.g.debug) {
 		window.cd = cd
 	}

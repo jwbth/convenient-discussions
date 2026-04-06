@@ -1105,8 +1105,7 @@ class Loader {
 	}
 }
 
-// Export a singleton instance. This is defensive in case the module is loaded multiple times in
-// non-standard environments.
+// Export a singleton instance. This is defensive in case the module is loaded multiple times.
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (!cd.loader) {
 	cd.loader = new Loader()

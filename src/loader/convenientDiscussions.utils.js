@@ -73,8 +73,8 @@ const utils = {
 	 *
 	 * @param {number | string} width
 	 * @param {number | string} height
-	 * @param {number} [viewBoxWidth]
-	 * @param {number} [viewBoxHeight]
+	 * @param {number | string} [viewBoxWidth]
+	 * @param {number | string} [viewBoxHeight]
 	 * @returns {JQuery<SVGElement>}
 	 */
 	createSvg(width, height, viewBoxWidth = width, viewBoxHeight = height) {
@@ -102,7 +102,7 @@ const utils = {
 	},
 }
 
-// This is defensive in case the module is loaded multiple times in non-standard environments.
+// This is defensive in case the module is loaded multiple times.
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (!cd.utils) {
 	cd.utils = utils

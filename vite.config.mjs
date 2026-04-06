@@ -31,6 +31,7 @@ function prependNowikiPlugin() {
 					chunk.code = bannerText + chunk.code
 					const mapChunk = bundle[`${fileName}.map`]
 					if (
+						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 						mapChunk?.type === 'asset' &&
 						typeof mapChunk.source === 'string'
 					) {

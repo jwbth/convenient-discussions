@@ -1,9 +1,9 @@
-import { resolve, dirname } from 'node:path'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { build } from 'vite'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * @typedef {object} InlineWorkerStringPluginOptions
@@ -32,14 +32,14 @@ export function inlineWorkerStringPlugin({
 		name: 'inline-worker-string',
 		enforce: 'pre',
 
-		async resolveId(source, importer) {
+		resolveId(source, importer) {
 			// Match imports like './worker/worker-gate?worker&inline-string'
 			if (source.includes('?worker&inline-string')) {
-				const [path] = source.split('?')
+				const [pathname] = source.split('?')
 				// Resolve the path relative to the importer
 				if (importer) {
-					const importerDir = dirname(importer)
-					const resolved = resolve(importerDir, path)
+					const importerDir = path.dirname(importer)
+					const resolved = path.resolve(importerDir, pathname)
 
 					return resolved + '?worker&inline-string'
 				}
