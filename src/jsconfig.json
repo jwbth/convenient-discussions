@@ -10,6 +10,7 @@
 	"include": [
 		"**/*",
 		"../config/**/*",
+		"../misc/convenientDiscussions-generateBasicConfig.js",
 		"../data/**/*",
 		"../node_modules/types-mediawiki"
 	]

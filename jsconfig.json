@@ -10,5 +10,7 @@
 	},
 
 	// No subdirectories
-	"include": ["*", "misc/**/*"]
+	"include": ["*", "misc/**/*"],
+
+	"exclude": ["misc/convenientDiscussions-generateBasicConfig.js"]
 }
