@@ -83,6 +83,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body':
 			'{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
+		'thanks-confirmation2': 'Поблагодарить публично?',
 		'checkuser-userinfocard-toggle-button-aria-label':
 			'Открыть информационную карточку {{GENDER:$1|участника|участницы}}',
 	},
