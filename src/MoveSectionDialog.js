@@ -750,7 +750,9 @@ export default function getMoveSectionDialogClass() {
 								v.replace(regexp, (...match) =>
 									replacer(
 										{
-											counter: parameters[templateConfig.counterParam] || null,
+											counter:
+												(templateConfig.counterParam && parameters[templateConfig.counterParam]) ||
+												null,
 											date: this.section.oldestComment?.date || null,
 										},
 
@@ -766,7 +768,7 @@ export default function getMoveSectionDialogClass() {
 						)
 
 					const presentPathParam = ensureArray(templateConfig[prop]).find(
-						(pathParam) => parameters[pathParam],
+						(pathParam) => pathParam && parameters[pathParam],
 					)
 
 					return presentPathParam ? replaceAll(parameters[presentPathParam]) : undefined
@@ -777,7 +779,14 @@ export default function getMoveSectionDialogClass() {
 					path = findPresentParamAndReplaceAll('relativePathParam')
 					if (path) {
 						const [absolutePairKey, absolutePairValue] = templateConfig.absolutePathPair || []
-						if (!(absolutePairKey && parameters[absolutePairKey]?.match(absolutePairValue))) {
+						const absoluteParamValue = absolutePairKey && parameters[absolutePairKey]
+						if (
+							!(
+								absoluteParamValue &&
+								absolutePairValue &&
+								absoluteParamValue.match(absolutePairValue)
+							)
+						) {
 							path = cd.page.name + '/' + path
 						}
 					}

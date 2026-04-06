@@ -19,7 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
  */
 function prependNowikiPlugin() {
 	const bannerText = '/* <nowiki> */\n'
-	const bannerLineCount = (bannerText.match(/\n/g) ?? []).length
+	const bannerLineCount = (bannerText.match(/\n/g) || []).length
 
 	return {
 		name: 'prepend-nowiki',
@@ -35,6 +35,7 @@ function prependNowikiPlugin() {
 						mapChunk?.type === 'asset' &&
 						typeof mapChunk.source === 'string'
 					) {
+						/** @type {{ mappings: string }} */
 						const map = JSON.parse(mapChunk.source)
 						map.mappings = ';'.repeat(bannerLineCount) + map.mappings
 						mapChunk.source = JSON.stringify(map)
@@ -162,7 +163,7 @@ function licenseExtractionPlugin() {
 						for (const license of licenses) {
 							modifiedCode = modifiedCode.replace(
 								license,
-								'\n'.repeat((license.match(/\n/g) ?? []).length),
+								'\n'.repeat((license.match(/\n/g) || []).length),
 							)
 						}
 						chunk.code = modifiedCode
@@ -171,12 +172,14 @@ function licenseExtractionPlugin() {
 						if (!fileName.includes('worker') && customBannerText) {
 							const bannerText = '/*' + customBannerText + '*/\n\n'
 							chunk.code = bannerText + chunk.code
-							const bannerLineCount = (bannerText.match(/\n/g) ?? []).length
+							const bannerLineCount = (bannerText.match(/\n/g) || []).length
 							const mapChunk = bundle[`${fileName}.map`]
 							if (
+								// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 								mapChunk?.type === 'asset' &&
 								typeof mapChunk.source === 'string'
 							) {
+								/** @type {{ mappings: string }} */
 								const map = JSON.parse(mapChunk.source)
 								map.mappings = ';'.repeat(bannerLineCount) + map.mappings
 								mapChunk.source = JSON.stringify(map)
@@ -251,9 +254,15 @@ function disableFullReloadPlugin() {
 	return {
 		name: 'disable-full-reload',
 		configureServer(server) {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			const hot = server.hot || server.ws
-			const originalSend = hot.send
-			hot.send = function (payload, ...args) {
+			const originalSend = hot.send.bind(hot)
+			/**
+			 * @param {any} payload
+			 * @param {...any} args
+			 * @returns {void}
+			 */
+			hot.send = (payload, ...args) => {
 				if (
 					typeof payload === 'object' &&
 					payload !== null &&
@@ -262,7 +271,7 @@ function disableFullReloadPlugin() {
 					return
 				}
 
-				return Reflect.apply(originalSend, this, [payload, ...args])
+				originalSend(payload, ...args)
 			}
 		},
 		transform(code, id) {
@@ -566,10 +575,8 @@ export default defineConfig(({ mode, command }) => {
 
 					// Asset filename for CSS
 					assetFileNames: (assetInfo) => {
-						if (
-							assetInfo.name?.endsWith('.css') ||
-							assetInfo.names?.some((n) => n.endsWith('.css'))
-						) {
+						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+						if (assetInfo.names?.some((n) => n.endsWith('.css'))) {
 							return `${bundleFilename}.css`
 						}
 
