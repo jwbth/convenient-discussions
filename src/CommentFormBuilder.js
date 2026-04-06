@@ -79,7 +79,7 @@ class CommentFormBuilder {
 			// As on the regular edit page
 			accessKey: 'b',
 		})
-		this.form.updateAutoSummary(!initialState.summary)
+		this.form.updateAutoSummary(initialState.summary === undefined)
 
 		mw.loader.using('mediawiki.widgets.visibleLengthLimit').then(() => {
 			this.form.summaryInput.$input.codePointLimit(cd.g.summaryLengthLimit)
