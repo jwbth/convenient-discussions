@@ -107,7 +107,7 @@ class TextInputWidgetMixin {
 	}
 
 	/**
-	 * Convert HTML code of a paste into wikitext.
+	 * Convert the HTML code of a paste into wikitext.
 	 *
 	 * @param {string} html Pasted HTML.
 	 * @returns {Promise<string>}

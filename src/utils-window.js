@@ -311,12 +311,12 @@ export function isHtmlConvertibleToWikitext(html, containerElement) {
 export function isElementConvertibleToWikitext(element) {
 	return Boolean(
 		element.childElementCount &&
-			!(
-				[...element.querySelectorAll('*')].length === 1 &&
-				element.childNodes.length === 1 &&
-				['P', 'LI', 'DD'].includes(element.children[0].tagName)
-			) &&
-			![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR'),
+		!(
+			[...element.querySelectorAll('*')].length === 1 &&
+			element.childNodes.length === 1 &&
+			['P', 'LI', 'DD'].includes(element.children[0].tagName)
+		) &&
+		![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR'),
 	)
 }
 
@@ -394,7 +394,7 @@ export function cleanUpPasteDom(element, containerElement) {
 		)
 
 		.forEach(removeElement)
-	;[...element.querySelectorAll('style')].forEach(removeElement)
+	;[...element.querySelectorAll('style, meta')].forEach(removeElement)
 
 	const topElements = /** @type {Element[]} */ (
 		Parser.prototype.getTopElementsWithText(
