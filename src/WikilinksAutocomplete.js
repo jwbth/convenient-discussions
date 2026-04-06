@@ -364,8 +364,16 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	async getSectionSuggestions(pageName, fragmentQuery) {
-		// Attempt interwiki resolution for cross-site pages
-		const interwiki = await this.resolveInterwikiPrefix(pageName)
+		// Strip leading colon if present (for categories, files, or interwikis)
+		let colonPrefix = false
+		let pageNameForApi = pageName
+		if (pageName.startsWith(':')) {
+			pageNameForApi = pageName.slice(1)
+			colonPrefix = true
+		}
+
+		// Attempt interwiki resolution for cross-site pages (use stripped page name)
+		const interwiki = await this.resolveInterwikiPrefix(pageNameForApi)
 
 		/** @type {string} */
 		let normalizedPageName
@@ -389,7 +397,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 			normalizedPageName = pageTitle.getPrefixedText()
 		} else {
-			pageTitle = CrossSiteMwTitle.newFromText(pageName)
+			pageTitle = CrossSiteMwTitle.newFromText(pageNameForApi)
 			if (!pageTitle) {
 				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
 			}
@@ -397,9 +405,9 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			normalizedPageName = pageTitle.getPrefixedText()
 		}
 
-		// The interwiki prefix is everything before the remote page name in the original pageName
+		// The interwiki prefix is everything before the remote page name in the original pageNameForApi
 		const interwikiPrefix = interwiki
-			? pageName.slice(0, pageName.length - interwiki.pageName.length)
+			? pageNameForApi.slice(0, pageNameForApi.length - interwiki.pageName.length)
 			: undefined
 
 		// Check cache for sections of this page
@@ -462,13 +470,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				return Number(bStarts) - Number(aStarts)
 			})
 			.map((section) => {
-				const pageNamePart = (interwikiPrefix ?? '') + normalizedPageName
+				const pageNamePart = (colonPrefix ? ':' : '') + (interwikiPrefix ?? '') + normalizedPageName
 				const label = pageNamePart + '#' + section.anchor
 
 				return /** @type {WikilinkEntry} */ ({
 					title: /** @type {CrossSiteMwTitle} */ (pageTitle),
 					pageName: normalizedPageName,
 					fragment: section.anchor,
+					colonPrefix,
 					interwikiPrefix,
 					label,
 				})
@@ -477,13 +486,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		// If no matches or empty query, show all sections (up to limit)
 		if (results.length === 0 && fragmentQuery === '') {
 			results = sections.slice(0, 10).map((section) => {
-				const pageNamePart = (interwikiPrefix ?? '') + normalizedPageName
+				const pageNamePart = (colonPrefix ? ':' : '') + (interwikiPrefix ?? '') + normalizedPageName
 				const label = pageNamePart + '#' + section.anchor
 
 				return /** @type {WikilinkEntry} */ ({
 					title: /** @type {CrossSiteMwTitle} */ (pageTitle),
 					pageName: normalizedPageName,
 					fragment: section.anchor,
+					colonPrefix,
 					interwikiPrefix,
 					label,
 				})
