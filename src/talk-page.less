@@ -82,7 +82,9 @@ ol > .cd-thread-button-container > .cd-thread-button {
 // `.cd-reformattedComments .cd-comment-part-first.cd-comment-part-first.cd-comment-part-first`
 // and also
 // `.cd-reformattedComments .cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem` ~~(I hate myself)~~
-.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound.cd-hiddenUntilFound {
+// ...And also stuff like `.skin-vector #mw-content-text .cd-parsed dd` on wikis where we reset the
+// thread styles.
+.cd-hiddenUntilFound:not(#cd-dummyId):not(#cd-dummyId) {
 	// Not margin-inline as that would mess with thread line positioning (bottom element of the thread
 	// would get a lower left offset and the thread line positioning would throw due to the
 	// discrepancy between the left offsets of the top and bottom element). Example:

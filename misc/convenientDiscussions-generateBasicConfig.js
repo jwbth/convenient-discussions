@@ -1,3 +1,5 @@
+// Run me:
+// mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js&action=raw&ctype=text/javascript');
 console.log(`Collecting data for ${mw.config.get('wgServerName')}…`)
 
 mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
@@ -309,7 +311,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 	let output = JSON.stringify(config, null, '\t')
 		.replace(/\n\t"([a-zA-Z]+)":/g, '\n\t$1:')
 		.replace(/("|\])\n(\t|\})/g, '$1,\n$2')
-		.replace(/'/g, "\\'")
+		.replace(/'/g, String.raw`\'`)
 		.replace(/"/g, "'")
 		.replace(
 			/signatureEndingRegexp: \{\}/,
