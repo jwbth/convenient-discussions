@@ -35,7 +35,7 @@ function highlightNewComments(noScroll = false) {
 	const url = new URL(location.href)
 	const newCommentIds = url.searchParams.get('dtnewcomments')?.split('|') || []
 	const newCommentsSinceId = url.searchParams.get('dtnewcommentssince')
-	const inThread = url.searchParams.get('dtinthread')
+	const inThread = Boolean(url.searchParams.get('dtinthread'))
 	const sinceThread = url.searchParams.get('dtsincethread')
 
 	/** @type {Comment[]} */
@@ -46,8 +46,8 @@ function highlightNewComments(noScroll = false) {
 		if (newCommentsSince?.date) {
 			const sinceTimestamp = newCommentsSince.date.getTime()
 			const commentsToCheck = inThread
-				? newCommentsSince.section
-					? newCommentsSince.section.comments
+				? newCommentsSince.section?.getBase()
+					? newCommentsSince.section.getBase().comments
 					: [newCommentsSince, ...newCommentsSince.getChildren(true)]
 				: commentManager.getAll()
 
