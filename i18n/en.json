@@ -402,6 +402,7 @@
 	"msd-keeplink": "Leave a link to the new location",
 	"msd-chronologicalorder": "Find the place for the topic based on chronological order",
 	"msd-summaryending": "Edit summary (will be added to the standard one)",
+	"msd-summaryending-archive": "archiving",
 	"msd-error-wrongpage": "Wrong page.",
 	"msd-error-sourcepagedeleted": "The current page was deleted.",
 	"msd-error-invalidpagename": "Invalid page name.",

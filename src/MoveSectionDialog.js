@@ -61,14 +61,12 @@ export default function getMoveSectionDialogClass() {
 		initRequests
 
 		/**
-		 * @typedef {{
-		 *   title: 'title';
-		 *   keepLink: 'checkbox';
-		 *   chronologicalOrder: 'checkbox';
-		 *   summaryEnding: 'text';
-		 * }} MoveSectionDialogControlTypes
+		 * @typedef {object} MoveSectionDialogControlTypes
+		 * @prop {'title'} title
+		 * @prop {'checkbox'} keepLink
+		 * @prop {'checkbox'} chronologicalOrder
+		 * @prop {'text'} summaryEnding
 		 */
-
 		controls = /** @type {ControlTypesByName<MoveSectionDialogControlTypes>} */ ({})
 
 		/**
@@ -248,6 +246,7 @@ export default function getMoveSectionDialogClass() {
 					$(this.insertArchivePageButton.buttonElement).on('click', () => {
 						this.controls.keepLink.input.setSelected(false)
 						this.controls.chronologicalOrder.input.setSelected(archiveConfig?.isSorted || false)
+						this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-archive'))
 					})
 				}
 
