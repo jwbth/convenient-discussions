@@ -332,8 +332,11 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			})
 		)
 
-		// The interwiki prefix is everything before the remote page name in the original input
-		const interwikiPrefix = text.slice(0, text.length - pageName.length)
+		// The interwiki prefix is everything up to and including the last colon of the prefix
+		// chain (e.g. "fr:" or "w:en:"). We match it from the original text rather than
+		// subtracting the URL-derived pageName's length, since the two can differ — e.g. the
+		// URL may have a trailing space trimmed, or spaces normalized to underscores.
+		const interwikiPrefix = text.match(/^(?:[a-z-]\w*:)+/)?.[0] ?? ''
 
 		return response[1].flatMap((/** @type {string} */ apiName) => {
 			const title = CrossSiteMwTitle.newFromText(apiName, undefined, hostname)
