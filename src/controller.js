@@ -22,6 +22,7 @@ import {
 	getLastArrayElementOrSelf,
 	isHeadingNode,
 	isInline,
+	parseWikiUrl,
 	sleep,
 } from './shared/utils-general'
 import toc from './toc'
@@ -854,6 +855,9 @@ class Controller extends EventEmitter {
 	handleAddTopicButtonClick = (event) => {
 		if (event.ctrlKey || event.shiftKey || event.metaKey) return
 
+		// Prevent running handlers attached to content or document elements (like DT's).
+		event.stopPropagation()
+
 		const $button = $(/** @type {EventTarget} */ (event.currentTarget))
 		let preloadConfig
 		let newTopicOnTop = false
@@ -1574,10 +1578,13 @@ class Controller extends EventEmitter {
 			let url
 			if ($button.is('a')) {
 				url = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href)
-				pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))?.replace(
-					/^Special:NewSection\//i,
-					'',
-				)
+				const titleParams = url.searchParams.getAll('title')
+				if (titleParams.length) {
+					pageName = getLastArrayElementOrSelf(titleParams)
+				} else {
+					pageName = parseWikiUrl(url.pathname)?.pageName
+				}
+				pageName = pageName?.replace(/^Special:NewSection\//i, '')
 			} else if ($button.is('input')) {
 				pageName = /** @type {string} */ (
 					$button.closest('form').find('input[name="title"][type="hidden"]').val()
