@@ -146,25 +146,26 @@ class Loader {
 	addCommentLinks
 
 	/**
-	 * Load modules required for talk pages, or not load. When this is called before the configuration
-	 * file is certain to be loaded, we make a guess whether the modules are gonna be needed. This
-	 * guess may be wrong in both ways (e.g. if a page turned out to be blacklisted/whitelisted).
+	 * Load modules required for talk pages or other specific page types, or not load. When this is
+	 * called before the configuration file is certain to be loaded, we make a guess whether the
+	 * modules are gonna be needed. This guess may be wrong in both ways (e.g. if a page turned out to
+	 * be blacklisted/whitelisted).
 	 *
-	 * @param {boolean} [preload=false] Is it the preload stage (where we should look at
-	 * pageTypes.talk before loading)?
 	 * @returns {JQuery.Promise<any> | undefined}
 	 */
-	maybeLoadTalkPageModules(preload = false) {
+	maybeLoadModules() {
 		if (!this.modulesRequest) {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (!this.pageTypes) {
-				this.setPageTypesTalk()
+				this.setPageTypes()
 			}
+
+			let modules
 
 			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
 			// gadget with preloaded dependencies, for example), so we use this trick.
-			if (this.pageTypes.talk || !preload) {
-				const modules = [
+			if (this.pageTypes.talk) {
+				modules = [
 					'ext.checkUser.styles',
 					'ext.checkUser.userInfoCard',
 					'jquery.client',
@@ -179,7 +180,6 @@ class Loader {
 					'mediawiki.storage',
 					'mediawiki.user',
 					'mediawiki.util',
-					'mediawiki.widgets.visibleLengthLimit',
 					'oojs',
 					'oojs-ui-core',
 					'oojs-ui-widgets',
@@ -192,32 +192,73 @@ class Loader {
 					'oojs-ui.styles.icons-interactions',
 					'oojs-ui.styles.icons-movement',
 					'user.options',
-					mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
-						? 'ext.confirmEdit.CaptchaInputWidget'
-						: undefined,
-					// We need to instantiate our clase based on the CodeMirror class, so we load it now, not on
-					// comment form creation.
-					cd.g.isCodeMirror6Installed ? 'ext.CodeMirror.v6.WikiEditor' : undefined,
+					,
 				].filter(defined)
 
-				this.modulesRequest = modules.some((module) => mw.loader.getState(module) !== 'ready')
-					? mw.loader.using(modules)
-					: $.Deferred().resolve().promise()
+				// Non-blocking modules that we need to load for comment forms. We load them in parallel with
+				// the main modules, but we don't wait for them to load before firing the "preprocessed"
+				// hook and running the app, because they are not critical and we want to save time if they
+				// are not needed.
+				mw.loader.using(
+					[
+						'mediawiki.widgets.visibleLengthLimit',
+						mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
+							? 'ext.confirmEdit.CaptchaInputWidget'
+							: undefined,
+						// We need to instantiate our class based on the CodeMirror class, so we load it now,
+						// not on comment form creation.
+						...(cd.g.isCodeMirror6Installed
+							? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
+							: []),
+					].filter(defined),
+				)
 			}
+
+			if (
+				this.pageTypes.watchlist ||
+				this.pageTypes.contributions ||
+				this.pageTypes.history ||
+				this.pageTypes.diff ||
+				this.articlePageOfTypeTalk ||
+				// Instant Diffs script can be used on talk pages as well
+				this.pageTypes.talk
+			) {
+				modules = [
+					'mediawiki.Title',
+					'mediawiki.jqueryMsg',
+					'mediawiki.util',
+					'mediawiki.user',
+					'user.options',
+
+					// TODO: do a separate build for addCommentLinks(). addCommentLinks() doesn't need these
+					// modules, but in Rolldown, all imports are moved to the top due to the way
+					// https://rollupjs.org/configuration-options/#output-inlinedynamicimports works, so if we
+					// do `class ProcessDialog extends OO.ui.ProcessDialog` in one of the modules, that would
+					// throw an error if oojs-ui-windows is not loaded.
+					'oojs',
+					'oojs-ui-core',
+					'oojs-ui-widgets',
+					'oojs-ui-windows',
+				]
+			}
+
+			this.modulesRequest = modules?.some((module) => mw.loader.getState(module) !== 'ready')
+				? mw.loader.using(modules)
+				: $.Deferred().resolve().promise()
 		}
 
 		return this.modulesRequest
 	}
 
 	/**
-	 * Set page types related to talk pages.
+	 * Set page types.
 	 *
 	 * This is called two times: once in bootstrap() in startup.js before the configuration is certain
 	 * to be loaded and once in Loader#maybeLoadTalkPageModules() after the configuration is certain
 	 * to be loaded. The first call is provisional and used to determine whether to preload modules;
 	 * the second call is to set the final values based on configuration data.
 	 */
-	setPageTypesTalk() {
+	setPageTypes() {
 		// These values can change: start() in startup.js may run a second time from
 		// maybeAddFooterSwitcher().
 		this.queryTalkPage = getQueryParamBooleanValue('cdtalkpage')
@@ -253,6 +294,11 @@ class Loader {
 			mw.config.get('wgIsArticle') &&
 			!this.queryIsNotTalkPage &&
 			(this.queryIsTalkPage || this.articlePageOfTypeTalk)
+
+		this.pageTypes.watchlist = this.isWatchlistPage()
+		this.pageTypes.contributions = this.isContributionsPage()
+		this.pageTypes.history = this.isHistoryPage()
+		this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search)
 	}
 
 	/**
@@ -329,16 +375,11 @@ class Loader {
 	 * Set page types and initialize talk page or comment links page.
 	 */
 	async init() {
-		this.setPageTypesTalk()
+		this.setPageTypes()
 
 		if (this.pageTypes.talk) {
 			await this.initTalkPage()
 		}
-
-		this.pageTypes.watchlist = this.isWatchlistPage()
-		this.pageTypes.contributions = this.isContributionsPage()
-		this.pageTypes.history = this.isHistoryPage()
-		this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search)
 
 		if (
 			this.pageTypes.watchlist ||
@@ -375,7 +416,7 @@ class Loader {
 
 		try {
 			await Promise.all([
-				this.maybeLoadTalkPageModules(),
+				this.maybeLoadModules(),
 				this.loadApp(),
 				this.loadStyles().then(() => {
 					/*
@@ -915,7 +956,7 @@ class Loader {
 		}
 
 		try {
-			await Promise.all([this.maybeLoadTalkPageModules(), this.loadApp()])
+			await Promise.all([this.maybeLoadModules(), this.loadApp()])
 
 			// See the comment above: "Additions of CSS...".
 			mw.util.addCSS(globalCss)

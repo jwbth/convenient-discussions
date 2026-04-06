@@ -403,7 +403,9 @@ class CommentFormBuilder {
 		await Promise.all([
 			mw.loader.using([
 				'ext.wikiEditor',
-				...(cd.g.isCodeMirror6Installed ? ['ext.CodeMirror.v6.mode.mediawiki'] : []),
+				...(cd.g.isCodeMirror6Installed
+					? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
+					: []),
 			]),
 			customModulesPromise,
 		])
