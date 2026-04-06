@@ -27,7 +27,13 @@ class Loader {
 	 * @type {JQuery.Promise<void> | undefined}
 	 * @private
 	 */
-	modulesRequest
+	tpModulesRequest
+
+	/**
+	 * @type {JQuery.Promise<void> | undefined}
+	 * @private
+	 */
+	clModulesRequest
 
 	/**
 	 * @type {Promise<void> | undefined}
@@ -146,97 +152,117 @@ class Loader {
 	addCommentLinks
 
 	/**
-	 * Load modules required for talk pages or other specific page types, or not load. When this is
+	 * Load modules required for talk pages or not load. When this is called before the configuration
+	 * file is certain to be loaded, we make a guess whether the modules are gonna be needed. This
+	 * guess may be wrong in both ways (e.g. if a page turned out to be blacklisted/whitelisted).
+	 *
+	 * @returns {JQuery.Promise<any> | undefined}
+	 */
+	maybeLoadTalkPageModules() {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!this.pageTypes) {
+			this.setPageTypes()
+		}
+
+		if (this.shouldInitTalkPage()) {
+			const modules = [
+				'ext.checkUser.styles',
+				'ext.checkUser.userInfoCard',
+				'jquery.client',
+				'jquery.ui',
+				'mediawiki.Title',
+				'mediawiki.Uri',
+				'mediawiki.api',
+				'mediawiki.cookie',
+				'mediawiki.interface.helpers.styles',
+				'mediawiki.jqueryMsg',
+				'mediawiki.notification',
+				'mediawiki.storage',
+				'mediawiki.user',
+				'mediawiki.util',
+				'oojs',
+				'oojs-ui-core',
+				'oojs-ui-widgets',
+				'oojs-ui-windows',
+				'oojs-ui.styles.icons-alerts',
+				'oojs-ui.styles.icons-content',
+				'oojs-ui.styles.icons-editing-advanced',
+				'oojs-ui.styles.icons-editing-citation',
+				'oojs-ui.styles.icons-editing-core',
+				'oojs-ui.styles.icons-interactions',
+				'oojs-ui.styles.icons-movement',
+				'user.options',
+			].filter(defined)
+
+			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
+			// gadget with preloaded dependencies, for example), so we use this trick.
+			this.tpModulesRequest ??= modules.some((module) => mw.loader.getState(module) !== 'ready')
+				? mw.loader.using(modules)
+				: $.Deferred().resolve().promise()
+
+			// Non-blocking modules that we need to load for comment forms. We load them in parallel with
+			// the main modules, but we don't wait for them to load before firing the "preprocessed"
+			// hook and running the app, because they are not critical and we want to save time if they
+			// are not needed.
+			mw.loader.using(
+				[
+					'mediawiki.widgets.visibleLengthLimit',
+					mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
+						? 'ext.confirmEdit.CaptchaInputWidget'
+						: undefined,
+					// We need to instantiate our class based on the CodeMirror class, so we load it now,
+					// not on comment form creation.
+					...(cd.g.isCodeMirror6Installed
+						? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
+						: []),
+				].filter(defined),
+			)
+		}
+
+		return this.tpModulesRequest
+	}
+
+	/**
+	 * Load modules required for pages suitable for adding comment links or not load. When this is
 	 * called before the configuration file is certain to be loaded, we make a guess whether the
 	 * modules are gonna be needed. This guess may be wrong in both ways (e.g. if a page turned out to
 	 * be blacklisted/whitelisted).
 	 *
 	 * @returns {JQuery.Promise<any> | undefined}
 	 */
-	maybeLoadModules() {
-		if (!this.modulesRequest) {
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			if (!this.pageTypes) {
-				this.setPageTypes()
-			}
+	maybeLoadCommentLinksModules() {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!this.pageTypes) {
+			this.setPageTypes()
+		}
 
-			let modules
+		if (this.shouldInitCommentLinks()) {
+			const modules = [
+				'mediawiki.Title',
+				'mediawiki.jqueryMsg',
+				'mediawiki.util',
+				'mediawiki.user',
+				'user.options',
+
+				// TODO: do a separate build for addCommentLinks(). addCommentLinks() doesn't need these
+				// modules, but in Rolldown, all imports are moved to the top due to the way
+				// https://rollupjs.org/configuration-options/#output-inlinedynamicimports works, so if we
+				// do `class ProcessDialog extends OO.ui.ProcessDialog` in one of the modules, that would
+				// throw an error if oojs-ui-windows is not loaded.
+				'oojs',
+				'oojs-ui-core',
+				'oojs-ui-widgets',
+				'oojs-ui-windows',
+			]
 
 			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
 			// gadget with preloaded dependencies, for example), so we use this trick.
-			if (this.shouldInitTalkPage()) {
-				modules = [
-					'ext.checkUser.styles',
-					'ext.checkUser.userInfoCard',
-					'jquery.client',
-					'jquery.ui',
-					'mediawiki.Title',
-					'mediawiki.Uri',
-					'mediawiki.api',
-					'mediawiki.cookie',
-					'mediawiki.interface.helpers.styles',
-					'mediawiki.jqueryMsg',
-					'mediawiki.notification',
-					'mediawiki.storage',
-					'mediawiki.user',
-					'mediawiki.util',
-					'oojs',
-					'oojs-ui-core',
-					'oojs-ui-widgets',
-					'oojs-ui-windows',
-					'oojs-ui.styles.icons-alerts',
-					'oojs-ui.styles.icons-content',
-					'oojs-ui.styles.icons-editing-advanced',
-					'oojs-ui.styles.icons-editing-citation',
-					'oojs-ui.styles.icons-editing-core',
-					'oojs-ui.styles.icons-interactions',
-					'oojs-ui.styles.icons-movement',
-					'user.options',
-				].filter(defined)
-
-				// Non-blocking modules that we need to load for comment forms. We load them in parallel with
-				// the main modules, but we don't wait for them to load before firing the "preprocessed"
-				// hook and running the app, because they are not critical and we want to save time if they
-				// are not needed.
-				mw.loader.using(
-					[
-						'mediawiki.widgets.visibleLengthLimit',
-						mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
-							? 'ext.confirmEdit.CaptchaInputWidget'
-							: undefined,
-						// We need to instantiate our class based on the CodeMirror class, so we load it now,
-						// not on comment form creation.
-						...(cd.g.isCodeMirror6Installed
-							? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
-							: []),
-					].filter(defined),
-				)
-			} else if (this.shouldInitCommentLinks()) {
-				modules = [
-					'mediawiki.Title',
-					'mediawiki.jqueryMsg',
-					'mediawiki.util',
-					'mediawiki.user',
-					'user.options',
-
-					// TODO: do a separate build for addCommentLinks(). addCommentLinks() doesn't need these
-					// modules, but in Rolldown, all imports are moved to the top due to the way
-					// https://rollupjs.org/configuration-options/#output-inlinedynamicimports works, so if we
-					// do `class ProcessDialog extends OO.ui.ProcessDialog` in one of the modules, that would
-					// throw an error if oojs-ui-windows is not loaded.
-					'oojs',
-					'oojs-ui-core',
-					'oojs-ui-widgets',
-					'oojs-ui-windows',
-				]
-			}
-
-			this.modulesRequest = modules?.some((module) => mw.loader.getState(module) !== 'ready')
+			this.clModulesRequest ??= modules.some((module) => mw.loader.getState(module) !== 'ready')
 				? mw.loader.using(modules)
 				: $.Deferred().resolve().promise()
 		}
 
-		return this.modulesRequest
+		return this.clModulesRequest
 	}
 
 	/**
@@ -423,7 +449,7 @@ class Loader {
 
 		try {
 			await Promise.all([
-				this.maybeLoadModules(),
+				this.maybeLoadTalkPageModules(),
 				this.loadApp(),
 				this.loadStyles().then(() => {
 					/*
@@ -963,7 +989,7 @@ class Loader {
 		}
 
 		try {
-			await Promise.all([this.maybeLoadModules(), this.loadApp()])
+			await Promise.all([this.maybeLoadCommentLinksModules(), this.loadApp()])
 
 			// See the comment above: "Additions of CSS...".
 			mw.util.addCSS(globalCss)
