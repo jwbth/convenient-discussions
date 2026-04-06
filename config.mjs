@@ -114,6 +114,13 @@ export default {
 			},
 		},
 		{
+			server: 'pt.wikipedia.org',
+			default: {
+				source: 'w-pt.js',
+				targets: ['User:Jack who built the house/convenientDiscussions.js'],
+			},
+		},
+		{
 			server: 'commons.wikimedia.org',
 			default: {
 				source: 'commons.js',
