@@ -20,8 +20,8 @@ const execAsync = promisify(exec)
 const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
 /*
-	node deploy --staging
-	npm run deploy --staging
+	node deploy.mjs --staging
+	npm run deploy -- --staging
  */
 export const staging = Boolean(argv.staging || process.env.npm_config_staging)
 
@@ -334,6 +334,7 @@ async function getLastDeployedCommit(commits) {
 				/[uU]pdate to (?:([0-9a-f]{8})(?= @ )|(v\d+\.\d+\.\d+)\b)/.exec(
 					revision.comment,
 				) || []
+
 			return match[1] || match[2]
 		})
 		.find(Boolean)

@@ -98,12 +98,6 @@ export default {
 					'user.options',
 				],
 			},
-			staging: {
-				source: 'w-ru.staging.js',
-				targets: [
-					'User:Jack who built the house/convenientDiscussions.staging.js',
-				],
-			},
 		},
 		{
 			server: 'en.wikipedia.org',
