@@ -133,6 +133,10 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		const isCandidateInterwiki =
 			/^[a-z-]\w*:/.test(text) && !new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)
 
+		// Check if text after leading colon is a candidate interwiki
+		const isCandidateInterwikiWithColon =
+			/^:[a-z-]\w*:/.test(text) && !new RegExp(`^:(?:${allNssPattern}):`, 'i').test(text)
+
 		const valid =
 			text &&
 			text !== ':' &&
@@ -142,9 +146,13 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				.length <= 9 &&
 			// Forbidden characters
 			!/[#<>[\]|{}]/.test(text) &&
-			// Interwikis: allow candidate interwiki prefixes through; only reject colon-prefixed
-			// non-namespace strings that aren't candidate interwikis.
-			!(text.startsWith(':') && !new RegExp(`^:?(?:${allNssPattern}):`, 'i').test(text)) &&
+			// Interwikis: allow candidate interwiki prefixes through (with or without leading colon);
+			// only reject colon-prefixed non-namespace strings that aren't candidate interwikis.
+			!(
+				text.startsWith(':') &&
+				!isCandidateInterwikiWithColon &&
+				!new RegExp(`^:?(?:${allNssPattern}):`, 'i').test(text)
+			) &&
 			// Reject explicit non-namespace colon prefixes that aren't interwiki candidates
 			!(
 				!isCandidateInterwiki &&
@@ -247,20 +255,23 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	async getPageSuggestions(text) {
 		let colonPrefix = false
-		if (cd.g.colonNamespacesPrefixRegexp.test(text)) {
-			text = text.slice(1)
+		let textForApi = text
+
+		// Check for leading colon (for categories, files, or interwikis)
+		if (text.startsWith(':')) {
+			textForApi = text.slice(1)
 			colonPrefix = true
 		}
 
-		// Attempt interwiki resolution for candidate prefixes
-		const interwiki = await this.resolveInterwikiPrefix(text)
+		// Attempt interwiki resolution for candidate prefixes (use stripped text)
+		const interwiki = await this.resolveInterwikiPrefix(textForApi)
 
 		if (interwiki) {
-			return await this.getCrossSitePageSuggestions(text, interwiki)
+			return await this.getCrossSitePageSuggestions(textForApi, interwiki, colonPrefix)
 		}
 
 		const response = await BaseAutocomplete.makeOpenSearchRequest({
-			search: text,
+			search: textForApi,
 			redirects: 'return',
 		})
 
@@ -275,7 +286,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				const isCaseSensitive =
 					caseSensitiveNamespaces.length && caseSensitiveNamespaces.includes(0)
 				if (!isCaseSensitive) {
-					pageName = this.useOriginalFirstCharCase(apiName, text)
+					pageName = this.useOriginalFirstCharCase(apiName, textForApi)
 				}
 			}
 
@@ -290,10 +301,11 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 *
 	 * @param {string} text The full input text including interwiki prefix(es)
 	 * @param {InterwikiResolution} interwiki Resolved interwiki data
+	 * @param {boolean} [colonPrefix] Whether the user typed a leading `:`
 	 * @returns {Promise<WikilinkEntry[]>} Page name suggestions preserving the original interwiki prefix
 	 * @private
 	 */
-	async getCrossSitePageSuggestions(text, interwiki) {
+	async getCrossSitePageSuggestions(text, interwiki, colonPrefix = false) {
 		const { hostname, pageName } = interwiki
 		const wgScriptPath = mw.config.get('wgScriptPath')
 		const foreignApi = new mw.ForeignApi(`https://${hostname}${wgScriptPath}/api.php`, {
@@ -328,11 +340,12 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			if (!title) return []
 
 			// For interwiki links, never apply case fix - use API name as-is
-			const label = interwikiPrefix + apiName
+			const label = (colonPrefix ? ':' : '') + interwikiPrefix + apiName
 
 			return /** @type {WikilinkEntry} */ ({
 				title,
 				pageName: apiName,
+				colonPrefix,
 				interwikiPrefix,
 				label,
 			})
