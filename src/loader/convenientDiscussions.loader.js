@@ -164,7 +164,7 @@ class Loader {
 
 			// mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
 			// gadget with preloaded dependencies, for example), so we use this trick.
-			if (this.pageTypes.talk) {
+			if (this.shouldInitTalkPage()) {
 				modules = [
 					'ext.checkUser.styles',
 					'ext.checkUser.userInfoCard',
@@ -212,17 +212,7 @@ class Loader {
 							: []),
 					].filter(defined),
 				)
-			}
-
-			if (
-				this.pageTypes.watchlist ||
-				this.pageTypes.contributions ||
-				this.pageTypes.history ||
-				this.pageTypes.diff ||
-				this.articlePageOfTypeTalk ||
-				// Instant Diffs script can be used on talk pages as well
-				this.pageTypes.talk
-			) {
+			} else if (this.shouldInitCommentLinks()) {
 				modules = [
 					'mediawiki.Title',
 					'mediawiki.jqueryMsg',
@@ -372,16 +362,21 @@ class Loader {
 	}
 
 	/**
-	 * Set page types and initialize talk page or comment links page.
+	 * Check if the talk page initialization should run.
+	 *
+	 * @returns {boolean}
 	 */
-	async init() {
-		this.setPageTypes()
+	shouldInitTalkPage() {
+		return this.pageTypes.talk
+	}
 
-		if (this.pageTypes.talk) {
-			await this.initTalkPage()
-		}
-
-		if (
+	/**
+	 * Check if the comment links initialization should run.
+	 *
+	 * @returns {boolean}
+	 */
+	shouldInitCommentLinks() {
+		return (
 			this.pageTypes.watchlist ||
 			this.pageTypes.contributions ||
 			this.pageTypes.history ||
@@ -389,7 +384,20 @@ class Loader {
 			this.articlePageOfTypeTalk ||
 			// Instant Diffs script can be used on talk pages as well
 			this.pageTypes.talk
-		) {
+		)
+	}
+
+	/**
+	 * Set page types and initialize talk page or comment links page.
+	 */
+	async init() {
+		this.setPageTypes()
+
+		if (this.shouldInitTalkPage()) {
+			await this.initTalkPage()
+		}
+
+		if (this.shouldInitCommentLinks()) {
 			await this.initCommentLinks()
 		}
 	}

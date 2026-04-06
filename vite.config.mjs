@@ -440,6 +440,8 @@ export default defineConfig(({ mode, command }) => {
 	plugins.push(buildNotificationPlugin(), preserveControlEscapesPlugin())
 
 	if (!buildMode.isSingle) {
+		// TODO: Rolldown has native options for banners and license http://rolldown.rs/reference/, but
+		// our parameters are tricky, and we need to make sure they work and don't break source maps.
 		plugins.push(
 			// Append closing nowiki first so it ends up at the very bottom after all prepends
 			appendNowikiPlugin(),
