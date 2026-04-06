@@ -523,6 +523,7 @@ class BootProcess {
 				// mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
 				// wgFormattedNamespaces name separately.
 				.concat(ids.map((id) => nss[id]))
+				.map(mw.util.escapeRegExp)
 
 				.map(anySpace)
 				.join('|')
