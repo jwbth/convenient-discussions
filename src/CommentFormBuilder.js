@@ -1,6 +1,6 @@
 import Button from './Button'
 import MultilineTextInputWidget from './MultilineTextInputWidget'
-import OoUiInputCodeMirror from './OoUiInputCodeMirror'
+import getOoUiInputCodeMirrorClass from './OoUiInputCodeMirror'
 import TextInputWidget from './TextInputWidget'
 import TextMasker from './TextMasker'
 import commentManager from './commentManager'
@@ -792,7 +792,7 @@ class CommentFormBuilder {
 	 * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
 	 */
 	initCodeMirror = () => {
-		this.form.codeMirror = new OoUiInputCodeMirror(this.form.commentInput)
+		this.form.codeMirror = new (getOoUiInputCodeMirrorClass())(this.form.commentInput)
 		this.form.codeMirror.initialize(
 			undefined,
 			/** @type {string} */ (this.form.commentInput.$input.attr('placeholder')),

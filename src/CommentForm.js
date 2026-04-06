@@ -497,7 +497,7 @@ class CommentForm extends EventEmitter {
 	/**
 	 * CodeMirror instance for the comment input.
 	 *
-	 * @type {import('./OoUiInputCodeMirror').default | undefined}
+	 * @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>> | undefined}
 	 */
 	codeMirror
 
