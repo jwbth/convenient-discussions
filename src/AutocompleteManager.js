@@ -282,7 +282,11 @@ class AutocompleteManager {
 			savedSelection &&
 			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos &&
 			(!savedSelection.selectedText.includes(autocomplete.getTrigger()) ||
-				autocomplete.manager.tribute.current.collection?.allowNesting)
+				autocomplete.manager.tribute.current.collection?.allowNesting) &&
+			// Self-closing tags like `<references />` don't have `end`
+			autocomplete.getInsertionFromEntry(
+				/** @type {NonNullable<typeof option>} */ (option).original.entry,
+			).end
 		) {
 			selectedText = savedSelection.selectedText
 		}
