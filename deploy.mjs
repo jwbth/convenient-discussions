@@ -622,7 +622,7 @@ async function deployToServer(serverEdits) {
 		)
 
 		// To avoid hitting the edit rate limit
-		await sleep(1500)
+		await sleep(2000)
 
 		if (response.nochange) {
 			success(`No changes in ${edit.url}`)
