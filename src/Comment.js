@@ -2710,8 +2710,19 @@ class Comment extends CommentSkeleton {
 
 				// Try DiscussionTools API fallback
 				try {
-					await this.locateUsingDiscussionTools()
-					commentForm.viewChangesButton.toggle(false)
+					source = await this.locateUsingDiscussionTools()
+					if (!source) {
+						if (commentForm.getMode() === 'edit') {
+							throw new CdError({
+								type: 'parse',
+								code: 'locateComment',
+							})
+						}
+
+						// DiscussionTools API will be used for adding the comment; the "view changes"
+						// functionality can't be used in this case.
+						commentForm.viewChangesButton.toggle(false)
+					}
 				} catch {
 					throw error
 				}
