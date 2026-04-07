@@ -823,6 +823,15 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
+	 * Set the `targetPage` property.
+	 *
+	 * @param {import('./Page').default} targetPage
+	 */
+	setTargetPage(targetPage) {
+		this.targetPage = targetPage
+	}
+
+	/**
 	 * Compose a tab index for an element from the form's index and the supplied element index.
 	 *
 	 * @param {number} elementIndex
@@ -2276,6 +2285,9 @@ class CommentForm extends EventEmitter {
 
 				return
 			}
+
+			// DiscussionTools API will be used
+			if (!this.target.source) return
 		}
 
 		/** @type {string} */
@@ -2409,7 +2421,7 @@ class CommentForm extends EventEmitter {
 		if (
 			!this.isMode('addSection') &&
 			!this.target.source &&
-			!(this.isCommentTarget() && this.target.transcludedFrom)
+			!(this.isCommentTarget() && this.target.dtTranscludedFrom)
 		) {
 			await this.checkCode()
 			operation.close()
@@ -2425,15 +2437,15 @@ class CommentForm extends EventEmitter {
 			if (
 				this.isMode('reply') &&
 				!this.target.source &&
-				this.target.transcludedFrom !== undefined &&
-				this.target.transcludedFrom !== true
+				this.target.dtTranscludedFrom !== undefined &&
+				this.target.dtTranscludedFrom !== true
 			) {
 				const page =
-					typeof this.target.transcludedFrom === 'string'
-						? this.target.transcludedFrom
-						: cd.page.name
+					this.target.dtTranscludedFrom === false
+						? cd.page
+						: /** @type {import('./Page').default} */ (this.target.dtTranscludedFrom)
 				;({ html } = await parseCodeUsingDiscussionTools(this.inputToCode('preview'), {
-					page,
+					page: page.name,
 					useskin: cd.g.skin,
 				}))
 			} else {
@@ -2514,7 +2526,11 @@ class CommentForm extends EventEmitter {
 	 * View changes in the page code after submitting the form.
 	 */
 	async viewChanges() {
-		if (this.isBeingSubmitted()) return
+		if (
+			this.isBeingSubmitted() ||
+			(this.isCommentTarget() && this.target.dtTranscludedFrom === false)
+		)
+			return
 
 		const operation = this.operations.add('viewChanges')
 
@@ -2704,7 +2720,9 @@ class CommentForm extends EventEmitter {
 		try {
 			const target = /** @type {Comment} */ (this.target)
 			const page =
-				typeof target.transcludedFrom === 'string' ? target.transcludedFrom : cd.page.name
+				target.dtTranscludedFrom === false
+					? cd.page
+					: /** @type {import('./Page').default} */ (target.dtTranscludedFrom)
 
 			const response = /** @type {{ discussiontoolsedit: { result: string } }} */ (
 				await cd
@@ -2712,7 +2730,7 @@ class CommentForm extends EventEmitter {
 					.postWithEditToken(
 						cd.getApi().assertCurrentUser({
 							action: 'discussiontoolsedit',
-							page,
+							page: page.name,
 							wikitext: this.commentInput.getValue(),
 							commentid: target.dtId,
 							autosubscribe: this.subscribeCheckbox?.isSelected(),
@@ -2986,8 +3004,9 @@ class CommentForm extends EventEmitter {
 		if (contextCode === undefined) {
 			if (
 				this.isMode('reply') &&
-				/** @type {Comment} */ (this.target).dtId &&
-				!(/** @type {Comment} */ (this.target).transcludedFrom) &&
+				this.target.dtId &&
+				// TODO: Should be able to use DiscussionTools API on transcluded pages as well.
+				this.target.dtTranscludedFrom === false &&
 				!(await this.submitViaDiscussionTools(operation))
 			)
 				return

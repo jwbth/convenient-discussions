@@ -295,8 +295,8 @@ class Comment extends CommentSkeleton {
 	/** @type {string|undefined} */
 	dtId
 
-	/** @type {string|boolean|undefined} */
-	transcludedFrom
+	/** @type {import('./Page').default | boolean | undefined} */
+	dtTranscludedFrom
 
 	/**
 	 * The comment's coordinates.
@@ -2723,6 +2723,10 @@ class Comment extends CommentSkeleton {
 						// functionality can't be used in this case.
 						commentForm.viewChangesButton.toggle(false)
 					}
+
+					if (this.dtTranscludedFrom !== undefined && typeof this.dtTranscludedFrom !== 'boolean') {
+						commentForm.setTargetPage(this.dtTranscludedFrom)
+					}
 				} catch {
 					throw error
 				}
@@ -2764,7 +2768,6 @@ class Comment extends CommentSkeleton {
 
 		const transcludedFrom =
 			response.discussiontoolspageinfo.transcludedfrom[/** @type {string} */ (this.dtId)]
-
 		if (transcludedFrom === undefined) {
 			throw new CdError({
 				type: 'response',
@@ -2772,29 +2775,23 @@ class Comment extends CommentSkeleton {
 			})
 		}
 
-		if (transcludedFrom === true) {
+		this.dtTranscludedFrom =
+			typeof transcludedFrom === 'boolean'
+				? transcludedFrom
+				: /** @type {import('./Page').default} */ (pageRegistry.get(transcludedFrom))
+
+		if (this.dtTranscludedFrom === true) {
 			throw new CdError({
 				type: 'parse',
 				code: 'cantReply',
 			})
 		}
-
-		this.transcludedFrom = transcludedFrom
-
-		if (typeof transcludedFrom === 'boolean') return
+		if (this.dtTranscludedFrom === false) return
 
 		// Load the transcluded page code
-		const sourcePage = pageRegistry.get(transcludedFrom)
-		if (!sourcePage) {
-			throw new CdError({
-				type: 'parse',
-				code: 'locateComment',
-			})
-		}
-
-		await sourcePage.loadCode()
+		await this.dtTranscludedFrom.loadCode()
 		try {
-			return this.locateInCode(undefined, sourcePage.source.getCode())
+			return this.locateInCode(undefined, this.dtTranscludedFrom.source.getCode())
 		} catch {
 			throw new CdError({
 				type: 'parse',
