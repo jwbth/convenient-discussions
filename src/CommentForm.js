@@ -2249,6 +2249,7 @@ class CommentForm extends EventEmitter {
 	async buildSource(action, operation) {
 		const commentIds = CommentForm.extractCommentIds(this.commentInput.getValue())
 
+		// FIXME: bad place to put this in
 		this.setNewSectionApi(
 			Boolean(
 				this.isMode('addSection') &&
@@ -2400,7 +2401,7 @@ class CommentForm extends EventEmitter {
 		 *   (if the mode is 'edit' and the comment has not been loaded, this method would halt after
 		 *   looking for an unclosed 'load' operation above).
 		 */
-		if (!this.isMode('addSection') && !this.target.source) {
+		if (!this.isMode('addSection') && !this.target.source && !this.target.transcludedFrom) {
 			await this.checkCode()
 			operation.close()
 			if (operation.isClosed()) return
@@ -2762,11 +2763,11 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Subscribe and unsubscribe from topics.
 	 *
-	 * @param {string} editTimestamp
+	 * @param {Date} editDate
 	 * @param {string|undefined} commentCode
 	 * @private
 	 */
-	updateSubscriptionStatus(editTimestamp, commentCode) {
+	updateSubscriptionStatus(editDate, commentCode) {
 		if (!this.subscribeCheckbox) return
 
 		if (this.subscribeCheckbox.isSelected()) {
@@ -2783,21 +2784,21 @@ class CommentForm extends EventEmitter {
 				controller
 					.getSubscriptionsInstance()
 					.subscribe(
-						sectionManager.generateDtSubscriptionId(cd.user.getName(), editTimestamp),
+						sectionManager.generateDtSubscriptionId(cd.user.getName(), editDate),
 						rawHeadline && removeWikiMarkup(rawHeadline),
 						true,
 					)
 			} else {
 				const section = this.targetSection?.getSectionSubscribedTo()
 				if (section && !section.subscriptionState) {
-					section.ensureSubscribeIdPresent(editTimestamp)
+					section.ensureSubscribeIdPresent(editDate)
 					section.subscribe('silent')
 				}
 			}
 		} else {
 			const section = this.targetSection?.getSectionSubscribedTo()
 			if (section?.subscriptionState) {
-				section.ensureSubscribeIdPresent(editTimestamp)
+				section.ensureSubscribeIdPresent(editDate)
 				section.unsubscribe('silent')
 			}
 		}
@@ -2807,14 +2808,13 @@ class CommentForm extends EventEmitter {
 	 * Generate a comment ID to jump to after the page is reloaded, taking possible collisions into
 	 * account.
 	 *
-	 * @param {string} editTimestamp
+	 * @param {Date} date
 	 * @returns {string}
 	 * @private
 	 */
-	generateFutureCommentId(editTimestamp) {
-		const date = new Date(editTimestamp)
-
+	generateIdOfSubmittedComment(date) {
 		// Timestamps on the page (and therefore anchors) have no seconds.
+		// FIXME: don't modify the parameter
 		date.setSeconds(0)
 
 		const commentAboveCommentToBeAddedIndex =
@@ -2864,12 +2864,26 @@ class CommentForm extends EventEmitter {
 		const operation = this.operations.add('submit', undefined, clearMessages)
 
 		const { contextCode, commentCode } = (await this.buildSource('submit', operation)) || {}
-		if (contextCode === undefined) return
+		let editDate
+		if (contextCode === undefined) {
+			if (this.isMode('reply')) {
+				// Add DiscussionTools code here
 
-		const editTimestamp = await this.editPage(contextCode, operation, suppressTag)
+				// FIXME: replace with the actual timestamp of the new comment. Can we see it? Or should we
+				// just look at the newest own comment after the reload?
+				editDate = new Date()
+			} else {
+				return
+			}
+		} else {
+			const editTimestamp = await this.editPage(contextCode, operation, suppressTag)
 
-		// The operation is closed inside CommentForm#editPage().
-		if (!editTimestamp) return
+			// The operation is closed inside CommentForm#editPage().
+			if (!editTimestamp) return
+
+			editDate = new Date(editTimestamp)
+			this.updateSubscriptionStatus(editDate, commentCode)
+		}
 
 		// Here we use a trick where we pass, in bootData, the name of the section that was set to be
 		// be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
@@ -2877,9 +2891,13 @@ class CommentForm extends EventEmitter {
 		// one.
 		const bootData = /** @type {import('./BootProcess').PassedData} */ ({
 			submittedCommentForm: this,
+			commentIds: doDelete
+				? undefined
+				: [
+						// Generate an ID for the comment to jump to.
+						this.isMode('edit') ? this.target.id : this.generateIdOfSubmittedComment(editDate),
+					],
 		})
-
-		this.updateSubscriptionStatus(editTimestamp, commentCode)
 
 		if (this.watchCheckbox?.isSelected() && $('#ca-watch').length) {
 			$('#ca-watch')
@@ -2894,19 +2912,14 @@ class CommentForm extends EventEmitter {
 				.attr('href', cd.page.getUrl({ action: 'watch' }))
 		}
 
-		if (!doDelete) {
-			// Generate an ID for the comment to jump to.
-			bootData.commentIds = [
-				this.isMode('edit') ? this.target.id : this.generateFutureCommentId(editTimestamp),
-			]
-		}
-
 		// When the edit takes place on another page that is transcluded in the current one, we must
 		// purge the current page, otherwise we may get an old version without the submitted comment.
 		if (this.targetPage !== cd.page) {
 			await cd.page.purge()
 		}
 
+		// TODO: in `discussiontoolsedit` response, there is the new content (unless `nocontent` is
+		// true), so we don't need to make a parse request in controller.rebootPage(). Reuse it.
 		this.reloadPage(bootData, operation)
 	}
 

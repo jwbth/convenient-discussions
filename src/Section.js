@@ -10,7 +10,7 @@ import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
-import { defined, getHeadingLevel, underlinesToSpaces, unique } from './shared/utils-general'
+import { defined, underlinesToSpaces, unique } from './shared/utils-general'
 import { encodeWikilink, maskDistractingCode, normalizeCode } from './shared/utils-wikitext'
 import toc from './toc'
 import { handleApiReject } from './utils-api'
@@ -201,8 +201,6 @@ class Section extends SectionSkeleton {
 
 		this.manager = sectionManager
 		this.subscriptions = subscriptions
-
-		this.useTopicSubscription = cd.settings.get('useTopicSubscription')
 
 		/**
 		 * Automatically updated sequental number of the section.
@@ -604,10 +602,10 @@ class Section extends SectionSkeleton {
 	canFirstCommentBeEdited() {
 		return Boolean(
 			this.isActionable &&
-				this.commentsInFirstChunk.length &&
-				this.comments[0].isOpeningSection() &&
-				this.comments[0].canBeEdited() &&
-				!this.comments[0].isCollapsed,
+			this.commentsInFirstChunk.length &&
+			this.comments[0].isOpeningSection() &&
+			this.comments[0].canBeEdited() &&
+			!this.comments[0].isCollapsed,
 		)
 	}
 
@@ -673,10 +671,7 @@ class Section extends SectionSkeleton {
 			this.level >= 2 &&
 			this.level <= 5 &&
 			// Is closed
-			!(
-				this.comments[0]?.level === 0 &&
-				this.comments.every((comment) => !comment.isActionable)
-			) &&
+			!(this.comments[0]?.level === 0 && this.comments.every((comment) => !comment.isActionable)) &&
 			// While the "Reply" button is added to the end of the first chunk, the "Add subsection"
 			// button is added to the end of the whole section, so we look the next section of the same
 			// level.
@@ -2036,14 +2031,14 @@ class Section extends SectionSkeleton {
 	 * Generate a DT subscribe ID from the oldest timestamp in the section and the current user's name
 	 * if there is no.
 	 *
-	 * @param {string} editTimestamp Timestamp of the edit just made.
+	 * @param {Date} editDate Timestamp of the edit just made.
 	 */
-	ensureSubscribeIdPresent(editTimestamp) {
+	ensureSubscribeIdPresent(editDate) {
 		if (this.subscribeId) return
 
 		this.subscribeId = this.manager.generateDtSubscriptionId(
 			cd.user.getName(),
-			this.oldestComment?.date?.toISOString() || editTimestamp,
+			this.oldestComment?.date || editDate,
 		)
 	}
 

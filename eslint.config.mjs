@@ -405,6 +405,8 @@ const config = defineConfig(
 			'@stylistic/space-unary-ops': 'off',
 			'@stylistic/array-bracket-spacing': 'off',
 			'@stylistic/lines-between-class-members': 'off',
+			'@stylistic/multiline-ternary': 'off',
+			'@stylistic/no-mixed-operators': 'off',
 
 			'@stylistic/padding-line-between-statements': [
 				'warn',

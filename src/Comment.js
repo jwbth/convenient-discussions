@@ -2686,9 +2686,24 @@ class Comment extends CommentSkeleton {
 					}
 				}
 			}
-			if (!isSectionSubmitted) {
-				await this.getSourcePage().loadCode()
-				source = this.locateInCode()
+			try {
+				if (!isSectionSubmitted) {
+					await this.getSourcePage().loadCode()
+					source = this.locateInCode()
+				}
+			} catch (error) {
+				if (
+					commentForm?.getMode() !== 'reply' ||
+					!this.dtId ||
+					!(
+						error instanceof CdError &&
+						['noSuchSection', 'locateSection', 'locateComment'].includes(error.getCode() || '')
+					)
+				) {
+					throw error
+				}
+
+				// Add DiscussionTools code here
 			}
 		} catch (error) {
 			if (error instanceof CdError) {

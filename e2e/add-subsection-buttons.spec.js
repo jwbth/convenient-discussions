@@ -1,7 +1,11 @@
 // @ts-check
 import { test, expect } from '@playwright/test'
 
-import { setupConvenientDiscussions, TEST_PAGES, getSectionButtonContainer } from './helpers/test-utils.js'
+import {
+	setupConvenientDiscussions,
+	TEST_PAGES,
+	getSectionButtonContainer,
+} from './helpers/test-utils.js'
 
 test.describe('Add subsection buttons', () => {
 	test.beforeEach(async ({ page }) => {
@@ -11,7 +15,7 @@ test.describe('Add subsection buttons', () => {
 	})
 
 	test('hovering the section reply link reveals "Add subsection" buttons', async ({ page }) => {
-		const sectionButtonContainer = getSectionButtonContainer(page, 'test3')
+		const sectionButtonContainer = getSectionButtonContainer(page, 'Last subsection')
 
 		const replyLink = sectionButtonContainer.locator('.cd-replyButtonWrapper a')
 		await expect(replyLink).toBeVisible({ timeout: 10_000 })
@@ -28,7 +32,7 @@ test.describe('Add subsection buttons', () => {
 		const buttons = container.locator('a')
 		await expect(buttons).toHaveCount(2)
 
-		await expect(buttons.nth(0)).toHaveText('Add subsection to "test3"')
+		await expect(buttons.nth(0)).toHaveText('Add subsection to "Last subsection"')
 		await expect(buttons.nth(1)).toHaveText('Add subsection to "Section 1"')
 		console.log('✅ Both "Add subsection" buttons are visible with expected labels')
 	})
