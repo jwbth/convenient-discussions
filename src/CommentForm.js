@@ -2667,6 +2667,123 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
+	 * Submit a reply using the DiscussionTools API when the target comment cannot be found using
+	 * standard means.
+	 *
+	 * @param {import('./CommentFormOperation').default} operation Operation the form is undergoing.
+	 * @private
+	 */
+	async submitViaDiscussionTools(operation) {
+		try {
+			const target = /** @type {Comment} */ (this.target)
+			const page =
+				typeof target.transcludedFrom === 'string' ? target.transcludedFrom : cd.page.name
+
+			const response = /** @type {{ discussiontoolsedit: { result: string } }} */ (
+				await cd
+					.getApi()
+					.postWithEditToken(
+						cd.getApi().assertCurrentUser({
+							action: 'discussiontoolsedit',
+							page,
+							wikitext: this.commentInput.getValue(),
+							commentid: target.dtId,
+							autosubscribe: this.subscribeCheckbox?.isSelected(),
+							summary: buildEditSummary({ text: this.summaryInput.getValue() }),
+							captchaid: this.captchaInput?.getCaptchaId(),
+							captchaword: this.captchaInput?.getCaptchaWord(),
+						}),
+					)
+					.catch(handleApiReject)
+			)
+
+			if (response.discussiontoolsedit.result !== 'success') {
+				this.handleError({
+					error: new CdError({
+						type: 'response',
+						details: { error: response.discussiontoolsedit },
+					}),
+					operation,
+				})
+
+				return
+			}
+
+			// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
+			// just look at the newest own comment after the reload?
+			const editDate = new Date()
+
+			// Here we use a trick where we pass, in bootData, the name of the section that was set to be
+			// be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
+			// update the value quickly enough, so it returns the old value, but we must display the new
+			// one.
+			const bootData = /** @type {import('./BootProcess').PassedData} */ ({
+				submittedCommentForm: this,
+				commentIds: [this.generateIdOfSubmittedComment(editDate)],
+			})
+
+			if (this.watchCheckbox?.isSelected() && $('#ca-watch').length) {
+				$('#ca-watch')
+					.attr('id', 'ca-unwatch')
+					.find('a')
+					.attr('href', cd.page.getUrl({ action: 'unwatch' }))
+			} else if (!this.watchCheckbox?.isSelected() && $('#ca-unwatch').length) {
+				$('#ca-unwatch')
+					.attr('id', 'ca-watch')
+					.find('a')
+					.attr('href', cd.page.getUrl({ action: 'watch' }))
+			}
+
+			// When the edit takes place on another page that is transcluded in the current one, we must
+			// purge the current page, otherwise we may get an old version without the submitted comment.
+			if (this.targetPage !== cd.page) {
+				await cd.page.purge()
+			}
+
+			// TODO: in `discussiontoolsedit` response, there is the new content (unless `nocontent` is
+			// true), so we don't need to make a parse request in controller.rebootPage(). Reuse it.
+			this.reloadPage(bootData, operation)
+		} catch (error) {
+			delete this.captchaInput
+
+			if (error instanceof CdError) {
+				/** @type {'notice' | undefined} */
+				let messageType
+				const errorCode = error.getCode()
+				/** @type {string | undefined} */
+				const message = error.getMessage()
+				/** @type {JQuery | undefined} */
+				let $message
+
+				if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
+					this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(
+						/** @type {{ discussiontoolsedit: mw.libs.confirmEdit.CaptchaData }} */ (
+							error.getApiResponse()
+						).discussiontoolsedit.captcha,
+					)
+					this.captchaInput.on('enter', () => {
+						this.submit()
+					})
+					$message = new OO.ui.MessageWidget({
+						type: 'notice',
+						label: this.captchaInput.$element,
+					}).$element
+				}
+
+				this.handleError({
+					error,
+					message: error.getType() === 'network' ? cd.sParse('cf-error-couldntedit') : message,
+					$message,
+					messageType,
+					operation,
+				})
+			} else {
+				this.handleError({ error, operation })
+			}
+		}
+	}
+
+	/**
 	 * Send a post request to edit the page and handle errors.
 	 *
 	 * @param {string} code Code to save.
@@ -2866,11 +2983,19 @@ class CommentForm extends EventEmitter {
 		const { contextCode, commentCode } = (await this.buildSource('submit', operation)) || {}
 		let editDate
 		if (contextCode === undefined) {
-			if (this.isMode('reply')) {
-				// Add DiscussionTools code here
+			if (
+				this.isMode('reply') &&
+				/** @type {Comment} */ (this.target).dtId &&
+				!(/** @type {Comment} */ (this.target).transcludedFrom)
+			) {
+				await this.submitViaDiscussionTools(operation)
 
-				// FIXME: replace with the actual timestamp of the new comment. Can we see it? Or should we
-				// just look at the newest own comment after the reload?
+				return
+			}
+
+			if (this.isMode('reply')) {
+				// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should
+				// we just look at the newest own comment after the reload?
 				editDate = new Date()
 			} else {
 				return
