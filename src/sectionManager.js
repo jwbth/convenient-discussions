@@ -255,11 +255,11 @@ export class SectionManager {
 	 * Generate an DiscussionTools ID for a section.
 	 *
 	 * @param {string} author Author name.
-	 * @param {string} timestamp Oldest comment date.
+	 * @param {Date} date Oldest comment date.
 	 * @returns {string}
 	 */
-	generateDtSubscriptionId(author, timestamp) {
-		const date = new Date(timestamp)
+	generateDtSubscriptionId(author, date) {
+		// FIXME: don't modify the parameter
 		date.setSeconds(0)
 
 		return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, '00')}`

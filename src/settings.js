@@ -53,7 +53,6 @@ import { wrapHtml } from './utils-window'
  * @property {boolean} useCodeMirror
  * @property {boolean} useNativeAutocomplete
  * @property {boolean} useTemplateData
- * @property {boolean} useTopicSubscription
  * @property {boolean} useUiTime
  * @property {boolean} watchOnReply
  * @property {'wikilink'|'link'|null} defaultCommentLinkType Undocumented setting.
@@ -240,7 +239,6 @@ class Settings extends EventEmitter {
 			useCodeMirror: 'checkbox',
 			useNativeAutocomplete: 'checkbox',
 			useTemplateData: 'checkbox',
-			useTopicSubscription: 'checkbox',
 			useUiTime: 'checkbox',
 			watchOnReply: 'checkbox',
 		}),
@@ -306,7 +304,6 @@ class Settings extends EventEmitter {
 			'useBackgroundHighlighting': true,
 			'useNativeAutocomplete': false,
 			'useTemplateData': true,
-			'useTopicSubscription': cd.g.isDtInstalled,
 			'useUiTime': true,
 
 			// On wikis where there is no topic subscriptions, watching pages on replying is the

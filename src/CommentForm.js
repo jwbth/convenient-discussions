@@ -552,10 +552,6 @@ class CommentForm extends EventEmitter {
 
 		this.commentFormManager = commentFormManager
 
-		// Unlike when changing other settings on the fly, changing this one won't alter the behavior
-		// *for the current form*, because truth be told, we don't value it very much.
-		this.useTopicSubscription = cd.settings.get('useTopicSubscription')
-
 		/**
 		 * Whether the toolbar is loaded (it could be loaded at the beginning or later, if the user
 		 * enables the respective setting).
@@ -2776,35 +2772,21 @@ class CommentForm extends EventEmitter {
 		if (this.subscribeCheckbox.isSelected()) {
 			// Add the created section to the subscription list or change the headline for legacy
 			// subscriptions.
-			if (
-				// FIXME: fix behavior for sections added with no headline (that are, in fact, comments
-				// added to the preceding section)
-				this.isMode('addSection') ||
-				(!this.useTopicSubscription &&
-					(this.isMode('addSubsection') || this.isSectionOpeningCommentEdited()))
-			) {
+			// FIXME: fix behavior for sections added with no headline (that are, in fact, comments
+			// added to the preceding section)
+			if (this.isMode('addSection')) {
 				let rawHeadline = this.headlineInput?.getValue().trim()
 				if (!rawHeadline && !this.isSectionOpeningCommentEdited()) {
 					;[, rawHeadline] = /** @type {string} */ (commentCode).match(/^==(.*?)==[ \t]*$/m) || []
 				}
-				const headline = rawHeadline && removeWikiMarkup(rawHeadline)
 
-				let subscribeId
-				let originalHeadline
-				if (this.useTopicSubscription) {
-					subscribeId = sectionManager.generateDtSubscriptionId(cd.user.getName(), editTimestamp)
-				} else {
-					subscribeId = headline
-					if (this.isSectionOpeningCommentEdited()) {
-						originalHeadline = removeWikiMarkup(this.originalHeadline || '')
-					}
-				}
-
-				if (subscribeId !== undefined) {
-					controller
-						.getSubscriptionsInstance()
-						.subscribe(subscribeId, headline, true, originalHeadline)
-				}
+				controller
+					.getSubscriptionsInstance()
+					.subscribe(
+						sectionManager.generateDtSubscriptionId(cd.user.getName(), editTimestamp),
+						rawHeadline && removeWikiMarkup(rawHeadline),
+						true,
+					)
 			} else {
 				const section = this.targetSection?.getSectionSubscribedTo()
 				if (section && !section.subscriptionState) {

@@ -120,9 +120,7 @@ class CommentFormBuilder {
 				accessKey: 'w',
 			}))
 
-			const subscribableSection = this.form.useTopicSubscription
-				? this.form.targetSection?.getBase(true)
-				: this.form.targetSection
+			const subscribableSection = this.form.targetSection?.getBase(true)
 			if (
 				(subscribableSection?.subscribeId || this.form.isMode('addSection')) &&
 				(!controller.isSubscribingDisabled() || subscribableSection?.subscriptionState)
@@ -135,15 +133,7 @@ class CommentFormBuilder {
 							((cd.settings.get('subscribeOnReply') && !this.form.isMode('edit')) ||
 								subscribableSection?.subscriptionState),
 						),
-						label: cd.s(
-							this.form.useTopicSubscription ||
-								this.form.isMode('addSection') ||
-								(!this.form.isMode('addSubsection') &&
-									this.form.targetSection &&
-									this.form.targetSection.level <= 2)
-								? 'cf-watchsection-topic'
-								: 'cf-watchsection-subsection',
-						),
+						label: cd.s('cf-watchsection-topic'),
 						tabIndex: this.form.getTabIndex(22),
 						title: cd.s('cf-watchsection-tooltip'),
 					}))

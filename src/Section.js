@@ -1330,18 +1330,6 @@ class Section extends SectionSkeleton {
 	 * Extract the section's {@link Section#subscribeId subscribe ID}.
 	 */
 	extractSubscribeId() {
-		if (!this.useTopicSubscription) {
-			/**
-			 * The section subscribe ID, either in the DiscussionTools format or just a headline if legacy
-			 * subscriptions are used.
-			 *
-			 * @type {string | undefined}
-			 */
-			this.subscribeId = this.headline
-
-			return
-		}
-
 		if (!this.isTopic()) return
 
 		let subscribeId = controller
@@ -1565,9 +1553,8 @@ class Section extends SectionSkeleton {
 	 *   - `'quiet'`: don't show a notification.
 	 *   - `'silent'`: don't even change any UI, including the subscribe button appearance. If there
 	 *   is an error, it will be displayed though.
-	 * @param {string} [renamedFrom] If the section was renamed, the previous section headline.
 	 */
-	subscribe(mode, renamedFrom) {
+	subscribe(mode) {
 		if (!this.subscribeId) return
 
 		// That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
@@ -1588,13 +1575,7 @@ class Section extends SectionSkeleton {
 		}
 
 		this.subscriptions
-			.subscribe(
-				this.subscribeId,
-				this.id,
-				Boolean(mode),
-				// Unsubscribe from
-				renamedFrom && !this.manager.getBySubscribeId(renamedFrom).length ? renamedFrom : undefined,
-			)
+			.subscribe(this.subscribeId, this.id, Boolean(mode))
 			.then(() => {
 				// TODO: this condition seems a bad idea because when we could update the subscriptions but
 				// couldn't reload the page, the UI becomes unsynchronized. But there is also no UI
@@ -1660,42 +1641,6 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
-	 * Resubscribe to a renamed section if legacy topic subscriptions are used.
-	 *
-	 * @param {import('./updateChecker').CommentWorkerMatched} currentCommentData
-	 * @param {import('./updateChecker').CommentWorkerMatched} oldCommentData
-	 */
-	resubscribeIfRenamed(currentCommentData, oldCommentData) {
-		if (
-			this.useTopicSubscription ||
-			this.subscriptionState ||
-			getHeadingLevel({
-				tagName: currentCommentData.elementNames[0],
-				className: currentCommentData.elementClassNames[0],
-			}) ||
-			oldCommentData.elementNames[0] !== currentCommentData.elementNames[0]
-		) {
-			return
-		}
-
-		/**
-		 * @type {Partial<SectionSkeleton<Node>>}
-		 */
-		const oldSectionDummy = {
-			headlineElement: $('<span>').html(
-				$(
-					oldCommentData.elementHtmls[0].replace(
-						/\u0001(\d+)_\w+\u0002/g,
-						(_, /** @type {string} */ num) =>
-							currentCommentData.hiddenElementsData[Number(num) - 1].html,
-					),
-				).html(),
-			)[0],
-		}
-		this.parseHeadline.call(oldSectionDummy)
-	}
-
-	/**
 	 * _For internal use._ When the section's headline is live-updated in {@link Comment#liveUpdate}, also
 	 * update some aspects of the section.
 	 *
@@ -1705,9 +1650,6 @@ class Section extends SectionSkeleton {
 		const originalHeadline = this.headline
 		this.parseHeadline()
 		if (this.headline !== originalHeadline) {
-			if (this.headline && this.subscriptionState && !this.useTopicSubscription) {
-				this.subscribe('quiet', originalHeadline)
-			}
 			this.getTocItem()?.replaceText($html)
 		}
 	}
@@ -2097,7 +2039,7 @@ class Section extends SectionSkeleton {
 	 * @param {string} editTimestamp Timestamp of the edit just made.
 	 */
 	ensureSubscribeIdPresent(editTimestamp) {
-		if (!this.useTopicSubscription || this.subscribeId) return
+		if (this.subscribeId) return
 
 		this.subscribeId = this.manager.generateDtSubscriptionId(
 			cd.user.getName(),
@@ -2111,7 +2053,7 @@ class Section extends SectionSkeleton {
 	 * @returns {Section | undefined}
 	 */
 	getSectionSubscribedTo() {
-		return this.useTopicSubscription ? this.getBase(true) : this
+		return this.getBase(true)
 	}
 
 	/**

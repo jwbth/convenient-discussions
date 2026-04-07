@@ -108,11 +108,9 @@ class Subscriptions extends EventEmitter {
 	 * @param {string} subscribeId Section's DiscussionTools ID.
 	 * @param {string} [id] Section's ID. Not required for DiscussionTools subscriptions.
 	 * @param {boolean} [quiet] Don't show a success notification.
-	 * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
-	 *   time).
 	 */
-	async subscribe(subscribeId, id, quiet = false, unsubscribeHeadline) {
-		await this.actuallySubscribe(subscribeId, id, unsubscribeHeadline)
+	async subscribe(subscribeId, id, quiet = false) {
+		await this.actuallySubscribe(subscribeId, id)
 
 		if (!quiet) {
 			const body = subscribeId.startsWith('p-')
