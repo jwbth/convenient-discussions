@@ -8,6 +8,7 @@ import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
+import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
 import CommentSkeleton from './shared/CommentSkeleton'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
@@ -293,6 +294,9 @@ class Comment extends CommentSkeleton {
 
 	/** @type {string|undefined} */
 	dtId
+
+	/** @type {string|boolean|undefined} */
+	transcludedFrom
 
 	/**
 	 * The comment's coordinates.
@@ -2703,7 +2707,15 @@ class Comment extends CommentSkeleton {
 					throw error
 				}
 
-				// Add DiscussionTools code here
+				// Try DiscussionTools API fallback
+				try {
+					source = await this.locateUsingDiscussionTools()
+					if (commentForm) {
+						commentForm.viewChangesButton.toggle(false)
+					}
+				} catch {
+					throw error
+				}
 			}
 		} catch (error) {
 			if (error instanceof CdError) {
@@ -2714,6 +2726,69 @@ class Comment extends CommentSkeleton {
 		commentForm?.setSectionSubmitted(isSectionSubmitted)
 
 		return /** @type {CommentSource} */ (source)
+	}
+
+	/**
+	 * Locate the comment in wikitext using the DiscussionTools API as a fallback.
+	 *
+	 * @returns {Promise<CommentSource>}
+	 * @throws {CdError}
+	 * @private
+	 */
+	async locateUsingDiscussionTools() {
+		const response = await cd.getApi().get({
+			action: 'discussiontoolspageinfo',
+			page: cd.page.name,
+			oldid: mw.config.get('wgRevisionId'),
+		})
+
+		const transcludedFrom =
+			response?.discussiontoolspageinfo?.transcludedfrom?.[/** @type {string} */ (this.dtId)]
+
+		if (transcludedFrom === undefined) {
+			throw new CdError({
+				type: 'api',
+				code: 'noCommentData',
+			})
+		}
+
+		if (transcludedFrom === true) {
+			throw new CdError({
+				type: 'parse',
+				code: 'cantReply',
+			})
+		}
+
+		this.transcludedFrom = transcludedFrom
+
+		if (transcludedFrom === false) {
+			throw new CdError({
+				type: 'parse',
+				code: 'locateComment',
+			})
+		}
+
+		// Load the transcluded page code
+		const sourcePage = pageRegistry.get(transcludedFrom)
+		if (!sourcePage) {
+			throw new CdError({
+				type: 'parse',
+				code: 'noSourcePage',
+			})
+		}
+
+		await sourcePage.loadCode()
+		const code = sourcePage.source.getCode()
+		if (!code) {
+			throw new CdError({
+				type: 'parse',
+				code: 'noCode',
+			})
+		}
+
+		const source = this.locateInCode(undefined, code)
+
+		return source
 	}
 
 	/**
