@@ -916,16 +916,17 @@ class CommentSkeleton {
 	 */
 	wrapInlineParts() {
 		const sequencesToBeEnclosed = []
-		let start
-		let encloseThis = false
-		for (let i = 0; i <= this.parts.length - 1; i++) {
-			const part = this.parts[i]
+		let startIndex
+		let enclosingPending = false
+		for (let i = 0; i <= this.parts.length; i++) {
+			const part = this.parts.at(i)
 			if (
-				(start === undefined || ['back', 'start'].includes(part.step)) &&
+				part &&
+				(startIndex === undefined || ['back', 'start'].includes(part.step)) &&
 				!part.hasForeignComponents &&
 				!part.isHeading
 			) {
-				if (start === undefined) {
+				if (startIndex === undefined) {
 					// Don't enclose nodes whose parent is an inline element.
 					if (isInline(/** @type {ElementFor<N>} */ (part.node.parentElement))) {
 						for (let j = i + 1; j < this.parts.length; j++) {
@@ -936,7 +937,7 @@ class CommentSkeleton {
 						}
 						break
 					} else {
-						start = i
+						startIndex = i
 					}
 				}
 
@@ -945,18 +946,18 @@ class CommentSkeleton {
 				// https://en.wikipedia.org/w/index.php?title=Project:Village_pump_(WMF)&oldid=1256060662#c-Tazerdadog-20241102185300-Ratnahastin-20241102181500
 				// where the parser leaves <s> </s> (<span> </span> for Parsoid) between <dd> tags.
 				if (
-					!encloseThis &&
+					!enclosingPending &&
 					isInline(part.node, true) &&
 					/** @type {TextFor<N> | ElementFor<N>} */ (part.node).textContent.trim()
 				) {
-					encloseThis = true
+					enclosingPending = true
 				}
-			} else if (start !== undefined) {
-				if (encloseThis) {
-					sequencesToBeEnclosed.push({ start, end: i - 1 })
+			} else if (startIndex !== undefined) {
+				if (enclosingPending) {
+					sequencesToBeEnclosed.push({ startIndex, endIndex: i - 1 })
 				}
-				start = undefined
-				encloseThis = false
+				startIndex = undefined
+				enclosingPending = false
 			}
 		}
 
@@ -964,14 +965,16 @@ class CommentSkeleton {
 			const sequence = sequencesToBeEnclosed[i]
 			const wrapper = this.parser.constructor.createElement('div')
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const nextSibling = this.parts[sequence.start].node.nextSibling
+			const nextSibling = this.parts[sequence.startIndex].node.nextSibling
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const parent = /** @type {ElementFor<N>} */ (this.parts[sequence.start].node.parentElement)
-			for (let j = sequence.end; j >= sequence.start; j--) {
+			const parent = /** @type {ElementFor<N>} */ (
+				this.parts[sequence.startIndex].node.parentElement
+			)
+			for (let j = sequence.endIndex; j >= sequence.startIndex; j--) {
 				this.parser.constructor.appendChild(wrapper, this.parts[j].node)
 			}
 			this.parser.constructor.insertBefore(parent, wrapper, nextSibling)
-			this.parts.splice(sequence.start, sequence.end - sequence.start + 1, {
+			this.parts.splice(sequence.startIndex, sequence.endIndex - sequence.startIndex + 1, {
 				node: wrapper,
 				isTextNode: false,
 				isHeading: false,
