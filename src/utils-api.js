@@ -34,6 +34,12 @@ import userRegistry from './userRegistry'
  */
 
 /**
+ * @typedef {object} ApiResponseDiscussionToolsPreview
+ * @property {object} discussiontoolspreview
+ * @property {ApiResponseParseContent} discussiontoolspreview.parse
+ */
+
+/**
  * @typedef {object} ApiResponseParseTree
  * @property {object} parse
  * @property {string} parse.parsetree
@@ -236,6 +242,41 @@ export async function parseCode(code, customOptions) {
 	return {
 		html: response.parse.text,
 		parsedSummary: /** @type {string} */ (response.parse.parsedsummary),
+	}
+}
+
+/**
+ * Make a DiscussionTools preview request for transcluded comments. We assume that if something is
+ * parsed, it will be shown, so we automatically load modules.
+ *
+ * @async
+ * @param {string} code
+ * @param {object} params
+ * @param {string} params.page
+ * @param {string} params.useskin
+ * @returns {Promise<{html: string}>}
+ * @throws {CdError}
+ */
+export async function parseCodeUsingDiscussionTools(code, { page, useskin }) {
+	const response = /** @type {ApiResponseDiscussionToolsPreview} */ (
+		await cd
+			.getApi()
+			.post({
+				action: 'discussiontoolspreview',
+				type: 'reply',
+				page,
+				wikitext: code,
+				useskin,
+			})
+			.catch(handleApiReject)
+	)
+
+	const parse = response.discussiontoolspreview.parse
+	mw.loader.load(parse.modules)
+	mw.loader.load(parse.modulestyles)
+
+	return {
+		html: parse.text,
 	}
 }
 

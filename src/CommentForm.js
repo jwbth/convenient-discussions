@@ -21,7 +21,7 @@ import {
 	removeWikiMarkup,
 } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
-import { handleApiReject, parseCode } from './utils-api'
+import { handleApiReject, parseCode, parseCodeUsingDiscussionTools } from './utils-api'
 import { keyCombination } from './utils-keyboard'
 import {
 	buildEditSummary,
@@ -2421,10 +2421,27 @@ class CommentForm extends EventEmitter {
 		let html
 		let parsedSummary
 		try {
-			;({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
-				title: this.targetPage.name,
-				summary: buildEditSummary({ text: this.summaryInput.getValue() }),
-			}))
+			// Use DiscussionTools API for transcluded comments in reply mode
+			if (
+				this.isMode('reply') &&
+				!this.target.source &&
+				this.target.transcludedFrom !== undefined &&
+				this.target.transcludedFrom !== true
+			) {
+				const page =
+					typeof this.target.transcludedFrom === 'string'
+						? this.target.transcludedFrom
+						: cd.page.name
+				;({ html } = await parseCodeUsingDiscussionTools(this.inputToCode('preview'), {
+					page,
+					useskin: cd.g.skin,
+				}))
+			} else {
+				;({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
+					title: this.targetPage.name,
+					summary: buildEditSummary({ text: this.summaryInput.getValue() }),
+				}))
+			}
 		} catch (error) {
 			this.handleError({
 				error,
