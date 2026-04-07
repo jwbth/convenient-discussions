@@ -8,7 +8,6 @@ import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
-import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
 import CommentSkeleton from './shared/CommentSkeleton'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
@@ -2665,7 +2664,7 @@ class Comment extends CommentSkeleton {
 	 *
 	 * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
 	 *   changes are viewed.
-	 * @returns {Promise<CommentSource>}
+	 * @returns {Promise<CommentSource | undefined>}
 	 * @throws {CdError|Error}
 	 */
 	async loadCode(commentForm) {
@@ -2709,10 +2708,8 @@ class Comment extends CommentSkeleton {
 
 				// Try DiscussionTools API fallback
 				try {
-					source = await this.locateUsingDiscussionTools()
-					if (commentForm) {
-						commentForm.viewChangesButton.toggle(false)
-					}
+					await this.checkExistenceUsingDiscussionTools()
+					commentForm.viewChangesButton.toggle(false)
 				} catch {
 					throw error
 				}
@@ -2725,30 +2722,39 @@ class Comment extends CommentSkeleton {
 		}
 		commentForm?.setSectionSubmitted(isSectionSubmitted)
 
-		return /** @type {CommentSource} */ (source)
+		return source
 	}
 
 	/**
-	 * Locate the comment in wikitext using the DiscussionTools API as a fallback.
+	 * Make sure the comment is known on a page using the DiscussionTools API as a fallback.
 	 *
-	 * @returns {Promise<CommentSource>}
 	 * @throws {CdError}
 	 * @private
 	 */
-	async locateUsingDiscussionTools() {
-		const response = await cd.getApi().get({
-			action: 'discussiontoolspageinfo',
-			page: cd.page.name,
-			oldid: mw.config.get('wgRevisionId'),
-		})
+	async checkExistenceUsingDiscussionTools() {
+		/**
+		 * @typedef {object} ApiResponseDtPageInfo
+		 * @property {object} discussiontoolspageinfo
+		 * @property {Partial<{ [id: string]: boolean | string }>} discussiontoolspageinfo.transcludedfrom
+		 */
+
+		/** @type {ApiResponseDtPageInfo} */
+		const response = await cd
+			.getApi()
+			.get({
+				action: 'discussiontoolspageinfo',
+				page: cd.page.name,
+				oldid: mw.config.get('wgRevisionId'),
+			})
+			.catch(handleApiReject)
 
 		const transcludedFrom =
-			response?.discussiontoolspageinfo?.transcludedfrom?.[/** @type {string} */ (this.dtId)]
+			response.discussiontoolspageinfo.transcludedfrom[/** @type {string} */ (this.dtId)]
 
 		if (transcludedFrom === undefined) {
 			throw new CdError({
-				type: 'api',
-				code: 'noCommentData',
+				type: 'response',
+				code: 'noData',
 			})
 		}
 
@@ -2760,35 +2766,6 @@ class Comment extends CommentSkeleton {
 		}
 
 		this.transcludedFrom = transcludedFrom
-
-		if (transcludedFrom === false) {
-			throw new CdError({
-				type: 'parse',
-				code: 'locateComment',
-			})
-		}
-
-		// Load the transcluded page code
-		const sourcePage = pageRegistry.get(transcludedFrom)
-		if (!sourcePage) {
-			throw new CdError({
-				type: 'parse',
-				code: 'noSourcePage',
-			})
-		}
-
-		await sourcePage.loadCode()
-		const code = sourcePage.source.getCode()
-		if (!code) {
-			throw new CdError({
-				type: 'parse',
-				code: 'noCode',
-			})
-		}
-
-		const source = this.locateInCode(undefined, code)
-
-		return source
 	}
 
 	/**
