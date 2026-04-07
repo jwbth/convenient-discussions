@@ -2733,18 +2733,11 @@ class CommentForm extends EventEmitter {
 				let $message
 
 				if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
-					this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(
+					$message = this.setupCaptchaInput(
 						/** @type {{ discussiontoolsedit: mw.libs.confirmEdit.CaptchaData }} */ (
 							error.getApiResponse()
 						).discussiontoolsedit.captcha,
 					)
-					this.captchaInput.on('enter', () => {
-						this.submit()
-					})
-					$message = new OO.ui.MessageWidget({
-						type: 'notice',
-						label: this.captchaInput.$element,
-					}).$element
 				}
 
 				this.handleError({
@@ -2760,6 +2753,25 @@ class CommentForm extends EventEmitter {
 		}
 
 		return false
+	}
+
+	/**
+	 * Set up captcha input widget and return a message widget.
+	 *
+	 * @param {mw.libs.confirmEdit.CaptchaData} captchaData Captcha data from the API response.
+	 * @returns {JQuery} Message widget element.
+	 * @private
+	 */
+	setupCaptchaInput(captchaData) {
+		this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(captchaData)
+		this.captchaInput.on('enter', () => {
+			this.submit()
+		})
+
+		return new OO.ui.MessageWidget({
+			type: 'notice',
+			label: this.captchaInput.$element,
+		}).$element
 	}
 
 	/**
@@ -2819,17 +2831,10 @@ class CommentForm extends EventEmitter {
 					)
 					messageType = 'notice'
 				} else if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
-					this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(
+					$message = this.setupCaptchaInput(
 						/** @type {{ edit: mw.libs.confirmEdit.CaptchaData }} */ (error.getApiResponse()).edit
 							.captcha,
 					)
-					this.captchaInput.on('enter', () => {
-						this.submit()
-					})
-					$message = new OO.ui.MessageWidget({
-						type: 'notice',
-						label: this.captchaInput.$element,
-					}).$element
 				}
 
 				this.handleError({
