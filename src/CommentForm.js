@@ -852,7 +852,9 @@ class CommentForm extends EventEmitter {
 	async loadComment(initialState) {
 		const operation = this.operations.add('load')
 		try {
-			const source = await this.target.loadCode(this)
+			const source = /** @type {import('./CommentSource').default} */ (
+				await this.target.loadCode(this)
+			)
 			let commentInputValue = source.toInput()
 			if (source.inSmallFont) {
 				commentInputValue = `<small>${commentInputValue}</small>`
@@ -2054,6 +2056,9 @@ class CommentForm extends EventEmitter {
 					case 'locateComment':
 						message = cd.sParse('error-locatecomment', editUrl, cd.page.name)
 						break
+					case 'cantReply':
+						message = cd.sParse('error-cantreply', editUrl, cd.page.name)
+						break
 					case 'locateSection':
 						message = cd.sParse('error-locatesection', editUrl, cd.page.name)
 						break
@@ -2401,7 +2406,11 @@ class CommentForm extends EventEmitter {
 		 *   (if the mode is 'edit' and the comment has not been loaded, this method would halt after
 		 *   looking for an unclosed 'load' operation above).
 		 */
-		if (!this.isMode('addSection') && !this.target.source && !this.target.transcludedFrom) {
+		if (
+			!this.isMode('addSection') &&
+			!this.target.source &&
+			!(this.isCommentTarget() && this.target.transcludedFrom)
+		) {
 			await this.checkCode()
 			operation.close()
 			if (operation.isClosed()) return
@@ -2671,6 +2680,7 @@ class CommentForm extends EventEmitter {
 	 * standard means.
 	 *
 	 * @param {import('./CommentFormOperation').default} operation Operation the form is undergoing.
+	 * @returns {Promise<boolean>}
 	 * @private
 	 */
 	async submitViaDiscussionTools(operation) {
@@ -2700,49 +2710,16 @@ class CommentForm extends EventEmitter {
 			if (response.discussiontoolsedit.result !== 'success') {
 				this.handleError({
 					error: new CdError({
-						type: 'response',
+						type: 'api',
 						details: { error: response.discussiontoolsedit },
 					}),
 					operation,
 				})
 
-				return
+				return false
 			}
 
-			// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
-			// just look at the newest own comment after the reload?
-			const editDate = new Date()
-
-			// Here we use a trick where we pass, in bootData, the name of the section that was set to be
-			// be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
-			// update the value quickly enough, so it returns the old value, but we must display the new
-			// one.
-			const bootData = /** @type {import('./BootProcess').PassedData} */ ({
-				submittedCommentForm: this,
-				commentIds: [this.generateIdOfSubmittedComment(editDate)],
-			})
-
-			if (this.watchCheckbox?.isSelected() && $('#ca-watch').length) {
-				$('#ca-watch')
-					.attr('id', 'ca-unwatch')
-					.find('a')
-					.attr('href', cd.page.getUrl({ action: 'unwatch' }))
-			} else if (!this.watchCheckbox?.isSelected() && $('#ca-unwatch').length) {
-				$('#ca-unwatch')
-					.attr('id', 'ca-watch')
-					.find('a')
-					.attr('href', cd.page.getUrl({ action: 'watch' }))
-			}
-
-			// When the edit takes place on another page that is transcluded in the current one, we must
-			// purge the current page, otherwise we may get an old version without the submitted comment.
-			if (this.targetPage !== cd.page) {
-				await cd.page.purge()
-			}
-
-			// TODO: in `discussiontoolsedit` response, there is the new content (unless `nocontent` is
-			// true), so we don't need to make a parse request in controller.rebootPage(). Reuse it.
-			this.reloadPage(bootData, operation)
+			return true
 		} catch (error) {
 			delete this.captchaInput
 
@@ -2781,6 +2758,8 @@ class CommentForm extends EventEmitter {
 				this.handleError({ error, operation })
 			}
 		}
+
+		return false
 	}
 
 	/**
@@ -2986,20 +2965,12 @@ class CommentForm extends EventEmitter {
 			if (
 				this.isMode('reply') &&
 				/** @type {Comment} */ (this.target).dtId &&
-				!(/** @type {Comment} */ (this.target).transcludedFrom)
-			) {
-				await this.submitViaDiscussionTools(operation)
-
+				!(/** @type {Comment} */ (this.target).transcludedFrom) &&
+				!(await this.submitViaDiscussionTools(operation))
+			)
 				return
-			}
 
-			if (this.isMode('reply')) {
-				// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should
-				// we just look at the newest own comment after the reload?
-				editDate = new Date()
-			} else {
-				return
-			}
+			editDate = new Date()
 		} else {
 			const editTimestamp = await this.editPage(contextCode, operation, suppressTag)
 

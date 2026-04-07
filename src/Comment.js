@@ -8,6 +8,7 @@ import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
+import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
 import CommentSkeleton from './shared/CommentSkeleton'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
@@ -2696,7 +2697,8 @@ class Comment extends CommentSkeleton {
 				}
 			} catch (error) {
 				if (
-					commentForm?.getMode() !== 'reply' ||
+					!commentForm ||
+					(commentForm.getMode() !== 'reply' && commentForm.getMode() !== 'edit') ||
 					!this.dtId ||
 					!(
 						error instanceof CdError &&
@@ -2708,7 +2710,7 @@ class Comment extends CommentSkeleton {
 
 				// Try DiscussionTools API fallback
 				try {
-					await this.checkExistenceUsingDiscussionTools()
+					await this.locateUsingDiscussionTools(commentForm.getMode() === 'reply')
 					commentForm.viewChangesButton.toggle(false)
 				} catch {
 					throw error
@@ -2729,9 +2731,11 @@ class Comment extends CommentSkeleton {
 	 * Make sure the comment is known on a page using the DiscussionTools API as a fallback.
 	 *
 	 * @throws {CdError}
+	 * @param {boolean} isReply
+	 * @returns {Promise<CommentSource | undefined>}
 	 * @private
 	 */
-	async checkExistenceUsingDiscussionTools() {
+	async locateUsingDiscussionTools(isReply) {
 		/**
 		 * @typedef {object} ApiResponseDtPageInfo
 		 * @property {object} discussiontoolspageinfo
@@ -2766,6 +2770,45 @@ class Comment extends CommentSkeleton {
 		}
 
 		this.transcludedFrom = transcludedFrom
+
+		if (typeof transcludedFrom === 'boolean') return
+
+		// Load the transcluded page code
+		const sourcePage = pageRegistry.get(transcludedFrom)
+		if (!sourcePage) {
+			throw new CdError({
+				type: 'parse',
+				code: 'noSourcePage',
+			})
+		}
+
+		try {
+			await sourcePage.loadCode()
+			const code = sourcePage.source.getCode()
+			if (!code) {
+				// If we couldn't locate the comment but it's known to DiscussionTools, we'll just delegate
+				// replying to it.
+				if (!isReply) {
+					throw new CdError({
+						type: 'parse',
+						code: 'locateComment',
+					})
+				}
+
+				return
+			}
+
+			return this.locateInCode(undefined, code)
+		} catch {
+			if (!isReply) {
+				// If we couldn't locate the comment but it's known to DiscussionTools, we'll just delegate
+				// replying to it.
+				throw new CdError({
+					type: 'parse',
+					code: 'locateComment',
+				})
+			}
+		}
 	}
 
 	/**
