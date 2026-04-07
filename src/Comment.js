@@ -2791,7 +2791,9 @@ class Comment extends CommentSkeleton {
 		// Load the transcluded page code
 		await this.dtTranscludedFrom.loadCode()
 		try {
-			return this.locateInCode(undefined, this.dtTranscludedFrom.source.getCode())
+			this.source = this.locateInCode(undefined, this.dtTranscludedFrom.source.getCode())
+
+			return this.source
 		} catch {
 			throw new CdError({
 				type: 'parse',
@@ -3141,6 +3143,7 @@ class Comment extends CommentSkeleton {
 		if (!customCodePassed) {
 			code = sectionCode || this.getSourcePage().source.getCode()
 			this.source = undefined
+			this.dtTranscludedFrom = undefined
 		}
 
 		if (code === undefined) {

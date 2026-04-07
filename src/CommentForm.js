@@ -2441,10 +2441,8 @@ class CommentForm extends EventEmitter {
 				this.target.dtTranscludedFrom !== true
 			) {
 				const page =
-					this.target.dtTranscludedFrom === false
-						? cd.page
-						: /** @type {import('./Page').default} */ (this.target.dtTranscludedFrom)
-				;({ html } = await parseCodeUsingDiscussionTools(this.inputToCode('preview'), {
+					this.target.dtTranscludedFrom === false ? cd.page : this.target.dtTranscludedFrom
+				;({ html } = await parseCodeUsingDiscussionTools(this.commentInput.getValue(), {
 					page: page.name,
 					useskin: cd.g.skin,
 				}))
@@ -2528,6 +2526,8 @@ class CommentForm extends EventEmitter {
 	async viewChanges() {
 		if (
 			this.isBeingSubmitted() ||
+			// We couldn't find the comment by our means and will use DT API for submitting. "View
+			// changes" is unavailable then.
 			(this.isCommentTarget() && this.target.dtTranscludedFrom === false)
 		)
 			return
@@ -2719,6 +2719,7 @@ class CommentForm extends EventEmitter {
 	async submitViaDiscussionTools(operation) {
 		try {
 			const target = /** @type {Comment} */ (this.target)
+			// Currently (April 2026) it's always false at this point
 			const page =
 				target.dtTranscludedFrom === false
 					? cd.page
