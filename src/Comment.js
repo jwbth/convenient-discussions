@@ -2710,7 +2710,7 @@ class Comment extends CommentSkeleton {
 
 				// Try DiscussionTools API fallback
 				try {
-					await this.locateUsingDiscussionTools(commentForm.getMode() === 'reply')
+					await this.locateUsingDiscussionTools()
 					commentForm.viewChangesButton.toggle(false)
 				} catch {
 					throw error
@@ -2731,11 +2731,10 @@ class Comment extends CommentSkeleton {
 	 * Make sure the comment is known on a page using the DiscussionTools API as a fallback.
 	 *
 	 * @throws {CdError}
-	 * @param {boolean} isReply
 	 * @returns {Promise<CommentSource | undefined>}
 	 * @private
 	 */
-	async locateUsingDiscussionTools(isReply) {
+	async locateUsingDiscussionTools() {
 		/**
 		 * @typedef {object} ApiResponseDtPageInfo
 		 * @property {object} discussiontoolspageinfo
@@ -2778,36 +2777,18 @@ class Comment extends CommentSkeleton {
 		if (!sourcePage) {
 			throw new CdError({
 				type: 'parse',
-				code: 'noSourcePage',
+				code: 'locateComment',
 			})
 		}
 
+		await sourcePage.loadCode()
 		try {
-			await sourcePage.loadCode()
-			const code = sourcePage.source.getCode()
-			if (!code) {
-				// If we couldn't locate the comment but it's known to DiscussionTools, we'll just delegate
-				// replying to it.
-				if (!isReply) {
-					throw new CdError({
-						type: 'parse',
-						code: 'locateComment',
-					})
-				}
-
-				return
-			}
-
-			return this.locateInCode(undefined, code)
+			return this.locateInCode(undefined, sourcePage.source.getCode())
 		} catch {
-			if (!isReply) {
-				// If we couldn't locate the comment but it's known to DiscussionTools, we'll just delegate
-				// replying to it.
-				throw new CdError({
-					type: 'parse',
-					code: 'locateComment',
-				})
-			}
+			throw new CdError({
+				type: 'parse',
+				code: 'locateComment',
+			})
 		}
 	}
 
