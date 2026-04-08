@@ -38,7 +38,7 @@ export default class CommentFormOperation {
 	open(clearMessages) {
 		this.date = new Date()
 		this.closed = false
-		this.delayed = false
+		this.suspended = false
 
 		if (this.type !== 'preview' || !this.options.isAuto) {
 			if (clearMessages && !this.commentForm.captchaInput) {
@@ -71,23 +71,23 @@ export default class CommentFormOperation {
 	}
 
 	/**
-	 * Mark the operation as delayed.
+	 * Mark the operation as suspended.
 	 */
-	delay() {
-		this.delayed = true
+	suspend() {
+		this.suspended = true
 	}
 
 	/**
-	 * Unmark the operation as delayed.
+	 * Unmark the operation as suspended.
 	 */
-	undelay() {
-		this.delayed = false
+	resume() {
+		this.suspended = false
 	}
 
 	/**
-	 * Check for conflicts of the operation with other pending operations, and if there are such,
-	 * {@link CommentFormOperationRegistry#close close} the operation and return `true` so that the
-	 * caller can abort it.
+	 * Check for conflicts of the operation with other, newer, pending operations, and if there are
+	 * such, {@link CommentFormOperationRegistry#close close} the operation and return `true` so that
+	 * the caller can abort it.
 	 *
 	 * The rules are the following:
 	 * - `preview` and `viewChanges` operations can be overriden with other of one of these types
@@ -117,9 +117,9 @@ export default class CommentFormOperation {
 					op.isOpen() &&
 					['preview', 'viewChanges'].includes(op.getType()) &&
 					op.date > this.date &&
-					// If we delete this line, then, with autopreview enabled, the preview will be updated only
-					// when the user stops typing.
-					!op.isDelayed(),
+					// If we delete this line, then, with autopreview enabled, the preview will be updated
+					// only when the user stops typing.
+					!op.isSuspended(),
 			).length
 		) {
 			this.close()
@@ -178,11 +178,11 @@ export default class CommentFormOperation {
 	}
 
 	/**
-	 * Check whether the operation is delayed.
+	 * Check whether the operation is suspended.
 	 *
-	 * @returns {this is { delayed: true }}
+	 * @returns {this is { suspended: true }}
 	 */
-	isDelayed() {
-		return Boolean(this.delayed)
+	isSuspended() {
+		return Boolean(this.suspended)
 	}
 }

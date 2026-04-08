@@ -2679,6 +2679,7 @@ class Comment extends CommentSkeleton {
 					this.section.locateInCode(sectionCode)
 					source = this.locateInCode(sectionCode)
 					isSectionSubmitted = true
+					commentForm.setApi('edit')
 				} catch (error) {
 					if (
 						!(
@@ -2694,6 +2695,7 @@ class Comment extends CommentSkeleton {
 				if (!isSectionSubmitted) {
 					await this.getSourcePage().loadCode()
 					source = this.locateInCode()
+					commentForm?.setApi('edit')
 				}
 			} catch (error) {
 				if (

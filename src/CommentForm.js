@@ -910,15 +910,16 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Test if a target comment or section exists in the wikitext.
 	 *
+	 * @param {import('./CommentFormOperation').default} [operation]
 	 * @returns {CheckCodeRequest}
 	 * @private
 	 */
-	checkCode() {
+	checkCode(operation) {
 		if (!this.checkCodeRequest) {
 			this.checkCodeRequest = this.target.loadCode(this).catch((/** @type {unknown} */ error) => {
 				this.$messageArea.empty()
 				delete this.checkCodeRequest
-				this.handleError({ error })
+				this.handleError({ error, operation })
 			})
 		}
 
@@ -2398,7 +2399,7 @@ class CommentForm extends EventEmitter {
 					if (this.previewTimeout) {
 						operation.close()
 					} else {
-						operation.delay()
+						operation.suspend()
 						this.previewTimeout = setTimeout(
 							() => {
 								this.previewTimeout = undefined
@@ -2412,7 +2413,7 @@ class CommentForm extends EventEmitter {
 				}
 			}
 
-			operation.undelay()
+			operation.resume()
 			this.lastPreviewTimestamp = Date.now()
 		}
 
@@ -2425,16 +2426,8 @@ class CommentForm extends EventEmitter {
 		 *   (if the mode is 'edit' and the comment has not been loaded, this method would halt after
 		 *   looking for an unclosed 'load' operation above).
 		 */
-		if (
-			!this.isMode('addSection') &&
-			!this.target.source &&
-			// DiscussionTools API will be used; no need to check the code. TODO: Update if we ever decide
-			// to use DiscussionTools API to reply even to transcluded comments where `dtTranscludedFrom`
-			// will have a page.
-			!(this.isCommentTarget() && this.target.dtTranscludedFrom === false)
-		) {
-			await this.checkCode()
-			operation.close()
+		if (!this.isMode('addSection') && !this.target.source && this.apiName !== 'dt') {
+			await this.checkCode(operation)
 			if (operation.isClosed()) return
 		}
 
@@ -2452,7 +2445,6 @@ class CommentForm extends EventEmitter {
 			) {
 				;({ html } = await parseCodeUsingDiscussionTools(this.commentInput.getValue(), {
 					page: this.target.getSourcePage().name,
-					useskin: cd.g.skin,
 				}))
 				this.willCommentBeIndented = true
 			} else {

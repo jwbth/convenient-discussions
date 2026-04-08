@@ -253,11 +253,10 @@ export async function parseCode(code, customOptions) {
  * @param {string} code
  * @param {object} params
  * @param {string} params.page
- * @param {string} params.useskin
  * @returns {Promise<{html: string}>}
  * @throws {CdError}
  */
-export async function parseCodeUsingDiscussionTools(code, { page, useskin }) {
+export async function parseCodeUsingDiscussionTools(code, { page }) {
 	const response = /** @type {ApiResponseDiscussionToolsPreview} */ (
 		await cd
 			.getApi()
@@ -266,7 +265,7 @@ export async function parseCodeUsingDiscussionTools(code, { page, useskin }) {
 				type: 'reply',
 				page,
 				wikitext: code,
-				useskin,
+				useskin: cd.g.skin,
 			})
 			.catch(handleApiReject)
 	)
