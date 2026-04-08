@@ -2700,7 +2700,7 @@ class Comment extends CommentSkeleton {
 			} catch (error) {
 				if (
 					!commentForm ||
-					(commentForm.getMode() !== 'reply' && commentForm.getMode() !== 'edit') ||
+					!commentForm.isCommentTarget() ||
 					!this.dtId ||
 					!(
 						error instanceof CdError &&
@@ -2714,6 +2714,7 @@ class Comment extends CommentSkeleton {
 				try {
 					source = await this.locateUsingDiscussionTools()
 					if (!source) {
+						// Can't edit existing comments with DiscussionTools API.
 						if (commentForm.getMode() === 'edit') {
 							throw new CdError({
 								type: 'parse',
@@ -2725,9 +2726,12 @@ class Comment extends CommentSkeleton {
 						commentForm.setApi('dt')
 					}
 
-					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					if (this.dtTranscludedFrom !== undefined && typeof this.dtTranscludedFrom !== 'boolean') {
-						commentForm.setTargetPage(this.dtTranscludedFrom)
+					if (typeof this.dtTranscludedFrom !== 'boolean') {
+						commentForm.setTargetPage(
+							/** @type {import('./Page').default} */ (
+								/** @type {unknown} */ (this.dtTranscludedFrom)
+							),
+						)
 					}
 				} catch {
 					throw error

@@ -2439,15 +2439,15 @@ class CommentForm extends EventEmitter {
 		let parsedSummary
 		try {
 			// Use DiscussionTools API for transcluded comments in reply mode
-			if (
-				this.isMode('reply') &&
-				!this.target.source &&
-				this.target.dtTranscludedFrom !== undefined &&
-				this.target.dtTranscludedFrom !== true
-			) {
-				;({ html } = await parseCodeUsingDiscussionTools(this.commentInput.getValue(), {
-					page: this.target.getSourcePage().name,
-				}))
+			if (this.apiName === 'dt') {
+				const text = this.commentInput.getValue()
+				if (text) {
+					;({ html } = await parseCodeUsingDiscussionTools(text, {
+						page: /** @type {Comment} */ (this.target).getSourcePage().name,
+					}))
+				} else {
+					html = ''
+				}
 				this.willCommentBeIndented = true
 			} else {
 				;({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
@@ -2467,47 +2467,45 @@ class CommentForm extends EventEmitter {
 
 		if (operation.closeIfConflicted()) return
 
-		if (html) {
-			if (
-				(isAuto &&
-					// In case of an empty comment input, we in fact make this request for the sake of parsing
-					// the summary if there is a need. Alternatively, the user could click the "Preview"
-					// button.
-					!commentInputValue.trim() &&
-					!this.headlineInput?.getValue().trim()) ||
-				this.deleteCheckbox?.isSelected()
-			) {
-				this.$previewArea.empty()
-			} else {
-				this.updatePreview(html)
-			}
+		if (
+			(isAuto &&
+				// In case of an empty comment input, we in fact make this request for the sake of parsing
+				// the summary if there is a need. Alternatively, the user could click the "Preview"
+				// button.
+				!commentInputValue.trim() &&
+				!this.headlineInput?.getValue().trim()) ||
+			this.deleteCheckbox?.isSelected()
+		) {
+			this.$previewArea.empty()
+		} else {
+			this.updatePreview(html)
+		}
 
-			// Workaround to omit the signature when templates containing a signature, like
-			// https://en.wikipedia.org/wiki/Template:Requested_move, are substituted.
-			if (this.omitSignatureCheckbox && !this.omitSignatureCheckboxAltered) {
-				const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
-				if (new RegExp(`{{ *(${substAliasesString})`, 'i').test(commentInputValue)) {
-					const signatureText = this.$previewArea.find('.cd-commentForm-signature').text()
-					const previewText = this.$previewArea.text()
-					if (
-						signatureText &&
-						previewText.indexOf(signatureText) !== previewText.lastIndexOf(signatureText)
-					) {
-						this.omitSignatureCheckbox.setSelected(true)
-					}
-				} else {
-					this.omitSignatureCheckbox.setSelected(false)
+		// Workaround to omit the signature when templates containing a signature, like
+		// https://en.wikipedia.org/wiki/Template:Requested_move, are substituted.
+		if (this.omitSignatureCheckbox && !this.omitSignatureCheckboxAltered) {
+			const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
+			if (new RegExp(`{{ *(${substAliasesString})`, 'i').test(commentInputValue)) {
+				const signatureText = this.$previewArea.find('.cd-commentForm-signature').text()
+				const previewText = this.$previewArea.text()
+				if (
+					signatureText &&
+					previewText.indexOf(signatureText) !== previewText.lastIndexOf(signatureText)
+				) {
+					this.omitSignatureCheckbox.setSelected(true)
 				}
+			} else {
+				this.omitSignatureCheckbox.setSelected(false)
 			}
+		}
 
-			this.$summaryPreview.empty()
-			if (parsedSummary) {
-				this.$summaryPreview.append(
-					document.createTextNode(cd.sParse('cf-summary-preview')),
-					document.createTextNode(cd.mws('colon-separator')),
-					$('<span>').addClass('comment').html(parsedSummary),
-				)
-			}
+		this.$summaryPreview.empty()
+		if (parsedSummary) {
+			this.$summaryPreview.append(
+				document.createTextNode(cd.sParse('cf-summary-preview')),
+				document.createTextNode(cd.mws('colon-separator')),
+				$('<span>').addClass('comment').html(parsedSummary),
+			)
 		}
 
 		if (cd.settings.get('autopreview') && this.previewButton.$element.is(':visible')) {
@@ -2527,13 +2525,7 @@ class CommentForm extends EventEmitter {
 	 * View changes in the page code after submitting the form.
 	 */
 	async viewChanges() {
-		if (
-			this.isBeingSubmitted() ||
-			// We couldn't find the comment by our means and will use DT API for submitting. "View
-			// changes" is unavailable then.
-			(this.isCommentTarget() && this.target.dtTranscludedFrom === false)
-		)
-			return
+		if (this.isBeingSubmitted() || this.apiName === 'dt') return
 
 		const operation = this.operations.add('viewChanges')
 
@@ -3004,15 +2996,10 @@ class CommentForm extends EventEmitter {
 		const { contextCode, commentCode } = (await this.buildSource('submit', operation)) || {}
 		let editDate
 		if (contextCode === undefined) {
-			if (
-				this.isMode('reply') &&
-				this.target.dtId &&
-				// TODO: Should be able to use DiscussionTools API on transcluded pages as well.
-				this.target.dtTranscludedFrom === false &&
-				!(await this.submitViaDiscussionTools(operation))
-			)
-				return
+			if (this.apiName === 'dt' && !(await this.submitViaDiscussionTools(operation))) return
 
+			// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
+			// just look at the newest own comment after the reload?
 			editDate = new Date()
 		} else {
 			const editTimestamp = await this.editPage(contextCode, operation, suppressTag)

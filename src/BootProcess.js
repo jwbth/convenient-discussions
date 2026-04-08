@@ -892,7 +892,11 @@ class BootProcess {
 	async processPassedTargets() {
 		const commentIds = this.passedData.commentIds
 		if (commentIds) {
-			const comments = commentIds.map((id) => commentManager.getById(id)).filter(definedAndNotNull)
+			const comments = commentIds
+				// FIXME: second parameter to getById (inpreciseDate) is true due to using the current date
+				// in `editDate = new Date()` in src\CommentForm.js
+				.map((id) => commentManager.getById(id, true))
+				.filter(definedAndNotNull)
 			if (comments.length) {
 				// sleep() for Firefox, as in Comment.markAsLinkedOnLoad()
 				await sleep()
