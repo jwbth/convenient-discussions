@@ -577,6 +577,9 @@ class CommentForm extends EventEmitter {
 		this.mode = mode
 
 		this.setTargets(target)
+		if (this.isCommentTarget()) {
+			this.target.on('transclusionFound', this.onCommentTransclusionFound)
+		}
 
 		/**
 		 * Configuration to preload data into the form.
@@ -870,9 +873,16 @@ class CommentForm extends EventEmitter {
 	async loadComment(initialState) {
 		const operation = this.operations.add('load')
 		try {
-			const source = /** @type {import('./CommentSource').default} */ (
-				await this.target.loadCode(this)
-			)
+			const source = await this.target.loadCode(this)
+
+			// Can't edit existing comments with DiscussionTools API.
+			if (!source) {
+				throw new CdError({
+					type: 'parse',
+					code: 'locateComment',
+				})
+			}
+
 			let commentInputValue = source.toInput()
 			if (source.inSmallFont) {
 				commentInputValue = `<small>${commentInputValue}</small>`
@@ -1373,6 +1383,28 @@ class CommentForm extends EventEmitter {
 		this.addEventListenersToTextInputs(emitChange, preview)
 		this.addEventListenersToCheckboxes(emitChange, preview)
 		this.addEventListenersToButtons()
+	}
+
+	/**
+	 * Handle the comment "transclusion found" event.
+	 *
+	 * @param {import('./Page').default | boolean} transcludedFrom
+	 */
+	onCommentTransclusionFound = (transcludedFrom) => {
+		const targetTyped = /** @type {Comment} */ (this.target)
+
+		if (!targetTyped.source) {
+			// DiscussionTools API will be used for adding the comment. TODO: currently, once set to
+			// 'discussiontoolsedit', we can't set it back to 'edit'. Allowing so could introduce
+			// unsynchronization of various components.
+			this.setApi('discussiontoolsedit')
+		}
+		// Even if we fail to obtain the source, we need to update the target page. We may be more
+		// lucky next time, but if the target page is wrong, the current page would be rewritten
+		// with the transcluded one.
+		if (typeof transcludedFrom !== 'boolean') {
+			this.setTargetPage(transcludedFrom)
+		}
 	}
 
 	/**
@@ -3155,7 +3187,11 @@ class CommentForm extends EventEmitter {
 	unregister() {
 		if (!this.registered) return
 
-		CommentForm.forgetOnTarget(this.target, this.mode)
+		CommentForm.unregisterOnTarget(this.target, this.mode)
+		if (this.isCommentTarget()) {
+			delete this.target.dtTranscludedFrom
+			delete this.target.source
+		}
 
 		// Popups can be placed outside the form element, so they need to be torn down whenever the form
 		// is unregistered (even if the form itself is not torn down).
@@ -4174,7 +4210,7 @@ class CommentForm extends EventEmitter {
 	 * @param {CommentFormTarget} target
 	 * @param {CommentFormMode} mode
 	 */
-	static forgetOnTarget(target, mode) {
+	static unregisterOnTarget(target, mode) {
 		delete target[/** @type {keyof typeof target} */ (this.getPropertyNameOnTarget(target, mode))]
 	}
 }

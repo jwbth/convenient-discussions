@@ -20,7 +20,7 @@ import { getRangeContents } from './utils-window'
 /**
  * A section in the browser context (as opposed to the worker context, see {@link SectionWorker}).
  *
- * @augments {SectionSkeleton<Node>}
+ * @augments SectionSkeleton<Node>
  */
 class Section extends SectionSkeleton {
 	/** @readonly */

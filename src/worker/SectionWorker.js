@@ -5,7 +5,7 @@ import { keepSafeKeys } from './worker'
 /**
  * Section class used in the worker scope.
  *
- * @augments {SectionSkeleton<import('domhandler').Node>}
+ * @augments SectionSkeleton<import('domhandler').Node>
  */
 export default class SectionWorker extends SectionSkeleton {
 	/** @type {SectionWorker|undefined} */

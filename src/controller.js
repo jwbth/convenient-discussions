@@ -1048,7 +1048,7 @@ class Controller extends EventEmitter {
 		this.mutationObserver?.disconnect()
 		commentManager.reset()
 		sectionManager.reset()
-		CommentForm.forgetOnTarget(cd.page, 'addSection')
+		CommentForm.unregisterOnTarget(cd.page, 'addSection')
 		this.$emulatedAddTopicButton?.remove()
 		delete this.$addTopicButtons
 		this.content = {}
@@ -1579,11 +1579,9 @@ class Controller extends EventEmitter {
 			if ($button.is('a')) {
 				url = new URL(/** @type {HTMLAnchorElement} */ ($button[0]).href)
 				const titleParams = url.searchParams.getAll('title')
-				if (titleParams.length) {
-					pageName = getLastArrayElementOrSelf(titleParams)
-				} else {
-					pageName = parseWikiUrl(url.pathname)?.pageName
-				}
+				pageName = titleParams.length
+					? getLastArrayElementOrSelf(titleParams)
+					: parseWikiUrl(url.pathname)?.pageName
 				pageName = pageName?.replace(/^Special:NewSection\//i, '')
 			} else if ($button.is('input')) {
 				pageName = /** @type {string} */ (

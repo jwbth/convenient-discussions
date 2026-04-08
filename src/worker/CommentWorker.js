@@ -8,7 +8,7 @@ import { keepSafeKeys } from './worker'
 /**
  * Comment class used in the worker scope.
  *
- * @augments {CommentSkeleton<import('domhandler').Node>}
+ * @augments CommentSkeleton<import('domhandler').Node>
  */
 export default class CommentWorker extends CommentSkeleton {
 	/**

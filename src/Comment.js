@@ -2,6 +2,7 @@ import Button from './Button'
 import CommentFlagSet from './CommentFlagSet'
 import CommentSource from './CommentSource'
 import CommentSubitemList from './CommentSubitemList'
+import EventEmitter from './EventEmitter'
 import LiveTimestamp from './LiveTimestamp'
 import StorageItemWithKeys from './StorageItemWithKeys'
 import commentFormManager from './commentFormManager'
@@ -30,6 +31,7 @@ import userRegistry from './userRegistry'
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api'
 import { formatDate, formatDateNative } from './utils-date'
 import { showConfirmDialog } from './utils-oojs'
+import { mixIntoClass } from './utils-oojs-class'
 import {
 	extractSignatures,
 	getExtendedRect,
@@ -83,13 +85,20 @@ import {
  */
 
 /**
+ * @typedef {object} EventMap
+ * @property {[import('./Page').default | boolean]} transclusionFound
+ */
+
+/**
  * A comment (any signed, and in some cases unsigned, text on a wiki talk page) in the window (not
  * the web worker) context.
  *
  * @template {boolean} [OpeningSection=boolean]
- * @augments CommentSkeleton<Node>
  */
-class Comment extends CommentSkeleton {
+class Comment extends mixIntoClass(
+	/** @type {typeof CommentSkeleton<Node>} */ (CommentSkeleton),
+	/** @type {typeof EventEmitter<EventMap>} */ (EventEmitter),
+) {
 	/** @readonly */
 	TYPE = 'comment'
 
@@ -2678,7 +2687,6 @@ class Comment extends CommentSkeleton {
 					this.section.locateInCode(sectionCode)
 					source = this.locateInCode(sectionCode)
 					isSectionSubmitted = true
-					commentForm.setApi('edit')
 				} catch (error) {
 					if (
 						!(
@@ -2694,7 +2702,6 @@ class Comment extends CommentSkeleton {
 				if (!isSectionSubmitted) {
 					await this.getSourcePage().loadCode()
 					source = this.locateInCode()
-					commentForm?.setApi('edit')
 				}
 			} catch (error) {
 				if (
@@ -2709,33 +2716,8 @@ class Comment extends CommentSkeleton {
 					throw error
 				}
 
-				try {
-					// Try DiscussionTools API fallback
-					source = await this.locateUsingDiscussionTools()
-					if (!source) {
-						// Can't edit existing comments with DiscussionTools API.
-						if (commentForm.getMode() === 'edit') {
-							throw new CdError({
-								type: 'parse',
-								code: 'locateComment',
-							})
-						}
-
-						// DiscussionTools API will be used for adding the comment.
-						commentForm.setApi('discussiontoolsedit')
-					}
-				} finally {
-					// Even if we fail to obtain the source, we need to update the target page. We may be more
-					// lucky next time, but if the target page is wrong, the current page would be rewritten
-					// with the transcluded one.
-					if (typeof this.dtTranscludedFrom !== 'boolean') {
-						commentForm.setTargetPage(
-							/** @type {import('./Page').default} */ (
-								/** @type {unknown} */ (this.dtTranscludedFrom)
-							),
-						)
-					}
-				}
+				// Try DiscussionTools API fallback
+				source = await this.locateUsingDiscussionTools()
 			}
 		} catch (error) {
 			if (error instanceof CdError) {
@@ -2785,28 +2767,42 @@ class Comment extends CommentSkeleton {
 			typeof transcludedFrom === 'boolean'
 				? transcludedFrom
 				: /** @type {import('./Page').default} */ (pageRegistry.get(transcludedFrom))
-		this.dtTranscludedFrom = dtTranscludedFrom
 
-		if (dtTranscludedFrom === true) {
-			throw new CdError({
-				type: 'parse',
-				code: 'cantReply',
-			})
-		}
-		if (dtTranscludedFrom === false) return
-
-		// Load the transcluded page code. Shouldn't use dtTranscludedFrom (without `this.`) here to
-		// prevent a race condition if this.dtTranscludedFrom suddenly gets overriden elsewhere.
-		await dtTranscludedFrom.loadCode()
 		try {
-			this.source = this.locateInCode(undefined, dtTranscludedFrom.source.getCode())
+			if (dtTranscludedFrom === true) {
+				throw new CdError({
+					type: 'parse',
+					code: 'cantReply',
+				})
+			}
+			if (dtTranscludedFrom === false) return
 
-			return this.source
-		} catch {
-			throw new CdError({
-				type: 'parse',
-				code: 'locateComment',
-			})
+			// Load the transcluded page code. Shouldn't use dtTranscludedFrom (without `this.`) here to
+			// prevent a race condition if this.dtTranscludedFrom suddenly gets overriden elsewhere.
+			await dtTranscludedFrom.loadCode()
+			try {
+				this.source = this.locateInCode(undefined, dtTranscludedFrom.source.getCode())
+
+				return this.source
+			} catch {
+				throw new CdError({
+					type: 'parse',
+					code: 'locateComment',
+				})
+			}
+		} finally {
+			// Set the property and emit the event only after we obtained or not obtained the source to
+			// make sure Comment#dtTranscludedFrom (used in Comment#getSourcePage()) is 100% synced with
+			// CommentForm#targetPage. Otherwise, the current page may end up rewritten with the
+			// transcluded one. We should also watch out that there is no awaiting between
+			// Comment#modifyContext() (which uses Comment#dtTranscludedFrom as the context page) and
+			// submitting the form (which edits CommentForm#targetPage; but could just as well edit
+			// Comment#dtTranscludedFrom if we choose to refactor) since if we emit the event right in the
+			// middle of the awaiting, that would result in dissynchronization. Different stuff may want
+			// run the current method at different times, e.g. a reply form and an edit form opened for
+			// the same comment.
+			this.dtTranscludedFrom = dtTranscludedFrom
+			this.emit('transclusionFound', dtTranscludedFrom)
 		}
 	}
 

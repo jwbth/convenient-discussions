@@ -6,6 +6,16 @@ import { es6ClassToOoJsClass } from './utils-oojs-class'
  */
 export default class EventEmitter extends OO.EventEmitter {
 	/**
+	 * Initialize the mixin.
+	 *
+	 * @this {EventEmitter & OO.EventEmitter}
+	 */
+	construct() {
+		// For Comment class where EventEmitter is used as a mixin
+		OO.EventEmitter.call(this)
+	}
+
+	/**
 	 * @template {keyof EventMap} K
 	 * @template {any[]} [A=[]]
 	 * @template [C=null]
