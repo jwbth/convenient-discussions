@@ -200,6 +200,7 @@
 	"cf-error-preview": "Couldn't preview the comment.",
 	"cf-error-viewchanges": "Couldn't get the changes.",
 	"cf-error-couldntedit": "The page may not have been edited.",
+	"cf-error-couldntedit-dt": "Couldn't edit the page.",
 	"cf-error-pagedoesntexist": "The page doesn't exist.",
 	"cf-error-formconflict": "There already is an \"Add topic\" form of a different type open on the page. Close that form to open this one.",
 	"cf-error-othersubmitted": "Can't submit the form because another form is being submitted right now.",

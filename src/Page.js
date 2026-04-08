@@ -460,8 +460,7 @@ export default class Page {
 		/** @type {ApiResponseEdit} */
 		let response
 		try {
-			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const request = cd
+			response = await cd
 				.getApi()
 				.postWithEditToken(
 					cd.getApi().assertCurrentUser({
@@ -485,7 +484,6 @@ export default class Page {
 					},
 				)
 				.catch(handleApiReject)
-			response = await request
 		} catch (error) {
 			if (error instanceof CdError && error.isServerDefinedApiError()) {
 				switch (error.getCode()) {

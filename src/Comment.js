@@ -2671,7 +2671,6 @@ class Comment extends CommentSkeleton {
 	async loadCode(commentForm) {
 		let source
 		let isSectionSubmitted = false
-		this.dtTranscludedFrom = undefined
 		try {
 			if (commentForm && this.section?.liveSectionNumber !== undefined) {
 				try {
@@ -2710,8 +2709,8 @@ class Comment extends CommentSkeleton {
 					throw error
 				}
 
-				// Try DiscussionTools API fallback
 				try {
+					// Try DiscussionTools API fallback
 					source = await this.locateUsingDiscussionTools()
 					if (!source) {
 						// Can't edit existing comments with DiscussionTools API.
@@ -2723,7 +2722,7 @@ class Comment extends CommentSkeleton {
 						}
 
 						// DiscussionTools API will be used for adding the comment.
-						commentForm.setApi('dt')
+						commentForm.setApi('discussiontoolsedit')
 					}
 
 					if (typeof this.dtTranscludedFrom !== 'boolean') {
@@ -2781,23 +2780,25 @@ class Comment extends CommentSkeleton {
 			})
 		}
 
-		this.dtTranscludedFrom =
+		const dtTranscludedFrom =
 			typeof transcludedFrom === 'boolean'
 				? transcludedFrom
 				: /** @type {import('./Page').default} */ (pageRegistry.get(transcludedFrom))
+		this.dtTranscludedFrom = dtTranscludedFrom
 
-		if (this.dtTranscludedFrom === true) {
+		if (dtTranscludedFrom === true) {
 			throw new CdError({
 				type: 'parse',
 				code: 'cantReply',
 			})
 		}
-		if (this.dtTranscludedFrom === false) return
+		if (dtTranscludedFrom === false) return
 
-		// Load the transcluded page code
-		await this.dtTranscludedFrom.loadCode()
+		// Load the transcluded page code. Shouldn't use dtTranscludedFrom (without `this.`) here to
+		// prevent a race condition if this.dtTranscludedFrom suddenly gets overriden elsewhere.
+		await dtTranscludedFrom.loadCode()
 		try {
-			this.source = this.locateInCode(undefined, this.dtTranscludedFrom.source.getCode())
+			this.source = this.locateInCode(undefined, dtTranscludedFrom.source.getCode())
 
 			return this.source
 		} catch {

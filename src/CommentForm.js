@@ -511,7 +511,7 @@ class CommentForm extends EventEmitter {
 	/**
 	 * The API to be used for the form requests.
 	 *
-	 * @type {'edit' | 'dt'}
+	 * @type {'edit' | 'discussiontoolsedit'}
 	 */
 	apiName = 'edit'
 
@@ -822,7 +822,9 @@ class CommentForm extends EventEmitter {
 	setTargets(target) {
 		this.target = target
 		this.targetSection = /** @type {CommentFormTargetSection} */ (this.target.getRelevantSection())
-		this.targetPage = this.targetSection?.getSourcePage() || cd.page
+		this.targetPage = this.isCommentTarget()
+			? this.target.getSourcePage()
+			: this.targetSection?.getSourcePage() || cd.page
 		this.parentComment =
 			this.isMode('reply') || this.isMode('replyInSection')
 				? this.target.getRelevantComment()
@@ -1925,7 +1927,7 @@ class CommentForm extends EventEmitter {
 
 			this.submitButton.setDisabled(false)
 			this.previewButton.setDisabled(false)
-			this.viewChangesButton.setDisabled(this.apiName === 'dt')
+			this.viewChangesButton.setDisabled(this.apiName === 'discussiontoolsedit')
 			this.cancelButton.setDisabled(false)
 
 			this.minorCheckbox?.setDisabled(false)
@@ -2296,8 +2298,14 @@ class CommentForm extends EventEmitter {
 				return
 			}
 
-			// DiscussionTools API will be used
-			if (!this.target.source) return
+			if (!this.target.source) {
+				// For submit action, will try to use DiscussionTools API in submit() if we can
+				if (action === 'viewChanges') {
+					operation.close()
+				}
+
+				return
+			}
 		}
 
 		/** @type {string} */
@@ -2428,7 +2436,11 @@ class CommentForm extends EventEmitter {
 		 *   (if the mode is 'edit' and the comment has not been loaded, this method would halt after
 		 *   looking for an unclosed 'load' operation above).
 		 */
-		if (!this.isMode('addSection') && !this.target.source && this.apiName !== 'dt') {
+		if (
+			!this.isMode('addSection') &&
+			!this.target.source &&
+			this.apiName !== 'discussiontoolsedit'
+		) {
 			await this.checkCode(operation)
 			if (operation.isClosed()) return
 		}
@@ -2439,7 +2451,7 @@ class CommentForm extends EventEmitter {
 		let parsedSummary
 		try {
 			// Use DiscussionTools API for transcluded comments in reply mode
-			if (this.apiName === 'dt') {
+			if (this.apiName === 'discussiontoolsedit') {
 				const text = this.commentInput.getValue()
 				if (text) {
 					;({ html } = await parseCodeUsingDiscussionTools(text, {
@@ -2525,7 +2537,7 @@ class CommentForm extends EventEmitter {
 	 * View changes in the page code after submitting the form.
 	 */
 	async viewChanges() {
-		if (this.isBeingSubmitted() || this.apiName === 'dt') return
+		if (this.isBeingSubmitted() || this.apiName === 'discussiontoolsedit') return
 
 		const operation = this.operations.add('viewChanges')
 
@@ -2731,6 +2743,7 @@ class CommentForm extends EventEmitter {
 							captchaid: this.captchaInput?.getCaptchaId(),
 							captchaword: this.captchaInput?.getCaptchaWord(),
 							useskin: cd.g.skin,
+							tags: (cd.user.isRegistered() && cd.config.tagName) || undefined,
 						}),
 					)
 					.catch(handleApiReject)
@@ -2739,7 +2752,8 @@ class CommentForm extends EventEmitter {
 			if (response.discussiontoolsedit.result !== 'success') {
 				this.handleError({
 					error: new CdError({
-						type: 'api',
+						type: 'response',
+						message: cd.sParse('cf-error-couldntedit-dt'),
 						details: { error: response.discussiontoolsedit },
 					}),
 					operation,
@@ -2753,6 +2767,24 @@ class CommentForm extends EventEmitter {
 			delete this.captchaInput
 
 			if (error instanceof CdError) {
+				if (error.isServerDefinedApiError()) {
+					switch (error.getCode()) {
+						case 'missingtitle': {
+							error.setMessage(cd.sParse('error-pagedeleted'))
+							break
+						}
+
+						default: {
+							const message = error.getHtml()
+							if (message.includes('<table') || message.includes('<div')) {
+								error.set$message($(message))
+							} else {
+								error.setMessage(message)
+							}
+						}
+					}
+				}
+
 				/** @type {'notice' | undefined} */
 				let messageType
 				const errorCode = error.getCode()
@@ -2771,7 +2803,12 @@ class CommentForm extends EventEmitter {
 
 				this.handleError({
 					error,
-					message: error.getType() === 'network' ? cd.sParse('cf-error-couldntedit') : message,
+					message:
+						error.getType() === 'network'
+							? cd.sParse('cf-error-couldntedit') +
+								cd.mws('word-separator') +
+								cd.sParse('error-network')
+							: message,
 					$message,
 					messageType,
 					operation,
@@ -2856,7 +2893,9 @@ class CommentForm extends EventEmitter {
 				if (errorCode === 'editconflict') {
 					error.setMessage(
 						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-						/** @type {string} */ (message) + ' ' + cd.sParse('cf-notice-editconflict-retrying'),
+						/** @type {string} */ (message) +
+							cd.mws('word-separator') +
+							cd.sParse('cf-notice-editconflict-retrying'),
 					)
 					messageType = 'notice'
 				} else if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
@@ -2868,7 +2907,12 @@ class CommentForm extends EventEmitter {
 
 				this.handleError({
 					error,
-					message: error.getType() === 'network' ? cd.sParse('cf-error-couldntedit') : message,
+					message:
+						error.getType() === 'network'
+							? cd.sParse('cf-error-couldntedit') +
+								cd.mws('word-separator') +
+								cd.sParse('error-network')
+							: message,
 					$message,
 					messageType,
 					operation,
@@ -2993,10 +3037,15 @@ class CommentForm extends EventEmitter {
 
 		const operation = this.operations.add('submit', undefined, clearMessages)
 
+		// Attempt to build source without DT API even when apiName is 'discussiontoolsedit'
 		const { contextCode, commentCode } = (await this.buildSource('submit', operation)) || {}
 		let editDate
 		if (contextCode === undefined) {
-			if (this.apiName === 'dt' && !(await this.submitViaDiscussionTools(operation))) return
+			if (
+				this.apiName === 'discussiontoolsedit' &&
+				!(await this.submitViaDiscussionTools(operation))
+			)
+				return
 
 			// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
 			// just look at the newest own comment after the reload?
@@ -4027,13 +4076,13 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Set the API to be used for the form requests.
 	 *
-	 * @param {'edit' | 'dt'} apiName
+	 * @param {'edit' | 'discussiontoolsedit'} apiName
 	 */
 	setApi(apiName) {
 		this.apiName = apiName
 
 		// The "view changes" functionality can't be used for comments to be added with DT.
-		this.viewChangesButton.setDisabled(apiName === 'dt')
+		this.viewChangesButton.setDisabled(apiName === 'discussiontoolsedit')
 	}
 
 	static counter = 0
