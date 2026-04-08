@@ -2724,7 +2724,10 @@ class Comment extends CommentSkeleton {
 						// DiscussionTools API will be used for adding the comment.
 						commentForm.setApi('discussiontoolsedit')
 					}
-
+				} finally {
+					// Even if we fail to obtain the source, we need to update the target page. We may be more
+					// lucky next time, but if the target page is wrong, the current page would be rewritten
+					// with the transcluded one.
 					if (typeof this.dtTranscludedFrom !== 'boolean') {
 						commentForm.setTargetPage(
 							/** @type {import('./Page').default} */ (
@@ -2732,8 +2735,6 @@ class Comment extends CommentSkeleton {
 							),
 						)
 					}
-				} catch {
-					throw error
 				}
 			}
 		} catch (error) {
