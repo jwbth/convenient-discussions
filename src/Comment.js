@@ -2670,8 +2670,8 @@ class Comment extends CommentSkeleton {
 	 */
 	async loadCode(commentForm) {
 		let source
-
 		let isSectionSubmitted = false
+		this.dtTranscludedFrom = undefined
 		try {
 			if (commentForm && this.section?.liveSectionNumber !== undefined) {
 				try {
@@ -2719,11 +2719,11 @@ class Comment extends CommentSkeleton {
 							})
 						}
 
-						// DiscussionTools API will be used for adding the comment; the "view changes"
-						// functionality can't be used in this case.
-						commentForm.viewChangesButton.toggle(false)
+						// DiscussionTools API will be used for adding the comment.
+						commentForm.setApi('dt')
 					}
 
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 					if (this.dtTranscludedFrom !== undefined && typeof this.dtTranscludedFrom !== 'boolean') {
 						commentForm.setTargetPage(this.dtTranscludedFrom)
 					}
@@ -3143,7 +3143,6 @@ class Comment extends CommentSkeleton {
 		if (!customCodePassed) {
 			code = sectionCode || this.getSourcePage().source.getCode()
 			this.source = undefined
-			this.dtTranscludedFrom = undefined
 		}
 
 		if (code === undefined) {
@@ -3202,7 +3201,11 @@ class Comment extends CommentSkeleton {
 	 * @returns {import('./Page').default}
 	 */
 	getSourcePage() {
-		return this.section ? this.section.getSourcePage() : cd.page
+		return typeof this.dtTranscludedFrom !== 'boolean' && this.dtTranscludedFrom !== undefined
+			? this.dtTranscludedFrom
+			: this.section
+				? this.section.getSourcePage()
+				: cd.page
 	}
 
 	/**

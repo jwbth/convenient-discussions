@@ -102,7 +102,7 @@ export default class CommentFormOperation {
 	 *
 	 * @returns {boolean}
 	 */
-	maybeClose() {
+	closeIfConflicted() {
 		if (!this.isOpen()) {
 			return false
 		}

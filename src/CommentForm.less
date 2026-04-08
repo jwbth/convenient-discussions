@@ -224,8 +224,10 @@ body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-
 	}
 }
 
-.cd-commentForm-signature {
-	opacity: 0.67;
+.cd-commentForm-signature,
+.cd-commentForm-previewArea span[style="opacity: 0.6;"] {
+	// Too low contrast in DT
+	opacity: 0.67 !important;
 }
 
 .cd-commentForm-dummyElement {
@@ -287,6 +289,9 @@ body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-
 
 .cd-reformattedComments .cd-commentForm-signature,
 .cd-reformattedComments .cd-helpPopup-hideForReformattedComments,
+
+// When using DT's preview API
+.cd-reformattedComments span[style="opacity: 0.6;"],
 
 // In case the user didn't turn it off. preview=true in the API request doesn't remove the tag -
 // empty space can be visible because of `display: inline-flex;`.

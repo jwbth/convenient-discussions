@@ -21,7 +21,7 @@ class CommentFormOperationRegistry {
 	}
 
 	/**
-	 * Add an operation to the registry.
+	 * Add an operation to the registry and open it.
 	 *
 	 * @param {'load'|'preview'|'viewChanges'|'submit'} type
 	 * @param {import('./CommentFormOperation').CommentFormOperationOptions} [options]

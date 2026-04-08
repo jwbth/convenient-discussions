@@ -509,6 +509,13 @@ class CommentForm extends EventEmitter {
 	sectionButtons = []
 
 	/**
+	 * The API to be used for the form requests.
+	 *
+	 * @type {'edit' | 'dt'}
+	 */
+	apiName = 'edit'
+
+	/**
 	 * @typedef {Mode extends 'addSection' ? undefined : import('./Section').default | undefined} CommentFormTargetSection
 	 */
 
@@ -1917,7 +1924,7 @@ class CommentForm extends EventEmitter {
 
 			this.submitButton.setDisabled(false)
 			this.previewButton.setDisabled(false)
-			this.viewChangesButton.setDisabled(false)
+			this.viewChangesButton.setDisabled(this.apiName === 'dt')
 			this.cancelButton.setDisabled(false)
 
 			this.minorCheckbox?.setDisabled(false)
@@ -2409,7 +2416,7 @@ class CommentForm extends EventEmitter {
 			this.lastPreviewTimestamp = Date.now()
 		}
 
-		if (operation.maybeClose()) return
+		if (operation.closeIfConflicted()) return
 
 		/*
 		 * This condition can be met:
@@ -2421,7 +2428,10 @@ class CommentForm extends EventEmitter {
 		if (
 			!this.isMode('addSection') &&
 			!this.target.source &&
-			!(this.isCommentTarget() && this.target.dtTranscludedFrom)
+			// DiscussionTools API will be used; no need to check the code. TODO: Update if we ever decide
+			// to use DiscussionTools API to reply even to transcluded comments where `dtTranscludedFrom`
+			// will have a page.
+			!(this.isCommentTarget() && this.target.dtTranscludedFrom === false)
 		) {
 			await this.checkCode()
 			operation.close()
@@ -2440,12 +2450,11 @@ class CommentForm extends EventEmitter {
 				this.target.dtTranscludedFrom !== undefined &&
 				this.target.dtTranscludedFrom !== true
 			) {
-				const page =
-					this.target.dtTranscludedFrom === false ? cd.page : this.target.dtTranscludedFrom
 				;({ html } = await parseCodeUsingDiscussionTools(this.commentInput.getValue(), {
-					page: page.name,
+					page: this.target.getSourcePage().name,
 					useskin: cd.g.skin,
 				}))
+				this.willCommentBeIndented = true
 			} else {
 				;({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
 					title: this.targetPage.name,
@@ -2462,7 +2471,7 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		if (operation.maybeClose()) return
+		if (operation.closeIfConflicted()) return
 
 		if (html) {
 			if (
@@ -2577,7 +2586,7 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		if (operation.maybeClose()) return
+		if (operation.closeIfConflicted()) return
 
 		const html = response.compare.body
 		if (html) {
@@ -2718,12 +2727,8 @@ class CommentForm extends EventEmitter {
 	 */
 	async submitViaDiscussionTools(operation) {
 		try {
-			const target = /** @type {Comment} */ (this.target)
+			const targetTyped = /** @type {Comment} */ (this.target)
 			// Currently (April 2026) it's always false at this point
-			const page =
-				target.dtTranscludedFrom === false
-					? cd.page
-					: /** @type {import('./Page').default} */ (target.dtTranscludedFrom)
 
 			const response = /** @type {{ discussiontoolsedit: { result: string } }} */ (
 				await cd
@@ -2731,13 +2736,15 @@ class CommentForm extends EventEmitter {
 					.postWithEditToken(
 						cd.getApi().assertCurrentUser({
 							action: 'discussiontoolsedit',
-							page: page.name,
+							paction: 'addcomment',
+							page: targetTyped.getSourcePage().name,
 							wikitext: this.commentInput.getValue(),
-							commentid: target.dtId,
-							autosubscribe: this.subscribeCheckbox?.isSelected(),
+							commentid: targetTyped.dtId,
+							autosubscribe: this.subscribeCheckbox?.isSelected() ? 'yes' : 'no',
 							summary: buildEditSummary({ text: this.summaryInput.getValue() }),
 							captchaid: this.captchaInput?.getCaptchaId(),
 							captchaword: this.captchaInput?.getCaptchaWord(),
+							useskin: cd.g.skin,
 						}),
 					)
 					.catch(handleApiReject)
@@ -4034,6 +4041,18 @@ class CommentForm extends EventEmitter {
 		// initialize it directly here as well?
 		this.commentInput.setCodeMirror(active ? this.codeMirror : undefined)
 		this.addEventListenersToCommentInput()
+	}
+
+	/**
+	 * Set the API to be used for the form requests.
+	 *
+	 * @param {'edit' | 'dt'} apiName
+	 */
+	setApi(apiName) {
+		this.apiName = apiName
+
+		// The "view changes" functionality can't be used for comments to be added with DT.
+		this.viewChangesButton.setDisabled(apiName === 'dt')
 	}
 
 	static counter = 0
