@@ -403,7 +403,7 @@ class NavPanel {
 		if (!this.state || controller.isAutoScrolling()) return
 
 		this.state.commentFormButton.toggle(
-			commentFormManager.getAll().some((cf) => !cf.$element.cdIsInViewport(true)),
+			commentFormManager.getAll().some((cf) => !cf.commentInput.$element.cdIsInViewport(true)),
 		)
 	}
 }

@@ -167,7 +167,7 @@ class CommentForm extends EventEmitter {
 	 * Wiki page that has the source code of the target object (may be different from the current
 	 * page if the section is transcluded from another page).
 	 *
-	 * @type {import('./Page').default}
+	 * @type {import('./Page').default | undefined}
 	 * @private
 	 */
 	targetPage
@@ -577,9 +577,6 @@ class CommentForm extends EventEmitter {
 		this.mode = mode
 
 		this.setTargets(target)
-		if (this.isCommentTarget()) {
-			this.target.on('transclusionFound', this.onCommentTransclusionFound)
-		}
 
 		/**
 		 * Configuration to preload data into the form.
@@ -825,22 +822,29 @@ class CommentForm extends EventEmitter {
 	setTargets(target) {
 		this.target = target
 		this.targetSection = /** @type {CommentFormTargetSection} */ (this.target.getRelevantSection())
+		// For comments, we need to consult the source or DiscussionTools API first.
 		this.targetPage = this.isCommentTarget()
-			? this.target.getSourcePage()
+			? undefined
 			: this.targetSection?.getSourcePage() || cd.page
 		this.parentComment =
 			this.isMode('reply') || this.isMode('replyInSection')
 				? this.target.getRelevantComment()
 				: undefined
+
+		if (this.isCommentTarget()) {
+			this.target.on('transclusionFound', this.onCommentTransclusionFound)
+		}
 	}
 
 	/**
-	 * Set the `targetPage` property.
+	 * Get the page where the target resides.
 	 *
-	 * @param {import('./Page').default} targetPage
+	 * @returns {import('./Page').default}
 	 */
-	setTargetPage(targetPage) {
-		this.targetPage = targetPage
+	getTargetPage() {
+		return this.targetPage === undefined
+			? /** @type {Comment} */ (this.target).getSourcePage()
+			: this.targetPage
 	}
 
 	/**
@@ -1403,7 +1407,7 @@ class CommentForm extends EventEmitter {
 		// lucky next time, but if the target page is wrong, the current page would be rewritten
 		// with the transcluded one.
 		if (typeof transcludedFrom !== 'boolean') {
-			this.setTargetPage(transcludedFrom)
+			this.targetPage = transcludedFrom
 		}
 	}
 
@@ -2495,7 +2499,7 @@ class CommentForm extends EventEmitter {
 				this.willCommentBeIndented = true
 			} else {
 				;({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
-					title: this.targetPage.name,
+					title: this.getTargetPage().name,
 					summary: buildEditSummary({ text: this.summaryInput.getValue() }),
 				}))
 			}
@@ -2582,7 +2586,7 @@ class CommentForm extends EventEmitter {
 		try {
 			const options = /** @type {import('types-mediawiki/api_params').ApiComparePagesParams} */ ({
 				'action': 'compare',
-				'totitle': this.targetPage.name,
+				'totitle': this.getTargetPage().name,
 				'toslots': 'main',
 				'totext-main': contextCode,
 				'topst': true,
@@ -2590,11 +2594,11 @@ class CommentForm extends EventEmitter {
 				...cd.g.apiErrorFormatHtml,
 			})
 
-			if (this.sectionSubmitted || this.newSectionApi || !this.targetPage.revisionId) {
+			if (this.sectionSubmitted || this.newSectionApi || !this.getTargetPage().revisionId) {
 				options.fromslots = 'main'
 				options['fromtext-main'] = this.isSectionSubmitted() ? this.targetSection.presumedCode : ''
 			} else {
-				options.fromrev = this.targetPage.revisionId
+				options.fromrev = this.getTargetPage().revisionId
 			}
 
 			response = /** @type {import('./utils-api').APIResponseCompare} */ (
@@ -2903,14 +2907,14 @@ class CommentForm extends EventEmitter {
 						: undefined
 				sectionOrPage = this.targetSection
 			} else {
-				sectionOrPage = this.targetPage
+				sectionOrPage = this.getTargetPage()
 			}
 			options.baserevid = sectionOrPage?.revisionId
 			options.starttimestamp = sectionOrPage?.queryTimestamp
 			if (suppressTag) {
 				options.tags = undefined
 			}
-			result = await this.targetPage.edit(options)
+			result = await this.getTargetPage().edit(options)
 		} catch (error) {
 			delete this.captchaInput
 
@@ -3121,7 +3125,7 @@ class CommentForm extends EventEmitter {
 
 		// When the edit takes place on another page that is transcluded in the current one, we must
 		// purge the current page, otherwise we may get an old version without the submitted comment.
-		if (this.targetPage !== cd.page) {
+		if (this.getTargetPage() !== cd.page) {
 			await cd.page.purge()
 		}
 
