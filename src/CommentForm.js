@@ -1996,7 +1996,7 @@ class CommentForm extends EventEmitter {
 	 * Abort the operation the form is undergoing and show an error message.
 	 *
 	 * @param {object} options
-	 * @param {JQuery} options.$message Message visible to the user.
+	 * @param {JQuery} [options.$message] Message visible to the user.
 	 * @param {'error'|'notice'|'warning'} [options.messageType] Message type if not `'error'`.
 	 * @param {boolean} [options.framed] Whether to show the OOUI message framing for the error
 	 *   message.
@@ -2009,7 +2009,7 @@ class CommentForm extends EventEmitter {
 	abort({ $message, messageType = 'error', framed = true, errorToLog, cancel = false, operation }) {
 		operation?.close()
 
-		if (this.torndown) return
+		if (this.torndown || !$message) return
 
 		if (errorToLog) {
 			cd.debug.logWarn(errorToLog)
@@ -2145,24 +2145,26 @@ class CommentForm extends EventEmitter {
 				break
 			}
 		}
-		if (!message) return
 
-		// If the message in the jQuery format was pre-provided, then by convention it's one that is not
-		// supposed to be framed.
-		const framed = !$message
-		$message ??=
-			typeof message === 'string'
-				? wrapHtml(message, {
-						callbacks: {
-							'cd-message-reloadPage': () => {
-								if (this.confirmClose()) {
-									this.reloadPage()
-								}
+		let framed
+		if (message) {
+			// If the message in the jQuery format was pre-provided, then by convention it's one that is not
+			// supposed to be framed.
+			framed = !$message
+			$message ??=
+				typeof message === 'string'
+					? wrapHtml(message, {
+							callbacks: {
+								'cd-message-reloadPage': () => {
+									if (this.confirmClose()) {
+										this.reloadPage()
+									}
+								},
 							},
-						},
-					})
-				: message
-		$message.find('.mw-parser-output').css('display', 'inline')
+						})
+					: message
+			$message.find('.mw-parser-output').css('display', 'inline')
+		}
 
 		this.abort({
 			$message,
