@@ -200,7 +200,7 @@ class CommentActions {
 				this.comment.id === id ||
 				// This comes from the local storage, the value may be corrupt
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				this.comment.dtId === thank?.id ||
+				(this.comment.dtId && this.comment.dtId === thank?.id) ||
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				this.comment.id === thank?.id,
 		)
