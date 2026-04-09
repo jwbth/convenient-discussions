@@ -209,6 +209,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			if (!WikilinksAutocomplete.getUrlFromInterwikiLinkPromise) {
 				WikilinksAutocomplete.getUrlFromInterwikiLinkPromise = mw.loader
 					.getScript(
+						// Documentation: https://en.wikipedia.org/wiki/User:Jack_who_built_the_house/getUrlFromInterwikiLink
 						'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
 					)
 					.catch((/** @type {unknown} */ error) => {
@@ -332,11 +333,8 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			})
 		)
 
-		// The interwiki prefix is everything up to and including the last colon of the prefix
-		// chain (e.g. "fr:" or "w:en:"). We match it from the original text rather than
-		// subtracting the URL-derived pageName's length, since the two can differ — e.g. the
-		// URL may have a trailing space trimmed, or spaces normalized to underscores.
-		const interwikiPrefix = text.match(/^(?:[a-z-]\w*:)+/)?.[0] ?? ''
+		// The interwiki prefix is everything before the remote page name in the original text
+		const interwikiPrefix = text.slice(0, text.length - pageName.length)
 
 		return response[1].flatMap((/** @type {string} */ apiName) => {
 			const title = CrossSiteMwTitle.newFromText(apiName, undefined, hostname)
