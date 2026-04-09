@@ -145,6 +145,7 @@
 	"msd-error-wrongpage": "Pagina sbagliata.",
 	"msd-error-sourcepagedeleted": "La pagina attuale è stata cancellata.",
 	"msd-error-invalidpagename": "Nome pagina non valido.",
+	"msd-error-editingsourcepage": "La pagina di destinazione è stata modificata correttamente, ma non è stato possibile modificare la pagina di origine. Dovrai modificarla manualmente.",
 	"ud-preset-ownwork": "Questa è una mia opera creativa",
 	"ud-author": "Autore",
 	"ud-license": "Licenza, in formato wikitesto",
