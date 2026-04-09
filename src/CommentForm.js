@@ -830,10 +830,6 @@ class CommentForm extends EventEmitter {
 			this.isMode('reply') || this.isMode('replyInSection')
 				? this.target.getRelevantComment()
 				: undefined
-
-		if (this.isCommentTarget()) {
-			this.target.on('transclusionFound', this.onCommentTransclusionFound)
-		}
 	}
 
 	/**
@@ -1387,28 +1383,6 @@ class CommentForm extends EventEmitter {
 		this.addEventListenersToTextInputs(emitChange, preview)
 		this.addEventListenersToCheckboxes(emitChange, preview)
 		this.addEventListenersToButtons()
-	}
-
-	/**
-	 * Handle the comment "transclusion found" event.
-	 *
-	 * @param {import('./Page').default | boolean} transcludedFrom
-	 */
-	onCommentTransclusionFound = (transcludedFrom) => {
-		const targetTyped = /** @type {Comment} */ (this.target)
-
-		if (!targetTyped.source) {
-			// DiscussionTools API will be used for adding the comment. TODO: currently, once set to
-			// 'discussiontoolsedit', we can't set it back to 'edit'. Allowing so could introduce
-			// unsynchronization of various components.
-			this.setApi('discussiontoolsedit')
-		}
-		// Even if we fail to obtain the source, we need to update the target page. We may be more
-		// lucky next time, but if the target page is wrong, the current page would be rewritten
-		// with the transcluded one.
-		if (typeof transcludedFrom !== 'boolean') {
-			this.targetPage = transcludedFrom
-		}
 	}
 
 	/**
@@ -2780,6 +2754,8 @@ class CommentForm extends EventEmitter {
 							captchaword: this.captchaInput?.getCaptchaWord(),
 							useskin: cd.g.skin,
 							tags: (cd.user.isRegistered() && cd.config.tagName) || undefined,
+							dttags: ['discussiontools-reply'],
+							...cd.g.apiErrorFormatHtml,
 						}),
 					)
 					.catch(handleApiReject)
@@ -3192,10 +3168,6 @@ class CommentForm extends EventEmitter {
 		if (!this.registered) return
 
 		CommentForm.unregisterOnTarget(this.target, this.mode)
-		if (this.isCommentTarget()) {
-			delete this.target.dtTranscludedFrom
-			delete this.target.source
-		}
 
 		// Popups can be placed outside the form element, so they need to be torn down whenever the form
 		// is unregistered (even if the form itself is not torn down).

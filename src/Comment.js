@@ -85,8 +85,7 @@ import {
  */
 
 /**
- * @typedef {object} EventMap
- * @property {[import('./Page').default | boolean]} transclusionFound
+ * @typedef {Record<string, [any]>} EventMap
  */
 
 /**
@@ -2718,6 +2717,13 @@ class Comment extends mixIntoClass(
 
 				// Try DiscussionTools API fallback
 				source = await this.locateUsingDiscussionTools()
+
+				if (!source) {
+					// DiscussionTools API will be used for adding the comment. TODO: currently, once set to
+					// 'discussiontoolsedit', we can't set it back to 'edit'. Allowing so could introduce
+					// unsynchronization of various components.
+					commentForm.setApi('discussiontoolsedit')
+				}
 			}
 		} catch (error) {
 			if (error instanceof CdError) {
@@ -2767,42 +2773,28 @@ class Comment extends mixIntoClass(
 			typeof transcludedFrom === 'boolean'
 				? transcludedFrom
 				: /** @type {import('./Page').default} */ (pageRegistry.get(transcludedFrom))
+		this.dtTranscludedFrom = dtTranscludedFrom
 
+		if (dtTranscludedFrom === true) {
+			throw new CdError({
+				type: 'parse',
+				code: 'cantReply',
+			})
+		}
+		if (dtTranscludedFrom === false) return
+
+		// Load the transcluded page code. Shouldn't use dtTranscludedFrom (without `this.`) here to
+		// prevent a race condition if this.dtTranscludedFrom suddenly gets overriden elsewhere.
+		await dtTranscludedFrom.loadCode()
 		try {
-			if (dtTranscludedFrom === true) {
-				throw new CdError({
-					type: 'parse',
-					code: 'cantReply',
-				})
-			}
-			if (dtTranscludedFrom === false) return
+			this.source = this.locateInCode(undefined, dtTranscludedFrom.source.getCode())
 
-			// Load the transcluded page code. Shouldn't use dtTranscludedFrom (without `this.`) here to
-			// prevent a race condition if this.dtTranscludedFrom suddenly gets overriden elsewhere.
-			await dtTranscludedFrom.loadCode()
-			try {
-				this.source = this.locateInCode(undefined, dtTranscludedFrom.source.getCode())
-
-				return this.source
-			} catch {
-				throw new CdError({
-					type: 'parse',
-					code: 'locateComment',
-				})
-			}
-		} finally {
-			// Set the property and emit the event only after we obtained or not obtained the source to
-			// make sure Comment#dtTranscludedFrom (used in Comment#getSourcePage()) is 100% synced with
-			// CommentForm#targetPage. Otherwise, the current page may end up rewritten with the
-			// transcluded one. We should also watch out that there is no awaiting between
-			// Comment#modifyContext() (which uses Comment#dtTranscludedFrom as the context page) and
-			// submitting the form (which edits CommentForm#targetPage; but could just as well edit
-			// Comment#dtTranscludedFrom if we choose to refactor) since if we emit the event right in the
-			// middle of the awaiting, that would result in dissynchronization. Different stuff may want
-			// run the current method at different times, e.g. a reply form and an edit form opened for
-			// the same comment.
-			this.dtTranscludedFrom = dtTranscludedFrom
-			this.emit('transclusionFound', dtTranscludedFrom)
+			return this.source
+		} catch {
+			throw new CdError({
+				type: 'parse',
+				code: 'locateComment',
+			})
 		}
 	}
 
