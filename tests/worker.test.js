@@ -42,6 +42,7 @@ describe('worker', () => {
 		expect(parseResult.comments).toHaveLength(1)
 		expect(parseResult.comments[0].authorName).toBe('Example')
 		expect(parseResult.comments[0].date.toISOString()).toBe('2026-01-01T00:00:00.000Z')
+		expect(parseResult.comments[0].text).toBe('Section\nComment.')
 	})
 
 	test('parse identifies sections correctly', () => {
