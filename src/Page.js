@@ -149,7 +149,16 @@ export default class Page {
 	 * @returns {boolean}
 	 */
 	isCurrent() {
-		return this.name === cd.g.pageName
+		return this.mwTitle.getPrefixedText() === this.registry.getCanonicalCurrentPageName()
+	}
+
+	/**
+	 * Set the gendered name of the page.
+	 *
+	 * @param {string} genderedName
+	 */
+	setGenderedName(genderedName) {
+		this.name = genderedName
 	}
 
 	/**

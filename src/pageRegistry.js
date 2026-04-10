@@ -21,6 +21,16 @@ const pageRegistry = {
 	items: {},
 
 	/**
+	 * Canonical name of the current page.
+	 *
+	 * @type {string}
+	 * @private
+	 */
+	canonicalCurrentPageName: /** @type {mw.Title} */ (
+		mw.Title.newFromText(cd.g.pageName)
+	).getPrefixedText(),
+
+	/**
 	 * @overload
 	 * @param {string} nameOrMwTitle
 	 * @param {true} [isGendered]
@@ -49,14 +59,14 @@ const pageRegistry = {
 
 		const name = title.getPrefixedText()
 		if (!(name in this.items)) {
-			this.items[name] = new (nameOrMwTitle === cd.g.pageName ? CurrentPage : Page)(
+			this.items[name] = new (name === this.canonicalCurrentPageName ? CurrentPage : Page)(
 				title,
 				this,
 				isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined,
 			)
 		} else if (isGendered) {
 			// Set the gendered name which could be missing for the page.
-			this.items[name].name = /** @type {string} */ (nameOrMwTitle)
+			this.items[name].setGenderedName(/** @type {string} */ (nameOrMwTitle))
 		}
 
 		return this.items[name]
@@ -68,7 +78,16 @@ const pageRegistry = {
 	 * @returns {import('./CurrentPage').default}
 	 */
 	getCurrent() {
-		return /** @type {import('./CurrentPage').default} */ (this.get(cd.g.pageName))
+		return /** @type {import('./CurrentPage').default} */ (this.get(cd.g.pageName, true))
+	},
+
+	/**
+	 * Get the canonical name of the current page.
+	 *
+	 * @returns {string}
+	 */
+	getCanonicalCurrentPageName() {
+		return this.canonicalCurrentPageName
 	},
 }
 
