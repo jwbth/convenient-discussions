@@ -190,8 +190,11 @@ class Controller extends EventEmitter {
 	scrollData = {}
 
 	autoScrolling = false
+
 	isUpdateThreadLinesHandlerAttached = false
+
 	lastScrollX = 0
+
 	originalPageTitle = document.title
 
 	/** @type {number | undefined} */

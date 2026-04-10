@@ -404,7 +404,6 @@ const config = defineConfig(
 			'@stylistic/rest-spread-spacing': 'off',
 			'@stylistic/space-unary-ops': 'off',
 			'@stylistic/array-bracket-spacing': 'off',
-			'@stylistic/lines-between-class-members': 'off',
 			'@stylistic/multiline-ternary': 'off',
 			'@stylistic/no-mixed-operators': 'off',
 
@@ -423,6 +422,20 @@ const config = defineConfig(
 				{
 					avoidEscape: true,
 					allowTemplateLiterals: 'always',
+				},
+			],
+			'@stylistic/lines-between-class-members': [
+				'error',
+				{
+					enforce: [
+						{ blankLine: 'always', prev: 'method', next: 'method' },
+
+						// Arrow functions
+						{ blankLine: 'always', prev: 'method', next: 'field' },
+
+						// Arrow functions
+						{ blankLine: 'always', prev: 'field', next: 'field' },
+					],
 				},
 			],
 
