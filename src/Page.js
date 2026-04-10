@@ -379,6 +379,7 @@ export default class Page {
 			redirects: true,
 			prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections', 'subtitle', 'categorieshtml'],
 			parsoid: cd.g.isParsoidUsed,
+			disablelimitreport: true,
 			...cd.g.apiErrorFormatHtml,
 
 			...customOptions,
