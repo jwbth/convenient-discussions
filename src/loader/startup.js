@@ -24,8 +24,10 @@ import cd from './cd'
 	try {
 		await bootstrap()
 		$(start)
-	} catch {
-		// Empty
+	} catch (error) {
+		if (error instanceof Error && error.cause) {
+			console.error(error.cause)
+		}
 	}
 })()
 
@@ -38,7 +40,7 @@ async function bootstrap() {
 	if (cd.isRunning) {
 		console.warn('One instance of Convenient Discussions is already running.')
 
-		throw new Error()
+		throw new Error('One instance of Convenient Discussions is already running.')
 	}
 
 	/**
@@ -59,7 +61,7 @@ async function bootstrap() {
 		$('.lqt-talkpage').length ||
 		mw.config.get('wgIsMainPage')
 	) {
-		throw new Error()
+		throw new Error("Convenient Discussions can't run on this page.")
 	}
 
 	cd.debug.init()
@@ -94,7 +96,7 @@ async function bootstrap() {
 		}
 	}
 
-	setLanguages()
+	setEssentials()
 	cd.loader.maybeLoadTalkPageModules()
 	cd.loader.maybeLoadCommentLinksModules()
 
@@ -106,7 +108,7 @@ async function bootstrap() {
 	} catch (error) {
 		console.error(error)
 
-		throw new Error()
+		throw new Error(`Couldn't load config and/or strings.`, { cause: error })
 	}
 
 	cd.debug.stopTimer('bootstrap')
@@ -155,9 +157,12 @@ async function loadSingleLangInDevOrSingleMode(lang) {
 }
 
 /**
- * Set language properties of the global object, taking fallback languages into account.
+ * Set some essential stuff:
+ * - Language properties of the global object, taking fallback languages into account
+ * - Page types
+ * - Merge config with the default config IF it's already available
  */
-function setLanguages() {
+function setEssentials() {
 	const getLanguageOrFallback = (/** @type {string} */ lang) =>
 		cd.utils.getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks)
 
@@ -168,6 +173,12 @@ function setLanguages() {
 	// As a result, we use cd.g.contentLanguage only for the script's own messages, not the native
 	// MediaWiki messages.
 	cd.g.contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'))
+
+	cd.loader.setPageTypes()
+
+	if ('config' in cd) {
+		makeSureConfigIsSet()
+	}
 }
 
 /**

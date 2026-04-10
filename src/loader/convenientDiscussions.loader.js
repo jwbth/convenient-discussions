@@ -159,11 +159,6 @@ class Loader {
 	 * @returns {JQuery.Promise<any> | undefined}
 	 */
 	maybeLoadTalkPageModules() {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (!this.pageTypes) {
-			this.setPageTypes()
-		}
-
 		if (this.shouldInitTalkPage()) {
 			const modules = [
 				'ext.checkUser.styles',
@@ -231,11 +226,6 @@ class Loader {
 	 * @returns {JQuery.Promise<any> | undefined}
 	 */
 	maybeLoadCommentLinksModules() {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (!this.pageTypes) {
-			this.setPageTypes()
-		}
-
 		if (this.shouldInitCommentLinks()) {
 			const modules = [
 				'mediawiki.Title',
@@ -416,8 +406,6 @@ class Loader {
 	 * Set page types and initialize talk page or comment links page.
 	 */
 	async init() {
-		this.setPageTypes()
-
 		if (this.shouldInitTalkPage()) {
 			await this.initTalkPage()
 		}
