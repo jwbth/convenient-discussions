@@ -1130,6 +1130,9 @@ class CommentForm extends EventEmitter {
 		const button = new OO.ui.ButtonWidget({
 			label: cd.s('cf-popup-richformatting-convert'),
 			flags: ['progressive'],
+
+			// Same as the comment input, so that the button is focused when the user presses Tab.
+			tabIndex: this.getTabIndex(13),
 		})
 		const position = this.commentInput.getRange().to
 		button.on('click', async () => {
