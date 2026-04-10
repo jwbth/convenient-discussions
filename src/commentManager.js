@@ -153,7 +153,7 @@ export class CommentManager extends EventEmitter {
 			.save()
 
 		controller
-			.on('scroll', this.registerSeen)
+			.on('viewportMove', this.registerSeen)
 			.on('mutate', this.maybeRedrawLayers)
 			.on('resize', this.maybeRedrawLayers)
 			.on('mouseMove', this.maybeHighlightHovered)
@@ -325,7 +325,7 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Recalculate the offset of the highlighted comments' (usually, new or own) layers and redraw if
+	 * Recalculate the offset of the layers of highlighted comments (e.g. new and own) and redraw if
 	 * they've changed.
 	 *
 	 * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.

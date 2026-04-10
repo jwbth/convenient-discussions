@@ -116,7 +116,7 @@ class PageNav {
 		this.update()
 
 		controller
-			.on('scroll', this.update)
+			.on('viewportMove', this.update)
 			.on('horizontalScroll', this.updateWidth)
 			.on('resize', this.updateWidth)
 	}

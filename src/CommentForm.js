@@ -2415,6 +2415,7 @@ class CommentForm extends EventEmitter {
 		operation ??= this.operations.add('preview', { isAuto })
 
 		if (isAuto) {
+			// Throttle preview requests. TODO: move to OO.ui.throttle?
 			const lastPreviewTimestamp = this.lastPreviewTimestamp
 			if (lastPreviewTimestamp) {
 				const isTooEarly = Date.now() - lastPreviewTimestamp < 1000

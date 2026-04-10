@@ -59,7 +59,7 @@ class NavPanel {
 				this.reset()
 			} else {
 				this.mount()
-				controller.on('scroll', this.updateCommentFormButton).on('keyDown', (event) => {
+				controller.on('viewportMove', this.updateCommentFormButton).on('keyDown', (event) => {
 					if (isInputFocused()) return
 
 					// R

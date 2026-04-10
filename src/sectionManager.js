@@ -36,7 +36,7 @@ export class SectionManager {
 	 * @param {import('./Subscriptions').default} subscriptions
 	 */
 	init(subscriptions) {
-		controller.on('scroll', this.maybeUpdateVisibility)
+		controller.on('viewportMove', this.maybeUpdateVisibility)
 		subscriptions.on('process', this.addSubscribeButtons)
 		visits.on('process', this.updateNewCommentsData)
 	}
@@ -64,6 +64,8 @@ export class SectionManager {
 
 		if (cd.settings.get('improvePerformance')) {
 			// Unhide when the user opens a search box to allow searching the full page.
+			// CAUTION! You may run into these events never triggered if debugging in Chrome with
+			// Rendering (or Elements > Styles → :hov) → Emulate a focused page enabled.
 			$(window)
 				.off('focus.cd', this.maybeUpdateVisibility)
 				.off('blur.cd', this.maybeUnhideAll)

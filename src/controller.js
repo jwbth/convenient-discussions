@@ -37,7 +37,7 @@ import workerCode from './worker/worker?worker&inline-string'
  * @property {[event: MouseEvent | JQuery.MouseMoveEvent | JQuery.MouseOverEvent]} mouseMove
  * @property {[]} resize
  * @property {[event: KeyboardEvent | JQuery.KeyDownEvent]} keyDown
- * @property {[]} scroll
+ * @property {[]} viewportMove
  * @property {[]} horizontalScroll
  * @property {[fragment: string]} popState
  * @property {[]} selectionChange
@@ -169,13 +169,19 @@ class Controller extends EventEmitter {
 	 * @type {(() => void) | undefined}
 	 * @private
 	 */
-	throttledHandleScroll
+	throttledActuallyHandleViewportMove
 
 	/**
 	 * @type {(() => void) | undefined}
 	 * @private
 	 */
 	throttledHandleSelectionChange
+
+	/**
+	 * @type {(() => void) | undefined}
+	 * @private
+	 */
+	throttledHandlePageMutate
 
 	/**
 	 * @type {{
@@ -241,6 +247,18 @@ class Controller extends EventEmitter {
 	 * @param {string} [pageHtml] HTML to update the page with.
 	 */
 	setup(pageHtml) {
+		this.throttledHandleSelectionChange ??= OO.ui.throttle(this.handleSelectionChange, 200)
+		this.throttledHandlePageMutate ??= OO.ui.throttle(this.handlePageMutate, 100)
+
+		// Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
+		// comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
+		// Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
+		// enough, so we try 300ms.
+		this.throttledActuallyHandleViewportMove ??= OO.ui.throttle(
+			this.actuallyHandleViewportMove,
+			300,
+		)
+
 		// RevisionSlider replaces the #mw-content-text element.
 		if (!cd.loader.$content.get(0)?.parentNode) {
 			cd.loader.$content = $('#mw-content-text')
@@ -749,7 +767,7 @@ class Controller extends EventEmitter {
 		await sleep(cd.g.skin === 'vector-2022' ? 100 : 0)
 
 		this.emit('resize')
-		this.handleScroll()
+		this.handleViewportMove()
 	}
 
 	/**
@@ -769,24 +787,15 @@ class Controller extends EventEmitter {
 	 * navigation panel's first unseen button, and update the current section block. Trigger the
 	 * `horizontalscroll` event.
 	 */
-	handleScroll = () => {
-		// Scroll will be handled when the autoscroll is finished.
+	handleViewportMove = () => {
+		// Scroll will be handled when the autoscroll is finished by means of the initiator of the
+		// autoscroll.
 		if (this.isAutoScrolling()) return
 
 		this.mouseMoveBlocked = true
-
-		// Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
-		// comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
-		// Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
-		// enough, so we try 300ms.
-		this.throttledHandleScroll ??= OO.ui.throttle(() => {
-			this.mouseMoveBlocked = false
-
-			if (this.isAutoScrolling()) return
-
-			this.emit('scroll')
-		}, 300)
-		this.throttledHandleScroll()
+		// @ts-expect-error: This handler is throttled in setup(), which is earlier than this method may
+		// be called. ~~Hopefully.~~
+		this.throttledActuallyHandleViewportMove()
 
 		if (window.scrollX !== this.lastScrollX) {
 			$(document).trigger('horizontalscroll.cd')
@@ -795,7 +804,19 @@ class Controller extends EventEmitter {
 	}
 
 	/**
-	 * Handle a `horizontalscroll` event, triggered from {@link Controller#handleScroll}.
+	 * Actually handle a `viewportMove` event.
+	 *
+	 * @private
+	 */
+	actuallyHandleViewportMove = () => {
+		this.mouseMoveBlocked = false
+		if (this.isAutoScrolling()) return
+
+		this.emit('viewportMove')
+	}
+
+	/**
+	 * Handle a `horizontalscroll` event, triggered from {@link Controller#handleViewportMove}.
 	 *
 	 * @private
 	 */
@@ -829,10 +850,7 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	handleSelectionChange = () => {
-		this.throttledHandleSelectionChange ??= OO.ui.throttle(() => {
-			this.emit('selectionChange')
-		}, 200)
-		this.throttledHandleSelectionChange()
+		this.emit('selectionChange')
 	}
 
 	/**
@@ -916,7 +934,7 @@ class Controller extends EventEmitter {
 		// We need the `visibilitychange` event because many things may move while the document is
 		// hidden, and movements are not processed when the document is hidden.
 		$(document)
-			.on('scroll visibilitychange', this.handleScroll)
+			.on('scroll visibilitychange', this.handleViewportMove)
 			.on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll)
 			.on('selectionchange', this.handleSelectionChange)
 
@@ -945,7 +963,7 @@ class Controller extends EventEmitter {
 			})
 			.on('commentsUpdate', this.updateAddedComments)
 
-		Thread.on('toggle', this.handleScroll)
+		Thread.on('toggle', this.handleViewportMove)
 	}
 
 	/**
@@ -1204,7 +1222,7 @@ class Controller extends EventEmitter {
 	scrollToY(y, smooth = true, callback) {
 		const onComplete = () => {
 			this.toggleAutoScrolling(false)
-			this.handleScroll()
+			this.handleViewportMove()
 			callback?.()
 		}
 
@@ -1270,7 +1288,7 @@ class Controller extends EventEmitter {
 			)
 				return
 
-			this.handlePageMutate()
+			this.throttledHandlePageMutate()
 		})
 		this.mutationObserver.observe(cd.loader.$content[0], {
 			attributes: true,
