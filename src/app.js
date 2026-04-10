@@ -35,8 +35,7 @@ async function app() {
 
 	commentManager.setCommentClasses({ CompactComment, SpaciousComment })
 
-	controller.createBootProcess()
-	await controller.bootTalkPage(false)
+	await controller.bootTalkPage()
 }
 
 // Set up API after initialization

@@ -1754,18 +1754,6 @@ class Controller extends EventEmitter {
 	}
 
 	/**
-	 * Create a boot process.
-	 *
-	 * @param {import('./BootProcess').PassedData} [passedData]
-	 * @returns {import('./BootProcess').default}
-	 */
-	createBootProcess(passedData = {}) {
-		this.bootProcess = new BootProcess(passedData)
-
-		return this.bootProcess
-	}
-
-	/**
 	 * Get the current (or last available) boot process.
 	 *
 	 * @returns {import('./BootProcess').default}
@@ -1777,10 +1765,12 @@ class Controller extends EventEmitter {
 	/**
 	 * Run the current boot process and catch errors.
 	 *
-	 * @param {boolean} isReload Is the page reloaded, not booted the first time.
+	 * @param {import('./BootProcess').default} [bootProcess] Boot process
+	 * @param {boolean} [isReload] Is the page reloaded, not booted the first time.
 	 */
-	async bootTalkPage(isReload) {
+	async bootTalkPage(bootProcess, isReload = false) {
 		cd.loader.setBooting(true)
+		this.bootProcess = bootProcess || new BootProcess()
 
 		try {
 			await this.bootProcess.execute(isReload)
@@ -1843,7 +1833,7 @@ class Controller extends EventEmitter {
 		})
 
 		cd.loader.showBootingOverlay()
-		const bootProcess = this.createBootProcess(passedData)
+		const bootProcess = new BootProcess(passedData)
 
 		try {
 			bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true)
@@ -1867,8 +1857,6 @@ class Controller extends EventEmitter {
 			(comment) => comment.isSeen === false,
 		)
 
-		this.bootProcess = bootProcess
-
 		if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
 			bootProcess.passedData.submittedCommentForm.teardown()
 		}
@@ -1877,7 +1865,7 @@ class Controller extends EventEmitter {
 
 		this.emit('startReboot')
 
-		await this.bootTalkPage(true)
+		await this.bootTalkPage(bootProcess)
 
 		this.emit('reboot')
 
