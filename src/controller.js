@@ -1735,7 +1735,7 @@ class Controller extends EventEmitter {
 			// @ts-expect-error: Compatibility
 			event.returnValue = '1'
 		}
-		$(window).on('beforeunload', this.beforeUnloadHandlers[name])
+		$(window).on('beforeunload.cd', this.beforeUnloadHandlers[name])
 	}
 
 	/**
@@ -1746,7 +1746,7 @@ class Controller extends EventEmitter {
 	removePreventUnloadCondition(name) {
 		if (!(name in this.beforeUnloadHandlers)) return
 
-		$(window).off('beforeunload', this.beforeUnloadHandlers[name])
+		$(window).off('beforeunload.cd', this.beforeUnloadHandlers[name])
 		delete this.beforeUnloadHandlers[name]
 	}
 
@@ -1960,7 +1960,7 @@ class Controller extends EventEmitter {
 			delete newQuery.diffmode
 			delete newQuery.type
 
-			$(window).on('popstate', () => {
+			$(window).on('popstate.cd', () => {
 				const { searchParams: newSearchParams } = new URL(location.href)
 				if (newSearchParams.has('diff') || newSearchParams.has('oldid')) {
 					location.reload()

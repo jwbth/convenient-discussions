@@ -36,16 +36,9 @@ export class SectionManager {
 	 * @param {import('./Subscriptions').default} subscriptions
 	 */
 	init(subscriptions) {
-		this.improvePerformance = cd.settings.get('improvePerformance')
-
 		controller.on('scroll', this.maybeUpdateVisibility)
 		subscriptions.on('process', this.addSubscribeButtons)
 		visits.on('process', this.updateNewCommentsData)
-
-		if (this.improvePerformance) {
-			// Unhide when the user opens a search box to allow searching the full page.
-			$(window).on('focus', this.maybeUpdateVisibility).on('blur', this.maybeUnhideAll)
-		}
 	}
 
 	/**
@@ -68,6 +61,15 @@ export class SectionManager {
 		this.items.forEach((section) => {
 			section.showAddSubsectionButtonsOnReplyButtonHover()
 		})
+
+		if (cd.settings.get('improvePerformance')) {
+			// Unhide when the user opens a search box to allow searching the full page.
+			$(window)
+				.off('focus.cd', this.maybeUpdateVisibility)
+				.off('blur.cd', this.maybeUnhideAll)
+				.on('focus.cd', this.maybeUpdateVisibility)
+				.on('blur.cd', this.maybeUnhideAll)
+		}
 	}
 
 	/**
