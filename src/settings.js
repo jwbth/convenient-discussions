@@ -275,7 +275,7 @@ class Settings extends EventEmitter {
 
 			'autopreview': true,
 			'collapseThreads': true,
-			'collapseThreadsLevel': 10,
+			'collapseThreadsLevel': 5,
 			'commentDisplay': null,
 			'countEditsAsNewComments': false,
 			'desktopNotifications': 'unknown',
