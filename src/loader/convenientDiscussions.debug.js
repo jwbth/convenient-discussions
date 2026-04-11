@@ -163,9 +163,8 @@ class Debug {
 			counterLabels.sort()
 		}
 		counterLabels.forEach((label) => {
-			console.debug(`counter ${label}: ${this.counters[label]}`)
+			this.logAndResetCounter(label)
 		})
-		this.initCounters()
 
 		if (this.array.length) {
 			console.debug(`array:`, this.array)
@@ -176,6 +175,16 @@ class Debug {
 			console.debug(`object:`, this.object)
 			this.object = {}
 		}
+	}
+
+	/**
+	 * Log and reset the specified timer.
+	 *
+	 * @param {string} label
+	 */
+	logAndResetCounter(label) {
+		console.debug(`counter ${label}: ${this.counters[label]}`)
+		this.resetCounter(label)
 	}
 
 	/**
@@ -213,6 +222,15 @@ class Debug {
 	 */
 	incrementCounter(label) {
 		this.counters[label]++
+	}
+
+	/**
+	 * Reset the specified counter to 0.
+	 *
+	 * @param {string} label
+	 */
+	resetCounter(label) {
+		this.counters[label] = 0
 	}
 
 	/**

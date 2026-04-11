@@ -183,6 +183,8 @@ class BootProcess {
 		cd.debug.startTimer('main code')
 
 		if (this.firstRun) {
+			// TODO: scrollY is never passed to execute() currently. Is it actually useful to avoid
+			// reflow?
 			controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY)
 
 			userRegistry.loadMuted()
