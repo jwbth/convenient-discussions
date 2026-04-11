@@ -166,24 +166,6 @@ class Controller extends EventEmitter {
 	content = {}
 
 	/**
-	 * @type {(() => void) | undefined}
-	 * @private
-	 */
-	throttledActuallyHandleViewportMove
-
-	/**
-	 * @type {(() => void) | undefined}
-	 * @private
-	 */
-	throttledHandleSelectionChange
-
-	/**
-	 * @type {(() => void) | undefined}
-	 * @private
-	 */
-	throttledHandlePageMutate
-
-	/**
 	 * @type {{
 	 *   offset?: number | undefined;
 	 *   element?: Element | undefined;
@@ -247,18 +229,6 @@ class Controller extends EventEmitter {
 	 * @param {string} [pageHtml] HTML to update the page with.
 	 */
 	setup(pageHtml) {
-		this.throttledHandleSelectionChange ??= OO.ui.throttle(this.handleSelectionChange, 200)
-		this.throttledHandlePageMutate ??= OO.ui.throttle(this.handlePageMutate, 100)
-
-		// Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
-		// comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
-		// Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
-		// enough, so we try 300ms.
-		this.throttledActuallyHandleViewportMove ??= OO.ui.throttle(
-			this.actuallyHandleViewportMove,
-			300,
-		)
-
 		// RevisionSlider replaces the #mw-content-text element.
 		if (!cd.loader.$content.get(0)?.parentNode) {
 			cd.loader.$content = $('#mw-content-text')
@@ -377,8 +347,8 @@ class Controller extends EventEmitter {
 			this.scrollData.offsetBottom =
 				document.documentElement.scrollHeight - (scrollY + window.innerHeight)
 
-			// The number 100 accounts for various content moves by scripts running on the page (like
-			// HotCat that may add an empty category list).
+			// The number 100 is to capture various episodes of shifting the content down by scripts
+			// running on the page (like HotCat that may add an empty category list).
 			if (this.scrollData.offsetBottom < 100) {
 				this.scrollData.touchesBottom = true
 			} else if (
@@ -793,8 +763,6 @@ class Controller extends EventEmitter {
 		if (this.isAutoScrolling()) return
 
 		this.mouseMoveBlocked = true
-		// @ts-expect-error: This handler is throttled in setup(), which is earlier than this method may
-		// be called. ~~Hopefully.~~
 		this.throttledActuallyHandleViewportMove()
 
 		if (window.scrollX !== this.lastScrollX) {
@@ -861,9 +829,10 @@ class Controller extends EventEmitter {
 	handlePageMutate = () => {
 		if (cd.loader.isBooting()) return
 
+		this.animationFrameRequestedToHandlePageMutate = false
 		this.emit('mutate')
 
-		// Could also run this.handleScroll() here, but not sure, as it would double the execution
+		// Could also run this.handleViewportMove() here, but not sure, as it would double the execution
 		// time with rare effect.
 	}
 
@@ -918,6 +887,22 @@ class Controller extends EventEmitter {
 		cd.page.addSection(undefined, undefined, preloadConfig, newTopicOnTop)
 	}
 
+	throttledHandleSelectionChange = OO.ui.throttle(this.handleSelectionChange, 200)
+
+	throttledHandlePageMutate = () => {
+		if (!this.animationFrameRequestedToHandlePageMutate)
+			requestAnimationFrame(this.handlePageMutate)
+		this.animationFrameRequestedToHandlePageMutate = true
+	}
+
+	animationFrameRequestedToHandlePageMutate = false
+
+	// Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
+	// comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
+	// Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to benot
+	// enough, so we try 300ms.
+	throttledActuallyHandleViewportMove = OO.ui.throttle(this.actuallyHandleViewportMove, 300)
+
 	/**
 	 * _For internal use._ Add event listeners to `window`, `document`, hooks.
 	 */
@@ -936,7 +921,7 @@ class Controller extends EventEmitter {
 		$(document)
 			.on('scroll visibilitychange', this.handleViewportMove)
 			.on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll)
-			.on('selectionchange', this.handleSelectionChange)
+			.on('selectionchange', this.throttledHandleSelectionChange)
 
 		$(window)
 			.on('resize orientationchange', this.handleWindowResize)
@@ -1279,7 +1264,9 @@ class Controller extends EventEmitter {
 				records.every(
 					(record) =>
 						record.target instanceof HTMLElement &&
-						(/^cd-comment(-underlay|-overlay|Layers)/.test(record.target.className) ||
+						(/^cd-comment(-underlay|-overlay|Layers)|cd-thread-clickArea/.test(
+							record.target.className,
+						) ||
 							// Fight infinite loop caused by `el.style.overflow = 'hidden';` in
 							// Comment#getAdjustedRects()
 							(record.target.className.startsWith('cd-comment-part') &&
