@@ -129,6 +129,19 @@ function hasDontConvertComment(wikitext) {
 }
 
 /**
+ * Check if wikitext contains the "Don't convert to a test group" comment.
+ *
+ * @param {string} wikitext Wikitext to check
+ * @returns {boolean}
+ */
+function hasDontConvertGroupComment(wikitext) {
+	// Check for the comment near the heading (first line)
+	const firstLine = wikitext.split('\n')[0]
+
+	return /<!--\s*Don't convert this to a test group\s*-->/.test(firstLine)
+}
+
+/**
  * Check if any child section has the "Don't convert" comment.
  *
  * @param {Array} sections All sections
@@ -187,15 +200,47 @@ async function generateTestCases(limit, outputFile) {
 	const testGroups = []
 	let currentGroup = null
 	let processedGroups = 0
+	let skipUntilLevel = null // Track when we're skipping a test group and its children
 
 	for (let i = 0; i < sections.length; i++) {
 		const section = sections[i]
 		const level = Number.parseInt(section.toclevel)
 
+		// If we're skipping a test group, skip all sections until we reach the same or lower level
+		if (skipUntilLevel !== null) {
+			if (level > skipUntilLevel) {
+				// Still inside the skipped group, continue skipping
+				continue
+			} else {
+				// We've exited the skipped group
+				skipUntilLevel = null
+			}
+		}
+
 		// Level 1 (h2) sections are test groups
 		if (level === 1) {
 			if (limit && processedGroups >= limit) {
 				break
+			}
+
+			// Check if this test group should be skipped
+			let groupWikitext
+			try {
+				groupWikitext = await getSectionWikitext(TEST_PAGE, section.index)
+			} catch (error) {
+				console.error(
+					`Error fetching test group ${section.index}:`,
+					error.message,
+				)
+				continue
+			}
+
+			if (hasDontConvertGroupComment(groupWikitext)) {
+				console.log(
+					`\nSkipping test group: ${section.line} (has "Don't convert to a test group" comment)`,
+				)
+				skipUntilLevel = level
+				continue
 			}
 
 			// Save previous group if it exists
