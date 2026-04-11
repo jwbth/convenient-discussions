@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Jack who built the house",
+			"KormiSK",
 			"Luky001",
 			"Yardom78"
 		]
@@ -290,7 +291,7 @@
 	"sd-notifications-radio-all": "Upozorniť ma na odpovede na moje komentáre a komentáre v sekciách {{GENDER:$1|prihlásených na odber}}",
 	"sd-notifications-radio-tome": "Poslať mi oznámenie len pri odpovedaní na moje komentáre",
 	"sd-notifications-radio-none": "Neposielať mi oznámenia",
-	"sd-notifications-help": "Oznámenia sú malé okienka, ktoré vyskakujú v pravom hornom rohu.",
+	"sd-notifications-help": "Toto tiež ovplyvňuje, ktoré komentáre sa pre vás považujú za relevantné. Keď sú k dispozícii nové relevantné komentáre, počet nových komentárov v navigačnom paneli sa zvýrazní fialovou farbou.",
 	"sd-notifycollapsedthreads": "Poslať mi oznámenia o komentároch v zrolovaných vláknach",
 	"sd-showcontribslink": "V komentároch zobraziť odkaz na príspevok za menom používateľa",
 	"sd-showtoolbar": "Zobraziť panel s nástrojmi pre úpravu",
@@ -320,7 +321,7 @@
 	"msd-error-invalidpagename": "Neplatný názov stránky.",
 	"msd-error-editconflict-retry": "Len kliknite \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Nepodarilo sa upraviť cieľovú stránku.",
-	"msd-error-editingsourcepage": "Nepodarilo sa upraviť zdrojovú stránku. Musíte ju upraviť manuálne.",
+	"msd-error-editingsourcepage": "Cieľová stránka bola úspešne upravená, ale zdrojovú stránku sa nepodarilo upraviť. Budete ju musieť upraviť manuálne.",
 	"msd-moved": "Téma bola úspešne presunutá. Môžete prejsť na [[$1|stránku, na ktorú bola téma presunutá]].",
 	"move-sourcepagecode": "Presunuté do [[$1]]. $2",
 	"move-targetpagecode": "Presunuté z [[$1]]. $2",
