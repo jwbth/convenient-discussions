@@ -5,35 +5,71 @@ const mwConfig = new Map()
 const mwMessages = new Map()
 
 globalThis.mw = {
-  Title: class MockTitle {},
-  config: {
-    set: (key, value) => mwConfig.set(key, value),
-    get: (key) => mwConfig.get(key),
-  },
-  messages: {
-    set: (messages) => {
-      for (const [key, value] of Object.entries(messages)) {
-        mwMessages.set(key, value)
-      }
-    },
-    get: (key) => mwMessages.get(key),
-  },
-  user: {
-    options: {
-      get: vi.fn(() => ({})),
-    },
-  },
-  loader: {
-    require: vi.fn(),
-  },
+	Title: class MockTitle {
+		static newFromText(title) {
+			return new this(title)
+		}
+
+		constructor(title) {
+			this.title = title
+		}
+
+		getPrefixedText() {
+			return this.title
+		}
+	},
+	config: {
+		set: (key, value) => mwConfig.set(key, value),
+		get: (key) => mwConfig.get(key),
+	},
+	messages: {
+		set: (messages) => {
+			for (const [key, value] of Object.entries(messages)) {
+				mwMessages.set(key, value)
+			}
+		},
+		get: (key) => mwMessages.get(key),
+	},
+	user: {
+		options: {
+			get: vi.fn(() => ({})),
+		},
+	},
+	loader: {
+		require: vi.fn(),
+	},
 }
 
 vi.mock('../src/CrossSiteMwTitle', () => ({
-  default: class MockCrossSiteMwTitle {
-    constructor(title) {
-      this.title = title
-    }
-  }
+	default: class MockCrossSiteMwTitle {
+		constructor(title) {
+			this.title = title
+		}
+	},
+}))
+
+vi.mock('../src/pageRegistry', () => ({
+	default: {
+		canonicalCurrentPageName: 'Test_Page',
+		get: vi.fn(),
+		getCurrent: vi.fn(),
+	},
+}))
+
+vi.mock('../src/controller', () => ({
+	default: {},
+}))
+
+vi.mock('../src/sectionManager', () => ({
+	default: {},
+}))
+
+vi.mock('../src/userRegistry', () => ({
+	default: {},
+}))
+
+vi.mock('../src/notifications', () => ({
+	default: {},
 }))
 
 import { enUS } from 'date-fns/locale'

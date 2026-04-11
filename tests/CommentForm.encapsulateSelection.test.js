@@ -1,16 +1,68 @@
 // Mock mw global before imports
 globalThis.mw = {
-  Title: class MockTitle {},
+	Title: class MockTitle {
+		static newFromText(title) {
+			return new this(title)
+		}
+
+		constructor(title) {
+			this.title = title
+		}
+
+		getPrefixedText() {
+			return this.title
+		}
+	},
 }
 
 import { vi } from 'vitest'
 
 vi.mock('../src/CrossSiteMwTitle', () => ({
-  default: class MockCrossSiteMwTitle {
-    constructor(title) {
-      this.title = title
-    }
-  }
+	default: class MockCrossSiteMwTitle {
+		constructor(title) {
+			this.title = title
+		}
+	},
+}))
+
+vi.mock('../src/loader/cd', () => ({
+	default: {
+		g: {
+			pageName: 'Test_Page',
+		},
+		s: vi.fn((key) => key),
+		utils: {
+			skin$: vi.fn(() => ({ length: 0 })),
+		},
+	},
+}))
+
+vi.mock('../src/pageRegistry', () => ({
+	default: {
+		canonicalCurrentPageName: 'Test_Page',
+		get: vi.fn(),
+		getCurrent: vi.fn(),
+	},
+}))
+
+vi.mock('../src/controller', () => ({
+	default: {},
+}))
+
+vi.mock('../src/commentManager', () => ({
+	default: {},
+}))
+
+vi.mock('../src/sectionManager', () => ({
+	default: {},
+}))
+
+vi.mock('../src/userRegistry', () => ({
+	default: {},
+}))
+
+vi.mock('../src/notifications', () => ({
+	default: {},
 }))
 
 import { describe, it, expect, beforeEach } from 'vitest'
