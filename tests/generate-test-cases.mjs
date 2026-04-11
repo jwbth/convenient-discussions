@@ -2,10 +2,14 @@
 
 /**
  * Script to fetch test cases from the CD test page and convert them to JSON format.
- * Each bottom-level section (h3-h6 with no children) will be converted to HTML.
+ * Level 2 sections (h2) are test groups, and bottom-level nested sections are test cases.
  */
 
-import { sleep } from '../src/shared/utils-general'
+function sleep(ms) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms)
+	})
+}
 
 const TEST_PAGE = 'User_talk:Jack_who_built_the_house/CD_test_cases'
 const API_URL = 'https://commons.wikimedia.org/w/api.php'
@@ -112,9 +116,19 @@ function hasChildren(sections, index) {
 }
 
 /**
+ * Build URL for editing a specific section.
+ *
+ * @param {string} sectionIndex Section index
+ * @returns {string}
+ */
+function buildSectionUrl(sectionIndex) {
+	return `https://commons.wikimedia.org/w/index.php?title=${TEST_PAGE}&action=edit&section=${sectionIndex}`
+}
+
+/**
  * Main function to generate test cases.
  *
- * @param {number} [limit] Limit number of sections to process (for testing)
+ * @param {number} [limit] Limit number of test groups to process (for testing)
  * @param {string} [outputFile] Optional output file path
  * @returns {Promise<Array>}
  */
@@ -124,27 +138,49 @@ async function generateTestCases(limit, outputFile) {
 	const sections = await getSections(TEST_PAGE)
 	console.log(`Found ${sections.length} sections`)
 
-	const testCases = []
-	let processed = 0
+	const testGroups = []
+	let currentGroup = null
+	let processedGroups = 0
 
 	for (let i = 0; i < sections.length; i++) {
 		const section = sections[i]
+		const level = Number.parseInt(section.toclevel)
 
-		// Skip top-level sections (h2) - they are test groups
-		if (section.toclevel === '1') {
+		// Level 1 (h2) sections are test groups
+		if (level === 1) {
+			if (limit && processedGroups >= limit) {
+				break
+			}
+
+			// Save previous group if it exists
+			if (currentGroup) {
+				testGroups.push(currentGroup)
+			}
+
+			// Start new test group
+			currentGroup = {
+				name: section.line,
+				url: buildSectionUrl(section.index),
+				tests: [],
+			}
+
+			console.log(`\nTest group: ${section.line}`)
+			processedGroups++
 			continue
 		}
 
-		// Only process bottom-level sections (no children)
+		// Skip if we haven't started a group yet
+		if (!currentGroup) {
+			continue
+		}
+
+		// Skip sections that have children (they're intermediate groupings, not actual tests)
 		if (hasChildren(sections, i)) {
 			continue
 		}
 
-		if (limit && processed >= limit) {
-			break
-		}
-
-		console.log(`Processing section ${section.index}: ${section.line}`)
+		// This is a bottom-level section - it's a test case
+		console.log(`  Processing test ${section.index}: ${section.line}`)
 
 		try {
 			const wikitext = await getSectionWikitext(TEST_PAGE, section.index)
@@ -152,31 +188,44 @@ async function generateTestCases(limit, outputFile) {
 			// Convert wikitext to HTML using parseCode
 			const html = await parseCode(wikitext)
 
-			testCases.push({
+			currentGroup.tests.push({
 				headline: section.line,
 				level: Number.parseInt(section.level),
+				url: buildSectionUrl(section.index),
 				wikitext: wikitext.trim(),
 				html: html.trim(),
 			})
-
-			processed++
 		} catch (error) {
-			console.error(`Error processing section ${section.index}:`, error.message)
+			console.error(
+				`  Error processing section ${section.index}:`,
+				error.message,
+			)
 		}
 
 		// MediaWiki API is rate-limited, so we need to wait between requests
 		await sleep(2000)
 	}
 
-	console.log(`\nProcessed ${processed} test cases`)
+	// Don't forget to add the last group
+	if (currentGroup) {
+		testGroups.push(currentGroup)
+	}
+
+	const totalTests = testGroups.reduce(
+		(sum, group) => sum + group.tests.length,
+		0,
+	)
+	console.log(
+		`\nProcessed ${testGroups.length} test groups with ${totalTests} total tests`,
+	)
 
 	if (outputFile) {
 		const fs = await import('node:fs/promises')
-		await fs.writeFile(outputFile, JSON.stringify(testCases, null, 2), 'utf-8')
+		await fs.writeFile(outputFile, JSON.stringify(testGroups, null, 2), 'utf-8')
 		console.log(`\nSaved to ${outputFile}`)
 	}
 
-	return testCases
+	return testGroups
 }
 
 // Run the script
@@ -189,11 +238,11 @@ async function generateTestCases(limit, outputFile) {
 				: undefined
 		const outputFile = args.find((arg) => arg.endsWith('.json'))
 
-		const testCases = await generateTestCases(limit, outputFile)
+		const testGroups = await generateTestCases(limit, outputFile)
 
 		if (!outputFile) {
-			console.log('\n--- Test Cases JSON ---')
-			console.log(JSON.stringify(testCases, null, 2))
+			console.log('\n--- Test Groups JSON ---')
+			console.log(JSON.stringify(testGroups, null, 2))
 		}
 	} catch (error) {
 		console.error('Error:', error)
