@@ -116,6 +116,52 @@ function hasChildren(sections, index) {
 }
 
 /**
+ * Check if wikitext contains the "Don't convert" comment.
+ *
+ * @param {string} wikitext Wikitext to check
+ * @returns {boolean}
+ */
+function hasDontConvertComment(wikitext) {
+	// Check for the comment near the heading (first line)
+	const firstLine = wikitext.split('\n')[0]
+
+	return /<!--\s*Don't convert this to an automatic test\s*-->/.test(firstLine)
+}
+
+/**
+ * Check if any child section has the "Don't convert" comment.
+ *
+ * @param {Array} sections All sections
+ * @param {number} parentIndex Parent section index
+ * @returns {Promise<boolean>}
+ */
+async function hasChildWithDontConvert(sections, parentIndex) {
+	const parentLevel = Number.parseInt(sections[parentIndex].toclevel)
+
+	// Look at the next sections to find children
+	for (let i = parentIndex + 1; i < sections.length; i++) {
+		const childLevel = Number.parseInt(sections[i].toclevel)
+
+		// If we've reached a section at the same or lower level, we're done with children
+		if (childLevel <= parentLevel) {
+			break
+		}
+
+		// Check if this child has the "Don't convert" comment
+		try {
+			const wikitext = await getSectionWikitext(TEST_PAGE, sections[i].index)
+			if (hasDontConvertComment(wikitext)) {
+				return true
+			}
+		} catch {
+			// Continue checking other children
+		}
+	}
+
+	return false
+}
+
+/**
  * Build URL for editing a specific section.
  *
  * @param {string} sectionIndex Section index
@@ -174,17 +220,49 @@ async function generateTestCases(limit, outputFile) {
 			continue
 		}
 
-		// Skip sections that have children (they're intermediate groupings, not actual tests)
-		if (hasChildren(sections, i)) {
+		// Get the wikitext to check for "Don't convert" comment
+		let wikitext
+		try {
+			wikitext = await getSectionWikitext(TEST_PAGE, section.index)
+		} catch (error) {
+			console.error(`  Error fetching section ${section.index}:`, error.message)
 			continue
 		}
 
-		// This is a bottom-level section - it's a test case
-		console.log(`  Processing test ${section.index}: ${section.line}`)
+		// If this section itself has the "Don't convert" comment, skip it
+		if (hasDontConvertComment(wikitext)) {
+			console.log(
+				`  Skipping test ${section.index}: ${section.line} (has "Don't convert" comment)`,
+			)
+			continue
+		}
+
+		// Check if this section has children
+		const sectionHasChildren = hasChildren(sections, i)
+
+		// If it has children, check if any child has the "Don't convert" comment
+		// If so, treat this section as a test case
+		let shouldTreatAsTest = false
+		if (sectionHasChildren) {
+			shouldTreatAsTest = await hasChildWithDontConvert(sections, i)
+			if (shouldTreatAsTest) {
+				console.log(
+					`  Processing test ${section.index}: ${section.line} (child has "Don't convert" comment)`,
+				)
+			}
+		}
+
+		// Skip sections that have children unless a child has the "Don't convert" comment
+		if (sectionHasChildren && !shouldTreatAsTest) {
+			continue
+		}
+
+		// This is a bottom-level section or has a child with "Don't convert" - it's a test case
+		if (!shouldTreatAsTest) {
+			console.log(`  Processing test ${section.index}: ${section.line}`)
+		}
 
 		try {
-			const wikitext = await getSectionWikitext(TEST_PAGE, section.index)
-
 			// Convert wikitext to HTML using parseCode
 			const html = await parseCode(wikitext)
 
