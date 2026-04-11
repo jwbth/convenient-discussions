@@ -152,24 +152,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 					setTimeout(() => this.insertTemplateData(option, input))
 				}
 
-				// Get selected text from the input widget if available
-				const element = this.manager?.tribute.current.element
-				let selectedText
-				if (
-					element?.cdInput &&
-					typeof element.cdInput.getAutocompleteSavedSelection === 'function'
-				) {
-					const savedSelection = element.cdInput.getAutocompleteSavedSelection()
-					if (
-						savedSelection &&
-						// By this comparison we make sure that the user immediately pressed the trigger
-						// character after selecting text.
-						savedSelection.start ===
-							option.original.autocomplete?.manager?.tribute.current.triggerPos
-					) {
-						selectedText = savedSelection.selectedText
-					}
-				}
+				const selectedText = this.manager?.getSelectedTextForInsertion(option)
 
 				return this.getInsertionFromEntry(option.original.entry, selectedText)
 			},

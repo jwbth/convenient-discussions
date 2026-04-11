@@ -260,6 +260,34 @@ class AutocompleteManager {
 	}
 
 	/**
+	 * Get the selected text from the input widget if it should be used for autocomplete insertion.
+	 *
+	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>>} option
+	 * @returns {string | undefined}
+	 */
+	getSelectedTextForInsertion(option) {
+		const autocomplete = option.original.autocomplete
+		const element = autocomplete.manager?.tribute.current.element
+		const savedSelection =
+			element?.cdInput && typeof element.cdInput.getAutocompleteSavedSelection === 'function'
+				? element.cdInput.getAutocompleteSavedSelection()
+				: undefined
+
+		if (
+			savedSelection &&
+			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos &&
+			(!savedSelection.selectedText.includes(autocomplete.getTrigger()) ||
+				autocomplete.manager.tribute.current.collection?.allowNesting) &&
+			// Self-closing tags like `<references />` don't have `end`
+			autocomplete.getInsertionFromEntry(option.original.entry).end
+		) {
+			return savedSelection.selectedText
+		}
+
+		return undefined
+	}
+
+	/**
 	 * Handle the option choose event.
 	 *
 	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>> | undefined} option
@@ -271,25 +299,9 @@ class AutocompleteManager {
 			return ''
 		}
 
-		// Get the selected text from the input widget if available
-		const element = this.tribute.current.element
-		const savedSelection =
-			element?.cdInput && typeof element.cdInput.getAutocompleteSavedSelection === 'function'
-				? element.cdInput.getAutocompleteSavedSelection()
-				: undefined
-		let selectedText
-		if (
-			savedSelection &&
-			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos &&
-			(!savedSelection.selectedText.includes(autocomplete.getTrigger()) ||
-				autocomplete.manager.tribute.current.collection?.allowNesting) &&
-			// Self-closing tags like `<references />` don't have `end`
-			autocomplete.getInsertionFromEntry(
-				/** @type {NonNullable<typeof option>} */ (option).original.entry,
-			).end
-		) {
-			selectedText = savedSelection.selectedText
-		}
+		const selectedText = this.getSelectedTextForInsertion(
+			/** @type {NonNullable<typeof option>} */ (option),
+		)
 
 		return autocomplete.getInsertionFromEntry(
 			/** @type {NonNullable<typeof option>} */ (option).original.entry,

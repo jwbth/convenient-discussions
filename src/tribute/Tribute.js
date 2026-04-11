@@ -52,6 +52,10 @@ import tributeCss from './tribute.less?inline'
  *   results list
  * @property {string} [selectClass='highlight'] Class added in the flyout menu for active item
  * @property {string} [trigger='@'] Symbol or string that starts the lookup
+ * @property {boolean} [tabSelectsStartOnly] Whether Tab inserts only `data.start` (no content/end
+ *   wrapping), unlike Enter which inserts the full text
+ * @property {boolean} [allowNesting=false] Whether this autocomplete type allows nesting of the
+ *   same trigger
  */
 
 /**
@@ -64,8 +68,6 @@ import tributeCss from './tribute.less?inline'
  *   objects to search across or a function that takes a query text and calls a callback provided to
  *   it with that array
  * @property {RegExp} [keepAsEnd] Custom regex for end matching behavior
- * @property {boolean} [tabSelectsStartOnly] Whether Tab inserts only `data.start` (no content/end
- *   wrapping), unlike Enter which inserts the full text
  * @property {(searchResults: TributeSearchResults<Value>) => string} [menuItemTemplate] Template
  *   for displaying item in menu
  * @property {boolean} [replaceEnd] Whether to replace text at the end
@@ -74,8 +76,6 @@ import tributeCss from './tribute.less?inline'
  * @property {(item: TributeSearchResults<Value> | undefined, event: KeyboardEvent | MouseEvent) =>
  *   string | InsertData} [selectTemplate] Function called on select that returns the content to
  *   insert
- * @property {boolean} [allowNesting=false] Whether this autocomplete type allows nesting of the
- *   same trigger
  */
 
 /**
