@@ -932,8 +932,8 @@ class Controller extends EventEmitter {
 		mw.hook('wikipage.content').add(this.connectToCommentLinks, this.highlightMentions)
 		mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks)
 
-		// Mutation observer doesn't follow all possible comment position changes (e.g.,
-		// initiated with adding new CSS) unfortunately.
+		// Mutation observer doesn't follow all possible comment position changes (e.g., initiated with
+		// adding new CSS or changes in the DOM outside of the observed area) unfortunately.
 		setInterval(this.handlePageMutate, 1500)
 
 		if (cd.page.isCommentable()) {
@@ -1277,7 +1277,7 @@ class Controller extends EventEmitter {
 
 			this.throttledHandlePageMutate()
 		})
-		this.mutationObserver.observe(cd.loader.$content[0], {
+		this.mutationObserver.observe($('.vector-body').get(0) || cd.loader.$content[0], {
 			attributes: true,
 			childList: true,
 			subtree: true,
