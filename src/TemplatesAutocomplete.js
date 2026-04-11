@@ -54,14 +54,44 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 * @returns {Promise<string[]>} Promise resolving to array of template suggestions
 	 */
 	async makeApiRequest(text) {
+		// Determine the search string based on namespace detection
+		let searchString
+		let isExplicitNamespace = false
+		const hasLeadingColon = text.startsWith(':')
+
+		if (hasLeadingColon) {
+			// Leading colon means main namespace or explicit namespace
+			searchString = text.slice(1)
+			isExplicitNamespace = true
+		} else {
+			// Try to parse as a title to detect if a namespace is specified
+			const title = mw.Title.newFromText(text)
+			if (title && title.getNamespaceId() !== 10) {
+				// Namespace is specified and it's not the Template namespace (ID 10)
+				searchString = text
+				isExplicitNamespace = true
+			} else {
+				// No namespace or Template namespace - use default Template: prefix
+				searchString = 'Template:' + text
+			}
+		}
+
 		const response = await BaseAutocomplete.makeOpenSearchRequest({
-			search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
+			search: searchString,
 			redirects: 'return',
 		})
 
 		return response[1]
 			.filter((name) => !/(\/doc(?:umentation)?|\.css)$/.test(name))
-			.map((name) => (text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1)))
+			.map((name) => {
+				if (isExplicitNamespace) {
+					// Keep the full name and preserve leading colon if it was in the original input
+					return hasLeadingColon ? ':' + name : name
+				}
+
+				// Strip Template: prefix for regular templates
+				return name.slice(name.indexOf(':') + 1)
+			})
 			.map((name) =>
 				mw.config.get('wgCaseSensitiveNamespaces').includes(10)
 					? name
