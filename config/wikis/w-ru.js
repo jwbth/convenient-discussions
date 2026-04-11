@@ -682,10 +682,12 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
 	}
 });
 
-mw.util.addCSS(
-	'\
-	.ts-Закрыто > .cd-commentLevel:not(ol) {\
-		margin-left: -1em;\
-	}\
-',
-);
+mw.util.addCSS(`
+.ts-Закрыто > .cd-commentLevel:not(ol) {
+	margin-left: -1em;
+}
+
+.ruwiki-addsection {
+	display: none;
+}
+`);
