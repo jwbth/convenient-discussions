@@ -1883,7 +1883,7 @@ class Controller extends EventEmitter {
 
 		this.emit('startReboot')
 
-		await this.bootTalkPage(bootProcess)
+		await this.bootTalkPage(bootProcess, true)
 
 		this.emit('reboot')
 
