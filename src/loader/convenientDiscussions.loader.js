@@ -406,6 +406,8 @@ class Loader {
 	 * Set page types and initialize talk page or comment links page.
 	 */
 	async init() {
+		cd.loader.setPageTypes()
+
 		if (this.shouldInitTalkPage()) {
 			await this.initTalkPage()
 		}
