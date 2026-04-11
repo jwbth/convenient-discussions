@@ -253,7 +253,7 @@ export async function parseCode(code, customOptions) {
  * @param {string} code
  * @param {object} params
  * @param {string} params.page
- * @returns {Promise<{html: string}>}
+ * @returns {Promise<string>}
  * @throws {CdError}
  */
 export async function getDtPreview(code, { page }) {
@@ -274,9 +274,7 @@ export async function getDtPreview(code, { page }) {
 	mw.loader.load(parse.modules)
 	mw.loader.load(parse.modulestyles)
 
-	return {
-		html: parse.text,
-	}
+	return parse.text
 }
 
 /**
