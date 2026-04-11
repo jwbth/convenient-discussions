@@ -2716,7 +2716,7 @@ class Comment extends mixIntoClass(
 				}
 
 				// Try DiscussionTools API fallback
-				source = await this.locateUsingDiscussionTools()
+				source = await this.locateUsingDt()
 
 				if (!source) {
 					// DiscussionTools API will be used for adding the comment. TODO: currently, once set to
@@ -2743,7 +2743,7 @@ class Comment extends mixIntoClass(
 	 * @returns {Promise<CommentSource | undefined>}
 	 * @private
 	 */
-	async locateUsingDiscussionTools() {
+	async locateUsingDt() {
 		/**
 		 * @typedef {object} ApiResponseDtPageInfo
 		 * @property {object} discussiontoolspageinfo

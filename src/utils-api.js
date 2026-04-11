@@ -256,7 +256,7 @@ export async function parseCode(code, customOptions) {
  * @returns {Promise<{html: string}>}
  * @throws {CdError}
  */
-export async function parseCodeUsingDiscussionTools(code, { page }) {
+export async function getDtPreview(code, { page }) {
 	const response = /** @type {ApiResponseDiscussionToolsPreview} */ (
 		await cd
 			.getApi()

@@ -21,7 +21,7 @@ import {
 	removeWikiMarkup,
 } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
-import { handleApiReject, parseCode, parseCodeUsingDiscussionTools } from './utils-api'
+import { handleApiReject, parseCode, getDtPreview } from './utils-api'
 import { keyCombination } from './utils-keyboard'
 import {
 	buildEditSummary,
@@ -2464,16 +2464,14 @@ class CommentForm extends EventEmitter {
 		let html
 		let parsedSummary
 		try {
-			// Use DiscussionTools API for transcluded comments in reply mode
+			// Use DiscussionTools API for hard-to-locate and transcluded comments in reply mode
 			if (this.apiName === 'discussiontoolsedit') {
 				const text = this.commentInput.getValue()
-				if (text) {
-					;({ html } = await parseCodeUsingDiscussionTools(text, {
-						page: /** @type {Comment} */ (this.target).getSourcePage().name,
-					}))
-				} else {
-					html = ''
-				}
+				html = text
+					? await getDtPreview(text, {
+							page: /** @type {Comment} */ (this.target).getSourcePage().name,
+						})
+					: ''
 				this.willCommentBeIndented = true
 			} else {
 				;({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
@@ -2737,7 +2735,7 @@ class CommentForm extends EventEmitter {
 	 * @returns {Promise<boolean>}
 	 * @private
 	 */
-	async submitViaDiscussionTools(operation) {
+	async submitViaDt(operation) {
 		try {
 			const targetTyped = /** @type {Comment} */ (this.target)
 			// Currently (April 2026) it's always false at this point
@@ -3057,11 +3055,7 @@ class CommentForm extends EventEmitter {
 		const { contextCode, commentCode } = (await this.buildSource('submit', operation)) || {}
 		let editDate
 		if (contextCode === undefined) {
-			if (
-				this.apiName === 'discussiontoolsedit' &&
-				!(await this.submitViaDiscussionTools(operation))
-			)
-				return
+			if (this.apiName === 'discussiontoolsedit' && !(await this.submitViaDt(operation))) return
 
 			// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
 			// just look at the newest own comment after the reload?
