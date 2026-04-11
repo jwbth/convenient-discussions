@@ -158,6 +158,7 @@ class UpdateChecker extends EventEmitter {
 	lastCheckedRevisionId = undefined
 
 	resolverCount = 0
+
 	initted = false
 
 	/** @type {Worker} */
@@ -669,10 +670,6 @@ class UpdateChecker extends EventEmitter {
 					comparedRevisionId: previousVisitRevisionId,
 					commentsData,
 				})
-
-				if (comment.isOpeningSection()) {
-					comment.section.resubscribeIfRenamed(currentComment, oldComment)
-				}
 
 				changeList.push({ comment, commentsData })
 			}
