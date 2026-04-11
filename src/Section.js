@@ -1692,7 +1692,7 @@ class Section extends SectionSkeleton {
 		const main = revision?.slots?.main
 		const content = main?.content
 
-		if (!query || !page || !main || content === undefined) {
+		if (!query || !page) {
 			throw new CdError({
 				type: 'response',
 				code: 'noData',
@@ -1713,10 +1713,17 @@ class Section extends SectionSkeleton {
 			})
 		}
 
-		if (main.nosuchsection) {
+		if (main?.nosuchsection) {
 			throw new CdError({
 				type: 'response',
 				code: 'noSuchSection',
+			})
+		}
+
+		if (!revision || content === undefined) {
+			throw new CdError({
+				type: 'api',
+				code: 'noData',
 			})
 		}
 
