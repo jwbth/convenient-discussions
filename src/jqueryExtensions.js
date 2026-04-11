@@ -29,7 +29,7 @@ export default {
 	 * Remove non-element nodes and metadata elements (`'STYLE'`, `'LINK'`) from a jQuery collection.
 	 *
 	 * @returns {JQuery}
-	 * @memberof JQuery.fn
+	 * @memberof JQuery
 	 * @this {JQuery}
 	 */
 	cdRemoveNonElementNodes() {
@@ -45,7 +45,7 @@ export default {
 	 * @param {(() => void)} [callback] Callback to run after the animation has
 	 *   completed.
 	 * @returns {JQuery}
-	 * @memberof JQuery.fn
+	 * @memberof JQuery
 	 * @this {JQuery}
 	 */
 	cdScrollTo(alignment = 'top', smooth = true, /** @type {() => void | undefined} */ callback) {
@@ -124,7 +124,7 @@ export default {
 	 *
 	 * @param {boolean} partially Return `true` even if only a part of the element is in the viewport.
 	 * @returns {?boolean}
-	 * @memberof JQuery.fn
+	 * @memberof JQuery
 	 * @this {JQuery}
 	 */
 	cdIsInViewport(partially = false) {
@@ -178,7 +178,7 @@ export default {
 	 * @param {boolean} [smooth] Whether to use a smooth animation.
 	 * @param {() => void} [callback] Callback to run after the animation has completed.
 	 * @returns {JQuery}
-	 * @memberof JQuery.fn
+	 * @memberof JQuery
 	 * @this {JQuery}
 	 */
 	cdScrollIntoView(alignment = 'top', smooth = true, callback) {
@@ -201,7 +201,7 @@ export default {
 	 * taken into account. **This function is expensive.**
 	 *
 	 * @returns {string}
-	 * @memberof JQuery.fn
+	 * @memberof JQuery
 	 * @this {JQuery}
 	 */
 	cdGetText() {
@@ -220,7 +220,7 @@ export default {
 	 * Add a close button to the element.
 	 *
 	 * @returns {JQuery}
-	 * @memberof JQuery.fn
+	 * @memberof JQuery
 	 * @this {JQuery}
 	 */
 	cdAddCloseButton() {
@@ -251,7 +251,7 @@ export default {
 	 * Remove the close button from the element.
 	 *
 	 * @returns {JQuery}
-	 * @memberof JQuery.fn
+	 * @memberof JQuery
 	 * @this {JQuery}
 	 */
 	cdRemoveCloseButton() {

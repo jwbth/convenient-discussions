@@ -13,6 +13,7 @@ import type SectionSource from './SectionSource'
 import type TextInputWidget from './TextInputWidget'
 import type addCommentLinks from './addCommentLinks'
 import type { app } from './app'
+import type jqueryExtensions from './jqueryExtensions'
 import type { ConvenientDiscussions } from './loader/cd'
 
 declare global {
@@ -314,21 +315,13 @@ declare global {
 	}
 
 	interface JQuery {
-		cdRemoveNonElementNodes(): void
-		cdScrollTo(
-			alignment?: 'top' | 'center' | 'bottom',
-			smooth?: boolean,
-			callback?: () => void,
-		): this
-		cdIsInViewport(partially?: boolean): boolean
-		cdScrollIntoView(
-			alignment?: 'top' | 'center' | 'bottom',
-			smooth?: boolean,
-			callback?: () => void,
-		): this
-		cdGetText(): string
-		cdAddCloseButton(): this
-		cdRemoveCloseButton(): this
+		cdRemoveNonElementNodes: typeof jqueryExtensions.cdRemoveNonElementNodes
+		cdScrollTo: typeof jqueryExtensions.cdScrollTo
+		cdIsInViewport: typeof jqueryExtensions.cdIsInViewport
+		cdScrollIntoView: typeof jqueryExtensions.cdScrollIntoView
+		cdGetText: typeof jqueryExtensions.cdGetText
+		cdAddCloseButton: typeof jqueryExtensions.cdAddCloseButton
+		cdRemoveCloseButton: typeof jqueryExtensions.cdRemoveCloseButton
 
 		wikiEditor(
 			funcName:

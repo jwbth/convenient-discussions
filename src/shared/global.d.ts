@@ -92,35 +92,6 @@ declare global {
 		substr(from: number, length?: number): string
 	}
 
-	interface JQuery {
-		cdRemoveNonElementNodes(): JQuery
-		cdScrollTo(
-			alignment: 'top' | 'center' | 'bottom' = 'top',
-			smooth = true,
-			callback?: () => void,
-		): this
-		cdIsInViewport(partially = false): boolean
-		cdScrollIntoView(
-			alignment: 'top' | 'center' | 'bottom' = 'top',
-			smooth = true,
-			callback?: () => void,
-		): this
-		cdGetText(): string
-		cdAddCloseButton(): this
-		cdRemoveCloseButton(): this
-
-		wikiEditor(
-			functionName:
-				| 'addModule'
-				| 'addToToolbar'
-				| 'removeFromToolbar'
-				| 'addDialog'
-				| 'openDialog'
-				| 'closeDialog',
-			data: any,
-		): this
-	}
-
 	interface Element {
 		cdIsInline?: boolean
 
