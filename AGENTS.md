@@ -60,7 +60,7 @@
   ```
 
 - Use functional patterns where possible.
-- Don't introduce new `null` values. Use `undefined` instead, but best of all, omit it where the value is `undefined` anyway. Avoid returning `null` from functions instead of `undefined`.
+- Don't introduce new `null` values. Use `undefined` instead, but omit assigning or returning it where the value is `undefined` anyway. Avoid returning `null` either.
 - Add an empty line before `return` statements at the end of blocks (functions, `if` statements, etc.) unless it's the first statement in that block.
 - When a function parameter is not used in the function, put an underscore in front of it.
 - When a class method is overriding a method of the parent class, add `@override` tag to its JSDoc comment.
