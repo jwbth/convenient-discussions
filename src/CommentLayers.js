@@ -175,7 +175,7 @@ class CommentLayers {
 		// Apply common layer styling
 		const styleFlags = this.comment.getStyleFlags()
 		styleFlags.forEach(({ name, value }) => {
-			this.updateClassesForFlag(name, Boolean(value))
+			this.updateClassesForFlag(name, value)
 		})
 
 		if (wereJustCreated && this.comment.isLineGapped) {
@@ -381,6 +381,7 @@ class CommentLayers {
 
 		this.animateToColors(finalMarkerColor, finalBackgroundColor, () => {
 			this.comment.removeFlag(flag)
+			this.currentFlashFlag = undefined
 		})
 	}
 
@@ -402,6 +403,9 @@ class CommentLayers {
 		this.comment.addFlag(flag)
 
 		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
+
+		// Store the current flash flag so we can clean it up if layers are destroyed
+		this.currentFlashFlag = flag
 
 		const deferred = (this.unhighlightDeferred = $.Deferred())
 		deferred.always(() => {
