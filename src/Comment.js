@@ -1466,6 +1466,11 @@ class Comment extends mixIntoClass(
 		this.stopAnimations()
 		this.handleUnhover(true)
 
+		// Clean up any pending flash animation state
+		if (this.layers.currentFlashFlag) {
+			this.removeFlag(this.layers.currentFlashFlag)
+		}
+
 		// TODO: add add/remove methods to commentManager.underlays
 		removeFromArrayIfPresent(this.manager.underlays, this.layers.underlay)
 
