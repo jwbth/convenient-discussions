@@ -1069,8 +1069,7 @@ class Settings extends EventEmitter {
 
 		if (this.get('desktopNotifications') === 'unknown' && Notification.permission !== 'denied') {
 			// Avoid using the setting kept in mw.user.options, as it may be outdated. Also don't reuse
-			// the previous settings request, as the settings might be changed in
-			// this.maybeSuggestEnableCommentReformatting().
+			// the previous settings request, as the settings might be changed on the fly.
 			const { desktopNotifications } = await this.load()
 			if (['unknown', undefined].includes(desktopNotifications)) {
 				const action = await showConfirmDialog(cd.s('dn-confirm'), {

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-**Convenient Discussions** is a JavaScript tool that provides an enhanced user experience for MediaWiki talk pages. It acts as a shell over the existing MediaWiki discussion system.
+**Convenient Discussions** (**CD**) is a JavaScript tool that provides an enhanced user experience for MediaWiki talk pages. It acts as a shell over the existing MediaWiki discussion system.
 
 ## Instructions
 
