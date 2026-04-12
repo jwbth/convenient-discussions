@@ -190,10 +190,12 @@ class CommentSource {
 	 * with `:` that is used to indent some side note. It shouldn't be considered an indentation
 	 * character.
 	 *
+	 * @param {number} [level] Optional level to use instead of this.comment.level
 	 * @private
 	 */
-	excludeIndentationAndIntro() {
-		if (this.comment.level === 0) return
+	excludeIndentationAndIntro(level) {
+		const commentLevel = level === undefined ? this.comment.level : level
+		if (commentLevel === 0) return
 
 		/** @type {ReplaceCallback} */
 		const replaceIndentation = (s, before, chars, after = '') => {
@@ -233,7 +235,7 @@ class CommentSource {
 					https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#No_intro_text,_empty_line_before_the_first_vote
 					works correctly.
 					*/
-				if (adjustedChars.length < this.comment.level) {
+				if (adjustedChars.length < commentLevel) {
 					adjustedChars += ':'
 				}
 				startIndexShift -= 1 + after.length
@@ -268,9 +270,9 @@ class CommentSource {
 		}
 
 		// Workaround to remove the code of a preceding comment or intro with no proper signature
-		if (this.indentation.length < this.comment.level && countOccurrences(this.code, /\n/g)) {
+		if (this.indentation.length < commentLevel && countOccurrences(this.code, /\n/g)) {
 			this.code = this.code.replace(
-				new RegExp(`^([^]+?\\n)([:*#]{${this.comment.level}})( *)`),
+				new RegExp(`^([^]+?\\n)([:*#]{${commentLevel}})( *)`),
 				replaceIndentation,
 			)
 		}
@@ -486,18 +488,32 @@ class CommentSource {
 	}
 
 	/**
+	 * Reprocess the comment source with a different indentation level. This is useful for fixing
+	 * broken indentation where the comment appears at level 0 but actually starts with indentation
+	 * characters.
+	 *
+	 * @param {number} level The indentation level to use for reprocessing
+	 */
+	reprocessWithLevel(level) {
+		this.excludeIndentationAndIntro(level)
+		this.excludeSmallFontWrappers()
+	}
+
+	/**
 	 * Convert the comment's source code to code to set as a value of an input (practically, to the
 	 * {@link CommentForm#commentInput comment form's input}).
 	 *
+	 * @param {number} [level] Optional level to use instead of this.comment.level
 	 * @returns {string}
 	 */
-	toInputValue() {
+	toInputValue(level) {
+		const commentLevel = level === undefined ? this.comment.level : level
 		const originalIndentationLength = this.originalIndentation.length
 
 		let inputValue = new TextMasker(this.code)
 			.maskSensitiveCode()
 			.withText((code) => {
-				if (this.comment.level === 0) {
+				if (commentLevel === 0) {
 					// Collapse random line breaks that do not affect text rendering but would otherwise
 					// transform into <br> on posting. \u0001 and \u0002 mean the beginning and ending of
 					// sensitive code except for tables. \u0003 and \u0004 mean the beginning and ending of a
@@ -587,7 +603,7 @@ class CommentSource {
 					)
 				}
 
-				if (this.comment.level !== 0) {
+				if (commentLevel !== 0) {
 					code = code.replace(/\n\n+/g, '\n\n')
 				}
 

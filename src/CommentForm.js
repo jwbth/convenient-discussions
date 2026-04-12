@@ -23,6 +23,7 @@ import {
 import userRegistry from './userRegistry'
 import { handleApiReject, parseCode, getDtPreview } from './utils-api'
 import { keyCombination } from './utils-keyboard'
+import { showConfirmDialog } from './utils-oojs'
 import {
 	buildEditSummary,
 	isExistentAnchor,
@@ -94,6 +95,7 @@ import {
  * @property {boolean} summaryAltered
  * @property {boolean} omitSignatureCheckboxAltered
  * @property {Date|undefined} lastFocused
+ * @property {number|undefined} actualCommentLevel
  */
 
 /**
@@ -780,6 +782,18 @@ class CommentForm extends EventEmitter {
 			this.lastFocused = new Date(initialState.lastFocused)
 		}
 
+		if (initialState.actualCommentLevel !== undefined) {
+			/**
+			 * The actual indentation level of the comment when it has broken indentation. This is stored
+			 * so that the fix can be reapplied when the source is loaded again for operations like
+			 * submit or view changes.
+			 *
+			 * @type {number|undefined}
+			 * @private
+			 */
+			this.actualCommentLevel = initialState.actualCommentLevel
+		}
+
 		if (initialState.targetWithOutdentedReplies) {
 			this.showMessage(
 				wrapHtml(
@@ -883,7 +897,29 @@ class CommentForm extends EventEmitter {
 				})
 			}
 
-			const commentInputValue = source.toInputValue()
+			// Detect broken indentation pattern
+			let detectedLevel
+			if (this.target.level === 0 && !this.target.hasFlag('own') && !this.target.followsHeading) {
+				detectedLevel = this.detectBrokenIndentation(source.code)
+			}
+
+			let commentInputValue = source.toInputValue()
+			if (detectedLevel) {
+				// Ask user if they want to fix the broken indentation
+				const confirmed = await showConfirmDialog(cd.s('cf-confirm-fixindentation'), {
+					size: 'medium',
+				})
+
+				if (confirmed === 'accept') {
+					// Store the actual level for future operations
+					this.actualCommentLevel = detectedLevel
+
+					// Re-process the source with the detected level
+					this.applyActualLevel(source)
+					commentInputValue = source.toInputValue(detectedLevel)
+				}
+			}
+
 			this.commentInput.setValue(commentInputValue)
 			this.originalComment = commentInputValue
 
@@ -912,6 +948,61 @@ class CommentForm extends EventEmitter {
 				cancel: true,
 				operation,
 			})
+		}
+	}
+
+	/**
+	 * Apply the actual comment level to a source object. This is used when the comment has broken
+	 * indentation and we need to reprocess it with the correct level.
+	 *
+	 * @param {import('./CommentSource').default | import('./SectionSource').default | import('./PageSource').default} [source]
+	 * @private
+	 */
+	applyActualLevel(source) {
+		if (
+			this.actualCommentLevel !== undefined &&
+			source &&
+			'reprocessWithLevel' in source &&
+			typeof source.reprocessWithLevel === 'function'
+		) {
+			source.reprocessWithLevel(this.actualCommentLevel)
+		}
+	}
+
+	/**
+	 * Detect if a comment has broken indentation (starts with indentation characters but renders at
+	 * level 0 due to incorrect markup).
+	 *
+	 * @param {string} code Comment source code
+	 * @returns {number | undefined} The detected indentation level, or undefined if no broken
+	 *   indentation is detected
+	 * @private
+	 */
+	detectBrokenIndentation(code) {
+		// Check if the code starts with indentation characters
+		const match = code.match(/^([:*#]+)/)
+		if (!match) {
+			return
+		}
+
+		const indentationChars = match[1]
+		const indentationLength = indentationChars.length
+
+		// If indentation is longer than 1 character, it's unlikely to be a list markup
+		if (indentationLength > 1) {
+			return indentationLength
+		}
+
+		// For single-character indentation, check if the second line doesn't have indentation
+		// (which would indicate this is broken indentation, not a list)
+		const lines = code.split('\n')
+		if (lines.length > 1) {
+			const secondLine = lines[1]
+			// If the second line doesn't start with indentation characters, this is likely broken
+			// indentation
+			if (!/^[:*#]/.test(secondLine)) {
+				return indentationLength
+			}
 		}
 	}
 
@@ -2297,6 +2388,8 @@ class CommentForm extends EventEmitter {
 		if (!this.isNewSectionApi()) {
 			try {
 				await this.target.loadCode(this, !cd.page.exists())
+				// Apply the actual level if we've detected broken indentation
+				this.applyActualLevel(this.target.source)
 			} catch (error) {
 				this.handleError({
 					error,
@@ -4051,6 +4144,7 @@ class CommentForm extends EventEmitter {
 			summaryAltered: this.isSummaryAltered(),
 			omitSignatureCheckboxAltered: this.isOmitSignatureCheckboxAltered(),
 			lastFocused: this.getLastFocused(),
+			actualCommentLevel: this.actualCommentLevel,
 		}
 	}
 
