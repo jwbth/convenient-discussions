@@ -351,6 +351,7 @@ const globalProperties = {
 		'THEAD',
 		'TR',
 		'UL',
+		'WIKI-CHART',
 	],
 
 	/**
@@ -391,6 +392,7 @@ const globalProperties = {
 		'STRONG',
 		'SUB',
 		'SUP',
+		'SVG',
 		'TIME',
 		'TT',
 		'U',
