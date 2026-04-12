@@ -213,13 +213,26 @@ class Comment extends mixIntoClass(
 	isChangedSincePreviousVisit
 
 	/**
+	 * The current flash flag being animated (if any). Used to clean up the flag if layers are
+	 * destroyed before the animation completes.
+	 *
+	 * @type {import('./CommentFlagSet').CommentFlag | undefined}
+	 */
+	currentFlashFlag
+
+	/**
 	 * Adds a comment flag.
 	 *
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
+	 * @param {boolean} [isFlashFlag] Whether this is a temporary flash flag that should be tracked
+	 *   for cleanup when layers are removed.
 	 */
-	addFlag(flag) {
+	addFlag(flag, isFlashFlag = false) {
 		this.flags.add(flag)
 		this.updateClassesForFlag(flag, true)
+		if (isFlashFlag) {
+			this.currentFlashFlag = flag
+		}
 	}
 
 	/**
@@ -230,6 +243,9 @@ class Comment extends mixIntoClass(
 	removeFlag(flag) {
 		this.flags.remove(flag)
 		this.updateClassesForFlag(flag, false)
+		if (this.currentFlashFlag === flag) {
+			this.currentFlashFlag = undefined
+		}
 	}
 
 	/**
@@ -1467,8 +1483,8 @@ class Comment extends mixIntoClass(
 		this.handleUnhover(true)
 
 		// Clean up any pending flash animation state
-		if (this.layers.currentFlashFlag) {
-			this.removeFlag(this.layers.currentFlashFlag)
+		if (this.currentFlashFlag) {
+			this.removeFlag(this.currentFlashFlag)
 		}
 
 		// TODO: add add/remove methods to commentManager.underlays
