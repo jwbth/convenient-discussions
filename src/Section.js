@@ -734,7 +734,8 @@ class Section extends SectionSkeleton {
 					$authorLink: $('<a>')
 						.text(author.getName())
 						.attr('href', `#${comments[0].getUrlFragment() || ''}`)
-						.on('click', () => {
+						.on('click', (event) => {
+							event.preventDefault()
 							Comment.scrollToFirstFlashAll(comments)
 						}),
 				}
@@ -794,7 +795,7 @@ class Section extends SectionSkeleton {
 					.sort((datum1, datum2) => datum2.count - datum1.count)
 					.map((datum) =>
 						$('<li>').append(
-							datum.$authorLink.clone(),
+							datum.$authorLink.clone(true),
 							cd.mws('word-separator') + cd.mws('parentheses', datum.count),
 						),
 					),
