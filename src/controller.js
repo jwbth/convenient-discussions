@@ -1277,7 +1277,7 @@ class Controller extends EventEmitter {
 
 			this.throttledHandlePageMutate()
 		})
-		this.mutationObserver.observe($('.vector-body').get(0) || cd.loader.$content[0], {
+		this.mutationObserver.observe($('#bodyContent').get(0) || cd.loader.$content[0], {
 			attributes: true,
 			childList: true,
 			subtree: true,
