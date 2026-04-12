@@ -1482,6 +1482,8 @@ class Comment extends mixIntoClass(
 	 * @param {number} delay
 	 */
 	flash(flag, delay) {
+		if (this.isCollapsed || !isVisible(...this.elements)) return
+
 		this.configureLayers()
 		if (!this.layers) return
 
