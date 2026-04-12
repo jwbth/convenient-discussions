@@ -174,11 +174,11 @@ function setEssentials() {
 	// MediaWiki messages.
 	cd.g.contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'))
 
-	cd.loader.setPageTypes()
-
 	if ('config' in cd) {
 		makeSureConfigIsSet()
 	}
+
+	cd.loader.setPageTypes()
 }
 
 /**
