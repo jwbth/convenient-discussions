@@ -381,7 +381,6 @@ class CommentLayers {
 
 		this.animateToColors(finalMarkerColor, finalBackgroundColor, () => {
 			this.comment.removeFlag(flag)
-			this.currentFlashFlag = undefined
 		})
 	}
 
@@ -400,12 +399,9 @@ class CommentLayers {
 
 		// TODO: This should better reside in Comment, but we need to add the flag *after* rejecting the
 		// deferred and stopping the animation because that would remove the flag.
-		this.comment.addFlag(flag)
+		this.comment.addFlag(flag, true)
 
 		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
-
-		// Store the current flash flag so we can clean it up if layers are destroyed
-		this.currentFlashFlag = flag
 
 		const deferred = (this.unhighlightDeferred = $.Deferred())
 		deferred.always(() => {
