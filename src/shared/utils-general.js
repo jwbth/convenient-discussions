@@ -38,7 +38,7 @@ export function isInline(node, considerTextNodesAsInline = false) {
 		return true
 	}
 
-	if (!isElement(node)) {
+	if (!isElement(node) || isSvgElement(node)) {
 		return
 	}
 
@@ -615,6 +615,16 @@ export function isDomHandlerElement(node) {
  */
 export function isMetadataNode(node) {
 	return isElement(node) && ['STYLE', 'LINK'].includes(node.tagName)
+}
+
+/**
+ * Check whether the provided node is one of the SVG elements, excluding <svg> itself.
+ *
+ * @param {NodeLike} node
+ * @returns {boolean}
+ */
+export function isSvgElement(node) {
+	return Boolean('ownerSVGElement' in node && node.ownerSVGElement)
 }
 
 /**

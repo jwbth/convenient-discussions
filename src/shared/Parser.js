@@ -305,8 +305,8 @@ class Parser {
 		const elementsTreeWalker = new ElementsTreeWalker(this.context.rootElement, timestamp.element)
 		while (
 			elementsTreeWalker.previousNode() &&
-			(isInline(elementsTreeWalker.currentNode) !== false ||
-				isMetadataNode(elementsTreeWalker.currentNode))
+			(isMetadataNode(elementsTreeWalker.currentNode) ||
+				isInline(elementsTreeWalker.currentNode) !== false)
 		) {
 			if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
 				isExtraSignature = true
