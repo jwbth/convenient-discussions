@@ -313,6 +313,7 @@ async function generateTestCases(limit, outputFile) {
 
 			currentGroup.tests.push({
 				headline: section.line,
+				id: section.anchor,
 				level: Number.parseInt(section.level),
 				url: buildSectionUrl(section.index),
 				wikitext: wikitext.trim(),
