@@ -426,8 +426,8 @@ class CommentFormInputTransformer extends TextMasker {
 		} else if (this.isMode('addSubsection')) {
 			level = this.target.level + 1
 		} else if (this.isMode('edit')) {
-			// See CommentForm#loadComment(): I think a situation where the headline input is present and
-			// but not in the source or vice versa is impossible, but need to recheck.
+			// See CommentForm#loadComment(): I think a situation where the headline input is present but
+			// the heading is not in the source or vice versa is impossible, but need to recheck.
 			level = /** @type {number} */ (this.target.source.headingLevel)
 		}
 
@@ -579,6 +579,7 @@ class CommentFormInputTransformer extends TextMasker {
 		'*': 'ul',
 		'#': 'ol',
 	})
+
 	static itemTags = /** @type {const} */ ({
 		':': 'dd',
 		';': 'dt',

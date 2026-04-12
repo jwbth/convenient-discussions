@@ -883,11 +883,7 @@ class CommentForm extends EventEmitter {
 				})
 			}
 
-			let commentInputValue = source.toInput()
-			if (source.inSmallFont) {
-				commentInputValue = `<small>${commentInputValue}</small>`
-			}
-
+			const commentInputValue = source.toInputValue()
 			this.commentInput.setValue(commentInputValue)
 			this.originalComment = commentInputValue
 

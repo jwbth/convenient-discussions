@@ -90,6 +90,7 @@ class CommentSource {
 		this.excludeBadBeginnings()
 		this.excludeIndentationAndIntro()
 		this.adjustSignature()
+		this.excludeSmallFontWrappers()
 		this.adjustIndentation()
 	}
 
@@ -185,8 +186,9 @@ class CommentSource {
 	/**
 	 * While {@link CommentSource#adjust adjusting the comment's source code data}, extract the
 	 * indentation characters and exclude them and any foreign code (such as section intro) before
-	 * them from the comment's code. Comments at the zero level sometimes nevertheless start with `:`
-	 * that is used to indent some side note. It shouldn't be considered an indentation character.
+	 * them from the comment's source code. Comments at the zero level sometimes nevertheless start
+	 * with `:` that is used to indent some side note. It shouldn't be considered an indentation
+	 * character.
 	 *
 	 * @private
 	 */
@@ -311,34 +313,44 @@ class CommentSource {
 			].filter(defined),
 		)
 
-		// Exclude <small></small> and template wrappers from the strings
-		const smallWrappers = [
+		this.signatureCode = this.signatureDirtyCode
+		this.inSmallFont = false
+	}
+
+	/**
+	 * While {@link CommentSource#adjust adjusting the comment's source code data}, exclude
+	 * <code>&lt;small&gt;&lt;/small&gt;</code> and template wrappers from the strings in case they
+	 * wrap the entire comment.
+	 *
+	 * @private
+	 */
+	excludeSmallFontWrappers() {
+		;[
 			{
 				start: /^<small>/,
 				end: /<\/small>[ \u00A0\t]*$/,
 			},
 		]
-		if (cd.config.smallDivTemplates.length) {
-			smallWrappers.push({
-				start: new RegExp(
-					`^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,
-					'i',
-				),
-				end: /\}\}[ \u00A0\t]*$/,
+			.concat(
+				cd.config.smallDivTemplates.length
+					? {
+							start: new RegExp(
+								`^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,
+								'i',
+							),
+							end: /\}\}[ \u00A0\t]*$/,
+						}
+					: [],
+			)
+			.some((wrapper) => {
+				if (wrapper.start.test(this.code) && wrapper.end.test(this.signatureCode)) {
+					this.inSmallFont = true
+					this.code = this.code.replace(wrapper.start, '')
+					this.signatureCode = this.signatureCode.replace(wrapper.end, '')
+
+					return true
+				}
 			})
-		}
-
-		this.signatureCode = this.signatureDirtyCode
-		this.inSmallFont = false
-		smallWrappers.some((wrapper) => {
-			if (wrapper.start.test(this.code) && wrapper.end.test(this.signatureCode)) {
-				this.inSmallFont = true
-				this.code = this.code.replace(wrapper.start, '')
-				this.signatureCode = this.signatureCode.replace(wrapper.end, '')
-
-				return true
-			}
-		})
 	}
 
 	/**
@@ -479,10 +491,10 @@ class CommentSource {
 	 *
 	 * @returns {string}
 	 */
-	toInput() {
+	toInputValue() {
 		const originalIndentationLength = this.originalIndentation.length
 
-		return new TextMasker(this.code)
+		let inputValue = new TextMasker(this.code)
 			.maskSensitiveCode()
 			.withText((code) => {
 				if (this.comment.level === 0) {
@@ -584,6 +596,12 @@ class CommentSource {
 			.unmask()
 			.getText()
 			.trim()
+
+		if (this.inSmallFont) {
+			inputValue = `<small>${inputValue}</small>`
+		}
+
+		return inputValue
 	}
 
 	/**
