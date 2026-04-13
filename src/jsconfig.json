@@ -2,6 +2,7 @@
 	"extends": "../jsconfig-base.json",
 	"compilerOptions": {
 		"module": "esnext",
+		// Support ES2022 functions and runtime APIs, but not language features
 		"target": "es2022",
 		"moduleResolution": "bundler",
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
