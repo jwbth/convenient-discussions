@@ -911,12 +911,7 @@ class CommentForm extends EventEmitter {
 				})
 
 				if (confirmed === 'accept') {
-					// Store the actual level for future operations
-					this.actualCommentLevel = detectedLevel
-
-					// Re-process the source with the detected level
-					this.applyActualLevel(source)
-					commentInputValue = source.toInputValue(detectedLevel)
+					commentInputValue = this.fixBrokenLayout(source, detectedLevel)
 				}
 			}
 
@@ -1004,6 +999,31 @@ class CommentForm extends EventEmitter {
 				return indentationLength
 			}
 		}
+	}
+
+	/**
+	 * Fix broken layout in a comment, including broken indentation and deprecated `<pre>` tags.
+	 *
+	 * @param {import('./CommentSource').default} source Comment source
+	 * @param {number} detectedLevel The detected actual indentation level
+	 * @returns {string} The fixed comment input value
+	 * @private
+	 */
+	fixBrokenLayout(source, detectedLevel) {
+		// Store the actual level for future operations
+		this.actualCommentLevel = detectedLevel
+
+		// Re-process the source with the detected level
+		this.applyActualLevel(source)
+		let commentInputValue = source.toInputValue(detectedLevel)
+
+		// Replace <pre>...</pre> with <syntaxhighlight lang="wikitext">...</syntaxhighlight>
+		commentInputValue = commentInputValue.replace(
+			/<pre\b([^>]*)>([\s\S]*?)<\/pre>/gi,
+			'<syntaxhighlight lang="wikitext"$1>$2</syntaxhighlight>',
+		)
+
+		return commentInputValue
 	}
 
 	/**
