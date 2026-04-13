@@ -58,6 +58,10 @@ class CommentSource {
 		this.code = contextCode.slice(signature.commentStartIndex, signature.startIndex)
 		this.isInSectionContext = isInSectionContext
 
+		this.lineStartIndex = this.startIndex
+		this.originalIndentation = ''
+		this.indentation = ''
+
 		this.adjust()
 	}
 
@@ -68,9 +72,7 @@ class CommentSource {
 	 * @private
 	 */
 	adjust() {
-		this.lineStartIndex = this.startIndex
-
-		// Ignore heading markup inside <nowiki>, <syntaxhighlight>, etc.
+		// Get the heading match while ignoring heading markup inside <nowiki>, <syntaxhighlight>, etc.
 		this.code = new TextMasker(this.code)
 			.maskSensitiveCode()
 			.withText((text, textMasker) => {
@@ -84,8 +86,6 @@ class CommentSource {
 			})
 			.unmask()
 			.getText()
-		this.originalIndentation = ''
-		this.indentation = ''
 
 		this.excludeBadBeginnings()
 		this.excludeIndentationAndIntro()
@@ -183,10 +183,10 @@ class CommentSource {
 	}
 
 	/**
-	 * While {@link CommentSource#adjust adjusting the comment's source code data}, exclude the
-	 * indentation characters and any foreign code (such as section intro) before them from the
-	 * comment's coude code. Comments at the zero level sometimes start with `:` that is used to
-	 * indent some side note. It shouldn't be considered an indentation character.
+	 * While {@link CommentSource#adjust adjusting the comment's source code data}, extract the
+	 * indentation characters and exclude them and any foreign code (such as section intro) before
+	 * them from the comment's code. Comments at the zero level sometimes nevertheless start with `:`
+	 * that is used to indent some side note. It shouldn't be considered an indentation character.
 	 *
 	 * @private
 	 */
@@ -265,7 +265,7 @@ class CommentSource {
 			)
 		}
 
-		// Workaround to remove code of a preceding comment or intro with no proper signature
+		// Workaround to remove the code of a preceding comment or intro with no proper signature
 		if (this.indentation.length < this.comment.level && countOccurrences(this.code, /\n/g)) {
 			this.code = this.code.replace(
 				new RegExp(`^([^]+?\\n)([:*#]{${this.comment.level}})( *)`),
@@ -349,36 +349,36 @@ class CommentSource {
 	 */
 	adjustIndentation() {
 		// If the comment contains different indentation character sets for different lines, then use
-		// different sets depending on the mode (edit/reply).
-		let replyIndentation = this.indentation
+		// different sets depending on the mode (edit/reply). Here we set the reply indentation, but
+		// also adjust the edit intendation if necessary.
+		let replyIndentationBase = this.indentation
 		if (!this.comment.isOpeningSection()) {
 			// If the last line ends with `#`, it's probably a numbered list _inside_ the comment, not two
 			// comments in one, so we exclude such cases. The signature code is used because it may start
 			// with a newline.
 			const match = (this.code + this.signatureDirtyCode).match(/\n([:*#]*[:*])(?!:*#).*$/)
 			if (match) {
-				replyIndentation = match[1]
+				replyIndentationBase = match[1]
 
 				// Cases where indentation characters on the first line don't denote a comment level but
 				// serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
 				// https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
 				// replaceIndentation() in .excludeIndentationAndIntro()).
-				if (replyIndentation.length < this.originalIndentation.length) {
+				if (replyIndentationBase.length < this.originalIndentation.length) {
 					const prefix =
-						this.originalIndentation.slice(replyIndentation.length) +
+						this.originalIndentation.slice(replyIndentationBase.length) +
 						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 						/** @type {string} */ (this.indentationSpacing)
 					this.code = prefix + this.code
 					this.indentation = this.originalIndentation = this.originalIndentation.slice(
 						0,
-						replyIndentation.length,
+						replyIndentationBase.length,
 					)
 					this.startIndex -= prefix.length
 				}
 			}
 		}
-		replyIndentation += cd.config.defaultIndentationChar
-		this.replyIndentation = replyIndentation
+		this.replyIndentation = replyIndentationBase + cd.config.defaultIndentationChar
 	}
 
 	/**
