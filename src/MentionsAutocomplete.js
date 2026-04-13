@@ -54,7 +54,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 
 		return {
 			start: `@[[${pageName}|`,
-			end: name.match(/[(,]/) ? `${name}]]` : ']]',
+			end: pageName.match(/[(,]/) ? `${name}]]` : ']]',
 			content: selectedText || name,
 			omitContentCheck() {
 				return !selectedText && !this.start.includes('/')
