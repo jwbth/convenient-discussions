@@ -528,7 +528,7 @@ class CommentFormManager extends EventEmitter {
 	 * @param {boolean} [inSight]
 	 */
 	goToNextCommentForm(inSight) {
-		this.query((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
+		this.query((commentForm) => inSight || !commentForm.commentInput.$element.cdIsInViewport(true))
 			.map((commentForm) => {
 				let top = commentForm.$element[0].getBoundingClientRect().top
 				if (top < 0) {
