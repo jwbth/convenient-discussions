@@ -180,9 +180,7 @@ export default class Page {
 	}
 
 	/**
-	 * Check if the page is an archive page. Relies on {@link module:defaultConfig.archivePaths}
-	 * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
-	 * `data-is-archive-page`.
+	 * Check if the page is an archive page. Relies on {@link module:defaultConfig.archivePaths}.
 	 *
 	 * @returns {boolean}
 	 */

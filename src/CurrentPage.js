@@ -50,6 +50,10 @@ export default class CurrentPage extends Page {
 	 * @returns {boolean}
 	 */
 	isArchive() {
+		if (typeof cd.g.isArchive === 'boolean') {
+			return cd.g.isArchive
+		}
+
 		const archivingInfoElement = this.findArchivingInfoElement()
 		if (archivingInfoElement?.length) {
 			return Boolean(Number(archivingInfoElement.attr('data-is-archive-page')))

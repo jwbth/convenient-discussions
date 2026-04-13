@@ -238,6 +238,8 @@ const globalProperties = {
 
 	debug: getQueryParamBooleanValue('cddebug') ?? IS_DEV,
 
+	isArchive: getQueryParamBooleanValue('cdarchive'),
+
 	/**
 	 * Whether the script is running in development mode.
 	 *
