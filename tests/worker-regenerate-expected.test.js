@@ -1,13 +1,14 @@
 /**
  * Regenerate expected test data by running the actual parser
  *
- * Run with: npm test tests/worker-regenerate-expected.test.js
+ * Run with: npm run test:regenerate
  */
 
+import { writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { describe, test, beforeEach, vi, afterEach } from 'vitest'
-import { readFileSync, writeFileSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
 
 import defaultPayload from './worker-default-payload'
 import testGroupsOriginal from './worker-test-cases-merged.json'
@@ -15,7 +16,11 @@ import testGroupsOriginal from './worker-test-cases-merged.json'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-describe('Regenerate expected test data', () => {
+// Skip this test when running all tests, only run when targeted directly
+// Set REGENERATE=1 environment variable to run this test
+const isDirectRun = process.env.REGENERATE === '1'
+
+describe.skipIf(!isDirectRun)('Regenerate expected test data', () => {
 	let postMessageSpy
 
 	beforeEach(async () => {

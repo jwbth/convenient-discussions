@@ -7,6 +7,13 @@ describe('worker - merged test cases', () => {
 	let postMessageSpy
 
 	beforeEach(async () => {
+		// Silence console output
+		vi.spyOn(console, 'log').mockImplementation(() => {})
+		vi.spyOn(console, 'warn').mockImplementation(() => {})
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		vi.spyOn(console, 'info').mockImplementation(() => {})
+		vi.spyOn(console, 'debug').mockImplementation(() => {})
+
 		vi.stubGlobal(
 			'Worker',
 			class Worker {
