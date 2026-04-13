@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Agam Riyandana",
+			"Budhiastawa",
 			"Farras",
 			"Kenrick95",
 			"Penyuwangi",
@@ -125,5 +126,8 @@
 	"sd-page-notifications": "Notifikasi",
 	"sd-page-dataremoval": "Penghapusan data",
 	"sd-autocompletetypes-templates": "templat-templat",
-	"sd-signatureprefix": "Prefiks tanda tangan"
+	"sd-signatureprefix": "Prefiks tanda tangan",
+	"error-locatecomment": "Komentar tidak ditemukan di kode sumber. Hal ini mungkin disebabkan oleh kompleksitas kode komentar, kesalahan skrip, atau fakta bahwa komentar tersebut telah dihapus atau diedit secara besar-besaran. Anda dapat mencoba <span class=\"cd-message-editSection\">[ $1 mengedit kode sumber dengan cara standar]</span> .",
+	"error-cantreply": "Fitur Diskusi Praktis tidak dapat digunakan untuk membalas komentar ini. Anda dapat mencoba <span class=\"cd-message-editSection\">[ $1 sunting kode sumber dengan cara standar]</span> .",
+	"error-locatesection": "Tidak ditemukan bagian dalam kode sumber. Hal ini mungkin disebabkan oleh kompleksitas kode komentar pertama bagian tersebut, kesalahan skrip, atau fakta bahwa bagian tersebut telah dihapus. Anda dapat mencoba <span class=\"cd-message-editPage\">[ $1 mengedit kode sumber halaman dengan cara standar]</span> ."
 }

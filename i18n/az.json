@@ -195,6 +195,7 @@
 	"cf-error-preview": "Şərhi önizləmək mümkün olmadı.",
 	"cf-error-viewchanges": "Dəyişiklikləri əldə etmək mümkün olmadı.",
 	"cf-error-couldntedit": "Səhifə redaktə edilməmiş ola bilər.",
+	"cf-error-couldntedit-dt": "Səhifəni redaktə etmək mümkün olmadı.",
 	"cf-error-pagedoesntexist": "Səhifə mövcud deyil.",
 	"cf-error-formconflict": "səhifədə fərqli tipli \"Mövzu əlavə et\" forması açıqdır. Bunu açmaq üçün həmin formanı bağlayın.",
 	"cf-error-othersubmitted": "Formanı göndərmək mümkün deyil, çünki hazırda başqa forma göndərilir.",

@@ -196,6 +196,7 @@
 	"cf-error-preview": "לא ניתן להראות תצוגה מקדימה.",
 	"cf-error-viewchanges": "לא ניתן לקבל את השינויים.",
 	"cf-error-couldntedit": "ייתכן שהדף לא נערך.",
+	"cf-error-couldntedit-dt": "לא ניתן לערוך את הדף.",
 	"cf-error-pagedoesntexist": "הדף לא קיים.",
 	"cf-error-formconflict": "כבר פתוח טופס הוספת נושא מסוג אחר על הדף. יש לסגור אותו כדי לפתוח את זה.",
 	"cf-error-othersubmitted": "לא ניתן לשלוח את הטופס מכיוון שטופס אחר נשלח בו זמנית.",

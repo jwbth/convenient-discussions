@@ -388,7 +388,7 @@
 	"msd-keeplink": "Оставить ссылку на новое место",
 	"msd-chronologicalorder": "Найти место для темы на основе хронологического порядка",
 	"msd-summaryending": "Описание правки (будет добавлено к стандартному)",
-	"msd-summaryending-archive": "архивирование",
+	"msd-summaryending-archive": "архивация",
 	"msd-error-wrongpage": "Неверно указана страница.",
 	"msd-error-sourcepagedeleted": "Текущая страница была удалена.",
 	"msd-error-invalidpagename": "Указано невозможное название страницы.",

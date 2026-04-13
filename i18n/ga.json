@@ -182,6 +182,7 @@
 	"cf-error-preview": "Níorbh fhéidir réamhamharc a dhéanamh ar an trácht.",
 	"cf-error-viewchanges": "Níorbh fhéidir na hathruithe a fháil.",
 	"cf-error-couldntedit": "B’fhéidir nach ndearnadh an leathanach a chur in eagar.",
+	"cf-error-couldntedit-dt": "Níorbh fhéidir an leathanach a chur in eagar.",
 	"cf-error-pagedoesntexist": "Níl an leathanach ann.",
 	"cf-error-formconflict": "Tá foirm \"Cuir ábhar leis\" de chineál difriúil oscailte ar an leathanach cheana féin. Dún an fhoirm sin chun an ceann seo a oscailt.",
 	"cf-error-othersubmitted": "Ní féidir an fhoirm a chur isteach mar tá foirm eile á cur isteach faoi láthair.",

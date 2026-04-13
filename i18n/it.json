@@ -107,6 +107,7 @@
 	"cf-block-close": "Chiudi",
 	"cf-notice-nochanges": "Nessuna modifica.",
 	"cf-error-closed": "La discussione è chiusa.",
+	"cf-error-couldntedit-dt": "Impossibile modificare la pagina.",
 	"cf-error-pagedoesntexist": "Questa pagina non esiste.",
 	"cf-autocomplete-mentions-label": "Menziona un utente",
 	"cf-autocomplete-wikilinks-label": "Collega una wikipage",
