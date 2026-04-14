@@ -614,10 +614,14 @@ class CommentSkeleton {
 		// only one comment part eventually (a list item, for example), and only the second `stage` code
 		// (in CommentSkeleton#filterParts()) fully covers comments indented with `:`).
 
-		return (
+		let parentElement
+
+		return Boolean(
 			step === 'back' &&
 			(!previousPart || previousPart.step === 'up') &&
-			(!['DD', 'LI'].includes(/** @type {ElementLike} */ (node.parentElement).tagName) ||
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			(parentElement = /** @type {ElementLike} */ (node.parentElement)) &&
+			(!['DD', 'LI'].includes(parentElement.tagName) ||
 				// Cases like
 				// https://en.wikipedia.org/w/index.php?title=Wikipedia:Arbitration/Requests/Case/SmallCat_dispute/Proposed_decision&oldid=1172525361#c-Wugapodes-20230822205500-Purpose_of_Wikipedia
 				(isElement(nextNode) &&
@@ -628,14 +632,13 @@ class CommentSkeleton {
 					)) ||
 				// Comment split by replies: a text node (e.g. "List item 1") before a list whose
 				// first item contains a signature. This means another user inserted a reply in the
-				// middle of someone else's list. The text node must be the first child of its
-				// parent (to exclude cases where inline elements precede the text, like in
-				// "Signature without a date"), and the parent element must have siblings (to
-				// exclude cases like "No signature" where the parent is the only item).
+				// middle of someone else's list. The parent element must have siblings (to exclude
+				// cases like "No signature" where the parent is the only item) and must not have
+				// direct <a> children (to exclude cases like "Signature without a date" where the
+				// parent has user links preceding the inner list).
 				(node.nodeType === Node.TEXT_NODE &&
-					!node.previousSibling &&
-					(node.parentElement.previousElementSibling ||
-						node.parentElement.nextElementSibling) &&
+					(parentElement.previousElementSibling || parentElement.nextElementSibling) &&
+					!this.parser.getChildElements(parentElement).some((child) => child.tagName === 'A') &&
 					isElement(nextNode) &&
 					['UL', 'DL'].includes(nextNode.tagName) &&
 					this.parser.context.getElementByClassName(
@@ -686,7 +689,7 @@ class CommentSkeleton {
 					this.parser.getChildElements(nextNode)[0],
 					this.signatureElement,
 				)
-			)
+			),
 		)
 	}
 

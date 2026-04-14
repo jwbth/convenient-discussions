@@ -1394,6 +1394,45 @@
 						"date": "2026-04-12T05:48:00.000Z"
 					}
 				]
+			},
+			{
+				"headline": "Comment split by replies 5",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_split_by_replies_5\">Comment split by replies 5</h3></div>\n<p>Somebody describes something, and here goes a list:\n</p>\n<ul><li><i>List</i> <b>item</b> 1\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:46, 13 April 2026 (UTC)</li></ul></li>\n<li>List item 2\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:47, 13 April 2026 (UTC)</li></ul></li>\n<li>List item 3\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:48, 13 April 2026 (UTC)</li></ul></li></ul>\n<p>Here continues the original post. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 05:48, 13 April 2026 (UTC)\n</p></div>",
+				"sections": [
+					{
+						"headline": "Comment split by replies 5"
+					}
+				],
+				"comments": [
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": true,
+						"date": "2026-04-13T06:46:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-13T06:47:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-13T06:48:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Here continues the original post.",
+						"followsHeading": false,
+						"date": "2026-04-13T05:48:00.000Z"
+					}
+				]
 			}
 		]
 	},
