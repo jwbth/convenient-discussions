@@ -5,6 +5,7 @@ import { defineConfig } from 'vite'
 
 import nonNullableConfig from './config.mjs'
 import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs'
+import { treeShakeImportsPlugin } from './vite-plugin-tree-shake-imports.mjs'
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
 const cdConfig = nonNullableConfig
@@ -434,6 +435,17 @@ export default defineConfig(({ mode, command }) => {
 	}
 
 	const plugins = []
+
+	// Add tree-shaking plugin for single builds (must be first to transform before other plugins)
+	if (buildMode.isSingle) {
+		plugins.push(
+			treeShakeImportsPlugin({
+				isSingle: true,
+				wiki: buildMode.wiki,
+				lang: buildMode.lang,
+			}),
+		)
+	}
 
 	// Add inline worker string plugin (must be early in pipeline)
 	plugins.push(

@@ -77,25 +77,6 @@ async function bootstrap() {
 	 */
 	mw.hook('convenientDiscussions.started').fire(cd)
 
-	if (SINGLE_CONFIG_FILE_NAME) {
-		try {
-			cd.config = (
-				await import(/* @vite-ignore */ '../../config/wikis/' + SINGLE_CONFIG_FILE_NAME + '.js')
-			).default
-		} catch {
-			// Empty
-		}
-	}
-
-	if (SINGLE_LANG_CODE) {
-		// A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
-		cd.i18n = /** @type {I18n} */ {}
-		await loadSingleLangInDevOrSingleMode('en')
-		if (SINGLE_LANG_CODE !== 'en') {
-			await loadSingleLangInDevOrSingleMode(SINGLE_LANG_CODE)
-		}
-	}
-
 	setEssentials()
 	cd.loader.maybeLoadTalkPageModules()
 	cd.loader.maybeLoadCommentLinksModules()
@@ -135,22 +116,25 @@ function replaceEntities(string) {
  * @param {string} lang
  */
 async function loadSingleLangInDevOrSingleMode(lang) {
-	const langObj = (await import(/* @vite-ignore */ '../../i18n/' + lang + '.json')).default
+	const langModule = await import(/* @vite-ignore */ `../../i18n/${lang}.json`)
+	const langObj = langModule.default
 	Object.keys(langObj)
 		.filter((name) => typeof langObj[name] === 'string')
 		.forEach((name) => {
 			langObj[name] = replaceEntities(langObj[name])
 		})
 	cd.i18n[lang] = langObj
+
 	if (lang !== 'en') {
 		const dayjsLang = lang.replace(/^zh-hans$/, 'zh-cn').replace(/^zh-hant$/, 'zh-tw')
-		langObj.dayjsLocale = (
-			await import(/* @vite-ignore */ '../../node_modules/dayjs/esm/locale/' + dayjsLang + '.js')
-		).default
+		const dayjsModule = await import(
+			/* @vite-ignore */ `../../node_modules/dayjs/esm/locale/${dayjsLang}.js`
+		)
+		langObj.dayjsLocale = dayjsModule.default
 
 		const dateFnsLang = dayjsLang.replace(/-.+$/, (s) => s.toUpperCase())
 		const dateFnsModule = await import(
-			/* @vite-ignore */ '../../node_modules/date-fns/locale/' + dateFnsLang + '.js'
+			/* @vite-ignore */ `../../node_modules/date-fns/locale/${dateFnsLang}.js`
 		)
 		langObj.dateFnsLocale = dateFnsModule.default || dateFnsModule[dateFnsLang.replace(/-/g, '')]
 	}
