@@ -625,6 +625,22 @@ class CommentSkeleton {
 					this.parser.constructor.contains(
 						this.parser.getChildElements(nextNode)[0],
 						this.signatureElement,
+					)) ||
+				// Comment split by replies: a text node (e.g. "List item 1") before a list whose
+				// first item contains a signature. This means another user inserted a reply in the
+				// middle of someone else's list. The text node must be the first child of its
+				// parent (to exclude cases where inline elements precede the text, like in
+				// "Signature without a date"), and the parent element must have siblings (to
+				// exclude cases like "No signature" where the parent is the only item).
+				(node.nodeType === Node.TEXT_NODE &&
+					!node.previousSibling &&
+					(node.parentElement.previousElementSibling ||
+						node.parentElement.nextElementSibling) &&
+					isElement(nextNode) &&
+					['UL', 'DL'].includes(nextNode.tagName) &&
+					this.parser.context.getElementByClassName(
+						/** @type {ElementFor<N>} */ (this.parser.getChildElements(nextNode)[0]),
+						'cd-signature',
 					))) &&
 			((isElement(nextNode) && ['UL', 'OL'].includes(nextNode.tagName)) ||
 				/*
