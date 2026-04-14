@@ -1,5 +1,6 @@
 /**
- * Regenerate expected test data by running the actual parser
+ * Regenerate expected test data by running the actual parser and treating the output as the new
+ * expected results.
  *
  * Run with: npm run test:regenerate
  */
@@ -11,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, test, beforeEach, vi, afterEach } from 'vitest'
 
 import defaultPayload from './worker-default-payload'
-import testGroupsOriginal from './worker-test-cases-merged.json'
+import testGroupsOriginal from './worker-test-cases.json'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -115,8 +116,11 @@ describe.skipIf(!isDirectRun)('Regenerate expected test data', () => {
 						return expectedComment
 					})
 
-					// Drop isActionable from test case itself
-					delete testCase.isActionable
+					// Drop some props from test case itself
+					delete testCase.id
+					delete testCase.level
+					delete testCase.wikitext
+					delete testCase.url
 
 					processedTests++
 					console.log(
@@ -132,12 +136,10 @@ describe.skipIf(!isDirectRun)('Regenerate expected test data', () => {
 		console.log(`\n\nProcessed ${processedTests}/${totalTests} test cases`)
 
 		// Write the updated test cases back to file
-		const outputPath = join(__dirname, 'worker-test-cases-merged-regenerated.json')
+		const outputPath = join(__dirname, 'worker-test-cases-regenerated.json')
 		writeFileSync(outputPath, JSON.stringify(testGroups, null, '\t'), 'utf-8')
 
 		console.log(`\nWrote updated test cases to: ${outputPath}`)
-		console.log(
-			'\nReview the changes, then rename to worker-test-cases-merged.json if satisfied.\n',
-		)
+		console.log('\nReview the changes, then rename to worker-test-cases.json if satisfied.\n')
 	})
 })

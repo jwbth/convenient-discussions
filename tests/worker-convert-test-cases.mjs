@@ -11,8 +11,8 @@ function sleep(ms) {
 	})
 }
 
-const TEST_PAGE = 'User_talk:Jack_who_built_the_house/CD_test_cases'
-const API_URL = 'https://commons.wikimedia.org/w/api.php'
+const TEST_PAGE = 'User_talk:JWBTH/CD_test_cases'
+const API_URL = 'https://test.wikipedia.org/w/api.php'
 
 /**
  * Make a MediaWiki API request.
@@ -181,7 +181,7 @@ async function hasChildWithDontConvert(sections, parentIndex) {
  * @returns {string}
  */
 function buildSectionUrl(sectionIndex) {
-	return `https://commons.wikimedia.org/w/index.php?title=${TEST_PAGE}&action=edit&section=${sectionIndex}`
+	return `https://test.wikipedia.org/w/index.php?title=${TEST_PAGE}&action=edit&section=${sectionIndex}`
 }
 
 /**

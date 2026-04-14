@@ -6,6 +6,13 @@ describe('worker', () => {
 	let postMessageSpy
 
 	beforeEach(async () => {
+		// Silence console output
+		vi.spyOn(console, 'log').mockImplementation(() => {})
+		vi.spyOn(console, 'warn').mockImplementation(() => {})
+		vi.spyOn(console, 'error').mockImplementation(() => {})
+		vi.spyOn(console, 'info').mockImplementation(() => {})
+		vi.spyOn(console, 'debug').mockImplementation(() => {})
+
 		vi.stubGlobal(
 			'Worker',
 			class Worker {
@@ -37,7 +44,7 @@ describe('worker', () => {
 		expect(msg).toBeDefined()
 		const parseResult = msg[0]
 
-		console.log(parseResult.comments[0])
+		// console.log(parseResult.comments[0])
 
 		expect(parseResult.comments).toHaveLength(1)
 		expect(parseResult.comments[0].authorName).toBe('Example')

@@ -41,7 +41,7 @@
 		"single": "node build-wrapper.mjs --mode single",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:regenerate": "cross-env REGENERATE=1 vitest run tests/worker-regenerate-expected.test.js",
+		"test:regenerate": "cross-env REGENERATE=1 vitest run tests/worker-regenerate-test-cases.test.js",
 		"test:browser": "playwright test",
 		"test:browser:auth": "playwright test test-wikipedia-auth.spec.js",
 		"test:browser:headed": "playwright test --headed",

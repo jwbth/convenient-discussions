@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, vi, afterEach } from 'vitest'
 
 import defaultPayload from './worker-default-payload'
-import testGroups from './worker-test-cases-merged.json'
+import testGroups from './worker-test-cases.json'
 
 describe('worker - merged test cases', () => {
 	let postMessageSpy
