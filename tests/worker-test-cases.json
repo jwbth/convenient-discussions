@@ -1,0 +1,2791 @@
+[
+	{
+		"name": "Subsections",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=2",
+		"tests": [
+			{
+				"headline": "Subsection with no comments",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Subsection_with_no_comments\">Subsection with no comments</h3></div>\n<p>Text.\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [],
+				"sections": [
+					{
+						"headline": "Subsection with no comments"
+					}
+				]
+			},
+			{
+				"headline": "Subsection",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Subsection\">Subsection</h3></div>\n<p>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:00, 24 March 2018 (UTC)\n</p>\n<div class=\"mw-heading mw-heading4\"><h4 id=\"Subsubsection\">Subsubsection</h4></div>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 10:00, 25 March 2018 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Subsection\nComment. —",
+						"followsHeading": true,
+						"date": "2018-03-24T10:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": true,
+						"date": "2018-03-25T10:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Subsection"
+					}
+				]
+			},
+			{
+				"headline": "Subsection again",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Subsection_again\">Subsection again</h3></div>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:00, 26 March 2018 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": true,
+						"date": "2018-03-26T10:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Subsection again"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Threads",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=7",
+		"tests": [
+			{
+				"headline": "Simple thread",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Simple_thread\">Simple thread</h3></div>\n<p>Comment 1. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:00, 17 January 2018 (UTC)\n</p>\n<ul><li>Comment 2. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:10, 17 January 2018 (UTC)\n<ul><li><ul><li>Comment 4 with a gap in indentation. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:20, 17 January 2018 (UTC)\n<ul><li>Comment 5. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:30, 17 January 2018 (UTC)</li></ul></li></ul></li>\n<li>Comment at a lower level at the end. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:40, 17 January 2018 (UTC)</li></ul></li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Simple thread\nComment 1. —",
+						"followsHeading": true,
+						"date": "2018-01-17T07:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment 2. —",
+						"followsHeading": false,
+						"date": "2018-01-17T07:10:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment 4 with a gap in indentation. —",
+						"followsHeading": false,
+						"date": "2018-01-17T07:20:00.000Z"
+					},
+					{
+						"level": 4,
+						"authorName": "Example",
+						"text": "Comment 5. —",
+						"followsHeading": false,
+						"date": "2018-01-17T07:30:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment at a lower level at the end. —",
+						"followsHeading": false,
+						"date": "2018-01-17T07:40:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Simple thread"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Signature problems",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=9",
+		"tests": [
+			{
+				"headline": "Invalid signature",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Invalid_signature\">Invalid signature</h3></div>\n<p>Test. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:00, 12 January 2019 (UTC)\n</p>\n<ul><li>No timestamp comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></li>\n<li>No timezone comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12 January 2019</li>\n<li>No author. 18:10, 12 January 2019 (UTC)</li>\n<li>No author, but there is a link. <a href=\"/w/index.php?title=MediaWiki:Gadget-mediawiki.toolbar.js&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"MediaWiki:Gadget-mediawiki.toolbar.js (page does not exist)\">MediaWiki:Gadget-mediawiki.toolbar.js</a> 18:20, 12 January 2019 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Invalid signature\nTest. —",
+						"followsHeading": true,
+						"date": "2019-01-12T18:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Invalid signature"
+					}
+				]
+			},
+			{
+				"headline": "Signature without a date",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Signature_without_a_date\">Signature without a date</h3></div>\n<p>Try to edit the comments.\nComment 1. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 09:00, 18 May 2020 (UTC)\n</p>\n<ul><li>Comment 2. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)\n<ul><li>Comment 3. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 09:10, 18 May 2020 (UTC)\n<ul><li>Comment 4. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)</li></ul></li></ul></li>\n<li>Comment 5. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)</li>\n<li>Comment 6. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 09:20, 18 May 2020 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Signature without a date\nTry to edit the comments.\nComment 1.",
+						"followsHeading": true,
+						"date": "2020-05-18T09:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment 2. Example (talk)\n\nComment 3.",
+						"followsHeading": false,
+						"date": "2020-05-18T09:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment 4. Example (talk)\nComment 5. Example (talk)\nComment 6.",
+						"followsHeading": false,
+						"date": "2020-05-18T09:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Signature without a date"
+					}
+				]
+			},
+			{
+				"headline": "No signature",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"No_signature\">No signature</h3></div>\n<p>Try to edit the comments.\nComment 1. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:00, 19 May 2020 (UTC)\n</p>\n<ul><li>Comment 2.\n<ul><li>Comment 3. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:10, 19 May 2020 (UTC)</li></ul></li></ul>\n<ul><li>Comment indented by <code>*</code>, no signature.</li></ul>\n<dl><dd><dl><dd>Comment indented by <code>::</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:20, 19 May 2020 (UTC)</dd></dl></dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "No signature\nTry to edit the comments.\nComment 1.",
+						"followsHeading": true,
+						"date": "2020-05-19T10:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment 2.\nComment 3.",
+						"followsHeading": false,
+						"date": "2020-05-19T10:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment indented by ::.",
+						"followsHeading": false,
+						"date": "2020-05-19T10:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "No signature"
+					}
+				]
+			},
+			{
+				"headline": "No signature in a participant list",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"No_signature_in_a_participant_list\">No signature in a participant list</h3></div>\n<ul><li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></li>\n<li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></li>\n<li><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 11:00, 19 May 2020 (UTC)</li>\n<li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 11:10, 19 May 2020 (UTC)</li></ul>\n<ol><li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></li>\n<li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></li>\n<li><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 12:00, 19 May 2020 (UTC)</li>\n<li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:10, 19 May 2020 (UTC)</li></ol>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></dd>\n<dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></dd>\n<dd><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 13:00, 19 May 2020 (UTC)</dd>\n<dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 13:10, 19 May 2020 (UTC)</dd></dl>\n<p>(Cases with no second correct signature like 11:10, 19 May 2020 (UTC) are harder to handle.)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": true,
+						"date": "2020-05-19T11:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-05-19T11:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-05-19T12:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-05-19T12:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "Example\nExample",
+						"followsHeading": false,
+						"date": "2020-05-19T13:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-05-19T13:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "No signature in a participant list"
+					}
+				]
+			},
+			{
+				"headline": "Foreign signature inside a comment",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Foreign_signature_inside_a_comment\">Foreign signature inside a comment</h3></div>\n<p>First comment (the problem is unlikely here).\nHere comes a foreign signature. Example (talk) 06:00, 27 July 2018 (UTC)\n— <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 14:50, 5 March 2020 (UTC)\n</p><p>Here comes a foreign signature. Example (talk) 06:00, 27 July 2018 (UTC)\nAnd another foreign signature. Example (talk) 06:10, 27 July 2018 (UTC) This time with some text after it.\nLast foreign signature at this line. - Example2 (talk) 06:20, 27 July 2018 (UTC). Some text after. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:00, 5 March 2020 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Foreign signature inside a comment\nFirst comment (the problem is unlikely here).\nHere comes a foreign signature. Example (talk) 06:00, 27 July 2018 (UTC)\n—",
+						"followsHeading": true,
+						"date": "2020-03-05T14:50:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Here comes a foreign signature. Example (talk) 06:00, 27 July 2018 (UTC)\nAnd another foreign signature. Example (talk) 06:10, 27 July 2018 (UTC) This time with some text after it.\nLast foreign signature at this line. - Example2 (talk) 06:20, 27 July 2018 (UTC). Some text after. —",
+						"followsHeading": false,
+						"date": "2020-03-05T15:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Foreign signature inside a comment"
+					}
+				]
+			},
+			{
+				"headline": "Explicit boundary of a signature with a \"span\" tag",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Explicit_boundary_of_a_signature_with_a_&quot;span&quot;_tag\"><span id=\"Explicit_boundary_of_a_signature_with_a_.22span.22_tag\"></span>Explicit boundary of a signature with a \"span\" tag</h3></div>\n<p>Comment. <span>Example (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)</span> 10:00, 17 July 2020 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Explicit boundary of a signature with a \"span\" tag\nComment.",
+						"followsHeading": true,
+						"date": "2020-07-17T10:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Explicit boundary of a signature with a \"span\" tag"
+					}
+				]
+			},
+			{
+				"headline": "Complex signature",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Complex_signature\">Complex signature</h3></div>\n<ul><li>Comment. <span style=\"color:#AAA\"><small>&#123;{u&#124;</small><span style=\"border-radius:9em;padding:0 5px;background:#088\"><a href=\"/wiki/User:Example\" title=\"User:Example\"><span style=\"color:#FFF\"><b>Example</b></span></a></span><small>}&#125;</small></span> <sup><a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\"><b>talk</b></a></sup> 18:00, 31 August 2020 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": true,
+						"date": "2020-08-31T18:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Complex signature"
+					}
+				]
+			},
+			{
+				"headline": "Unsigned templates",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Unsigned_templates\">Unsigned templates</h3></div>\n<ul><li>Without time. <small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) </small></li>\n<li>With time, with UTC. <small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) 19:00, 1 September 2020 (UTC)</small></li>\n<li>With time, without UTC. <small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) 19:10, 1 September 2020 (UTC)</small></li>\n<li>IP, without time. <small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/w/index.php?title=User:127.0.0.1&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:127.0.0.1 (page does not exist)\">127.0.0.1</a></bdi> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">contribs</a>) </small></li>\n<li>IP, with time, with UTC. <small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/w/index.php?title=User:127.0.0.1&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:127.0.0.1 (page does not exist)\">127.0.0.1</a></bdi> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">contribs</a>) 19:20, 1 September 2020 (UTC)</small></li>\n<li>IP, with time, without UTC. <small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/w/index.php?title=User:127.0.0.1&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:127.0.0.1 (page does not exist)\">127.0.0.1</a></bdi> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">contribs</a>) 19:30, 1 September 2020 (UTC)</small></li>\n<li>Undated. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <small>—Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">undated comment</a> was added at 19:40, 1 September 2020 (UTC)</small></li>\n<li><a href=\"/wiki/Template:Unsigned2\" title=\"Template:Unsigned2\">&#123;&#123;Unsigned2&#125;&#125;</a>. <small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) 19:50, 1 September 2020 (UTC)</small></li>\n<li><a href=\"/wiki/Template:UnsignedIP\" title=\"Template:UnsignedIP\">&#123;&#123;UnsignedIP&#125;&#125;</a>. <small class=\"autosigned\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment was added by <a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">127.0.0.1</a> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>) 20:00, 1 September 2020 (UTC)</small></li>\n<li><a href=\"/wiki/Template:UnsignedIP2\" title=\"Template:UnsignedIP2\">&#123;&#123;UnsignedIP2&#125;&#125;</a>. <small class=\"autosigned\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment was added by <a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">127.0.0.1</a> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>) 20:10, 1 September 2020 (UTC)</small></li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Without time.",
+						"followsHeading": true
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "With time, with UTC.",
+						"followsHeading": false,
+						"date": "2020-09-01T19:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "With time, without UTC.",
+						"followsHeading": false,
+						"date": "2020-09-01T19:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "127.0.0.1",
+						"text": "IP, without time.",
+						"followsHeading": false
+					},
+					{
+						"level": 1,
+						"authorName": "127.0.0.1",
+						"text": "IP, with time, with UTC.",
+						"followsHeading": false,
+						"date": "2020-09-01T19:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "127.0.0.1",
+						"text": "IP, with time, without UTC.",
+						"followsHeading": false,
+						"date": "2020-09-01T19:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Undated.",
+						"followsHeading": false,
+						"date": "2020-09-01T19:40:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "{{Unsigned2}}.",
+						"followsHeading": false,
+						"date": "2020-09-01T19:50:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "127.0.0.1",
+						"text": "{{UnsignedIP}}.",
+						"followsHeading": false,
+						"date": "2020-09-01T20:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "127.0.0.1",
+						"text": "{{UnsignedIP2}}.",
+						"followsHeading": false,
+						"date": "2020-09-01T20:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Unsigned templates"
+					}
+				]
+			},
+			{
+				"headline": "Text after a signature",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Text_after_a_signature\">Text after a signature</h3></div>\n<p>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12:00, 27 March 2020 (UTC) Text after the signature.\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Text after a signature\nComment. —  Text after the signature.",
+						"followsHeading": true,
+						"date": "2020-03-27T12:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Text after a signature"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Indentation issues",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=19",
+		"tests": [
+			{
+				"headline": "Comment ending at the 0th level",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_ending_at_the_0th_level\">Comment ending at the 0th level</h3></div>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:00, 18 January 2018 (UTC)\n<ul><li>Comment ending</li></ul></li></ul>\n<p>at the 0th level. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:10, 18 January 2018 (UTC)\n</p>\n<dl><dd>Lorem</dd>\n<dd>ipsum</dd>\n<dd>dolor</dd></dl>\n<p>sit\n</p>\n<dl><dd>ament,</dd>\n<dd>consectetur</dd></dl>\n<p>adipiscing. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:20, 18 January 2018 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": true,
+						"date": "2018-01-18T07:00:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment ending\nat the 0th level. —",
+						"followsHeading": false,
+						"date": "2018-01-18T07:10:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Lorem\nipsum\ndolor\nsit\n\nament,\nconsectetur\nadipiscing. —",
+						"followsHeading": false,
+						"date": "2018-01-18T07:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Comment ending at the 0th level"
+					}
+				]
+			},
+			{
+				"headline": "Section starting with a bulleted list",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Section_starting_with_a_bulleted_list\">Section starting with a bulleted list</h3></div>\n<ul><li>Lorem</li>\n<li>ipsum</li>\n<li>dolor</li></ul>\n<p>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 00:00, 17 April 2018 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Section starting with a bulleted list\nLorem\nipsum\ndolor\nComment end.",
+						"followsHeading": true,
+						"date": "2018-04-17T00:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Section starting with a bulleted list"
+					}
+				]
+			},
+			{
+				"headline": "Section starting with a description list",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Section_starting_with_a_description_list\">Section starting with a description list</h3></div>\n<dl><dd>Lorem</dd>\n<dd>ipsum</dd>\n<dd>dolor</dd></dl>\n<p>Text. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 01:00, 18 October 2019 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Section starting with a description list\nLorem\nipsum\ndolor\nText. —",
+						"followsHeading": true,
+						"date": "2019-10-18T01:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Section starting with a description list"
+					}
+				]
+			},
+			{
+				"headline": "Classic : indentation and multiple lines",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Classic_:_indentation_and_multiple_lines\">Classic <code>:</code> indentation and multiple lines</h3></div>\n<dl><dd>Comment indented with <code>:</code>.</dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 11:50, 10 January 2019 (UTC)\n<dl><dd>Comment indented with <code>::</code>.</dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:00, 10 January 2019 (UTC)</dd>\n<dd>Comment indented with <code>::</code>.</dd>\n<dd>Second line.</dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:10, 10 January 2019 (UTC)\n<dl><dd>Comment indented with <code>:::</code>.</dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:20, 10 January 2019 (UTC)</dd>\n<dd>Comment indented with <code>:::</code>.</dd>\n<dd>Second line.</dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:30, 10 January 2019 (UTC)\n<dl><dd>Comment indented with <code>::::</code>.</dd>\n<dd>Second line.</dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:40, 10 January 2019 (UTC)</dd></dl></dd></dl></dd></dl></dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment indented with :.\nEnd.",
+						"followsHeading": true,
+						"date": "2019-01-10T11:50:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment indented with ::.\nEnd.",
+						"followsHeading": false,
+						"date": "2019-01-10T12:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment indented with ::.\nSecond line.\nEnd.",
+						"followsHeading": false,
+						"date": "2019-01-10T12:10:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment indented with :::.\nEnd.",
+						"followsHeading": false,
+						"date": "2019-01-10T12:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment indented with :::.\nSecond line.\nEnd.",
+						"followsHeading": false,
+						"date": "2019-01-10T12:30:00.000Z"
+					},
+					{
+						"level": 4,
+						"authorName": "Example",
+						"text": "Comment indented with ::::.\nSecond line.\nEnd.",
+						"followsHeading": false,
+						"date": "2019-01-10T12:40:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Classic : indentation and multiple lines"
+					}
+				]
+			},
+			{
+				"headline": "Comments with different indentation characters for different lines",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comments_with_different_indentation_characters_for_different_lines\">Comments with different indentation characters for different lines</h3></div>\n<ul><li>Comment indented with <code>*</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 11:50, 15 January 2019 (UTC)\n<ul><li>Comment started with <code>**</code>.</li></ul></li></ul>\n<dl><dd><dl><dd>Comment part indented with <code>::</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:00, 15 January 2019 (UTC)</dd></dl></dd></dl>\n<ul><li><ul><li>Comment started with <code>**</code>.</li></ul></li></ul>\n<dl><dd><dl><dd>Comment part indented with <code>::</code>.</dd>\n<dd>Comment part indented with <code>::</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:01, 15 January 2019 (UTC)</dd></dl></dd>\n<dd>Comment indented with <code>:</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:09, 15 January 2019 (UTC)\n<dl><dd>(Incorrect markup.) Comment started with <code>::</code>.</dd></dl></dd></dl>\n<ul><li><ul><li>Comment part indented with <code>**</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:10, 15 January 2019 (UTC)</li></ul></li></ul>\n<dl><dd><dl><dd>(Incorrect markup.) Comment started with <code>::</code>.</dd>\n<dd>Comment part indented with <code>::</code>.</dd></dl></dd></dl>\n<ul><li><ul><li>Comment part indented with <code>**</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:20, 15 January 2019 (UTC)</li></ul></li></ul>\n<dl><dd><dl><dd>(Incorrect markup.) Comment started with <code>::</code>.</dd></dl></dd></dl>\n<ul><li><ul><li>Comment part indented with <code>**</code>.</li>\n<li>Comment part indented with <code>**</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:30, 15 January 2019 (UTC)</li></ul></li></ul>\n<p>Empty line.\n</p>\n<ul><li>Comment started with <code>*</code>.</li></ul>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:00, 14 October 2021 (UTC)\n<ul><li>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:10, 14 October 2021 (UTC)</li></ul></dd></dl>\n<ul><li>Comment indented with <code>*</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 19:00, 14 October 2021 (UTC)\n<ul><li>Comment started with <code>**</code>.</li></ul></li></ul>\n<dl><dd><dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 19:10, 14 October 2021 (UTC)\n<ul><li>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 19:20, 14 October 2021 (UTC)</li></ul></dd></dl></dd></dl>\n<ul><li>Comment indented with <code>*</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 20:00, 14 October 2021 (UTC)\n<ul><li>Comment started with <code>**</code>.</li></ul></li></ul>\n<dl><dd><dl><dd>Comment part indented with <code>::</code>.</dd>\n<dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 20:10, 14 October 2021 (UTC)\n<ul><li>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 20:20, 14 October 2021 (UTC)</li></ul></dd></dl></dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment indented with *.",
+						"followsHeading": true,
+						"date": "2019-01-15T11:50:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment started with **.\nComment part indented with ::.",
+						"followsHeading": false,
+						"date": "2019-01-15T12:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment started with **.\nComment part indented with ::.\nComment part indented with ::.",
+						"followsHeading": false,
+						"date": "2019-01-15T12:01:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment indented with :.",
+						"followsHeading": false,
+						"date": "2019-01-15T12:09:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "(Incorrect markup.) Comment started with ::.\nComment part indented with **.",
+						"followsHeading": false,
+						"date": "2019-01-15T12:10:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "(Incorrect markup.) Comment started with ::.\nComment part indented with ::.\nComment part indented with **.",
+						"followsHeading": false,
+						"date": "2019-01-15T12:20:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "(Incorrect markup.) Comment started with ::.\nComment part indented with **.\nComment part indented with **.",
+						"followsHeading": false,
+						"date": "2019-01-15T12:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment started with *.\nComment end.",
+						"followsHeading": false,
+						"date": "2021-10-14T18:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2021-10-14T18:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment indented with *.",
+						"followsHeading": false,
+						"date": "2021-10-14T19:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment started with **.\nComment end.",
+						"followsHeading": false,
+						"date": "2021-10-14T19:10:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2021-10-14T19:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment indented with *.",
+						"followsHeading": false,
+						"date": "2021-10-14T20:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment started with **.\nComment part indented with ::.\nComment end.",
+						"followsHeading": false,
+						"date": "2021-10-14T20:10:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2021-10-14T20:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Comments with different indentation characters for different lines"
+					}
+				]
+			},
+			{
+				"headline": "Comment parts with empty line between",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_parts_with_empty_line_between\">Comment parts with empty line between</h3></div>\n<dl><dd>Comment started with <code>:</code>.</dd></dl>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:00, 8 October 2021 (UTC)</dd></dl>\n<dl><dd>Comment start (with <code>:</code>).</dd></dl>\n<dl><dd>Comment continuation.</dd></dl>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:10, 8 October 2021 (UTC)</dd></dl>\n<ul><li>Comment start (with <code>*</code>).</li></ul>\n<dl><dd>Comment continuation.</dd></dl>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:20, 8 October 2021 (UTC)</dd></dl>\n<p>Comment start.\n</p>\n<ul><li>List item followed by an empty line.</li></ul>\n<ul><li>List item followed by an empty line.</li></ul>\n<ul><li>List item followed by an empty line.</li></ul>\n<p>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:30, 8 October 2021 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment started with :.\nComment end.",
+						"followsHeading": true,
+						"date": "2021-10-08T15:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment start (with :).\nComment continuation.\nComment end.",
+						"followsHeading": false,
+						"date": "2021-10-08T15:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment start (with *).\nComment continuation.\nComment end.",
+						"followsHeading": false,
+						"date": "2021-10-08T15:20:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment start.\n\nList item followed by an empty line.\nList item followed by an empty line.\nList item followed by an empty line.\nComment end.",
+						"followsHeading": false,
+						"date": "2021-10-08T15:30:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Comment parts with empty line between"
+					}
+				]
+			},
+			{
+				"headline": "Сomment parts, each indented with *",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Сomment_parts,_each_indented_with_*\"><span id=\".D0.A1omment_parts.2C_each_indented_with_.2A\"></span>Сomment parts, each indented with <code>*</code></h3></div>\n<ul><li>Comment part.</li>\n<li>Another comment part. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:00, 6 October 2021 (UTC)</li>\n<li>Comment part.</li></ul>\n<ul><li>Another comment part, but after an empty line this time. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:10, 6 October 2021 (UTC)</li>\n<li>Comment part.</li></ul>\n<ul><li>Another comment part, empty line.</li>\n<li>Another comment part, no empty line. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:20, 6 October 2021 (UTC)</li>\n<li>Comment part.</li></ul>\n<ul><li>Another comment part, empty line.</li></ul>\n<ul><li>Another comment part, empty line. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:30, 6 October 2021 (UTC)\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:40, 6 October 2021 (UTC)</dd></dl></li></ul>\n<ul><li>Comment part, empty line.</li></ul>\n<ul><li>Another comment part, empty line. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:50, 6 October 2021 (UTC)</li></ul>\n<ul><li>Comment part, empty line.</li>\n<li>Another comment part, no empty line. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 19:00, 6 October 2021 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment part.\nAnother comment part. —",
+						"followsHeading": true,
+						"date": "2021-10-06T18:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment part.\nAnother comment part, but after an empty line this time. —",
+						"followsHeading": false,
+						"date": "2021-10-06T18:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment part.\nAnother comment part, empty line.\nAnother comment part, no empty line. —",
+						"followsHeading": false,
+						"date": "2021-10-06T18:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment part.\nAnother comment part, empty line.\nAnother comment part, empty line. —",
+						"followsHeading": false,
+						"date": "2021-10-06T18:30:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2021-10-06T18:40:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment part, empty line.\nAnother comment part, empty line. —",
+						"followsHeading": false,
+						"date": "2021-10-06T18:50:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment part, empty line.\nAnother comment part, no empty line.",
+						"followsHeading": false,
+						"date": "2021-10-06T19:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Сomment parts, each indented with *"
+					}
+				]
+			},
+			{
+				"headline": "Intro list item indented with *, comment indented with *",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Intro_list_item_indented_with_*,_comment_indented_with_*\"><span id=\"Intro_list_item_indented_with_.2A.2C_comment_indented_with_.2A\"></span>Intro list item indented with <code>*</code>, comment indented with <code>*</code></h3></div>\n<ul><li>Some section note, with an empty line following (compare <a href=\"#Many_comment_parts,_each_indented_with_*\">#Many comment parts, each indented with *</a>).</li></ul>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:00, 16 July 2021 (UTC)</li></ul>\n<ul><li>List item <i>not</i> at the beginning of a section.</li></ul>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:10, 16 July 2021 (UTC)</li></ul>\n<ul><li>List item <i>not</i> at the beginning of a section.</li></ul>\n<dl><dd>Comment indented with <code>:</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:20, 16 July 2021 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": true,
+						"date": "2021-07-16T01:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "List item not at the beginning of a section.\nComment.",
+						"followsHeading": false,
+						"date": "2021-07-16T01:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "List item not at the beginning of a section.\nComment indented with :.",
+						"followsHeading": false,
+						"date": "2021-07-16T01:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Intro list item indented with *, comment indented with *"
+					}
+				]
+			},
+			{
+				"headline": "Intro list item indented with *, comment indented with :",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Intro_list_item_indented_with_*,_comment_indented_with_:\"><span id=\"Intro_list_item_indented_with_.2A.2C_comment_indented_with_:\"></span>Intro list item indented with <code>*</code>, comment indented with <code>:</code></h3></div>\n<ul><li>Some section note, followed by an empty line and a comment indented with <code>:</code>.</li></ul>\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:30, 17 July 2021 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Some section note, followed by an empty line and a comment indented with :.\nComment.",
+						"followsHeading": true,
+						"date": "2021-07-17T01:30:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Intro list item indented with *, comment indented with :"
+					}
+				]
+			},
+			{
+				"headline": "Intro list item indented with :, comment indented with *",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Intro_list_item_indented_with_:,_comment_indented_with_*\"><span id=\"Intro_list_item_indented_with_:.2C_comment_indented_with_.2A\"></span>Intro list item indented with <code>:</code>, comment indented with <code>*</code></h3></div>\n<dl><dd>Some section note, with no empty line following.</dd></dl>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:00, 7 October 2021 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": true,
+						"date": "2021-10-07T10:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Intro list item indented with :, comment indented with *"
+					}
+				]
+			},
+			{
+				"headline": "List inside a comment",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"List_inside_a_comment\">List inside a comment</h3></div>\n<ul><li>Text.</li></ul>\n<dl><dd><ul><li>Item 1.</li>\n<li>Item 2.</li></ul></dd>\n<dd>— <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:00, 7 October 2019 (UTC)\n<ul><li>Item 1.</li>\n<li>Item 2.</li></ul></dd>\n<dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:10, 7 October 2019 (UTC)\n<dl><dd><ul><li>Item 1.</li>\n<li>Item 2.</li></ul></dd>\n<dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:20, 7 October 2019 (UTC)\n<dl><dd><ul><li>Item 1.</li>\n<li>Item 2.</li></ul></dd>\n<dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:30, 7 October 2019 (UTC)</dd></dl></dd></dl>\n<ul><li>Item 1.</li>\n<li>Item 2.</li></ul></dd>\n<dd>— <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:40, 7 October 2019 (UTC)\n<ul><li><ul><li>(Non-trivial markup – OK to fail here.) Item 1.</li>\n<li>Item 2.</li></ul></li></ul>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:41, 7 October 2019 (UTC)</dd></dl></dd></dl>\n<ul><li>Comment indented with <code>*</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:45, 7 October 2019 (UTC)\n<ul><li><ul><li>(Non-trivial markup – OK to fail here.) Item 1.</li>\n<li>Item 2.</li></ul></li></ul></li></ul>\n<dl><dd><dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:46, 7 October 2019 (UTC)\n<ul><li>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:47, 7 October 2019 (UTC)</li></ul></dd></dl></dd></dl>\n<ul><li>Comment indented with <code>*</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:45, 7 October 2019 (UTC)\n<ul><li><ul><li>Comment mistakenly indented with <code>***</code> instead of <code>**</code>.</li></ul></li></ul></li></ul>\n<dl><dd><dl><dd><dl><dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:50, 7 October 2019 (UTC)</dd></dl></dd></dl></dd></dl>\n<p>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:00, 7 October 2019 (UTC)\n</p>\n<ul><li>Text.</li></ul>\n<dl><dd><ul><li>Item 1.</li>\n<li>Item 2.</li></ul></dd>\n<dd>— <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 10:10, 7 October 2019 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Text.\nItem 1.\nItem 2.\n—",
+						"followsHeading": true,
+						"date": "2019-10-07T08:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\n—",
+						"followsHeading": false,
+						"date": "2019-10-07T08:40:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "(Non-trivial markup – OK to fail here.) Item 1.\nItem 2.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:41:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment indented with *.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:45:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "(Non-trivial markup – OK to fail here.) Item 1.\nItem 2.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:46:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:47:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment indented with *.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:45:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment mistakenly indented with *** instead of **.\nEnd.",
+						"followsHeading": false,
+						"date": "2019-10-07T08:50:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2019-10-07T10:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Text.\nItem 1.\nItem 2.\n—",
+						"followsHeading": false,
+						"date": "2019-10-07T10:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "List inside a comment"
+					}
+				]
+			},
+			{
+				"headline": "Comments starting with a list",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comments_starting_with_a_list\">Comments starting with a list</h3></div>\n<p>There can be problems with editing them as well. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:00, 13 October 2021 (UTC)\n</p>\n<dl><dd><ul><li>Item.</li>\n<li>Item.</li></ul></dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:10, 13 October 2021 (UTC)\n<ol><li>Item.</li>\n<li>Item.</li></ol></dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:20, 13 October 2021 (UTC)\n<dl><dd>Item.</dd>\n<dd>Item.</dd></dl></dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:30, 13 October 2021 (UTC)\n<dl><dd>Item.</dd>\n<dd>Item.</dd></dl></dd>\n<dd>Continuation.</dd>\n<dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 18:40, 13 October 2021 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comments starting with a list\nThere can be problems with editing them as well.",
+						"followsHeading": true,
+						"date": "2021-10-13T18:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item.\nItem.\nEnd.",
+						"followsHeading": false,
+						"date": "2021-10-13T18:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item.\nItem.\nEnd.",
+						"followsHeading": false,
+						"date": "2021-10-13T18:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item.\nItem.\nEnd.",
+						"followsHeading": false,
+						"date": "2021-10-13T18:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item.\nItem.\nContinuation.\nEnd.",
+						"followsHeading": false,
+						"date": "2021-10-13T18:40:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Comments starting with a list"
+					}
+				]
+			},
+			{
+				"headline": "Intro text and a gap",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Intro_text_and_a_gap\">Intro text and a gap</h3></div>\n<p>Intro.\n</p>\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 00:00, 20 July 2021 (UTC)</dd>\n<dd>Comment with a gap.</dd></dl>\n<blockquote><p>Gap.</p></blockquote>\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 00:10, 20 July 2021 (UTC)</dd></dl>\n<dl><dt>Introduction using DT tag.</dt>\n<dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 00:20, 20 July 2021 (UTC)</dd></dl>\n<dl><dt>Introduction using DT tag.</dt></dl>\n<dl><dd>Comment after an empty line. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 00:30, 20 July 2021 (UTC)</dd></dl>\n<dl><dt>Introduction using DT tag.</dt></dl>\n<ul><li>Comment intented with an asterisk (<code>*</code>). <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 00:40, 20 July 2021 (UTC)</li></ul>\n<p>Comment that genuinely includes a DT tag.\n</p>\n<dl><dt>Pseudo-heading using a DT tag.</dt>\n<dd>Content.</dd></dl>\n<p>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 00:50, 20 July 2021 (UTC)\n</p><p>Another comment that genuinely includes a DT tag.\n</p>\n<dl><dt>Pseudo-heading using a DT tag.</dt></dl>\n<p>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:00, 20 July 2021 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": true,
+						"date": "2021-07-20T00:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment with a gap.\nGap.\nComment.",
+						"followsHeading": false,
+						"date": "2021-07-20T00:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-07-20T00:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment after an empty line.",
+						"followsHeading": false,
+						"date": "2021-07-20T00:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment intented with an asterisk (*).",
+						"followsHeading": false,
+						"date": "2021-07-20T00:40:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment that genuinely includes a DT tag.\n\nPseudo-heading using a DT tag.\nContent.\nEnd.",
+						"followsHeading": false,
+						"date": "2021-07-20T00:50:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Another comment that genuinely includes a DT tag.\n\nPseudo-heading using a DT tag.\nEnd.",
+						"followsHeading": false,
+						"date": "2021-07-20T01:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Intro text and a gap"
+					}
+				]
+			},
+			{
+				"headline": "Not intro list",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Not_intro_list\">Not intro list</h3></div>\n<ul><li>Comment start.</li></ul>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:00, 21 July 2021 (UTC)</dd></dl>\n<ul><li>Comment start.</li></ul>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:10, 21 July 2021 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment start.\nTitle\nTitle\nComment end.",
+						"followsHeading": true,
+						"date": "2021-07-21T01:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment start.\nTitle\nTitle\nComment end.",
+						"followsHeading": false,
+						"date": "2021-07-21T01:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Not intro list"
+					}
+				]
+			},
+			{
+				"headline": "Not intro list 2",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Not_intro_list_2\">Not intro list 2</h3></div>\n<ul><li>Comment start.</li></ul>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:20, 22 July 2021 (UTC)</dd></dl>\n<ul><li>Comment start.</li></ul>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 01:30, 22 July 2021 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment start.\nTitle\nComment end.",
+						"followsHeading": true,
+						"date": "2021-07-22T01:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment start.\nTitle\nComment end.",
+						"followsHeading": false,
+						"date": "2021-07-22T01:30:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Not intro list 2"
+					}
+				]
+			},
+			{
+				"headline": "Joint statements",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Joint_statements\">Joint statements</h3></div>\n<p>Joint statement, signatures indented with <code>:</code>.\n</p><p>Statement end.\n</p>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:00, 19 September 2020 (UTC)</dd>\n<dd><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 19:01, 19 September 2020 (UTC)</dd></dl>\n<p>Joint statement, signatures indented with <code>*</code>\n</p><p>Statement end.\n</p>\n<ul><li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:10, 19 September 2020 (UTC)</li>\n<li><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 19:11, 19 September 2020 (UTC)</li></ul>\n<p>Joint statement, signatures indented with <code>#</code>\n</p><p>Statement end.\n</p>\n<ol><li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:15, 19 September 2020 (UTC)</li>\n<li><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 19:16, 19 September 2020 (UTC)</li></ol>\n<p>Joint statement, signatures indented with <code>:</code>.\n</p>\n<ul><li>List item.</li>\n<li>List item.</li>\n<li>List item.</li></ul>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:20, 19 September 2020 (UTC)</dd>\n<dd><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 19:21, 19 September 2020 (UTC)</dd></dl>\n<p>Joint statement, signatures indented with <code>*</code>.\n</p>\n<dl><dd>List item.</dd>\n<dd>List item.</dd>\n<dd>List item.</dd></dl>\n<ul><li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:30, 19 September 2020 (UTC)</li>\n<li><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 19:31, 19 September 2020 (UTC)</li></ul>\n<p>Joint statement, signatures indented with <code>:</code>.\n</p>\n<ol><li>List item.</li>\n<li>List item.</li>\n<li>List item.</li></ol>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:30, 19 September 2020 (UTC)</dd>\n<dd><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 19:31, 19 September 2020 (UTC)</dd></dl>\n<p>Joint statement, signatures indented with <code>*</code>.\n</p>\n<ol><li>List item.</li>\n<li>List item.</li>\n<li>List item.</li></ol>\n<ul><li><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:30, 19 September 2020 (UTC)</li>\n<li><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> 19:31, 19 September 2020 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": true,
+						"date": "2020-09-19T19:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:01:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:11:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:15:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:16:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:21:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:31:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Joint statement, signatures indented with :.\n\nList item.\nList item.\nList item.",
+						"followsHeading": false,
+						"date": "2020-09-19T19:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:31:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Joint statement, signatures indented with *.\n\nList item.\nList item.\nList item.",
+						"followsHeading": false,
+						"date": "2020-09-19T19:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Jack who built the house",
+						"text": "",
+						"followsHeading": false,
+						"date": "2020-09-19T19:31:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Joint statements"
+					}
+				]
+			},
+			{
+				"headline": "Rare tags",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Rare_tags\">Rare tags</h3></div>\n<dl><dd></dd></dl>\n<ul class=\"gallery mw-gallery-traditional\">\n\t\t<li class=\"gallerybox\" style=\"width: 155px\">\n\t\t\t<div class=\"thumb\" style=\"height: 150px;\"><span typeof=\"mw:Error mw:File\"><a href=\"/w/index.php?title=Special:Upload&amp;wpDestFile=Gallery.\" class=\"new\" title=\"File:Gallery.\"><span class=\"mw-file-element mw-broken-media\" data-width=\"120\" data-height=\"120\">File:Gallery.</span></a></span></div>\n\t\t\t<div class=\"gallerytext\"></div>\n\t\t</li>\n</ul>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 19:00, 14 October 2021 (UTC)</dd>\n<dd></dd></dl>\n<div class=\"poem\">\n<p>Poem line.<br />\nPoem line.<br />\nPoem line.\n</p>\n</div>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 19:10, 14 October 2021 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "File:Gallery.",
+						"followsHeading": true,
+						"date": "2021-10-14T19:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Poem line.\nPoem line.\nPoem line.",
+						"followsHeading": false,
+						"date": "2021-10-14T19:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Rare tags"
+					}
+				]
+			},
+			{
+				"headline": "Comment split by replies",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_split_by_replies\">Comment split by replies</h3></div>\n<p>Somebody describes something, and here goes a list:\n</p>\n<ul><li>List item 1\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:46, 9 April 2026 (UTC)</li></ul></li>\n<li>List item 2\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:47, 9 April 2026 (UTC)</li></ul></li>\n<li>List item 3\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:48, 9 April 2026 (UTC)</li></ul></li></ul>\n<p>Here continues the original post. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 05:48, 9 April 2026 (UTC)\n</p></div>",
+				"sections": [
+					{
+						"headline": "Comment split by replies"
+					}
+				],
+				"comments": [
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": true,
+						"date": "2026-04-09T06:46:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-09T06:47:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-09T06:48:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Here continues the original post.",
+						"followsHeading": false,
+						"date": "2026-04-09T05:48:00.000Z"
+					}
+				]
+			},
+			{
+				"headline": "Comment split by replies 2",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_split_by_replies_2\">Comment split by replies 2</h3></div>\n<p>Somebody describes something, and here goes a list:\n</p>\n<ul><li>List item 1\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:46, 10 April 2026 (UTC)\n<ul><li>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 06:46, 10 April 2026 (UTC)</li></ul></li></ul></li>\n<li>List item 2\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:47, 10 April 2026 (UTC)</li></ul></li>\n<li>List item 3\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:48, 10 April 2026 (UTC)</li></ul></li></ul>\n<p>Here continues the original post. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 05:48, 10 April 2026 (UTC)\n</p></div>",
+				"sections": [
+					{
+						"headline": "Comment split by replies 2"
+					}
+				],
+				"comments": [
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": true,
+						"date": "2026-04-10T06:46:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2026-04-10T06:46:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-10T06:47:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-10T06:48:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Here continues the original post.",
+						"followsHeading": false,
+						"date": "2026-04-10T05:48:00.000Z"
+					}
+				]
+			},
+			{
+				"headline": "Comment split by replies 3",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_split_by_replies_3\">Comment split by replies 3</h3></div>\n<p>Somebody describes something, and here goes a list:\n</p>\n<ul><li>List item 1\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:46, 11 April 2026 (UTC)</li>\n<li>Another reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:46, 11 April 2026 (UTC)</li></ul></li>\n<li>List item 2\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:47, 11 April 2026 (UTC)</li></ul></li>\n<li>List item 3\n<ul><li>Here a user breaks the list with their reply. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:48, 11 April 2026 (UTC)</li></ul></li></ul>\n<p>Here continues the original post. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 05:48, 11 April 2026 (UTC)\n</p></div>",
+				"sections": [
+					{
+						"headline": "Comment split by replies 3"
+					}
+				],
+				"comments": [
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": true,
+						"date": "2026-04-11T06:46:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Another reply.",
+						"followsHeading": false,
+						"date": "2026-04-11T06:46:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-11T06:47:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example2",
+						"text": "Here a user breaks the list with their reply.",
+						"followsHeading": false,
+						"date": "2026-04-11T06:48:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Here continues the original post.",
+						"followsHeading": false,
+						"date": "2026-04-11T05:48:00.000Z"
+					}
+				]
+			},
+			{
+				"headline": "Comment split by replies 4",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_split_by_replies_4\">Comment split by replies 4</h3></div>\n<p>Somebody describes something, and here goes a list:\n</p>\n<ul><li>Comment from Example2.\n<ul><li>A genuine list item from Example2.</li>\n<li>A genuine list item from Example2. <a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) 06:46, 12 April 2026 (UTC)</li></ul></li></ul>\n<p>Here continues the original post. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 05:48, 12 April 2026 (UTC)\n</p></div>",
+				"sections": [
+					{
+						"headline": "Comment split by replies 4"
+					}
+				],
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example2",
+						"text": "Comment from Example2.\nA genuine list item from Example2.\nA genuine list item from Example2.",
+						"followsHeading": true,
+						"date": "2026-04-12T06:46:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Here continues the original post.",
+						"followsHeading": false,
+						"date": "2026-04-12T05:48:00.000Z"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Automatic fixes",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=37",
+		"tests": [
+			{
+				"headline": "Signature in the last item",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Signature_in_the_last_item\">Signature in the last item</h3></div>\n<p>List:\n</p>\n<ul><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:00, 20 September 2020 (UTC)</li>\n<li>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 20:10, 20 September 2020 (UTC)</li>\n<li>List:\n<ul><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:20, 20 September 2020 (UTC)\n<ul><li>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 20:30, 20 September 2020 (UTC)</li></ul></li></ul></li>\n<li>List:</li></ul>\n<dl><dd><ul><li>Item.</li>\n<li>Item. Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:00, 20 September 2020 (UTC)</li></ul></dd></dl>\n<ul><li><ul><li><ul><li>Reply indented with <code>***</code>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:10, 20 September 2020 (UTC)</li></ul></li></ul></li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Signature in the last item\nList:\n\nItem 1.\nItem 2.\nItem 3. Comment end.",
+						"followsHeading": true,
+						"date": "2020-09-20T20:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-09-20T20:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "List:\n\nItem 1.\nItem 2.\nItem 3. Comment end.",
+						"followsHeading": false,
+						"date": "2020-09-20T20:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-09-20T20:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "List:\nItem.\nItem. Comment end.",
+						"followsHeading": false,
+						"date": "2020-09-20T21:00:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply indented with ***.",
+						"followsHeading": false,
+						"date": "2020-09-20T21:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Signature in the last item"
+					}
+				]
+			},
+			{
+				"headline": "Indentation hole",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Indentation_hole\">Indentation hole</h3></div>\n<ul><li>Comment started with <code>*</code>.</li></ul>\n<blockquote><p>Quote at the zeroth level.</p></blockquote>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:00, 22 September 2020 (UTC)</dd></dl>\n<ul><li><ul><li>Comment started with <code>**</code>.</li></ul></li></ul>\n<blockquote><p>Quote at the zeroth level.</p></blockquote>\n<dl><dd><dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:01, 22 September 2020 (UTC)</dd></dl></dd></dl>\n<ul><li>Regular comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:02, 22 September 2020 (UTC)\n<ul><li>Comment started with <code>**</code>.</li></ul></li></ul>\n<dl><dd><dl><dd>Comment part started with <code>::</code>.</dd></dl></dd></dl>\n<blockquote><p>Quote at the zeroth level.</p></blockquote>\n<dl><dd><dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:03, 22 September 2020 (UTC)</dd></dl></dd>\n<dd>Comment started with <code>:</code>.</dd></dl>\n<blockquote><p>Quote at the zeroth level.</p></blockquote>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:04, 22 September 2020 (UTC)\n<dl><dd>Comment started with <code>::</code>.</dd></dl></dd></dl>\n<blockquote><p>Quote at the zeroth level.</p></blockquote>\n<dl><dd><dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:05, 22 September 2020 (UTC)</dd></dl></dd>\n<dd>Regular comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:09, 22 September 2020 (UTC)\n<ul><li>Comment starting with <code>:*</code>. Start.</li></ul></dd></dl>\n<ol><li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li></ol>\n<dl><dd><dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:10, 22 September 2020 (UTC)</dd></dl></dd></dl>\n<ul><li>Regular comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:00, 22 September 2020 (UTC)\n<ul><li>Comment starting with <code>**</code>. Start.</li></ul></li></ul>\n<ol><li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li></ol>\n<dl><dd><dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:10, 22 September 2020 (UTC)</dd></dl></dd></dl>\n<ul><li>Comment starting with <code>*</code>. Start. Check how this comment is edited!</li></ul>\n<ol><li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li></ol>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:00, 22 September 2020 (UTC)</dd>\n<dd>Comment starting with <code>:</code>. Start. Check how this comment is edited!</dd></dl>\n<ol><li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li></ol>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:10, 22 September 2020 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment started with *.\nQuote at the zeroth level.\nComment end.",
+						"followsHeading": true,
+						"date": "2020-09-22T20:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment started with **.\nQuote at the zeroth level.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T20:01:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Regular comment.",
+						"followsHeading": false,
+						"date": "2020-09-22T20:02:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment started with **.\nComment part started with ::.\nQuote at the zeroth level.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T20:03:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment started with :.\nQuote at the zeroth level.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T20:04:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment started with ::.\nQuote at the zeroth level.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T20:05:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Regular comment.",
+						"followsHeading": false,
+						"date": "2020-09-22T20:09:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment starting with :*. Start.\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T20:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Regular comment.",
+						"followsHeading": false,
+						"date": "2020-09-22T21:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment starting with **. Start.\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T21:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment starting with *. Start. Check how this comment is edited!\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T22:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment starting with :. Start. Check how this comment is edited!\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"followsHeading": false,
+						"date": "2020-09-22T22:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Indentation hole"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Votings",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=40",
+		"tests": [
+			{
+				"headline": "Normal",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Normal\">Normal</h3></div>\n<p>Text. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 20:00, 19 June 2020 (UTC)\n</p>\n<ol><li>Vote 1. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:10, 19 June 2020 (UTC)</li>\n<li>Vote 2. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:20, 19 June 2020 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Normal\nText. —",
+						"followsHeading": true,
+						"date": "2020-06-19T20:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Vote 1.",
+						"followsHeading": false,
+						"date": "2020-06-19T20:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Vote 2.",
+						"followsHeading": false,
+						"date": "2020-06-19T20:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Normal"
+					}
+				]
+			},
+			{
+				"headline": "Intro text, placeholder",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Intro_text,_placeholder\"><span id=\"Intro_text.2C_placeholder\"></span>Intro text, placeholder</h3></div>\n<p>Text.\n</p>\n<ol><li class=\"mw-empty-elt\"></li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [],
+				"sections": [
+					{
+						"headline": "Intro text, placeholder"
+					}
+				]
+			},
+			{
+				"headline": "Intro text, vote",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Intro_text,_vote\"><span id=\"Intro_text.2C_vote\"></span>Intro text, vote</h3></div>\n<p>Text.\n</p>\n<ol><li>Vote. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 17:00, 12 December 2019 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Vote. —",
+						"followsHeading": true,
+						"date": "2019-12-12T17:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Intro text, vote"
+					}
+				]
+			},
+			{
+				"headline": "Intro text, two votes",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Intro_text,_two_votes\"><span id=\"Intro_text.2C_two_votes\"></span>Intro text, two votes</h3></div>\n<p>Text.\n</p>\n<ol><li>Vote 1. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 17:00, 13 December 2019 (UTC)</li>\n<li>Vote 2. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 17:10, 13 December 2019 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Vote 1. —",
+						"followsHeading": true,
+						"date": "2019-12-13T17:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Vote 2. —",
+						"followsHeading": false,
+						"date": "2019-12-13T17:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Intro text, two votes"
+					}
+				]
+			},
+			{
+				"headline": "No intro text",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"No_intro_text\">No intro text</h3></div>\n<ol><li>Vote 1. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 17:00, 14 December 2019 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "No intro text\nVote 1. —",
+						"followsHeading": true,
+						"date": "2019-12-14T17:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "No intro text"
+					}
+				]
+			},
+			{
+				"headline": "No intro text, empty line before the first vote",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"No_intro_text,_empty_line_before_the_first_vote\"><span id=\"No_intro_text.2C_empty_line_before_the_first_vote\"></span>No intro text, empty line before the first vote</h3></div>\n<ol><li>Vote 1. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 17:00, 15 December 2019 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "No intro text, empty line before the first vote\nVote 1. —",
+						"followsHeading": true,
+						"date": "2019-12-15T17:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "No intro text, empty line before the first vote"
+					}
+				]
+			},
+			{
+				"headline": "Not a voting",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Not_a_voting\">Not a voting</h3></div>\n<p>This is.\n</p>\n<ol><li>Not.</li>\n<li>A voting. I just end my comment with a list. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 02:00, 17 January 2020 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Not a voting\nThis is.\n\nNot.\nA voting. I just end my comment with a list. —",
+						"followsHeading": true,
+						"date": "2020-01-17T02:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Not a voting"
+					}
+				]
+			},
+			{
+				"headline": "Reply to not-a-voting keeping # indentation",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Reply_to_not-a-voting_keeping_#_indentation\"><span id=\"Reply_to_not-a-voting_keeping_.23_indentation\"></span>Reply to not-a-voting keeping <code>#</code> indentation</h3></div>\n<p>This is.\n</p>\n<ol><li>Not.</li>\n<li>A voting. I just end my comment with a list. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 02:00, 18 January 2020 (UTC)\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 02:10, 18 January 2020 (UTC)</dd></dl></li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Reply to not-a-voting keeping # indentation\nThis is.\n\nNot.\nA voting. I just end my comment with a list. —",
+						"followsHeading": true,
+						"date": "2020-01-18T02:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-01-18T02:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Reply to not-a-voting keeping # indentation"
+					}
+				]
+			},
+			{
+				"headline": "Indented voting",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Indented_voting\">Indented voting</h3></div>\n<p>Text\n</p>\n<dl><dd>Support\n<ol><li>Vote. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 02:00, 19 January 2020 (UTC)</li>\n<li>Another vote. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 02:10, 19 January 2020 (UTC)</li></ol></dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Vote.",
+						"followsHeading": true,
+						"date": "2020-01-19T02:00:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Another vote.",
+						"followsHeading": false,
+						"date": "2020-01-19T02:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Indented voting"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Numbered lists",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=50",
+		"tests": [
+			{
+				"headline": "Reply with a numbered list",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Reply_with_a_numbered_list\">Reply with a numbered list</h3></div>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 09:00, 16 May 2020 (UTC)\n</p>\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 09:10, 16 May 2020 (UTC)</li></ol>\n<dl><dd><ol><li>Reply starting with <code>:#</code>. Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 09:20, 16 May 2020 (UTC)</li></ol></dd></dl>\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 09:30, 16 May 2020 (UTC)\n<ol><li>Reply starting with <code>##</code>. Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 09:40, 16 May 2020 (UTC)</li></ol></li></ol>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 10:00, 16 May 2020 (UTC)\n</p>\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\n<dl><dd><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 10:10, 16 May 2020 (UTC)</dd></dl>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 11:00, 16 May 2020 (UTC)\n</p>\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 11:10, 16 May 2020 (UTC)\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\n<dl><dd>Incorrect reply (but common mistake, see <a href=\"https://en.wikipedia.org/wiki/ru:%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5:Minecraft#Агнес_Ларссон\" class=\"extiw\" title=\"w:ru:Обсуждение:Minecraft\">w:ru:Обсуждение:Minecraft#Агнес Ларссон</a>). <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 11:20, 16 May 2020 (UTC)</dd></dl></dd></dl>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:00, 16 May 2020 (UTC)\n</p>\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:10, 16 May 2020 (UTC)\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\n<dl><dd>Incorrect reply (but common mistake, see <a href=\"https://en.wikipedia.org/wiki/ru:%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5:Minecraft#Агнес_Ларссон\" class=\"extiw\" title=\"w:ru:Обсуждение:Minecraft\">w:ru:Обсуждение:Minecraft#Агнес Ларссон</a>). <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:20, 16 May 2020 (UTC)\n<dl><dd>Reply to it. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:30, 16 May 2020 (UTC)</dd></dl></dd></dl></dd></dl>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 13:00, 16 May 2020 (UTC)\n</p>\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 13:10, 16 May 2020 (UTC)\n<dl><dd><ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol></dd>\n<dd>Correct reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 13:20, 16 May 2020 (UTC)\n<dl><dd>Reply to it. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 13:30, 16 May 2020 (UTC)</dd></dl></dd></dl></dd></dl>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:00, 16 May 2020 (UTC)\n</p>\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:10, 16 May 2020 (UTC)\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:20, 16 May 2020 (UTC)\n<dl><dd>And a reply to it. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:30, 16 May 2020 (UTC)</dd></dl></li></ol>\n<dl><dd>One more reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:40, 16 May 2020 (UTC)</dd></dl>\n<ul><li>One more reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:50, 16 May 2020 (UTC)</li></ul></dd></dl>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 15:00, 16 May 2020 (UTC)\n</p>\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 15:10, 16 May 2020 (UTC)\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol></dd>\n<dd>Reply to the 0-level comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 15:20, 16 May 2020 (UTC)</dd></dl>\n<dl><dd>Text.</dd></dl>\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. Another super-weird case: a numbered list without any other indentation <i>after</i> normal indentation. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 16:00, 16 May 2020 (UTC)</li></ol>\n<dl><dd>Text.</dd></dl>\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\n<dl><dd>Another super-weird case: a numbered list without any other indentation <i>after</i> normal indentation and ending with normal indentation. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 17:00, 16 May 2020 (UTC)</dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Reply with a numbered list\nComment.",
+						"followsHeading": true,
+						"date": "2020-05-16T09:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"followsHeading": false,
+						"date": "2020-05-16T09:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Reply starting with :#. Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"followsHeading": false,
+						"date": "2020-05-16T09:20:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"followsHeading": false,
+						"date": "2020-05-16T09:30:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Reply starting with ##. Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"followsHeading": false,
+						"date": "2020-05-16T09:40:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2020-05-16T10:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3.",
+						"followsHeading": false,
+						"date": "2020-05-16T10:10:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2020-05-16T11:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T11:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3.\nIncorrect reply (but common mistake, see w:ru:Обсуждение:Minecraft#Агнес Ларссон).",
+						"followsHeading": false,
+						"date": "2020-05-16T11:20:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2020-05-16T12:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T12:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3.\nIncorrect reply (but common mistake, see w:ru:Обсуждение:Minecraft#Агнес Ларссон).",
+						"followsHeading": false,
+						"date": "2020-05-16T12:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply to it.",
+						"followsHeading": false,
+						"date": "2020-05-16T12:30:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2020-05-16T13:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T13:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3.\nCorrect reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T13:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply to it.",
+						"followsHeading": false,
+						"date": "2020-05-16T13:30:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2020-05-16T14:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T14:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"followsHeading": false,
+						"date": "2020-05-16T14:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "And a reply to it.",
+						"followsHeading": false,
+						"date": "2020-05-16T14:30:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "One more reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T14:40:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "One more reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T14:50:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2020-05-16T15:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2020-05-16T15:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Item 1.\nItem 2.\nItem 3.\nReply to the 0-level comment.",
+						"followsHeading": false,
+						"date": "2020-05-16T15:20:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Text.\nItem 1.\nItem 2.\nItem 3. Another super-weird case: a numbered list without any other indentation after normal indentation.",
+						"followsHeading": false,
+						"date": "2020-05-16T16:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Text.\nItem 1.\nItem 2.\nItem 3.\nAnother super-weird case: a numbered list without any other indentation after normal indentation and ending with normal indentation.",
+						"followsHeading": false,
+						"date": "2020-05-16T17:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Reply with a numbered list"
+					}
+				]
+			},
+			{
+				"headline": "Zero level comment",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Zero_level_comment\">Zero level comment</h3></div>\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. It is <i>not</i> a reply (unlike <a href=\"#202005160901_Example\">#202005160901_Example</a> that has the same markup). It is a 0-level comment starting a section! <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 18:00, 17 May 2020 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Zero level comment\nItem 1.\nItem 2.\nItem 3. It is not a reply (unlike #202005160901_Example that has the same markup). It is a 0-level comment starting a section!",
+						"followsHeading": true,
+						"date": "2020-05-17T18:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Zero level comment"
+					}
+				]
+			},
+			{
+				"headline": "Numbered list of comments with the last comment having multiple lines",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Numbered_list_of_comments_with_the_last_comment_having_multiple_lines\">Numbered list of comments with the last comment having multiple lines</h3></div>\n<ol><li>Reply 1. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:00, 20 June 2020 (UTC)</li>\n<li>Reply 2. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:10, 20 June 2020 (UTC)</li>\n<li>Reply 3<small style=\"font-size:85%;\"></small>. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:20, 20 June 2020 (UTC)</li></ol></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply 1.",
+						"followsHeading": true,
+						"date": "2020-06-20T20:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply 2.",
+						"followsHeading": false,
+						"date": "2020-06-20T20:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply 3.",
+						"followsHeading": false,
+						"date": "2020-06-20T20:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Numbered list of comments with the last comment having multiple lines"
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "Specific content",
+		"url": "https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_cases&action=edit&section=54",
+		"tests": [
+			{
+				"headline": "Paragraphs",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Paragraphs\">Paragraphs</h3></div>\n<p>Paragraph 1.\n</p><p>Paragraph 2. \n</p><p>Paragraph 3. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 00:00, 1 March 2021 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Paragraphs\nParagraph 1.\n\nParagraph 2. \n\nParagraph 3.",
+						"followsHeading": true,
+						"date": "2021-03-01T00:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Paragraphs"
+					}
+				]
+			},
+			{
+				"headline": "Outdent templates",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Outdent_templates\">Outdent templates</h3></div>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:00, 25 April 2021 (UTC)\n</p>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:10, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:20, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:30, 25 April 2021 (UTC)</li></ul></li></ul></li>\n<li><div class=\"outdent-template\" style=\"position:relative;left:1px;\"><span style=\"display:block;width:3.2em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-bottom:1px solid var(--border-color-base, #a2a9b1);border-right:1px solid var(--border-color-base, #a2a9b1);\"></span><span style=\"display:block;width:3.2em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-left:1px solid var(--border-color-base, #a2a9b1);\"></span></div> Test outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">User:Example</a> 12:40, 25 April 2021 (UTC)\n<ul><li>Reply to an outdented comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">User:Example</a> 12:50, 25 April 2021 (UTC)</li></ul></li>\n<li>Reply to the 0-level comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">User:Example</a> 13:00, 25 April 2021 (UTC)</li></ul>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:00, 25 April 2021 (UTC)\n</p>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:10, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:20, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:30, 25 April 2021 (UTC)</li></ul></li></ul></li></ul>\n<div class=\"outdent-template\" style=\"position:relative;left:1px;\"><span style=\"display:block;width:4.8em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-bottom:1px solid var(--border-color-base, #a2a9b1);border-right:1px solid var(--border-color-base, #a2a9b1);\"></span><span style=\"display:block;width:4.8em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-left:1px solid var(--border-color-base, #a2a9b1);\"></span></div><p> Outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:40, 25 April 2021 (UTC)\n</p><ul><li>Reply to an outdented comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 14:50, 25 April 2021 (UTC)</li></ul>\n<p>Standalone comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 15:00, 25 April 2021 (UTC)\n</p><p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 16:00, 25 April 2021 (UTC)\n</p>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 16:10, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 16:20, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 16:30, 25 April 2021 (UTC)</li></ul></li>\n<li><div class=\"outdent-template\" style=\"position:relative;left:1px;\"><span style=\"display:block;width:1.6em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-bottom:1px solid var(--border-color-base, #a2a9b1);border-right:1px solid var(--border-color-base, #a2a9b1);\"></span><span style=\"display:block;width:1.6em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-left:1px solid var(--border-color-base, #a2a9b1);\"></span></div> Outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 16:40, 25 April 2021 (UTC)\n<ul><li>Reply to an outdented comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 16:50, 25 April 2021 (UTC)</li></ul></li></ul></li></ul>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 18:10, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 18:20, 25 April 2021 (UTC)\n<ul><li>Comment. The comment being replied to with an outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 18:30, 25 April 2021 (UTC)</li></ul></li>\n<li>Comment added later than the outdented comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 18:50, 25 April 2021 (UTC)</li></ul></li>\n<li><div class=\"outdent-template\" style=\"position:relative;left:1px;\"><span style=\"display:block;width:1.6em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-bottom:1px solid var(--border-color-base, #a2a9b1);border-right:1px solid var(--border-color-base, #a2a9b1);\"></span><span style=\"display:block;width:1.6em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-left:1px solid var(--border-color-base, #a2a9b1);\"></span></div> Outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 18:40, 25 April 2021 (UTC)</li></ul>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:00, 25 April 2021 (UTC)\n</p>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:10, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:20, 25 April 2021 (UTC)\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:30, 25 April 2021 (UTC)</li></ul></li></ul></li></ul>\n<div class=\"outdent-template\" style=\"position:relative;left:1px;\"><span style=\"display:block;width:4.8em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-bottom:1px solid var(--border-color-base, #a2a9b1);border-right:1px solid var(--border-color-base, #a2a9b1);\"></span><span style=\"display:block;width:4.8em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-left:1px solid var(--border-color-base, #a2a9b1);\"></span></div><p> Outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:50, 25 April 2021 (UTC)\n</p><ul><li>Reply <b>not</b> to an outdented comment (earlier in time). <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 19:40, 25 April 2021 (UTC)</li></ul>\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:10, 25 April 2021 (UTC)\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:20, 25 April 2021 (UTC)\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:30, 25 April 2021 (UTC)\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:40, 25 April 2021 (UTC)</dd></dl></dd></dl></dd>\n<dd><div class=\"outdent-template\" style=\"position:relative;left:1px;\"><span style=\"display:block;width:3.2em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-bottom:1px solid var(--border-color-base, #a2a9b1);border-right:1px solid var(--border-color-base, #a2a9b1);\"></span><span style=\"display:block;width:3.2em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-left:1px solid var(--border-color-base, #a2a9b1);\"></span></div> Outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 21:50, 25 April 2021 (UTC)\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:00, 25 April 2021 (UTC)\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:10, 25 April 2021 (UTC)\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:20, 25 April 2021 (UTC)</dd></dl></dd></dl></dd></dl></dd></dl></dd></dl>\n<div class=\"outdent-template\" style=\"position:relative;left:1px;\"><span style=\"display:block;width:8em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-bottom:1px solid var(--border-color-base, #a2a9b1);border-right:1px solid var(--border-color-base, #a2a9b1);\"></span><span style=\"display:block;width:8em;height:0.5em;font-family:DejaVu Sans, sans-serif;border-left:1px solid var(--border-color-base, #a2a9b1);\"></span></div><p> Outdent. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:30, 25 April 2021 (UTC)\n</p><dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:40, 25 April 2021 (UTC)\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 22:50, 25 April 2021 (UTC)</dd></dl></dd></dl></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Outdent templates\nComment.",
+						"followsHeading": true,
+						"date": "2021-04-25T12:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T12:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T12:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T12:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Test outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T12:40:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Reply to an outdented comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T12:50:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply to the 0-level comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T13:00:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T14:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T14:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T14:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T14:30:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T14:40:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply to an outdented comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T14:50:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Standalone comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T15:00:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T16:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T16:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T16:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T16:30:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T16:40:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Reply to an outdented comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T16:50:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T18:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T18:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment. The comment being replied to with an outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T18:30:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment added later than the outdented comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T18:50:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T18:40:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T19:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T19:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T19:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T19:30:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T19:50:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply not to an outdented comment (earlier in time).",
+						"followsHeading": false,
+						"date": "2021-04-25T19:40:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T21:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T21:20:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T21:30:00.000Z"
+					},
+					{
+						"level": 4,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T21:40:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T21:50:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T22:00:00.000Z"
+					},
+					{
+						"level": 4,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T22:10:00.000Z"
+					},
+					{
+						"level": 5,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T22:20:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Outdent.",
+						"followsHeading": false,
+						"date": "2021-04-25T22:30:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T22:40:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": false,
+						"date": "2021-04-25T22:50:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Outdent templates"
+					}
+				]
+			},
+			{
+				"headline": "Closed thread",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Closed_thread\">Closed thread</h3></div>\n<p>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:00, 26 April 2021 (UTC)\n</p>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:10, 26 April 2021 (UTC)\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:20, 26 April 2021 (UTC)</li></ul></li></ul>\n<div class=\"boilerplate metadata discussion-closed\" style=\"background-color: #f5f3ef; margin: 2em 0 0 0; padding: 0 10px 0 10px; border: 1px solid #AAAAAA;\">\n<dl><dd><i>The following discussion is closed, and will be archived soon.</i></dd></dl>\n<hr />\n<ul><li><ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:30, 26 April 2021 (UTC)\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:40, 26 April 2021 (UTC)</li></ul></li></ul></li></ul>\n<hr />\n<dl><dd><i>The above discussion is closed, and will be archived soon.</i></dd></dl>\n</div>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:00, 26 April 2021 (UTC)</li></ul>\n<div class=\"boilerplate metadata discussion-closed\" style=\"background-color: #f5f3ef; margin: 2em 0 0 0; padding: 0 10px 0 10px; border: 1px solid #AAAAAA;\">\n<dl><dd><i>The following discussion is closed, and will be archived soon.</i></dd></dl>\n<hr />\n<p>Comment at the 0th level. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:10, 26 April 2021 (UTC)\n</p>\n<hr />\n<dl><dd><i>The above discussion is closed, and will be archived soon.</i></dd></dl>\n</div></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Closed thread\nComment. —",
+						"followsHeading": true,
+						"date": "2021-04-26T07:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-26T07:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-26T07:20:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-26T07:30:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-26T07:40:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-26T08:00:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "The following discussion is closed, and will be archived soon.\n\nComment at the 0th level. — \n\n\nThe above discussion is closed, and will be archived soon.",
+						"followsHeading": false,
+						"date": "2021-04-26T08:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Closed thread"
+					}
+				]
+			},
+			{
+				"headline": "Closed thread inside a parameter",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Closed_thread_inside_a_parameter\">Closed thread inside a parameter</h3></div>\n<p>Add <code>User:Jack who built the house/closed</code> to the first array of the <code>closedDiscussionTemplates</code> configuration property to test this.\n</p><p>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:00, 27 April 2021 (UTC)\n</p>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:10, 27 April 2021 (UTC)\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:20, 27 April 2021 (UTC)</li></ul></li></ul>\n<div style=\"background:#E3F9DF; padding:0 10px; border:1px solid #AAA;\" class=\"ruwiki-closedDiscussion\"><i>The following discussion is closed&#32;and will soon be archived.</i> <b> </b>&#32;\n<hr />\n<ul><li><ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:30, 27 April 2021 (UTC)\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:40, 27 April 2021 (UTC)</li></ul></li></ul></li></ul></div>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:50, 27 April 2021 (UTC)</li></ul>\n<div style=\"background:#E3F9DF; padding:0 10px; border:1px solid #AAA;\" class=\"ruwiki-closedDiscussion\"><i>The following discussion is closed&#32;and will soon be archived.</i> <b> </b>&#32;\n<hr />\nComment at the 0th level. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:00, 27 April 2021 (UTC)</div></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Closed thread inside a parameter\nAdd User:Jack who built the house/closed to the first array of the closedDiscussionTemplates configuration property to test this.\n\nComment. —",
+						"followsHeading": true,
+						"date": "2021-04-27T07:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-27T07:10:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-27T07:20:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-27T07:30:00.000Z"
+					},
+					{
+						"level": 3,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-27T07:40:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2021-04-27T07:50:00.000Z"
+					},
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "The following discussion is closed and will soon be archived.   \n\nComment at the 0th level. —",
+						"followsHeading": false,
+						"date": "2021-04-27T08:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Closed thread inside a parameter"
+					}
+				]
+			},
+			{
+				"headline": "Moved section",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Moved_section\">Moved section</h3></div>\n<div role=\"note\" style=\"margin: 1em;\" class=\"resolved\"><span style=\"border: 1px solid #aaa; background-color: var(--background-color-neutral-subtle, #f9fcf9); color:inherit; margin-right: 0.5em; padding: 0.5em;\"><span style=\"\"><span typeof=\"mw:File\"><span><img alt=\"\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Go-next-purple.svg/20px-Go-next-purple.svg.png\" decoding=\"async\" width=\"20\" height=\"20\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Go-next-purple.svg/40px-Go-next-purple.svg.png 2x\" data-file-width=\"48\" data-file-height=\"48\" /></span></span></span> Moved to User talk:Jack who built the house/sandbox#Moved section&#58;</span> <span style=\"font-size: 85%\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 07:49, 11 March 2018 (UTC)</span></div></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Moved section\n Moved to User talk:Jack who built the house/sandbox#Moved section:",
+						"followsHeading": true,
+						"date": "2018-03-11T07:49:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Moved section"
+					}
+				]
+			},
+			{
+				"headline": "Section after two empty lines",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Section_after_two_empty_lines\">Section after two empty lines</h3></div>\n<p>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12:10, 28 March 2020 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Section after two empty lines\nComment. —",
+						"followsHeading": true,
+						"date": "2020-03-28T12:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Section after two empty lines"
+					}
+				]
+			},
+			{
+				"headline": "Section after zero empty lines",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Section_after_zero_empty_lines\">Section after zero empty lines</h3></div>\n<p>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12:10, 29 March 2020 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Section after zero empty lines\nComment. —",
+						"followsHeading": true,
+						"date": "2020-03-29T12:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Section after zero empty lines"
+					}
+				]
+			},
+			{
+				"headline": "References",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"References\">References</h3></div>\n<ul><li>Comment. <sup id=\"cite&#95;ref-1\" class=\"reference\"><a href=\"#cite_note-1\"><span class=\"cite-bracket\">&#91;</span>note 1<span class=\"cite-bracket\">&#93;</span></a></sup> — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 21:00, 20 January 2020 (UTC)</li></ul>\n<ol class=\"references\" data-mw-group=\"note\">\n<li id=\"cite&#95;note-1\"><span class=\"mw-cite-backlink\"><a href=\"#cite_ref-1\">↑</a></span> <span class=\"reference-text\">Reference</span>\n</li>\n</ol>\n<ul><li>Comment. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 21:10, 20 January 2020 (UTC)</li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. [note 1] —",
+						"followsHeading": true,
+						"date": "2020-01-20T21:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment. —",
+						"followsHeading": false,
+						"date": "2020-01-20T21:10:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "References"
+					}
+				]
+			},
+			{
+				"headline": "Сomments in small font",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Сomments_in_small_font\"><span id=\".D0.A1omments_in_small_font\"></span>Сomments in small font</h3></div>\n<ul><li><small>&lt;small&gt; tag. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 23:30, 18 February 2018 (UTC)</small></li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "<small> tag. —",
+						"followsHeading": true,
+						"date": "2018-02-18T23:30:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Сomments in small font"
+					}
+				]
+			},
+			{
+				"headline": "Image",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Image\">Image</h3></div>\n<figure class=\"mw-default-size mw-halign-left\" typeof=\"mw:File\"><a href=\"/wiki/File:Edit_toolbar_-_2.png\" class=\"mw-file-description\" title=\"Old editor panel 2006\"><img alt=\"Old editor panel 2006\" src=\"https://upload.wikimedia.org/wikipedia/commons/1/1f/Edit_toolbar_-_2.png\" decoding=\"async\" width=\"369\" height=\"100\" class=\"mw-file-element\" data-file-width=\"369\" data-file-height=\"100\" /></a><figcaption>Old editor panel 2006</figcaption></figure>\n<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n</p><p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 23:00, 7 November 2018 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Image\nOld editor panel 2006\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nSed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
+						"followsHeading": true,
+						"date": "2018-11-07T23:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Image"
+					}
+				]
+			},
+			{
+				"headline": "Images from both sides",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Images_from_both_sides\">Images from both sides</h3></div>\n<figure class=\"mw-default-size mw-halign-right\" typeof=\"mw:File/Thumb\"><a href=\"/wiki/File:Example.png\" class=\"mw-file-description\"><img src=\"https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png\" decoding=\"async\" width=\"172\" height=\"178\" class=\"mw-file-element\" data-file-width=\"172\" data-file-height=\"178\" /></a><figcaption>Caption</figcaption></figure>\n<figure class=\"mw-default-size mw-halign-left\" typeof=\"mw:File/Thumb\"><a href=\"/wiki/File:Example.png\" class=\"mw-file-description\"><img src=\"https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png\" decoding=\"async\" width=\"172\" height=\"178\" class=\"mw-file-element\" data-file-width=\"172\" data-file-height=\"178\" /></a><figcaption>Caption</figcaption></figure>\n<p>Look at the comment markers. The replies don't look good without CD as well, so... <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 23:00, 8 November 2018 (UTC)\n</p>\n<dl><dd>Reply. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 23:10, 8 November 2018 (UTC)</dd>\n<dd>Reply 2. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 23:20, 8 November 2018 (UTC)</dd></dl>\n<div style=\"clear:both;\"></div></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Images from both sides\nCaption\nCaption\nLook at the comment markers. The replies don't look good without CD as well, so...",
+						"followsHeading": true,
+						"date": "2018-11-08T23:00:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply.",
+						"followsHeading": false,
+						"date": "2018-11-08T23:10:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Reply 2.",
+						"followsHeading": false,
+						"date": "2018-11-08T23:20:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Images from both sides"
+					}
+				]
+			},
+			{
+				"headline": "Image breaking a thread",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Image_breaking_a_thread\">Image breaking a thread</h3></div>\n<ul><li>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 12:40, 16 January 2019 (UTC)</li></ul>\n<figure class=\"mw-halign-right\" typeof=\"mw:File/Thumb\"><a href=\"/wiki/File:Grand_Turk(34).jpg\" class=\"mw-file-description\"><img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Grand_Turk%2834%29.jpg/330px-Grand_Turk%2834%29.jpg\" decoding=\"async\" width=\"300\" height=\"225\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Grand_Turk%2834%29.jpg/960px-Grand_Turk%2834%29.jpg 2x\" data-file-width=\"1280\" data-file-height=\"960\" /></a><figcaption>Grand Turk, a replica of a three-masted 6th rate frigate from Nelson's days - logbook and charts</figcaption></figure>\n<ul><li><ul><li>Comment after an image. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12:50, 16 January 2019 (UTC)</li></ul></li></ul></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": true,
+						"date": "2019-01-16T12:40:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"text": "Comment after an image. —",
+						"followsHeading": false,
+						"date": "2019-01-16T12:50:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Image breaking a thread"
+					}
+				]
+			},
+			{
+				"headline": "Table in a comment",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Table_in_a_comment\">Table in a comment</h3></div>\n<table style=\"background:#FDFFE7; border: solid 1px #C2C2C2; width: 88%; padding: 2px;\">\n<tbody><tr>\n<td rowspan=\"2\" valign=\"middle\" width=\"110px\"><figure class=\"mw-halign-center\" typeof=\"mw:File\"><a href=\"/wiki/File:Minor_Barnstar_Hires.png\" class=\"mw-file-description\" title=\"Barnstar\"><img alt=\"Barnstar\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Minor_Barnstar_Hires.png/120px-Minor_Barnstar_Hires.png\" decoding=\"async\" width=\"100\" height=\"95\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Minor_Barnstar_Hires.png/250px-Minor_Barnstar_Hires.png 2x\" data-file-width=\"2000\" data-file-height=\"1900\" /></a><figcaption>Barnstar</figcaption></figure>\n</td>\n<td style=\"font-size: large; padding: 0; vertical-align: middle; height: 1.1em;\"><b>Barnstar</b>\n</td></tr>\n<tr>\n<td style=\"vertical-align: middle; border-top: 1px solid #C2C2C2;\">Take that barnstar! <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 23:00, 24 June 2018 (UTC)\n</td></tr></tbody></table></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Table in a comment\n\n\nBarnstar\n\nBarnstar\n\n\nTake that barnstar!",
+						"followsHeading": true,
+						"date": "2018-06-24T23:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Table in a comment"
+					}
+				]
+			},
+			{
+				"headline": "Talk message box",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Talk_message_box\">Talk message box</h3></div>\n<style data-mw-deduplicate=\"TemplateStyles:r972124657\">.mw-parser-output .tmbox{margin:4px 0;width:auto;border-collapse:collapse;border:2px solid #ca3;background-color:var(--background-color-warning-subtle,#fdf2d5);box-sizing:border-box;border-inline-start-width:8px}.mw-parser-output .tmbox.mbox-small{font-size:88%;line-height:1.25em}.mw-parser-output .tmbox-speedy{border:2px solid var(--border-color-error,#f54739);background-color:var(--background-color-error-subtle,#ffe9e5);border-inline-start-width:8px}.mw-parser-output .tmbox-delete{border:2px solid var(--border-color-error,#f54739);border-inline-start-width:8px}.mw-parser-output .tmbox-content{border:2px solid #f28500;border-inline-start-width:8px}.mw-parser-output .tmbox-style{border:2px solid #f4c430;border-inline-start-width:8px}.mw-parser-output .tmbox-move{border:2px solid #93c;border-inline-start-width:8px}.mw-parser-output .tmbox .mbox-text{border:none;padding:0.25em 0.9em;width:100%}.mw-parser-output .tmbox .mbox-image{border:none;padding:2px 0 2px 0.9em;text-align:center}.mw-parser-output .tmbox .mbox-imageright{border:none;padding:2px 0.9em 2px 0;text-align:center}.mw-parser-output .tmbox .mbox-empty-cell{border:none;padding:0;width:1px}.mw-parser-output .tmbox .mbox-invalid-type{text-align:center}@media(min-width:720px){.mw-parser-output .tmbox{margin:4px 10%}.mw-parser-output .tmbox.mbox-small{clear:right;float:right;margin:4px 0 4px 1em;width:238px}}body.skin--responsive .mw-parser-output table.tmbox img{max-width:none!important}</style><table class=\"plainlinks tmbox tmbox-notice\" role=\"presentation\"><tbody><tr><td class=\"mbox-image\"><span typeof=\"mw:File\"><span><img alt=\"\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/60px-Information_icon4.svg.png\" decoding=\"async\" width=\"45\" height=\"45\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/120px-Information_icon4.svg.png 2x\" data-file-width=\"620\" data-file-height=\"620\" /></span></span></td><td class=\"mbox-text\">Text</td></tr></tbody></table>\n<p>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12:00, 9 October 2021 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment.",
+						"followsHeading": true,
+						"date": "2021-10-09T12:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Talk message box"
+					}
+				]
+			},
+			{
+				"headline": "Comment inside a talk message box",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_inside_a_talk_message_box\">Comment inside a talk message box</h3></div>\n<style data-mw-deduplicate=\"TemplateStyles:r972124657\">.mw-parser-output .tmbox{margin:4px 0;width:auto;border-collapse:collapse;border:2px solid #ca3;background-color:var(--background-color-warning-subtle,#fdf2d5);box-sizing:border-box;border-inline-start-width:8px}.mw-parser-output .tmbox.mbox-small{font-size:88%;line-height:1.25em}.mw-parser-output .tmbox-speedy{border:2px solid var(--border-color-error,#f54739);background-color:var(--background-color-error-subtle,#ffe9e5);border-inline-start-width:8px}.mw-parser-output .tmbox-delete{border:2px solid var(--border-color-error,#f54739);border-inline-start-width:8px}.mw-parser-output .tmbox-content{border:2px solid #f28500;border-inline-start-width:8px}.mw-parser-output .tmbox-style{border:2px solid #f4c430;border-inline-start-width:8px}.mw-parser-output .tmbox-move{border:2px solid #93c;border-inline-start-width:8px}.mw-parser-output .tmbox .mbox-text{border:none;padding:0.25em 0.9em;width:100%}.mw-parser-output .tmbox .mbox-image{border:none;padding:2px 0 2px 0.9em;text-align:center}.mw-parser-output .tmbox .mbox-imageright{border:none;padding:2px 0.9em 2px 0;text-align:center}.mw-parser-output .tmbox .mbox-empty-cell{border:none;padding:0;width:1px}.mw-parser-output .tmbox .mbox-invalid-type{text-align:center}@media(min-width:720px){.mw-parser-output .tmbox{margin:4px 10%}.mw-parser-output .tmbox.mbox-small{clear:right;float:right;margin:4px 0 4px 1em;width:238px}}body.skin--responsive .mw-parser-output table.tmbox img{max-width:none!important}</style><table class=\"plainlinks tmbox tmbox-notice\" role=\"presentation\"><tbody><tr><td class=\"mbox-image\"><span typeof=\"mw:File\"><span><img alt=\"\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/60px-Information_icon4.svg.png\" decoding=\"async\" width=\"45\" height=\"45\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/120px-Information_icon4.svg.png 2x\" data-file-width=\"620\" data-file-height=\"620\" /></span></span></td><td class=\"mbox-text\">Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12:00, 10 October 2021 (UTC)</td></tr></tbody></table></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Comment inside a talk message box\n\u00011_templateStyles\u0002\nComment.",
+						"followsHeading": true,
+						"date": "2021-10-10T12:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Comment inside a talk message box"
+					}
+				]
+			},
+			{
+				"headline": "Exotic tags",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Exotic_tags\">Exotic tags</h3></div>\n<ul><li>Text.<div class=\"mw-highlight mw-highlight-lang-html mw-content-ltr mw-highlight-lines mw-highlight-copy\" dir=\"ltr\"><pre><span></span><span class=\"linenos\" data-line=\"1\"></span><span class=\"p\">&lt;</span><span class=\"nt\">p</span><span class=\"p\">&gt;</span>Text in the syntaxhighlight tag.<span class=\"p\">&lt;/</span><span class=\"nt\">p</span><span class=\"p\">&gt;</span>\n</pre></div><blockquote><p>Text in the blockquote tag.</p></blockquote>Text. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 08:00, 5 November 2019 (UTC)</li></ul>\n<div style=\"clear:both;\"></div></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 1,
+						"authorName": "Example",
+						"text": "Text.<p>Text in the syntaxhighlight tag.</p>\nText in the blockquote tag.Text. —",
+						"followsHeading": true,
+						"date": "2019-11-05T08:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Exotic tags"
+					}
+				]
+			},
+			{
+				"headline": "Empty section with {{clear}} before it",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Empty_section_with_{{clear}}_before_it\"><span id=\"Empty_section_with_.7B.7Bclear.7D.7D_before_it\"></span>Empty section with {{clear}} before it</h3></div>\n<div style=\"clear:both;\"></div></div>",
+				"headingNestingLevel": 1,
+				"comments": [],
+				"sections": [
+					{
+						"headline": "Empty section with {{clear}} before it"
+					}
+				]
+			},
+			{
+				"headline": "Section with {{clear}} before it",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Section_with_{{clear}}_before_it\"><span id=\"Section_with_.7B.7Bclear.7D.7D_before_it\"></span>Section with {{clear}} before it</h3></div>\n<p>Test. — <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 12:00, 19 January 2020 (UTC)\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Section with {{clear}} before it\nTest. —",
+						"followsHeading": true,
+						"date": "2020-01-19T12:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Section with {{clear}} before it"
+					}
+				]
+			},
+			{
+				"headline": "Section ending with a HTML comment",
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Section_ending_with_a_HTML_comment\">Section ending with a HTML comment</h3></div>\n<p>Section text. Both on section reply and comment reply, the comment should be added above the HTML comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> 20:00, 30 September 2020 (UTC)\n</p><p><br />\n</p></div>",
+				"headingNestingLevel": 1,
+				"comments": [
+					{
+						"level": 0,
+						"authorName": "Example",
+						"text": "Section ending with a HTML comment\nSection text. Both on section reply and comment reply, the comment should be added above the HTML comment.",
+						"followsHeading": true,
+						"date": "2020-09-30T20:00:00.000Z"
+					}
+				],
+				"sections": [
+					{
+						"headline": "Section ending with a HTML comment"
+					}
+				]
+			}
+		]
+	}
+]
