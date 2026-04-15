@@ -334,7 +334,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		)
 
 		// The interwiki prefix is everything before the remote page name in the original text
-		const interwikiPrefix = text.slice(0, text.length - pageName.length)
+		const interwikiPrefix = this.extractInterwikiPrefix(text, pageName)
 
 		return response[1].flatMap((/** @type {string} */ apiName) => {
 			const title = CrossSiteMwTitle.newFromText(apiName, undefined, hostname)
@@ -405,7 +405,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 		// The interwiki prefix is everything before the remote page name in the original pageNameForApi
 		const interwikiPrefix = interwiki
-			? pageNameForApi.slice(0, pageNameForApi.length - interwiki.pageName.length)
+			? this.extractInterwikiPrefix(pageNameForApi, interwiki.pageName)
 			: undefined
 
 		// Check cache for sections of this page
@@ -523,6 +523,33 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				label: pageName + '#' + fragment,
 			},
 		]
+	}
+
+	/**
+	 * Extract the interwiki prefix from the original user input based on the number of colons
+	 * preserved in the remote page name. We determine this by comparing colons rather than string
+	 * length, since the URL-derived remote page name might have trailing spaces or underscores
+	 * normalized, differing in length from the user input.
+	 *
+	 * @param {string} text The full user-typed text.
+	 * @param {string} remotePageName The page name as resolved on the remote wiki, which has the
+	 *   interwiki prefixes stripped.
+	 * @returns {string} The interwiki prefix substring from `text`.
+	 * @private
+	 */
+	extractInterwikiPrefix(text, remotePageName) {
+		const colonsInText = (text.match(/:/g) || []).length
+		const colonsInPageName = (remotePageName.match(/:/g) || []).length
+		const prefixColonsCount = colonsInText - colonsInPageName
+
+		if (prefixColonsCount <= 0) return ''
+
+		let colonIndex = -1
+		for (let i = 0; i < prefixColonsCount; i++) {
+			colonIndex = text.indexOf(':', colonIndex + 1)
+		}
+
+		return text.slice(0, colonIndex + 1)
 	}
 
 	/**
