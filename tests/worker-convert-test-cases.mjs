@@ -11,8 +11,17 @@ function sleep(ms) {
 	})
 }
 
-const TEST_PAGE = 'User_talk:JWBTH/CD_test_cases'
-const API_URL = 'https://test.wikipedia.org/w/api.php'
+// Default values
+const DEFAULT_TEST_PAGE = 'User_talk:JWBTH/CD_test_cases'
+const DEFAULT_DOMAIN = 'test.wikipedia.org'
+
+// Get from environment variables or use defaults
+let TEST_PAGE = process.env.TEST_PAGE || DEFAULT_TEST_PAGE
+let DOMAIN = process.env.DOMAIN || DEFAULT_DOMAIN
+
+// Construct API URL and base URL from domain
+let API_URL = `https://${DOMAIN}/w/api.php`
+let BASE_URL = `https://${DOMAIN}`
 
 /**
  * Make a MediaWiki API request.
@@ -181,7 +190,7 @@ async function hasChildWithDontConvert(sections, parentIndex) {
  * @returns {string}
  */
 function buildSectionUrl(sectionIndex) {
-	return `https://test.wikipedia.org/w/index.php?title=${TEST_PAGE}&action=edit&section=${sectionIndex}`
+	return `${BASE_URL}/w/index.php?title=${TEST_PAGE}&action=edit&section=${sectionIndex}`
 }
 
 /**
@@ -352,15 +361,51 @@ async function generateTestCases(limit, outputFile) {
 	return testGroups
 }
 
+/**
+ * Parse command-line arguments.
+ *
+ * @param {string[]} args Command-line arguments
+ * @returns {{ limit?: number, outputFile?: string, testPage?: string, domain?: string }}
+ */
+function parseArgs(args) {
+	const result = {}
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i]
+
+		if (arg === '--page' && i + 1 < args.length) {
+			result.testPage = args[++i]
+		} else if (arg === '--domain' && i + 1 < args.length) {
+			result.domain = args[++i]
+		} else if (arg.endsWith('.json')) {
+			result.outputFile = arg
+		} else if (!Number.isNaN(Number.parseInt(arg))) {
+			result.limit = Number.parseInt(arg)
+		}
+	}
+
+	return result
+}
+
 // Run the script
 ;(async () => {
 	try {
 		const args = process.argv.slice(2)
-		const limit =
-			args[0] && !args[0].endsWith('.json')
-				? Number.parseInt(args[0])
-				: undefined
-		const outputFile = args.find((arg) => arg.endsWith('.json'))
+		const { limit, outputFile, testPage, domain } = parseArgs(args)
+
+		// Override defaults with command-line arguments
+		if (testPage) {
+			TEST_PAGE = testPage
+		}
+		if (domain) {
+			DOMAIN = domain
+			API_URL = `https://${DOMAIN}/w/api.php`
+			BASE_URL = `https://${DOMAIN}`
+		}
+
+		console.log(`Using TEST_PAGE: ${TEST_PAGE}`)
+		console.log(`Using DOMAIN: ${DOMAIN}`)
+		console.log(`Using API_URL: ${API_URL}`)
 
 		const testGroups = await generateTestCases(limit, outputFile)
 

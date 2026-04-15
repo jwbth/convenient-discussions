@@ -140,6 +140,8 @@ describe.skipIf(!isDirectRun)('Regenerate expected test data', () => {
 		writeFileSync(outputPath, JSON.stringify(testGroups, null, '\t'), 'utf-8')
 
 		console.log(`\nWrote updated test cases to: ${outputPath}`)
-		console.log('\nReview the changes, then rename to worker-test-cases.json if satisfied.\n')
+		console.log(
+			'\nReview the changes, then move the contents to worker-test-cases.json if satisfied.\n',
+		)
 	})
 })
