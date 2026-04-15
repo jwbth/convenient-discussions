@@ -309,7 +309,9 @@ class TributeEvents {
 			},
 			tab: (e, el) => {
 				// choose first match
-				this.callbacks().enter(e, el)
+				if (!e.shiftKey) {
+					this.callbacks().enter(e, el)
+				}
 			},
 			up: (e) => {
 				// navigate up ul

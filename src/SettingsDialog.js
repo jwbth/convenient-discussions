@@ -26,7 +26,9 @@ export default function getSettingsDialogClass() {
 	class SettingsDialog extends ProcessDialog {
 		// @ts-expect-error: https://phabricator.wikimedia.org/T358416
 		static name = 'settingsDialog'
+
 		static title = cd.s('sd-title')
+
 		static actions = [
 			{
 				action: 'close',
@@ -55,6 +57,7 @@ export default function getSettingsDialogClass() {
 				flags: ['primary', 'progressive'],
 			},
 		]
+
 		static size = 'large'
 
 		/**
