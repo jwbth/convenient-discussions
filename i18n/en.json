@@ -114,6 +114,7 @@
 	"es-edit-subsection": "edit opening comment",
 	"es-edit-comment": "edit comment",
 	"es-edit-comment-by": "edit comment by {{gender:$2|}} $1",
+	"es-fix-layout": "fix layout in comment by {{gender:$2|}} $1",
 	"es-delete-reply": "delete reply",
 	"es-delete-reply-to": "delete reply to {{gender:$2|}} $1",
 	"es-delete-addition": "delete addition",

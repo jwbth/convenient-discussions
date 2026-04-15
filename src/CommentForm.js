@@ -903,6 +903,8 @@ class CommentForm extends EventEmitter {
 				// If fixBrokenLayout is set in initialState, skip confirmation and fix automatically
 				if (initialState.fixBrokenLayout) {
 					commentInputValue = this.fixBrokenLayout(source)
+					// Mark that layout was fixed for the edit summary
+					this.layoutWasFixed = true
 					// Show success message
 					OO.ui.alert(cd.s('cf-confirm-fixindentation-success'))
 				} else {
@@ -913,6 +915,8 @@ class CommentForm extends EventEmitter {
 
 					if (confirmed === 'accept') {
 						commentInputValue = this.fixBrokenLayout(source)
+						// Mark that layout was fixed for the edit summary
+						this.layoutWasFixed = true
 					}
 				}
 			}
@@ -3369,6 +3373,22 @@ class CommentForm extends EventEmitter {
 				? cd.s('es-addition')
 				: removeDoubleSpaces(cd.s('es-reply-to', target.author.getName(), target.author))
 		} else if (this.isMode('edit')) {
+			// Check if this is a layout fix edit
+			if (this.layoutWasFixed) {
+				this.target.maybeRequestAuthorGender(this.updateAutoSummary)
+				const authorName = this.target.author.getName()
+
+				return removeDoubleSpaces(
+					cd.s(
+						'es-fix-layout',
+						this.target.author.isRegistered()
+							? `[[${this.target.author.getNamespaceAlias()}:${authorName}|${authorName}]]`
+							: authorName,
+						this.target.author,
+					),
+				)
+			}
+
 			// The codes for generating "edit" and "delete" descriptions are equivalent, so we provide
 			// an umbrella function.
 			const editOrDeleteText = (/** @type {'edit'|'delete'} */ action) => {
