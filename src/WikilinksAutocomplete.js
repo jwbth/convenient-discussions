@@ -273,7 +273,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 		const response = await BaseAutocomplete.makeOpenSearchRequest({
 			search: textForApi,
-			redirects: 'return',
+			redirects: 'resolve',
 		})
 
 		return response[1].flatMap((/** @type {string} */ apiName) => {
@@ -321,7 +321,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 					.get({
 						action: 'opensearch',
 						search: pageName,
-						redirects: 'return',
+						redirects: 'resolve',
 						limit: 10,
 					})
 					.catch(handleApiReject)
