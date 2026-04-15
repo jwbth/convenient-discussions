@@ -1450,7 +1450,7 @@ class Thread extends mixIntoObject(
 			})
 			controller.on('resize', this.updateLines).on('mutate', () => {
 				// Update only on mouse move to prevent short freezings of a page when there is a comment
-				// form in the beginning of a very long page and the input is changed so that everything
+				// form at the beginning of a very long page and the input is changed so that everything
 				// below the form shifts vertically.
 				$(document).off('mousemove.cd', this.updateLines).one('mousemove.cd', this.updateLines)
 			})

@@ -312,6 +312,13 @@ class Controller extends EventEmitter {
 	}
 
 	/**
+	 * Reset the cached content column offsets so they are recalculated on the next access.
+	 */
+	resetContentColumnOffsets() {
+		delete this.contentColumnOffsets
+	}
+
+	/**
 	 * Get the popup overlay used for OOUI components.
 	 *
 	 * @returns {JQuery}
@@ -743,6 +750,7 @@ class Controller extends EventEmitter {
 		// sleep(), because it seems like sometimes it doesn't have time to update.
 		await sleep(cd.g.skin === 'vector-2022' ? 100 : 0)
 
+		this.resetContentColumnOffsets()
 		this.emit('resize')
 		this.handleViewportMove()
 	}
