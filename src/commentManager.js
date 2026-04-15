@@ -99,6 +99,14 @@ export class CommentManager extends EventEmitter {
 	commentDisplay
 
 	/**
+	 * Counter for broken layout check requests to prevent server bombardment.
+	 *
+	 * @type {number}
+	 * @private
+	 */
+	brokenLayoutCheckCount = 0
+
+	/**
 	 * Set the comment classes.
 	 *
 	 * @param {object} classes
@@ -1387,6 +1395,22 @@ export class CommentManager extends EventEmitter {
 	 */
 	getThanksStorage() {
 		return this.thanksStorage
+	}
+
+	/**
+	 * Check if broken layout checks can still be performed.
+	 *
+	 * @returns {boolean}
+	 */
+	canCheckBrokenLayout() {
+		return this.brokenLayoutCheckCount < 2
+	}
+
+	/**
+	 * Increment the broken layout check counter.
+	 */
+	incrementBrokenLayoutCheckCount() {
+		this.brokenLayoutCheckCount++
 	}
 
 	/**

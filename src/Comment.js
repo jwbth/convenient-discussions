@@ -2983,6 +2983,11 @@ class Comment extends mixIntoClass(
 	 * @private
 	 */
 	async checkBrokenLayout() {
+		// Rate limiting: Don't make more than N requests per page load
+		if (!this.manager.canCheckBrokenLayout()) {
+			return
+		}
+
 		// Step 1: Rough check - skip if only one highlightable or if conditions from
 		// detectBrokenIndentation would make it impossible
 		if (
@@ -3005,6 +3010,9 @@ class Comment extends mixIntoClass(
 		}
 
 		// Step 3: Load the comment source to check detectedActualLevel
+		// Increment counter before making the request
+		this.manager.incrementBrokenLayoutCheckCount()
+
 		try {
 			const source = await this.loadCode()
 			if (!source?.detectedActualLevel) {
