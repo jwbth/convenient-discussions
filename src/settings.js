@@ -1004,7 +1004,10 @@ class Settings extends EventEmitter {
 						// Set dimensions so that the dialog is rendered with the correct size
 						.attr('width', 631)
 						.attr('height', 73)
-						.attr('src', 'http://localhost:9000/assets/commentDisplay-compact.png')
+						.attr(
+							'src',
+							'//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png',
+						)
 						.addClass('cd-rcnotice-img'),
 					$('<div>')
 						.addClass('cd-rcnotice-img cd-rcnotice-arrow cd-icon')
@@ -1019,7 +1022,10 @@ class Settings extends EventEmitter {
 						// Set dimensions so that the dialog is rendered with the correct size
 						.attr('width', 631)
 						.attr('height', 130)
-						.attr('src', 'http://localhost:9000/assets/commentDisplay-spacious.png')
+						.attr(
+							'src',
+							'//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png',
+						)
 						.addClass('cd-rcnotice-img'),
 					$('<div>')
 						.addClass('cd-rcnotice-text')
