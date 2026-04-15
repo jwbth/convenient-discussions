@@ -18,7 +18,7 @@
 	"cm-edit": "Edit",
 	"cm-edit-tooltip": "Edit the comment",
 	"cm-fix": "Fix",
-	"cm-fix-tooltip": "Fix broken comment layout",
+	"cm-fix-tooltip": "Fix broken comment markup",
 	"cm-reply": "Reply",
 	"cm-reply-outdented-tooltip": "Can't reply to a comment that has outdented replies",
 	"cm-quote": "Quote",

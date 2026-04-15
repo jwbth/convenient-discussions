@@ -2959,7 +2959,7 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} flash Whether to flash the comment as a target.
 	 */
 	async handleInViewport(flash) {
-		// Check for broken layout on first viewport appearance
+		// Check for broken markup on first viewport appearance
 		if (cd.utils.isCurrentRevision() && !this.brokenLayoutChecked) {
 			this.brokenLayoutChecked = true
 			await this.checkBrokenLayout()

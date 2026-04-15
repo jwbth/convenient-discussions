@@ -209,7 +209,7 @@
 	"cf-error-uploadimage": "Text of the error notification that may appear when trying to upload an image.",
 
 	"cf-confirm-fixindentation": "Text of the confirmation dialog that pops up when the script detects that a comment has incorrect indentation level and offers to fix it automatically.",
-	"cf-confirm-fixindentation-success": "Text of the alert message that appears after the comment's broken layout has been automatically fixed. The user still needs to save the edit to apply the fix.",
+	"cf-confirm-fixindentation-success": "Text of the alert message that appears after the comment's broken markup has been automatically fixed. The user still needs to save the edit to apply the fix.",
 	"cf-confirm-noheadline-topic": "First part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the topic headline.\n\nSecond part is the question: {{msg-wm|Convenient-discussions-cf-confirm-noheadline-question}}",
 	"cf-confirm-noheadline-subsection": "First part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the subsection headline.\n\nSecond part is the question: {{msg-wm|Convenient-discussions-cf-confirm-noheadline-question}}",
 	"cf-confirm-noheadline-question": "Second part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the topic/subsection headline.\n\nFirst part is either:\n* {{msg-wm|Convenient-discussions-cf-confirm-noheadline-topic}} or:\n* {{msg-wm|Convenient-discussions-cf-confirm-noheadline-subsection}}",

@@ -147,7 +147,7 @@ class CommentActions {
 	 * Reusable action for fix button.
 	 */
 	onFixAction = () => {
-		this.comment.edit({ fixBrokenLayout: true })
+		this.comment.edit({ fixBrokenMarkup: true })
 	}
 
 	/**

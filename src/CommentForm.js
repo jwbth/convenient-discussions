@@ -103,7 +103,7 @@ import {
  * @property {boolean} [focus]
  * @property {string} [focusHeadline]
  * @property {Comment} [targetWithOutdentedReplies]
- * @property {boolean} [fixBrokenLayout]
+ * @property {boolean} [fixBrokenMarkup]
  */
 
 /**
@@ -900,9 +900,9 @@ class CommentForm extends EventEmitter {
 
 			let commentInputValue = source.toInputValue()
 			if (source.detectedActualLevel) {
-				// If fixBrokenLayout is set in initialState, skip confirmation and fix automatically
-				if (initialState.fixBrokenLayout) {
-					commentInputValue = this.fixBrokenLayout(source)
+				// If fixBrokenMarkup is set in initialState, skip confirmation and fix automatically
+				if (initialState.fixBrokenMarkup) {
+					commentInputValue = this.fixBrokenMarkup(source)
 					// Mark that layout was fixed for the edit summary
 					this.layoutWasFixed = true
 					// Show success message
@@ -914,7 +914,7 @@ class CommentForm extends EventEmitter {
 					})
 
 					if (confirmed === 'accept') {
-						commentInputValue = this.fixBrokenLayout(source)
+						commentInputValue = this.fixBrokenMarkup(source)
 						// Mark that layout was fixed for the edit summary
 						this.layoutWasFixed = true
 					}
@@ -971,13 +971,13 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Fix broken layout in a comment, including broken indentation and deprecated `<pre>` tags.
+	 * Fix broken markup in a comment, including broken indentation and deprecated `<pre>` tags.
 	 *
 	 * @param {import('./CommentSource').default} source Comment source
 	 * @returns {string} The fixed comment input value
 	 * @private
 	 */
-	fixBrokenLayout(source) {
+	fixBrokenMarkup(source) {
 		// Store the actual level for future operations
 		this.actualCommentLevel = source.detectedActualLevel
 
