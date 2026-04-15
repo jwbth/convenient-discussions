@@ -149,13 +149,6 @@ export class CommentManager extends EventEmitter {
 	 * _For internal use._ Initialize the registry.
 	 */
 	init() {
-		this.timestampsDefault =
-			(!cd.settings.get('useUiTime') ||
-				cd.g.timestampTools.content.timezone === cd.g.timestampTools.user.timezone) &&
-			cd.settings.get('timestampFormat') === 'default' &&
-			mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
-			!cd.settings.get('hideTimezone')
-
 		this.thanksStorage = new StorageItemWithKeys('thanks')
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
@@ -210,6 +203,12 @@ export class CommentManager extends EventEmitter {
 	setup() {
 		// This can be updated after an in-script page reload.
 		this.commentDisplay = cd.settings.get('commentDisplay') || 'spacious'
+		this.timestampsDefault =
+			(!cd.settings.get('useUiTime') ||
+				cd.g.timestampTools.content.timezone === cd.g.timestampTools.user.timezone) &&
+			cd.settings.get('timestampFormat') === 'default' &&
+			mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
+			!cd.settings.get('hideTimezone')
 
 		this.reformatTimestamps()
 		this.findAndUpdateTableComments()
