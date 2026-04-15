@@ -2703,7 +2703,7 @@ class Comment extends mixIntoClass(
 		let source
 		let isSectionSubmitted = false
 		try {
-			if (commentForm && this.section?.liveSectionNumber !== undefined) {
+			if (this.section?.liveSectionNumber !== undefined) {
 				try {
 					const sectionCode = await this.section.requestCode()
 					this.section.locateInCode(sectionCode)
@@ -2712,8 +2712,12 @@ class Comment extends mixIntoClass(
 				} catch (error) {
 					if (
 						!(
-							error instanceof CdError &&
-							['noSuchSection', 'locateSection', 'locateComment'].includes(error.getCode() || '')
+							// If there is some issue with the section code, then it's likely an outdated section
+							// ID. We should just expand the search scope to the entire page code.
+							(
+								error instanceof CdError &&
+								['noSuchSection', 'locateSection', 'locateComment'].includes(error.getCode() || '')
+							)
 						)
 					) {
 						throw error
