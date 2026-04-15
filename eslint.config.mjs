@@ -15,7 +15,6 @@ const config = defineConfig(
 			'dist/**',
 			'*.json5',
 			'*.jsonc',
-			'config/**/*',
 			'src/tribute/**',
 			'sandbox/**',
 			'backup/**',
@@ -498,36 +497,87 @@ const config = defineConfig(
 		},
 	},
 
+	// ES7 (ES2016) only for config/wikis - no ES8+ syntax
 	{
-		files: ['config/**/*'],
+		files: ['config/wikis/**/*'],
+		languageOptions: {
+			globals: {
+				// Browser globals
+				window: 'readonly',
+				document: 'readonly',
+				// MediaWiki globals
+				mw: 'readonly',
+				$: 'readonly',
+				// CD globals
+				convenientDiscussions: 'readonly',
+				cd: 'writable',
+			},
+		},
 		plugins: {
 			'es-x': esX,
 		},
 		rules: {
 			...js.configs.recommended.rules,
 
-			'es-x/no-exponential-operators': 'error',
+			// ES2017 (ES8) features - disallow syntax only, not methods
 			'es-x/no-async-functions': 'error',
-			'es-x/no-object-rest-spread': 'error',
-			'es-x/no-async-iteration': 'error',
+			'es-x/no-trailing-function-commas': 'off', // Allow trailing commas (ES2017)
+			'es-x/no-atomics': 'error',
+			'es-x/no-shared-array-buffer': 'error',
 
+			// ES2018 (ES9) features - disallow syntax only
+			'es-x/no-rest-spread-properties': 'error',
+			'es-x/no-async-iteration': 'error',
 			'es-x/no-regexp-lookbehind-assertions': 'error',
 			'es-x/no-regexp-named-capture-groups': 'error',
 			'es-x/no-regexp-unicode-property-escapes': 'error',
 			'es-x/no-regexp-s-flag': 'error',
 
+			// ES2019 (ES10) features - disallow syntax only
+			'es-x/no-optional-catch-binding': 'error',
+			'es-x/no-json-superset': 'error',
+
+			// ES2020 (ES11) features - disallow syntax only
 			'es-x/no-optional-chaining': 'error',
 			'es-x/no-nullish-coalescing-operators': 'error',
 			'es-x/no-bigint': 'error',
 			'es-x/no-dynamic-import': 'error',
 			'es-x/no-import-meta': 'error',
 
+			// ES2021 (ES12) features - disallow syntax only
 			'es-x/no-logical-assignment-operators': 'error',
-			'es-x/no-numeric-separator-literals': 'error',
-			'es-x/no-class-fields': 'error',
+			'es-x/no-numeric-separators': 'error',
+
+			// ES2022 (ES13) features - disallow syntax only
+			'es-x/no-class-instance-fields': 'error',
+			'es-x/no-class-private-fields': 'error',
+			'es-x/no-class-private-methods': 'error',
+			'es-x/no-class-static-fields': 'error',
 			'es-x/no-class-static-block': 'error',
-			'es-x/no-private-in-object': 'error',
+			'es-x/no-private-in': 'error',
 			'es-x/no-top-level-await': 'error',
+			'es-x/no-regexp-d-flag': 'error',
+
+			// Turn off rules that suggest using syntax we just disabled
+			'@typescript-eslint/prefer-optional-chain': 'off',
+			'@typescript-eslint/prefer-nullish-coalescing': 'off',
+
+			// Unicorn rules suggesting ES8+ syntax features
+			'unicorn/prefer-optional-catch-binding': 'off', // ES2019
+			'unicorn/prefer-top-level-await': 'off', // ES2022
+			'unicorn/prefer-array-flat': 'off', // ES2019
+			'unicorn/prefer-array-flat-map': 'off', // ES2019
+			'unicorn/prefer-object-from-entries': 'off', // ES2019
+			'unicorn/prefer-string-replace-all': 'off', // ES2021
+			'unicorn/prefer-at': 'off', // ES2022
+			'unicorn/prefer-structured-clone': 'off', // ES2022+
+			'unicorn/no-array-reverse': 'off', // Suggests ES2023
+			'unicorn/no-array-sort': 'off', // Suggests ES2023
+			'unicorn/prefer-global-this': 'off', // ES2020
+			'unicorn/prefer-class-fields': 'off', // ES2022
+
+			// Turn off JSDoc requirement for config files
+			'jsdoc/require-jsdoc': 'off',
 		},
 	},
 
