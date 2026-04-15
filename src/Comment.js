@@ -2960,7 +2960,7 @@ class Comment extends mixIntoClass(
 	 */
 	async handleInViewport(flash) {
 		// Check for broken layout on first viewport appearance
-		if (!this.brokenLayoutChecked) {
+		if (cd.utils.isCurrentRevision() && !this.brokenLayoutChecked) {
 			this.brokenLayoutChecked = true
 			await this.checkBrokenLayout()
 		}

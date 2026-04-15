@@ -289,7 +289,7 @@ class Loader {
 		)
 
 		this.articlePageOfTypeTalk =
-			(!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
+			(!mw.config.get('wgIsRedirect') || !cd.utils.isCurrentRevision()) &&
 			!this.$content.find('.cd-notTalkPage').length &&
 			(this.pageTypes.talkStrict || this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
 			// Undocumented setting
@@ -338,20 +338,6 @@ class Loader {
 	 */
 	isArticlePageOfTypeTalk() {
 		return this.articlePageOfTypeTalk
-	}
-
-	/**
-	 * Is the displayed revision the current (last known) revision of the page.
-	 *
-	 * @returns {boolean}
-	 * @private
-	 */
-	isCurrentRevision() {
-		// RevisionSlider may show a revision newer than the revision in wgCurRevisionId due to a bug
-		// (when navigating forward, at least twice, from a revision older than the revision in
-		// wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
-		// wgCurRevisionId value.
-		return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId')
 	}
 
 	/**
