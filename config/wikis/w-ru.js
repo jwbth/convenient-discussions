@@ -399,16 +399,13 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 					)
 				) {
 					commentForm.commentInput.setValue(
-						commentForm.commentInput
-							.getValue()
-							.replace(
-								/$/,
-								() =>
-									'\n' +
-									/** @type {string} */ (
-										cd.settings.get('closerTemplate') || '{{'.concat('subst:ПИ}}')
-									),
-							),
+						commentForm.commentInput.getValue().replace(/$/, () => {
+							const closerTemplateSetting = /** @type {string | undefined} */ (
+								cd.settings.get('closerTemplate')
+							);
+
+							return '\n' + (closerTemplateSetting || '{{'.concat('subst:ПИ}}'));
+						}),
 					);
 
 					return true;
@@ -476,15 +473,12 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	},
 
 	getMoveSourcePageCode(targetPageWikilink, signature, timestamp) {
-		return (
-			'{{перенесено на|' +
-			targetPageWikilink +
-			'|' +
-			signature +
-			'}}\n<small>Для бота: ' +
-			timestamp +
-			'</small>\n'
-		);
+		let code = '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n';
+		if (timestamp) {
+			code += '<small>Для бота: ' + timestamp + '</small>\n';
+		}
+
+		return code;
 	},
 
 	getMoveTargetPageCode(targetPageWikilink, signature) {
@@ -495,39 +489,21 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 const cd = convenientDiscussions;
 
 mw.hook('convenientDiscussions.beforeParse').add(() => {
-	// Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
-	// the parent list tag into two parts putting the comment in between.
-
-	// Commented for now, as it can confuse votes for the criteria check script on voting pages.
-	/* $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
-		const $current = $(el).css('margin', 0);
-		const $list = $current.parent('dd, li').parent('dl, ul, ol');
-		while ($list[0].contains($current[0])) {
-			const $parent = $current.parent();
-			const $elementsAfter = $current.nextAll();
-			if ($elementsAfter.length) {
-				$parent
-					.clone()
-					.empty()
-					.append($elementsAfter);
-			}
-			$parent.after($current);
-			if (!$parent.children().length) {
-				$parent.remove();
-			}
-		}
-	}); */
-
 	mw.loader.using('mediawiki.util').then(() => {
 		mw.util.addCSS('.ruwiki-msgIndentation-minus1level { margin-left: 0 !important; }');
 	});
 });
 
-mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
-	function generateEditCommonJsLink() {
-		return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
-	}
+/**
+ * Generate a link to edit common.js for the current user.
+ *
+ * @returns {string}
+ */
+function generateEditCommonJsLink() {
+	return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
+}
 
+mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 	const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
 	if (isHlmEnabled) {
 		// Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
@@ -608,10 +584,14 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
 				// Ctrl+Alt+W
 				const isCmdModifierPressed =
 					$.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey;
-				if (isCmdModifierPressed && !event.shiftKey && event.altKey && event.keyCode === 87) {
-					if (window.Wikify) {
-						window.Wikify(commentForm.commentInput.$input[0]);
-					}
+				if (
+					isCmdModifierPressed &&
+					!event.shiftKey &&
+					event.altKey &&
+					event.code === 'KeyW' &&
+					window.Wikify
+				) {
+					window.Wikify(commentForm.commentInput.$input[0]);
 				}
 			});
 		}

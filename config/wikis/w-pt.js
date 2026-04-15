@@ -170,9 +170,9 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	closedDiscussionClasses: [],
 });
 
-/** @type {CSSStyleSheet} */
+/** @type {CSSStyleSheet | undefined} */
 let styles;
-mw.hook('convenientDiscussions.beforeParse').add(function () {
+mw.hook('convenientDiscussions.beforeParse').add(() => {
 	if (!styles) {
 		styles = mw.util.addCSS(
 			'\
