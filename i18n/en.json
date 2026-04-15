@@ -388,7 +388,7 @@
 	"sd-timestampformat-radio-improved": "Improved (\"$1\", \"$2\")",
 	"sd-timestampformat-radio-relative": "Relative (\"$1\", \"$2\")",
 	"sd-timestampformat-help": "Timestamps use your interface language (not the content language). You can always see the original timestamp on mouse hover.",
-	"sd-usebackgroundhighlighting": "Use background highlighting (not just a colored marker) for new and own comments",
+	"sd-usebackgroundhighlighting": "Use background highlighting (not just a colored marker) for highlighted comments",
 	"sd-useuitime": "Show comment timestamps in the timezone set in [[$1|my wiki preferences]]",
 	"sd-usetemplatedata": "Use TemplateData in template autocomplete",
 	"sd-usetemplatedata-help": "Hold Shift while choosing a template from the autocomplete menu to insert the template's required and suggested parameters as well.",
