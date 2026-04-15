@@ -2920,6 +2920,7 @@ class Comment extends mixIntoClass(
 
 	/**
 	 * Mark the comment as seen, and also {@link Comment#flash flash} comments that are set to flash.
+	 * If direction is provided, then proceed to the next comment in provided direction.
 	 *
 	 * @param {'forward'|'backward'} [registerAllInDirection] Mark all comments in the forward or
 	 *   backward direction from this comment as seen.
@@ -2927,15 +2928,8 @@ class Comment extends mixIntoClass(
 	 */
 	registerSeen(registerAllInDirection, flash = false) {
 		const isInVewport = !registerAllInDirection || this.isInViewport()
-		if (this.isSeen === false && isInVewport) {
-			this.isSeen = true
-			if (flash) {
-				this.flashTarget()
-			}
-		}
-
-		if (this.willFlashChangedOnSight && isInVewport) {
-			this.flashChanged()
+		if (isInVewport) {
+			this.handleInViewport(flash)
 		}
 
 		if (
@@ -2949,6 +2943,27 @@ class Comment extends mixIntoClass(
 			if (nextComment && nextComment.isInViewport() !== false) {
 				nextComment.registerSeen(registerAllInDirection, flash)
 			}
+		}
+	}
+
+	/**
+	 * Behavior for comments in the viewport. This is triggered after 'scroll' and 'moveViewport'
+	 * controller events.
+	 *
+	 * Mark the comment as seen, and also {@link Comment#flash flash} comments that are set to flash.
+	 *
+	 * @param {boolean} flash Whether to flash the comment as a target.
+	 */
+	handleInViewport(flash) {
+		if (this.isSeen === false) {
+			this.isSeen = true
+			if (flash) {
+				this.flashTarget()
+			}
+		}
+
+		if (this.willFlashChangedOnSight) {
+			this.flashChanged()
 		}
 	}
 

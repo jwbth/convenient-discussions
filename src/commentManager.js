@@ -419,7 +419,7 @@ export class CommentManager extends EventEmitter {
 	registerSeen = () => {
 		if (document.hidden) return
 
-		const commentInViewport = this.findInViewport()
+		const commentInViewport = this.findOneInViewport()
 		if (!commentInViewport) return
 
 		const registerIfInViewport = (/** @type {C} */ comment) => {
@@ -429,7 +429,7 @@ export class CommentManager extends EventEmitter {
 
 				return false
 			} else if (isInViewport === false) {
-				// isInViewport could also be `null`.
+				// isInViewport could also be `undefined`.
 				return true
 			}
 		}
@@ -449,8 +449,9 @@ export class CommentManager extends EventEmitter {
 	 * @param {'forward' | 'backward'} [findClosestDirection] If there is no comment in the viewport,
 	 *   find the closest comment in the specified direction.
 	 * @returns {C | undefined}
+	 * @private
 	 */
-	findInViewport(findClosestDirection) {
+	findOneInViewport(findClosestDirection) {
 		// Reset the roughOffset property. It is used only within this method.
 		this.items.forEach((comment) => {
 			comment.roughOffset = undefined
@@ -1323,7 +1324,7 @@ export class CommentManager extends EventEmitter {
 	goToNewCommentInDirection(direction) {
 		if (controller.isAutoScrolling()) return
 
-		const commentInViewport = this.findInViewport(direction)
+		const commentInViewport = this.findOneInViewport(direction)
 		if (!commentInViewport) return
 
 		const candidates = reorderArray(
