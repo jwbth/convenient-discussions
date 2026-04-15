@@ -8,8 +8,8 @@
  *
  * @typedef {object} Reaction
  * @property {RegExp} regexp Regular expression to match.
- * @property {string} message Message displayed to the user.
- * @property {string} name Latin letters, digits, `-`.
+ * @property {string} [message] Message displayed to the user.
+ * @property {string} [name] Latin letters, digits, `-`.
  * @property {'headline'|'comment'|'all'} [target] Which field to look for the regexp. `'all'` by
  *   default.
  * @property {'notice'|'error'|'warning'|'success'} [type='notice'] One of

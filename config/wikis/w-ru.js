@@ -382,18 +382,39 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 	textReactions: [
 		{
-			regexp: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
-			message:
-				'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
-			name: 'closerTemplateNotNeeded',
+			regexp: /^Итог$/,
+			target: 'headline',
 			type: 'notice',
 			checkFunc(commentForm) {
-				return (
-					'couldBeCloserClosing' in commentForm &&
-					commentForm.couldBeCloserClosing &&
+				const userGroups = mw.config.get('wgUserGroups');
+				if (
+					cd.page.name.startsWith('Википедия:К удалению') &&
+					commentForm.getMode() === 'addSubsection' &&
+					userGroups &&
+					userGroups.includes('closer') &&
 					commentForm.headlineInput &&
-					commentForm.headlineInput.getValue().trim() === 'Итог'
-				);
+					commentForm.headlineInput.getValue().trim() === 'Итог' &&
+					!/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(
+						commentForm.commentInput.getValue(),
+					)
+				) {
+					commentForm.commentInput.setValue(
+						commentForm.commentInput
+							.getValue()
+							.replace(
+								/$/,
+								() =>
+									'\n' +
+									/** @type {string} */ (
+										cd.settings.get('closerTemplate') || '{{'.concat('subst:ПИ}}')
+									),
+							),
+					);
+
+					return true;
+				}
+
+				return false;
 			},
 		},
 	],
@@ -415,27 +436,6 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			.replace(cd.s('es-new-subsection') + ': /* Итог */', 'итог')
 			.replace(cd.s('es-new-subsection') + ': /* Предварительный итог */', 'предварительный итог')
 			.replace(cd.s('es-new-subsection') + ': /* Предытог */', 'предытог');
-	},
-
-	postTransformCode(code, commentForm) {
-		// Add a closer template
-		if (
-			'couldBeCloserClosing' in commentForm &&
-			commentForm.couldBeCloserClosing &&
-			commentForm.headlineInput &&
-			commentForm.headlineInput.getValue().trim() === 'Итог' &&
-			!/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code)
-		) {
-			code = code.replace(
-				/(\n?\n)$/,
-				(newlines) =>
-					'\n' +
-					/** @type {string} */ (cd.settings.get('closerTemplate') || '{{'.concat('subst:ПИ}}')) +
-					newlines,
-			);
-		}
-
-		return code;
 	},
 
 	rejectNode(node) {
@@ -600,20 +600,6 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
 		});
 	}
 });
-
-mw.hook('convenientDiscussions.commentFormCreated').add(
-	/** @type {( ...args: import('../../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
-		(commentForm) => {
-			const userGroups = mw.config.get('wgUserGroups');
-			// @ts-ignore
-			commentForm.couldBeCloserClosing =
-				cd.page.name.startsWith('Википедия:К удалению') &&
-				commentForm.getMode() === 'addSubsection' &&
-				userGroups &&
-				userGroups.includes('closer');
-		}
-	),
-);
 
 mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
 	/** @type {( ...args: import('../../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (

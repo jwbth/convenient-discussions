@@ -3293,8 +3293,10 @@ class CommentForm extends EventEmitter {
 	 */
 	reactToText(text, { regexp, checkFunc, message, type, name }) {
 		if (regexp.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
-			this.showMessage(message, { type, name })
-		} else {
+			if (message) {
+				this.showMessage(message, { type, name })
+			}
+		} else if (name) {
 			this.hideMessage(name)
 		}
 	}
