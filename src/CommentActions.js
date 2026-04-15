@@ -144,6 +144,13 @@ class CommentActions {
 	}
 
 	/**
+	 * Reusable action for fix button.
+	 */
+	onFixAction = () => {
+		this.comment.edit({ fixBrokenLayout: true })
+	}
+
+	/**
 	 * Create a reply button and add it to the appropriate container.
 	 *
 	 * This method should be overridden by subclasses for specific styling.
@@ -276,6 +283,18 @@ class CommentActions {
 	}
 
 	/**
+	 * Create a "Fix" button and add it to the appropriate container.
+	 *
+	 * This method should be overridden by subclasses for specific styling.
+	 */
+	addFixButton() {
+		if (this.fixButton?.isConnected()) return
+
+		this.fixButton = this.createFixButton(this.onFixAction)
+		this.insertFixButton()
+	}
+
+	/**
 	 * Set the thank button to thanked state.
 	 */
 	setThanked() {
@@ -349,6 +368,15 @@ class CommentActions {
 	 */
 	insertToggleChildThreadsButton() {
 		this.addButton(/** @type {CommentButton} */ (this.toggleChildThreadsButton))
+	}
+
+	/**
+	 * Insert the "Fix" button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertFixButton() {
+		this.addButton(/** @type {CommentButton} */ (this.fixButton))
 	}
 
 	/**
@@ -427,6 +455,17 @@ class CommentActions {
 	 */
 	createToggleChildThreadsButton(_action) {
 		throw new Error('createToggleChildThreadsButton must be implemented by subclasses')
+	}
+
+	/**
+	 * Create a "Fix" button. To be overridden by subclasses.
+	 *
+	 * @param {import('./Button').Action} _action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 * @abstract
+	 */
+	createFixButton(_action) {
+		throw new Error('createFixButton must be implemented by subclasses')
 	}
 
 	/**

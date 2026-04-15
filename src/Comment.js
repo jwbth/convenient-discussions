@@ -2958,7 +2958,13 @@ class Comment extends mixIntoClass(
 	 *
 	 * @param {boolean} flash Whether to flash the comment as a target.
 	 */
-	handleInViewport(flash) {
+	async handleInViewport(flash) {
+		// Check for broken layout on first viewport appearance
+		if (!this.brokenLayoutChecked) {
+			this.brokenLayoutChecked = true
+			await this.checkBrokenLayout()
+		}
+
 		if (this.isSeen === false) {
 			this.isSeen = true
 			if (flash) {
@@ -2968,6 +2974,48 @@ class Comment extends mixIntoClass(
 
 		if (this.willFlashChangedOnSight) {
 			this.flashChanged()
+		}
+	}
+
+	/**
+	 * Check if the comment has broken layout (mismatched indentation levels) and offer to fix it.
+	 *
+	 * @private
+	 */
+	async checkBrokenLayout() {
+		// Step 1: Rough check - skip if only one highlightable or if conditions from
+		// detectBrokenIndentation would make it impossible
+		if (
+			this.highlightables.length === 1 ||
+			this.level !== 0 ||
+			this.hasFlag('own') ||
+			this.followsHeading
+		) {
+			return
+		}
+
+		// Step 2: Check nesting levels of first and last highlightable elements
+		const firstLevel = this.parser.getNestingLevel(this.highlightables[0])
+		const lastLevel = this.parser.getNestingLevel(
+			this.highlightables[this.highlightables.length - 1],
+		)
+
+		if (firstLevel === lastLevel) {
+			return
+		}
+
+		// Step 3: Load the comment source to check detectedActualLevel
+		try {
+			const source = await this.loadCode()
+			if (!source?.detectedActualLevel) {
+				return
+			}
+
+			// Step 4: Add the "Fix" action
+			this.configureLayers()
+			this.actions?.addFixButton()
+		} catch {
+			// Silently fail - this is a non-critical feature
 		}
 	}
 

@@ -275,6 +275,10 @@ body:not(.skin-monobook)
 body:not(.skin-monobook)
 	.cd-comment-button-edit.cd-comment-button-edit
 	> .oo-ui-buttonElement-button
+	> .oo-ui-iconElement-icon,
+body:not(.skin-monobook)
+	.cd-comment-button-fix.cd-comment-button-fix
+	> .oo-ui-buttonElement-button
 	> .oo-ui-iconElement-icon {
 	width: 1.14285714em;
 	min-width: 1.14285714em;
@@ -286,6 +290,11 @@ body:not(.skin-monobook)
 	> .oo-ui-buttonElement-button
 	> .oo-ui-iconElement-icon {
 	inset-block-start: -1px;
+}
+
+// Fix button icon
+.cd-comment-button-ooui .oo-ui-icon-fix {
+	background-image: url(../assets/wrench.svg);
 }
 
 .cd-commentLayersContainer {

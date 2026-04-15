@@ -32,6 +32,8 @@
 	"cm-thanked-tooltip": "Text of the tooltip for the {{msg-wm|Convenient-discussions-cm-thank}} comment menu item in the disabled form.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cm-thank-tooltip}}",
 	"cm-edit": "Label of the comment menu item that opens an edit form the comment.",
 	"cm-edit-tooltip": "Tooltip of the comment menu item that opens an edit form for the comment.",
+	"cm-fix": "Label of the comment menu item that opens an edit form to fix broken comment layout (incorrect indentation).",
+	"cm-fix-tooltip": "Tooltip of the comment menu item that opens an edit form to fix broken comment layout (incorrect indentation).",
 	"cm-reply": "Label of the comment menu item that opens a reply form for the comment and inserts the selected text into the form as a quote.",
 	"cm-reply-outdented-tooltip": "Text of the tooltip for the comment reply button when it is disabled for the reason that it is followed by an \"Outdent\" template like [[w:Template:Outdent]]. \"To outdent\" is \"to negatively indent\".",
 	"cm-quote": "Label of the comment menu item that opens an edit form the comment and inserts the selected text into the form as a quote.\n\n{{identical|Quote}}",
@@ -206,6 +208,7 @@
 	"cf-error-uploadimage": "Text of the error notification that may appear when trying to upload an image.",
 
 	"cf-confirm-fixindentation": "Text of the confirmation dialog that pops up when the script detects that a comment has incorrect indentation level and offers to fix it automatically.",
+	"cf-confirm-fixindentation-success": "Text of the alert message that appears after the comment's broken layout has been automatically fixed. The user still needs to save the edit to apply the fix.",
 	"cf-confirm-noheadline-topic": "First part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the topic headline.\n\nSecond part is the question: {{msg-wm|Convenient-discussions-cf-confirm-noheadline-question}}",
 	"cf-confirm-noheadline-subsection": "First part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the subsection headline.\n\nSecond part is the question: {{msg-wm|Convenient-discussions-cf-confirm-noheadline-question}}",
 	"cf-confirm-noheadline-question": "Second part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the topic/subsection headline.\n\nFirst part is either:\n* {{msg-wm|Convenient-discussions-cf-confirm-noheadline-topic}} or:\n* {{msg-wm|Convenient-discussions-cf-confirm-noheadline-subsection}}",

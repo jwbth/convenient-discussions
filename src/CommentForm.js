@@ -103,6 +103,7 @@ import {
  * @property {boolean} [focus]
  * @property {string} [focusHeadline]
  * @property {Comment} [targetWithOutdentedReplies]
+ * @property {boolean} [fixBrokenLayout]
  */
 
 /**
@@ -899,13 +900,20 @@ class CommentForm extends EventEmitter {
 
 			let commentInputValue = source.toInputValue()
 			if (source.detectedActualLevel) {
-				// Ask user if they want to fix the broken indentation
-				const confirmed = await showConfirmDialog(cd.s('cf-confirm-fixindentation'), {
-					size: 'medium',
-				})
-
-				if (confirmed === 'accept') {
+				// If fixBrokenLayout is set in initialState, skip confirmation and fix automatically
+				if (initialState.fixBrokenLayout) {
 					commentInputValue = this.fixBrokenLayout(source)
+					// Show success message
+					OO.ui.alert(cd.s('cf-confirm-fixindentation-success'))
+				} else {
+					// Ask user if they want to fix the broken indentation
+					const confirmed = await showConfirmDialog(cd.s('cf-confirm-fixindentation'), {
+						size: 'medium',
+					})
+
+					if (confirmed === 'accept') {
+						commentInputValue = this.fixBrokenLayout(source)
+					}
 				}
 			}
 

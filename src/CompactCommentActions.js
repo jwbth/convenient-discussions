@@ -263,6 +263,41 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
+	 * Create a "Fix" button for compact comments.
+	 *
+	 * @override
+	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 */
+	createFixButton(action) {
+		return new CommentButton({
+			element: this.createFixWidget().$element[0],
+			action,
+			widgetConstructor: this.createFixWidget,
+		})
+	}
+
+	/**
+	 * Create a "Fix" widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createFixWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-fix'),
+			icon: 'fix',
+			invisibleLabel: true,
+			title: cd.s('cm-fix-tooltip'),
+			framed: false,
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-fix',
+			],
+		})
+
+	/**
 	 * Get the overlay menu container.
 	 *
 	 * @override
