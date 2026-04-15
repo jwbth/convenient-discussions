@@ -210,7 +210,7 @@
 	"cf-error-uploadimage": "Couldn't upload the image.",
 
 	"cf-confirm-fixindentation": "It looks like this comment has incorrect indentation. Try to fix it?",
-	"cf-confirm-fixindentation-success": "The comment's markup has successfully been fixed. Save to apply the fix.",
+	"cf-confirm-fixindentation-success": "The comment's markup has been fixed. Save to apply the fix.",
 	"cf-confirm-noheadline-topic": "You didn't enter the topic subject. The comment will be added to the previous section, without a headline.",
 	"cf-confirm-noheadline-subsection": "You didn't enter the section subject. The comment will be added to the previous section, without a headline.",
 	"cf-confirm-noheadline-question": "Are you sure you want to post the comment?",
@@ -330,14 +330,14 @@
 	"sd-page-notifications": "Notifications",
 	"sd-page-dataremoval": "Data deletion",
 	"sd-close-confirm": "The settings were not saved. Are you sure you want to close the window?",
-	"sd-saved": "The settings have been saved successfully. Reload the page to fully apply them$1.",
+	"sd-saved": "The settings have been saved. Reload the page to fully apply them$1.",
 	"sd-reset": "Reset settings (in all sections)",
 	"sd-reset-confirm": "Are you sure you want to reset the settings? (Click \"{{int:convenient-discussions-sd-save}}\" after resetting.)",
 	"sd-removedata": "Delete all script data",
 	"sd-removedata-description": "Delete the data that Convenient Discussions has collected: your settings, talk page last visits, legacy subscriptions, and drafts of unsent comments",
 	"sd-removedata-help": "Note that everything except the global settings is deleted for the current wiki only. If you have used Convenient Discussions on other wikis and you want to delete data for them, you will have to delete it on those wikis. See [[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|the script's homepage]] for the details on what, why, and how the script stores and instructions on how to delete each piece of data individually. <strong>Note:</strong> Your subscriptions aren't deleted as they are part of your wiki account.",
 	"sd-removedata-confirm": "This will permanently delete your settings, talk page last visits, subscriptions, and drafts of unsent comments. Do you want to proceed?",
-	"sd-dataremoved": "Your data has been successfully deleted. To prevent creation of any new data, make sure you don't visit any talk pages before disabling Convenient Discussions.",
+	"sd-dataremoved": "Your data has been deleted. To prevent creation of any new data, make sure you don't visit any talk pages before disabling Convenient Discussions.",
 	"sd-error-removedata": "Couldn't delete the data on the server.",
 	"sd-localsetting": "<i>This setting is individual for each wiki.</i>",
 
@@ -414,8 +414,8 @@
 	"msd-error-invalidpagename": "Invalid page name.",
 	"msd-error-editconflict-retry": "Just click \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Couldn't edit the target page.",
-	"msd-error-editingsourcepage": "Successfully edited the target page, but couldn't edit the source page. You will have to edit it manually.",
-	"msd-moved": "The topic has been successfully moved. You may go to [[$1|the page where the topic was moved to]].",
+	"msd-error-editingsourcepage": "The target page was edited, but the source page couldn't be edit. You will have to edit it manually.",
+	"msd-moved": "The topic has been moved. You may go to [[$1|the page where the topic was moved to]].",
 
 	"move-sourcepagecode": "''Moved to [[$1]]. $2''",
 	"move-targetpagecode": "''Moved from [[$1]]. $2''",
@@ -466,7 +466,7 @@
 	"warning-performance": "Convenient Discussions can try to resolve them with the \"{{int:convenient-discussions-sd-improveperformance}}\" setting. <span class=\"cd-notification-talkPageSettings\">[[$1|Open the settings dialog]]</span>.",
 
 	"discussiontools-incompatible": "Convenient Discussions is mostly incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[$1|disable]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(or <b><span class=\"cd-notification-disableDtGlobally\">[[$2|globally disable]]</span></b>)</span> DiscussionTools to make Convenient Discussions work correctly.",
-	"discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">[[$1|Refresh the page]]</span>.",
+	"discussiontools-disabled": "DiscussionTools has been disabled. <span class=\"cd-notification-refresh\">[[$1|Refresh the page]]</span>.",
 
 	"wl-button-settings-tooltip": "Convenient Discussions settings",
 
