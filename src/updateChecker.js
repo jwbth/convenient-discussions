@@ -783,6 +783,9 @@ class UpdateChecker extends EventEmitter {
 			 * @global
 			 */
 			mw.hook('convenientDiscussions.newChanges').fire(changeList)
+
+			// Reset floating elements cache after live updates as the DOM structure may have changed
+			controller.resetFloatingElements()
 		}
 	}
 

@@ -568,6 +568,13 @@ class Controller extends EventEmitter {
 	}
 
 	/**
+	 * Reset the cached floating elements so they are recalculated on the next access.
+	 */
+	resetFloatingElements() {
+		delete this.content.floatingElements
+	}
+
+	/**
 	 * Find floating and hidden (`display: none`) elements on the page.
 	 *
 	 * @returns {Element[]}
