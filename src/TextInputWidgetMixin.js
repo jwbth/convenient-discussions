@@ -76,8 +76,10 @@ class TextInputWidgetMixin {
 	 */
 	insertContent(content) {
 		this.focus()
+		// CodeMirror implements undo/redo with its own means. Using document.execCommand causes issues
+		// in Firefox.
 		// eslint-disable-next-line @typescript-eslint/no-deprecated
-		if (!document.execCommand('insertText', false, content)) {
+		if ('codeMirror' in this || !document.execCommand('insertText', false, content)) {
 			// May be OO.ui.TextInputWidget or its subtype
 			/** @type {OO.ui.TextInputWidget} */ getMixinBaseClassPrototype(
 				this,
