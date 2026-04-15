@@ -36,6 +36,9 @@ class CommentSource {
 	/** @type {string} */
 	signatureCode
 
+	/** @type {number | undefined} */
+	detectedActualLevel
+
 	/**
 	 * Create a comment's source object.
 	 *
@@ -92,6 +95,7 @@ class CommentSource {
 		this.adjustSignature()
 		this.excludeSmallFontWrappers()
 		this.adjustIndentation()
+		this.detectBrokenIndentation()
 	}
 
 	/**
@@ -393,6 +397,48 @@ class CommentSource {
 			}
 		}
 		this.replyIndentation = replyIndentationBase + cd.config.defaultIndentationChar
+	}
+
+	/**
+	 * Detect broken indentation pattern where a comment at level 0 that doesn't follow a heading
+	 * and isn't the user's own comment has indentation characters that don't match the expected
+	 * level.
+	 *
+	 * @private
+	 */
+	detectBrokenIndentation() {
+		// Only check for comments at level 0 that aren't own comments and don't follow headings
+		if (this.comment.level !== 0 || this.comment.hasFlag('own') || this.comment.followsHeading) {
+			return
+		}
+
+		// Check if the code starts with indentation characters
+		const match = this.code.match(/^([:*#]+)/)
+		if (!match) {
+			return
+		}
+
+		const indentationChars = match[1]
+		const indentationLength = indentationChars.length
+
+		// If indentation is longer than 1 character, it's unlikely to be a list markup
+		if (indentationLength > 1) {
+			this.detectedActualLevel = indentationLength
+
+			return
+		}
+
+		// For single-character indentation, check if the second line doesn't have indentation
+		// (which would indicate this is broken indentation, not a list)
+		const lines = this.code.split('\n')
+		if (lines.length > 1) {
+			const secondLine = lines[1]
+			// If the second line doesn't start with indentation characters, this is likely broken
+			// indentation
+			if (!/^[:*#]/.test(secondLine)) {
+				this.detectedActualLevel = indentationLength
+			}
+		}
 	}
 
 	/**

@@ -897,21 +897,15 @@ class CommentForm extends EventEmitter {
 				})
 			}
 
-			// Detect broken indentation pattern
-			let detectedLevel
-			if (this.target.level === 0 && !this.target.hasFlag('own') && !this.target.followsHeading) {
-				detectedLevel = this.detectBrokenIndentation(source.code)
-			}
-
 			let commentInputValue = source.toInputValue()
-			if (detectedLevel) {
+			if (source.detectedActualLevel) {
 				// Ask user if they want to fix the broken indentation
 				const confirmed = await showConfirmDialog(cd.s('cf-confirm-fixindentation'), {
 					size: 'medium',
 				})
 
 				if (confirmed === 'accept') {
-					commentInputValue = this.fixBrokenLayout(source, detectedLevel)
+					commentInputValue = this.fixBrokenLayout(source)
 				}
 			}
 
@@ -965,57 +959,19 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Detect if a comment has broken indentation (starts with indentation characters but renders at
-	 * level 0 due to incorrect markup).
-	 *
-	 * @param {string} code Comment source code
-	 * @returns {number | undefined} The detected indentation level, or undefined if no broken
-	 *   indentation is detected
-	 * @private
-	 */
-	detectBrokenIndentation(code) {
-		// Check if the code starts with indentation characters
-		const match = code.match(/^([:*#]+)/)
-		if (!match) {
-			return
-		}
-
-		const indentationChars = match[1]
-		const indentationLength = indentationChars.length
-
-		// If indentation is longer than 1 character, it's unlikely to be a list markup
-		if (indentationLength > 1) {
-			return indentationLength
-		}
-
-		// For single-character indentation, check if the second line doesn't have indentation
-		// (which would indicate this is broken indentation, not a list)
-		const lines = code.split('\n')
-		if (lines.length > 1) {
-			const secondLine = lines[1]
-			// If the second line doesn't start with indentation characters, this is likely broken
-			// indentation
-			if (!/^[:*#]/.test(secondLine)) {
-				return indentationLength
-			}
-		}
-	}
-
-	/**
 	 * Fix broken layout in a comment, including broken indentation and deprecated `<pre>` tags.
 	 *
 	 * @param {import('./CommentSource').default} source Comment source
-	 * @param {number} detectedLevel The detected actual indentation level
 	 * @returns {string} The fixed comment input value
 	 * @private
 	 */
-	fixBrokenLayout(source, detectedLevel) {
+	fixBrokenLayout(source) {
 		// Store the actual level for future operations
-		this.actualCommentLevel = detectedLevel
+		this.actualCommentLevel = source.detectedActualLevel
 
 		// Re-process the source with the detected level
 		this.applyActualLevel(source)
-		let commentInputValue = source.toInputValue(detectedLevel)
+		let commentInputValue = source.toInputValue(source.detectedActualLevel)
 
 		// Replace <pre>...</pre> with <syntaxhighlight lang="wikitext">...</syntaxhighlight>
 		commentInputValue = commentInputValue.replace(
