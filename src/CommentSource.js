@@ -408,7 +408,13 @@ class CommentSource {
 	 */
 	detectBrokenIndentation() {
 		// Only check for comments at level 0 that aren't own comments and don't follow headings
-		if (this.comment.level !== 0 || this.comment.hasFlag('own') || this.comment.followsHeading) {
+		// Also skip if comment has replies - we can't fix it without breaking the reply hierarchy
+		if (
+			this.comment.level !== 0 ||
+			this.comment.hasFlag('own') ||
+			this.comment.followsHeading ||
+			this.comment.getChildren().length > 0
+		) {
 			return
 		}
 

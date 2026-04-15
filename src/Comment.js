@@ -2994,7 +2994,9 @@ class Comment extends mixIntoClass(
 			this.highlightables.length === 1 ||
 			this.level !== 0 ||
 			this.hasFlag('own') ||
-			this.followsHeading
+			this.followsHeading ||
+			// Don't check if comment has replies - we can't fix it without breaking the reply hierarchy
+			this.getChildren().length > 0
 		) {
 			return
 		}
