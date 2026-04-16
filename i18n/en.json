@@ -414,7 +414,7 @@
 	"msd-error-invalidpagename": "Invalid page name.",
 	"msd-error-editconflict-retry": "Just click \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Couldn't edit the target page.",
-	"msd-error-editingsourcepage": "The target page was edited, but the source page couldn't be edit. You will have to edit it manually.",
+	"msd-error-editingsourcepage": "The target page was edited, but the source page couldn't be edited. You will have to edit it manually.",
 	"msd-moved": "The topic has been moved. You may go to [[$1|the page where the topic was moved to]].",
 
 	"move-sourcepagecode": "''Moved to [[$1]]. $2''",
