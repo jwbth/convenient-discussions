@@ -1,3 +1,6 @@
+import cd from './loader/cd'
+import { parseWikiUrl, sleep, underlinesToSpaces } from './shared/utils-general'
+import { encodeLinkLabel, encodeWikilink } from './shared/utils-wikitext'
 import { convertHtmlToWikitext } from './utils-api'
 import { es6ClassToOoJsClass, getMixinBaseClassPrototype } from './utils-oojs-class'
 import {
@@ -272,6 +275,330 @@ class TextInputWidgetMixin {
 				// Set the autocomplete menu as inactive to allow selection changes again
 				this.setAutocompleteMenuActive(false)
 			})
+	}
+
+	/**
+	 * Extract URL and label from paste/drop data.
+	 *
+	 * @param {DataTransfer} data
+	 * @param {string} [selectedText]
+	 * @returns {{ url: string; label: string | undefined } | null}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	extractUrlFromData(data, selectedText) {
+		let url
+		let label
+
+		// Extract URL and label from DataTransfer in priority order
+		// 1. text/x-moz-url
+		if (data.types.includes('text/x-moz-url')) {
+			const mozUrl = data.getData('text/x-moz-url')
+			const parts = mozUrl.split(/\r?\n/)
+			url = parts[0]
+			label = parts[1] || selectedText
+		}
+		// 2. text/html
+		else if (data.types.includes('text/html')) {
+			const html = data.getData('text/html')
+			const tempDiv = document.createElement('div')
+			tempDiv.innerHTML = html
+
+			// Check if it's a single link
+			const links = tempDiv.querySelectorAll('a')
+			const textContent = (tempDiv.textContent || '').trim()
+
+			if (links.length === 1 && textContent === (links[0].textContent || '').trim()) {
+				url = links[0].href
+				label = (links[0].textContent || '').trim() || selectedText
+			}
+		}
+		// 3. text/uri-list
+		else if (data.types.includes('text/uri-list')) {
+			const uriList = data.getData('text/uri-list')
+			const urls = uriList.split(/\r?\n/).filter((line) => line && !line.startsWith('#'))
+
+			// Only process if it's a single URL
+			if (urls.length === 1) {
+				url = urls[0]
+				label = selectedText
+			} else if (urls.length > 1) {
+				// Multiple URLs - don't convert
+				return null
+			}
+		}
+		// 4. text/plain
+		else if (data.types.includes('text/plain')) {
+			const plainText = data.getData('text/plain').trim()
+
+			// Check if the entire text is a URL
+			let isValidUrl = false
+			try {
+				// eslint-disable-next-line no-new
+				new URL(plainText)
+				isValidUrl = true
+			} catch {
+				// Not a valid URL
+			}
+
+			if (isValidUrl) {
+				// Check for spaces - if present, don't convert
+				if (plainText.includes(' ')) {
+					return null
+				}
+				url = plainText
+				label = selectedText
+			} else {
+				return null
+			}
+		}
+
+		if (!url) {
+			return null
+		}
+
+		// Trim the label if it exists
+		if (label) {
+			label = label.trim()
+		}
+
+		return { url, label }
+	}
+
+	/**
+	 * Convert a URL to a wikilink or formatted link.
+	 *
+	 * @param {string} url
+	 * @param {string | undefined} label
+	 * @returns {Promise<string|null>} The converted link or null if conversion failed
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	async convertUrlToWikilink(url, label) {
+		let urlObj
+		try {
+			urlObj = new URL(url)
+		} catch {
+			return null
+		}
+
+		// Check if URL has query parameters other than 'title'
+		const params = new URLSearchParams(urlObj.search)
+		const hasOtherParams = [...params.keys()].some((key) => key !== 'title')
+
+		if (hasOtherParams) {
+			// Can't convert to wikilink - use external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		// Load the interwiki prefix detection script if not already loaded
+		if (!window.getInterwikiPrefixForHostname) {
+			try {
+				await mw.loader.getScript(
+					'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
+				)
+			} catch {
+				// Script failed to load - fall back to external link format
+				return this.formatExternalLink(url, label)
+			}
+		}
+
+		// Get interwiki prefix
+		let interwikiPrefix
+		try {
+			if (!window.getInterwikiPrefixForHostname) {
+				return this.formatExternalLink(url, label)
+			}
+			interwikiPrefix = await window.getInterwikiPrefixForHostname(urlObj.hostname, cd.g.serverName)
+		} catch {
+			// Failed to get prefix - fall back to external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		if (interwikiPrefix === null) {
+			// No interwiki prefix available - use external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		// Parse the wiki URL
+		const parsedUrl = parseWikiUrl(url)
+		if (!parsedUrl) {
+			// Can't parse - use external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		// Build the wikilink
+		let wikilink = `[[${interwikiPrefix}${parsedUrl.pageName}`
+
+		// Add fragment if present
+		if (parsedUrl.fragment) {
+			let fragment = decodeURIComponent(parsedUrl.fragment)
+			fragment = underlinesToSpaces(fragment)
+			fragment = encodeWikilink(fragment)
+			wikilink += `#${fragment}`
+		}
+
+		// Add label if present
+		if (label) {
+			const encodedLabel = encodeLinkLabel(label)
+			wikilink += `|${encodedLabel}`
+		}
+
+		wikilink += ']]'
+
+		return wikilink
+	}
+
+	/**
+	 * Format a URL as an external link.
+	 *
+	 * @param {string} url
+	 * @param {string} [label]
+	 * @returns {string}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	formatExternalLink(url, label) {
+		if (label) {
+			return `[${url} ${label}]`
+		}
+
+		return url
+	}
+
+	/**
+	 * Handle paste/drop events for URL conversion.
+	 *
+	 * @param {ClipboardEvent | DragEvent} event
+	 * @returns {boolean} Whether URL conversion will happen
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	handleUrlConversion(event) {
+		const data = 'clipboardData' in event ? event.clipboardData : event.dataTransfer
+		if (!data) return false
+
+		const isPaste = 'clipboardData' in event
+		const insertedLength = data.getData('text/plain').length
+
+		// Determine if text is selected (for paste events)
+		let selectedText
+		let selectionStart
+		let selectionEnd
+		if (isPaste) {
+			;[selectionStart, selectionEnd] = this.$input.textSelection('getCaretPosition', {
+				startAndEnd: true,
+			})
+			if (selectionStart !== selectionEnd) {
+				selectedText = this.getValue().substring(selectionStart, selectionEnd)
+
+				// If the selected text is itself a URL, don't use it as a label
+				// (user is likely replacing one URL with another)
+				try {
+					// eslint-disable-next-line no-new
+					new URL(selectedText.trim())
+					selectedText = undefined
+				} catch {
+					// Not a URL, can be used as label
+				}
+			}
+		}
+
+		// Extract URL and label
+		const extracted = this.extractUrlFromData(data, selectedText)
+		if (!extracted) {
+			return false
+		}
+
+		const { url, label } = extracted
+
+		// If we have a label (selected text), trim leading/trailing spaces
+		// by actually changing the selection BEFORE the paste happens
+		if (selectedText && selectionStart !== undefined && selectionEnd !== undefined) {
+			// Count leading spaces
+			const leadingSpaces = selectedText.length - selectedText.trimStart().length
+			// Count trailing spaces
+			const trailingSpaces = selectedText.length - selectedText.trimEnd().length
+
+			// Adjust selection boundaries to exclude spaces
+			selectionStart += leadingSpaces
+			selectionEnd -= trailingSpaces
+
+			// Actually change the selection so the browser pastes into the trimmed range
+			if (leadingSpaces > 0 || trailingSpaces > 0) {
+				this.selectRange(selectionStart, selectionEnd)
+			}
+		}
+
+		// Schedule the actual conversion
+		this.performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength)
+
+		return true
+	}
+
+	/**
+	 * Perform the URL conversion after the paste/drop has completed.
+	 *
+	 * @param {string} url
+	 * @param {string | undefined} label
+	 * @param {boolean} isPaste
+	 * @param {string | undefined} selectedText
+	 * @param {number | undefined} selectionStart
+	 * @param {number} insertedLength
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	async performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength) {
+		// Wait for the paste/drop to complete naturally
+		await sleep()
+
+		// Force CodeMirror to create a history boundary (if CodeMirror is available)
+		// This ensures the paste/drop is saved as a separate undo event before we convert it
+		if ('codeMirror' in this && this.codeMirror) {
+			const codeMirror =
+				/** @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>>} */ (
+					this.codeMirror
+				)
+			const view = codeMirror.view
+			if (view) {
+				const currentSelection = view.state.selection.main
+
+				// Dispatch a selection change to the same range (preserves selection for drop events)
+				// This creates a history boundary without changing the document
+				view.dispatch({
+					selection: { anchor: currentSelection.anchor, head: currentSelection.head },
+				})
+			}
+		}
+
+		// Get the current selection after paste
+		const [newSelectionStart, _newSelectionEnd] = this.$input.textSelection('getCaretPosition', {
+			startAndEnd: true,
+		})
+
+		// Try to convert the URL
+		const convertedLink = await this.convertUrlToWikilink(url, label)
+		if (!convertedLink) {
+			return
+		}
+
+		// Calculate where the pasted content is
+		if (isPaste) {
+			let insertedStart
+			let insertedEnd
+			if (selectedText) {
+				// Text was selected and replaced
+				insertedStart = selectionStart ?? 0
+				insertedEnd = newSelectionStart
+			} else {
+				// Text was inserted at caret
+				insertedStart = newSelectionStart - insertedLength
+				insertedEnd = newSelectionStart
+			}
+			this.selectRange(insertedStart, insertedEnd)
+		}
+
+		// Select the pasted content and replace it with the converted link
+		this.insertContent(convertedLink)
 	}
 }
 
