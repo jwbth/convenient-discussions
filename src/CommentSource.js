@@ -408,13 +408,7 @@ class CommentSource {
 	 */
 	detectBrokenIndentation() {
 		// Only check for comments at level 0 that aren't own comments and don't follow headings
-		// Also skip if comment has replies - we can't fix it without breaking the reply hierarchy
-		if (
-			this.comment.level !== 0 ||
-			this.comment.hasFlag('own') ||
-			this.comment.followsHeading ||
-			this.comment.getChildren().length > 0
-		) {
+		if (this.comment.level !== 0 || this.comment.hasFlag('own') || this.comment.followsHeading) {
 			return
 		}
 
@@ -430,21 +424,53 @@ class CommentSource {
 		// If indentation is longer than 1 character, it's unlikely to be a list markup
 		if (indentationLength > 1) {
 			this.detectedActualLevel = indentationLength
-
-			return
-		}
-
-		// For single-character indentation, check if the second line doesn't have indentation
-		// (which would indicate this is broken indentation, not a list)
-		const lines = this.code.split('\n')
-		if (lines.length > 1) {
-			const secondLine = lines[1]
-			// If the second line doesn't start with indentation characters, this is likely broken
-			// indentation
-			if (!/^[:*#]/.test(secondLine)) {
-				this.detectedActualLevel = indentationLength
+		} else {
+			// For single-character indentation, check if the second line doesn't have indentation
+			// (which would indicate this is broken indentation, not a list)
+			const lines = this.code.split('\n')
+			if (lines.length > 1) {
+				const secondLine = lines[1]
+				// If the second line doesn't start with indentation characters, this is likely broken
+				// indentation
+				if (!/^[:*#]/.test(secondLine)) {
+					this.detectedActualLevel = indentationLength
+				}
 			}
 		}
+
+		// If we detected broken indentation, verify it's safe to fix
+		if (this.detectedActualLevel !== undefined && !this.canFixBrokenIndentation()) {
+			this.detectedActualLevel = undefined
+		}
+	}
+
+	/**
+	 * Check if the comment's broken indentation can be safely fixed without disrupting replies.
+	 *
+	 * @returns {boolean}
+	 * @private
+	 */
+	canFixBrokenIndentation() {
+		const children = this.comment.getChildren()
+
+		// If no children, it's safe to fix
+		if (children.length === 0) {
+			return true
+		}
+
+		// Check if there are valid replies (newer or same date + level 1)
+		const hasValidReply = this.comment.brokenCommentHasValidReplies()
+
+		// If there are children but none are valid replies, it's safe to fix
+		if (!hasValidReply) {
+			return true
+		}
+
+		// If there are valid replies, check that all children have level > detectedActualLevel
+		// This ensures we won't disrupt the layout after fixing
+		return children.every(
+			(child) => this.detectedActualLevel !== undefined && child.level > this.detectedActualLevel,
+		)
 	}
 
 	/**

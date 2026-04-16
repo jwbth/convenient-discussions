@@ -676,6 +676,23 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
+	 * Check if a level 0 comment with broken layout has any valid replies (newer or same date, and
+	 * level 1).
+	 *
+	 * @returns {boolean}
+	 */
+	brokenCommentHasValidReplies() {
+		const children = this.getChildren()
+		if (children.length === 0) {
+			return false
+		}
+
+		return children.some(
+			(child) => child.date && this.date && child.date >= this.date && child.level === 1,
+		)
+	}
+
+	/**
 	 * Show a popup onboarding onto the "Toggle child threads" feature.
 	 */
 	async maybeOnboardOntoToggleChildThreads() {
@@ -2995,8 +3012,8 @@ class Comment extends mixIntoClass(
 			this.level !== 0 ||
 			this.hasFlag('own') ||
 			this.followsHeading ||
-			// Don't check if comment has replies - we can't fix it without breaking the reply hierarchy
-			this.getChildren().length > 0
+			// Light check: skip if there are valid replies (newer/same date + level 1)
+			this.brokenCommentHasValidReplies()
 		) {
 			return
 		}
