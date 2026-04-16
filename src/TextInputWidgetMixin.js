@@ -571,6 +571,7 @@ class TextInputWidgetMixin {
 					this.codeMirror
 				)
 			const view = codeMirror.view
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (view) {
 				const currentSelection = view.state.selection.main
 
@@ -590,6 +591,14 @@ class TextInputWidgetMixin {
 		// Try to convert the URL
 		const convertedLink = await this.convertUrlToWikilink(url, label)
 		if (!convertedLink) {
+			return
+		}
+
+		// If the converted link is the same as the original URL (no label, couldn't convert to
+		// wikilink), don't replace it - the browser already pasted it correctly. FIXME: maybe
+		// convertUrlToWikilink() should just return null if there is no label and it can't convert to
+		// a wikilink.
+		if (convertedLink === url) {
 			return
 		}
 
