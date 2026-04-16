@@ -518,14 +518,20 @@ class TextInputWidgetMixin {
 			if (selectionStart !== selectionEnd) {
 				selectedText = this.getValue().substring(selectionStart, selectionEnd)
 
-				// If the selected text is itself a URL, don't use it as a label
-				// (user is likely replacing one URL with another)
+				// If the selected text is itself a URL, wikilink, or template, don't use it as a label
+				// (user is likely replacing one with another)
+				const trimmedText = selectedText.trim()
+
+				// Check if it's a URL
 				try {
 					// eslint-disable-next-line no-new
-					new URL(selectedText.trim())
+					new URL(trimmedText)
 					selectedText = undefined
 				} catch {
-					// Not a URL, can be used as label
+					// Not a URL, check for wikilinks or templates
+					if (trimmedText.includes('[[') || trimmedText.includes('{{')) {
+						selectedText = undefined
+					}
 				}
 			}
 		}
