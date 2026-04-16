@@ -403,33 +403,42 @@ class TextInputWidgetMixin {
 			return this.formatExternalLink(url, label)
 		}
 
-		// Load the interwiki prefix detection script if not already loaded
-		if (!window.getInterwikiPrefixForHostname) {
-			try {
-				await mw.loader.getScript(
-					'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
-				)
-			} catch {
-				// Script failed to load - fall back to external link format
-				return this.formatExternalLink(url, label)
-			}
-		}
-
 		// Get interwiki prefix
 		let interwikiPrefix
-		try {
-			if (!window.getInterwikiPrefixForHostname) {
+
+		// Same domain = empty interwiki prefix (no need to load external script)
+		if (urlObj.hostname === cd.g.serverName) {
+			interwikiPrefix = ''
+		} else {
+			// Load the interwiki prefix detection script if not already loaded
+			if (!window.getInterwikiPrefixForHostname && cd.g.isProbablyWmfSulWiki) {
+				try {
+					await mw.loader.getScript(
+						'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
+					)
+				} catch {
+					// Script failed to load - fall back to external link format
+					return this.formatExternalLink(url, label)
+				}
+			}
+
+			try {
+				if (!window.getInterwikiPrefixForHostname) {
+					return this.formatExternalLink(url, label)
+				}
+				interwikiPrefix = await window.getInterwikiPrefixForHostname(
+					urlObj.hostname,
+					cd.g.serverName,
+				)
+			} catch {
+				// Failed to get prefix - fall back to external link format
 				return this.formatExternalLink(url, label)
 			}
-			interwikiPrefix = await window.getInterwikiPrefixForHostname(urlObj.hostname, cd.g.serverName)
-		} catch {
-			// Failed to get prefix - fall back to external link format
-			return this.formatExternalLink(url, label)
-		}
 
-		if (interwikiPrefix === null) {
-			// No interwiki prefix available - use external link format
-			return this.formatExternalLink(url, label)
+			if (interwikiPrefix === null) {
+				// No interwiki prefix available - use external link format
+				return this.formatExternalLink(url, label)
+			}
 		}
 
 		// Parse the wiki URL
