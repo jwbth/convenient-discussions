@@ -1337,10 +1337,13 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Handle `paste` and `drop` events.
 	 *
-	 * @param {JQuery.TriggeredEvent} event
+	 * @param {ClipboardEvent | DragEvent | JQuery.TriggeredEvent} event
 	 */
 	handlePasteDrop = async (event) => {
-		const originalEvent = /** @type {ClipboardEvent | DragEvent} */ (event.originalEvent)
+		// Handle both native events and jQuery events
+		const originalEvent = /** @type {ClipboardEvent | DragEvent} */ (
+			'originalEvent' in event ? event.originalEvent : event
+		)
 		const data =
 			'clipboardData' in originalEvent ? originalEvent.clipboardData : originalEvent.dataTransfer
 		if (!data) return
@@ -1354,7 +1357,7 @@ class CommentForm extends EventEmitter {
 		}
 
 		// Try to convert URLs to wikilinks
-		const urlConverted = await this.tryConvertUrlToWikilink(event, data)
+		const urlConverted = await this.tryConvertUrlToWikilink(originalEvent, data)
 		if (urlConverted) {
 			return
 		}
@@ -1371,14 +1374,13 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Try to convert a pasted/dropped URL to a wikilink or formatted link.
 	 *
-	 * @param {JQuery.TriggeredEvent} event
+	 * @param {ClipboardEvent | DragEvent} event
 	 * @param {DataTransfer} data
 	 * @returns {Promise<boolean>} Whether a URL was converted
 	 * @private
 	 */
 	async tryConvertUrlToWikilink(event, data) {
-		const originalEvent = /** @type {ClipboardEvent | DragEvent} */ (event.originalEvent)
-		const isPaste = 'clipboardData' in originalEvent
+		const isPaste = 'clipboardData' in event
 		const isDrop = !isPaste
 
 		let url
@@ -1881,7 +1883,6 @@ class CommentForm extends EventEmitter {
 			.on('dragleave.cd drop.cd blur.cd', () => {
 				this.commentInput.$element.removeClass('cd-input-acceptFile')
 			})
-			.on('paste.cd drop.cd', this.handlePasteDrop)
 			.on('tribute-replaced.cd', (event) => {
 				if (
 					/** @type {CustomEvent<TributeReplacedEvent>} */ (event.originalEvent).detail.instance
@@ -1913,6 +1914,11 @@ class CommentForm extends EventEmitter {
 				}
 			})
 
+		// Use native addEventListener with capture phase to intercept paste/drop before CodeMirror
+		const editableElement = this.commentInput.getEditableElement()[0]
+		editableElement.addEventListener('paste', this.handlePasteDrop, true)
+		editableElement.addEventListener('drop', this.handlePasteDrop, true)
+
 		this.commentInput.addEventListeners()
 	}
 
@@ -1923,6 +1929,10 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	removeEventListenersFromCommentInput() {
+		const editableElement = this.commentInput.getEditableElement()[0]
+		editableElement.removeEventListener('paste', this.handlePasteDrop, true)
+		editableElement.removeEventListener('drop', this.handlePasteDrop, true)
+
 		this.commentInput.getEditableElement().off('.cd')
 	}
 
