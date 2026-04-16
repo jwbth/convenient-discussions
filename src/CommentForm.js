@@ -1356,11 +1356,12 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		// Check if we should try to convert URLs to wikilinks (but don't prevent default yet)
-		this.scheduleUrlConversion(originalEvent, data)
+		// Check if we should try to convert URLs to wikilinks
+		// If URL conversion will happen, skip rich text conversion
+		const willConvertUrl = this.scheduleUrlConversion(originalEvent, data)
 
-		// Handle rich text conversion
-		if (data.types.includes('text/html')) {
+		// Handle rich text conversion only if URL conversion won't happen
+		if (!willConvertUrl && data.types.includes('text/html')) {
 			const html = data.getData('text/html')
 			if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return
 
@@ -1369,32 +1370,16 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Schedule URL conversion after the paste/drop has been processed naturally.
+	 * Extract URL and label from paste/drop data.
 	 *
-	 * @param {ClipboardEvent | DragEvent} event
 	 * @param {DataTransfer} data
+	 * @param {string} [selectedText]
+	 * @returns {{ url: string; label: string | undefined } | null}
 	 * @private
 	 */
-	async scheduleUrlConversion(event, data) {
-		const isPaste = 'clipboardData' in event
-		const _isDrop = !isPaste
-
+	extractUrlFromData(data, selectedText) {
 		let url
 		let label
-
-		// Determine if text is selected (for paste events)
-		let selectedText
-		let selectionStart
-		let selectionEnd
-		const insertedLength = data.getData('text/plain').length
-		if (isPaste) {
-			;[selectionStart, selectionEnd] = this.commentInput.$input.textSelection('getCaretPosition', {
-				startAndEnd: true,
-			})
-			if (selectionStart !== selectionEnd) {
-				selectedText = this.commentInput.getValue().substring(selectionStart, selectionEnd)
-			}
-		}
 
 		// Extract URL and label from DataTransfer in priority order
 		// 1. text/x-moz-url
@@ -1430,7 +1415,7 @@ class CommentForm extends EventEmitter {
 				label = selectedText
 			} else if (urls.length > 1) {
 				// Multiple URLs - don't convert
-				return
+				return null
 			}
 		}
 		// 4. text/plain
@@ -1450,19 +1435,74 @@ class CommentForm extends EventEmitter {
 			if (isValidUrl) {
 				// Check for spaces - if present, don't convert
 				if (plainText.includes(' ')) {
-					return
+					return null
 				}
 				url = plainText
 				label = selectedText
 			} else {
-				return
+				return null
 			}
 		}
 
 		if (!url) {
-			return
+			return null
 		}
 
+		return { url, label }
+	}
+
+	/**
+	 * Schedule URL conversion after the paste/drop has been processed naturally.
+	 *
+	 * @param {ClipboardEvent | DragEvent} event
+	 * @param {DataTransfer} data
+	 * @returns {boolean} Whether URL conversion will happen
+	 * @private
+	 */
+	scheduleUrlConversion(event, data) {
+		const isPaste = 'clipboardData' in event
+		const _isDrop = !isPaste
+
+		// Determine if text is selected (for paste events)
+		let selectedText
+		let selectionStart
+		let selectionEnd
+		const insertedLength = data.getData('text/plain').length
+		if (isPaste) {
+			;[selectionStart, selectionEnd] = this.commentInput.$input.textSelection('getCaretPosition', {
+				startAndEnd: true,
+			})
+			if (selectionStart !== selectionEnd) {
+				selectedText = this.commentInput.getValue().substring(selectionStart, selectionEnd)
+			}
+		}
+
+		// Extract URL and label
+		const extracted = this.extractUrlFromData(data, selectedText)
+		if (!extracted) {
+			return false
+		}
+
+		const { url, label } = extracted
+
+		// Schedule the actual conversion
+		this.performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength)
+
+		return true
+	}
+
+	/**
+	 * Perform the URL conversion after the paste/drop has completed.
+	 *
+	 * @param {string} url
+	 * @param {string | undefined} label
+	 * @param {boolean} isPaste
+	 * @param {string | undefined} selectedText
+	 * @param {number | undefined} selectionStart
+	 * @param {number} insertedLength
+	 * @private
+	 */
+	async performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength) {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
 
