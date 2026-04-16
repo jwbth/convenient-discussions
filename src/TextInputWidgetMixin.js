@@ -6,6 +6,7 @@ import { es6ClassToOoJsClass, getMixinBaseClassPrototype } from './utils-oojs-cl
 import {
 	cleanUpPasteDom,
 	getElementFromPasteHtml,
+	interlanguagePrefixes,
 	isElementConvertibleToWikitext,
 } from './utils-window'
 
@@ -448,8 +449,14 @@ class TextInputWidgetMixin {
 			return this.formatExternalLink(url, label)
 		}
 
+		// Check if we need a leading colon (for interlanguage prefixes)
+		// The interwiki prefix already includes the trailing colon when present
+		const needsLeadingColon =
+			interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
+		const leadingColon = needsLeadingColon ? ':' : ''
+
 		// Build the wikilink
-		let wikilink = `[[${interwikiPrefix}${parsedUrl.pageName}`
+		let wikilink = `[[${leadingColon}${interwikiPrefix}${parsedUrl.pageName}`
 
 		// Add fragment if present
 		if (parsedUrl.fragment) {
