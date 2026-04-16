@@ -25,9 +25,12 @@ fs.readdirSync('./config/wikis/').forEach((filename) => {
 	content = `/**
  * This file was assembled automatically from the configuration at
  * https://github.com/jwbth/convenient-discussions/tree/main/config/wikis/${filename} by running
- * \`node build-configs\`. The configuration might get outdated as the script evolves, so it's best
- * to keep it up to date by checking for the documentation updates from time to time. See the
- * documentation at
+ * \`node build-configs\`. If it's deployed here automatically from the original repo (i.e., it's
+ * listed in https://github.com/jwbth/convenient-discussions/blob/main/config.mjs), please submit
+ * pull requests to https://github.com/jwbth/convenient-discussions/pulls rather than edit this
+ * file, otherwise your changes will be overriden by new deployments. The configuration might get
+ * outdated as the script evolves, so it's best to keep it up to date by checking for the
+ * documentation updates from time to time. See the documentation at
  * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
  */
 
