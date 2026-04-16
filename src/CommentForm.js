@@ -1466,6 +1466,20 @@ class CommentForm extends EventEmitter {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
 
+		// Force CodeMirror to create a history boundary
+		// This ensures the paste/drop is saved as a separate undo event before we convert it
+		if (this.codeMirror?.view) {
+			const view = this.codeMirror.view
+			const currentSelection = view.state.selection.main
+
+			// Dispatch a selection change to the same range (preserves selection for drop events). This
+			// creates a history boundary without changing the document. FIXME: maybe we can send an even
+			// simpler change?
+			view.dispatch({
+				selection: { anchor: currentSelection.anchor, head: currentSelection.head },
+			})
+		}
+
 		// Get the current selection after paste
 		const [newSelectionStart, _newSelectionEnd] = this.commentInput.$input.textSelection(
 			'getCaretPosition',
