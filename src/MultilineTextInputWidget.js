@@ -131,6 +131,20 @@ class MultilineTextInputWidget extends mixIntoClass(
 	getEditableElement() {
 		return $(this.codeMirror?.view.contentDOM || this.$input)
 	}
+
+	/**
+	 * Set the disabled state of the input, including the CodeMirror instance if present.
+	 *
+	 * @param {boolean} disabled
+	 * @returns {this}
+	 * @override
+	 */
+	setDisabled(disabled) {
+		super.setDisabled(disabled)
+		this.codeMirror?.updateDisabled(disabled)
+
+		return this
+	}
 }
 
 es6ClassToOoJsClass(MultilineTextInputWidget)

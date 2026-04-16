@@ -23,6 +23,7 @@ export default function getOoUiInputCodeMirrorClass() {
 			/**
 			 * @typedef {object} Lib
 			 * @property {typeof import('@codemirror/state').Compartment} Compartment
+			 * @property {typeof import('@codemirror/state').EditorState} EditorState
 			 * @property {typeof import('@codemirror/view').EditorView} EditorView
 			 * @property {import('@codemirror/view').placeholder} placeholder
 			 */
@@ -32,6 +33,7 @@ export default function getOoUiInputCodeMirrorClass() {
 			 */
 			this.lib = mw.loader.require('ext.CodeMirror.v6.lib')
 			this.cdPlaceholderCompartment = new this.lib.Compartment()
+			this.cdDisabledCompartment = new this.lib.Compartment()
 			this.cdChangeExtension = this.lib.EditorView.updateListener.of((update) => {
 				// Make CodeMirror dispatch `input` events like OOUI's TextInputWidget. Also maintain `value`,
 				// `selectionStart`, and `selectionEnd` properties on the textarea (for autocomplete by
@@ -97,6 +99,7 @@ export default function getOoUiInputCodeMirrorClass() {
 			this.mode = 'mediawiki'
 			extensions.push(
 				this.cdPlaceholderCompartment.of(this.lib.placeholder(placeholderText)),
+				this.cdDisabledCompartment.of([]),
 				this.cdChangeExtension,
 				this.cdContentClassExtension,
 			)
@@ -151,6 +154,22 @@ export default function getOoUiInputCodeMirrorClass() {
 			if (!this.extensionRegistry.isRegistered('autocomplete', this.view)) return
 
 			this.preferences.lockPreference('autocomplete', this.view, enabled)
+		}
+
+		/**
+		 * Set the disabled state of the CodeMirror editor.
+		 *
+		 * @param {boolean} disabled
+		 */
+		updateDisabled(disabled) {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			this.view?.dispatch({
+				effects: this.cdDisabledCompartment.reconfigure(
+					disabled
+						? [this.lib.EditorState.readOnly.of(true), this.lib.EditorView.editable.of(false)]
+						: [],
+				),
+			})
 		}
 	}
 
