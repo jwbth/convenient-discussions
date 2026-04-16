@@ -1386,7 +1386,7 @@ class CommentForm extends EventEmitter {
 		let selectedText
 		let selectionStart
 		let selectionEnd
-		let pastedLength
+		const insertedLength = data.getData('text/plain').length
 		if (isPaste) {
 			;[selectionStart, selectionEnd] = this.commentInput.$input.textSelection('getCaretPosition', {
 				startAndEnd: true,
@@ -1394,7 +1394,6 @@ class CommentForm extends EventEmitter {
 			if (selectionStart !== selectionEnd) {
 				selectedText = this.commentInput.getValue().substring(selectionStart, selectionEnd)
 			}
-			pastedLength = data.getData('text/plain').length
 		}
 
 		// Extract URL and label from DataTransfer in priority order
@@ -1480,20 +1479,23 @@ class CommentForm extends EventEmitter {
 		}
 
 		// Calculate where the pasted content is
-		let pastedStart
-		let pastedEnd
-		if (isPaste && selectedText) {
-			// Text was selected and replaced
-			pastedStart = selectionStart ?? 0
-			pastedEnd = newSelectionStart
-		} else {
-			// Text was inserted at caret
-			pastedStart = newSelectionStart - pastedLength
-			pastedEnd = newSelectionStart
+		let insertedStart
+		let insertedEnd
+		if (isPaste) {
+			if (selectedText) {
+				// Text was selected and replaced
+				insertedStart = selectionStart ?? 0
+				insertedEnd = newSelectionStart
+			} else {
+				// Text was inserted at caret
+				insertedStart = newSelectionStart - insertedLength
+				insertedEnd = newSelectionStart
+			}
+			this.commentInput.selectRange(insertedStart, insertedEnd)
 		}
 
 		// Select the pasted content and replace it with the converted link
-		this.commentInput.selectRange(pastedStart, pastedEnd).insertContent(convertedLink)
+		this.commentInput.insertContent(convertedLink)
 	}
 
 	/**
