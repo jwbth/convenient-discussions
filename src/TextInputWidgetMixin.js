@@ -370,7 +370,7 @@ class TextInputWidgetMixin {
 	 *
 	 * @param {string} url
 	 * @param {string | undefined} label
-	 * @returns {Promise<string|null>} The converted link or null if conversion failed
+	 * @returns {Promise<string|undefined>} The converted link or null if conversion failed
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
@@ -379,7 +379,7 @@ class TextInputWidgetMixin {
 		try {
 			urlObj = new URL(url)
 		} catch {
-			return null
+			return
 		}
 
 		// Check if URL has query parameters other than 'title'
@@ -466,16 +466,12 @@ class TextInputWidgetMixin {
 	 *
 	 * @param {string} url
 	 * @param {string} [label]
-	 * @returns {string}
+	 * @returns {string | undefined}
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	formatExternalLink(url, label) {
-		if (label) {
-			return `[${url} ${label}]`
-		}
-
-		return url
+		return label ? `[${url} ${label}]` : undefined
 	}
 
 	/**
@@ -591,14 +587,6 @@ class TextInputWidgetMixin {
 		// Try to convert the URL
 		const convertedLink = await this.convertUrlToWikilink(url, label)
 		if (!convertedLink) {
-			return
-		}
-
-		// If the converted link is the same as the original URL (no label, couldn't convert to
-		// wikilink), don't replace it - the browser already pasted it correctly. FIXME: maybe
-		// convertUrlToWikilink() should just return null if there is no label and it can't convert to
-		// a wikilink.
-		if (convertedLink === url) {
 			return
 		}
 
