@@ -1448,6 +1448,11 @@ class CommentForm extends EventEmitter {
 			return null
 		}
 
+		// Trim the label if it exists
+		if (label) {
+			label = label.trim()
+		}
+
 		return { url, label }
 	}
 
@@ -1494,6 +1499,24 @@ class CommentForm extends EventEmitter {
 		}
 
 		const { url, label } = extracted
+
+		// If we have a label (selected text), trim leading/trailing spaces
+		// by actually changing the selection BEFORE the paste happens
+		if (selectedText && selectionStart !== undefined && selectionEnd !== undefined) {
+			// Count leading spaces
+			const leadingSpaces = selectedText.length - selectedText.trimStart().length
+			// Count trailing spaces
+			const trailingSpaces = selectedText.length - selectedText.trimEnd().length
+
+			// Adjust selection boundaries to exclude spaces
+			selectionStart += leadingSpaces
+			selectionEnd -= trailingSpaces
+
+			// Actually change the selection so the browser pastes into the trimmed range
+			if (leadingSpaces > 0 || trailingSpaces > 0) {
+				this.commentInput.selectRange(selectionStart, selectionEnd)
+			}
+		}
 
 		// Schedule the actual conversion
 		this.performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength)
@@ -1543,9 +1566,9 @@ class CommentForm extends EventEmitter {
 		}
 
 		// Calculate where the pasted content is
-		let insertedStart
-		let insertedEnd
 		if (isPaste) {
+			let insertedStart
+			let insertedEnd
 			if (selectedText) {
 				// Text was selected and replaced
 				insertedStart = selectionStart ?? 0
