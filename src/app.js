@@ -17,6 +17,7 @@ import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
 import settings from './settings'
+import { parseWikiUrl } from './shared/utils-general'
 import updateChecker from './updateChecker'
 import { buildEditSummary, wrapDiffBody, wrapHtml } from './utils-window'
 import visits from './visits'
@@ -45,6 +46,7 @@ cd.tests.controller = controller
 cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker)
 cd.tests.visits = visits
 cd.tests.showSettingsDialog = settings.showDialog.bind(cd.settings)
+cd.tests.parseWikiUrl = parseWikiUrl
 
 /**
  * Script's publicly available API. Here there are some utilities that we believe should be

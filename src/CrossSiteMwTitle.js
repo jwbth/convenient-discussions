@@ -24,6 +24,9 @@ import { spacesToUnderlines } from './shared/utils-general'
  * @property {number[]} contentNamespaces
  */
 
+/**
+ * A wrapper around {@link mw.Title} that allows working with titles from other hosts.
+ */
 export default class CrossSiteMwTitle extends mw.Title {
 	/**
 	 * @type {Record<string, HostData>}
@@ -46,12 +49,15 @@ export default class CrossSiteMwTitle extends mw.Title {
 	static mwString = mw.loader.require('mediawiki.String')
 
 	/** @type {number} */
+	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
 	namespace = this.namespace
 
 	/** @type {string} */
+	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
 	title = this.title
 
 	/** @type {string} */
+	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
 	hostname = this.hostname
 
 	/**
@@ -79,6 +85,11 @@ export default class CrossSiteMwTitle extends mw.Title {
 		}
 
 		this.hostname = hostname
+
+		// Workaround to make this.constructor in methods to be type-checked correctly
+		/** @type {typeof CrossSiteMwTitle} */
+		// eslint-disable-next-line no-self-assign
+		this.constructor = this.constructor
 	}
 
 	/**
@@ -184,7 +195,7 @@ export default class CrossSiteMwTitle extends mw.Title {
 			this.hostDataPromises.set(hostname, promise)
 		}
 
-		return this.hostDataPromises.get(hostname)
+		return /** @type {JQuery.Promise<void>} */ (this.hostDataPromises.get(hostname))
 	}
 
 	/**
