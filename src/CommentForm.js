@@ -1339,7 +1339,7 @@ class CommentForm extends EventEmitter {
 	 *
 	 * @param {ClipboardEvent | DragEvent | JQuery.TriggeredEvent} event
 	 */
-	handlePasteDrop = async (event) => {
+	handlePasteDrop = (event) => {
 		// Handle both native events and jQuery events
 		const originalEvent = /** @type {ClipboardEvent | DragEvent} */ (
 			'originalEvent' in event ? event.originalEvent : event
@@ -1356,11 +1356,8 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		// Try to convert URLs to wikilinks
-		const urlConverted = await this.tryConvertUrlToWikilink(originalEvent, data)
-		if (urlConverted) {
-			return
-		}
+		// Check if we should try to convert URLs to wikilinks (but don't prevent default yet)
+		this.scheduleUrlConversion(originalEvent, data)
 
 		// Handle rich text conversion
 		if (data.types.includes('text/html')) {
@@ -1372,30 +1369,32 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Try to convert a pasted/dropped URL to a wikilink or formatted link.
+	 * Schedule URL conversion after the paste/drop has been processed naturally.
 	 *
 	 * @param {ClipboardEvent | DragEvent} event
 	 * @param {DataTransfer} data
-	 * @returns {Promise<boolean>} Whether a URL was converted
 	 * @private
 	 */
-	async tryConvertUrlToWikilink(event, data) {
+	async scheduleUrlConversion(event, data) {
 		const isPaste = 'clipboardData' in event
-		const isDrop = !isPaste
+		const _isDrop = !isPaste
 
 		let url
 		let label
 
 		// Determine if text is selected (for paste events)
 		let selectedText
+		let selectionStart
+		let selectionEnd
+		let pastedLength
 		if (isPaste) {
-			const [selectionStart, selectionEnd] = this.commentInput.$input.textSelection(
-				'getCaretPosition',
-				{ startAndEnd: true },
-			)
+			;[selectionStart, selectionEnd] = this.commentInput.$input.textSelection('getCaretPosition', {
+				startAndEnd: true,
+			})
 			if (selectionStart !== selectionEnd) {
 				selectedText = this.commentInput.getValue().substring(selectionStart, selectionEnd)
 			}
+			pastedLength = data.getData('text/plain').length
 		}
 
 		// Extract URL and label from DataTransfer in priority order
@@ -1431,8 +1430,8 @@ class CommentForm extends EventEmitter {
 				url = urls[0]
 				label = selectedText
 			} else if (urls.length > 1) {
-				// Multiple URLs - don't convert, insert as plain text
-				return false
+				// Multiple URLs - don't convert
+				return
 			}
 		}
 		// 4. text/plain
@@ -1452,42 +1451,49 @@ class CommentForm extends EventEmitter {
 			if (isValidUrl) {
 				// Check for spaces - if present, don't convert
 				if (plainText.includes(' ')) {
-					return false
+					return
 				}
 				url = plainText
 				label = selectedText
 			} else {
-				return false
+				return
 			}
 		}
 
 		if (!url) {
-			return false
+			return
 		}
+
+		// Wait for the paste/drop to complete naturally
+		await sleep()
+
+		// Get the current selection after paste
+		const [newSelectionStart, _newSelectionEnd] = this.commentInput.$input.textSelection(
+			'getCaretPosition',
+			{ startAndEnd: true },
+		)
 
 		// Try to convert the URL
 		const convertedLink = await this.convertUrlToWikilink(url, label)
 		if (!convertedLink) {
-			return false
+			return
 		}
 
-		// Prevent default and insert the converted link
-		event.preventDefault()
-
-		if (isPaste) {
-			if (selectedText) {
-				// Replace selected text with the link
-				this.commentInput.insertContent(convertedLink)
-			} else {
-				// Insert at caret position
-				this.commentInput.insertContent(convertedLink)
-			}
-		} else if (isDrop) {
-			// For drop events, insert at caret position
-			this.commentInput.insertContent(convertedLink)
+		// Calculate where the pasted content is
+		let pastedStart
+		let pastedEnd
+		if (isPaste && selectedText) {
+			// Text was selected and replaced
+			pastedStart = selectionStart ?? 0
+			pastedEnd = newSelectionStart
+		} else {
+			// Text was inserted at caret
+			pastedStart = newSelectionStart - pastedLength
+			pastedEnd = newSelectionStart
 		}
 
-		return true
+		// Select the pasted content and replace it with the converted link
+		this.commentInput.selectRange(pastedStart, pastedEnd).insertContent(convertedLink)
 	}
 
 	/**
