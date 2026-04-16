@@ -233,3 +233,20 @@ export function extractNumeralAndConvertToNumber(string, digits = '0123456789') 
 export function escapeEqualsInTemplate(text) {
 	return text.replace(/=/g, '{{=}}')
 }
+
+/**
+ * Encode a link label for use in wikilinks by escaping special characters.
+ *
+ * @param {string} label
+ * @returns {string}
+ */
+export function encodeLinkLabel(label) {
+	return label
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/\[/g, '&#91;')
+		.replace(/\]/g, '&#93;')
+		.replace(/\{/g, '&#123;')
+		.replace(/\|/g, '&#124;')
+		.replace(/\}/g, '&#125;')
+}

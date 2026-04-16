@@ -281,13 +281,13 @@ declare global {
 
 		// https://en.wikipedia.org/wiki/User:Jack_who_built_the_house/getUrlFromInterwikiLink
 		getInterwikiPrefixForHostname:
-			| ((targetHostname: string, originHostname?: string) => Promise<string>)
+			| ((targetHostname: string, originHostname?: string) => Promise<string | null>)
 			| undefined
 		getInterwikiPrefixForHostnameSync:
-			| ((targetHostname: string, originHostname?: string) => string)
+			| ((targetHostname: string, originHostname?: string) => string | null)
 			| undefined
 		getUrlFromInterwikiLink:
-			| ((interwikiLink: string, originHostname?: string) => Promise<string>)
+			| ((interwikiLink: string, originHostname?: string) => Promise<string | null>)
 			| undefined
 
 		// w-ru.js

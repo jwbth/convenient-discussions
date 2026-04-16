@@ -14,11 +14,21 @@ import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
 import CdError from './shared/CdError'
 import Parser from './shared/Parser'
-import { defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './shared/utils-general'
+import {
+	defined,
+	getDayTimestamp,
+	removeDoubleSpaces,
+	sleep,
+	unique,
+	parseWikiUrl,
+	underlinesToSpaces,
+} from './shared/utils-general'
 import {
 	escapePipesOutsideLinks,
 	generateTagsRegexp,
 	removeWikiMarkup,
+	encodeLinkLabel,
+	encodeWikilink,
 } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
 import { handleApiReject, parseCode, getDtPreview } from './utils-api'
@@ -1329,7 +1339,7 @@ class CommentForm extends EventEmitter {
 	 *
 	 * @param {JQuery.TriggeredEvent} event
 	 */
-	handlePasteDrop = (event) => {
+	handlePasteDrop = async (event) => {
 		const originalEvent = /** @type {ClipboardEvent | DragEvent} */ (event.originalEvent)
 		const data =
 			'clipboardData' in originalEvent ? originalEvent.clipboardData : originalEvent.dataTransfer
@@ -1339,12 +1349,242 @@ class CommentForm extends EventEmitter {
 		if (image) {
 			event.preventDefault()
 			this.uploadImage(image.getAsFile() || undefined)
-		} else if (data.types.includes('text/html')) {
+
+			return
+		}
+
+		// Try to convert URLs to wikilinks
+		const urlConverted = await this.tryConvertUrlToWikilink(event, data)
+		if (urlConverted) {
+			return
+		}
+
+		// Handle rich text conversion
+		if (data.types.includes('text/html')) {
 			const html = data.getData('text/html')
 			if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return
 
 			this.suggestConvertToWikitext(html, data.getData('text/plain').replace(/\r/g, ''))
 		}
+	}
+
+	/**
+	 * Try to convert a pasted/dropped URL to a wikilink or formatted link.
+	 *
+	 * @param {JQuery.TriggeredEvent} event
+	 * @param {DataTransfer} data
+	 * @returns {Promise<boolean>} Whether a URL was converted
+	 * @private
+	 */
+	async tryConvertUrlToWikilink(event, data) {
+		const originalEvent = /** @type {ClipboardEvent | DragEvent} */ (event.originalEvent)
+		const isPaste = 'clipboardData' in originalEvent
+		const isDrop = !isPaste
+
+		let url
+		let label
+
+		// Determine if text is selected (for paste events)
+		let selectedText
+		if (isPaste) {
+			const [selectionStart, selectionEnd] = this.commentInput.$input.textSelection(
+				'getCaretPosition',
+				{ startAndEnd: true },
+			)
+			if (selectionStart !== selectionEnd) {
+				selectedText = this.commentInput.getValue().substring(selectionStart, selectionEnd)
+			}
+		}
+
+		// Extract URL and label from DataTransfer in priority order
+		// 1. text/x-moz-url
+		if (data.types.includes('text/x-moz-url')) {
+			const mozUrl = data.getData('text/x-moz-url')
+			const parts = mozUrl.split(/\r?\n/)
+			url = parts[0]
+			label = parts[1] || selectedText
+		}
+		// 2. text/html
+		else if (data.types.includes('text/html')) {
+			const html = data.getData('text/html')
+			const tempDiv = document.createElement('div')
+			tempDiv.innerHTML = html
+
+			// Check if it's a single link
+			const links = tempDiv.querySelectorAll('a')
+			const textContent = (tempDiv.textContent || '').trim()
+
+			if (links.length === 1 && textContent === (links[0].textContent || '').trim()) {
+				url = links[0].href
+				label = (links[0].textContent || '').trim() || selectedText
+			}
+		}
+		// 3. text/uri-list
+		else if (data.types.includes('text/uri-list')) {
+			const uriList = data.getData('text/uri-list')
+			const urls = uriList.split(/\r?\n/).filter((line) => line && !line.startsWith('#'))
+
+			// Only process if it's a single URL
+			if (urls.length === 1) {
+				url = urls[0]
+				label = selectedText
+			} else if (urls.length > 1) {
+				// Multiple URLs - don't convert, insert as plain text
+				return false
+			}
+		}
+		// 4. text/plain
+		else if (data.types.includes('text/plain')) {
+			const plainText = data.getData('text/plain').trim()
+
+			// Check if the entire text is a URL
+			let isValidUrl = false
+			try {
+				// eslint-disable-next-line no-new
+				new URL(plainText)
+				isValidUrl = true
+			} catch {
+				// Not a valid URL
+			}
+
+			if (isValidUrl) {
+				// Check for spaces - if present, don't convert
+				if (plainText.includes(' ')) {
+					return false
+				}
+				url = plainText
+				label = selectedText
+			} else {
+				return false
+			}
+		}
+
+		if (!url) {
+			return false
+		}
+
+		// Try to convert the URL
+		const convertedLink = await this.convertUrlToWikilink(url, label)
+		if (!convertedLink) {
+			return false
+		}
+
+		// Prevent default and insert the converted link
+		event.preventDefault()
+
+		if (isPaste) {
+			if (selectedText) {
+				// Replace selected text with the link
+				this.commentInput.insertContent(convertedLink)
+			} else {
+				// Insert at caret position
+				this.commentInput.insertContent(convertedLink)
+			}
+		} else if (isDrop) {
+			// For drop events, insert at caret position
+			this.commentInput.insertContent(convertedLink)
+		}
+
+		return true
+	}
+
+	/**
+	 * Convert a URL to a wikilink or formatted link.
+	 *
+	 * @param {string} url
+	 * @param {string} [label]
+	 * @returns {Promise<string|null>} The converted link or null if conversion failed
+	 * @private
+	 */
+	async convertUrlToWikilink(url, label) {
+		let urlObj
+		try {
+			urlObj = new URL(url)
+		} catch {
+			return null
+		}
+
+		// Check if URL has query parameters other than 'title'
+		const params = new URLSearchParams(urlObj.search)
+		const hasOtherParams = [...params.keys()].some((key) => key !== 'title')
+
+		if (hasOtherParams) {
+			// Can't convert to wikilink - use external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		// Load the interwiki prefix detection script if not already loaded
+		if (!window.getInterwikiPrefixForHostname) {
+			try {
+				await mw.loader.getScript(
+					'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
+				)
+			} catch {
+				// Script failed to load - fall back to external link format
+				return this.formatExternalLink(url, label)
+			}
+		}
+
+		// Get interwiki prefix
+		let interwikiPrefix
+		try {
+			if (!window.getInterwikiPrefixForHostname) {
+				return this.formatExternalLink(url, label)
+			}
+			interwikiPrefix = await window.getInterwikiPrefixForHostname(urlObj.hostname, cd.g.serverName)
+		} catch {
+			// Failed to get prefix - fall back to external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		if (interwikiPrefix === null) {
+			// No interwiki prefix available - use external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		// Parse the wiki URL
+		const parsedUrl = parseWikiUrl(url)
+		if (!parsedUrl) {
+			// Can't parse - use external link format
+			return this.formatExternalLink(url, label)
+		}
+
+		// Build the wikilink
+		let wikilink = `[[${interwikiPrefix}${parsedUrl.pageName}`
+
+		// Add fragment if present
+		if (parsedUrl.fragment) {
+			let fragment = decodeURIComponent(parsedUrl.fragment)
+			fragment = underlinesToSpaces(fragment)
+			fragment = encodeWikilink(fragment)
+			wikilink += `#${fragment}`
+		}
+
+		// Add label if present
+		if (label) {
+			const encodedLabel = encodeLinkLabel(label)
+			wikilink += `|${encodedLabel}`
+		}
+
+		wikilink += ']]'
+
+		return wikilink
+	}
+
+	/**
+	 * Format a URL as an external link.
+	 *
+	 * @param {string} url
+	 * @param {string} [label]
+	 * @returns {string}
+	 * @private
+	 */
+	formatExternalLink(url, label) {
+		if (label) {
+			return `[${url} ${label}]`
+		}
+
+		return url
 	}
 
 	/**
