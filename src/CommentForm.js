@@ -1335,7 +1335,7 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Handle `paste` and `drop` events.
+	 * Handle `paste` and `drop` events for the comment input (includes image and rich text handling).
 	 *
 	 * @param {ClipboardEvent | DragEvent | JQuery.TriggeredEvent} event
 	 */
@@ -1356,9 +1356,8 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		// Check if we should try to convert URLs to wikilinks. If URL conversion will happen, skip rich
-		// text conversion
-		const willConvertUrl = this.scheduleUrlConversion(originalEvent, data)
+		// Check if we should try to convert URLs to wikilinks
+		const willConvertUrl = this.scheduleUrlConversion(originalEvent, data, this.commentInput)
 
 		// Handle rich text conversion only if URL conversion won't happen
 		if (!willConvertUrl && data.types.includes('text/html')) {
@@ -1366,6 +1365,22 @@ class CommentForm extends EventEmitter {
 			if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return
 
 			this.suggestConvertToWikitext(html, data.getData('text/plain').replace(/\r/g, ''))
+		}
+	}
+
+	/**
+	 * Handle `paste` and `drop` events for text inputs (headline and summary).
+	 *
+	 * @param {import('./TextInputWidget').default | import('./MultilineTextInputWidget').default} input
+	 * @returns {(event: ClipboardEvent | DragEvent) => void}
+	 */
+	createTextInputPasteDropHandler(input) {
+		return (event) => {
+			const data = 'clipboardData' in event ? event.clipboardData : event.dataTransfer
+			if (!data) return
+
+			// Only handle URL conversion for text inputs
+			this.scheduleUrlConversion(event, data, input)
 		}
 	}
 
@@ -1461,10 +1476,11 @@ class CommentForm extends EventEmitter {
 	 *
 	 * @param {ClipboardEvent | DragEvent} event
 	 * @param {DataTransfer} data
+	 * @param {import('./TextInputWidget').default | import('./MultilineTextInputWidget').default} input
 	 * @returns {boolean} Whether URL conversion will happen
 	 * @private
 	 */
-	scheduleUrlConversion(event, data) {
+	scheduleUrlConversion(event, data, input) {
 		const isPaste = 'clipboardData' in event
 		const _isDrop = !isPaste
 
@@ -1474,11 +1490,11 @@ class CommentForm extends EventEmitter {
 		let selectionEnd
 		const insertedLength = data.getData('text/plain').length
 		if (isPaste) {
-			;[selectionStart, selectionEnd] = this.commentInput.$input.textSelection('getCaretPosition', {
+			;[selectionStart, selectionEnd] = input.$input.textSelection('getCaretPosition', {
 				startAndEnd: true,
 			})
 			if (selectionStart !== selectionEnd) {
-				selectedText = this.commentInput.getValue().substring(selectionStart, selectionEnd)
+				selectedText = input.getValue().substring(selectionStart, selectionEnd)
 
 				// If the selected text is itself a URL, don't use it as a label
 				// (user is likely replacing one URL with another)
@@ -1514,12 +1530,20 @@ class CommentForm extends EventEmitter {
 
 			// Actually change the selection so the browser pastes into the trimmed range
 			if (leadingSpaces > 0 || trailingSpaces > 0) {
-				this.commentInput.selectRange(selectionStart, selectionEnd)
+				input.selectRange(selectionStart, selectionEnd)
 			}
 		}
 
 		// Schedule the actual conversion
-		this.performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength)
+		this.performUrlConversion(
+			url,
+			label,
+			isPaste,
+			selectedText,
+			selectionStart,
+			insertedLength,
+			input,
+		)
 
 		return true
 	}
@@ -1533,31 +1557,38 @@ class CommentForm extends EventEmitter {
 	 * @param {string | undefined} selectedText
 	 * @param {number | undefined} selectionStart
 	 * @param {number} insertedLength
+	 * @param {import('./TextInputWidget').default | import('./MultilineTextInputWidget').default} input
 	 * @private
 	 */
-	async performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength) {
+	async performUrlConversion(
+		url,
+		label,
+		isPaste,
+		selectedText,
+		selectionStart,
+		insertedLength,
+		input,
+	) {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
 
-		// Force CodeMirror to create a history boundary. This ensures the paste/drop is saved as a
-		// separate undo event before we convert it
-		if (this.codeMirror?.view) {
+		// Force CodeMirror to create a history boundary (only for commentInput with CodeMirror)
+		// This ensures the paste/drop is saved as a separate undo event before we convert it
+		if (input === this.commentInput && this.codeMirror?.view) {
 			const view = this.codeMirror.view
 			const currentSelection = view.state.selection.main
 
-			// Dispatch a selection change to the same range (preserves selection for drop events). This
-			// creates a history boundary without changing the document. FIXME: maybe we can send an even
-			// simpler change?
+			// Dispatch a selection change to the same range (preserves selection for drop events)
+			// This creates a history boundary without changing the document
 			view.dispatch({
 				selection: { anchor: currentSelection.anchor, head: currentSelection.head },
 			})
 		}
 
 		// Get the current selection after paste
-		const [newSelectionStart, _newSelectionEnd] = this.commentInput.$input.textSelection(
-			'getCaretPosition',
-			{ startAndEnd: true },
-		)
+		const [newSelectionStart, _newSelectionEnd] = input.$input.textSelection('getCaretPosition', {
+			startAndEnd: true,
+		})
 
 		// Try to convert the URL
 		const convertedLink = await this.convertUrlToWikilink(url, label)
@@ -1578,11 +1609,11 @@ class CommentForm extends EventEmitter {
 				insertedStart = newSelectionStart - insertedLength
 				insertedEnd = newSelectionStart
 			}
-			this.commentInput.selectRange(insertedStart, insertedEnd)
+			input.selectRange(insertedStart, insertedEnd)
 		}
 
 		// Select the pasted content and replace it with the converted link
-		this.commentInput.insertContent(convertedLink)
+		input.insertContent(convertedLink)
 	}
 
 	/**
@@ -1897,6 +1928,12 @@ class CommentForm extends EventEmitter {
 				.on('change', emitChange)
 
 			this.headlineInput.on('enter', this.submit)
+
+			// Add paste/drop handlers for URL conversion
+			const headlineElement = this.headlineInput.getEditableElement()[0]
+			this.headlinePasteDropHandler = this.createTextInputPasteDropHandler(this.headlineInput)
+			headlineElement.addEventListener('paste', this.headlinePasteDropHandler, true)
+			headlineElement.addEventListener('drop', this.headlinePasteDropHandler, true)
 		}
 
 		this.commentInput
@@ -1947,6 +1984,12 @@ class CommentForm extends EventEmitter {
 			.on('change', emitChange)
 
 		this.summaryInput.on('enter', this.submit)
+
+		// Add paste/drop handlers for URL conversion
+		const summaryElement = this.summaryInput.getEditableElement()[0]
+		this.summaryPasteDropHandler = this.createTextInputPasteDropHandler(this.summaryInput)
+		summaryElement.addEventListener('paste', this.summaryPasteDropHandler, true)
+		summaryElement.addEventListener('drop', this.summaryPasteDropHandler, true)
 	}
 
 	/**
@@ -3569,6 +3612,19 @@ class CommentForm extends EventEmitter {
 		this.unregister()
 		this.codeMirror?.destroy()
 		this.operations.closeAll()
+
+		// Clean up paste/drop handlers
+		if (this.headlineInput && this.headlinePasteDropHandler) {
+			const headlineElement = this.headlineInput.getEditableElement()[0]
+			headlineElement.removeEventListener('paste', this.headlinePasteDropHandler, true)
+			headlineElement.removeEventListener('drop', this.headlinePasteDropHandler, true)
+		}
+		if (this.summaryPasteDropHandler) {
+			const summaryElement = this.summaryInput.getEditableElement()[0]
+			summaryElement.removeEventListener('paste', this.summaryPasteDropHandler, true)
+			summaryElement.removeEventListener('drop', this.summaryPasteDropHandler, true)
+		}
+
 		if (this.$element[0].isConnected) {
 			this.target.cleanUpCommentFormTraces(this.mode, this)
 			this.$element.remove()
