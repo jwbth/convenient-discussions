@@ -384,7 +384,19 @@ class TextInputWidgetMixin {
 
 		// Check if URL has query parameters other than 'title'
 		const params = new URLSearchParams(urlObj.search)
-		const hasOtherParams = [...params.keys()].some((key) => key !== 'title')
+		const paramKeys = [...params.keys()]
+
+		// Special case: red links have action=edit and redlink=1 parameters
+		// These should be converted to wikilinks (title parameter contains the page name)
+		const isRedLink =
+			paramKeys.length === 3 &&
+			params.get('action') === 'edit' &&
+			params.get('redlink') === '1' &&
+			params.has('title')
+
+		const hasOtherParams = paramKeys.some(
+			(key) => key !== 'title' && !(isRedLink && (key === 'action' || key === 'redlink')),
+		)
 
 		if (hasOtherParams) {
 			// Can't convert to wikilink - use external link format
