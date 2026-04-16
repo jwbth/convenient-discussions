@@ -96,7 +96,7 @@ function getFragment() {
 	const value = location.hash.slice(1)
 	let decodedValue
 	try {
-		decodedValue = decodeURIComponent(value)
+		decodedValue = mw.util.percentDecodeFragment(value)
 	} catch (error) {
 		cd.debug.logError(error)
 	}

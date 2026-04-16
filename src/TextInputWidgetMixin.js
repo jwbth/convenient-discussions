@@ -460,9 +460,12 @@ class TextInputWidgetMixin {
 
 		// Add fragment if present
 		if (parsedUrl.fragment) {
-			let fragment = decodeURIComponent(parsedUrl.fragment)
-			fragment = underlinesToSpaces(fragment)
-			fragment = encodeWikilink(fragment)
+			let fragment = mw.util.percentDecodeFragment(parsedUrl.fragment)
+			if (!fragment) {
+				// Decoding failed - use external link format
+				return this.formatExternalLink(url, label)
+			}
+			fragment = encodeWikilink(underlinesToSpaces(fragment))
 			wikilink += `#${fragment}`
 		}
 
