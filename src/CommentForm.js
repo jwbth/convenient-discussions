@@ -1356,8 +1356,8 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		// Check if we should try to convert URLs to wikilinks
-		// If URL conversion will happen, skip rich text conversion
+		// Check if we should try to convert URLs to wikilinks. If URL conversion will happen, skip rich
+		// text conversion
 		const willConvertUrl = this.scheduleUrlConversion(originalEvent, data)
 
 		// Handle rich text conversion only if URL conversion won't happen
@@ -1474,6 +1474,16 @@ class CommentForm extends EventEmitter {
 			})
 			if (selectionStart !== selectionEnd) {
 				selectedText = this.commentInput.getValue().substring(selectionStart, selectionEnd)
+
+				// If the selected text is itself a URL, don't use it as a label
+				// (user is likely replacing one URL with another)
+				try {
+					// eslint-disable-next-line no-new
+					new URL(selectedText.trim())
+					selectedText = undefined
+				} catch {
+					// Not a URL, can be used as label
+				}
 			}
 		}
 
@@ -1506,8 +1516,8 @@ class CommentForm extends EventEmitter {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
 
-		// Force CodeMirror to create a history boundary
-		// This ensures the paste/drop is saved as a separate undo event before we convert it
+		// Force CodeMirror to create a history boundary. This ensures the paste/drop is saved as a
+		// separate undo event before we convert it
 		if (this.codeMirror?.view) {
 			const view = this.codeMirror.view
 			const currentSelection = view.state.selection.main
