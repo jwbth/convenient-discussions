@@ -415,6 +415,15 @@ class TextInputWidgetMixin {
 			if (urlObj.hostname === cd.g.serverName) {
 				interwikiPrefix = ''
 			} else {
+				// Check if the URL looks like a wiki URL before loading the interwiki script
+				// This avoids unnecessary requests for non-wiki URLs like https://www.google.com/
+				const looksLikeWikiUrl = cd.g.articlePathRegexp.test(urlObj.pathname) || params.has('title')
+
+				if (!looksLikeWikiUrl) {
+					// Doesn't look like a wiki URL - throw to fall back to external link format
+					throw new Error('URL does not look like a wiki URL')
+				}
+
 				// Load the interwiki prefix detection script if not already loaded
 				if (!window.getInterwikiPrefixForHostname && cd.g.isProbablyWmfSulWiki) {
 					try {
