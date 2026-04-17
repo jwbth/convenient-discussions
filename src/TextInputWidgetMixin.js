@@ -568,26 +568,28 @@ class TextInputWidgetMixin {
 			}
 		}
 
-		// If we have a label (selected text), trim leading/trailing spaces
-		// by actually changing the selection BEFORE the paste happens
-		if (selectedText && selectionStart !== undefined && selectionEnd !== undefined) {
-			// Count leading spaces
-			const leadingSpaces = selectedText.length - selectedText.trimStart().length
-			// Count trailing spaces
-			const trailingSpaces = selectedText.length - selectedText.trimEnd().length
-
-			// Adjust selection boundaries to exclude spaces
-			selectionStart += leadingSpaces
-			selectionEnd -= trailingSpaces
-
-			// Actually change the selection so the browser pastes into the trimmed range
-			if (leadingSpaces > 0 || trailingSpaces > 0) {
-				this.selectRange(selectionStart, selectionEnd)
-			}
+		// Memorize leading/trailing spaces from selected text to add them back later
+		// Don't change the selection now - let the native paste happen with spaces included
+		let leadingSpaces = ''
+		let trailingSpaces = ''
+		if (selectedText) {
+			const leadingSpaceCount = selectedText.length - selectedText.trimStart().length
+			const trailingSpaceCount = selectedText.length - selectedText.trimEnd().length
+			leadingSpaces = selectedText.substring(0, leadingSpaceCount)
+			trailingSpaces = selectedText.substring(selectedText.length - trailingSpaceCount)
 		}
 
 		// Schedule the actual conversion
-		this.performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength)
+		this.performUrlConversion(
+			url,
+			label,
+			isPaste,
+			selectedText,
+			selectionStart,
+			insertedLength,
+			leadingSpaces,
+			trailingSpaces,
+		)
 
 		return true
 	}
@@ -601,10 +603,21 @@ class TextInputWidgetMixin {
 	 * @param {string | undefined} selectedText
 	 * @param {number | undefined} selectionStart
 	 * @param {number} insertedLength
+	 * @param {string} leadingSpaces Leading spaces from selected text to preserve
+	 * @param {string} trailingSpaces Trailing spaces from selected text to preserve
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	async performUrlConversion(url, label, isPaste, selectedText, selectionStart, insertedLength) {
+	async performUrlConversion(
+		url,
+		label,
+		isPaste,
+		selectedText,
+		selectionStart,
+		insertedLength,
+		leadingSpaces,
+		trailingSpaces,
+	) {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
 
@@ -639,6 +652,12 @@ class TextInputWidgetMixin {
 			return
 		}
 
+		// If the converted link is the same as the original URL (no label, couldn't convert to wikilink),
+		// don't replace it - the browser already pasted it correctly
+		if (convertedLink === url) {
+			return
+		}
+
 		// Calculate where the pasted content is
 		if (isPaste) {
 			let insertedStart
@@ -655,8 +674,11 @@ class TextInputWidgetMixin {
 			this.selectRange(insertedStart, insertedEnd)
 		}
 
-		// Select the pasted content and replace it with the converted link
-		this.insertContent(convertedLink)
+		// Add back the leading/trailing spaces that were in the original selection
+		const linkWithSpaces = leadingSpaces + convertedLink + trailingSpaces
+
+		// Select the pasted content and replace it with the converted link (with spaces)
+		this.insertContent(linkWithSpaces)
 	}
 }
 
