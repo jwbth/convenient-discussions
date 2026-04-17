@@ -371,7 +371,7 @@ class TextInputWidgetMixin {
 	 *
 	 * @param {string} url
 	 * @param {string | undefined} label
-	 * @returns {Promise<string|undefined>} The converted link or null if conversion failed
+	 * @returns {Promise<string|undefined>} The converted link or undefined if conversion failed
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
@@ -404,80 +404,93 @@ class TextInputWidgetMixin {
 			return this.formatExternalLink(url, label)
 		}
 
-		// Get interwiki prefix
-		let interwikiPrefix
+		// Show pending state during async operations
+		this.pushPending().setDisabled(true)
 
-		// Same domain = empty interwiki prefix (no need to load external script)
-		if (urlObj.hostname === cd.g.serverName) {
-			interwikiPrefix = ''
-		} else {
-			// Load the interwiki prefix detection script if not already loaded
-			if (!window.getInterwikiPrefixForHostname && cd.g.isProbablyWmfSulWiki) {
-				try {
-					await mw.loader.getScript(
-						'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
-					)
-				} catch {
-					// Script failed to load - fall back to external link format
-					return this.formatExternalLink(url, label)
+		try {
+			// Get interwiki prefix
+			let interwikiPrefix
+
+			// Same domain = empty interwiki prefix (no need to load external script)
+			if (urlObj.hostname === cd.g.serverName) {
+				interwikiPrefix = ''
+			} else {
+				// Load the interwiki prefix detection script if not already loaded
+				if (!window.getInterwikiPrefixForHostname && cd.g.isProbablyWmfSulWiki) {
+					try {
+						await $.ajax(
+							'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
+							{
+								dataType: 'script',
+								cache: true,
+								timeout: 5000,
+							},
+						)
+					} catch {
+						// Script failed to load - throw to fall back to external link format
+						throw new Error('Failed to load interwiki script')
+					}
 				}
-			}
 
-			try {
 				if (!window.getInterwikiPrefixForHostname) {
-					return this.formatExternalLink(url, label)
+					throw new Error('getInterwikiPrefixForHostname not available')
 				}
+
 				interwikiPrefix = await window.getInterwikiPrefixForHostname(
 					urlObj.hostname,
 					cd.g.serverName,
 				)
-			} catch {
-				// Failed to get prefix - fall back to external link format
-				return this.formatExternalLink(url, label)
+
+				if (interwikiPrefix === null) {
+					// No interwiki prefix available - throw to fall back to external link format
+					throw new Error('No interwiki prefix available')
+				}
 			}
 
-			if (interwikiPrefix === null) {
-				// No interwiki prefix available - use external link format
-				return this.formatExternalLink(url, label)
+			// Parse the wiki URL
+			const parsedUrl = parseWikiUrl(url)
+			if (!parsedUrl) {
+				// Can't parse - throw to fall back to external link format
+				throw new Error('Failed to parse wiki URL')
 			}
-		}
 
-		// Parse the wiki URL
-		const parsedUrl = parseWikiUrl(url)
-		if (!parsedUrl) {
-			// Can't parse - use external link format
+			// Check if we need a leading colon (for interlanguage prefixes)
+			// The interwiki prefix already includes the trailing colon when present
+			const needsLeadingColon =
+				interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
+			const leadingColon = needsLeadingColon ? ':' : ''
+
+			// Build the wikilink
+			let wikilink = `[[${leadingColon}${interwikiPrefix}${parsedUrl.pageName}`
+
+			// Add fragment if present
+			if (parsedUrl.fragment) {
+				let fragment = mw.util.percentDecodeFragment(parsedUrl.fragment)
+				if (!fragment) {
+					// Decoding failed - throw to fall back to external link format
+					throw new Error('Failed to decode fragment')
+				}
+				fragment = encodeWikilink(underlinesToSpaces(fragment))
+				wikilink += `#${fragment}`
+			}
+
+			// Add label if present
+			if (label) {
+				const encodedLabel = encodeLinkLabel(label)
+				wikilink += `|${encodedLabel}`
+			}
+
+			wikilink += ']]'
+
+			this.popPending().setDisabled(false)
+
+			return wikilink
+		} catch {
+			// Fall back to external link format on any error
+			this.popPending().setDisabled(false)
+
 			return this.formatExternalLink(url, label)
 		}
-
-		// Check if we need a leading colon (for interlanguage prefixes)
-		// The interwiki prefix already includes the trailing colon when present
-		const needsLeadingColon =
-			interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
-		const leadingColon = needsLeadingColon ? ':' : ''
-
-		// Build the wikilink
-		let wikilink = `[[${leadingColon}${interwikiPrefix}${parsedUrl.pageName}`
-
-		// Add fragment if present
-		if (parsedUrl.fragment) {
-			let fragment = mw.util.percentDecodeFragment(parsedUrl.fragment)
-			if (!fragment) {
-				// Decoding failed - use external link format
-				return this.formatExternalLink(url, label)
-			}
-			fragment = encodeWikilink(underlinesToSpaces(fragment))
-			wikilink += `#${fragment}`
-		}
-
-		// Add label if present
-		if (label) {
-			const encodedLabel = encodeLinkLabel(label)
-			wikilink += `|${encodedLabel}`
-		}
-
-		wikilink += ']]'
-
-		return wikilink
 	}
 
 	/**
