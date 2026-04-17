@@ -567,9 +567,13 @@ export async function getPagesExistence(titles) {
  * @private
  */
 function callTransformApi(url, html) {
-	return $.post(url, {
-		html,
-		scrub_wikitext: true,
+	return $.ajax(url, {
+		method: 'POST',
+		data: {
+			html,
+			scrub_wikitext: true,
+		},
+		timeout: 5000,
 	})
 }
 
