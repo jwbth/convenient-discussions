@@ -539,22 +539,6 @@ class TextInputWidgetMixin {
 			})
 			if (selectionStart !== selectionEnd) {
 				selectedText = this.getValue().substring(selectionStart, selectionEnd)
-
-				// If the selected text is itself a URL, wikilink, or template, don't use it as a label
-				// (user is likely replacing one with another)
-				const trimmedText = selectedText.trim()
-
-				// Check if it's a URL
-				try {
-					// eslint-disable-next-line no-new
-					new URL(trimmedText)
-					selectedText = undefined
-				} catch {
-					// Not a URL, check for wikilinks or templates
-					if (trimmedText.includes('[[') || trimmedText.includes('{{')) {
-						selectedText = undefined
-					}
-				}
 			}
 		}
 
@@ -564,7 +548,25 @@ class TextInputWidgetMixin {
 			return false
 		}
 
-		const { url, label } = extracted
+		let { url, label } = extracted
+
+		// If the selected text (which would be used as label) is itself a URL, wikilink, or template,
+		// don't use it as a label (user is likely replacing one with another)
+		if (label) {
+			const trimmedLabel = label.trim()
+
+			// Check if it's a URL
+			try {
+				// eslint-disable-next-line no-new
+				new URL(trimmedLabel)
+				label = undefined
+			} catch {
+				// Not a URL, check for wikilinks or templates
+				if (trimmedLabel.includes('[[') || trimmedLabel.includes('{{')) {
+					label = undefined
+				}
+			}
+		}
 
 		// If we have a label (selected text), trim leading/trailing spaces
 		// by actually changing the selection BEFORE the paste happens
