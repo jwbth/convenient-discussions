@@ -26,6 +26,7 @@ import { keyCombination } from './utils-keyboard'
 import { showConfirmDialog } from './utils-oojs'
 import {
 	buildEditSummary,
+	inputPropsAffectingCoords,
 	isExistentAnchor,
 	isHtmlConvertibleToWikitext,
 	isInputFocused,
@@ -1156,7 +1157,7 @@ class CommentForm extends EventEmitter {
 				width: `${Number.parseFloat(computedStyle.width)}px`,
 
 				// Transfer the element's properties to the div.
-				...cd.g.inputPropsAffectingCoords.reduce((props, propName) => {
+				...inputPropsAffectingCoords.reduce((props, propName) => {
 					props[propName] = computedStyle[propName]
 
 					return props

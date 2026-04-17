@@ -1,6 +1,7 @@
 import BaseAutocomplete from './BaseAutocomplete'
 import cd from './loader/cd'
 import { ensureArray } from './shared/utils-general'
+import { allowedTags } from './utils-window'
 
 /**
  * @typedef {string | [string, string, string?]} TagEntry
@@ -39,7 +40,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 			['templatestyles', '<templatestyles src="', '" />'],
 		]
 
-		return /** @type {Array<TagEntry>} */ (cd.g.allowedTags)
+		return /** @type {Array<TagEntry>} */ (allowedTags)
 			.filter((tagString) => !tagAdditions.some((tagArray) => tagArray[0] === tagString))
 			.concat(tagAdditions)
 			.sort((item1, item2) => (ensureArray(item1)[0] > ensureArray(item2)[0] ? 1 : -1))

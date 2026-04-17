@@ -22,6 +22,141 @@ import { maskDistractingCode } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
 
 /**
+ * List of tags allowed in user input. See
+ * {@link https://www.mediawiki.org/wiki/Help:HTML_in_wikitext#Allowed_HTML_tags},
+ * {@link https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags}.
+ * Deprecated tags are not included.
+ *
+ * @type {string[]}
+ */
+export const allowedTags = [
+	'abbr',
+	'b',
+	'bdi',
+	'bdo',
+	'blockquote',
+	'br',
+	'caption',
+	'cite',
+	'code',
+	'data',
+	'dd',
+	'del',
+	'dfn',
+	'div',
+	'dl',
+	'dt',
+	'em',
+	'h1',
+	'h2',
+	'h3',
+	'h4',
+	'h5',
+	'h6',
+	'hr',
+	'i',
+	'ins',
+	'kbd',
+	'li',
+	'link',
+	'mark',
+	'meta',
+	'ol',
+	'p',
+	'pre',
+	'q',
+	'rp',
+	'rt',
+	'rtc',
+	'ruby',
+	's',
+	'samp',
+	'small',
+	'span',
+	'strong',
+	'sub',
+	'sup',
+	'table',
+	'td',
+	'th',
+	'time',
+	'tr',
+	'translate',
+	'tvar',
+	'u',
+	'ul',
+	'var',
+	'wbr',
+	'gallery',
+	'includeonly',
+	'noinclude',
+	'nowiki',
+	'onlyinclude',
+	'categorytree',
+	'charinsert',
+	'chem',
+	'ce',
+	'graph',
+	'hiero',
+	'imagemap',
+	'indicator',
+	'inputbox',
+	'mapframe',
+	'maplink',
+	'math',
+	'poem',
+	'ref',
+	'references',
+	'score',
+	'section',
+	'syntaxhighlight',
+	'templatedata',
+	'templatestyles',
+	'timeline',
+]
+
+/**
+ * CSS properties that affect coordinates when changed on an input element.
+ *
+ * @type {(keyof CSSStyleDeclaration)[]}
+ */
+export const inputPropsAffectingCoords = /** @type {(keyof CSSStyleDeclaration)[]} */ ([
+	'borderBottomStyle',
+	'borderBottomWidth',
+	'borderLeftStyle',
+	'borderLeftWidth',
+	'borderRightStyle',
+	'borderRightWidth',
+	'borderTopStyle',
+	'borderTopWidth',
+	'boxSizing',
+	'direction',
+	'fontFamily',
+	'fontSize',
+	'fontSizeAdjust',
+	'fontStretch',
+	'fontStyle',
+	'fontVariant',
+	'fontWeight',
+	'height',
+	'letterSpacing',
+	'lineHeight',
+	'overflowX',
+	'overflowY',
+	'paddingBottom',
+	'paddingLeft',
+	'paddingRight',
+	'paddingTop',
+	'tabSize',
+	'textAlign',
+	'textDecoration',
+	'textIndent',
+	'textTransform',
+	'width',
+	'wordSpacing',
+])
+
+/**
  * Set of interlanguage prefixes used in MediaWiki interwiki links.
  *
  * To generate a new list, use this. See *interlanguage* prefixes at
@@ -840,9 +975,9 @@ export function cleanUpPasteDom(element, containerElement) {
 			}
 		})
 
-	const allowedTags = new Set(cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt'))
+	const allowedTagsSet = new Set(allowedTags.concat('a', 'center', 'big', 'strike', 'tt'))
 	;[...element.querySelectorAll('*')].forEach((el) => {
-		if (!allowedTags.has(el.tagName.toLowerCase())) {
+		if (!allowedTagsSet.has(el.tagName.toLowerCase())) {
 			replaceWithChildren(el)
 
 			return
