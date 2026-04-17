@@ -3758,7 +3758,15 @@ class Comment extends mixIntoClass(
 	handleDtTimestampClick() {
 		if (!this.id) return
 
-		this.$elements.find('.ext-discussiontools-init-timestamplink').off().on('click', this.copyLink)
+		this.$elements
+			.find('.ext-discussiontools-init-timestamplink')
+			.off()
+			.on('click', (event) => {
+				// Browsers reserve Alt+click for selecting link text
+				if (!event.altKey) {
+					this.copyLink(event)
+				}
+			})
 	}
 
 	/**
