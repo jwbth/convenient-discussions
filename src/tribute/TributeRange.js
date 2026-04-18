@@ -56,7 +56,7 @@ class TributeRange {
 	}
 
 	/**
-	 * @param {string | import('./Tribute').InsertData} data
+	 * @param {string | import('./Tribute').Insertion} data
 	 * @param {boolean} requireLeadingSpace
 	 * @param {boolean} hasTrailingSpace
 	 * @param {KeyboardEvent | MouseEvent} originalEvent

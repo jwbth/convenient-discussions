@@ -717,7 +717,7 @@ const defaultConfig = {
 	 * @type {number}
 	 * @default 10000
 	 */
-	longCommentThreshold: 10000,
+	longCommentThreshold: 10_000,
 
 	/**
 	 * Lower limit of the number of bytes to be added to the page to deem an edit a new comment. Used

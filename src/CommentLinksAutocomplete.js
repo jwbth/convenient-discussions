@@ -63,7 +63,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 * @override
 	 * @param {CommentLinkEntry} entry The comment links entry to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').InsertData & { end: string, content: string }}
+	 * @returns {import('./tribute/Tribute').Insertion & { end: string, content: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		// Use selected text if available, otherwise use the default content

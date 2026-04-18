@@ -61,7 +61,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @override
 	 * @param {WikilinkEntry} entry The wikilink entry to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').InsertData & { end: string }}
+	 * @returns {import('./tribute/Tribute').Insertion & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		const { title, pageName, fragment, colonPrefix, interwikiPrefix = '' } = entry

@@ -40,7 +40,7 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 * @override
 	 * @param {string} entry The user name to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').InsertData & { end: string, content: string }}
+	 * @returns {import('./tribute/Tribute').Insertion & { end: string, content: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		const name = entry.trim()

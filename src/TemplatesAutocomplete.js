@@ -105,7 +105,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 * @override
 	 * @param {string} entry The template name to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').InsertData & { end: string }}
+	 * @returns {import('./tribute/Tribute').Insertion & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		return {
@@ -152,9 +152,25 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 					setTimeout(() => this.insertTemplateData(option, input))
 				}
 
-				const selectedText = this.manager?.getSelectedTextForInsertion(option)
+				const selectionData = this.manager?.getSelectedTextForInsertion(option)
 
-				return this.getInsertionFromEntry(option.original.entry, selectedText)
+				/** @type {import('./tribute/Tribute').Insertion} */
+				const insertion = this.getInsertionFromEntry(
+					option.original.entry,
+					selectionData?.selectedText,
+				)
+
+				// If we have preserved spaces, wrap the insertion with them
+				if (selectionData && (selectionData.leadingSpaces || selectionData.trailingSpaces)) {
+					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+					insertion.start = selectionData.leadingSpaces + insertion.start
+					if (insertion.end) {
+						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+						insertion.end = insertion.end + selectionData.trailingSpaces
+					}
+				}
+
+				return insertion
 			},
 		}
 	}

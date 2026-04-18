@@ -337,10 +337,8 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
 			commentForm.$element.on('keydown', (e) => {
 				// Ctrl+Alt+W
 				const isCmdModifierPressed = $.client.profile().platform === 'mac' ? e.metaKey : e.ctrlKey;
-				if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
-					if (window.Wikify) {
-						window.Wikify(commentForm.commentInput.$input[0]);
-					}
+				if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87 && window.Wikify) {
+					window.Wikify(commentForm.commentInput.$input[0]);
 				}
 			});
 		}

@@ -27,7 +27,7 @@ class TextInputWidgetMixin {
 	/**
 	 * Text that was selected before typing an autocomplete trigger.
 	 *
-	 * @type {{selectedText: string, start: number} | undefined}
+	 * @type {{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string} | undefined}
 	 * @private
 	 */
 	autocompleteSavedSelection
@@ -169,8 +169,14 @@ class TextInputWidgetMixin {
 
 		const end = element.selectionEnd
 
-		const selectedText =
-			start !== null && end !== null ? element.value.substring(start, end).trimEnd() : ''
+		const rawSelectedText =
+			start !== null && end !== null ? element.value.substring(start, end) : ''
+		const selectedText = rawSelectedText.trimEnd()
+		const leadingSpaces = rawSelectedText.substring(
+			0,
+			rawSelectedText.length - rawSelectedText.trimStart().length,
+		)
+		const trailingSpaces = rawSelectedText.substring(selectedText.length + leadingSpaces.length)
 
 		const savedSelection = this.autocompleteSavedSelection
 		if (
@@ -184,7 +190,14 @@ class TextInputWidgetMixin {
 		}
 
 		this.autocompleteSavedSelection =
-			selectedText.length > 0 ? { selectedText, start: /** @type {number} */ (start) } : undefined
+			selectedText.length > 0
+				? {
+						selectedText,
+						start: /** @type {number} */ (start),
+						leadingSpaces,
+						trailingSpaces,
+					}
+				: undefined
 	}
 
 	/**
@@ -210,7 +223,7 @@ class TextInputWidgetMixin {
 	/**
 	 * Get the text that was selected before typing an autocomplete trigger.
 	 *
-	 * @returns {{selectedText: string, start: number} | undefined} The selected text and its
+	 * @returns {{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string} | undefined} The selected text and its
 	 *   start position, or undefined if none
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */

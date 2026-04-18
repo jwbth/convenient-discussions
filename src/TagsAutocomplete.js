@@ -72,7 +72,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 * @override
 	 * @param {TagEntry} entry The tag entry to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').InsertData}
+	 * @returns {import('./tribute/Tribute').Insertion}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		return {

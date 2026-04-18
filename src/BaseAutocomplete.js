@@ -20,7 +20,7 @@ import { handleApiReject } from './utils-api'
  * @typedef {object} Option
  * @property {string} label Text searched against and displayed
  * @property {T} entry
- * @property {import('./BaseAutocomplete').default} [autocomplete] Reference to the autocomplete instance
+ * @property {import('./BaseAutocomplete').default} autocomplete Reference to the autocomplete instance
  */
 
 /**
@@ -157,7 +157,7 @@ class BaseAutocomplete {
 	 * @abstract
 	 * @param {any} _entry The entry to transform
 	 * @param {string} [_selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').InsertData}
+	 * @returns {import('./tribute/Tribute').Insertion}
 	 */
 	getInsertionFromEntry(_entry, _selectedText) {
 		throw new CdError({

@@ -74,7 +74,7 @@ import tributeCss from './tribute.less?inline'
  * @property {boolean} [requireLeadingSpace] Specify whether a space is required before the trigger
  *   string
  * @property {(item: TributeSearchResults<Value> | undefined, event: KeyboardEvent | MouseEvent) =>
- *   string | InsertData} [selectTemplate] Function called on select that returns the content to
+ *   string | Insertion} [selectTemplate] Function called on select that returns the content to
  *   insert
  */
 
@@ -132,12 +132,12 @@ import tributeCss from './tribute.less?inline'
  * Data to insert into the input along with some modification logic that can be supplied to
  * {@link TributeDange#replaceTriggerText} in addition to strings.
  *
- * @typedef {object} InsertData
+ * @typedef {object} Insertion
  * @property {string} start Start text
  * @property {string} [end] End text
  * @property {string} [content] Text between start and end
  * @property {() => boolean} [omitContentCheck] Function that checks whether to omit
- *   {@link InsertData#content}. This can be done so that the inserted text ends up having a pipe
+ *   {@link Insertion#content}. This can be done so that the inserted text ends up having a pipe
  *   trick (e.g. `[[User:Example|]]` that would be saved as `[[User:Example|Example]]`)
  * @property {boolean} [selectContent] Whether to select content, or put caret at its place if it's
  *   empty (this is done automatically when Shift is held)

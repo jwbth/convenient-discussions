@@ -27,7 +27,7 @@ import { handleApiReject } from './utils-api'
  * @property {any[]} [default] Default set of entries to search across (may be more narrow than the
  *   list of all potential values, as in the case of user names)
  * @property {(() => any[])} [defaultLazy] Function for lazy loading of the defaults
- * @property {() => import('./tribute/Tribute').InsertData} [getInsertionFromEntry] Function
+ * @property {() => import('./tribute/Tribute').Insertion} [getInsertionFromEntry] Function
  *   that transforms the entry into the insertion data that is actually inserted
  * @property {AnyByKey} [data] Any additional data to be used by methods
  * @property {number} [cacheMaxSize]
@@ -263,7 +263,7 @@ class AutocompleteManager {
 	 * Get the selected text from the input widget if it should be used for autocomplete insertion.
 	 *
 	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>>} option
-	 * @returns {string | undefined}
+	 * @returns {{selectedText: string, leadingSpaces: string, trailingSpaces: string} | undefined}
 	 */
 	getSelectedTextForInsertion(option) {
 		const autocomplete = option.original.autocomplete
@@ -281,17 +281,19 @@ class AutocompleteManager {
 			// Self-closing tags like `<references />` don't have `end`
 			autocomplete.getInsertionFromEntry(option.original.entry).end
 		) {
-			return savedSelection.selectedText
+			return {
+				selectedText: savedSelection.selectedText,
+				leadingSpaces: savedSelection.leadingSpaces,
+				trailingSpaces: savedSelection.trailingSpaces,
+			}
 		}
-
-		return undefined
 	}
 
 	/**
 	 * Handle the option choose event.
 	 *
 	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>> | undefined} option
-	 * @returns {import('./tribute/Tribute').InsertData | string}
+	 * @returns {import('./tribute/Tribute').Insertion | string}
 	 */
 	onOptionChoose = (option) => {
 		const autocomplete = option?.original.autocomplete
@@ -299,14 +301,27 @@ class AutocompleteManager {
 			return ''
 		}
 
-		const selectedText = this.getSelectedTextForInsertion(
+		const selectionData = this.getSelectedTextForInsertion(
 			/** @type {NonNullable<typeof option>} */ (option),
 		)
 
-		return autocomplete.getInsertionFromEntry(
+		/** @type {import('./tribute/Tribute').Insertion} */
+		const insertion = autocomplete.getInsertionFromEntry(
 			/** @type {NonNullable<typeof option>} */ (option).original.entry,
-			selectedText,
+			selectionData?.selectedText,
 		)
+
+		// If we have preserved spaces, wrap the insertion with them
+		if (selectionData && (selectionData.leadingSpaces || selectionData.trailingSpaces)) {
+			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+			insertion.start = selectionData.leadingSpaces + insertion.start
+			if (insertion.end) {
+				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+				insertion.end = insertion.end + selectionData.trailingSpaces
+			}
+		}
+
+		return insertion
 	}
 
 	/**
