@@ -176,7 +176,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		return authorLink.lastElementChild;
 	},
 	afterAuthorLinkParse(authorLink, adminMarkCandidate) {
-		if (adminMarkCandidate?.classList.contains('adminMark')) {
+		if (adminMarkCandidate && adminMarkCandidate.classList.contains('adminMark')) {
 			authorLink.append(adminMarkCandidate);
 		}
 	},

@@ -362,7 +362,9 @@ class SectionSkeleton {
 	 */
 	getParent(ignoreFirstLevel = true, sections = /** @type {this[]} */ (cd.sections)) {
 		if (ignoreFirstLevel && this.level <= 2) {
-			return
+			// WTF? Without `undefined`, eslintjsdoc/require-returns-check will be triggered, despite that
+			// it isn't in other places.
+			return undefined
 		}
 
 		return sections
