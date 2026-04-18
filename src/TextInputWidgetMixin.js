@@ -325,7 +325,7 @@ class TextInputWidgetMixin {
 
 			if (links.length === 1 && textContent === (links[0].textContent || '').trim()) {
 				url = links[0].href
-				label = (links[0].textContent || '').trim() || selectedText
+				label = cleanUpPasteDom(links[0], this.$element[0]).text.trim() || selectedText
 			}
 		}
 		// 3. text/uri-list
