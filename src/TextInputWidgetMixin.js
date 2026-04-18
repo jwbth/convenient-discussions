@@ -699,21 +699,19 @@ class TextInputWidgetMixin {
 			return
 		}
 
-		// Calculate where the pasted content is
-		if (isPaste) {
-			let insertedStart
-			let insertedEnd
-			if (selectedText) {
-				// Text was selected and replaced
-				insertedStart = selectionStart ?? 0
-				insertedEnd = newSelectionStart
-			} else {
-				// Text was inserted at caret
-				insertedStart = newSelectionStart - insertedLength
-				insertedEnd = newSelectionStart
-			}
-			this.selectRange(insertedStart, insertedEnd)
+		// Calculate where the pasted/dropped content is and select it
+		let insertedStart
+		let insertedEnd
+		if (selectedText) {
+			// Text was selected and replaced
+			insertedStart = selectionStart ?? 0
+			insertedEnd = newSelectionStart
+		} else {
+			// Text was inserted at caret
+			insertedStart = newSelectionStart - insertedLength
+			insertedEnd = newSelectionStart
 		}
+		this.selectRange(insertedStart, insertedEnd)
 
 		// Add back the leading/trailing spaces that were in the original selection
 		const linkWithSpaces = leadingSpaces + convertedLink + trailingSpaces
