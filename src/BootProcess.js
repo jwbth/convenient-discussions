@@ -20,6 +20,7 @@ import {
 	defined,
 	definedAndNotNull,
 	generatePageNamePattern,
+	getQueryParamBooleanValue,
 	isElement,
 	sleep,
 	unique,
@@ -940,7 +941,7 @@ class BootProcess {
 	 * @private
 	 */
 	maybeSuggestDisableDt() {
-		if (!cd.g.isDtReplyToolEnabled) return
+		if (!cd.g.isDtReplyToolEnabled || !getQueryParamBooleanValue('dtenable')) return
 
 		const $message = wrapHtml(
 			cd.sParse(
