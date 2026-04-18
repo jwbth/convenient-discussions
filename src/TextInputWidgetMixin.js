@@ -404,7 +404,7 @@ class TextInputWidgetMixin {
 		// Try to get interwiki link directly from URL
 		const interwikiLink = urlToInterwikiLink(url)
 		if (interwikiLink) {
-			return this.buildWikilinkFromInterwikiLink(interwikiLink, urlObj, label)
+			return this.buildWikilink(interwikiLink, label)
 		}
 
 		// Special case: red links have action=edit and redlink=1 parameters. These should be converted
@@ -446,20 +446,18 @@ class TextInputWidgetMixin {
 	}
 
 	/**
-	 * Build a wikilink from an interwiki link prefix.
+	 * Build a wikilink from a target and optional label.
 	 *
-	 * @param {string} interwikiLink
-	 * @param {URL} urlObj
-	 * @param {string} [label]
+	 * @param {string} target Target page name (may include interwiki prefix and fragment)
+	 * @param {string} [label] Optional label for the link
 	 * @returns {string}
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	buildWikilinkFromInterwikiLink(interwikiLink, urlObj, label) {
-		let wikilink = `[[${interwikiLink}`
+	buildWikilink(target, label) {
+		let wikilink = `[[${target}`
 
-		// Add label if present
-		if (label && label !== interwikiLink) {
+		if (label && label !== target) {
 			const encodedLabel = encodeLinkLabel(label)
 			wikilink += `|${encodedLabel}`
 		}
@@ -530,11 +528,8 @@ class TextInputWidgetMixin {
 			interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
 		const leadingColon = needsLeadingColon ? ':' : ''
 
-		// Build the wikilink
-		const target = interwikiPrefix + parsedUrl.pageName
-		let wikilink = `[[${leadingColon}${target}`
-
-		// Add fragment if present
+		// Build the target with fragment if present
+		let target = interwikiPrefix + parsedUrl.pageName
 		if (parsedUrl.fragment) {
 			let decodedFragment = mw.util.percentDecodeFragment(parsedUrl.fragment)
 			if (!decodedFragment) {
@@ -542,18 +537,10 @@ class TextInputWidgetMixin {
 				throw new Error('Failed to decode fragment')
 			}
 			decodedFragment = encodeWikilink(underlinesToSpaces(decodedFragment))
-			wikilink += `#${decodedFragment}`
+			target += `#${decodedFragment}`
 		}
 
-		// Add label if present
-		if (label && label !== target) {
-			const encodedLabel = encodeLinkLabel(label)
-			wikilink += `|${encodedLabel}`
-		}
-
-		wikilink += ']]'
-
-		return wikilink
+		return this.buildWikilink(leadingColon + target, label)
 	}
 
 	/**
