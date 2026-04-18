@@ -111,7 +111,7 @@ class CommentFormBuilder {
 				selected:
 					initialState.watch ??
 					((cd.settings.get('watchOnReply') && !this.form.isMode('edit')) ||
-						$('.mw-watchlink a[href*="action=unwatch"]').length ||
+						cd.page.isWatched() ||
 						mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')),
 				label: cd.s('cf-watch'),
 				tabIndex: this.form.getTabIndex(21),

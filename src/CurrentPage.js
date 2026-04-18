@@ -333,4 +333,33 @@ export default class CurrentPage extends Page {
 	getCommentAboveCommentToBeAdded(commentForm) {
 		return commentForm.isNewTopicOnTop() ? undefined : commentManager.getByIndex(-1)
 	}
+
+	/**
+	 * Check if the current page is watched by the user.
+	 *
+	 * @returns {boolean}
+	 */
+	isWatched() {
+		return $('.mw-watchlink a[href*="action=unwatch"]').length > 0
+	}
+
+	/**
+	 * Update the watch state in the UI (the watch/unwatch link in the page header).
+	 *
+	 * @param {boolean} watched Whether the page should be marked as watched.
+	 */
+	setWatchedState(watched) {
+		if (watched && $('#ca-watch').length) {
+			$('#ca-watch')
+				.attr('id', 'ca-unwatch')
+				.find('a')
+				.attr('href', this.getUrl({ action: 'unwatch' }))
+		}
+		if (!watched && $('#ca-unwatch').length) {
+			$('#ca-unwatch')
+				.attr('id', 'ca-watch')
+				.find('a')
+				.attr('href', this.getUrl({ action: 'watch' }))
+		}
+	}
 }

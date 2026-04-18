@@ -3206,17 +3206,8 @@ class CommentForm extends EventEmitter {
 					],
 		})
 
-		if (this.watchCheckbox?.isSelected() && $('#ca-watch').length) {
-			$('#ca-watch')
-				.attr('id', 'ca-unwatch')
-				.find('a')
-				.attr('href', cd.page.getUrl({ action: 'unwatch' }))
-		}
-		if (!this.watchCheckbox?.isSelected() && $('#ca-unwatch').length) {
-			$('#ca-unwatch')
-				.attr('id', 'ca-watch')
-				.find('a')
-				.attr('href', cd.page.getUrl({ action: 'watch' }))
+		if (this.watchCheckbox) {
+			cd.page.setWatchedState(this.watchCheckbox.isSelected())
 		}
 
 		// When the edit takes place on another page that is transcluded in the current one, we must
