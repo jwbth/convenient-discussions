@@ -7,7 +7,7 @@
         ...iwData.matchingLangPrefixes,
         ...iwData.matchingChapterPrefixes.map((prefix) => 'wm' + prefix),
           ...Object.values(iwData.urlToPrefixes).flat(),
-        ].filter(item => !['chapter', '_default', 'toollabs'].includes(item)))
+        ].filter(item => !['chapter', '_default'].includes(item)))
       mw.loader.getScript('https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getInterwikiData.js&action=raw&ctype=text/javascript')
       ```
   2. Go to https://quarry.wmcloud.org/query/104471
@@ -19,7 +19,16 @@
   8. Prepend with `const quarryResults = `
   9. Run
       ```
-      const prefixes = quarryResults.rows.filter(row => row[1] >= 100).map(row => row[0])
+      const prefixes = quarryResults
+        .rows
+        // - 'google' and 'scholar' scramble spaces
+        // - 'toollabs' is outdated
+        // - 'discord' and 'gitlab' will better do without converting
+        .filter(row => (
+          row[1] >= 100 &&
+          !['toollabs', 'google', 'scholar', 'discord', 'gitlab'].includes(row[0])
+        )
+        .map(row => row[0])
       const iwMap = (await new mw.ForeignApi('https://de.wiktionary.org/w/api.php').get({
         meta: 'siteinfo',
         siprop: 'interwikimap',
@@ -54,7 +63,6 @@ const prefixData = [
 	['wikitech', 'https://wikitech.wikimedia.org/wiki/$1'],
 	['doi', 'https://doi.org/$1'],
 	['creativecommons', 'https://creativecommons.org/licenses/$1'],
-	['google', 'https://www.google.com/search?q=$1'],
 	['bugzilla', 'https://bugzilla.wikimedia.org/show_bug.cgi?id=$1'],
 	['wikiconference', 'https://wikiconference.org/wiki/$1'],
 	['ccorg', 'https://creativecommons.org/$1'],
@@ -87,8 +95,6 @@ const prefixData = [
 	['arxiv', 'https://arxiv.org/abs/$1'],
 	['mwod', 'https://www.merriam-webster.com/dictionary/$1'],
 	['wmau', 'https://wikimedia.org.au/wiki/$1'],
-	['discord', 'https://discord.com/$1'],
-	['gitlab', 'https://gitlab.wikimedia.org/$1'],
 	['otrs', 'https://ticket.wikimedia.org/otrs/index.pl?Action=AgentTicketZoom&TicketID=$1'],
 	['wmin', 'https://meta.wikimedia.org/wiki/Wikimedia_India'],
 	['wikifur', 'https://en.wikifur.com/wiki/$1'],
@@ -111,7 +117,6 @@ const prefixData = [
 	['appropedia', 'https://www.appropedia.org/$1'],
 	['hrwiki', 'http://www.hrwiki.org/index.php/$1'],
 	['sep11', 'https://meta.wikimedia.org/wiki/Sep11wiki'],
-	['scholar', 'https://scholar.google.com/scholar?q=$1'],
 	['localwiki', 'https://localwiki.org/$1'],
 	['bulba', 'https://bulbapedia.bulbagarden.net/wiki/$1'],
 	['marveldatabase', 'https://marvel.fandom.com/wiki/$1'],

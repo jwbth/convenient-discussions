@@ -1,3 +1,4 @@
+import { urlToInterwikiLink } from './interwikiPrefixes'
 import cd from './loader/cd'
 import { parseWikiUrl, sleep, underlinesToSpaces } from './shared/utils-general'
 import { encodeLinkLabel, encodeWikilink } from './shared/utils-wikitext'
@@ -383,7 +384,7 @@ class TextInputWidgetMixin {
 	 * Convert a URL to a wikilink or formatted link.
 	 *
 	 * @param {string} url
-	 * @param {string | undefined} label
+	 * @param {string} [label]
 	 * @returns {Promise<string|undefined>} The converted link or undefined if conversion failed
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
@@ -400,8 +401,14 @@ class TextInputWidgetMixin {
 		const params = new URLSearchParams(urlObj.search)
 		const paramKeys = [...params.keys()]
 
-		// Special case: red links have action=edit and redlink=1 parameters
-		// These should be converted to wikilinks (title parameter contains the page name)
+		// Try to get interwiki link directly from URL
+		const interwikiLink = urlToInterwikiLink(url)
+		if (interwikiLink) {
+			return this.buildWikilinkFromInterwikiLink(interwikiLink, urlObj, label)
+		}
+
+		// Special case: red links have action=edit and redlink=1 parameters. These should be converted
+		// to wikilinks (title parameter contains the page name)
 		const isRedLink =
 			paramKeys.length === 3 &&
 			params.get('action') === 'edit' &&
@@ -421,96 +428,132 @@ class TextInputWidgetMixin {
 		this.pushPending().setDisabled(true)
 
 		try {
-			// Get interwiki prefix
-			let interwikiPrefix
+			// Check if the URL looks like a wiki URL before proceeding
+			const looksLikeWikiUrl = cd.g.articlePathRegexp.test(urlObj.pathname) || params.has('title')
 
-			// Same domain = empty interwiki prefix (no need to load external script)
-			if (urlObj.hostname === cd.g.serverName) {
-				interwikiPrefix = ''
-			} else {
-				// Check if the URL looks like a wiki URL before loading the interwiki script
-				// This avoids unnecessary requests for non-wiki URLs like https://www.google.com/
-				const looksLikeWikiUrl = cd.g.articlePathRegexp.test(urlObj.pathname) || params.has('title')
-
-				if (!looksLikeWikiUrl) {
-					// Doesn't look like a wiki URL - throw to fall back to external link format
-					throw new Error('URL does not look like a wiki URL')
-				}
-
-				// Load the interwiki prefix detection script if not already loaded
-				if (!window.getInterwikiPrefixForHostname && cd.g.isProbablyWmfSulWiki) {
-					try {
-						await $.ajax(
-							'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
-							{
-								dataType: 'script',
-								cache: true,
-								timeout: 5000,
-							},
-						)
-					} catch {
-						// Script failed to load - throw to fall back to external link format
-						throw new Error('Failed to load interwiki script')
-					}
-				}
-
-				if (!window.getInterwikiPrefixForHostname) {
-					throw new Error('getInterwikiPrefixForHostname not available')
-				}
-
-				interwikiPrefix = await window.getInterwikiPrefixForHostname(
-					urlObj.hostname,
-					cd.g.serverName,
-				)
-
-				if (interwikiPrefix === null) {
-					// No interwiki prefix available - throw to fall back to external link format
-					throw new Error('No interwiki prefix available')
-				}
+			if (!looksLikeWikiUrl) {
+				// Doesn't look like a wiki URL - throw to fall back to external link format
+				throw new Error('URL does not look like a wiki URL')
 			}
 
-			// Parse the wiki URL
-			const parsedUrl = parseWikiUrl(url)
-			if (!parsedUrl) {
-				// Can't parse - throw to fall back to external link format
-				throw new Error('Failed to parse wiki URL')
-			}
-
-			// Check if we need a leading colon (for interlanguage prefixes)
-			// The interwiki prefix already includes the trailing colon when present
-			const needsLeadingColon =
-				interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
-			const leadingColon = needsLeadingColon ? ':' : ''
-
-			// Build the wikilink
-			let wikilink = `[[${leadingColon}${interwikiPrefix}${parsedUrl.pageName}`
-
-			// Add fragment if present
-			if (parsedUrl.fragment) {
-				let fragment = mw.util.percentDecodeFragment(parsedUrl.fragment)
-				if (!fragment) {
-					// Decoding failed - throw to fall back to external link format
-					throw new Error('Failed to decode fragment')
-				}
-				fragment = encodeWikilink(underlinesToSpaces(fragment))
-				wikilink += `#${fragment}`
-			}
-
-			// Add label if present
-			if (label) {
-				const encodedLabel = encodeLinkLabel(label)
-				wikilink += `|${encodedLabel}`
-			}
-
-			wikilink += ']]'
-
-			return wikilink
+			return await this.convertUrlToWikilinkWithPrefix(url, urlObj, params, label)
 		} catch {
 			// Fall back to external link format on any error
 			return this.formatExternalLink(url, label)
 		} finally {
 			this.popPending().setDisabled(false).focus()
 		}
+	}
+
+	/**
+	 * Build a wikilink from an interwiki link prefix.
+	 *
+	 * @param {string} interwikiLink
+	 * @param {URL} urlObj
+	 * @param {string} [label]
+	 * @returns {string}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	buildWikilinkFromInterwikiLink(interwikiLink, urlObj, label) {
+		let wikilink = `[[${interwikiLink}`
+
+		// Add label if present
+		if (label && label !== interwikiLink) {
+			const encodedLabel = encodeLinkLabel(label)
+			wikilink += `|${encodedLabel}`
+		}
+
+		wikilink += ']]'
+
+		return wikilink
+	}
+
+	/**
+	 * Convert a URL to a wikilink by determining the interwiki prefix.
+	 *
+	 * @param {string} url
+	 * @param {URL} urlObj
+	 * @param {URLSearchParams} params
+	 * @param {string} [label]
+	 * @returns {Promise<string>}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	async convertUrlToWikilinkWithPrefix(url, urlObj, params, label) {
+		// Get interwiki prefix
+		let interwikiPrefix
+
+		// Same domain = empty interwiki prefix (no need to load external script)
+		if (urlObj.hostname === cd.g.serverName) {
+			interwikiPrefix = ''
+		} else {
+			// Load the interwiki prefix detection script if not already loaded
+			if (!window.getInterwikiPrefixForHostname && cd.g.isProbablyWmfSulWiki) {
+				try {
+					await $.ajax(
+						'https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript',
+						{
+							dataType: 'script',
+							cache: true,
+							timeout: 5000,
+						},
+					)
+				} catch {
+					// Script failed to load - throw to fall back to external link format
+					throw new Error('Failed to load interwiki script')
+				}
+			}
+
+			if (!window.getInterwikiPrefixForHostname) {
+				throw new Error('getInterwikiPrefixForHostname not available')
+			}
+
+			interwikiPrefix = await window.getInterwikiPrefixForHostname(urlObj.hostname, cd.g.serverName)
+
+			if (interwikiPrefix === null) {
+				// No interwiki prefix available - throw to fall back to external link format
+				throw new Error('No interwiki prefix available')
+			}
+		}
+
+		// Parse the wiki URL
+		const parsedUrl = parseWikiUrl(url)
+		if (!parsedUrl) {
+			// Can't parse - throw to fall back to external link format
+			throw new Error('Failed to parse wiki URL')
+		}
+
+		// Check if we need a leading colon (for interlanguage prefixes)
+		// The interwiki prefix already includes the trailing colon when present
+		const needsLeadingColon =
+			interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
+		const leadingColon = needsLeadingColon ? ':' : ''
+
+		// Build the wikilink
+		const target = interwikiPrefix + parsedUrl.pageName
+		let wikilink = `[[${leadingColon}${target}`
+
+		// Add fragment if present
+		if (parsedUrl.fragment) {
+			let decodedFragment = mw.util.percentDecodeFragment(parsedUrl.fragment)
+			if (!decodedFragment) {
+				// Decoding failed - throw to fall back to external link format
+				throw new Error('Failed to decode fragment')
+			}
+			decodedFragment = encodeWikilink(underlinesToSpaces(decodedFragment))
+			wikilink += `#${decodedFragment}`
+		}
+
+		// Add label if present
+		if (label && label !== target) {
+			const encodedLabel = encodeLinkLabel(label)
+			wikilink += `|${encodedLabel}`
+		}
+
+		wikilink += ']]'
+
+		return wikilink
 	}
 
 	/**
