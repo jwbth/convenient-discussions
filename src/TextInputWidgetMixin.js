@@ -504,14 +504,12 @@ class TextInputWidgetMixin {
 
 			wikilink += ']]'
 
-			this.popPending().setDisabled(false)
-
 			return wikilink
 		} catch {
 			// Fall back to external link format on any error
-			this.popPending().setDisabled(false)
-
 			return this.formatExternalLink(url, label)
+		} finally {
+			this.popPending().setDisabled(false).focus()
 		}
 	}
 
