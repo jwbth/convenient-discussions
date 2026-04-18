@@ -72,4 +72,4 @@
 - Don't use the `object` type when you know a more precise type is known. If that type is now defined, define it with `@typedef` and use it.
 - Don't use tags that are already reflected in the syntax (e.g. `@static`).
 - When a class method is overriding a method of the parent class, add `@override` tag to its JSDoc comment.
-- Don't start every sentence on a new line. To separate different groups of information if warranted, use paragraphs.
+- Don't start every comment sentence on a new line. Use periods. If it is necessary to separate different groups of information, use paragraphs.

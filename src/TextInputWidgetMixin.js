@@ -682,8 +682,8 @@ class TextInputWidgetMixin {
 			}
 		}
 
-		// Get the current selection after paste
-		const [newSelectionStart, _newSelectionEnd] = this.$input.textSelection('getCaretPosition', {
+		// Get the current selection after paste/drop
+		const [newSelectionStart, newSelectionEnd] = this.$input.textSelection('getCaretPosition', {
 			startAndEnd: true,
 		})
 
@@ -699,18 +699,28 @@ class TextInputWidgetMixin {
 			return
 		}
 
-		// Calculate where the pasted/dropped content is and select it
+		// Calculate where the pasted/dropped content is
+		// - For paste: use the original selectionStart
+		// - For drop: check if text is already selected (Chrome behavior) or calculate from cursor
+		//   position (Firefox)
 		let insertedStart
 		let insertedEnd
-		if (selectedText) {
-			// Text was selected and replaced
+		if (isPaste) {
 			insertedStart = selectionStart ?? 0
-			insertedEnd = newSelectionStart
+			insertedEnd = insertedStart + insertedLength
+
+			// For drop events, check if browser auto-selected the dropped text
+		} else if (newSelectionEnd - newSelectionStart === insertedLength) {
+			// Chrome: text is already selected
+			insertedStart = newSelectionStart
+			insertedEnd = newSelectionEnd
 		} else {
-			// Text was inserted at caret
+			// Firefox: cursor is at end, work backwards
 			insertedStart = newSelectionStart - insertedLength
 			insertedEnd = newSelectionStart
 		}
+
+		// Select the pasted/dropped content
 		this.selectRange(insertedStart, insertedEnd)
 
 		// Add back the leading/trailing spaces that were in the original selection
