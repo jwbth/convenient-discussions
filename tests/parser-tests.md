@@ -10,7 +10,7 @@ Parser tests verify the correctness of the page parsing logic by running it in a
 
 - **tests/worker.test.js**: Main test runner that executes parser tests
 - **tests/worker-test-cases.json**: Test cases with expected outputs
-- **tests/worker-convert-test-cases.mjs**: Converts wiki pages to test case format
+- **tests/worker-convert-test-cases.js**: Converts wiki pages to test case format
 - **tests/worker-regenerate-test-cases.test.js**: Regenerates test cases with current parser output
 - **tests/worker-test-cases-regenerated.json**: Output file from regeneration (temporary)
 
@@ -18,26 +18,26 @@ Parser tests verify the correctness of the page parsing logic by running it in a
 
 ### Step 1: Convert from Wiki Page
 
-Use `worker-convert-test-cases.mjs` to convert test cases from a live wiki page:
+Use `worker-convert-test-cases.js` to convert test cases from a live wiki page:
 
 ```bash
 # Using default page (User_talk:JWBTH/CD_test_cases on test.wikipedia.org)
-node tests/worker-convert-test-cases.mjs
+node tests/worker-convert-test-cases.js
 
 # Using custom page and domain
-node tests/worker-convert-test-cases.mjs --page "User:Example/Test_cases" --domain "en.wikipedia.org"
+node tests/worker-convert-test-cases.js --page "User:Example/Test_cases" --domain "en.wikipedia.org"
 
 # Using environment variables
-TEST_PAGE="User:Example/Test_cases" DOMAIN="en.wikipedia.org" node tests/worker-convert-test-cases.mjs
+TEST_PAGE="User:Example/Test_cases" DOMAIN="en.wikipedia.org" node tests/worker-convert-test-cases.js
 
 # Save output to file
-node tests/worker-convert-test-cases.mjs output.json
+node tests/worker-convert-test-cases.js output.json
 
 # Limit to first N test groups (for testing)
-node tests/worker-convert-test-cases.mjs 3
+node tests/worker-convert-test-cases.js 3
 
 # Combine options
-node tests/worker-convert-test-cases.mjs --page "User:Example/Test_cases" --domain "en.wikipedia.org" 5 output.json
+node tests/worker-convert-test-cases.js --page "User:Example/Test_cases" --domain "en.wikipedia.org" 5 output.json
 ```
 
 **Command-Line Options:**
@@ -107,7 +107,7 @@ The workflow is the same as adding new tests, but applied to the entire test sui
    https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases as the base):
 
    ```bash
-   node tests/worker-convert-test-cases.mjs --page "User_talk:Jack_who_built_the_house/CD_test_cases" --domain "commons.wikimedia.org" worker-test-cases-new.json
+   node tests/worker-convert-test-cases.js --page "User_talk:Jack_who_built_the_house/CD_test_cases" --domain "commons.wikimedia.org" worker-test-cases-new.json
    ```
 
 2. **Review the converted output:**
@@ -173,7 +173,7 @@ To run a specific test, add `-t "Test name"`.
 
 ## Workflow Summary
 
-1. **Convert** wiki page sections → `worker-convert-test-cases.mjs`
+1. **Convert** wiki page sections → `worker-convert-test-cases.js`
 2. **Add** converted cases → `worker-test-cases.json`
 3. **Regenerate** with expected outputs → `npm run test:regenerate`
 4. **Replace** original file → `worker-test-cases-regenerated.json` → `worker-test-cases.json`

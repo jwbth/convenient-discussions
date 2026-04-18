@@ -137,5 +137,5 @@ If the test fails:
 - Config: `config/wikis/w-ru.js`
 - i18n: `i18n/ru.json`
 - Build: `dist/convenientDiscussions.single.w-ru.js`
-- Build script: `build-wrapper.mjs`
-- Vite config: `vite.config.mjs`
+- Build script: `build-wrapper.js`
+- Vite config: `vite.config.js`

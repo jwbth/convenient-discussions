@@ -8,8 +8,7 @@ const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
 // node build-configs --staging
 // npm run <command running this script> --staging
-const stagingSuffix =
-	argv.staging || process.env.npm_config_staging ? '.staging' : ''
+const stagingSuffix = argv.staging || process.env.npm_config_staging ? '.staging' : ''
 
 fs.readdirSync('./config/wikis/').forEach((filename) => {
 	const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || []
@@ -26,7 +25,7 @@ fs.readdirSync('./config/wikis/').forEach((filename) => {
  * This file was assembled automatically from the configuration at
  * https://github.com/jwbth/convenient-discussions/tree/main/config/wikis/${filename} by running
  * \`node build-configs\`. If it's deployed here automatically from the original repo (i.e., it's
- * listed in https://github.com/jwbth/convenient-discussions/blob/main/config.mjs), please submit
+ * listed in https://github.com/jwbth/convenient-discussions/blob/main/config.js), please submit
  * pull requests to https://github.com/jwbth/convenient-discussions/pulls rather than edit this
  * file, otherwise your changes will be overriden by new deployments. The configuration might get
  * outdated as the script evolves, so it's best to keep it up to date by checking for the
@@ -80,10 +79,7 @@ if (!convenientDiscussions.isRunning) {
 // </nowiki>
 `
 	fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true })
-	fs.writeFileSync(
-		`dist/convenientDiscussions-config/${name}${stagingSuffix}.js`,
-		content,
-	)
+	fs.writeFileSync(`dist/convenientDiscussions-config/${name}${stagingSuffix}.js`, content)
 })
 
 fs.copyFileSync(

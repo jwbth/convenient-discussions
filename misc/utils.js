@@ -1,4 +1,4 @@
-import config from '../config.mjs'
+import config from '../config.js'
 
 /**
  * Encode a URL using MediaWiki's escaping style.

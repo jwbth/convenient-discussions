@@ -11,14 +11,7 @@ import tseslint from 'typescript-eslint'
 
 const config = defineConfig(
 	{
-		ignores: [
-			'dist/**',
-			'*.json5',
-			'*.jsonc',
-			'src/tribute/**',
-			'sandbox/**',
-			'backup/**',
-		],
+		ignores: ['dist/**', '*.json5', '*.jsonc', 'src/tribute/**', 'sandbox/**', 'backup/**'],
 	},
 	{
 		settings: {
@@ -116,20 +109,19 @@ const config = defineConfig(
 			// parserOptions: {
 			//   requireConfigFile: false,
 			// },
-			parserOptions:
-				/** @type {import('@typescript-eslint/parser').ParserOptions} */ ({
-					project: [
-						'./jsconfig.json',
-						'./src/jsconfig.json',
-						'./src/worker/jsconfig.json',
-						'./src/shared/jsconfig.json',
-						'./tests/jsconfig.json',
-						'./e2e/jsconfig.json',
-						// './sandbox/jsconfig.json',
-					],
-					tsconfigRootDir: import.meta.dirname,
-					// jsDocParsingMode: 'all',
-				}),
+			parserOptions: /** @type {import('@typescript-eslint/parser').ParserOptions} */ ({
+				project: [
+					'./jsconfig.json',
+					'./src/jsconfig.json',
+					'./src/worker/jsconfig.json',
+					'./src/shared/jsconfig.json',
+					'./tests/jsconfig.json',
+					'./e2e/jsconfig.json',
+					// './sandbox/jsconfig.json',
+				],
+				tsconfigRootDir: import.meta.dirname,
+				// jsDocParsingMode: 'all',
+			}),
 		},
 		plugins: {
 			'no-one-time-vars': noOneTimeVars,
@@ -445,7 +437,7 @@ const config = defineConfig(
 			//   ignoreTemplateLiterals: true,
 			// }],
 
-			// Slow rules (run `cross-env TIMING=1 eslint --config eslint.config.mjs --fix-dry-run src/`)
+			// Slow rules (run `cross-env TIMING=1 eslint --config eslint.config.js --fix-dry-run src/`)
 			'unicorn/no-unnecessary-polyfills': 'off',
 			'unused-imports/no-unused-imports': 'warn',
 			'unused-imports/no-unused-vars': [
@@ -462,7 +454,7 @@ const config = defineConfig(
 
 	// Overrides for JS
 	{
-		files: ['**/*.js', '**/*.mjs'],
+		files: ['**/*.js'],
 		languageOptions: {
 			globals: {
 				// Browser globals

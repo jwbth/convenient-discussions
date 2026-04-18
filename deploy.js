@@ -12,15 +12,15 @@ import prompts from 'prompts'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import config from './config.mjs'
-import { getUrl, unique } from './misc/utils.mjs'
+import config from './config.js'
+import { getUrl, unique } from './misc/utils.js'
 
 const execAsync = promisify(exec)
 
 const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv)
 
 /*
-	node deploy.mjs --staging
+	node deploy.js --staging
 	npm run deploy -- --staging
  */
 export const staging = Boolean(argv.staging || process.env.npm_config_staging)
@@ -29,9 +29,7 @@ const noI18n = Boolean(argv.noi18n || process.env.npm_config_noi18n)
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
 const noConfigs = Boolean(argv.noconfigs || process.env.npm_config_noconfigs)
 const i18nOnly = Boolean(argv.i18nonly || process.env.npm_config_i18nonly)
-const configsOnly = Boolean(
-	argv.configsonly || process.env.npm_config_configsonly,
-)
+const configsOnly = Boolean(argv.configsonly || process.env.npm_config_configsonly)
 const debug = Boolean(argv.debug || process.env.npm_config_debug)
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
 const dryRun = Boolean(argv['dry-run'] || process.env.npm_config_dry_run)
@@ -79,9 +77,7 @@ if (!('rootPath' in config.main)) {
 const pathPrefix = config.main.rootPath + '/'
 
 const assets =
-	'assets' in config.main
-		? config.main.assets[staging ? 'staging' : 'default']
-		: undefined
+	'assets' in config.main ? config.main.assets[staging ? 'staging' : 'default'] : undefined
 if (!assets || !Array.isArray(assets) || !assets.length) {
 	throw error(`File list is not found in ${keyword('config.js')}`)
 }
@@ -129,10 +125,7 @@ if (process.env.CI) {
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const eventJson = JSON.parse(
-		fs.readFileSync(
-			/** @type {string} */ (process.env.GITHUB_EVENT_PATH),
-			'utf8',
-		),
+		fs.readFileSync(/** @type {string} */ (process.env.GITHUB_EVENT_PATH), 'utf8'),
 	)
 
 	// Will be undefined if the event is workflow_dispatch.
@@ -154,9 +147,7 @@ const clients = {
 	}),
 	...config.configs.reduce((obj, wikiConfig) => {
 		const protocol =
-			'protocol' in wikiConfig && wikiConfig.protocol
-				? wikiConfig.protocol
-				: config.protocol
+			'protocol' in wikiConfig && wikiConfig.protocol ? wikiConfig.protocol : config.protocol
 		const scriptPath =
 			'scriptPath' in wikiConfig && wikiConfig.scriptPath
 				? wikiConfig.scriptPath
@@ -232,16 +223,12 @@ async function main() {
 		}
 
 		;({ branch, commits } = parseGitOutput(stdout))
-		;({ newCommitsCount, newCommitsSubjects } =
-			await getLastDeployedCommit(commits))
+		;({ newCommitsCount, newCommitsSubjects } = await getLastDeployedCommit(commits))
 	}
 
-	const edits = getMainEdits(
-		branch,
-		commits,
-		newCommitsCount,
-		newCommitsSubjects,
-	).concat(await getConfigsEdits())
+	const edits = getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects).concat(
+		await getConfigsEdits(),
+	)
 
 	const overview = edits.map(createEditOverview).join('\n')
 	console.log(`Gonna make these edits:\n\n${overview}`)
@@ -331,9 +318,7 @@ async function getLastDeployedCommit(commits) {
 	const lastDeployedCommitOrVersion = revisions
 		.map((/** @type {{ comment: string }} */ revision) => {
 			const match =
-				/[uU]pdate to (?:([0-9a-f]{8})(?= @ )|(v\d+\.\d+\.\d+)\b)/.exec(
-					revision.comment,
-				) || []
+				/[uU]pdate to (?:([0-9a-f]{8})(?= @ )|(v\d+\.\d+\.\d+)\b)/.exec(revision.comment) || []
 
 			return match[1] || match[2]
 		})
@@ -345,8 +330,7 @@ async function getLastDeployedCommit(commits) {
 
 	let newCommitsCount = commits.findIndex(
 		(commit) =>
-			commit.hash === lastDeployedCommitOrVersion ||
-			commit.tag === lastDeployedCommitOrVersion,
+			commit.hash === lastDeployedCommitOrVersion || commit.tag === lastDeployedCommitOrVersion,
 	)
 	if (newCommitsCount === -1) {
 		newCommitsCount = 0
@@ -392,17 +376,12 @@ function getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects) {
 
 	return assets
 		.flatMap((file) => {
-			if (
-				(noI18n && file.endsWith('i18n/')) ||
-				(i18nOnly && !file.endsWith('i18n/'))
-			) {
+			if ((noI18n && file.endsWith('i18n/')) || (i18nOnly && !file.endsWith('i18n/'))) {
 				return []
 			}
 
 			if (file.endsWith('/')) {
-				return fs
-					.readdirSync(`./dist/${file}`)
-					.map((fileInDir) => file + fileInDir)
+				return fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir)
 			}
 
 			return file
@@ -448,8 +427,7 @@ function getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects) {
 			 * @param {string} word
 			 * @returns {string}
 			 */
-			const pluralize = (count, word) =>
-				`${count} ${word}${count === 1 ? '' : 's'}`
+			const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`
 
 			const commitString = `${commits[0].hash} @ ${branch}`
 			let summary = process.env.CI
@@ -537,8 +515,7 @@ async function getConfigsEdits() {
  * @returns {string}
  */
 function createEditOverview(edit) {
-	const byteLength = (/** @type {string} */ text) =>
-		new TextEncoder().encode(text).length
+	const byteLength = (/** @type {string} */ text) => new TextEncoder().encode(text).length
 
 	return (
 		`${keyword('URL:')} ${edit.url}\n` +
@@ -563,18 +540,14 @@ async function getCredentials() {
 	let credentials = fs.existsSync('./credentials.json')
 		? // @ts-ignore
 			// eslint-disable-next-line import/no-unresolved
-			await import('./credentials.json', { with: { type: 'json' } }).then(
-				(m) => m.default,
-			)
+			await import('./credentials.json', { with: { type: 'json' } }).then((m) => m.default)
 		: undefined
 
 	if (credentials?.username && credentials.password) {
 		return credentials
 	}
 
-	console.log(
-		`User name and/or password were not found in ${keyword('credentials.json')}`,
-	)
+	console.log(`User name and/or password were not found in ${keyword('credentials.json')}`)
 	credentials = await prompts([
 		{
 			type: 'text',
@@ -615,11 +588,7 @@ async function logIn(server, credentials) {
  */
 async function deployToServer(serverEdits) {
 	for (const edit of serverEdits) {
-		const response = await clients[edit.server].save(
-			edit.title,
-			edit.content,
-			edit.summary,
-		)
+		const response = await clients[edit.server].save(edit.title, edit.content, edit.summary)
 
 		// To avoid hitting the edit rate limit
 		await sleep(2000)

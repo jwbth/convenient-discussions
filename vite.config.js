@@ -3,9 +3,9 @@ import { fileURLToPath } from 'node:url'
 
 import { defineConfig } from 'vite'
 
-import nonNullableConfig from './config.mjs'
-import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs'
-import { treeShakeImportsPlugin } from './vite-plugin-tree-shake-imports.mjs'
+import nonNullableConfig from './config.js'
+import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.js'
+import { treeShakeImportsPlugin } from './vite-plugin-tree-shake-imports.js'
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
 const cdConfig = nonNullableConfig
@@ -82,8 +82,7 @@ function preserveControlEscapesPlugin() {
 				if (chunk.type === 'chunk' && chunk.code) {
 					chunk.code = chunk.code.replace(
 						/[\u0001-\u0004\u001F]/g,
-						(match) =>
-							`\\u${(match.codePointAt(0) || 0).toString(16).padStart(4, '0')}`,
+						(match) => `\\u${(match.codePointAt(0) || 0).toString(16).padStart(4, '0')}`,
 					)
 				}
 			}
@@ -202,10 +201,8 @@ function licenseExtractionPlugin() {
 				if (fileNameStr.includes('worker')) {
 					// For worker files, add source map URL
 					if (cdConfig.sourceMapsBaseUrl) {
-						const sourceMapUrl =
-							cdConfig.sourceMapsBaseUrl + 'convenientDiscussions.worker.js.map'
-						licenseContent =
-							'//# sourceMappingURL=' + sourceMapUrl + '\n\n' + licenseContent
+						const sourceMapUrl = cdConfig.sourceMapsBaseUrl + 'convenientDiscussions.worker.js.map'
+						licenseContent = '//# sourceMappingURL=' + sourceMapUrl + '\n\n' + licenseContent
 					}
 				} else {
 					// For main bundle, add documentation banner
@@ -220,10 +217,7 @@ function licenseExtractionPlugin() {
 							cdConfig.protocol +
 							'://' +
 							cdConfig.main.server +
-							cdConfig.articlePath.replace(
-								'$1',
-								cdConfig.main.rootPath + '/' + licenseFileName,
-							)
+							cdConfig.articlePath.replace('$1', cdConfig.main.rootPath + '/' + licenseFileName)
 					}
 
 					const customBanner = generateBannerText(licenseUrl)
@@ -264,11 +258,7 @@ function disableFullReloadPlugin() {
 			 * @returns {void}
 			 */
 			hot.send = (payload, ...args) => {
-				if (
-					typeof payload === 'object' &&
-					payload !== null &&
-					payload.type === 'full-reload'
-				) {
+				if (typeof payload === 'object' && payload !== null && payload.type === 'full-reload') {
 					return
 				}
 
@@ -277,8 +267,7 @@ function disableFullReloadPlugin() {
 		},
 		transform(code, id) {
 			// Patch Vite's own client to suppress location.reload() calls
-			if (!id.includes('@vite/client') && !id.includes('vite/dist/client'))
-				return
+			if (!id.includes('@vite/client') && !id.includes('vite/dist/client')) return
 
 			return code.replace(
 				/location\.reload\(\)/g,
@@ -410,9 +399,7 @@ export default defineConfig(({ mode, command }) => {
 	const bundleFilename = `convenientDiscussions${buildMode.filenamePostfix}`
 
 	if (!cdConfig.protocol || !cdConfig.main?.rootPath || !cdConfig.articlePath) {
-		throw new Error(
-			'No protocol/server/root path/article path found in config.json5.',
-		)
+		throw new Error('No protocol/server/root path/article path found in config.json5.')
 	}
 
 	// For dev server (serve command), always use dev mode settings
@@ -424,13 +411,9 @@ export default defineConfig(({ mode, command }) => {
 		IS_STAGING: JSON.stringify(buildMode.isStaging),
 		IS_SINGLE: JSON.stringify(buildMode.isSingle),
 		SINGLE_CONFIG_FILE_NAME:
-			buildMode.isSingle && buildMode.wiki
-				? JSON.stringify(buildMode.wiki)
-				: 'undefined',
+			buildMode.isSingle && buildMode.wiki ? JSON.stringify(buildMode.wiki) : 'undefined',
 		SINGLE_LANG_CODE:
-			buildMode.isSingle && buildMode.lang
-				? JSON.stringify(buildMode.lang)
-				: 'undefined',
+			buildMode.isSingle && buildMode.lang ? JSON.stringify(buildMode.lang) : 'undefined',
 		CACHE_BUSTER: JSON.stringify(generateRandomId()),
 	}
 
@@ -450,9 +433,7 @@ export default defineConfig(({ mode, command }) => {
 	// Add inline worker string plugin (must be early in pipeline)
 	plugins.push(
 		inlineWorkerStringPlugin({
-			sourceMapsBaseUrl: buildMode.isSingle
-				? undefined
-				: cdConfig.sourceMapsBaseUrl,
+			sourceMapsBaseUrl: buildMode.isSingle ? undefined : cdConfig.sourceMapsBaseUrl,
 			workerMapFileName: `convenientDiscussions.worker${buildMode.filenamePostfix}.js.map`,
 		}),
 	)
@@ -490,9 +471,7 @@ export default defineConfig(({ mode, command }) => {
 		// Must run before the nowiki plugins so that //# sourceMappingURL= is still the last
 		// line when the regex runs (appendNowikiPlugin appends /* </nowiki> */ after it).
 		if (cdConfig.sourceMapsBaseUrl) {
-			plugins.push(
-				customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode),
-			)
+			plugins.push(customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode))
 		}
 
 		// TODO: Rolldown has native options for banners and license http://rolldown.rs/reference/, but
@@ -550,28 +529,21 @@ export default defineConfig(({ mode, command }) => {
 			rollupOptions: {
 				input: buildMode.isSingle
 					? {
-							[bundleFilename]: path.resolve(
-								__dirname,
-								'src/loader/startup.js',
-							),
+							[bundleFilename]: path.resolve(__dirname, 'src/loader/startup.js'),
 						}
 					: process.env.VITE_BUILD_PART === 'loader'
 						? {
-								[bundleFilename]: path.resolve(
-									__dirname,
-									'src/loader/startup.js',
-								),
+								[bundleFilename]: path.resolve(__dirname, 'src/loader/startup.js'),
 							}
 						: process.env.VITE_BUILD_PART === 'styles'
 							? {
-									'convenientDiscussions-styles': path.resolve(
-										__dirname,
-										'src/styles.less',
-									),
+									'convenientDiscussions-styles': path.resolve(__dirname, 'src/styles.less'),
 								}
 							: {
-									[`convenientDiscussions-main${buildMode.filenamePostfix}`]:
-										path.resolve(__dirname, 'src/app.js'),
+									[`convenientDiscussions-main${buildMode.filenamePostfix}`]: path.resolve(
+										__dirname,
+										'src/app.js',
+									),
 								},
 
 				output: {

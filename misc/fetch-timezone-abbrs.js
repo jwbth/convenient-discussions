@@ -7,7 +7,7 @@ import fs from 'fs'
 
 import JSON5 from 'json5'
 import fetch from 'node-fetch'
-import { unique } from './utils.mjs'
+import { unique } from './utils.js'
 
 async function getZoneToAbbr() {
 	const res = await fetch(

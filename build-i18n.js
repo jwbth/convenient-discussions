@@ -8,12 +8,10 @@ import createDOMPurify from 'dompurify'
 import { JSDOM } from 'jsdom'
 import { rimraf } from 'rimraf'
 
-import { replaceEntitiesInI18n } from './misc/utils.mjs'
+import { replaceEntitiesInI18n } from './misc/utils.js'
 
 const DOMPurify = createDOMPurify(
-	/** @type {import('dompurify').WindowLike} */ (
-		/** @type {unknown} */ (new JSDOM('').window)
-	),
+	/** @type {import('dompurify').WindowLike} */ (/** @type {unknown} */ (new JSDOM('').window)),
 )
 
 const warning = (/** @type {string} */ text) => {
@@ -57,10 +55,7 @@ const DATE_FNS_LOCALES_TEMP_DIR_NAME = 'dist/date-fns-locales-temp'
  * @returns {string}
  */
 function hideText(text, regexp, hidden) {
-	return text.replace(
-		regexp,
-		(s) => '\u0001' + String(hidden.push(s)) + '\u0002',
-	)
+	return text.replace(regexp, (s) => '\u0001' + String(hidden.push(s)) + '\u0002')
 }
 
 /**
@@ -107,18 +102,12 @@ function buildDayjsLocales(i18nWithFallbacks) {
 
 	// Add temporary language files to that folder that import respective locales if they exist.
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const dayjsLocales = JSON.parse(
-		fs.readFileSync('./node_modules/dayjs/locale.json', 'utf8'),
-	)
-	const locales = new Set(
-		dayjsLocales.map((/** @type {StringsByKey} */ locale) => locale.key),
-	)
+	const dayjsLocales = JSON.parse(fs.readFileSync('./node_modules/dayjs/locale.json', 'utf8'))
+	const locales = new Set(dayjsLocales.map((/** @type {StringsByKey} */ locale) => locale.key))
 	/** @type {string[]} */
 	const langsHavingLocale = []
 	Object.keys(i18nWithFallbacks).forEach((lang) => {
-		const localLangName = lang
-			.replace(/^zh-hans$/, 'zh-cn')
-			.replace(/^zh-hant$/, 'zh-tw')
+		const localLangName = lang.replace(/^zh-hans$/, 'zh-cn').replace(/^zh-hant$/, 'zh-tw')
 
 		// The English locale is built-in.
 		if (lang !== 'en' && locales.has(localLangName)) {
@@ -281,26 +270,19 @@ DOMPurify.addHook('uponSanitizeElement', (currentNode, data, config) => {
 	}
 })
 
-DOMPurify.addHook(
-	'uponSanitizeAttribute',
-	(_currentNode, hookEvent, config) => {
-		const sanitizeConfig = /** @type {SanitizeConfig} */ (config)
-		if (
-			!Object.keys(hookEvent.allowedAttributes).includes(hookEvent.attrName)
-		) {
-			warning(
-				`Disallowed attribute found and sanitized in the string "${keyword(sanitizeConfig.stringName)}" in ${keyword(sanitizeConfig.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${sanitizeConfig.stringName}/${sanitizeConfig.lang}.`,
-			)
-		}
-	},
-)
+DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => {
+	const sanitizeConfig = /** @type {SanitizeConfig} */ (config)
+	if (!Object.keys(hookEvent.allowedAttributes).includes(hookEvent.attrName)) {
+		warning(
+			`Disallowed attribute found and sanitized in the string "${keyword(sanitizeConfig.stringName)}" in ${keyword(sanitizeConfig.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See\nhttps://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${sanitizeConfig.stringName}/${sanitizeConfig.lang}.`,
+		)
+	}
+})
 
 /** @type {AnyByKey<StringsByKey>} */
 const i18n = {}
 fs.readdirSync('./i18n/')
-	.filter(
-		(filename) => path.extname(filename) === '.json' && filename !== 'qqq.json',
-	)
+	.filter((filename) => path.extname(filename) === '.json' && filename !== 'qqq.json')
 	.forEach((filename) => {
 		const [, lang] = path.basename(filename).match(/^(.+)\.json$/) || []
 		const strings = JSON.parse(fs.readFileSync(`./i18n/${filename}`, 'utf8'))
@@ -372,18 +354,12 @@ if (Object.keys(i18n).length) {
 	// they can be collected using
 	// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
 	/** @type {Record<string, string[]>} */
-	const fallbackData = JSON.parse(
-		fs.readFileSync('./data/languageFallbacks.json', 'utf8'),
-	)
+	const fallbackData = JSON.parse(fs.readFileSync('./data/languageFallbacks.json', 'utf8'))
 	Object.keys(i18n).forEach((lang) => {
 		const fallbacks = fallbackData[lang]
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		i18nWithFallbacks[lang] = fallbacks
-			? Object.assign(
-					{},
-					...fallbacks.map((fbLang) => i18n[fbLang]).reverse(),
-					i18n[lang],
-				)
+			? Object.assign({}, ...fallbacks.map((fbLang) => i18n[fbLang]).reverse(), i18n[lang])
 			: i18n[lang]
 	})
 
@@ -399,10 +375,7 @@ if (Object.keys(i18n).length) {
 
 		if (lang === 'en') {
 			// Prevent creating "</nowiki>" character sequences when building the main script file.
-			jsonText = jsonText.replace(
-				/<\/nowiki>/g,
-				'</" + "".repeat(1) + "nowiki>',
-			)
+			jsonText = jsonText.replace(/<\/nowiki>/g, '</" + "".repeat(1) + "nowiki>')
 		}
 
 		let text = `window.convenientDiscussions = /** @type {import('../../src/loader/cd').ConvenientDiscussions} */ (window.convenientDiscussions || {});
@@ -412,10 +385,7 @@ convenientDiscussions.i18n['${lang}'] = ${jsonText};
 
 		let dayjsLocaleText
 		if (langsHavingDayjsLocale.includes(lang)) {
-			dayjsLocaleText = fs.readFileSync(
-				`./${DAYJS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`,
-				'utf8',
-			)
+			dayjsLocaleText = fs.readFileSync(`./${DAYJS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`, 'utf8')
 			text += `
 // This assigns a day.js locale object to \`convenientDiscussions.i18n['${lang}'].dayjsLocale\`.
 ${dayjsLocaleText}
@@ -443,9 +413,6 @@ ${dateFnsLocaleText}
 }
 
 fs.mkdirSync('data', { recursive: true })
-fs.writeFileSync(
-	'data/i18nList.json',
-	JSON.stringify(Object.keys(i18n), null, '\t') + '\n',
-)
+fs.writeFileSync('data/i18nList.json', JSON.stringify(Object.keys(i18n), null, '\t') + '\n')
 
 console.log('Internationalization files have been built successfully.')
