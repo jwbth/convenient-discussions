@@ -462,7 +462,12 @@ class Tribute {
 					li.classList.add(collection.selectClass)
 				}
 				// jwbth: Replaced innerHTML with textContent to prevent XSS injections.
-				li.textContent = collection.menuItemTemplate(item)
+				let renderedItem = collection.menuItemTemplate(item)
+				if (renderedItem instanceof Node) {
+					li.append(renderedItem)
+				} else {
+					li.textContent = renderedItem
+				}
 				fragment.append(li)
 			})
 			ul.append(fragment)

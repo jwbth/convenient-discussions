@@ -13,6 +13,9 @@ import { interlanguagePrefixes } from './utils-window'
  * @property {boolean} [colonPrefix] Whether the user typed a leading `:` (e.g. `:Category:Foo`)
  * @property {string} [interwikiPrefix] The interwiki prefix portion (e.g. `"en:"` or `"w:en:"`)
  * @property {string} label The display string shown in the menu and used for searching
+ * @property {boolean} [isWikidataEntity] Whether this is a Wikidata entity search result
+ * @property {string} [description] Description of the Wikidata entity
+ * @property {string} [displayLabel] Original display label for the Wikidata entity
  */
 
 /**
@@ -315,6 +318,63 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		})
 
 		await CrossSiteMwTitle.loadHostData(hostname, foreignApi)
+
+		if (hostname === 'www.wikidata.org') {
+			const temporaryTitle = CrossSiteMwTitle.newFromText(pageName, undefined, hostname)
+			const namespacePrefix = temporaryTitle?.getNamespacePrefix() || ''
+
+			const typeMap = {
+				'': 'item',
+				'Property:': 'property',
+				'Lexeme:': 'lexeme',
+			}
+
+			if (temporaryTitle && namespacePrefix in typeMap) {
+				const type = typeMap[namespacePrefix]
+				const searchTerm = pageName.slice(namespacePrefix.length)
+
+				const response = /** @type {any} */ (
+					await BaseAutocomplete.createDelayedPromise(async (resolve) => {
+						const apiResponse = await foreignApi
+							.get({
+								action: 'wbsearchentities',
+								search: searchTerm,
+								limit: 10,
+								type,
+								language: cd.g.userLanguage,
+							})
+							.catch(handleApiReject)
+
+						if (BaseAutocomplete.currentPromise) {
+							BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
+						}
+						resolve(apiResponse)
+					})
+				)
+
+				const interwikiPrefix = this.extractInterwikiPrefix(text, pageName)
+
+				return (response.search || []).flatMap((/** @type {any} */ entity) => {
+					const titleStr = entity.title
+					const displayLabel = entity.label || entity.display?.label?.value || titleStr
+					const description = entity.description || entity.display?.description?.value || ''
+
+					const title = CrossSiteMwTitle.newFromText(titleStr, undefined, hostname)
+					if (!title) return []
+
+					return /** @type {WikilinkEntry} */ ({
+						title,
+						pageName: titleStr,
+						colonPrefix,
+						interwikiPrefix,
+						label: displayLabel,
+						isWikidataEntity: true,
+						description,
+						displayLabel,
+					})
+				})
+			}
+		}
 
 		const response = /** @type {import('./AutocompleteManager').OpenSearchResults} */ (
 			await BaseAutocomplete.createDelayedPromise(async (resolve) => {
@@ -628,6 +688,25 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		return {
 			keepAsEnd: /^(?:\||\]\])/,
 			tabSelectsStartOnly: true,
+			menuItemTemplate: (item) => {
+				const entry = item.original.entry
+				if (entry?.isWikidataEntity) {
+					const fragment = document.createDocumentFragment()
+					const labelSpan = document.createElement('span')
+					labelSpan.textContent = item.string || entry.displayLabel || ''
+					fragment.append(labelSpan)
+					if (entry.description) {
+						const descSpan = document.createElement('span')
+						descSpan.className = 'cd-autocomplete-wikidata-description'
+						descSpan.textContent = entry.description
+						fragment.append(descSpan)
+					}
+
+					return fragment
+				}
+
+				return item.string
+			},
 		}
 	}
 
