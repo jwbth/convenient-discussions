@@ -1,49 +1,65 @@
+<templatestyles src="Template:User-JWBTH-Convenient Discussions/styles.css" />
 <languages />
-<div style="margin-top: 1em;"></div>
 {{shortcut2|User:JWBTH/CD}}
-[[{{Localized media|Convenient Discussions logo color|svg}}|400px|<translate><!--T:1--> The script's logo. The colors represent the backgrounds of comments of different types</translate>]]
-[[{{Localized media|Convenient Discussions screenshot|png}}|thumb|400px|<translate><!--T:2--> A page that uses Convenient Discussions</translate>]]
-[[{{Localized media|Convenient Discussions watchlist|png}}|thumb|400px|<translate><!--T:3--> Convenient Discussions adds a number of elements to the watchlist: the "CD" button group to the left of the watchlist settings button and the "comment" links to the right of edit summaries.</translate>]]
-[[File:Convenient Discussions thread navigation.webm|thumb|<translate><!--T:101--> Navigating sibling threads by holding the middle mouse button</translate><translate></translate>]]
+<div style="width: fit-content; margin: 1em auto; text-align: center; font-size: 1.4em;">
+<div class="ts-cdLogo">[[{{Localized media|Convenient Discussions logo color|svg}}|475px|<translate><!--T:1--> The script's logo. The colors represent the backgrounds of comments of different types</translate>]]</div>
+<p style="margin-top: 0.25em;"><translate>Makes collaboration smooth and efficient on MediaWiki talk pages</translate></p>
+</div>
+
+<div style="width: fit-content; margin: 1em auto; display: flex; gap: 1.5em;">
+[[{{Localized media|Convenient Discussions hero|png}}|thumb|x350px|none|<translate>Light mode + Spacious design + Relative time</translate>]]
+[[{{Localized media|Convenient Discussions hero dark|png}}|thumb|x350px|none|<translate>Dark mode + Compact design + Absolute time</translate>]]
+</div>
 {{2021 Coolest tool award|Convenient Discussions|Versatile|float=right}}
 <translate>
 <!--T:4-->
-'''Convenient Discussions''' ('''CD''') is a JavaScript tool providing a shell over the existing MediaWiki discussion system that enhances user experience with talk pages in multiple ways.
+'''Convenient Discussions''' ('''CD''') is a JavaScript tool that enhances MediaWiki talk pages, redesigning threads, adding more comment and section actions, new comment navigation, real-time updates, autocomplete, and dozens of other features to make wiki discussions smooth and efficient.
+
+CD has been developed since 2017 by <tvar name="jack-link">[[User:Jack who built the house|Jack who built the house]]</tvar>. It is enriched by contributions and feedback from the global Wikimedia community and integrates solutions and ideas from the Wikimedia Foundation's engineering and design teams.
 
 == Features == <!--T:96-->
+</translate>
+[[File:Convenient Discussions wikilinks autocomplete.png|thumb|<translate>Cross-wiki wikilinks autocomplete ([[:File:Convenient Discussions wikilinks autocomplete.gif|animation]]). {{key|Tab}} to insert the page name, {{key|Enter}} to finalize the markup. ''How can we promote cross-wiki collaboration if people can't even link pages on other wikis easily?''</translate>]]
+<translate>
+Predating the [[mw:Extension:DiscussionTools|DiscussionTools]] (DT) project, CD offers a wide range of features beyond DT functionality:
 
-<!--T:5-->
-* Posting and editing comments without switching to a separate page
-** @mentions, <nowiki>[[#comment links]], [[wikilinks]], {{templates}}, and <tags></nowiki> autocomplete
-** Quoting comments with formatting preserved
-** Autofilling the edit summary with indication of the addressee of the comment
-** Saving comment drafts to restore the forms' content after unexpected events such as browser crashes
-** Uploading screenshots to Commons in three clicks
-* Creating topics and subsections
-* Redesigned talk pages, with author and date displayed on top of comments (opt-in) and thin lines denoting threads
-* Handling "outdent" templates
-* Collapsible (and autocollapsible) threads
-* Navigating sibling threads by holding the middle mouse button (''see video'')
-* Comment timestamps in local time and arbitrary format, including relative
-* Highlighting and navigating new comments (via the [[#Navigation panel|navigation panel]] or the table of contents)
-* Highlighting own comments
-* Checking for new comments in the background and automatically rendering simple comment edits
-* Subscribing to topics, which affects notifications and highlighting topics in several places (based on [[mw:Help:DiscussionTools#Topic_subscriptions|DiscussionTools]])
-* Desktop notifications about replies to the user's comments and comments in topics the user subscribed to on open pages (opt-in)
-* Moving topics between talk pages
-* Thanking for edits that added comments
-* Copying links to comments
-* Jumping to a specific comment from the watchlist and other pages that list revisions
-* Always seeing the current section's name and navigating page parts in one click
-* Searching for comments and sections in the archive
+* Discussion threads are redesigned, making the hierarchy of replies clear
+* <tvar name="user-icon"><span tabindex="0" class="ts-userInfoCardMock" style="top: -1px; position: relative; cursor: pointer; width: 24px; height: 24px; display: inline-flex; justify-content: center; border-width: 1px; border-style: solid; border-radius: 2px; border-color: transparent;"><span style="opacity: 0.65;">[[File:OOjs UI icon userAvatar.svg|16px|link=]]</span></span></tvar> '''Author''' and date appear ''at the top'' of each comment ''(opt-out)''
+* You can edit comments, move sections, create subsections, and vote in polls
+* New comments can be navigated using the [[#Navigation panel|navigation panel]] or the table of contents
+** No more reading talk pages through diffs
+* Comments are [[#Comment types|highlighted]] by type: <span class="ts-label ts-label-new" style="display: inline-block; background-color: #e8fff1; padding: 0 5px; border-left: 3px solid #00af89;">new or updated</span>, <span class="ts-label ts-label-own" style="display: inline-block; background-color: #faf3fc; padding: 0 5px; border-left: 3px solid #9f33cc;">your own</span>, <span class="ts-label ts-label-jumpedTo" style="display: inline-block; background-color: #fef6e7; padding: 0 5px; border-left: 3px solid #edab00;">jumped-to</span>, <span class="ts-label ts-label-linked" style="display: inline-block; background-color: #e8eeff; padding: 0 5px; border-left: 3px solid #36c;">linked</span>, <span class="ts-label ts-label-deleted" style="display: inline-block; background-color: #fee7e6; padding: 0 5px; border-left: 3px solid #d73333;">deleted</span>
+* The page checks for updates in real time:
+** A live counter shows the number of new comments
+** The table of contents and individual threads show which items have new activity and from whom
+** Simple comment edits by other users are rendered on the spot, with a diff available
+** [[w:Pop-up notification|Desktop notifications]] are available while the page is open
+* Timestamps are shown in your local time in one of several formats, including relative time ''(opt-in)''
+* Long, deeply nested discussions are handled well:
+** Threads collapse automatically or on demand, making it easier to scan and navigate
+** You can jump between a comment and its parent
+** When replying to the opening comment of a topic, the reply form can be under it or at the end of the section
+*** No need to scroll back and forth to reply or check details
+** {{template|outdent}} templates are respected and inserted in a clever way so as not to break or confuse the reply hierarchy
+* Beyond <syntaxhighlight inline lang="wikitext">@mentions</syntaxhighlight>, there is autocomplete for <syntaxhighlight inline lang="wikitext">[[#comment links]]</syntaxhighlight>, <syntaxhighlight inline lang="wikitext">[[wikilinks]]</syntaxhighlight>, <syntaxhighlight inline lang="wikitext">{{templates}}</syntaxhighlight>, and <syntaxhighlight inline lang="wikitext"><tags></syntaxhighlight>
+** Wikilinks autocomplete works across interwiki prefixes ''(see image)'' and will even let you autocomplete a page section on a distant wiki
 
-<!--T:6-->
-The script makes the user forget about:
-* the need to search the code for a place for a comment, count colons, type tildes and other markup;
-* edit conflicts;
-* reading talk pages through diffs;
-* the need to completely reload the page and look for new comments with eyes, or even check the watchlist;
-* the need to convert UTC dates to local time.
+Among other things, CD lets you:
+* comment in several places at once, without closing other forms;
+* quote comments with their formatting preserved;
+* get pasted links to Wikimedia wikis converted to wikilinks
+** <code><nowiki>http://fr.wiktionary.org/wiki/mot#Français</nowiki></code> on Commons becomes <syntaxhighlight inline lang="wikitext">[[wikt:fr:mot#Français]]</syntaxhighlight>
+* use custom text snippets for anything you type frequently;
+* upload screenshots to Commons with ease: paste → pick the source → upload;
+* copy links in several formats;
+* sort a topic's contributors by name, comment count, and date;
+* jump straight to a comment from the watchlist, history, contributions, and elsewhere via a "(comment)" link.
+
+CD is highly customizable [[#Usage|per-user]] and [[#Configuring for a wiki|per-wiki]], works across wikis, [https://translatewiki.net/wiki/Translating:Convenient_Discussions 43 languages], skins, themes, and browsers, supports RTL scripts and anonymous editing.
+
+== Limitations ==
+* Doesn't support [[mw:Extension:VisualEditor|VisualEditor]]
+* Doesn't work in the mobile version (but works on mobile with the desktop view)
 
 == Installation == <!--T:9-->
 
@@ -55,7 +71,7 @@ mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_bu
 </syntaxhighlight>
 <translate>
 <!--T:11-->
-To install the script on a specific wiki where it's not a gadget, add the same code to your common.js. If the wiki has the script as a gadget, activate it in user preferences. Even if you have the script installed globally, it would make sense to add the gadget—the script would load faster on that wiki.
+To install the script on a specific wiki where it's not a gadget, add the same code to your common.js. If the wiki has the script available as a gadget, it makes sense to enable the gadget if you have the script installed globally—the script will load faster on that wiki.
 
 <!--T:12-->
 Every wiki has its own peculiarities that the script can address in the configuration file. Those are individual for each wiki and created by volunteers. If you know JavaScript and your wiki doesn't have one, see {{section link||Configuring for a wiki}}. Having a configuration file for the wiki will also speed up the execution of the script.
@@ -79,8 +95,8 @@ Note that this will not load the script if Convenient Discussions doesn't load. 
 </translate>
 <syntaxhighlight lang="js" style="background: transparent;" copy>
 if (
-	mw.config.get( 'wgNamespaceNumber' ) % 2 !== 1 &&
-	!mw.config.get( 'wgExtraSignatureNamespaces' ).includes( mw.config.get( 'wgNamespaceNumber' ) )
+  mw.config.get( 'wgNamespaceNumber' ) % 2 !== 1 &&
+  !mw.config.get( 'wgExtraSignatureNamespaces' ).includes( mw.config.get( 'wgNamespaceNumber' ) )
 ) {
 	// Import the script here
 }
@@ -97,7 +113,7 @@ mw.hook( 'convenientDiscussions.commentsReady' ).add( function () {
 </syntaxhighlight>
 <translate>
 <!--T:95-->
-Be sure to disable the "Comments in Local Time" gadget in your preferences if it is present in your wiki (e.g. the English Wikipedia). Also remember to stop Convenient Discussions from
+Be sure to disable the "Comments in Local Time" gadget in your preferences if it is present in your wiki (e.g. the English Wikipedia).
 
 == Usage == <!--T:15-->
 </translate>
@@ -112,9 +128,13 @@ The hotkeys can be found at the click of the "?" button under any comment form a
 === Comment types === <!--T:18-->
 </translate>
 <div style="overflow: hidden;">
-* <div style="display: inline-block; background-color: #edffed; padding: 0 5px; border-left: 3px solid #00af89;><translate><!--T:21--> New comment (a comment is considered new if the page was loaded within 15 minutes since the comment was loaded first time)</translate></div>
-* <div style="display: inline-block; background-color: #faf3fc; padding: 0 5px; border-left: 3px solid #9f33cc;"><translate><!--T:22--> Own comment</translate></div>
-* <div style="display: inline-block; background-color: #fef6e7; padding: 0 5px; border-left: 3px solid #edab00;"><translate><!--T:20--> Target comment (opened by a link or has been jumped to)</translate></div>
+* <div style="display: inline-block; background-color: #e8fff1; padding: 0 5px; border-left: 3px solid #00af89;><translate><!--T:21--> New or updated comment</translate></div>
+** A comment is considered new if the page was loaded within 15 minutes since the comment was loaded first time.
+* <div style="display: inline-block; background-color: #faf3fc; padding: 0 5px; border-left: 3px solid #9f33cc;"><translate><!--T:22--> Your own comment</translate></div>
+* <div style="display: inline-block; background-color: #fef6e7; padding: 0 5px; border-left: 3px solid #edab00;"><translate><!--T:20--> Jumped-to comment</translate></div>
+** That's when you post a new comment or navigate to a comment using the [[#Navigation panel|navigation panel]], table of contents, section/comment header, or a link in another comment
+* <div style="display: inline-block; background-color: #e8eeff; padding: 0 5px; border-left: 3px solid #36c;"><translate>Linked comment</translate></div>
+** That's when you open a page by a comment link, including <span style="white-space: nowrap;">"(comment)"</span> links and [[mw:Extension:Echo|Echo]] notifications
 * <div style="display: inline-block; background-color: #fee7e6; padding: 0 5px; border-left: 3px solid #d73333;"><translate><!--T:89--> Deleted comment</translate></div>
 </div>
 <translate>
@@ -128,8 +148,8 @@ The hotkeys can be found at the click of the "?" button under any comment form a
 == FAQ == <!--T:24-->
 
 <!--T:25-->
-; The script doesn't work on a page where it should work / works on a page where it shouldn't work. How to fix it?
-: The script uses a number of factors to determine whether it should process a certain page, such as the presence of the "Add topic" tab and the <tvar name=wgExtraSignatureNamespaces><code>wgExtraSignatureNamespaces</code></tvar> config value. The simplest way to make it process/not process a page is to click "Run Convenient Discussions on this page once" in the page footer. But that will work only for one time. You should contact the user maintaining the configuration file on your wiki or create your own configuration file according to the [[#Configuring for a wiki|instructions below]]. In that file, [[w:en:Regular expression|regular expressions]] to match page names should be added to/removed from the <tvar name=pageWhitelist><code>pageWhitelist</code></tvar> / <tvar name=pageBlacklist><code>pageBlacklist</code></tvar> values. A worse way to deal with it is to add an element with <tvar name=talkPage><code>class="cd-talkPage"</code></tvar> or <tvar name=notTalkPage><code>class="cd-notTalkPage"</code></tvar> to the source code of the page. In that case, the page will still be classified incorrectly on log pages (the watchlist, history pages etc.).
+; The script doesn't work on a page where it should work or vice versa. How to fix it?
+: The script uses a number of factors to determine whether it should process a certain page, such as the presence of the "Add topic" tab and the <tvar name=wgExtraSignatureNamespaces><code>wgExtraSignatureNamespaces</code></tvar> config value. The simplest way to make it process/not process a page is to click "Run Convenient Discussions on this page once" in the page footer. But that will work only for one time. You should contact the user maintaining the configuration file on your wiki or create your own configuration file according to the [[#Configuring for a wiki|instructions below]]. In that file, [[w:en:Regular expression|regular expressions]] to match page names should be added to/removed from the <tvar name=pageWhitelist><code>pageWhitelist</code></tvar> / <tvar name=pageBlacklist><code>pageBlacklist</code></tvar> values. A worse way to deal with it is to add an element with <tvar name=talkPage><code>class="cd-talkPage"</code></tvar> or <tvar name=notTalkPage><code>class="cd-notTalkPage"</code></tvar> to the source code of the page. In that case, the page will still be classified incorrectly on log pages (the watchlist, history pages, etc.).
 
 <!--T:26-->
 ; What does "(-)" after the comment text in an edit summary mean?
@@ -145,7 +165,7 @@ The hotkeys can be found at the click of the "?" button under any comment form a
 
 <!--T:30-->
 ; I would like to have <tvar name=colon1><code>:&nbsp;</code></tvar> inserted after a user mention like in the <tvar name="ping-template">{{tl|ping}}</tvar> template.
-: Hold <tvar name=ctrl1>{{key press|Ctrl}}</tvar> while choosing the name you want to mention. You can also press the mention icon while holding <tvar name=ctrl2>{{key press|Ctrl}}</tvar> — if you're replying to a comment, a mention of the target comment's author with <tvar name=colon2><code>:&nbsp;</code></tvar> will appear at the beginning of your comment.
+: Hold <tvar name=key1>{{key press|Alt}}</tvar> while choosing the name you want to mention. You can also press the mention icon while holding <tvar name=key2>{{key press|Alt}}</tvar> — if you're replying to a comment, a mention of the target comment's author with <tvar name=colon2><code>:&nbsp;</code></tvar> will appear at the beginning of your comment.
 
 == Data == <!--T:31-->
 
@@ -162,8 +182,8 @@ Here's what the script stores, why, how, and how to delete the data. Note that y
 <translate><!--T:40--> Global settings:</translate>
 <syntaxhighlight lang="js">
 new mw.Api().postWithEditToken({
-	action: 'globalpreferences',
-	optionname: 'userjs-convenientDiscussions-settings',
+  action: 'globalpreferences',
+  optionname: 'userjs-convenientDiscussions-settings',
 });
 </syntaxhighlight>
 <translate><!--T:41--> Local settings:</translate>
@@ -188,7 +208,7 @@ new mw.Api().saveOption('userjs-convenientDiscussions-watchedSections', null);
 </syntaxhighlight>
 |-
 | <translate><!--T:49--> Unsent comment forms' content</translate>
-| <translate><!--T:50--> To restore comment drafts after page reloads, browser crashes, accidental jumps to a different page etc.</translate>
+| <translate><!--T:50--> To restore comment drafts after page reloads, browser crashes, accidental jumps to a different page, etc.</translate>
 | <translate><!--T:51--> For no longer than 60 days, in the browser's [<tvar name="docs-localStorage">https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage</tvar> local storage].</translate>
 | <syntaxhighlight lang="js">
 localStorage.removeItem('convenientDiscussions-commentForms');
@@ -220,11 +240,6 @@ Note that other scripts that you use on wiki pages, as well as side-wide scripts
 <!--T:59-->
 It's best to post bug reports and proposals on Phabricator under [<tvar name="phab-project">https://phabricator.wikimedia.org/tag/convenient-discussions/</tvar> the "convenient-discussions" tag]. If you don't have an account there and don't want to create one, post to the [[<tvar name="talk-page">User talk:Jack who built the house/Convenient Discussions</tvar>|talk page]].
 
-== Credits == <!--T:97-->
-
-<!--T:8-->
-Convenient Discussions started in 2018 as Russian Wikipedia's user script. It is being developed by <tvar name="jack-link">[[:ru:Участник:Jack who built the house|Jack who built the house]]</tvar>, enriched by the contributions and feedback from the global Wikimedia tech community and users. It also borrows the code for parsing timestamps in different formats from <tvar name="matma-rex-link">[[meta:User:Matma Rex|Matma Rex]]</tvar> and uses solutions and ideas from the Wikimedia engineering and design teams.
-
 == Configuring for a wiki == <!--T:60-->
 </translate>
 [[File:Convenient Discussions project structure.svg|thumb|595px|<translate><!--T:61--> Structure of the project</translate>]]
@@ -252,8 +267,8 @@ You can also add any additional instuctions (for example hooks) you need below t
 
 === Examples === <!--T:76-->
 </translate>
-* [[w:en:User:Jack who built the house/convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/wikis/w-en.js <translate><!--T:87--> source in the repository</translate>])
-* [[w:ru:MediaWiki:Gadget-convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/wikis/w-ru.js <translate><!--T:88--> source in the repository</translate>])
+* [[w:en:User:Jack who built the house/convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/w-en.js <translate><!--T:87--> source in the repository</translate>])
+* [[w:ru:MediaWiki:Gadget-convenientDiscussions.js]] ([https://github.com/jwbth/convenient-discussions/blob/master/config/w-ru.js <translate><!--T:88--> source in the repository</translate>])
 
 <translate>
 === How do I turn off the "Reply" buttons? === <!--T:98-->
@@ -272,7 +287,7 @@ To prevent the "Reply" buttons from showing up in closed discussions, add the <t
 If you want to debug your configuration more closely in the browser's development tools and you're familiar with [[w:en:Node.js|Node.js]] and [[w:en:Git|Git]] and have them installed, clone [<tvar name="github-repo">https://github.com/jwbth/convenient-discussions</tvar> the script's repository], run <tvar name="npm-install"><code>npm install</code></tvar> while in the script's directory to install the dependencies, create a <tvar name="js-ext"><code>.js</code></tvar> file in the <tvar name="config-folder"><code>config</code></tvar> folder named using pattern <tvar name="config-pattern"><code>''project_code''[-''language_code''].js</code></tvar> (for example, <tvar name="w-en"><code>w-en.js</code></tvar>, <tvar name="wikt-de"><code>wikt-de.js</code></tvar>, <tvar name=mw><code>mw.js</code></tvar>), and put the following code into it:</translate>
 <syntaxhighlight lang="js">
 export default {
-	// List of properties
+  // List of properties
 };
 
 // Any additional code, e.g. hooks
