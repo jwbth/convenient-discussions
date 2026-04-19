@@ -13,6 +13,8 @@ const TARGET_PAGE_2 = 'User_talk:JWBTH/CD_test_page'
 const TARGET_URL = 'https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page_2'
 
 test.describe('Move section', () => {
+	test.skip(!process.env.TEST_EDIT, 'Skipping editing test (use npm run test:browser:edit to run)')
+
 	test('moving a section to another page and back', async ({ page }) => {
 		// --- Phase 1: Move from CD_test_page to CD_test_page_2 ---
 		await setupConvenientDiscussions(page, { url: TEST_PAGES.JWBTH_TEST })
@@ -53,9 +55,11 @@ test.describe('Move section', () => {
 		console.log('✅ Clicked "Move" button in the dialog')
 
 		// Wait for the success message.
-		const successMessage = dialog.locator('div', {
-			hasText: 'The topic has been successfully moved',
-		}).last()
+		const successMessage = dialog
+			.locator('div', {
+				hasText: 'The topic has been successfully moved',
+			})
+			.last()
 		await expect(successMessage).toBeVisible({ timeout: 15_000 })
 		console.log('✅ Success message is visible')
 
@@ -104,9 +108,11 @@ test.describe('Move section', () => {
 		)
 		await moveButtonBack.click()
 
-		const successMessageBack = dialogBack.locator('div', {
-			hasText: 'The topic has been successfully moved',
-		}).last()
+		const successMessageBack = dialogBack
+			.locator('div', {
+				hasText: 'The topic has been successfully moved',
+			})
+			.last()
 		await expect(successMessageBack).toBeVisible({ timeout: 15_000 })
 		console.log('✅ Topic successfully moved back')
 

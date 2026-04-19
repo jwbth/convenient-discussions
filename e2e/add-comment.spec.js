@@ -8,6 +8,8 @@ import {
 } from './helpers/test-utils.js'
 
 test.describe('Add comment workflow', () => {
+	test.skip(!process.env.TEST_EDIT, 'Skipping editing test (use npm run test:browser:edit to run)')
+
 	test.beforeEach(async ({ page }) => {
 		await setupConvenientDiscussions(page, {
 			url: TEST_PAGES.JWBTH_TEST,
