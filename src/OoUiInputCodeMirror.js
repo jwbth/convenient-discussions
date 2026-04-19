@@ -1,11 +1,16 @@
 // eslint-disable-next-line jsdoc/require-jsdoc
-export default function getOoUiInputCodeMirrorClass() {
-	const codeMirrorExt = /** @type {typeof import('./CodeMirrorWikiEditor').default} */ (
+export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showToolbar) {
+	const codeMirrorExt =
 		mw.loader.getState('ext.CodeMirror.v6.WikiEditor') === 'ready'
-			? mw.loader.require('ext.CodeMirror.v6.WikiEditor')
+			? showToolbar
+				? /** @type {typeof import('./CodeMirrorWikiEditor').default} */ (
+						mw.loader.require('ext.CodeMirror.v6.WikiEditor')
+					)
+				: /** @type {typeof import('./CodeMirror').default} */ (
+						mw.loader.require('ext.CodeMirror.v6')
+					)
 			: // eslint-disable-next-line jsdoc/require-jsdoc
-				class {}
-	)
+				/** @type {typeof import('./CodeMirror').default} */ (/** @type {unknown} */ (class {}))
 
 	// HACK: Name it CodeMirrorChild instead of OoUiInputCodeMirror to prevent focusing in
 	// https://github.com/wikimedia/mediawiki-extensions-CodeMirror/blob/master/resources/codemirror.js

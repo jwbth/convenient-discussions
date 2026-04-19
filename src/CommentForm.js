@@ -1491,27 +1491,34 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Handle the settings update event.
 	 */
-	onSettingsUpdate = () => {
-		this.terminateAutocomplete()
-		this.initAutocomplete()
-
-		this.previewButton.toggle(!cd.settings.get('autopreview'))
-		this.viewChangesButton.toggle(cd.settings.get('autopreview'))
-
+	onSettingsUpdate = async () => {
 		if (cd.settings.get('showToolbar')) {
 			if (this.toolbarLoaded) {
 				this.showToolbar()
 			} else {
-				this.builder.buildToolbar(this.loadCustomModules())
+				// We need to switch from ext.CodeMirror.v6 to to ext.CodeMirror.v6.WikiEditor
+				this.codeMirror?.destroy()
+
+				await this.builder.buildToolbar(this.loadCustomModules())
+
+				this.toolbarLoaded = true
+				this.terminateAutocomplete()
+				this.initAutocomplete()
 			}
 		} else if (!cd.settings.get('showToolbar') && this.toolbarLoaded) {
 			this.hideToolbar()
 		}
 
+		this.terminateAutocomplete()
+		this.initAutocomplete()
+
+		this.codeMirror?.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
+
 		this.$insertButtons?.empty()
 		this.builder.buildInsertButtons()
 
-		this.codeMirror?.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
+		this.previewButton.toggle(!cd.settings.get('autopreview'))
+		this.viewChangesButton.toggle(cd.settings.get('autopreview'))
 	}
 
 	/**
@@ -3261,18 +3268,6 @@ class CommentForm extends EventEmitter {
 		this.codeMirror?.destroy()
 		this.operations.closeAll()
 
-		// Clean up paste/drop handlers
-		if (this.headlineInput && this.headlinePasteDropHandler) {
-			const headlineElement = this.headlineInput.getEditableElement()[0]
-			headlineElement.removeEventListener('paste', this.headlinePasteDropHandler, true)
-			headlineElement.removeEventListener('drop', this.headlinePasteDropHandler, true)
-		}
-		if (this.summaryPasteDropHandler) {
-			const summaryElement = this.summaryInput.getEditableElement()[0]
-			summaryElement.removeEventListener('paste', this.summaryPasteDropHandler, true)
-			summaryElement.removeEventListener('drop', this.summaryPasteDropHandler, true)
-		}
-
 		if (this.$element[0].isConnected) {
 			this.target.cleanUpCommentFormTraces(this.mode, this)
 			this.$element.remove()
@@ -4219,7 +4214,11 @@ class CommentForm extends EventEmitter {
 	 * @param {boolean} active
 	 */
 	setCodeMirrorActive(active) {
-		if (Boolean(this.commentInput.codeMirror) === active) return
+		if (
+			Boolean(this.commentInput.codeMirror) === active &&
+			this.commentInput.codeMirror === this.codeMirror
+		)
+			return
 
 		this.removeEventListenersFromCommentInput()
 		// Autocomplete is initialized indirectly by the settings' `set` event. Perhaps we should

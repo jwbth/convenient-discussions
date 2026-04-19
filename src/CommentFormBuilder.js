@@ -382,7 +382,9 @@ class CommentFormBuilder {
 	 */
 	async buildToolbar(customModulesPromise) {
 		if (!cd.settings.get('showToolbar') || !mw.loader.getState('ext.wikiEditor')) {
-			if (cd.settings.get('useCodeMirror')) {
+			if (cd.settings.get('useCodeMirror') && cd.g.isCodeMirror6Installed) {
+				await mw.loader.using(['ext.CodeMirror.v6', 'ext.CodeMirror.v6.mode.mediawiki'])
+
 				this.initCodeMirror()
 			}
 
@@ -404,7 +406,6 @@ class CommentFormBuilder {
 		])
 
 		$toolbarPlaceholder.remove()
-
 		this.tweakToolbar()
 
 		// A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
@@ -782,7 +783,9 @@ class CommentFormBuilder {
 	 * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
 	 */
 	initCodeMirror = () => {
-		this.form.codeMirror = new (getOoUiInputCodeMirrorClass())(this.form.commentInput)
+		this.form.codeMirror = new (getOoUiInputCodeMirrorClass(cd.settings.get('showToolbar')))(
+			this.form.commentInput,
+		)
 		this.form.codeMirror.initialize(
 			undefined,
 			/** @type {string} */ (this.form.commentInput.$input.attr('placeholder')),
