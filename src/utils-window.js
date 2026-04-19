@@ -996,11 +996,12 @@ export function cleanUpPasteDom(element, containerElement) {
 
 		.forEach(replaceWithChildren)
 
+	// Firefox adds newlines of unclear nature. In general, two newlines should be enough for anyone
+	element.normalize()
 	getAllTextNodes(element)
 		.filter((node) => /** @type {HTMLElement} */ (node.parentElement).tagName !== 'PRE')
 		.forEach((node) => {
-			// Firefox adds newlines of unclear nature
-			node.textContent = node.textContent.replace(/\n/g, ' ')
+			node.textContent = node.textContent.replace(/\n\s*\n\s+/g, '\n\n')
 		})
 
 	// Need to do it before removing the element; if we do it later, the literal textual content of

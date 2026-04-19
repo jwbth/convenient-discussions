@@ -947,10 +947,13 @@ export class CommentManager extends EventEmitter {
 		const selection = window.getSelection()
 		let comment
 		if (selection.toString().trim()) {
-			const { higherNode } =
-				/** @type {import('./utils-window').HigherNodeAndOffsetInSelection} */ (
-					getHigherNodeAndOffsetInSelection(selection)
-				)
+			const { higherNode } = getHigherNodeAndOffsetInSelection(selection) || {}
+			// Somehow it can be false in Firefox
+			if (!higherNode) {
+				this.resetSelectedComment()
+
+				return
+			}
 			const treeWalker = new TreeWalker(controller.rootElement, undefined, false, higherNode)
 			let commentIndex
 			do {
