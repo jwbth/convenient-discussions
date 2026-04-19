@@ -40,9 +40,9 @@
  *   /^yes$/]`).
  * @property {Map<RegExp, (data: { counter: string | null, date: Date | null }, match: string[]) =>
  *   string>} [replacements]
- *   {@https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map Map} of
- *   replacements where keys are RegExps and values are functions that take a data object and return
- *   a replacement string.
+ *   {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map Map}
+ *   of replacements where keys are RegExps and values are functions that take a data object and
+ *   return a replacement string.
  * @property {boolean} [areArchivesSorted=false] Set to `true` if the archived topic should be
  *   placed so that topics are sorted by date (e.g. in between other topics).
  */

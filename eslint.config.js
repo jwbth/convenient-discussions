@@ -117,6 +117,7 @@ const config = defineConfig(
 					'./src/shared/jsconfig.json',
 					'./tests/jsconfig.json',
 					'./e2e/jsconfig.json',
+					'./config/jsconfig.json',
 					// './sandbox/jsconfig.json',
 				],
 				tsconfigRootDir: import.meta.dirname,
