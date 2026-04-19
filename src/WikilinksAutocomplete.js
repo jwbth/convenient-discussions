@@ -19,6 +19,32 @@ import { interlanguagePrefixes } from './utils-window'
  */
 
 /**
+ * @typedef {object} WikidataEntity
+ * @property {string} title Entity ID (e.g., Q1)
+ * @property {string} [label] Entity label
+ * @property {string} [description] Entity description
+ * @property {object} [display]
+ * @property {object} [display.label]
+ * @property {string} [display.label.value]
+ * @property {object} [display.description]
+ * @property {string} [display.description.value]
+ */
+
+/**
+ * @typedef {object} WikidataSearchResponse
+ * @property {WikidataEntity[]} [search]
+ */
+
+/**
+ * @typedef {object} ApiResponseParseSections
+ * @property {object} [parse]
+ * @property {object[]} [parse.sections]
+ * @property {string} parse.sections[].anchor Section anchor (decoded)
+ * @property {string} parse.sections[].linkAnchor Section anchor (encoded)
+ * @property {string} parse.sections[].line Section headline
+ */
+
+/**
  * @typedef {object} SectionData
  * @property {string} pageName The page name before the #
  * @property {string} fragment The section fragment after the #
@@ -323,6 +349,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			const temporaryTitle = CrossSiteMwTitle.newFromText(pageName, undefined, hostname)
 			const namespacePrefix = temporaryTitle?.getNamespacePrefix() || ''
 
+			/** @type {{ [key: string]: string }} */
 			const typeMap = {
 				'': 'item',
 				'Property:': 'property',
@@ -333,7 +360,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				const type = typeMap[namespacePrefix]
 				const searchTerm = pageName.slice(namespacePrefix.length)
 
-				const response = /** @type {any} */ (
+				const response = /** @type {WikidataSearchResponse} */ (
 					await BaseAutocomplete.createDelayedPromise(async (resolve) => {
 						const apiResponse = await foreignApi
 							.get({
@@ -354,7 +381,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 				const interwikiPrefix = this.extractInterwikiPrefix(text, pageName)
 
-				return (response.search || []).flatMap((/** @type {any} */ entity) => {
+				return (response.search || []).flatMap((entity) => {
 					const titleStr = entity.title
 					const displayLabel = entity.label || entity.display?.label?.value || titleStr
 					const description = entity.description || entity.display?.description?.value || ''
@@ -478,29 +505,29 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		if (!sections) {
 			try {
 				// Fetch sections from API (local or foreign)
-				const response = await BaseAutocomplete.createDelayedPromise(async (resolve) => {
-					const api = foreignApi || cd.getApi(BaseAutocomplete.apiConfig)
-					const apiResponse = await api
-						.get({
-							action: 'parse',
-							page: normalizedPageName,
-							prop: 'sections',
-							redirects: true,
-						})
-						.catch(handleApiReject)
+				const response = /** @type {ApiResponseParseSections} */ (
+					await BaseAutocomplete.createDelayedPromise(async (resolve) => {
+						const api = foreignApi || cd.getApi(BaseAutocomplete.apiConfig)
+						const apiResponse = await api
+							.get({
+								action: 'parse',
+								page: normalizedPageName,
+								prop: 'sections',
+								redirects: true,
+							})
+							.catch(handleApiReject)
 
-					if (BaseAutocomplete.currentPromise) {
-						BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
-					}
-					resolve(apiResponse)
-				})
-
-				const parsedSections = (response?.parse?.sections || []).map(
-					(/** @type {any} */ section) => ({
-						anchor: section.linkAnchor.replace(/_/g, ' '),
-						line: section.line,
-					}),
+						if (BaseAutocomplete.currentPromise) {
+							BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
+						}
+						resolve(apiResponse)
+					})
 				)
+
+				const parsedSections = (response.parse?.sections || []).map((section) => ({
+					anchor: section.linkAnchor.replace(/_/g, ' '),
+					line: section.line,
+				}))
 
 				sections = parsedSections
 
@@ -510,11 +537,6 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				// API error or page doesn't exist, return user's input as-is
 				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
 			}
-		}
-
-		// At this point sections is guaranteed to be defined
-		if (!sections) {
-			return this.makeFallbackSectionEntry(pageName, fragmentQuery)
 		}
 
 		// Filter and format results
@@ -688,9 +710,11 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		return {
 			keepAsEnd: /^(?:\||\]\])/,
 			tabSelectsStartOnly: true,
-			menuItemTemplate: (item) => {
+			menuItemTemplate: (
+				/** @type {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<WikilinkEntry>>} */ item,
+			) => {
 				const entry = item.original.entry
-				if (entry?.isWikidataEntity) {
+				if (entry.isWikidataEntity) {
 					const fragment = document.createDocumentFragment()
 					const labelSpan = document.createElement('span')
 					labelSpan.textContent = item.string || entry.displayLabel || ''

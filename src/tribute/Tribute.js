@@ -68,8 +68,8 @@ import tributeCss from './tribute.less?inline'
  *   objects to search across or a function that takes a query text and calls a callback provided to
  *   it with that array
  * @property {RegExp} [keepAsEnd] Custom regex for end matching behavior
- * @property {(searchResults: TributeSearchResults<Value>) => string} [menuItemTemplate] Template
- *   for displaying item in menu
+ * @property {(searchResults: TributeSearchResults<Value>) => string | Node} [menuItemTemplate]
+ *   Template for displaying item in menu
  * @property {boolean} [replaceEnd] Whether to replace text at the end
  * @property {boolean} [requireLeadingSpace] Specify whether a space is required before the trigger
  *   string
