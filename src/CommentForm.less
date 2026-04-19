@@ -119,6 +119,8 @@
 
 	.cm-editor {
 		background-color: var(--background-color-base, #fff);
+		outline: 0;
+		border: 0;
 
 		&.cm-editor.cm-editor {
 			// For autoresize
@@ -145,10 +147,6 @@
 	.ext-codemirror-wrapper--hidden textarea {
 		// By default, it's `inline-block` which creates a gap between the textarea and the buttons.
 		display: block !important;
-	}
-
-	.cm-editor {
-		outline: 0;
 	}
 
 	.cm-panels,
