@@ -522,10 +522,19 @@ class TextInputWidgetMixin {
 			throw new Error('Failed to parse wiki URL')
 		}
 
-		// Check if we need a leading colon (for interlanguage prefixes)
-		// The interwiki prefix already includes the trailing colon when present
-		const needsLeadingColon =
-			interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
+		// Check if we need a leading colon (for interlanguage prefixes, File and Category pages). The
+		// interwiki prefix already includes the trailing colon when present.
+		let needsLeadingColon
+		if (parsedUrl.hostname === cd.g.serverName) {
+			const mwTitle = mw.Title.newFromText(parsedUrl.pageName)
+			if (!mwTitle) {
+				throw new Error('Failed to parse page name')
+			}
+			needsLeadingColon = mwTitle.getNamespaceId() === 6 || mwTitle.getNamespaceId() === 14
+		} else {
+			needsLeadingColon =
+				interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
+		}
 		const leadingColon = needsLeadingColon ? ':' : ''
 
 		// Build the target with fragment if present
