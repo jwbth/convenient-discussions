@@ -298,7 +298,7 @@ export default {
 Then you will need to add the code as described above. After the configuration is ready, you will need to build an actual configuration file that you will put in your wiki. Do it by running <tvar name="npm-run-configs"><code>npm run configs</code></tvar>. The resulting file will be named <tvar name="dist-config"><code>dist/convenientDiscussions-config/''filename''</code></tvar>.
 
 <!--T:91-->
-Test your configuration file by running <tvar name="npm-run-single"><code>npm run single -- project=''project_code'' lang=''language_code''</code></tvar>. A file named <tvar name="serve-url-single"><code>convenientDiscussions-single-''project_code''[-''language_code''].js</code></tvar> will be created (and updated on code changes) in the <tvar name=dist><code>dist</code></tvar> folder. Load it to the wiki using <tvar name="load-localhost-single"><code>mw.loader.load('<nowiki>http://</nowiki>localhost:9000/''filename''<nowiki />')</code></tvar>.
+Test your configuration file by running <tvar name="npm-run-single"><code>npm run single -- --project=''project_code'' --lang=''language_code''</code></tvar> (use <code>-- -- --project</code> in PowerShell). A file named <tvar name="serve-url-single"><code>convenientDiscussions.single.''project_code''[-''language_code''].js</code></tvar> will be created (and updated on code changes) in the <tvar name=dist><code>dist</code></tvar> folder. Load it to the wiki using <tvar name="load-localhost-single"><code>mw.loader.load('<nowiki>http://</nowiki>localhost:9000/''filename''<nowiki />')</code></tvar>.
 
 <!--T:68-->
 It will be best if you make a pull request to include your configuration in the CD repository. This way, if something in the script environment changes that affects your configuration file (the format of a property changes, for instance, or a default value, that your value is based on, is updated), other people including the maintainer of the script would be able to notice it and inform you and/or make changes themselves.
@@ -308,7 +308,8 @@ It will be best if you make a pull request to include your configuration in the 
 <!--T:78-->
 * [<tvar name="github-repo">https://github.com/jwbth/convenient-discussions</tvar> GitHub repository] is used to store code. GitHub Actions is used to build and deploy the resulting files to wikis, as well as docs to Toolforge.
 * [<tvar name="phabricator-project">https://phabricator.wikimedia.org/tag/convenient-discussions/</tvar> Phabricator tag] is used to coordinate efforts. (Post bug reports and proposals there, not at GitHub.)
-* [<tvar name="toolforge-docs">https://tools-static.wmflabs.org/convenient-discussions/docs/</tvar> Toolforge] has automatically generated code documentation.
+* [<tvar name="toolforge-docs">https://tools-static.wmflabs.org/convenient-discussions/docs/</tvar> Toolforge] has automatically generated code documentation ''for older versions''.
+** Starting from v8.0.0, the project relies on TypeScript-flavored JSDoc which makes the project type-safe but doesn't let autogenerate documentation.
 * [<tvar name=translatewiki>https://translatewiki.net/wiki/Translating:Convenient_Discussions</tvar> Translatewiki] has localization strings. Please suggest improvements to the English source through a pull request to [<tvar name="github-en">https://github.com/jwbth/convenient-discussions/blob/main/i18n/en.json</tvar> en.json].
 
 <!--T:79-->
@@ -318,18 +319,17 @@ Your contributions are welcome! You can either improve the script itself or writ
 * The "events" in the left panel of the [<tvar name="toolforge-docs">https://tools-static.wmflabs.org/convenient-discussions/docs/</tvar> documentation] correspond to the names used by <tvar name="mw-hook"><code>mw.hook</code></tvar>. For example, to attach a handler to the <tvar name=commentFormCreated><code>commentFormCreated</code></tvar> event, you need the code <tvar name="mw-hook-commentFormCreated"><code>mw.hook('convenientDiscussions.commentFormCreated').add(''handler'');</code></tvar>.
 * To see message names instead of messages themselves on a page, add the ''<tvar name="uselang-qqx">uselang=qqx</tvar>'' parameter to the end of the URL (just like with MediaWiki).
 * If you write a plugin and need some internal method to be available publicly via the global object, contact the [[<tvar name="jack-page">User:Jack who built the house</tvar>|script's maintainer]] (or just make a relevant pull request).
-* So far there are very few automatic tests (although it would be great to have more); most testing should be carried out manually. Some common test cases for comment detection and adding/editing comments are collected at [[User talk:Jack who built the house/CD test cases]].
+* To test, run <code>npm run test</code>. Only several key modules are tested. Parser tests are documented in [https://github.com/jwbth/convenient-discussions/blob/main/tests/parser-tests.md tests/parser-tests.md].
 
 === Building === <!--T:80-->
 
 <!--T:81-->
 Use:
-* <tvar name="npm-run-start"><code>npm run start</code></tvar> to serve the script from <tvar name="serve-url"><nowiki>http://localhost:9000/convenientDiscussions.dev.js</nowiki></tvar> and automatically rebuild on updates. Wiki configuration and translation will still be loaded from web.
-* <tvar name="npm-run-single"><code>npm run single -- project=''project_code'' lang=''language_code''</code></tvar> to serve the script as a single file. Useful to debug configuration and translation.
-* <tvar name="npm-run-build"><code>npm run build</code></tvar> to build the main file, source maps, [[#Configuring for a wiki|project configuration]] files, translation files, and license file. Use <tvar name="test-param1"><code>--test</code></tvar> to build the files with the <tvar name="test-postfix1"><code>-test</code></tvar> postfix.
-* <tvar name="npm-run-docs"><code>npm run docs</code></tvar> to generate documentation from [[w:en:JSDoc|JSDoc]] comments.
-* <tvar name="npm-run-configs"><code>npm run configs</code></tvar> to generate [[#Configuring for a wiki|wiki configuration]] files. Use <tvar name="test-param2"><code>--test</code></tvar> to generate the files with the <tvar name="test-postfix2"><code>-test</code></tvar> postfix.
-* <tvar name="npm-run-deploy"><code>npm run deploy</code></tvar> to deploy the built files (including wiki configurations) to wikis as configured in <tvar name=json5><code>config.json5</code></tvar>. Use <tvar name="test-param3"><code>--test</code></tvar> to deploy the test versions.
+* <tvar name="npm-run-start"><code>npm run dev</code></tvar> to serve the script from <tvar name="serve-url"><nowiki>http://localhost:9000/src/loader/startup.js</nowiki></tvar> and automatically rebuild on updates. Wiki configuration and translation will still be loaded from web.
+* <tvar name="npm-run-single"><code>npm run single -- --project=''project_code'' --lang=''language_code''</code></tvar> (use <code>-- -- --project</code> in PowerShell) to serve the script as a single file. Useful to debug configuration and translation.
+* <tvar name="npm-run-build"><code>npm run build</code></tvar> to build the main file, source maps, [[#Configuring for a wiki|project configuration]] files, translation files, and license file. Use <tvar name="test-param1"><code>--staging</code></tvar> to build the files with the <tvar name="test-postfix1"><code>.staging</code></tvar> postfix.
+* <tvar name="npm-run-configs"><code>npm run configs</code></tvar> to generate [[#Configuring for a wiki|wiki configuration]] files. Use <tvar name="test-param2"><code>--staging</code></tvar> to generate the files with the <tvar name="test-postfix2"><code>.staging</code></tvar> postfix.
+* <tvar name="npm-run-deploy"><code>npm run deploy</code></tvar> to deploy the built files (including wiki configurations) to wikis as configured in <tvar name=json5><code>config.json5</code></tvar>. Use <tvar name="test-param3"><code>--staging</code></tvar> to deploy the staging versions.
 
 == See also == <!--T:82-->
 </translate>
