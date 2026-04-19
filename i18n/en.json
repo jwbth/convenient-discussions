@@ -468,8 +468,6 @@
 	"discussiontools-incompatible": "Convenient Discussions is mostly incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[$1|disable]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(or <b><span class=\"cd-notification-disableDtGlobally\">[[$2|globally disable]]</span></b>)</span> DiscussionTools to make Convenient Discussions work correctly.",
 	"discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">[[$1|Refresh the page]]</span>.",
 
-	"wl-button-settings-tooltip": "Convenient Discussions settings",
-
 	"lp-comment": "comment",
 	"lp-comment-tooltip": "Go to comment",
 	"lp-comment-toyou": "the comment is addressed to you",
