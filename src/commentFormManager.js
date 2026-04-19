@@ -86,7 +86,9 @@ class CommentFormManager extends EventEmitter {
 			})
 
 		mw.hook('ext.CodeMirror.toggle').add((enabled, codeMirror) => {
-			this.items.find((item) => item.codeMirror === codeMirror)?.setCodeMirrorActive(enabled)
+			this.items
+				.find((item) => item.commentInput.codeMirror === codeMirror)
+				?.updateEventListeners(enabled)
 			if (enabled !== cd.settings.get('useCodeMirror')) {
 				cd.settings.saveSettingOnTheFly('useCodeMirror', enabled)
 			}
@@ -97,8 +99,10 @@ class CommentFormManager extends EventEmitter {
 			await sleep()
 
 			this.items
-				.find((item) => item.codeMirror === codeMirror)
-				?.codeMirror?.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
+				.find((item) => item.commentInput.codeMirror === codeMirror)
+				?.commentInput.codeMirror?.updateAutocompletePreference(
+					cd.settings.get('useNativeAutocomplete'),
+				)
 		})
 	}
 

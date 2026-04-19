@@ -55,7 +55,7 @@ class CommentFormBuilder {
 			value: initialState.comment ?? '',
 			placeholder: this.form.target.getCommentFormCommentInputPlaceholder(this.form.mode, () => {
 				const target = /** @type {import('./Comment').default} */ (this.form.target)
-				this.form.updateCommentInputPlaceholder(
+				this.form.commentInput.updatePlaceholder(
 					removeDoubleSpaces(
 						cd.s('cf-comment-placeholder-replytocomment', target.author.getName(), target.author),
 					),
@@ -430,7 +430,7 @@ class CommentFormBuilder {
 		this.setupToolbar()
 		this.removeToolbarElements()
 		this.addToolbarButtons()
-		this.addCodeMirror()
+		this.addCodeMirrorToToolbarAndInit()
 		this.tweakTabs()
 	}
 
@@ -660,7 +660,7 @@ class CommentFormBuilder {
 	 *
 	 * @private
 	 */
-	addCodeMirror() {
+	addCodeMirrorToToolbarAndInit() {
 		if (!cd.g.isCodeMirror6Installed) return
 
 		this.form.commentInput.$element
@@ -783,10 +783,11 @@ class CommentFormBuilder {
 	 * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
 	 */
 	initCodeMirror = () => {
-		this.form.codeMirror = new (getOoUiInputCodeMirrorClass(cd.settings.get('showToolbar')))(
+		const codeMirror = new (getOoUiInputCodeMirrorClass(cd.settings.get('showToolbar')))(
 			this.form.commentInput,
 		)
-		this.form.codeMirror.initialize(
+		this.form.commentInput.setCodeMirror(codeMirror)
+		codeMirror.initialize(
 			undefined,
 			/** @type {string} */ (this.form.commentInput.$input.attr('placeholder')),
 		)

@@ -51,17 +51,15 @@ class MultilineTextInputWidget extends mixIntoClass(
 	}
 
 	/**
-	 * Set the correspondent CodeMirror instance or `undefined` if CodeMirror is not active.
+	 * Set the correspondent CodeMirror instance.
 	 *
-	 * @param {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>> | undefined} codeMirror
+	 * @param {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>>} codeMirror
 	 */
 	setCodeMirror(codeMirror) {
 		/** @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>> | undefined} */
 		this.codeMirror = codeMirror
 
-		if (this.codeMirror) {
-			this.updateCodeMirrorPendingClass()
-		}
+		this.updateCodeMirrorPendingClass()
 	}
 
 	/**
@@ -71,7 +69,7 @@ class MultilineTextInputWidget extends mixIntoClass(
 	 * @returns {this}
 	 */
 	focus() {
-		if (this.codeMirror) {
+		if (this.codeMirror?.isActive) {
 			this.codeMirror.view.focus()
 
 			return this
@@ -86,7 +84,7 @@ class MultilineTextInputWidget extends mixIntoClass(
 	 * @returns {boolean}
 	 */
 	isFocused() {
-		return this.codeMirror
+		return this.codeMirror?.isActive
 			? this.codeMirror.container.contains(document.activeElement)
 			: this.$input.is(':focus')
 	}
@@ -113,8 +111,6 @@ class MultilineTextInputWidget extends mixIntoClass(
 
 	/**
 	 * Update the pending status of the CodeMirror instance.
-	 *
-	 * @private
 	 */
 	updateCodeMirrorPendingClass() {
 		if (!this.codeMirror) return
@@ -129,7 +125,7 @@ class MultilineTextInputWidget extends mixIntoClass(
 	 * @override
 	 */
 	getEditableElement() {
-		return $(this.codeMirror?.view.contentDOM || this.$input)
+		return $(this.codeMirror?.isActive ? this.codeMirror.view.contentDOM : this.$input)
 	}
 
 	/**
@@ -144,6 +140,16 @@ class MultilineTextInputWidget extends mixIntoClass(
 		this.codeMirror?.updateDisabled(disabled)
 
 		return this
+	}
+
+	/**
+	 * Update the placeholder text.
+	 *
+	 * @param {string} text
+	 */
+	updatePlaceholder(text) {
+		this.$input.attr('placeholder', text)
+		this.codeMirror?.updatePlaceholder(text)
 	}
 }
 

@@ -499,13 +499,6 @@ class CommentForm extends EventEmitter {
 	autoSummary
 
 	/**
-	 * CodeMirror instance for the comment input.
-	 *
-	 * @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>> | undefined}
-	 */
-	codeMirror
-
-	/**
 	 * Toggle buttons replacing sections like "Special characters", "Advanced".
 	 *
 	 * @type {OO.ui.ToggleButtonWidget[]}
@@ -867,16 +860,6 @@ class CommentForm extends EventEmitter {
 	 */
 	getTabIndex(elementIndex) {
 		return Number(String(this.index) + String(elementIndex))
-	}
-
-	/**
-	 * Update the comment input placeholder.
-	 *
-	 * @param {string} text
-	 */
-	updateCommentInputPlaceholder(text) {
-		this.commentInput.$input.attr('placeholder', text)
-		this.codeMirror?.updatePlaceholder(text)
 	}
 
 	/**
@@ -1414,7 +1397,7 @@ class CommentForm extends EventEmitter {
 					// When there is a search panel, CodeMirror closes it on Esc even when the caret is in the
 					// main text box. With the preferences panel, it is so only when the panel itself is
 					// focused.
-					(!this.codeMirror?.isActive ||
+					(!this.commentInput.codeMirror?.isActive ||
 						!this.$element.find('.cm-panels :focus, .cm-mw-panel--search-panel').length)
 				) {
 					this.cancel()
@@ -1425,7 +1408,10 @@ class CommentForm extends EventEmitter {
 		)
 
 		this.$element[0].addEventListener('keydown', (event) => {
-			if (this.codeMirror?.isActive && /** @type {Element} */ (event.target).tagName === 'TEXTAREA')
+			if (
+				this.commentInput.codeMirror?.isActive &&
+				/** @type {Element} */ (event.target).tagName === 'TEXTAREA'
+			)
 				return
 
 			// WikiEditor started supporting these in October 2024
@@ -1497,7 +1483,7 @@ class CommentForm extends EventEmitter {
 				this.showToolbar()
 			} else {
 				// We need to switch from ext.CodeMirror.v6 to to ext.CodeMirror.v6.WikiEditor
-				this.codeMirror?.destroy()
+				this.commentInput.codeMirror?.destroy()
 
 				await this.builder.buildToolbar(this.loadCustomModules())
 
@@ -1512,7 +1498,9 @@ class CommentForm extends EventEmitter {
 		this.terminateAutocomplete()
 		this.initAutocomplete()
 
-		this.codeMirror?.updateAutocompletePreference(cd.settings.get('useNativeAutocomplete'))
+		this.commentInput.codeMirror?.updateAutocompletePreference(
+			cd.settings.get('useNativeAutocomplete'),
+		)
 
 		this.$insertButtons?.empty()
 		this.builder.buildInsertButtons()
@@ -1731,11 +1719,16 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	removeEventListenersFromCommentInput() {
-		const editableElement = this.commentInput.getEditableElement()[0]
-		editableElement.removeEventListener('paste', this.handlePasteDrop, true)
-		editableElement.removeEventListener('drop', this.handlePasteDrop, true)
+		const elements = [this.commentInput.$input[0]]
+		if (this.commentInput.codeMirror?.view?.contentDOM) {
+			elements.push(this.commentInput.codeMirror.view.contentDOM)
+		}
 
-		this.commentInput.getEditableElement().off('.cd')
+		elements.forEach((editableElement) => {
+			editableElement.removeEventListener('paste', this.handlePasteDrop, true)
+			editableElement.removeEventListener('drop', this.handlePasteDrop, true)
+			$(editableElement).off('.cd')
+		})
 	}
 
 	/**
@@ -3265,7 +3258,7 @@ class CommentForm extends EventEmitter {
 		if (this.torndown) return
 
 		this.unregister()
-		this.codeMirror?.destroy()
+		this.commentInput.codeMirror?.destroy()
 		this.operations.closeAll()
 
 		if (this.$element[0].isConnected) {
@@ -4209,21 +4202,13 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Set whether CodeMirror is active. Update the autocomplete preference along the way.
-	 *
-	 * @param {boolean} active
+	 * Update the event listeners for the comment input.
 	 */
-	setCodeMirrorActive(active) {
-		if (
-			Boolean(this.commentInput.codeMirror) === active &&
-			this.commentInput.codeMirror === this.codeMirror
-		)
-			return
-
+	updateEventListeners() {
 		this.removeEventListenersFromCommentInput()
+
 		// Autocomplete is initialized indirectly by the settings' `set` event. Perhaps we should
 		// initialize it directly here as well?
-		this.commentInput.setCodeMirror(active ? this.codeMirror : undefined)
 		this.addEventListenersToCommentInput()
 	}
 
