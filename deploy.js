@@ -119,8 +119,8 @@ const configAssets = config.configs.flatMap((wikiConfig) => {
 /** @type {string} */
 let version
 if (process.env.CI) {
-	// HTTP proxy to use with https-proxy-agent while the SOCKS proxy is created by the `ssh -D
-	// [port]` command as part of the SSH tunnel to Toolforge.
+	// HTTP proxy to use with the http-proxy-to-socks module, while the SOCKS proxy is created by the
+	// `ssh -D [port]` command as part of the SSH tunnel to Toolforge.
 	config.proxy = 'http://localhost:8080'
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
