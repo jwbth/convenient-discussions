@@ -27,6 +27,7 @@ const ALLOWED_TAGS = [
 	'bdi',
 	'bdo',
 
+	'blockquote',
 	'code',
 	'div',
 	'em',
