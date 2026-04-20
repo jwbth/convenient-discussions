@@ -217,7 +217,7 @@ class CommentFormBuilder {
 				),
 				padded: true,
 				align: 'center',
-				width: 400,
+				width: 500,
 				classes: ['cd-helpPopup'],
 			},
 			$overlay: controller.getPopupOverlay(),
