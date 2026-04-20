@@ -28,6 +28,7 @@ const ALLOWED_TAGS = [
 	'bdo',
 
 	'code',
+	'div',
 	'em',
 	'i',
 	'kbd',
@@ -301,7 +302,7 @@ fs.readdirSync('./i18n/')
 					sanitized,
 					/** @type {SanitizeConfig} */ ({
 						ALLOWED_TAGS,
-						ALLOWED_ATTR: ['class', 'dir', 'href', 'target', 'style'],
+						ALLOWED_ATTR: ['class', 'dir', 'href', 'role', 'target', 'style'],
 						ALLOW_DATA_ATTR: false,
 						filename,
 						stringName,
