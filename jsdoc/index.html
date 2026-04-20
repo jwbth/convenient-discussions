@@ -1,0 +1,3797 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Home - Documentation</title>
+
+		<script src="scripts/prettify/prettify.js"></script>
+		<script src="scripts/prettify/lang-css.js"></script>
+		<!--[if lt IE 9]>
+			<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<link type="text/css" rel="stylesheet" href="styles/prettify.css" />
+		<link type="text/css" rel="stylesheet" href="styles/jsdoc.css" />
+		<style type="text/css">
+			html nav {
+				width: 275px;
+				padding: 20px 0;
+			}
+
+			nav #nav-search {
+				width: 235px;
+				margin-top: 0;
+			}
+
+			#main {
+				width: calc(100% - 275px);
+			}
+
+			@media only screen and (max-width: 680px) {
+				nav {
+					left: -275px;
+				}
+
+				.navicon-button {
+					top: 0;
+					left: 275px;
+					right: unset;
+				}
+
+				#main {
+					width: 100%;
+				}
+
+				footer {
+					margin-left: 0;
+				}
+			}
+
+			footer {
+				margin-left: 275px;
+			}
+
+			nav > ul:first-of-type a[href^='external-'] {
+				display: none;
+			}
+
+			td.description > p {
+				line-height: normal;
+			}
+
+			.prettyprint {
+				overflow: visible;
+			}
+
+			.prettyprint .linenums li:last-of-type code {
+				padding-bottom: 15px;
+			}
+
+			/* Same style as for <code> elements */
+			.tag-default > .dummy > li {
+				font-family: Consolas, Monaco, 'Andale Mono', monospace;
+				background: #f4f4f4;
+				padding: 1px 5px;
+				white-space: pre-wrap;
+			}
+
+			.params .type {
+				white-space: normal;
+			}
+
+			.type {
+				font-family: Consolas, Monaco, 'Andale Mono', monospace;
+			}
+
+			.description.description,
+			.attributes.attributes {
+				font-family: unset;
+			}
+
+			article .description a {
+				break-word: normal;
+			}
+
+			/* Modules with @exports shown two times */
+			section + section:not([class]) {
+				display: none;
+			}
+
+			.usertext h1:first-child {
+				margin-top: 0;
+			}
+		</style>
+		<script src="scripts/nav.js" defer></script>
+		<script>
+			document.addEventListener('keydown', (e) => {
+				const activeElement = document.activeElement
+				const inputs = ['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA']
+				if (
+					inputs.includes(activeElement.tagName) ||
+					activeElement.isContentEditable
+				)
+					return
+
+				if (e.code === 'Slash') {
+					e.preventDefault()
+					document.getElementById('nav-search').focus()
+				}
+			})
+		</script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	</head>
+	<body>
+		<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+		<label for="nav-trigger" class="navicon-button x">
+			<div class="navicon"></div>
+		</label>
+
+		<label for="nav-trigger" class="overlay"></label>
+
+		<nav>
+			<input type="text" id="nav-search" placeholder='Search (press "/")' />
+
+			<h2><a href="index.html">Home</a></h2>
+			<h3>Classes</h3>
+			<ul>
+				<li>
+					<a href="Autocomplete.html">Autocomplete</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#.getActiveMenu">getActiveMenu</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#.getConfig">getConfig</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#.getRelevantPageNames"
+								>getRelevantPageNames</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#.getRelevantTemplateNames"
+								>getRelevantTemplateNames</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#.getRelevantUserNames"
+								>getRelevantUserNames</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#.useOriginalFirstCharCase"
+								>useOriginalFirstCharCase</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#cleanUp">cleanUp</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Autocomplete.html#init">init</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="BootProcess.html">BootProcess</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="BootProcess.html#execute">execute</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="BootProcess.html#isFirstRun">isFirstRun</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="Button.html">Button</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="Button.html#hide">hide</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#isDisabled">isDisabled</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#isPending">isPending</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#maybeExecuteAction">maybeExecuteAction</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#setAction">setAction</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#setDisabled">setDisabled</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#setHref">setHref</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#setIconProgressive">setIconProgressive</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#setLabel">setLabel</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#setPending">setPending</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#setTooltip">setTooltip</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#show">show</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Button.html#toggle">toggle</a>
+						</li>
+					</ul>
+				</li>
+				<li><a href="CdError.html">CdError</a></li>
+				<li><a href="CheckboxInputWidget.html">CheckboxInputWidget</a></li>
+				<li>
+					<a href="Comment.html">Comment</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#.getLatest">getLatest</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#.groupBySection">groupBySection</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#.initPrototypes">initPrototypes</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#.parseDtId">parseDtId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#.parseId">parseId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#.scrollToFirstHighlightAll"
+								>scrollToFirstHighlightAll</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#addAttributes">addAttributes</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#addCommentFormToPage"
+								>addCommentFormToPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#addLayers">addLayers</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#addMenu">addMenu</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#addSubitem">addSubitem</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#canBeEdited">canBeEdited</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#cleanUpCommentFormTraces"
+								>cleanUpCommentFormTraces</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#collapse">collapse</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#collectParts">collectParts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#configureLayers">configureLayers</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#copyLink">copyLink</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#edit">edit</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#expand">expand</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#expandAllThreadsDownTo"
+								>expandAllThreadsDownTo</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#filterParts">filterParts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#findDiffMatches">findDiffMatches</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#findNewSelf">findNewSelf</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#flash">flash</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#flashChanged">flashChanged</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#flashChangedOnSight">flashChangedOnSight</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#flashTarget">flashTarget</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#formatTimestamp">formatTimestamp</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#generateDiffView">generateDiffView</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getAncestors">getAncestors</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getChildren">getChildren</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getCommentAboveReply"
+								>getCommentAboveReply</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getCommentFormMethodName"
+								>getCommentFormMethodName</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getDiffLink">getDiffLink</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getDirection">getDirection</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getIdentifyingData">getIdentifyingData</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getLayersContainer">getLayersContainer</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getLayersContainerOffset"
+								>getLayersContainerOffset</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getListsUpTree">getListsUpTree</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getMargins">getMargins</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getOffset">getOffset</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getParent">getParent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getRelevantComment">getRelevantComment</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getRelevantSection">getRelevantSection</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getSourcePage">getSourcePage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getText">getText</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getUrl">getUrl</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#getWikilinkFragment">getWikilinkFragment</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#goToParent">goToParent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#handleDtTimestampClick"
+								>handleDtTimestampClick</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#highlightHovered">highlightHovered</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#initNewAndSeen">initNewAndSeen</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#isIntro">isIntro</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#isInViewport">isInViewport</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#isOtherKindOfList">isOtherKindOfList</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#isPartOfList">isPartOfList</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#isUnsignedItem">isUnsignedItem</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#loadCode">loadCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#locateInCode">locateInCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#markAsChanged">markAsChanged</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#maybeRequestAuthorGender"
+								>maybeRequestAuthorGender</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#maybeSplitParent">maybeSplitParent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#reformatTimestamp">reformatTimestamp</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#registerSeen">registerSeen</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#removeLayers">removeLayers</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#removeNestedParts">removeNestedParts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#replaceElement">replaceElement</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#replaceListsWithItems"
+								>replaceListsWithItems</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#replaceSignatureWithHeader"
+								>replaceSignatureWithHeader</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#reply">reply</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#reviewHighlightables"
+								>reviewHighlightables</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#scrollIntoView">scrollIntoView</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#scrollTo">scrollTo</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#setSelected">setSelected</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#stopAnimations">stopAnimations</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#thank">thank</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#unhighlightHovered">unhighlightHovered</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#unmarkAsChanged">unmarkAsChanged</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#update">update</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#updateHoverState">updateHoverState</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#updateLayersOffset">updateLayersOffset</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#updateLevels">updateLevels</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#wrapInlineParts">wrapInlineParts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Comment.html#wrapNumberedList">wrapNumberedList</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentButton.html">CommentButton</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#hide">hide</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#isDisabled">isDisabled</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#isPending">isPending</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#maybeExecuteAction"
+								>maybeExecuteAction</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#setAction">setAction</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#setDisabled">setDisabled</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#setHref">setHref</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#setIconProgressive"
+								>setIconProgressive</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#setLabel">setLabel</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#setPending">setPending</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#setTooltip">setTooltip</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#show">show</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentButton.html#toggle">toggle</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentForm.html">CommentForm</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#.forgetOnTarget">forgetOnTarget</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#.getDefaultPreloadConfig"
+								>getDefaultPreloadConfig</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#.getPropertyNameOnTarget"
+								>getPropertyNameOnTarget</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#adjustLabels">adjustLabels</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#cancel">cancel</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#confirmClose">confirmClose</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#encapsulateSelection"
+								>encapsulateSelection</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getContainerListType"
+								>getContainerListType</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getLastFocused">getLastFocused</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getMode">getMode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getOriginalComment"
+								>getOriginalComment</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getOriginalHeadline"
+								>getOriginalHeadline</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getOutermostElement"
+								>getOutermostElement</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getParentComment">getParentComment</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getPreloadConfig">getPreloadConfig</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getTarget">getTarget</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#getTargetWithOutdentedReplies"
+								>getTargetWithOutdentedReplies</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#goTo">goTo</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#handleError">handleError</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#handlePasteDrop">handlePasteDrop</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="CommentForm.html#haveSuggestedToImprovePerformanceRecently"
+								>haveSuggestedToImprovePerformanceRecently</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#hideMessage">hideMessage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#highlightQuoteButton"
+								>highlightQuoteButton</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#inputToCode">inputToCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isAltered">isAltered</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isBeingSubmitted">isBeingSubmitted</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isContentBeingLoaded"
+								>isContentBeingLoaded</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isNewSectionApi">isNewSectionApi</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isNewTopicOnTop">isNewTopicOnTop</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isOmitSignatureCheckboxAltered"
+								>isOmitSignatureCheckboxAltered</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isSectionSubmitted"
+								>isSectionSubmitted</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#isSummaryAltered">isSummaryAltered</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#mention">mention</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#popPending">popPending</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#preview">preview</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#pushPending">pushPending</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#quote">quote</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#reloadPage">reloadPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#rescue">rescue</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#restore">restore</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#setNewSectionApi">setNewSectionApi</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#setSectionSubmitted"
+								>setSectionSubmitted</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#setup">setup</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#showMessage">showMessage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#submit">submit</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#teardown">teardown</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#uploadImage">uploadImage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentForm.html#viewChanges">viewChanges</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentFormInputTransformer.html"
+						>CommentFormInputTransformer</a
+					>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="CommentFormInputTransformer.html#.prependIndentationToLine"
+								>prependIndentationToLine</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#getMaskedTexts"
+								>getMaskedTexts</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#getText">getText</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#isIndented"
+								>isIndented</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#mask">mask</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#maskSensitiveCode"
+								>maskSensitiveCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#maskTags">maskTags</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="CommentFormInputTransformer.html#maskTemplatesRecursively"
+								>maskTemplatesRecursively</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#processNewlines"
+								>processNewlines</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#transform">transform</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#unmask">unmask</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#unmaskText"
+								>unmaskText</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormInputTransformer.html#withText">withText</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentFormOperation.html">CommentFormOperation</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#close">close</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#delay">delay</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#getDate">getDate</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#getOption">getOption</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#getType">getType</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#isClosed">isClosed</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#isDelayed">isDelayed</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#maybeClose">maybeClose</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#open">open</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperation.html#undelay">undelay</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentFormOperationRegistry.html"
+						>CommentFormOperationRegistry</a
+					>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperationRegistry.html#add">add</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperationRegistry.html#closeAll">closeAll</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperationRegistry.html#filter">filter</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperationRegistry.html#filterByType"
+								>filterByType</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentFormOperationRegistry.html#remove">remove</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentSkeleton.html">CommentSkeleton</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#.generateId">generateId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#.isAnyId">isAnyId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#.isDtId">isDtId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#.isId">isId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#.processOutdents"
+								>processOutdents</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#.updateOutdentWidth"
+								>updateOutdentWidth</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#addAttributes">addAttributes</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#collectParts">collectParts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#filterParts">filterParts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#getChildren">getChildren</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#getListsUpTree">getListsUpTree</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#getParent">getParent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#isIntro">isIntro</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#isOtherKindOfList"
+								>isOtherKindOfList</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#isPartOfList">isPartOfList</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#isUnsignedItem">isUnsignedItem</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#removeNestedParts"
+								>removeNestedParts</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#replaceListsWithItems"
+								>replaceListsWithItems</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#updateLevels">updateLevels</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#wrapInlineParts">wrapInlineParts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSkeleton.html#wrapNumberedList"
+								>wrapNumberedList</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentSource.html">CommentSource</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentSource.html#modifyContext">modifyContext</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSource.html#toInput">toInput</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CommentSubitemList.html">CommentSubitemList</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CommentSubitemList.html#add">add</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSubitemList.html#get">get</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CommentSubitemList.html#remove">remove</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="CopyLinkDialog.html">CopyLinkDialog</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="CopyLinkDialog.html#copyCallback">copyCallback</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CopyLinkDialog.html#createAnchorPanelContent"
+								>createAnchorPanelContent</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CopyLinkDialog.html#createDiffPanel">createDiffPanel</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="CopyLinkDialog.html#createDiffPanelContent"
+								>createDiffPanelContent</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li><a href="DivLabelWidget.html">DivLabelWidget</a></li>
+				<li>
+					<a href="DtSubscriptions.html">DtSubscriptions</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#actuallySubscribe"
+								>actuallySubscribe</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#actuallyUnsubscribe"
+								>actuallyUnsubscribe</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#areLoaded">areLoaded</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#getState">getState</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#getSubscriptions"
+								>getSubscriptions</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#getType">getType</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#itemsToKeys">itemsToKeys</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#load">load</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#loadToTalkPage">loadToTalkPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#processOnTalkPage"
+								>processOnTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#subscribe">subscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#unsubscribe">unsubscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#updateLocally">updateLocally</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="DtSubscriptions.html#updatePageSubscribeButton"
+								>updatePageSubscribeButton</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="EditSubscriptionsDialog.html">EditSubscriptionsDialog</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="EditSubscriptionsDialog.html#confirmClose"
+								>confirmClose</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="EditSubscriptionsDialog.html#handleError">handleError</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="EditSubscriptionsDialog.html#isUnsaved">isUnsaved</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="EditSubscriptionsDialog.html#save">save</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="ElementsAndTextTreeWalker.html">ElementsAndTextTreeWalker</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#firstChild">firstChild</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#lastChild">lastChild</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#nextNode">nextNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#nextSibling"
+								>nextSibling</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#parentNode">parentNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#previousNode"
+								>previousNode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#previousSibling"
+								>previousSibling</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsAndTextTreeWalker.html#tryMove">tryMove</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="ElementsTreeWalker.html">ElementsTreeWalker</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#firstChild">firstChild</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#lastChild">lastChild</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#nextNode">nextNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#nextSibling">nextSibling</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#parentNode">parentNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#previousNode">previousNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#previousSibling"
+								>previousSibling</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ElementsTreeWalker.html#tryMove">tryMove</a>
+						</li>
+					</ul>
+				</li>
+				<li><a href="external-mw.Api.html">external:mw.Api</a></li>
+				<li>
+					<a href="external-mw.ForeignStructuredUpload.html"
+						>external:mw.ForeignStructuredUpload</a
+					>
+				</li>
+				<li>
+					<a href="external-mw.ForeignStructuredUpload.BookletLayout.html"
+						>external:mw.ForeignStructuredUpload.BookletLayout</a
+					>
+				</li>
+				<li><a href="external-mw.Title.html">external:mw.Title</a></li>
+				<li><a href="external-mw.Upload.html">external:mw.Upload</a></li>
+				<li>
+					<a href="external-mw.Upload.Dialog.html">external:mw.Upload.Dialog</a>
+				</li>
+				<li>
+					<a href="external-OO.ui.ButtonMenuSelectWidget.html"
+						>external:OO.ui.ButtonMenuSelectWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.ButtonWidget.html"
+						>external:OO.ui.ButtonWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.CheckboxInputWidget.html"
+						>external:OO.ui.CheckboxInputWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.CopyTextLayout.html"
+						>external:OO.ui.CopyTextLayout</a
+					>
+				</li>
+				<li><a href="external-OO.ui.Error.html">external:OO.ui.Error</a></li>
+				<li>
+					<a href="external-OO.ui.FieldLayout.html"
+						>external:OO.ui.FieldLayout</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.HorizontalLayout.html"
+						>external:OO.ui.HorizontalLayout</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.LabelWidget.html"
+						>external:OO.ui.LabelWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.MultilineTextInputWidget.html"
+						>external:OO.ui.MultilineTextInputWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.PageLayout.html">external:OO.ui.PageLayout</a>
+				</li>
+				<li>
+					<a href="external-OO.ui.PopupButtonWidget.html"
+						>external:OO.ui.PopupButtonWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.PopupWidget.html"
+						>external:OO.ui.PopupWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.Process.html">external:OO.ui.Process</a>
+				</li>
+				<li>
+					<a href="external-OO.ui.ProcessDialog.html"
+						>external:OO.ui.ProcessDialog</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.RadioOptionWidget.html"
+						>external:OO.ui.RadioOptionWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.RadioSelectWidget.html"
+						>external:OO.ui.RadioSelectWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.TextInputWidget.html"
+						>external:OO.ui.TextInputWidget</a
+					>
+				</li>
+				<li>
+					<a href="external-OO.ui.WindowManager.html"
+						>external:OO.ui.WindowManager</a
+					>
+				</li>
+				<li>
+					<a href="ForeignStructuredUpload.html">ForeignStructuredUpload</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUpload.html#getDefaultUser"
+								>getDefaultUser</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUpload.html#getLicense">getLicense</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUpload.html#getSource">getSource</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUpload.html#getUser">getUser</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUpload.html#setLicense">setLicense</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUpload.html#setSource">setSource</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUpload.html#setUser">setUser</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="ForeignStructuredUploadBookletLayout.html"
+						>ForeignStructuredUploadBookletLayout</a
+					>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#.generateHistoryText"
+								>generateHistoryText</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#.getTemplateForHostname"
+								>getTemplateForHostname</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#areAddedInputsDisabled"
+								>areAddedInputsDisabled</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#cancelUpload"
+								>cancelUpload</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#clear"
+								>clear</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#createUpload"
+								>createUpload</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#getDateFromLastModified"
+								>getDateFromLastModified</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#getExactDateFromLastModified"
+								>getExactDateFromLastModified</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#getText"
+								>getText</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#isInfoFormOmitted"
+								>isInfoFormOmitted</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#modifyInfoForm"
+								>modifyInfoForm</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#modifyUploadForm"
+								>modifyUploadForm</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#onInfoFormChange"
+								>onInfoFormChange</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#onPresetChange"
+								>onPresetChange</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="ForeignStructuredUploadBookletLayout.html#onUploadFormChange"
+								>onUploadFormChange</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#saveFile"
+								>saveFile</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#setup"
+								>setup</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ForeignStructuredUploadBookletLayout.html#uploadFile"
+								>uploadFile</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="LegacySubscriptions.html">LegacySubscriptions</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#actuallySubscribe"
+								>actuallySubscribe</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#areLoaded">areLoaded</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#getForCurrentPage"
+								>getForCurrentPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#getForPageId">getForPageId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#getOriginalState"
+								>getOriginalState</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#getPageIds">getPageIds</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#getState">getState</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#getType">getType</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#itemsToKeys">itemsToKeys</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#load">load</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#loadToTalkPage"
+								>loadToTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#pack">pack</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#processOnTalkPage"
+								>processOnTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#save">save</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#subscribe">subscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#unpack">unpack</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#unsubscribe">unsubscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#updateLocally">updateLocally</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LegacySubscriptions.html#updatePageSubscribeButton"
+								>updatePageSubscribeButton</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="LiveTimestamp.html">LiveTimestamp</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="LiveTimestamp.html#.initImproved">initImproved</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LiveTimestamp.html#.reset">reset</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LiveTimestamp.html#.updateImproved">updateImproved</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LiveTimestamp.html#init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="LiveTimestamp.html#update">update</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-pageRegistry.Page.html">pageRegistry.Page</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#addAddTopicButton"
+								>addAddTopicButton</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#addCommentFormToPage"
+								>addCommentFormToPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#addSection">addSection</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#autoAddSection"
+								>autoAddSection</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#canHaveArchives"
+								>canHaveArchives</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#cleanUpCommentFormTraces"
+								>cleanUpCommentFormTraces</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#compareRevisions"
+								>compareRevisions</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#edit">edit</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#exists">exists</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#findNewSelf"
+								>findNewSelf</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getArchivedPage"
+								>getArchivedPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getArchivePrefix"
+								>getArchivePrefix</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getCommentAboveReply"
+								>getCommentAboveReply</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getCommentFormMethodName"
+								>getCommentFormMethodName</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getDecodedUrlWithFragment"
+								>getDecodedUrlWithFragment</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getIdentifyingData"
+								>getIdentifyingData</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getRelevantComment"
+								>getRelevantComment</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getRelevantSection"
+								>getRelevantSection</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getRevisions"
+								>getRevisions</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#getUrl">getUrl</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#guessNewTopicPlacement"
+								>guessNewTopicPlacement</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#isActive">isActive</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#isArchive">isArchive</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#isCommentable"
+								>isCommentable</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#isCurrentArchive"
+								>isCurrentArchive</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#isOwnTalkPage"
+								>isOwnTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#isProbablyTalkPage"
+								>isProbablyTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#loadCode">loadCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#markAsRead">markAsRead</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#parse">parse</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.Page.html#purge">purge</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-pageRegistry-PageSource.html"
+						>pageRegistry~PageSource</a
+					>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry-PageSource.html#modifyContext"
+								>modifyContext</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-toc-TocItem.html">toc~TocItem</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-toc-TocItem.html#replaceText">replaceText</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-toc-TocItem.html#updateSubscriptionState"
+								>updateSubscriptionState</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-userRegistry.User.html">userRegistry.User</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#getGender">getGender</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#getGlobalId"
+								>getGlobalId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#getName">getName</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#getNamespaceAlias"
+								>getNamespaceAlias</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#getRights">getRights</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#isMuted">isMuted</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#isRegistered"
+								>isRegistered</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#setGender">setGender</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#setGlobalId"
+								>setGlobalId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#setMuted">setMuted</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.User.html#setRights">setRights</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="MoveSectionDialog.html">MoveSectionDialog</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#abort">abort</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#confirmClose">confirmClose</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#editSourcePage">editSourcePage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#editTargetPage">editTargetPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#handleError">handleError</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#isUnsaved">isUnsaved</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#loadSourcePage">loadSourcePage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#loadTargetPage">loadTargetPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="MoveSectionDialog.html#onTitleInputChange"
+								>onTitleInputChange</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="MultilineTextInputWidget.html">MultilineTextInputWidget</a>
+				</li>
+				<li>
+					<a href="Parser.html">Parser</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#.processLink">processLink</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#createComment">createComment</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#createSection">createSection</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#findHeadings">findHeadings</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#findSignatures">findSignatures</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#findUnsigneds">findUnsigneds</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#getNestingLevel">getNestingLevel</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#getTopElementsWithText"
+								>getTopElementsWithText</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#processAndRemoveDtMarkup"
+								>processAndRemoveDtMarkup</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Parser.html#splitParentAfterNode"
+								>splitParentAfterNode</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="ProcessDialog.html">ProcessDialog</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="ProcessDialog.html#confirmClose">confirmClose</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ProcessDialog.html#handleError">handleError</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="ProcessDialog.html#isUnsaved">isUnsaved</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="PrototypeRegistry.html">PrototypeRegistry</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="PrototypeRegistry.html#add">add</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="PrototypeRegistry.html#addWidget">addWidget</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="PrototypeRegistry.html#get">get</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="PrototypeRegistry.html#getWidget">getWidget</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="RadioOptionWidget.html">RadioOptionWidget</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="RadioOptionWidget.html#createHelpElement"
+								>createHelpElement</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="Section.html">Section</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="Section.html#.initPrototypes">initPrototypes</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#addCommentFormToPage"
+								>addCommentFormToPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#addMetadataAndActions"
+								>addMetadataAndActions</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#addNewCommentCountMetadata"
+								>addNewCommentCountMetadata</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#addSubscribeButton">addSubscribeButton</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#addSubsection">addSubsection</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#canBeMoved">canBeMoved</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#canBeReplied">canBeReplied</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#canBeSubsectioned">canBeSubsectioned</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#canFirstCommentBeEdited"
+								>canFirstCommentBeEdited</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#cleanUpCommentFormTraces"
+								>cleanUpCommentFormTraces</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#copyLink">copyLink</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#ensureSubscribeIdPresent"
+								>ensureSubscribeIdPresent</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#extractSubscribeId">extractSubscribeId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#findNewSelf">findNewSelf</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#findRealLastElement">findRealLastElement</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getAncestors">getAncestors</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getBase">getBase</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getChildren">getChildren</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getClosestSectionSubscribedTo"
+								>getClosestSectionSubscribedTo</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getCommentAboveReply"
+								>getCommentAboveReply</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getCommentFormMethodName"
+								>getCommentFormMethodName</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getIdentifyingData">getIdentifyingData</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getLastElement">getLastElement</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getParent">getParent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getRelevantComment">getRelevantComment</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getRelevantSection">getRelevantSection</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getSectionSubscribedTo"
+								>getSectionSubscribedTo</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getSourcePage">getSourcePage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getTocItem">getTocItem</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getUrl">getUrl</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#getWikilinkFragment">getWikilinkFragment</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#loadCode">loadCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#locateInCode">locateInCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#maybeAddAddSubsectionButton"
+								>maybeAddAddSubsectionButton</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#maybeAddReplyButton">maybeAddReplyButton</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#move">move</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#parseHeadline">parseHeadline</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#reply">reply</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#requestCode">requestCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#resubscribeIfRenamed"
+								>resubscribeIfRenamed</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#showAddSubsectionButtonOnReplyButtonHover"
+								>showAddSubsectionButtonOnReplyButtonHover</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#subscribe">subscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#unsubscribe">unsubscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#update">update</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#updateNewCommentsData"
+								>updateNewCommentsData</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#updateTocLink">updateTocLink</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Section.html#updateVisibility">updateVisibility</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="SectionSkeleton.html">SectionSkeleton</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="SectionSkeleton.html#getAncestors">getAncestors</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SectionSkeleton.html#getLastElement">getLastElement</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SectionSkeleton.html#getParent">getParent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SectionSkeleton.html#parseHeadline">parseHeadline</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="SectionSource.html">SectionSource</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="SectionSource.html#extractLastCommentIndentation"
+								>extractLastCommentIndentation</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SectionSource.html#modifyContext">modifyContext</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="SettingsDialog.html">SettingsDialog</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#collectSettings">collectSettings</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#confirmClose">confirmClose</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#createPages">createPages</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#getStateSettings"
+								>getStateSettings</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#handleError">handleError</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#isUnsaved">isUnsaved</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#onDesktopNotificationsSelectChange"
+								>onDesktopNotificationsSelectChange</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#removeData">removeData</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#renderControls">renderControls</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="SettingsDialog.html#updateAbilities">updateAbilities</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="StorageItem.html">StorageItem</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#cleanUp">cleanUp</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#get">get</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#getAll">getAll</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#reload">reload</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#remove">remove</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#removeItem">removeItem</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#save">save</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#set">set</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="StorageItem.html#setWithTime">setWithTime</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="Subscriptions.html">Subscriptions</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#getState">getState</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#getType">getType</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#itemsToKeys">itemsToKeys</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#loadToTalkPage">loadToTalkPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#processOnTalkPage"
+								>processOnTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#subscribe">subscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#unsubscribe">unsubscribe</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#updateLocally">updateLocally</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Subscriptions.html#updatePageSubscribeButton"
+								>updatePageSubscribeButton</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="TextInputWidget.html">TextInputWidget</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="TextInputWidget.html#cdInsertContent">cdInsertContent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextInputWidget.html#getWikitextFromPaste"
+								>getWikitextFromPaste</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextInputWidget.html#getWikitextFromSelection"
+								>getWikitextFromSelection</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextInputWidget.html#maybeConvertElementToWikitext"
+								>maybeConvertElementToWikitext</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="TextMasker.html">TextMasker</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#getMaskedTexts">getMaskedTexts</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#getText">getText</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#mask">mask</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#maskSensitiveCode">maskSensitiveCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#maskTags">maskTags</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#maskTemplatesRecursively"
+								>maskTemplatesRecursively</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#unmask">unmask</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#unmaskText">unmaskText</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TextMasker.html#withText">withText</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="Thread.html">Thread</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="Thread.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Thread.html#.initPrototypes">initPrototypes</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Thread.html#.updateLines">updateLines</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Thread.html#collapse">collapse</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Thread.html#expand">expand</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Thread.html#getComments">getComments</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="Thread.html#hasMouseMoved">hasMouseMoved</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="TreeWalker.html">TreeWalker</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#firstChild">firstChild</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#lastChild">lastChild</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#nextNode">nextNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#nextSibling">nextSibling</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#parentNode">parentNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#previousNode">previousNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#previousSibling">previousSibling</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="TreeWalker.html#tryMove">tryMove</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="UploadDialog.html">UploadDialog</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="UploadDialog.html#showErrors">showErrors</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="UploadDialog.html#updateActionLabels"
+								>updateActionLabels</a
+							>
+						</li>
+					</ul>
+				</li>
+			</ul>
+			<h3>Modules</h3>
+			<ul>
+				<li>
+					<a href="module-addCommentLinks.html">addCommentLinks</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a
+								href="module-addCommentLinks.html#.addCommentLinksToSpecialSearch"
+								>addCommentLinksToSpecialSearch</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li><a href="module-app.html">app</a></li>
+				<li><a href="module-cd.html">cd</a></li>
+				<li>
+					<a href="module-commentFormRegistry.html">commentFormRegistry</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.adjustLabels"
+								>adjustLabels</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.detach">detach</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.getAll">getAll</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.getByIndex"
+								>getByIndex</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.getCount">getCount</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.getLastActive"
+								>getLastActive</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.getLastActiveAltered"
+								>getLastActiveAltered</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.query">query</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.remove">remove</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.saveSession"
+								>saveSession</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentFormRegistry.html#.setupCommentForm"
+								>setupCommentForm</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="module-commentFormRegistry.html#.toggleQuoteButtonsHighlighting"
+								>toggleQuoteButtonsHighlighting</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-commentRegistry.html">commentRegistry</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.add">add</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.addNewCommentsNotes"
+								>addNewCommentsNotes</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.adjustDom">adjustDom</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.changeElementType"
+								>changeElementType</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.configureAndAddLayers"
+								>configureAndAddLayers</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.connectBrokenThreads"
+								>connectBrokenThreads</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.findAndUpdateTableComments"
+								>findAndUpdateTableComments</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.findInViewport"
+								>findInViewport</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.getAll">getAll</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.getByAnyId">getByAnyId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.getByDtId">getByDtId</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.getById">getById</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.getByIndex">getByIndex</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.getCount">getCount</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.getSelectedComment"
+								>getSelectedComment</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.initNewAndSeen"
+								>initNewAndSeen</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.maybeHighlightHovered"
+								>maybeHighlightHovered</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.maybeRedrawLayers"
+								>maybeRedrawLayers</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.query">query</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.reformatComments"
+								>reformatComments</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.reformatTimestamps"
+								>reformatTimestamps</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.registerSeen"
+								>registerSeen</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.reset">reset</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.resetLayers">resetLayers</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.reviewHighlightables"
+								>reviewHighlightables</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.setDtIds">setDtIds</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-commentRegistry.html#.setup">setup</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-controller.html">controller</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.addEventListeners"
+								>addEventListeners</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.addPreventUnloadCondition"
+								>addPreventUnloadCondition</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.areThereLtrRtlMixes"
+								>areThereLtrRtlMixes</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.areThereOutdents"
+								>areThereOutdents</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.cleanUpUrlAndDom"
+								>cleanUpUrlAndDom</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.connectToAddTopicButtons"
+								>connectToAddTopicButtons</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getApi">getApi</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getBootProcess"
+								>getBootProcess</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getClosedDiscussions"
+								>getClosedDiscussions</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getContentColumnOffsets"
+								>getContentColumnOffsets</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getDtSubscribableThreads"
+								>getDtSubscribableThreads</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getFloatingElements"
+								>getFloatingElements</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getHiddenElements"
+								>getHiddenElements</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getPopupOverlay"
+								>getPopupOverlay</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getRelevantAddedCommentIds"
+								>getRelevantAddedCommentIds</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getRootElement"
+								>getRootElement</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getSubscriptionsInstance"
+								>getSubscriptionsInstance</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getWindowManager"
+								>getWindowManager</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.getWorker">getWorker</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.handleMouseMove"
+								>handleMouseMove</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.handleScroll">handleScroll</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isArticlePageTalkPage"
+								>isArticlePageTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isAutoScrolling"
+								>isAutoScrolling</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isBooting">isBooting</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isContributionsPage"
+								>isContributionsPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isCurrentRevision"
+								>isCurrentRevision</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isDefinitelyTalkPage"
+								>isDefinitelyTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isDiffPage">isDiffPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isHistoryPage">isHistoryPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isLongPage">isLongPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isObstructingElementHovered"
+								>isObstructingElementHovered</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isPageOverlayOn"
+								>isPageOverlayOn</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isSubscribingDisabled"
+								>isSubscribingDisabled</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isTalkPage">isTalkPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.isWatchlistPage"
+								>isWatchlistPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.maybeMarkPageAsRead"
+								>maybeMarkPageAsRead</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.reload">reload</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.removePreventUnloadCondition"
+								>removePreventUnloadCondition</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.restoreRelativeScrollPosition"
+								>restoreRelativeScrollPosition</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.restoreScrollPosition"
+								>restoreScrollPosition</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.saveRelativeScrollPosition"
+								>saveRelativeScrollPosition</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.saveScrollPosition"
+								>saveScrollPosition</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.scrollToY">scrollToY</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.setTalkPageness"
+								>setTalkPageness</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.setup">setup</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.setupMutationObserver"
+								>setupMutationObserver</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.showCopyLinkDialog"
+								>showCopyLinkDialog</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.showEditSubscriptionsDialog"
+								>showEditSubscriptionsDialog</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.toggleAutoScrolling"
+								>toggleAutoScrolling</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.updateAddedComments"
+								>updateAddedComments</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.updatePageContents"
+								>updatePageContents</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-controller.html#.updatePageTitle"
+								>updatePageTitle</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-convenientDiscussions.html">convenientDiscussions</a>
+				</li>
+				<li>
+					<a href="module-debug.html">debug</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.fullResetTimer">fullResetTimer</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.getAverageTimerTime"
+								>getAverageTimerTime</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.getTimerTotal">getTimerTotal</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.incrementCounter">incrementCounter</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.initCounters">initCounters</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.logAndResetEverything"
+								>logAndResetEverything</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.logAndResetTimer">logAndResetTimer</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.resetTimer">resetTimer</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.startTimer">startTimer</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-debug.html#.stopTimer">stopTimer</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-defaultConfig.html">defaultConfig</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.afterAuthorLinkParse"
+								>afterAuthorLinkParse</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.areNewTopicsOnTop"
+								>areNewTopicsOnTop</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.beforeAuthorLinkParse"
+								>beforeAuthorLinkParse</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.getAnchorCode"
+								>getAnchorCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.getMoveSourcePageCode"
+								>getMoveSourcePageCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.getMoveTargetPageCode"
+								>getMoveTargetPageCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.postTransformCode"
+								>postTransformCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.preTransformCode"
+								>preTransformCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.rejectNode">rejectNode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-defaultConfig.html#.transformSummary"
+								>transformSummary</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-init.html">init</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-init.html#.addTalkPageCss">addTalkPageCss</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-init.html#.getSiteData">getSiteData</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-init.html#.initGlobals">initGlobals</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-init.html#.initTalkPage">initTalkPage</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-init.html#.initTimestampParsingTools"
+								>initTimestampParsingTools</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-init.html#.memorizeCssValues"
+								>memorizeCssValues</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li><a href="module-jqueryExtensions.html">jqueryExtensions</a></li>
+				<li>
+					<a href="module-navPanel.html">navPanel</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-navPanel.html#.goToFirstUnseenComment"
+								>goToFirstUnseenComment</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-navPanel.html#.goToNextCommentForm"
+								>goToNextCommentForm</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-navPanel.html#.goToNextNewComment"
+								>goToNextNewComment</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-navPanel.html#.goToPreviousNewComment"
+								>goToPreviousNewComment</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-navPanel.html#.isMounted">isMounted</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-navPanel.html#.setup">setup</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-notifications.html">notifications</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-notifications.html#.add">add</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-notifications.html#.close">close</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-notifications.html#.get">get</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-notifications.html#.init">init</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-pageNav.html">pageNav</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-pageNav.html#.isMounted">isMounted</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageNav.html#.setup">setup</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-pageRegistry.html">pageRegistry</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.html#.get">get</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-pageRegistry.html#.getCurrent">getCurrent</a>
+						</li>
+					</ul>
+				</li>
+				<li></li>
+				<li><a href="module-processFragment.html">processFragment</a></li>
+				<li>
+					<a href="module-sectionRegistry.html">sectionRegistry</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.add">add</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.addMetadataAndActions"
+								>addMetadataAndActions</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.findByHeadlineParts"
+								>findByHeadlineParts</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.generateDtSubscriptionId"
+								>generateDtSubscriptionId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.getAll">getAll</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.getByHeadline"
+								>getByHeadline</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.getById">getById</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.getByIndex">getByIndex</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.getBySubscribeId"
+								>getBySubscribeId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.getCount">getCount</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.getCurrentSection"
+								>getCurrentSection</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="module-sectionRegistry.html#.getFirstSectionRelativeTopOffset"
+								>getFirstSectionRelativeTopOffset</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.maybeUnhideAll"
+								>maybeUnhideAll</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.query">query</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.reset">reset</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.search">search</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.setup">setup</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-sectionRegistry.html#.updateNewCommentsData"
+								>updateNewCommentsData</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-settings.html">settings</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.addLinkToFooter"
+								>addLinkToFooter</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.get">get</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.initUi">initUi</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.load">load</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.maybeConfirmDesktopNotifications"
+								>maybeConfirmDesktopNotifications</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="module-settings.html#.maybeSuggestEnableCommentReformatting"
+								>maybeSuggestEnableCommentReformatting</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.save">save</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.saveSettingOnTheFly"
+								>saveSettingOnTheFly</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-settings.html#.showDialog">showDialog</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-toc.html">toc</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-toc.html#.addCommentCount">addCommentCount</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-toc.html#.getBottomOffset">getBottomOffset</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-toc.html#.getItem">getItem</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-toc.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-toc.html#.isFloating">isFloating</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-toc.html#.isPresent">isPresent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-toc.html#.setup">setup</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-updateChecker.html">updateChecker</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-updateChecker.html#.init">init</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-updateChecker.html#.setup">setup</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-updateChecker.html#~markCommentsAsChanged"
+								>markCommentsAsChanged</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li></li>
+				<li>
+					<a href="module-userRegistry.html">userRegistry</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.html#.get">get</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.html#.getCurrent">getCurrent</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.html#.getUsersByGlobalId"
+								>getUsersByGlobalId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-userRegistry.html#.loadMuted">loadMuted</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-utilsApi.html">utilsApi</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.convertHtmlToWikitext"
+								>convertHtmlToWikitext</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.getPageIds">getPageIds</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.getPagesExistence"
+								>getPagesExistence</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.getPageTitles">getPageTitles</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.getUserInfo">getUserInfo</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.handleApiReject"
+								>handleApiReject</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.loadUserGenders"
+								>loadUserGenders</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.parseCode">parseCode</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.requestInBackground"
+								>requestInBackground</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.saveGlobalOption"
+								>saveGlobalOption</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.saveLocalOption"
+								>saveLocalOption</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.saveOptions">saveOptions</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsApi.html#.splitIntoBatches"
+								>splitIntoBatches</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-utilsGeneral.html">utilsGeneral</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.addToArrayIfAbsent"
+								>addToArrayIfAbsent</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.areObjectsEqual"
+								>areObjectsEqual</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.buildEditSummary"
+								>buildEditSummary</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.calculateWordOverlap"
+								>calculateWordOverlap</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.canonicalUrlToPageName"
+								>canonicalUrlToPageName</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.countOccurrences"
+								>countOccurrences</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.decodeHtmlEntities"
+								>decodeHtmlEntities</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.defined">defined</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.definedAndNotNull"
+								>definedAndNotNull</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.generateFixedPosTimestamp"
+								>generateFixedPosTimestamp</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.generatePageNamePattern"
+								>generatePageNamePattern</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getCommonGender"
+								>getCommonGender</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getContentLanguageMessages"
+								>getContentLanguageMessages</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getDayTimestamp"
+								>getDayTimestamp</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getDbnameForHostname"
+								>getDbnameForHostname</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getHeadingLevel"
+								>getHeadingLevel</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getLastArrayElementOrSelf"
+								>getLastArrayElementOrSelf</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getNativePromiseState"
+								>getNativePromiseState</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.getQueryParamBooleanValue"
+								>getQueryParamBooleanValue</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.isCommentEdit"
+								>isCommentEdit</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.isHeadingNode"
+								>isHeadingNode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.isInline">isInline</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.isMetadataNode"
+								>isMetadataNode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.isProbablyTalkPage"
+								>isProbablyTalkPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.isUndo">isUndo</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.keepWorkerSafeValues"
+								>keepWorkerSafeValues</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.mergeRegexps">mergeRegexps</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.parseWikiUrl">parseWikiUrl</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.removeDirMarks"
+								>removeDirMarks</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.removeDoubleSpaces"
+								>removeDoubleSpaces</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.removeFromArrayIfPresent"
+								>removeFromArrayIfPresent</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.reorderArray">reorderArray</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.sleep">sleep</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.spacesToUnderlines"
+								>spacesToUnderlines</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.ucFirst">ucFirst</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.underlinesToSpaces"
+								>underlinesToSpaces</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsGeneral.html#.unique">unique</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-utilsOoui.html">utilsOoui</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.createCheckboxField"
+								>createCheckboxField</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.createCopyTextField"
+								>createCopyTextField</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.createNumberField"
+								>createNumberField</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.createRadioField"
+								>createRadioField</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.createTextField"
+								>createTextField</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.mixEventEmitterInObject"
+								>mixEventEmitterInObject</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.mixinUserOoUiClass"
+								>mixinUserOoUiClass</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.showConfirmDialog"
+								>showConfirmDialog</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsOoui.html#.tweakUserOoUiClass"
+								>tweakUserOoUiClass</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-utilsTimestamp.html">utilsTimestamp</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-utilsTimestamp.html#.formatDate">formatDate</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsTimestamp.html#.formatDateImproved"
+								>formatDateImproved</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsTimestamp.html#.formatDateNative"
+								>formatDateNative</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsTimestamp.html#.formatDateRelative"
+								>formatDateRelative</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsTimestamp.html#.getDateFromTimestampMatch"
+								>getDateFromTimestampMatch</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsTimestamp.html#.initDayjs">initDayjs</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsTimestamp.html#.parseTimestamp"
+								>parseTimestamp</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-utilsWikitext.html">utilsWikitext</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.brsToNewlines"
+								>brsToNewlines</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.encodeWikilink"
+								>encodeWikilink</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.endWithTwoNewlines"
+								>endWithTwoNewlines</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.escapePipesOutsideLinks"
+								>escapePipesOutsideLinks</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.extractArabicNumeral"
+								>extractArabicNumeral</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.extractSignatures"
+								>extractSignatures</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.findFirstTimestamp"
+								>findFirstTimestamp</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.generateTagsRegexp"
+								>generateTagsRegexp</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.maskDistractingCode"
+								>maskDistractingCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.normalizeCode"
+								>normalizeCode</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWikitext.html#.removeWikiMarkup"
+								>removeWikiMarkup</a
+							>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="module-utilsWindow.html">utilsWindow</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.cleanUpPasteDom"
+								>cleanUpPasteDom</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.createSvg">createSvg</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.getElementFromPasteHtml"
+								>getElementFromPasteHtml</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.getExtendedRect"
+								>getExtendedRect</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.getFooter">getFooter</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="module-utilsWindow.html#.getHigherNodeAndOffsetInSelection"
+								>getHigherNodeAndOffsetInSelection</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.getRangeContents"
+								>getRangeContents</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.getVisibilityByRects"
+								>getVisibilityByRects</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.isCmdModifierPressed"
+								>isCmdModifierPressed</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.isElementConvertibleToWikitext"
+								>isElementConvertibleToWikitext</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.isHtmlConvertibleToWikitext"
+								>isHtmlConvertibleToWikitext</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.isInputFocused"
+								>isInputFocused</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.keyCombination"
+								>keyCombination</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.skin$">skin$</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.transparentize"
+								>transparentize</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.wrapDiffBody">wrapDiffBody</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="module-utilsWindow.html#.wrapHtml">wrapHtml</a>
+						</li>
+					</ul>
+				</li>
+				<li><a href="module-worker.html">worker</a></li>
+				<li><a href="module-worker-gate.html">worker-gate</a></li>
+			</ul>
+			<h3>Externals</h3>
+			<ul>
+				<li><a href="external-DataNode.html">external:DataNode</a></li>
+				<li><a href="external-Element.html">external:Element</a></li>
+				<li><a href="external-jQuery.html">external:jQuery</a></li>
+				<li>
+					<a href="external-jQueryPromise.html">external:jQueryPromise</a>
+				</li>
+				<li><a href="external-mw.html">external:mw</a></li>
+				<li><a href="external-Node.html">external:Node</a></li>
+				<li><a href="external-OO.html">external:OO</a></li>
+			</ul>
+			<h3>Events</h3>
+			<ul>
+				<li><a href="global.html#event:beforeParse">beforeParse</a></li>
+				<li>
+					<a href="global.html#event:changesSincePreviousVisit"
+						>changesSincePreviousVisit</a
+					>
+				</li>
+				<li>
+					<a href="global.html#event:commentFormCreated">commentFormCreated</a>
+				</li>
+				<li>
+					<a href="global.html#event:commentFormCustomModulesReady"
+						>commentFormCustomModulesReady</a
+					>
+				</li>
+				<li>
+					<a href="global.html#event:commentFormToolbarReady"
+						>commentFormToolbarReady</a
+					>
+				</li>
+				<li>
+					<a href="global.html#event:commentLayersCreated"
+						>commentLayersCreated</a
+					>
+				</li>
+				<li>
+					<a href="global.html#event:commentLinksAdded">commentLinksAdded</a>
+				</li>
+				<li><a href="global.html#event:commentsReady">commentsReady</a></li>
+				<li><a href="global.html#event:launched">launched</a></li>
+				<li>
+					<a href="global.html#event:moreMenuSelectCreated"
+						>moreMenuSelectCreated</a
+					>
+				</li>
+				<li><a href="global.html#event:mutedUsers">mutedUsers</a></li>
+				<li><a href="global.html#event:newChanges">newChanges</a></li>
+				<li>
+					<a href="global.html#event:newCommentsHighlighted"
+						>newCommentsHighlighted</a
+					>
+				</li>
+				<li><a href="global.html#event:pageReady">pageReady</a></li>
+				<li>
+					<a href="global.html#event:pageReadyFirstTime">pageReadyFirstTime</a>
+				</li>
+				<li><a href="global.html#event:preprocessed">preprocessed</a></li>
+				<li><a href="global.html#event:previewReady">previewReady</a></li>
+				<li><a href="global.html#event:sectionsReady">sectionsReady</a></li>
+				<li>
+					<a href="global.html#event:subscribeButtonAdded"
+						>subscribeButtonAdded</a
+					>
+				</li>
+			</ul>
+			<h3>Namespaces</h3>
+			<ul>
+				<li>
+					<a href="convenientDiscussions.html">convenientDiscussions</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.html#.mws">mws</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.html#.s">s</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.html#.sParse">sParse</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="convenientDiscussions.api.html">convenientDiscussions.api</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.buildEditSummary"
+								>buildEditSummary</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.generateCommentId"
+								>generateCommentId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.getCommentByDtId"
+								>getCommentByDtId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.getCommentById"
+								>getCommentById</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a
+								href="convenientDiscussions.api.html#.getLastActiveAlteredCommentForm"
+								>getLastActiveAlteredCommentForm</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.getLastActiveCommentForm"
+								>getLastActiveCommentForm</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.getRootElement"
+								>getRootElement</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.getSectionById"
+								>getSectionById</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.getSectionsByHeadline"
+								>getSectionsByHeadline</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.isPageOverlayOn"
+								>isPageOverlayOn</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.parseCommentId"
+								>parseCommentId</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.reloadPage"
+								>reloadPage</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.wrapDiffBody"
+								>wrapDiffBody</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="convenientDiscussions.api.html#.wrapHtml">wrapHtml</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="convenientDiscussions.g.html">convenientDiscussions.g</a>
+				</li>
+				<li>
+					<a href="external-jQuery.fn.html">external:jQuery.fn</a>
+					<ul class="methods">
+						<li data-type="method" style="display: none">
+							<a href="external-jQuery.fn.html#.cdAddCloseButton"
+								>cdAddCloseButton</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="external-jQuery.fn.html#.cdGetText">cdGetText</a>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="external-jQuery.fn.html#.cdIsInViewport"
+								>cdIsInViewport</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="external-jQuery.fn.html#.cdRemoveCloseButton"
+								>cdRemoveCloseButton</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="external-jQuery.fn.html#.cdRemoveNonElementNodes"
+								>cdRemoveNonElementNodes</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="external-jQuery.fn.html#.cdScrollIntoView"
+								>cdScrollIntoView</a
+							>
+						</li>
+						<li data-type="method" style="display: none">
+							<a href="external-jQuery.fn.html#.cdScrollTo">cdScrollTo</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="external-OO.EventEmitter.html">external:OO.EventEmitter</a>
+				</li>
+				<li><a href="external-OO.ui.html">external:OO.ui</a></li>
+			</ul>
+			<h3><a href="global.html">Global</a></h3>
+		</nav>
+
+		<div id="main">
+			<section class="package">
+				<h3></h3>
+			</section>
+
+			<section class="readme usertext">
+				<article>
+					<h1>Convenient Discussions code documentation</h1>
+					<p>
+						<strong
+							>This is an outdated documentation for Convenient Discussions v7.
+							Convenient Discussions v8 and above use TypeScript-flavored JSDoc
+							which makes the codebase work as a TypeScript one (with all
+							linting, code completion in IDEs etc.). Making it generate good
+							auto-documentation as well is out of my reach as of now.</strong
+						>
+					</p>
+					<p>
+						See &quot;<a
+							href="https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions#Development"
+							>Development</a
+						>&quot; and &quot;<a
+							href="https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki"
+							>Configuring for a wiki</a
+						>&quot; sections of the script's home page for some guidelines about
+						developing for Convenient Discussions.
+					</p>
+					<p>
+						This documentation is not complete. Sometimes I (Jack who built the
+						house) am just too lazy to add JSDoc for every minor functionality
+						or property. But it provides a good starting point.
+					</p>
+					<p>Some specifics:</p>
+					<ul>
+						<li>
+							Private methods and properties are not on the website, but many of
+							them are documented in the code.
+						</li>
+						<li>Protected methods <em>are</em> on the website.</li>
+						<li>
+							Public methods that are not intended for external use are marked
+							with the comment &quot;<em>For internal use</em>&quot;.
+						</li>
+						<li>
+							Internal events emitted by
+							<a href="external-OO.EventEmitter.html">OO.EventEmitter</a> are
+							not documented – only the ones fired on
+							<a
+								href="https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html"
+								>mw.hook</a
+							>.
+						</li>
+					</ul>
+				</article>
+			</section>
+		</div>
+
+		<br class="clear" />
+
+		<footer>
+			Documentation generated by
+			<a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a> on Sat, 31 Jan
+			2026 03:38:25 GMT using the
+			<a href="https://github.com/clenemt/docdash">docdash</a> theme.
+		</footer>
+
+		<script>
+			prettyPrint()
+		</script>
+		<script src="scripts/polyfill.js"></script>
+		<script src="scripts/linenumber.js"></script>
+
+		<script src="scripts/search.js" defer></script>
+
+		<script src="scripts/collapse.js" defer></script>
+	</body>
+</html>
