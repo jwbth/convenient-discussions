@@ -39,6 +39,9 @@ class CommentSource {
 	/** @type {number | undefined} */
 	detectedActualLevel
 
+	/** @type {boolean | undefined} */
+	hasTemplatesAtLineStart
+
 	/**
 	 * Create a comment's source object.
 	 *
@@ -84,6 +87,9 @@ class CommentSource {
 					const headingMatchTyped = /** @type {RegExpMatchArray} */ (this.headingMatch)
 					headingMatchTyped[i] = textMasker.unmaskText(group)
 				})
+
+				// Check for templates at the beginning of lines and memorize whether there are any
+				this.hasTemplatesAtLineStart = /(?:^|\n)\u0001\d+_template.*?\u0002/.test(text)
 
 				return text
 			})
@@ -451,6 +457,13 @@ class CommentSource {
 	 * @private
 	 */
 	canFixBrokenIndentation() {
+		// Can't fix if there are templates at the beginning of lines - these are quite likely to be
+		// something like navboxes that made the user to scratch indentation in the first place. (But
+		// this actually COULD be fixable by adding indentation to everthing *except* problematic lines)
+		if (this.hasTemplatesAtLineStart) {
+			return false
+		}
+
 		const children = this.comment.getChildren()
 
 		// If no children, it's safe to fix
