@@ -1720,6 +1720,7 @@ class CommentForm extends EventEmitter {
 	 */
 	removeEventListenersFromCommentInput() {
 		const elements = [this.commentInput.$input[0]]
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (this.commentInput.codeMirror?.view?.contentDOM) {
 			elements.push(this.commentInput.codeMirror.view.contentDOM)
 		}

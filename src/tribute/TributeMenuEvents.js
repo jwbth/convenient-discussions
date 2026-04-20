@@ -31,16 +31,12 @@ class TributeMenuEvents {
 		window.addEventListener('resize', this.windowResizeEvent)
 
 		// jwbth: Added this line to make the menu change its height if its lower border is off screen.
-		window.addEventListener('viewportMove', this.windowResizeEvent)
+		window.addEventListener('scroll', this.windowResizeEvent)
 
 		if (this.tribute.menuContainer) {
-			this.tribute.menuContainer.addEventListener(
-				'viewportMove',
-				this.menuContainerScrollEvent,
-				false,
-			)
+			this.tribute.menuContainer.addEventListener('scroll', this.menuContainerScrollEvent, false)
 		} else {
-			window.addEventListener('viewportMove', this.menuContainerScrollEvent)
+			window.addEventListener('scroll', this.menuContainerScrollEvent)
 		}
 	}
 
@@ -50,16 +46,12 @@ class TributeMenuEvents {
 		window.removeEventListener('resize', this.windowResizeEvent)
 
 		// jwbth: Added this line, see above.
-		window.removeEventListener('viewportMove', this.windowResizeEvent)
+		window.removeEventListener('scroll', this.windowResizeEvent)
 
 		if (this.tribute.menuContainer) {
-			this.tribute.menuContainer.removeEventListener(
-				'viewportMove',
-				this.menuContainerScrollEvent,
-				false,
-			)
+			this.tribute.menuContainer.removeEventListener('scroll', this.menuContainerScrollEvent, false)
 		} else {
-			window.removeEventListener('viewportMove', this.menuContainerScrollEvent)
+			window.removeEventListener('scroll', this.menuContainerScrollEvent)
 		}
 	}
 
