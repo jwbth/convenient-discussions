@@ -66,7 +66,7 @@ class TributeEvents {
 	}
 
 	/**
-	 * @param {Event} event
+	 * @param {KeyboardEvent} event
 	 */
 	keydown = (event) => {
 		const element = event.currentTarget
@@ -75,6 +75,18 @@ class TributeEvents {
 		// mention is typed and the user presses any command key.
 
 		this.commandEvent = false
+
+		// Ctrl+Space forces the autocomplete menu to show when at a trigger position, even after
+		// the menu was dismissed with Escape or the user navigated back to a trigger.
+		if (event.ctrlKey && event.key === ' ') {
+			event.preventDefault()
+			this.tribute.lastCanceledTriggerPos = null
+			this.tribute.lastCanceledTriggerChar = null
+			this.inputEvent = true
+			this.keyup(event, element)
+
+			return
+		}
 
 		TributeEvents.keys().forEach((o) => {
 			if (o.key === event.keyCode) {
