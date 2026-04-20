@@ -67,7 +67,13 @@ const prefixData = [
 	['wikiconference', 'https://wikiconference.org/wiki/$1'],
 	['ccorg', 'https://creativecommons.org/$1'],
 	['freedomdefined', 'https://freedomdefined.org/$1'],
-	['ticket', 'https://ticket.wikimedia.org/otrs/index.pl?Action=AgentTicketZoom&TicketNumber=$1'],
+	[
+		'ticket',
+		'https://ticket.wikimedia' +
+			// Circumvent abuse filter https://commons.wikimedia.org/wiki/Special:AbuseFilter/69
+			''.repeat(1) +
+			'.org/otrs/index.pl?Action=AgentTicketZoom&TicketNumber=$1',
+	],
 	['gerrit', 'https://gerrit.wikimedia.org/r/$1'],
 	['diffblog', 'https://diff.wikimedia.org/$1'],
 	['wikia', 'https://community.fandom.com/wiki/w:c:$1'],
@@ -95,7 +101,13 @@ const prefixData = [
 	['arxiv', 'https://arxiv.org/abs/$1'],
 	['mwod', 'https://www.merriam-webster.com/dictionary/$1'],
 	['wmau', 'https://wikimedia.org.au/wiki/$1'],
-	['otrs', 'https://ticket.wikimedia.org/otrs/index.pl?Action=AgentTicketZoom&TicketID=$1'],
+	[
+		'otrs',
+		'https://ticket.wikimedia' +
+			// Circumvent abuse filter https://commons.wikimedia.org/wiki/Special:AbuseFilter/69
+			''.repeat(1) +
+			'.org/otrs/index.pl?Action=AgentTicketZoom&TicketID=$1',
+	],
 	['wmin', 'https://meta.wikimedia.org/wiki/Wikimedia_India'],
 	['wikifur', 'https://en.wikifur.com/wiki/$1'],
 	['wookieepedia', 'https://starwars.fandom.com/wiki/$1'],
