@@ -216,6 +216,7 @@
 	"error-blocked": "Dir oder Är IP-Adress sidd fir Ännerunge gespaart. D'Säit gouf net geännert.",
 	"error-pagedeleted": "D'Säit gouf geläscht.",
 	"error-pagenotedited": "D'Säit gouf net geännert.",
+	"discussiontools-disabled": "DiscussionTools gouf desaktivéiert. <span class=\"cd-notification-refresh\">[[$1|Luet d'Säit nei]]</span>.",
 	"lp-comment": "Bemierkung",
 	"lp-comment-tooltip": "Op d'Bemierkung goen",
 	"lp-comment-toyou": "d'Bemierkung ass un Iech adresséiert",
