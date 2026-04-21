@@ -408,7 +408,7 @@ class TextInputWidgetMixin {
 			return this.buildWikilink({
 				target: interwikiLink.prefixedPageName,
 				label,
-				pageName: interwikiLink.pageName,
+				pageNameWithFragment: interwikiLink.pageName,
 				isShiftPressed,
 				hostname: urlObj.hostname,
 			})
