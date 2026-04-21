@@ -820,10 +820,11 @@ class CommentSkeleton {
 					break
 				}
 
-				// Weird cases with multiple signatures on different nesting levels, e.g.
-				// https://he.wikipedia.org/w/index.php?title=Template:%D7%9C%D7%90_%D7%97%D7%AA%D7%9D&oldid=36579655
-				// creates a class="autosigned" element and a hidden element with a signature after. Halt
-				// the search completely.
+				// Weird cases with multiple signatures on different nesting levels. E.g.:
+				// - https://he.wikipedia.org/w/index.php?title=Template:%D7%9C%D7%90_%D7%97%D7%AA%D7%9D&oldid=36579655
+				//   creates a class="autosigned" element and a hidden element with a signature after. Halt
+				//   the search completely.
+				// - https://en.wikipedia.org/wiki/Wikipedia:Administrators'_noticeboard/Archive357#c-64andtim-20231216032000-156.205.220.126-20231216031000
 				if (step === 'up' && node.classList.contains('cd-comment-part')) {
 					throw new CdError()
 				}

@@ -15,6 +15,7 @@ import notifications from './notifications'
 import pageNav from './pageNav'
 import processUrlOnLoad from './processUrl'
 import sectionManager from './sectionManager'
+import CdError from './shared/CdError'
 import Parser from './shared/Parser'
 import {
 	defined,
@@ -708,7 +709,9 @@ class BootProcess {
 					try {
 						commentManager.add(this.parser.createComment(signature, this.targets, commentManager))
 					} catch (error) {
-						cd.debug.logError(error)
+						if (!(error instanceof CdError && error.getType() === 'internal')) {
+							cd.debug.logError(error)
+						}
 					}
 				})
 
