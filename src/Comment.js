@@ -2948,8 +2948,8 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} [flash] Whether to flash the comment as a target.
 	 */
 	registerSeen(registerAllInDirection, flash = false) {
-		const isInVewport = !registerAllInDirection || this.isInViewport()
-		if (isInVewport) {
+		const isInViewport = !registerAllInDirection || this.isInViewport()
+		if (isInViewport) {
 			this.handleInViewport(flash)
 		}
 
@@ -2976,12 +2976,6 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} flash Whether to flash the comment as a target.
 	 */
 	async handleInViewport(flash) {
-		// Check for broken markup on first viewport appearance
-		if (cd.utils.isCurrentRevision() && !this.brokenLayoutChecked) {
-			this.brokenLayoutChecked = true
-			await this.checkBrokenLayout()
-		}
-
 		if (this.isSeen === false) {
 			this.isSeen = true
 			if (flash) {
@@ -2991,6 +2985,12 @@ class Comment extends mixIntoClass(
 
 		if (this.willFlashChangedOnSight) {
 			this.flashChanged()
+		}
+
+		// Check for broken markup on first viewport appearance
+		if (cd.utils.isCurrentRevision() && !this.brokenLayoutChecked) {
+			this.brokenLayoutChecked = true
+			await this.checkBrokenLayout()
 		}
 	}
 
