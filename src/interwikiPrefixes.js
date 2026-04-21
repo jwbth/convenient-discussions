@@ -262,7 +262,7 @@ const compiledPrefixes = prefixData.map(([prefix, urlTemplate]) =>
  * or `undefined` if the URL doesn't match any known interwiki prefix.
  *
  * @param {string} url
- * @returns {string | undefined}
+ * @returns {{ prefix: string; pageName: string; prefixedPageName: string } | undefined}
  */
 export function urlToInterwikiLink(url) {
 	const qIdx = url.indexOf('?')
@@ -318,8 +318,20 @@ export function urlToInterwikiLink(url) {
 			}
 		} else if (Object.keys(fixedParams).length || paramKey !== undefined) continue
 
-		if (param === undefined) return prefix + ':'
+		if (param === undefined) {
+			return {
+				prefix,
+				pageName: '',
+				prefixedPageName: prefix + ':',
+			}
+		}
 
-		return prefix + ':' + (paramDecoded ? param : safeDecode(param))
+		const pageName = paramDecoded ? param : safeDecode(param)
+
+		return {
+			prefix,
+			pageName,
+			prefixedPageName: prefix + ':' + pageName,
+		}
 	}
 }

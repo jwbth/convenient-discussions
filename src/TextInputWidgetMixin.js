@@ -385,11 +385,12 @@ class TextInputWidgetMixin {
 	 *
 	 * @param {string} url
 	 * @param {string} [label]
+	 * @param {boolean} [isShiftPressed] Whether Shift key is pressed
 	 * @returns {Promise<string|undefined>} The converted link or undefined if conversion failed
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	async convertUrlToWikilink(url, label) {
+	async convertUrlToWikilink(url, label, isShiftPressed = false) {
 		let urlObj
 		try {
 			urlObj = new URL(url)
@@ -404,7 +405,13 @@ class TextInputWidgetMixin {
 		// Try to get interwiki link directly from URL
 		const interwikiLink = urlToInterwikiLink(url)
 		if (interwikiLink) {
-			return this.buildWikilink(interwikiLink, label)
+			return this.buildWikilink({
+				target: interwikiLink.prefixedPageName,
+				label,
+				pageName: interwikiLink.pageName,
+				isShiftPressed,
+				hostname: urlObj.hostname,
+			})
 		}
 
 		// Special case: red links have action=edit and redlink=1 parameters. These should be converted
@@ -436,7 +443,7 @@ class TextInputWidgetMixin {
 				throw new Error('URL does not look like a wiki URL')
 			}
 
-			return await this.convertUrlToWikilinkWithPrefix(url, urlObj, params, label)
+			return await this.convertUrlToWikilinkWithPrefix(url, urlObj, params, label, isShiftPressed)
 		} catch {
 			// Fall back to external link format on any error
 			return this.formatExternalLink(url, label)
@@ -448,14 +455,31 @@ class TextInputWidgetMixin {
 	/**
 	 * Build a wikilink from a target and optional label.
 	 *
-	 * @param {string} target Target page name (may include interwiki prefix and fragment)
-	 * @param {string} [label] Optional label for the link
+	 * @param {object} options
+	 * @param {string} options.target Target page name (may include interwiki prefix and fragment)
+	 * @param {string} [options.label] Optional label for the link
+	 * @param {string} [options.pageNameWithFragment] Page name without prefix but with fragment (for
+	 *   Shift+paste label)
+	 * @param {boolean} [options.isShiftPressed] Whether Shift key is pressed
+	 * @param {string} [options.hostname] Hostname of the URL (for interwiki prefix detection)
 	 * @returns {string}
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	buildWikilink(target, label) {
+	buildWikilink({ target, label, pageNameWithFragment, isShiftPressed = false, hostname }) {
 		let wikilink = `[[${target}`
+
+		// If Shift is pressed and there's no existing label, and it's an interwiki link (different domain),
+		// use the page name as the label
+		if (
+			isShiftPressed &&
+			!label &&
+			pageNameWithFragment &&
+			hostname &&
+			hostname !== cd.g.serverName
+		) {
+			label = pageNameWithFragment
+		}
 
 		if (label && label !== target) {
 			const encodedLabel = encodeLinkLabel(label)
@@ -472,13 +496,14 @@ class TextInputWidgetMixin {
 	 *
 	 * @param {string} url
 	 * @param {URL} urlObj
-	 * @param {URLSearchParams} params
+	 * @param {URLSearchParams} _params
 	 * @param {string} [label]
+	 * @param {boolean} [isShiftPressed] Whether Shift key is pressed
 	 * @returns {Promise<string>}
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	async convertUrlToWikilinkWithPrefix(url, urlObj, params, label) {
+	async convertUrlToWikilinkWithPrefix(url, urlObj, _params, label, isShiftPressed = false) {
 		// Get interwiki prefix
 		let interwikiPrefix
 
@@ -539,6 +564,7 @@ class TextInputWidgetMixin {
 
 		// Build the target with fragment if present
 		let target = interwikiPrefix + parsedUrl.pageName
+		let pageNameWithFragment = parsedUrl.pageName
 		if (parsedUrl.fragment) {
 			let decodedFragment = mw.util.percentDecodeFragment(parsedUrl.fragment)
 			if (!decodedFragment) {
@@ -547,9 +573,16 @@ class TextInputWidgetMixin {
 			}
 			decodedFragment = encodeWikilink(underlinesToSpaces(decodedFragment))
 			target += `#${decodedFragment}`
+			pageNameWithFragment += `#${decodedFragment}`
 		}
 
-		return this.buildWikilink(leadingColon + target, label)
+		return this.buildWikilink({
+			target: leadingColon + target,
+			label,
+			pageNameWithFragment,
+			isShiftPressed,
+			hostname: urlObj.hostname,
+		})
 	}
 
 	/**
@@ -569,15 +602,23 @@ class TextInputWidgetMixin {
 	 * Handle paste/drop events for URL conversion.
 	 *
 	 * @param {ClipboardEvent | DragEvent} event
+	 * @param {boolean} [isShiftPressedForPaste] Whether Shift is pressed (for paste events)
 	 * @returns {boolean} Whether URL conversion will happen
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	handleUrlConversion(event) {
+	handleUrlConversion(event, isShiftPressedForPaste) {
 		const data = 'clipboardData' in event ? event.clipboardData : event.dataTransfer
 		if (!data) return false
 
 		const isPaste = 'clipboardData' in event
 		const insertedLength = data.getData('text/plain').length
+
+		// Determine if Shift is pressed
+		// For paste events, use the provided value (or default to false)
+		// For drop events, check event.shiftKey
+		const isShiftPressed = isPaste
+			? (isShiftPressedForPaste ?? false)
+			: /** @type {DragEvent} */ (event).shiftKey
 
 		// Determine if text is selected (for paste events)
 		let selectedText
@@ -630,16 +671,16 @@ class TextInputWidgetMixin {
 		}
 
 		// Schedule the actual conversion
-		this.performUrlConversion(
+		this.performUrlConversion({
 			url,
 			label,
 			isPaste,
-			selectedText,
 			selectionStart,
 			insertedLength,
 			leadingSpaces,
 			trailingSpaces,
-		)
+			isShiftPressed,
+		})
 
 		return true
 	}
@@ -647,27 +688,28 @@ class TextInputWidgetMixin {
 	/**
 	 * Perform the URL conversion after the paste/drop has completed.
 	 *
-	 * @param {string} url
-	 * @param {string | undefined} label
-	 * @param {boolean} isPaste
-	 * @param {string | undefined} selectedText
-	 * @param {number | undefined} selectionStart
-	 * @param {number} insertedLength
-	 * @param {string} leadingSpaces Leading spaces from selected text to preserve
-	 * @param {string} trailingSpaces Trailing spaces from selected text to preserve
+	 * @param {object} options
+	 * @param {string} options.url URL to convert
+	 * @param {string} [options.label] Optional label for the link
+	 * @param {boolean} options.isPaste Whether this is a paste (vs drop) event
+	 * @param {number} [options.selectionStart] Selection start position (for paste events)
+	 * @param {number} options.insertedLength Length of inserted text
+	 * @param {string} options.leadingSpaces Leading spaces from selected text to preserve
+	 * @param {string} options.trailingSpaces Trailing spaces from selected text to preserve
+	 * @param {boolean} options.isShiftPressed Whether Shift key is pressed
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	async performUrlConversion(
+	async performUrlConversion({
 		url,
 		label,
 		isPaste,
-		selectedText,
 		selectionStart,
 		insertedLength,
 		leadingSpaces,
 		trailingSpaces,
-	) {
+		isShiftPressed,
+	}) {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
 
@@ -697,7 +739,7 @@ class TextInputWidgetMixin {
 		})
 
 		// Try to convert the URL
-		const convertedLink = await this.convertUrlToWikilink(url, label)
+		const convertedLink = await this.convertUrlToWikilink(url, label, isShiftPressed)
 		if (!convertedLink) {
 			return
 		}

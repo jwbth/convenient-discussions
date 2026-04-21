@@ -224,6 +224,14 @@ class Controller extends EventEmitter {
 	commentLayersOptionalBackgroundHighlightingCss
 
 	/**
+	 * Whether the Shift key is currently pressed.
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	isShiftPressed = false
+
+	/**
 	 * Set up the boot manager for use in the current boot process. (Executed at every page load.)
 	 *
 	 * @param {string} [pageHtml] HTML to update the page with.
@@ -764,7 +772,32 @@ class Controller extends EventEmitter {
 	handleGlobalKeyDown = (event) => {
 		if (cd.loader.isPageOverlayOn()) return
 
+		if (event.key === 'Shift') {
+			this.isShiftPressed = true
+		}
+
 		this.emit('keyDown', event)
+	}
+
+	/**
+	 * Handles `keyup` event on the document.
+	 *
+	 * @param {KeyboardEvent | JQuery.KeyUpEvent} event
+	 * @private
+	 */
+	handleGlobalKeyUp = (event) => {
+		if (event.key === 'Shift') {
+			this.isShiftPressed = false
+		}
+	}
+
+	/**
+	 * Handles window `blur` event to reset Shift key state.
+	 *
+	 * @private
+	 */
+	handleWindowBlur = () => {
+		this.isShiftPressed = false
 	}
 
 	/**
@@ -952,7 +985,8 @@ class Controller extends EventEmitter {
 		setInterval(this.handlePageMutate, 1500)
 
 		if (cd.page.isCommentable()) {
-			$(document).on('keydown', this.handleGlobalKeyDown)
+			$(document).on('keydown', this.handleGlobalKeyDown).on('keyup', this.handleGlobalKeyUp)
+			$(window).on('blur', this.handleWindowBlur)
 		}
 
 		mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this))
@@ -1260,6 +1294,15 @@ class Controller extends EventEmitter {
 	 */
 	isAutoScrolling() {
 		return this.autoScrolling
+	}
+
+	/**
+	 * Check whether the Shift key is currently pressed.
+	 *
+	 * @returns {boolean}
+	 */
+	getIsShiftPressed() {
+		return this.isShiftPressed
 	}
 
 	/**

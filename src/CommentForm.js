@@ -1331,7 +1331,10 @@ class CommentForm extends EventEmitter {
 		}
 
 		// Check if we should try to convert URLs to wikilinks
-		const willConvertUrl = this.commentInput.handleUrlConversion(originalEvent)
+		const willConvertUrl = this.commentInput.handleUrlConversion(
+			originalEvent,
+			controller.getIsShiftPressed(),
+		)
 
 		// Handle rich text conversion only if URL conversion won't happen
 		if (!willConvertUrl && data.types.includes('text/html')) {
@@ -1351,7 +1354,7 @@ class CommentForm extends EventEmitter {
 	createTextInputPasteDropHandler(input) {
 		return (event) => {
 			// Only handle URL conversion for text inputs
-			input.handleUrlConversion(event)
+			input.handleUrlConversion(event, controller.getIsShiftPressed())
 		}
 	}
 
