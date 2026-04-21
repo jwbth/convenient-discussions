@@ -3624,8 +3624,8 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * _For internal use._ Apply a very specific fix for cases when an indented comment starts with a
-	 * list like this:
+	 * _For internal use._ Apply very specific fixes for cases when an indented comment starts with a
+	 * list. One case is this:
 	 *
 	 * ```html
 	 * : Comment. [signature]
@@ -3647,11 +3647,60 @@ class Comment extends mixIntoClass(
 	 * <dd>Comment end. [signature]</dd>
 	 * ```
 	 *
-	 * The code splits the parent item element (`dd` in this case) into two and puts the list in the
-	 * second one. This fixes the thread feature behavior among other things.
+	 * Another case is this (based on the child comments of
+	 * https://en.wikipedia.org/wiki/Special:GoToComment/c-Matma_Rex-20260417224500-The_Bushranger-20260409190700):
+	 *
+	 * ```html
+	 * : Comment 1. [signature]
+	 * :: Comment 2. [signature]
+	 * :* Item
+	 * :* Item
+	 * : Comment 3 end. [signature]
+	 * ```
+	 *
+	 * which gives the following DOM:
+	 *
+	 * ```html
+	 * <dd>
+	 *   <div>Comment 1. [signature]</div>
+	 *   <dl>
+	 *     <dd>
+	 *       <div>Comment 2. [signature]</div>
+	 *     </dd>
+	 *   </dl>
+	 *   <div>
+	 *     <ul>
+	 *       <li>Item</li>
+	 *       <li>Item</li>
+	 *     </ul>
+	 *   </div>
+	 * </dd>
+	 * <dd>Comment 3 end. [signature]</dd>
+	 * ```
+	 *
+	 * In both cases, the code splits the parent item element (`dd` in this case) into two and puts
+	 * the list in the second one. This fixes the thread feature behavior among other things.
 	 */
 	maybeSplitParent() {
 		if (this.index === 0) return
+
+		const firstElement = this.elements[0]
+
+		// A comment starting with a list (UL/OL wrapped in a DIV) that follows a nested DL inside
+		// the same DD/LI. The list ends up in the same container as the preceding comments due to
+		// MediaWiki's parser behavior with `:*` after `::`.
+		if (
+			firstElement.parentElement &&
+			['DD', 'LI'].includes(firstElement.parentElement.tagName) &&
+			firstElement.tagName === 'DIV' &&
+			firstElement.previousElementSibling?.tagName === 'DL' &&
+			firstElement.firstElementChild &&
+			['UL', 'OL'].includes(firstElement.firstElementChild.tagName)
+		) {
+			this.parser.splitParentAfterNode(/** @type {Node} */ (firstElement.previousSibling))
+
+			return
+		}
 
 		const previousComment = /** @type {Comment} */ (this.manager.getByIndex(this.index - 1))
 		if (this.level !== previousComment.level) return
