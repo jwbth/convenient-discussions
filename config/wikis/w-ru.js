@@ -165,10 +165,6 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 	archivePaths: [
 		{
-			source: 'Википедия:Форум/Географический',
-			archive: 'Википедия:Форум/Географический/Архивы/',
-		},
-		{
 			source: 'Википедия:Форум арбитров',
 			archive: 'Википедия:Форум/Архив/Форум арбитров',
 		},
