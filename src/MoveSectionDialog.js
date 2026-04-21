@@ -6,7 +6,7 @@ import controller from './controller'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
-import { defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './shared/utils-general'
+import { defined, sleep } from './shared/utils-general'
 import { encodeWikilink, endWithTwoNewlines, escapeEqualsInTemplate } from './shared/utils-wikitext'
 import { createCheckboxControl, createTitleControl } from './utils-oojs'
 import { es6ClassToOoJsClass } from './utils-oojs-class'
@@ -107,27 +107,10 @@ export default function getMoveSectionDialogClass() {
 			this.pushPending()
 
 			const sourcePage = this.section.getSourcePage()
-			const archivingConfigPages = []
-			if (sourcePage.canHaveArchives()) {
-				archivingConfigPages.push(
-					sourcePage,
-					...(cd.config.archivingConfig.subpages || [])
-						.map((subpage) => pageRegistry.get(sourcePage.name + '/' + subpage))
-						.filter(definedAndNotNull),
-				)
-			}
-			const templatePages = (cd.config.archivingConfig.templates || [])
-				.map((template) => pageRegistry.get(template.name))
-				.filter(definedAndNotNull)
 			this.initRequests = [
 				sourcePage.loadCode(),
 				mw.loader.using('mediawiki.widgets'),
-				Promise.all(
-					archivingConfigPages.map((page) => page.getFirstTemplateTransclusion(templatePages)),
-				).then(
-					(transclusions) => this.guessArchiveConfig(mergeMaps(transclusions)),
-					() => {},
-				),
+				this.section.manager.loadArchiveConfig(this.section).catch(() => undefined),
 			]
 
 			this.loadingPanel = new OO.ui.PanelLayout({
@@ -160,6 +143,7 @@ export default function getMoveSectionDialogClass() {
 		 *
 		 * @override
 		 * @param {object} [data] Dialog opening data
+		 * @param {'move' | 'archive'} [data.action] Action type
 		 * @returns {OO.ui.Process}
 		 * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
 		 * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
@@ -167,6 +151,7 @@ export default function getMoveSectionDialogClass() {
 		 */
 		getSetupProcess(data) {
 			return super.getSetupProcess(data).next(() => {
+				this.action = data?.action || 'move'
 				this.stack.setItem(this.loadingPanel)
 				this.actions.setMode('move')
 			})
@@ -240,29 +225,31 @@ export default function getMoveSectionDialogClass() {
 
 				const archivePath =
 					archiveConfig?.path || (cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true))
-				if (archivePath) {
-					this.insertArchivePageButton = new Pseudolink({
-						label: archivePath,
-						input: this.controls.title.input,
-					})
-					$(this.insertArchivePageButton.buttonElement).on('click', () => {
-						this.controls.keepLink.input.setSelected(false)
-						this.controls.chronologicalOrder.input.setSelected(archiveConfig?.isSorted || false)
-						this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-archive'))
-					})
-				}
-
-				// If on an archive page, create a button to unarchive to the source page
-				if (cd.page.isArchive()) {
-					const sourcePage = cd.page.getArchivedPage()
-					if (sourcePage !== cd.page) {
-						this.insertSourcePageButton = new Pseudolink({
-							label: sourcePage.name,
+				if (this.action !== 'archive') {
+					if (archivePath) {
+						this.insertArchivePageButton = new Pseudolink({
+							label: archivePath,
 							input: this.controls.title.input,
 						})
-						$(this.insertSourcePageButton.buttonElement).on('click', () => {
-							this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-unarchive'))
+						$(this.insertArchivePageButton.buttonElement).on('click', () => {
+							this.controls.keepLink.input.setSelected(false)
+							this.controls.chronologicalOrder.input.setSelected(archiveConfig?.isSorted || false)
+							this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-archive'))
 						})
+					}
+
+					// If on an archive page, create a button to unarchive to the source page
+					if (cd.page.isArchive()) {
+						const sourcePage = cd.page.getArchivedPage()
+						if (sourcePage !== cd.page) {
+							this.insertSourcePageButton = new Pseudolink({
+								label: sourcePage.name,
+								input: this.controls.title.input,
+							})
+							$(this.insertSourcePageButton.buttonElement).on('click', () => {
+								this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-unarchive'))
+							})
+						}
 					}
 				}
 
@@ -305,6 +292,11 @@ export default function getMoveSectionDialogClass() {
 						this.controls.summaryEnding.field.$element,
 					].filter(defined),
 				)
+
+				// Handle archive action
+				if (this.action === 'archive') {
+					this.setupArchiveAction(archiveConfig || undefined, archivePath)
+				}
 
 				this.stack.setItem(this.movePanel)
 				this.controls.title.input.focus()
@@ -735,85 +727,49 @@ export default function getMoveSectionDialogClass() {
 		}
 
 		/**
-		 * Provided parameters of archiving templates present on the page, guess the archive path and
-		 * other configuration for the section.
+		 * Set up the dialog for archive/unarchive action by pre-filling the target page and setting
+		 * appropriate options.
 		 *
-		 * @param {Map<import('./Page').default, StringsByKey>} templateToParameters
-		 * @returns {ArchiveConfig | undefined}
+		 * @param {ArchiveConfig | undefined} archiveConfig
+		 * @param {string} [archivePath]
+		 * @protected
 		 */
-		guessArchiveConfig(templateToParameters) {
-			return Array.from(templateToParameters).reduce((config, [page, parameters]) => {
-				if (config) {
-					return config
+		setupArchiveAction(archiveConfig, archivePath) {
+			let targetPageName
+			let summaryKey = 'msd-summaryending-archive'
+
+			if (cd.page.isArchive()) {
+				// Unarchiving: move from archive to source page
+				const sourcePage = cd.page.getArchivedPage()
+				if (sourcePage !== cd.page) {
+					targetPageName = sourcePage.name
+					summaryKey = 'msd-summaryending-unarchive'
 				}
 
-				const templateConfig = /** @type {import('../config/default').ArchivingTemplateEntry} */ (
-					(cd.config.archivingConfig.templates || []).find(
-						(template) => pageRegistry.get(template.name) === page,
-					)
+				// Archiving: move from source to archive page
+			} else if (archivePath) {
+				targetPageName = archivePath
+				summaryKey = 'msd-summaryending-archive'
+			}
+
+			if (targetPageName) {
+				// Set the target page
+				this.controls.title.input.setValue(targetPageName)
+
+				// Uncheck keepLink
+				this.controls.keepLink.input.setSelected(false)
+
+				// Check chronologicalOrder if archiving (not unarchiving)
+				this.controls.chronologicalOrder.input.setSelected(
+					cd.page.isArchive() || archiveConfig?.isSorted || false,
 				)
 
-				/**
-				 * Find a parameter mentioned in the template config in the list of actual template
-				 * parameters, do the regexp transformations, and return the result.
-				 *
-				 * @param {keyof typeof templateConfig} prop
-				 * @returns {string | undefined}
-				 */
-				const findPresentParamAndReplaceAll = (prop) => {
-					const replaceAll = (/** @type {string} */ value) =>
-						Array.from(templateConfig.replacements || []).reduce(
-							(v, [regexp, replacer]) =>
-								v.replace(regexp, (...match) =>
-									replacer(
-										{
-											counter:
-												(templateConfig.counterParam && parameters[templateConfig.counterParam]) ||
-												null,
-											date: this.section.oldestComment?.date || null,
-										},
+				// Set the summary
+				this.controls.summaryEnding.input.setValue(cd.s(summaryKey))
 
-										// Basically get all string matches. Use a complex expression in case JavaScript
-										// evolves in the future to add more arguments.
-										match.slice(
-											0,
-											match.findIndex((el) => typeof el !== 'string'),
-										),
-									),
-								),
-							value,
-						)
-
-					const presentPathParam = ensureArray(templateConfig[prop]).find(
-						(pathParam) => pathParam && parameters[pathParam],
-					)
-
-					return presentPathParam ? replaceAll(parameters[presentPathParam]) : undefined
-				}
-
-				let path = findPresentParamAndReplaceAll('pathParam')
-				if (!path) {
-					path = findPresentParamAndReplaceAll('relativePathParam')
-					if (path) {
-						const [absolutePairKey, absolutePairValue] = templateConfig.absolutePathPair || []
-						const absoluteParamValue = absolutePairKey && parameters[absolutePairKey]
-						if (
-							!(
-								absoluteParamValue &&
-								absolutePairValue &&
-								absoluteParamValue.match(absolutePairValue)
-							)
-						) {
-							path = cd.page.name + '/' + path
-						}
-					}
-				}
-
-				return {
-					path,
-					isSorted: cd.config.archivingConfig.areArchivesSorted || false,
-				}
-			}, /** @type {ArchiveConfig | undefined} */ (undefined))
+				// Trigger validation
+				this.onTitleInputChange()
+			}
 		}
 	}
 

@@ -1,6 +1,10 @@
 import controller from './controller'
 import cd from './loader/cd'
+import pageRegistry from './pageRegistry'
 import {
+	definedAndNotNull,
+	ensureArray,
+	mergeMaps,
 	areObjectsEqual,
 	calculateWordOverlap,
 	generateFixedPosTimestamp,
@@ -16,6 +20,12 @@ import visits from './visits'
  * }} SectionMatch
  */
 
+/**
+ * @typedef {object} ArchiveConfig
+ * @property {string | undefined} path
+ * @property {boolean} isSorted
+ */
+
 // TODO: Make it extend a generic registry.
 
 /**
@@ -29,6 +39,14 @@ export class SectionManager {
 	 * @private
 	 */
 	items = []
+
+	/**
+	 * Cached archive configuration.
+	 *
+	 * @type {Promise<ArchiveConfig | undefined> | undefined}
+	 * @private
+	 */
+	archiveConfigPromise
 
 	/**
 	 * _For internal use._ Initialize the registry.
@@ -418,6 +436,139 @@ export class SectionManager {
 		this.items.forEach((section) => {
 			section.updateVisibility(true)
 		})
+	}
+
+	/**
+	 * Load archive configuration for sections. This is cached so multiple sections can request it
+	 * without making duplicate network requests.
+	 *
+	 * @param {import('./Section').default} section
+	 * @returns {Promise<ArchiveConfig | undefined>}
+	 */
+	loadArchiveConfig(section) {
+		if (!this.archiveConfigPromise) {
+			this.archiveConfigPromise = this.fetchArchiveConfig(section)
+		}
+
+		return this.archiveConfigPromise
+	}
+
+	/**
+	 * Fetch archive configuration from the server.
+	 *
+	 * @param {import('./Section').default} section
+	 * @returns {Promise<ArchiveConfig | undefined>}
+	 * @private
+	 */
+	async fetchArchiveConfig(section) {
+		const sourcePage = section.getSourcePage()
+		if (!sourcePage.canHaveArchives()) {
+			return
+		}
+
+		const archivingConfigPages = [
+			sourcePage,
+			...(cd.config.archivingConfig.subpages || [])
+				.map((subpage) => pageRegistry.get(sourcePage.name + '/' + subpage))
+				.filter(definedAndNotNull),
+		]
+
+		const templatePages = (cd.config.archivingConfig.templates || [])
+			.map((template) => pageRegistry.get(template.name))
+			.filter(definedAndNotNull)
+
+		try {
+			const transclusions = await Promise.all(
+				archivingConfigPages.map((page) => page.getFirstTemplateTransclusion(templatePages)),
+			)
+
+			return this.guessArchiveConfig(section, mergeMaps(transclusions))
+		} catch {
+			return
+		}
+	}
+
+	/**
+	 * Provided parameters of archiving templates present on the page, guess the archive path and
+	 * other configuration for the section.
+	 *
+	 * @param {import('./Section').default} section
+	 * @param {Map<import('./Page').default, StringsByKey>} templateToParameters
+	 * @returns {ArchiveConfig | undefined}
+	 */
+	guessArchiveConfig(section, templateToParameters) {
+		return Array.from(templateToParameters).reduce((config, [page, parameters]) => {
+			if (config) {
+				return config
+			}
+
+			const templateConfig = /** @type {import('../config/default').ArchivingTemplateEntry} */ (
+				(cd.config.archivingConfig.templates || []).find(
+					(template) => pageRegistry.get(template.name) === page,
+				)
+			)
+
+			/**
+			 * Find a parameter mentioned in the template config in the list of actual template
+			 * parameters, do the regexp transformations, and return the result.
+			 *
+			 * @param {keyof typeof templateConfig} prop
+			 * @returns {string | undefined}
+			 */
+			const findPresentParamAndReplaceAll = (prop) => {
+				const replaceAll = (/** @type {string} */ value) =>
+					Array.from(templateConfig.replacements || []).reduce(
+						(v, [regexp, replacer]) =>
+							v.replace(regexp, (...match) =>
+								replacer(
+									{
+										counter:
+											(templateConfig.counterParam && parameters[templateConfig.counterParam]) ||
+											null,
+										date: section.oldestComment?.date || null,
+									},
+
+									// Basically get all string matches. Use a complex expression in case JavaScript
+									// evolves in the future to add more arguments.
+									match.slice(
+										0,
+										match.findIndex((el) => typeof el !== 'string'),
+									),
+								),
+							),
+						value,
+					)
+
+				const presentPathParam = ensureArray(templateConfig[prop]).find(
+					(pathParam) => pathParam && parameters[pathParam],
+				)
+
+				return presentPathParam ? replaceAll(parameters[presentPathParam]) : undefined
+			}
+
+			let path = findPresentParamAndReplaceAll('pathParam')
+			if (!path) {
+				path = findPresentParamAndReplaceAll('relativePathParam')
+				if (path) {
+					const [absolutePairKey, absolutePairValue] = templateConfig.absolutePathPair || []
+					const absoluteParamValue = absolutePairKey && parameters[absolutePairKey]
+					if (
+						!(
+							absoluteParamValue &&
+							absolutePairValue &&
+							absoluteParamValue.match(absolutePairValue)
+						)
+					) {
+						path = cd.page.name + '/' + path
+					}
+				}
+			}
+
+			return {
+				path,
+				isSorted: cd.config.archivingConfig.areArchivesSorted || false,
+			}
+		}, /** @type {ArchiveConfig | undefined} */ (undefined))
 	}
 }
 

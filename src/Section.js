@@ -276,6 +276,11 @@ class Section extends SectionSkeleton {
 		 * @type {boolean}
 		 */
 		this.isHidden = false
+
+		// Workaround to make this.constructor in methods to be type-checked correctly
+		/** @type {typeof Section} */
+		// eslint-disable-next-line no-self-assign
+		this.constructor = this.constructor
 	}
 
 	/**
@@ -619,6 +624,20 @@ class Section extends SectionSkeleton {
 			this.isTopic() &&
 			!this.isTranscludedFromTemplate &&
 			(cd.page.isActive() || cd.page.isCurrentArchive())
+		)
+	}
+
+	/**
+	 * Check whether the section can be unarchived (moved back to the source page).
+	 *
+	 * @returns {boolean}
+	 */
+	canBeUnarchived() {
+		return (
+			this.isTopic() &&
+			!this.isTranscludedFromTemplate &&
+			cd.page.isArchive() &&
+			cd.page.getArchivedPage() !== cd.page
 		)
 	}
 
@@ -1011,8 +1030,8 @@ class Section extends SectionSkeleton {
 	 */
 	addMoreMenuSelect = () => {
 		const moreMenuSelect = this.createMoreMenuSelectStub()
-		moreMenuSelect
-			.getMenu()
+		const menu = moreMenuSelect.getMenu()
+		menu
 			.addItems(
 				[
 					this.canFirstCommentBeEdited()
@@ -1029,6 +1048,14 @@ class Section extends SectionSkeleton {
 								label: cd.s('sm-move'),
 								title: cd.s('sm-move-tooltip'),
 								icon: 'arrowNext',
+							})
+						: undefined,
+					this.canBeUnarchived()
+						? new OO.ui.MenuOptionWidget({
+								data: 'unarchive',
+								label: cd.s('sm-unarchive'),
+								title: cd.s('sm-unarchive-tooltip'),
+								icon: 'unarchive',
 							})
 						: undefined,
 					this.canBeSubsectioned()
@@ -1057,6 +1084,12 @@ class Section extends SectionSkeleton {
 					case 'move':
 						this.move()
 						break
+					case 'unarchive':
+						this.unarchive()
+						break
+					case 'archive':
+						this.archive()
+						break
 					case 'addSubsection':
 						this.addSubsection()
 						break
@@ -1075,6 +1108,9 @@ class Section extends SectionSkeleton {
 		 * @type {OO.ui.ButtonMenuSelectWidget | undefined}
 		 */
 		this.actions.moreMenuSelect = moreMenuSelect
+
+		// Load archive config and add archive button if applicable
+		this.maybeAddArchiveButton(menu)
 
 		/**
 		 * A "More options" menu select button has been created and added to the section actions
@@ -1127,7 +1163,12 @@ class Section extends SectionSkeleton {
 	 */
 	createActionsElement() {
 		let moreMenuSelectDummy
-		if (this.canFirstCommentBeEdited() || this.canBeMoved() || this.canBeSubsectioned()) {
+		if (
+			this.canFirstCommentBeEdited() ||
+			this.canBeMoved() ||
+			this.canBeUnarchived() ||
+			this.canBeSubsectioned()
+		) {
 			const element = this.createMoreMenuSelectStub().$element[0]
 			moreMenuSelectDummy = new Button({
 				element,
@@ -1502,16 +1543,89 @@ class Section extends SectionSkeleton {
 
 	/**
 	 * Show a move section dialog.
+	 *
+	 * @param {'move' | 'archive'} [action] Action type: 'move' for regular move, 'archive'
+	 *   for archiving/unarchiving.
+	 * @private
 	 */
-	move() {
+	showMoveDialog(action = 'move') {
 		if (cd.loader.isPageOverlayOn()) return
 
 		const dialog = new (getMoveSectionDialogClass())(this)
 		const windowManager = cd.getWindowManager()
 		windowManager.addWindows([dialog])
-		windowManager.openWindow(dialog)
+		windowManager.openWindow(dialog, { action })
 
 		cd.tests.moveSectionDialog = dialog
+	}
+
+	/**
+	 * Show a move section dialog.
+	 */
+	move() {
+		this.showMoveDialog('move')
+	}
+
+	/**
+	 * Show a move section dialog with the target page pre-filled for unarchiving.
+	 */
+	unarchive() {
+		this.showMoveDialog('archive')
+	}
+
+	/**
+	 * Show a move section dialog with the target page pre-filled for archiving.
+	 */
+	archive() {
+		this.showMoveDialog('archive')
+	}
+
+	/**
+	 * Load archive configuration and add an "Archive" button to the menu if archiving is possible.
+	 *
+	 * @param {OO.ui.MenuSelectWidget} menu
+	 * @private
+	 */
+	async maybeAddArchiveButton(menu) {
+		// Quick checks before making network requests
+		if (
+			!this.isTopic() ||
+			this.isTranscludedFromTemplate ||
+			cd.page.isArchive() ||
+			!cd.page.canHaveArchives()
+		) {
+			return
+		}
+
+		try {
+			const archiveConfig = await this.manager.loadArchiveConfig(this)
+			const archivePath = archiveConfig?.path || cd.page.getArchivePrefix(true)
+
+			if (archivePath) {
+				// Find the position to insert the archive button (after move, before unarchive/addSubsection)
+				const items = menu.getItems()
+				let insertIndex = items.findIndex(
+					(item) => /** @type {OO.ui.MenuOptionWidget} */ (item).getData() === 'move',
+				)
+
+				if (insertIndex === -1) {
+					insertIndex = items.length
+				} else {
+					insertIndex++
+				}
+
+				const archiveButton = new OO.ui.MenuOptionWidget({
+					data: 'archive',
+					label: cd.s('sm-archive'),
+					title: cd.s('sm-archive-tooltip'),
+					icon: 'archive',
+				})
+
+				menu.addItems([archiveButton], insertIndex)
+			}
+		} catch {
+			// Silently fail if we can't determine archive config
+		}
 	}
 
 	/**
