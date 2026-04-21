@@ -394,6 +394,7 @@
 	"msd-chronologicalorder": "Найти место для темы на основе хронологического порядка",
 	"msd-summaryending": "Описание правки (будет добавлено к стандартному)",
 	"msd-summaryending-archive": "архивация",
+	"msd-summaryending-unarchive": "разархивация",
 	"msd-error-wrongpage": "Неверно указана страница.",
 	"msd-error-sourcepagedeleted": "Текущая страница была удалена.",
 	"msd-error-invalidpagename": "Указано невозможное название страницы.",

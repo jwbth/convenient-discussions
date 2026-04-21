@@ -28,7 +28,9 @@ export default function getMoveSectionDialogClass() {
 	class MoveSectionDialog extends ProcessDialog {
 		// @ts-expect-error: https://phabricator.wikimedia.org/T358416
 		static name = 'moveSectionDialog'
+
 		static title = cd.s('msd-title')
+
 		static actions = /** @type {const} */ ([
 			{
 				action: 'close',
@@ -250,6 +252,20 @@ export default function getMoveSectionDialogClass() {
 					})
 				}
 
+				// If on an archive page, create a button to unarchive to the source page
+				if (cd.page.isArchive()) {
+					const sourcePage = cd.page.getArchivedPage()
+					if (sourcePage !== cd.page) {
+						this.insertSourcePageButton = new Pseudolink({
+							label: sourcePage.name,
+							input: this.controls.title.input,
+						})
+						$(this.insertSourcePageButton.buttonElement).on('click', () => {
+							this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-unarchive'))
+						})
+					}
+				}
+
 				this.controls.keepLink = createCheckboxControl({
 					value: 'keepLink',
 					selected: !cd.page.isArchive(),
@@ -283,6 +299,7 @@ export default function getMoveSectionDialogClass() {
 					[
 						this.controls.title.field.$element,
 						this.insertArchivePageButton?.element,
+						this.insertSourcePageButton?.element,
 						this.controls.keepLink.field.$element,
 						this.controls.chronologicalOrder.field.$element,
 						this.controls.summaryEnding.field.$element,
