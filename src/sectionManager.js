@@ -365,7 +365,7 @@ export class SectionManager {
 	 */
 	maybeUpdateVisibility = () => {
 		if (
-			!this.improvePerformance ||
+			!cd.settings.get('improvePerformance') ||
 			!this.items.length ||
 			!controller.isLongPage() ||
 			// When the document has no focus, all sections are visible (see .maybeUnhideAll()).
