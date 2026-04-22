@@ -939,7 +939,7 @@ class Loader {
 }`)
 		}
 
-		mw.util.addCSS(globalCss)
+		mw.loader.addStyleTag(globalCss)
 	}
 
 	/**
@@ -968,8 +968,8 @@ class Loader {
 			await Promise.all([this.maybeLoadCommentLinksModules(), this.loadApp()])
 
 			// See the comment above: "Additions of CSS...".
-			mw.util.addCSS(globalCss)
-			mw.util.addCSS(addCommentLinksCss)
+			mw.loader.addStyleTag(globalCss)
+			mw.loader.addStyleTag(addCommentLinksCss)
 
 			await this.importApp()
 			this.addCommentLinks()
