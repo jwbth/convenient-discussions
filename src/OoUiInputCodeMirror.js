@@ -1,14 +1,12 @@
 // eslint-disable-next-line jsdoc/require-jsdoc
 export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showToolbar) {
 	const codeMirrorExt =
-		mw.loader.getState('ext.CodeMirror.v6.WikiEditor') === 'ready'
+		mw.loader.getState('ext.CodeMirror.WikiEditor') === 'ready'
 			? showToolbar
 				? /** @type {typeof import('./CodeMirrorWikiEditor').default} */ (
-						mw.loader.require('ext.CodeMirror.v6.WikiEditor')
+						mw.loader.require('ext.CodeMirror.WikiEditor')
 					)
-				: /** @type {typeof import('./CodeMirror').default} */ (
-						mw.loader.require('ext.CodeMirror.v6')
-					)
+				: /** @type {typeof import('./CodeMirror').default} */ (mw.loader.require('ext.CodeMirror'))
 			: // eslint-disable-next-line jsdoc/require-jsdoc
 				/** @type {typeof import('./CodeMirror').default} */ (/** @type {unknown} */ (class {}))
 
@@ -23,7 +21,7 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 		 * @param {import('./MultilineTextInputWidget').default} input
 		 */
 		constructor(input) {
-			super(input.$input, mw.loader.require('ext.CodeMirror.v6.mode.mediawiki')())
+			super(input.$input, mw.loader.require('ext.CodeMirror.mode.mediawiki')())
 
 			/**
 			 * @typedef {object} Lib
@@ -36,7 +34,7 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 			/**
 			 * @type {Lib}
 			 */
-			this.lib = mw.loader.require('ext.CodeMirror.v6.lib')
+			this.lib = mw.loader.require('ext.CodeMirror.lib')
 			this.cdPlaceholderCompartment = new this.lib.Compartment()
 			this.cdDisabledCompartment = new this.lib.Compartment()
 			this.cdChangeExtension = this.lib.EditorView.updateListener.of((update) => {

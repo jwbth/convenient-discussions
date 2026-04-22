@@ -512,7 +512,7 @@ const globalProperties = {
 	isDtVisualEnhancementsEnabled: bodyClassList.contains(
 		'ext-discussiontools-visualenhancements-enabled',
 	),
-	isCodeMirror6Installed: Boolean(mw.loader.getState('ext.CodeMirror.v6.WikiEditor')),
+	isCodeMirror6Installed: Boolean(mw.loader.getState('ext.CodeMirror.WikiEditor')),
 
 	isParsoidUsed: $('#mw-content-text > .mw-parser-output')
 		.contents()

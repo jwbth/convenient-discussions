@@ -1485,7 +1485,7 @@ class CommentForm extends EventEmitter {
 			if (this.toolbarLoaded) {
 				this.showToolbar()
 			} else {
-				// We need to switch from ext.CodeMirror.v6 to to ext.CodeMirror.v6.WikiEditor
+				// We need to switch from ext.CodeMirror to to ext.CodeMirror.WikiEditor
 				this.commentInput.codeMirror?.destroy()
 
 				await this.builder.buildToolbar(this.loadCustomModules())

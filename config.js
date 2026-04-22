@@ -67,7 +67,7 @@ export default {
 				],
 				editGadgetsDefinition: true,
 				modules: [
-					// 'ext.CodeMirror.v6.WikiEditor',
+					// 'ext.CodeMirror.WikiEditor',
 					'ext.checkUser.styles',
 					'ext.checkUser.userInfoCard',
 					'ext.confirmEdit.CaptchaInputWidget',
@@ -124,9 +124,7 @@ export default {
 			server: 'commons.wikimedia.org',
 			default: {
 				source: 'commons.js',
-				targets: [
-					'User:Jack who built the house/convenientDiscussions-commonsConfig.js',
-				],
+				targets: ['User:Jack who built the house/convenientDiscussions-commonsConfig.js'],
 			},
 		},
 		{
@@ -140,13 +138,10 @@ export default {
 			server: 'www.mediawiki.org',
 			default: {
 				source: 'mw.js',
-				targets: [
-					'User:Jack who built the house/convenientDiscussions-mwConfig.js',
-				],
+				targets: ['User:Jack who built the house/convenientDiscussions-mwConfig.js'],
 			},
 		},
 	]),
 
-	sourceMapsBaseUrl:
-		'https://tools-static.wmflabs.org/convenient-discussions/source-maps/',
+	sourceMapsBaseUrl: 'https://tools-static.wmflabs.org/convenient-discussions/source-maps/',
 }

@@ -208,7 +208,7 @@ class Loader {
 					// We need to instantiate our class based on the CodeMirror class, so we load it now,
 					// not on comment form creation.
 					...(cd.g.isCodeMirror6Installed
-						? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
+						? ['ext.CodeMirror.WikiEditor', 'ext.CodeMirror.mode.mediawiki']
 						: []),
 				].filter(defined),
 			)

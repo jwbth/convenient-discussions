@@ -383,7 +383,7 @@ class CommentFormBuilder {
 	async buildToolbar(customModulesPromise) {
 		if (!cd.settings.get('showToolbar') || !mw.loader.getState('ext.wikiEditor')) {
 			if (cd.settings.get('useCodeMirror') && cd.g.isCodeMirror6Installed) {
-				await mw.loader.using(['ext.CodeMirror.v6', 'ext.CodeMirror.v6.mode.mediawiki'])
+				await mw.loader.using(['ext.CodeMirror', 'ext.CodeMirror.mode.mediawiki'])
 
 				this.initCodeMirror()
 			}
@@ -399,7 +399,7 @@ class CommentFormBuilder {
 			mw.loader.using([
 				'ext.wikiEditor',
 				...(cd.g.isCodeMirror6Installed
-					? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
+					? ['ext.CodeMirror.WikiEditor', 'ext.CodeMirror.mode.mediawiki']
 					: []),
 			]),
 			customModulesPromise,
