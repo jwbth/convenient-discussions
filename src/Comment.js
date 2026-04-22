@@ -1385,7 +1385,13 @@ class Comment extends mixIntoClass(
 		} else if (this.isStartStretched) {
 			startMargin = controller.getContentColumnOffsets().startMargin
 		} else {
-			const marginElement = this.thread?.$expandNote?.[0] || this.marginHighlightable
+			const marginElement =
+				this.thread?.$expandNote?.[0] ||
+				// This is for cases like
+				// https://en.wikipedia.org/wiki/Project:Village_pump_(technical)#c-Zinnober9-20260418224400-Matma_Rex-20260417224500
+				// where Comment#maybeSplitParent() is used
+				this.editForm?.getOutermostElement() ||
+				this.marginHighlightable
 			if (marginElement.parentElement?.classList.contains('cd-commentLevel')) {
 				startMargin = -1 / cd.g.pixelDeviationRatioFor1px
 			} else if (
