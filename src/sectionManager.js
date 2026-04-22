@@ -474,7 +474,7 @@ export class SectionManager {
 		]
 
 		const templatePages = (cd.config.archivingConfig.templates || [])
-			.map((template) => pageRegistry.get(template.name))
+			.map((template) => pageRegistry.getFromTemplateName(template.name))
 			.filter(definedAndNotNull)
 
 		try {
@@ -504,7 +504,7 @@ export class SectionManager {
 
 			const templateConfig = /** @type {import('../config/default').ArchivingTemplateEntry} */ (
 				(cd.config.archivingConfig.templates || []).find(
-					(template) => pageRegistry.get(template.name) === page,
+					(template) => pageRegistry.getFromTemplateName(template.name) === page,
 				)
 			)
 
@@ -564,10 +564,12 @@ export class SectionManager {
 				}
 			}
 
-			return {
-				path,
-				isSorted: cd.config.archivingConfig.areArchivesSorted || false,
-			}
+			return path
+				? {
+						path,
+						isSorted: cd.config.archivingConfig.areArchivesSorted || false,
+					}
+				: undefined
 		}, /** @type {ArchiveConfig | undefined} */ (undefined))
 	}
 }

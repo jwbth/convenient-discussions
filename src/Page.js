@@ -625,7 +625,9 @@ export default class Page {
 									// Find the first <template> with a <title> child equal to the name
 									.filter(
 										(_, template) =>
-											this.registry.get($(template).children('title').text().trim()) === page,
+											this.registry.getFromTemplateName(
+												$(template).children('title').text().trim(),
+											) === page,
 									)
 									.first()
 									.find('comment')

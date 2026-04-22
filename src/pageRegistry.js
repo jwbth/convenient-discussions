@@ -89,6 +89,42 @@ const pageRegistry = {
 	getCanonicalCurrentPageName() {
 		return this.canonicalCurrentPageName
 	},
+
+	/**
+	 * Get a page object for a template name as used in wikitext.
+	 *
+	 * Converts template syntax to page names:
+	 * - `{{template}}` → `Template:Template`
+	 * - `{{:template}}` → `Template` (main namespace)
+	 * - `{{user:username/template}}` → `User:Username/template` (explicit namespace)
+	 * - `{{prefix:template}}` where prefix is not a namespace → `Template:Prefix:template`
+	 *
+	 * @param {string} templateName Template name as it appears in wikitext (without `{{` and `}}`)
+	 * @returns {import('./Page').default | undefined}
+	 */
+	getFromTemplateName(templateName) {
+		const hasLeadingColon = templateName.startsWith(':')
+
+		if (hasLeadingColon) {
+			// Leading colon means main namespace or explicit namespace
+			return this.get(templateName.slice(1))
+		}
+
+		// Try to parse as a title to detect if a namespace is specified
+		const title = mw.Title.newFromText(templateName)
+		if (title && title.getNamespaceId() !== 10 && title.getNamespaceId() !== 0) {
+			// Namespace is specified and it's not the Template namespace (ID 10) or main namespace (ID 0)
+			return this.get(templateName)
+		}
+
+		// If it's already in Template namespace, use as-is
+		if (title && title.getNamespaceId() === 10) {
+			return this.get(templateName)
+		}
+
+		// No namespace - use default Template: prefix
+		return this.get('Template:' + templateName)
+	},
 }
 
 export default pageRegistry

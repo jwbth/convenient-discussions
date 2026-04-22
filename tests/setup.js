@@ -1,6 +1,8 @@
 global.OO = {
 	ui: new Proxy(
-		{},
+		{
+			throttle: (fn) => fn,
+		},
 		{
 			get: (target, prop) => {
 				if (!(prop in target)) {
@@ -89,6 +91,76 @@ global.mw = {
 		getUrl: (/** @type {string} */ page) => `/wiki/${encodeURIComponent(page)}`,
 	},
 	msg: (/** @type {string} */ name) => mw.messages.values[name] || name,
+	Title: class Title {
+		constructor(namespace, title) {
+			this.namespace = namespace
+			this.title = title
+		}
+
+		getNamespaceId() {
+			return this.namespace
+		}
+
+		getMainText() {
+			return this.title
+		}
+
+		getPrefixedText() {
+			const namespaceNames = {
+				0: '',
+				2: 'User:',
+				4: 'Wikipedia:',
+				6: 'File:',
+				10: 'Template:',
+				12: 'Help:',
+				14: 'Category:',
+			}
+
+			return (namespaceNames[this.namespace] || '') + this.title
+		}
+
+		static newFromText(name) {
+			if (!name) return null
+
+			// Parse namespace from the name
+			let namespaceId = 0 // Main namespace by default
+			let mainText = name
+
+			// Handle leading colon
+			if (name.startsWith(':')) {
+				name = name.slice(1)
+			}
+
+			// Check for namespace prefix
+			const colonIndex = name.indexOf(':')
+			if (colonIndex !== -1) {
+				const prefix = name.slice(0, colonIndex).toLowerCase()
+				const namespaceMap = {
+					template: 10,
+					user: 2,
+					wikipedia: 4,
+					help: 12,
+					category: 14,
+					file: 6,
+				}
+
+				if (prefix in namespaceMap) {
+					namespaceId = namespaceMap[prefix]
+					mainText = name.slice(colonIndex + 1)
+				} else {
+					// Not a valid namespace, treat the whole thing as main text
+					mainText = name
+				}
+			}
+
+			// Capitalize first letter of main text
+			if (mainText) {
+				mainText = mainText.charAt(0).toUpperCase() + mainText.slice(1)
+			}
+
+			return new mw.Title(namespaceId, mainText)
+		}
+	},
 }
 
 const createProxy = (/** @type {string | symbol} */ name = '') => {
