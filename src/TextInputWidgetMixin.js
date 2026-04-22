@@ -633,6 +633,9 @@ class TextInputWidgetMixin {
 			}
 		}
 
+		// Check if we're pasting/dropping inside existing link markup like [^ link label]
+		const linkMarkupContext = this.detectLinkMarkupContext(selectionStart ?? 0)
+
 		// Extract URL and label
 		const extracted = this.extractUrlFromData(data, selectedText)
 		if (!extracted) {
@@ -641,9 +644,14 @@ class TextInputWidgetMixin {
 
 		let { url, label } = extracted
 
+		// If we're inside link markup, use the markup's label instead of the pasted link's label
+		if (linkMarkupContext) {
+			label = linkMarkupContext.label
+		}
+
 		// If the selected text (which would be used as label) is itself a URL, wikilink, or template,
 		// don't use it as a label (user is likely replacing one with another)
-		if (label) {
+		if (label && !linkMarkupContext) {
 			const trimmedLabel = label.trim()
 
 			// Check if it's a URL
@@ -680,9 +688,54 @@ class TextInputWidgetMixin {
 			leadingSpaces,
 			trailingSpaces,
 			isShiftPressed,
+			linkMarkupContext,
 		})
 
 		return true
+	}
+
+	/**
+	 * Detect if the cursor is inside link markup like [^ link label].
+	 *
+	 * @param {number} position Cursor position
+	 * @returns {{ label: string; start: number; end: number; hasClosingBracket: boolean } | null}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	detectLinkMarkupContext(position) {
+		const value = this.getValue()
+		const lineStart = value.lastIndexOf('\n', position - 1) + 1
+		const lineEnd = value.indexOf('\n', position)
+		const line = value.substring(lineStart, lineEnd === -1 ? undefined : lineEnd)
+		const positionInLine = position - lineStart
+
+		// Check if there's an opening bracket before the cursor on the same line
+		const openBracketIndex = line.lastIndexOf('[', positionInLine - 1)
+		if (openBracketIndex === -1 || openBracketIndex !== positionInLine - 1) {
+			return null
+		}
+
+		// Look for closing bracket on the same line
+		const closeBracketIndex = line.indexOf(']', positionInLine)
+		if (closeBracketIndex === -1) {
+			// No closing bracket found - we'll "eat" the opening bracket if conversion succeeds
+			return {
+				label: '',
+				start: lineStart + openBracketIndex,
+				end: position,
+				hasClosingBracket: false,
+			}
+		}
+
+		// Extract the label between cursor and closing bracket
+		const label = line.substring(positionInLine, closeBracketIndex).trim()
+
+		return {
+			label,
+			start: lineStart + openBracketIndex,
+			end: lineStart + closeBracketIndex + 1,
+			hasClosingBracket: true,
+		}
 	}
 
 	/**
@@ -697,6 +750,7 @@ class TextInputWidgetMixin {
 	 * @param {string} options.leadingSpaces Leading spaces from selected text to preserve
 	 * @param {string} options.trailingSpaces Trailing spaces from selected text to preserve
 	 * @param {boolean} options.isShiftPressed Whether Shift key is pressed
+	 * @param {{ label: string; start: number; end: number; hasClosingBracket: boolean } | null} [options.linkMarkupContext] Link markup context if pasting inside [^ label]
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
@@ -709,6 +763,7 @@ class TextInputWidgetMixin {
 		leadingSpaces,
 		trailingSpaces,
 		isShiftPressed,
+		linkMarkupContext,
 	}) {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
@@ -771,6 +826,46 @@ class TextInputWidgetMixin {
 			insertedEnd = newSelectionStart
 		}
 
+		// If we're inside link markup, handle it specially
+		if (linkMarkupContext) {
+			// Only proceed if conversion to wikilink was successful (starts with [[)
+			if (!convertedLink.startsWith('[[')) {
+				return
+			}
+
+			// After the native paste, the content has shifted. We need to adjust the positions.
+			// The link was inserted at the position right after the opening bracket.
+			// Calculate the shift: the inserted content length
+			const shift = insertedLength
+
+			// Adjust the markup positions based on where the content was inserted
+			let adjustedStart
+			let adjustedEnd
+
+			if (linkMarkupContext.hasClosingBracket) {
+				// We have [^ label] where ^ is where the link was inserted
+				// After paste: [<inserted_url> label]
+				// We want to replace from [ to ]
+				adjustedStart = linkMarkupContext.start
+				adjustedEnd = linkMarkupContext.end + shift
+			} else {
+				// We have [^ (no closing bracket) where ^ is where the link was inserted
+				// After paste: [<inserted_url>
+				// We want to replace from [ to the end of inserted content
+				adjustedStart = linkMarkupContext.start
+				adjustedEnd = insertedEnd
+			}
+
+			// Select the entire markup range (adjusted for the shift)
+			this.selectRange(adjustedStart, adjustedEnd)
+
+			// Insert the converted link (no spaces needed here)
+			this.insertContent(convertedLink)
+
+			return
+		}
+
+		// Normal case: not inside link markup
 		// Select the pasted/dropped content
 		this.selectRange(insertedStart, insertedEnd)
 
