@@ -318,7 +318,7 @@ export class CommentManager extends EventEmitter {
 			? controller.getFloatingElements().map(getExtendedRect)
 			: undefined
 		comments.forEach((comment) => {
-			comment.configureLayers({
+			comment.updateLayers({
 				add: false,
 				update: false,
 				floatingRects,
@@ -375,7 +375,7 @@ export class CommentManager extends EventEmitter {
 					comment.removeLayers()
 				} else if (shouldBeHighlighted) {
 					floatingRects ??= controller.getFloatingElements().map(getExtendedRect)
-					const displaced = comment.configureLayers({
+					const displaced = comment.updateLayers({
 						// If a comment was hidden, then became visible, we need to add the layers.
 						add: true,
 
@@ -470,7 +470,7 @@ export class CommentManager extends EventEmitter {
 		// Visibility is checked in the sense that an element is visible on the page, not necessarily in
 		// the viewport.
 		const isCommentVisible = (/** @type {C} */ comment) => {
-			comment.manageOffset({ save: true })
+			comment.getAndOrSaveOffset({ save: true })
 
 			return Boolean(comment.roughOffset)
 		}
@@ -530,7 +530,7 @@ export class CommentManager extends EventEmitter {
 		// there is only few comments. Usually the cycle finishes after a few steps.
 		for (const _item of this.items) {
 			if (!comment.roughOffset) {
-				comment.manageOffset({ save: true })
+				comment.getAndOrSaveOffset({ save: true })
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				if (!comment.roughOffset) {
 					const commentCandidate =
@@ -1467,7 +1467,7 @@ export class CommentManager extends EventEmitter {
 				// Clear linked state if the fragment no longer matches this comment
 				if (!currentFragment || currentFragment !== commentFragment) {
 					comment.removeFlag('linked')
-					comment.configureLayers()
+					comment.updateLayers()
 				}
 			}
 		}

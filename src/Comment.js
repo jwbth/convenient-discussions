@@ -999,8 +999,12 @@ class Comment extends mixIntoClass(
 	 */
 
 	/**
-	 * Get the coordinates of the comment. Optionally save them as the `offset` or `roughOffset`
-	 * property. Also set the {@link Comment#isStartStretched isStartStretched} and
+	 * All-in-one method for doing various things with the comment's offset. It was made so for
+	 * optimization reasons.
+	 *
+	 * It gets the coordinates of the comment; optionally saves them as the `offset` or `roughOffset`
+	 * property; returns the offset or (if `save: true` option is passed) the fact that the comment
+	 * was displaced. Also updates the {@link Comment#isStartStretched isStartStretched} and
 	 * {@link Comment#isEndStretched isEndStretched} properties (if `options.considerFloating` is
 	 * `true`).
 	 *
@@ -1012,7 +1016,7 @@ class Comment extends mixIntoClass(
 	 *   If `options.save` is `true`, returns a boolean value indicating if the comment was displaced
 	 *   instead of the offset. Otherwise, returns the offset object.
 	 */
-	manageOffset(options = {}) {
+	getAndOrSaveOffset(options = {}) {
 		options.considerFloating ??= Boolean(options.floatingRects)
 		options.save ??= false
 
@@ -1039,8 +1043,8 @@ class Comment extends mixIntoClass(
 		// content starts to occupy less space.
 		const scrollY = window.scrollY
 
-		// Has the comment's position stayed the same (i.e. it wasn't displaced)? This value will be
-		// `true` wrongly if the comment is around floating elements, but that doesn't hurt much.
+		// Has the comment's position stayed the same (i.e. was it displaced)? If the comment is around
+		// floating elements, this value will be `true` wrongly, but that doesn't hurt much.
 		if (
 			this.offset &&
 			// Has the top stayed the same? With scale other than 100% values of less than 0.001 appear
@@ -1076,8 +1080,10 @@ class Comment extends mixIntoClass(
 		const left = scrollX + Math.min(rectTop.left, rectBottom.left)
 		const right = scrollX + Math.max(rectTop.right, rectBottom.right)
 
+		// This is an irrelevant condition for computing "stretched" properties, but will suffice for
+		// now
 		if (options.considerFloating) {
-			this.updateStretched(left, right)
+			this.computeStretched(left, right)
 		}
 
 		const offset = {
@@ -1201,7 +1207,7 @@ class Comment extends mixIntoClass(
 	 * @param {number} right Right offset.
 	 * @private
 	 */
-	updateStretched(left, right) {
+	computeStretched(left, right) {
 		/**
 		 * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
 		 * start of the content area.
@@ -1441,7 +1447,7 @@ class Comment extends mixIntoClass(
 	 * @returns {boolean | undefined} Was the comment displaced or created. `undefined` if we couldn't
 	 *   determine (for example, if the element is invisible).
 	 */
-	configureLayers = (options = {}) => {
+	updateLayers = (options = {}) => {
 		options.add ??= true
 		options.update ??= true
 
@@ -1528,7 +1534,7 @@ class Comment extends mixIntoClass(
 	flash(flag, delay) {
 		if (this.isCollapsed || !isVisible(...this.elements)) return
 
-		this.configureLayers()
+		this.updateLayers()
 		if (!this.layers) return
 
 		this.layers.flash(flag, delay)
@@ -1547,7 +1553,7 @@ class Comment extends mixIntoClass(
 	 */
 	markAsLinked() {
 		this.addFlag('linked')
-		this.configureLayers()
+		this.updateLayers()
 	}
 
 	/**
@@ -2100,7 +2106,7 @@ class Comment extends mixIntoClass(
 				tag: 'cd-commentInCollapsedThread',
 			})
 		} else {
-			const offset = this.manageOffset({ considerFloating: true })
+			const offset = this.getAndOrSaveOffset({ considerFloating: true })
 			;(this.editForm?.$element || this.$elements).cdScrollIntoView(
 				alignment ||
 					(this.isOpeningSection() ||
@@ -2914,7 +2920,7 @@ class Comment extends mixIntoClass(
 
 			// Wait until the comment form is removed - its presence can e.g. affect the presence of a
 			// scrollbar, therefore the comment's offset.
-			setTimeout(this.configureLayers)
+			setTimeout(this.updateLayers)
 
 			// Wait until the comment form is unregistered
 			setTimeout(() => {
@@ -2931,7 +2937,7 @@ class Comment extends mixIntoClass(
 	 * @param {CommentOffset | undefined} [offset] Prefetched offset.
 	 * @returns {boolean | undefined}
 	 */
-	isInViewport(partially = false, offset = this.manageOffset()) {
+	isInViewport(partially = false, offset = this.getAndOrSaveOffset()) {
 		if (!offset) {
 			return
 		}
@@ -3045,7 +3051,7 @@ class Comment extends mixIntoClass(
 			}
 
 			// Step 4: Add the "Fix" action
-			this.configureLayers()
+			this.updateLayers()
 			this.actions?.addFixButton()
 		} catch {
 			// Silently fail - this is a non-critical feature
@@ -3790,7 +3796,7 @@ class Comment extends mixIntoClass(
 		}
 		this.isCollapsed = false
 		this.collapsedThread = undefined
-		this.configureLayers()
+		this.updateLayers()
 
 		return
 	}
@@ -3803,7 +3809,7 @@ class Comment extends mixIntoClass(
 	setSelected(selected) {
 		this.isSelected = selected
 		if (selected && this.isActionable) {
-			this.configureLayers()
+			this.updateLayers()
 		}
 	}
 

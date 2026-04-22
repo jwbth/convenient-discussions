@@ -252,7 +252,7 @@ class CommentActions {
 	maybeAddGoToChildButton() {
 		if (!this.comment.targetChild) return
 
-		this.comment.configureLayers()
+		this.comment.updateLayers()
 		if (this.goToChildButton?.isConnected()) return
 
 		this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction)

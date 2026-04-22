@@ -274,7 +274,7 @@ class CommentLayers {
 		if (!containerOffset) return
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const displaced = this.comment.manageOffset({
+		const displaced = this.comment.getAndOrSaveOffset({
 			...options,
 			considerFloating: true,
 			save: true,

@@ -245,7 +245,7 @@ class CompactComment extends Comment {
 
 		// Update classes if the comment is visible and wasn't displaced. If it was, the layers are
 		// removed and created again when the next event fires.
-		if (this.configureLayers() !== false) return
+		if (this.updateLayers() !== false) return
 
 		this.flags.add('hovered')
 		this.updateClassesForFlag('hovered', true)

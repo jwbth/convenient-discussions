@@ -1223,7 +1223,7 @@ class Thread extends mixIntoObject(
 			if (elTop) {
 				rectTop = elTop.getBoundingClientRect()
 			} else {
-				rectTop = comment.manageOffset({ floatingRects })
+				rectTop = comment.getAndOrSaveOffset({ floatingRects })
 				if (rectTop) {
 					rectTop.top -= scrollY
 					rectTop.bottom -= scrollY
