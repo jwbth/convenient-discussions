@@ -382,7 +382,14 @@ export function createRadioControl({ label, selected, help, options }) {
  * @param {CopyTextControlOptions} options
  * @returns {CopyTextControl}
  */
-export function createCopyTextControl({ label, value, disabled = false, help, copyCallback }) {
+export function createCopyTextControl({
+	label,
+	value,
+	disabled = false,
+	help,
+	classes,
+	copyCallback,
+}) {
 	if ('CopyTextLayout' in OO.ui) {
 		const field = new OO.ui.CopyTextLayout({
 			align: 'top',
@@ -392,6 +399,7 @@ export function createCopyTextControl({ label, value, disabled = false, help, co
 			textInput: { disabled },
 			help,
 			helpInline: Boolean(help),
+			classes,
 		})
 		field.on('copy', (successful) => {
 			copyCallback(successful, field.textInput)
@@ -418,6 +426,7 @@ export function createCopyTextControl({ label, value, disabled = false, help, co
 			label,
 			help,
 			helpInline: Boolean(help),
+			classes,
 		}),
 		input,
 	}

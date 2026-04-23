@@ -31,6 +31,7 @@ import { mergeJquery, wrapHtml } from './utils-window'
 class CopyLinkDialog extends OO.ui.MessageDialog {
 	// @ts-expect-error: https://phabricator.wikimedia.org/T358416
 	static name = 'copyLinkDialog'
+
 	static actions = [
 		{
 			label: cd.s('cld-close'),
@@ -318,6 +319,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			label: cd.s('cld-link'),
 			copyCallback,
 			help: helpOnlyCd,
+			classes: ['cd-spaced-2em'],
 		})
 
 		this.controls.permanentLink = createCopyTextControl({
@@ -332,6 +334,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 				value: this.content.jsCall,
 				label: 'JS call',
 				copyCallback,
+				classes: ['cd-spaced-2em'],
 			})
 
 			this.controls.jsBreakpoint = createCopyTextControl({
