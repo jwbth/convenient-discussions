@@ -762,9 +762,9 @@ class Comment extends mixIntoClass(
 		return Boolean(
 			element?.matches(':hover') &&
 			// There is some bug with the popup positioned at 0, 0; I couldn't find the cause, so maybe
-			// checkVisibility() would help.
+			// isVisible() would help.
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			(!element.checkVisibility || element.checkVisibility()) &&
+			isVisible(element) &&
 			!cd.settings.get('toggleChildThreads-onboarded') &&
 			!this.areChildThreadsCollapsed() &&
 			!this.manager.query((c) => Boolean(c.toggleChildThreadsPopup)).length,
@@ -1032,7 +1032,7 @@ class Comment extends mixIntoClass(
 		let rectTop = Comment.getCommentPartRect(firstElement)
 		let rectBottom = this.elements.length === 1 ? rectTop : Comment.getCommentPartRect(lastElement)
 
-		if (!isVisible(firstElement, lastElement)) {
+		if (!isVisible([firstElement, lastElement])) {
 			this.maybeSaveOffset(undefined, options)
 
 			return

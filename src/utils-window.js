@@ -708,10 +708,15 @@ export function getVisibilityByRects(...rects) {
  * Check if elements are visible, using modern checkVisibility API when available, falling back to
  * rectangle-based and hidden="until-found" checks.
  *
- * @param {...Element} elements
+ * @param {Element|Element[]} elements
+ * @param {HTMLElement} [rootElement]
  * @returns {boolean} `true` if all elements are visible, `false` otherwise.
  */
-export function isVisible(...elements) {
+export function isVisible(elements, rootElement) {
+	if (!Array.isArray(elements)) {
+		elements = [elements]
+	}
+
 	return elements.every((element) => {
 		// Use modern checkVisibility API if available
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -726,7 +731,7 @@ export function isVisible(...elements) {
 		}
 
 		// Then check for hidden="until-found" ancestors
-		return !isHiddenByUntilFound(element)
+		return !isHiddenByUntilFound(element, rootElement)
 	})
 }
 
@@ -734,12 +739,13 @@ export function isVisible(...elements) {
  * Check if an element is hidden by a `hidden="until-found"` ancestor.
  *
  * @param {Element} element The element to check
+ * @param {HTMLElement} [rootElement]
  * @returns {boolean}
  */
-export function isHiddenByUntilFound(element) {
+export function isHiddenByUntilFound(element, rootElement) {
 	let current = element.parentElement
 
-	while (current) {
+	while (current && current !== rootElement) {
 		if (current.getAttribute('hidden') === 'until-found') {
 			return true
 		}
@@ -1054,6 +1060,7 @@ export function getRangeContents(start, end, rootElement) {
 			break
 		}
 	}
+	if (!commonAncestor) return
 
 	/*
 		Here we should equally account for all cases of the start and end item relative position.

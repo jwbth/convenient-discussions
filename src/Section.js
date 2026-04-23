@@ -2191,7 +2191,11 @@ class Section extends SectionSkeleton {
 	updateVisibility(show) {
 		if (show !== this.isHidden) return
 
-		this.elements ??= getRangeContents(this.headingElement, this.findRealLastElement(), controller.rootElement)
+		this.elements ??= getRangeContents(
+			this.headingElement,
+			this.findRealLastElement(),
+			controller.rootElement,
+		)
 		this.isHidden = !show
 		this.elements?.forEach((el) => {
 			el.classList.toggle('cd-section-hidden', !show)
