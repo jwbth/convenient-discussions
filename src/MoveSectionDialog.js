@@ -759,6 +759,9 @@ export default function getMoveSectionDialogClass() {
 			this.controls.chronologicalOrder.input.setSelected(
 				archiveConfig?.isSorted ?? cd.config.archivingConfig.areArchivesSorted ?? false,
 			)
+			if (archiveConfig?.isSorted !== undefined) {
+				this.controls.chronologicalOrder.field.toggle()
+			}
 			this.controls.summaryEnding.input.setValue(cd.s(summaryKey))
 
 			if (targetPageName) {
