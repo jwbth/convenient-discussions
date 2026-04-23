@@ -595,7 +595,9 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	formatExternalLink(url, label) {
-		return label ? `[${url} ${label}]` : undefined
+		const escapedLabel = encodeLinkLabel(label)
+
+		return `[${url} ${escapedLabel}]`
 	}
 
 	/**
@@ -660,8 +662,12 @@ class TextInputWidgetMixin {
 				new URL(trimmedLabel)
 				label = undefined
 			} catch {
-				// Not a URL, check for wikilinks or templates
-				if (trimmedLabel.includes('[[') || trimmedLabel.includes('{{')) {
+				// Not a URL, check for wikilinks, templates, and MediaWiki placeholders like [1]
+				if (
+					trimmedLabel.includes('[[') ||
+					trimmedLabel.includes('{{') ||
+					/^\[\d+\]$/.test(trimmedLabel)
+				) {
 					label = undefined
 				}
 			}

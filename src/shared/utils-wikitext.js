@@ -246,7 +246,4 @@ export function encodeLinkLabel(label) {
 		.replace(/>/g, '&gt;')
 		.replace(/\[/g, '&#91;')
 		.replace(/\]/g, '&#93;')
-		.replace(/\{/g, '&#123;')
-		.replace(/\|/g, '&#124;')
-		.replace(/\}/g, '&#125;')
 }
