@@ -354,7 +354,6 @@
 	"warning-performance": "Pohodlné diskusie sa ich môžu pokúsiť vyriešiť pomocou nastavenia „{{int:convenient-discussions-sd-improveperformance}}“. <span class=\"cd-notification-talkPageSettings\">Otvorte dialógové okno nastavení</span> .",
 	"discussiontools-incompatible": "Pohodlné diskusie nie sú kompatibilné s Diskusnými nástrojmi. Prosím vypnite Diskusné nástroje na [[$1|stránke s beta funkciami]], aby Pohodlné diskusie pracovali správne.",
 	"discussiontools-disabled": "Diskusné nástroje boli úspešne deaktivované. <span class=\"cd-notification-refresh\">Obnovte stránku</span> .",
-	"wl-button-settings-tooltip": "Pohodlné diskusie - nastavenia",
 	"lp-comment": "komentár",
 	"lp-comment-tooltip": "Prejsť na komentár",
 	"lp-comment-toyou": "komentár je adresovaný Vám",

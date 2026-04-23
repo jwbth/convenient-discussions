@@ -357,7 +357,6 @@
 	"warning-performance": "सुविधाजनक चर्चा \"{{int:convenient-discussions-sd-improveperformance}}\" सेटिंग की मदद से इन्हें सुलझाने की कोशिश कर सकती है। <span class=\"cd-notification-talkPageSettings\">[[$1|सेटिंग्स डायलॉग खोलें]]</span>।",
 	"discussiontools-incompatible": "सुविधाजनक चर्चा DiscussionTools के साथ काम नहीं करती। सुविधाजनक चर्चा को ठीक से चलाने के लिए कृपया DiscussionTools को <b><span class=\"cd-notification-disabledt\">[[$1|अक्षम करें]]</span></b>।",
 	"discussiontools-disabled": "DiscussionTools को सफलतापूर्वक अक्षम कर दिया गया है। <span class=\"cd-notification-refresh\">[[$1|पृष्ठ को ताज़ा करें]]</span>।",
-	"wl-button-settings-tooltip": "सुविधाजनक चर्चा की सेटिंग्स",
 	"lp-comment": "टिप्पणी",
 	"lp-comment-tooltip": "टिप्पणी पर जाएँ",
 	"lp-comment-toyou": "टिप्पणी आपके लिए है",

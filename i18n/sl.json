@@ -369,7 +369,6 @@
 	"warning-performance": "Priročne razprave jih lahko poskušajo razrešiti z nastavitvijo »{{int:convenient-discussions-sd-improveperformance}}«. <span class=\"cd-notification-talkPageSettings\">[[$1|Odprite pogovorno okno z nastavitvami]]</span>.",
 	"discussiontools-incompatible": "Priročne razprave niso združljive z orodjem DiscussionTools. <b><span class=\"cd-notification-disabledt\">[[$1|Onemogočite]]</span></b> (ali <b><span class=\"cd-notification-disableDtGlobally\">[[$2|globalno onemogočite]]</span></b>) ga, da bodo priročne razprave delovale pravilno.",
 	"discussiontools-disabled": "Orodje DiscussionTools je bilo uspešno onemogočeno. <span class=\"cd-notification-refresh\">[[$1|Osvežite stran]]</span>.",
-	"wl-button-settings-tooltip": "Nastavitve za Priročne razprave",
 	"lp-comment": "komentar",
 	"lp-comment-tooltip": "Pojdi na komentar",
 	"lp-comment-toyou": "komentar je naslovljen na vas",

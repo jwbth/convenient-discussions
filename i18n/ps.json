@@ -433,7 +433,6 @@
 	"warning-performance": "ارامه شننې کولی شي چې په ترتيب سره د \"{{int:convenient-discussions-sd-improveperformance}}\" اوارولو هڅه وکړي. <span class=\"cd-notification-talkPageSettings\">[[$1|د اوڼنو خبربکس پرانېځئ]]</span>.",
 	"discussiontools-incompatible": "ارامه شننې تر ډېره له شنن‌توکو سره ورته‌والی نه لري. مهرباني وکړئ د ارامه شننو په سمه توگه کارکولو لپاره شنن‌توکي <b><span class=\"cd-notification-disabledt\">[[$1|ناچارن]] </span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(يا <b><span class=\"cd-notification-disableDtGlobally\">[[$2|ټوليز ناچارن]]</span></b>)</span> کړئ.",
 	"discussiontools-disabled": "شنن‌توکي ناچارن شول. <span class=\"cd-notification-refresh\">[[$1|مخ بيا تازه کړئ]]</span>.",
-	"wl-button-settings-tooltip": "ارامه شننو اوڼنې",
 	"lp-comment": "څرگندونه",
 	"lp-comment-tooltip": "څرگندونې ته ورتلل",
 	"lp-comment-toyou": "څرگندونه کې تاسو په گوته شوې ياست",

@@ -376,7 +376,6 @@
 	"error-elementhidden": "El elemento está oculto. No se puede avanzar hacia este.",
 	"error-purgecache": "No se pudo purgar la caché de esta página.",
 	"discussiontools-incompatible": "Convenient Discussions es mayoritariamente incompatible con DiscussionTools. Por favor <b><span class=\"cd-notification-disabledt\">, [[$1|deshabilite]]</span></b> (o <b><span class=\"cd-notification-disableDtGlobally\">[[$2|deshabilite globalmente]]</span></b>) las herramientas de discusión para que las discusiones convenientes funcionen correctamente.",
-	"wl-button-settings-tooltip": "Configuración de Discusiones Prácticas",
 	"lp-comment": "comentario",
 	"lp-comment-tooltip": "Ir al comentario",
 	"lp-comment-toyou": "El comentario va dirigido a ti",

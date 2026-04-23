@@ -395,7 +395,6 @@
 	"warning-performance": "Patogios diskusijos gali bandyti tai išspręsti naudodamos nustatymą „{{int:convenient-discussions-sd-improveperformance}}“. <span class=\"cd-notification-talkPageSettings\">[[$1|Atidaryti nustatymų dialogo langą]]</span>.",
 	"discussiontools-incompatible": "Patogios diskusijos nesuderinamos su DiscussionTools. Prašome <b><span class=\"cd-notification-disabledt\">[[$1|išjungti]]</span></b> (arba <b><span class=\"cd-notification-disableDtGlobally\">[[$2|visuotinai išjungti]]</span></b>) DiscussionTools, kad Patogios diskusijos veiktų tinkamai.",
 	"discussiontools-disabled": "DiscussionTools sėkmingai išjungtas. <span class=\"cd-notification-refresh\">[[$1|Atnaujinti puslapį]]</span>.",
-	"wl-button-settings-tooltip": "Patogių diskusijų nustatymai",
 	"lp-comment": "komentaras",
 	"lp-comment-tooltip": "Eiti į komentarą",
 	"lp-comment-toyou": "komentaras skirtas jums",

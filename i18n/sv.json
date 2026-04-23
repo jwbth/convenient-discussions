@@ -422,7 +422,6 @@
 	"warning-performance": "Angenäma diskussioner kan försöka lösa dem med \"{{int:convenient-discussions-sd-improveperformance}}\"-inställningen.<span class=\"cd-notification-talkPageSettings\">[[$1|Öppna inställningsdialogen]]</span>.",
 	"discussiontools-incompatible": "Angenäma diskussioner är mestadels inte kompatibelt med DiscussionTools. Var god <b><span class=\"cd-notification-disabledt\">[[$1|inaktivera]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(eller <b><span class=\"cd-notification-disableDtGlobally\">[[$2|inaktivera globalt]]</span></b>)</span> DiscussionTools för att se till att Angenäma diskussioner fungerar som det ska.",
 	"discussiontools-disabled": "DiscussionTools har inaktiverats. <span class=\"cd-notification-refresh\">[[$1|Ladda om sidan]]</span>.",
-	"wl-button-settings-tooltip": "Inställningar för Angenäma diskussioner",
 	"lp-comment": "kommentar",
 	"lp-comment-tooltip": "Gå till kommentar",
 	"lp-comment-toyou": "kommentaren är adresserad till dig",

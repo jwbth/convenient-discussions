@@ -419,7 +419,6 @@
 	"warning-performance": "Convenient Discussions可以嘗試通過“{{int:convenient-discussions-sd-improveperformance}}”設置來解決。 <span class=\"cd-notification-talkPageSettings\">[[ $1 |打開設置對話框]]</span> .",
 	"discussiontools-incompatible": "多數情況下，快速討論與討論工具不相容。 請<b><span class=\"cd-notification-disabledt\">[[$1|停用]]</span></b> （或<b><span class=\"cd-notification-disableDtGlobally-wrapper\">[[ $2|全域停用]]</span></b>）討論工具以使便捷討論正常工作。",
 	"discussiontools-disabled": "討論工具已成功禁用。 <span class=\"cd-notification-refresh\">[[ $1 |刷新頁面]]</span> .",
-	"wl-button-settings-tooltip": "快速討論設定",
 	"lp-comment": "評論",
 	"lp-comment-tooltip": "前往評論",
 	"lp-comment-toyou": "該評論是寫給你的",

@@ -435,7 +435,6 @@
 	"warning-performance": "Convenient Discussions có thể cố gắng giải quyết chúng trong tùy chọn \"{{int:convenient-discussions-sd-improveperformance}}\". <span class=\"cd-notification-talkPageSettings\">[[$1|Mở tùy chọn]]</span>.",
 	"discussiontools-incompatible": "Công cụ Convenient Discussions không thể được sử dụng cùng lúc với DiscussionTools (công cụ thảo luận). Xin hãy <b><span class=\"cd-notification-disabledt\">[[$1|tắt tại wiki này]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(hoặc <b><span class=\"cd-notification-disableDtGlobally\">[[$2|tắt toàn cục]]</span></b>)</span> Công cụ thảo luận để Convenient Discussions hoạt động đúng cách.",
 	"discussiontools-disabled": "DiscussionTools đã được tắt. <span class=\"cd-notification-refresh\">[[$1|Nhấn để tải lại trang]]</span>.",
-	"wl-button-settings-tooltip": "Tùy chọn Convenient Discussions",
 	"lp-comment": "bình luận",
 	"lp-comment-tooltip": "Đi đến bình luận",
 	"lp-comment-toyou": "bình luận được gửi đến bạn",

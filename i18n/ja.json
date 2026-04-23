@@ -423,7 +423,6 @@
 	"warning-performance": "Convenient Discussionsの「{{int:convenient-discussions-sd-improveperformance}}」設定により問題が解消する場合があります。(<span class=\"cd-notification-talkPageSettings\">[[$1|設定ダイアログを開く]]</span>)",
 	"discussiontools-incompatible": "Convenient Discussionsは議論ツールと競合します。<b><span class=\"cd-notification-disabledt\">[[$1|個人設定]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(または<b><span class=\"cd-notification-disableDtGlobally\">[[$2|グローバル個人設定]]</span></b>)</span> で議論ツールを無効化してください。",
 	"discussiontools-disabled": "議論ツールが正常に無効化されました。(<span class=\"cd-notification-refresh\">[[$1|ページをリロード]]</span>)",
-	"wl-button-settings-tooltip": "Convenient Discussionsの設定",
 	"lp-comment": "コメント",
 	"lp-comment-tooltip": "コメントを表示",
 	"lp-comment-toyou": "あなた宛てのコメント",

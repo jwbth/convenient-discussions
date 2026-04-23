@@ -457,7 +457,6 @@
 	"warning-performance": "快捷讨论可以尝试通过“{{int:convenient-discussions-sd-improveperformance}}”设置来解决。<span class=\"cd-notification-talkPageSettings\">[[$1|打开设置对话框]]</span>。",
 	"discussiontools-incompatible": "多数情况下，快捷讨论与讨论工具不兼容。请<b><span class=\"cd-notification-disabledt\">[[$1|禁用]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">（或<b><span class=\"cd-notification-disableDtGlobally\">[[$2|全域禁用]]</span></b>）</span>讨论工具以使快捷讨论正常工作。",
 	"discussiontools-disabled": "讨论工具已禁用。<span class=\"cd-notification-refresh\">[[$1|刷新页面]]</span>",
-	"wl-button-settings-tooltip": "快捷讨论设置",
 	"lp-comment": "留言",
 	"lp-comment-tooltip": "前往留言",
 	"lp-comment-toyou": "该留言是写给你的",

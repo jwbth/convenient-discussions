@@ -424,7 +424,6 @@
 	"warning-performance": "Is féidir le Pléanna Áisiúla iarracht a dhéanamh iad a réiteach leis an socrú \"{{int:convenient-discussions-sd-improveperformance}}\". <span class=\"cd-notification-talkPageSettings\">[[$1|Oscail an dialóg socruithe]]</span>.",
 	"discussiontools-incompatible": "Is beag comhoiriúnacht atá idir Plé Áisiúil agus Uirlisí Discussion. Le do thoil, <b><span class=\"cd-notification-disabledt\">[[$1|díchumasaigh]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(nó <b><span class=\"cd-notification-disableDtGlobally\">[[$2|díchumasaigh go domhanda]]</span></b>)</span> Uirlisí Discussion chun go n-oibreoidh Plé Áisiúil i gceart.",
 	"discussiontools-disabled": "Tá Uirlisí Plé díchumasaithe go rathúil. <span class=\"cd-notification-refresh\">[[$1|Athnuachan an leathanach]]</span>.",
-	"wl-button-settings-tooltip": "Socruithe Plé Áisiúla",
 	"lp-comment": "trácht",
 	"lp-comment-tooltip": "Téigh go dtí an trácht",
 	"lp-comment-toyou": "Tá an trácht dírithe ort",
