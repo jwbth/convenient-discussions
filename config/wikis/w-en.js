@@ -557,6 +557,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			'Collapose bottom',
 			'Extended content bottom',
 			'Cbottom',
+			'Collapse bottom',
 		],
 	],
 

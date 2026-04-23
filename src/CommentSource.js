@@ -1065,7 +1065,7 @@ class CommentSource {
 				)
 			}
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const closedDiscussionSingleRegexp = new RegExp(
+			const closedDiscussionUnpairedRegexp = new RegExp(
 				`\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
 				'g',
 			)
@@ -1088,10 +1088,10 @@ class CommentSource {
 
 			/** @type {RegExpMatchArray | null} */
 			let match
-			while ((match = closedDiscussionSingleRegexp.exec(adjustedCode))) {
+			while ((match = closedDiscussionUnpairedRegexp.exec(adjustedCode))) {
 				adjustedCode =
 					adjustedCode.slice(0, match.index) +
-					// Fill the space that the first met template occupies with spaces, and put the specified
+					// Fill the space that the first met template occupies with spaces, and put a specified
 					// number of marker characters at the first positions. This will be later used in
 					// CommentSource#matchProperPlaceRegexps.
 					new TextMasker(adjustedCode.slice(match.index))
@@ -1102,10 +1102,7 @@ class CommentSource {
 								/\u0001\d+_template[^\u0002]*_(\d+)\u0002/,
 
 								(_m, n) =>
-									makeIndentationMarkers(
-										/** @type {RegExpMatchArray} */ (match)[1].length,
-										n.length,
-									),
+									makeIndentationMarkers(/** @type {RegExpMatchArray} */ (match)[1].length, n),
 							),
 						)
 						.unmask()
