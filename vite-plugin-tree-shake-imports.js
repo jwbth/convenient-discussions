@@ -161,7 +161,7 @@ export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {
 			// Remove the loadSingleLangInDevOrSingleMode function since we're importing pre-built i18n
 			// This function is only used in dev mode, not in single builds
 			transformedCode = transformedCode.replace(
-				/\/\*\*\s*\n\s*\* Load the i18n file for the single language code\. This function is used in dev mode and\s*\n\s*\* single mode \(where it's replaced to just return Promise\.resolve\(\) by the tree-shake plugin\)\.\s*\n\s*\*\s*\n\s*\* @param \{string\} lang\s*\n\s*\*\/\s*\nasync function loadSingleLangInDevOrSingleMode\([^)]+\) \{[\s\S]*?\n\}/,
+				/async function loadSingleLangInDevOrSingleMode\([^)]+\) \{[\s\S]*?\n\}/,
 				'',
 			)
 
