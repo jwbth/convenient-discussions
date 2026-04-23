@@ -259,6 +259,7 @@ class NavPanel {
 		controller.rebootPage({
 			commentIds: controller.getRelevantAddedCommentIds(),
 			markAsRead,
+			expandThreads: false,
 		})
 	}
 

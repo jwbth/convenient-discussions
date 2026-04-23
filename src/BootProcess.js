@@ -121,9 +121,10 @@ function processAndRemoveDtElements(elements) {
  * @property {import('./utils-api').ApiResponseParseContent} [parseData] Response to the parse
  *   request from the API.
  * @property {(string | undefined)[]} [commentIds] ID of comments to highlight and/or scroll to.
+ * @property {boolean} [expandThreads=true] Whether to expand the threads down to the comment (to
+ *   avoid the notification "The comment is in a collapsed thread").
  * @property {string} [sectionId] ID of a section to scroll to.
- * @property {boolean} [pushState] Whether to replace the URL in the address bar adding the comment
- *   ID to it if it's specified.
+ * @property {boolean} [pushState] Whether to add a state to the browser history.
  * @property {number} [scrollY] Page's Y offset.
  * @property {Comment[]} [unseenComments] Unseen comments on this page.
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
@@ -909,6 +910,7 @@ class BootProcess {
 				Comment.scrollToFirstFlashAll(comments, {
 					smooth: false,
 					pushState: this.passedData.pushState,
+					expandThreads: this.passedData.expandThreads ?? true,
 				})
 			}
 		} else if (this.passedData.sectionId) {
