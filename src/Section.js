@@ -620,11 +620,7 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeMoved() {
-		return (
-			this.isTopic() &&
-			!this.isTranscludedFromTemplate &&
-			(cd.page.isActive() || cd.page.isCurrentArchive())
-		)
+		return this.isTopic() && !this.isTranscludedFromTemplate && cd.page.isActive()
 	}
 
 	/**

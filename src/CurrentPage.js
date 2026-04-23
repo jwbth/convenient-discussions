@@ -168,6 +168,7 @@ export default class CurrentPage extends Page {
 	 * @returns {boolean}
 	 */
 	isCurrentArchive() {
+		// TODO: This is unused currently (was used by Section#canBeMoved())
 		return cd.utils.isCurrentRevision() && this.isArchive()
 	}
 
