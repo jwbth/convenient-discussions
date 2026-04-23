@@ -407,6 +407,8 @@
 	"sd-watchsectiononreply-help": "This affects notifications.",
 
 	"msd-title": "Move topic",
+	"msd-title-archive": "Archive topic",
+	"msd-title-unarchive": "Unarchive topic",
 	"msd-move": "Move",
 	"msd-targetpage": "Enter the name of the discussion page to move the topic to:",
 	"msd-keeplink": "Leave a link to the new location",

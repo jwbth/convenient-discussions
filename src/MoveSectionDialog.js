@@ -59,7 +59,7 @@ export default function getMoveSectionDialogClass() {
 		/** @type {OO.ui.PanelLayout} */
 		successPanel
 
-		/** @type {[Promise<any>, JQuery.Promise<any>, Promise<ArchiveConfig | void>]} */
+		/** @type {Array<Promise<any> | JQuery.Promise<any>>} */
 		initRequests
 
 		/**
@@ -107,10 +107,27 @@ export default function getMoveSectionDialogClass() {
 			this.pushPending()
 
 			const sourcePage = this.section.getSourcePage()
+
+			// Create a promise for searching subpages (for archive action)
+			const archivePrefix = cd.page.getArchivePrefix()
+			const subpagesPromise =
+				cd.page.isArchive() || !archivePrefix
+					? Promise.resolve(undefined)
+					: Promise.resolve(
+							cd.getApi().get({
+								action: 'query',
+								list: 'search',
+								srsearch: `prefix:${archivePrefix}`,
+								srsort: 'last_edit_desc',
+								srlimit: 5,
+							}),
+						)
+
 			this.initRequests = [
 				sourcePage.loadCode(),
 				mw.loader.using('mediawiki.widgets'),
 				this.section.manager.loadArchiveConfig(this.section).catch(() => undefined),
+				subpagesPromise,
 			]
 
 			this.loadingPanel = new OO.ui.PanelLayout({
@@ -171,9 +188,13 @@ export default function getMoveSectionDialogClass() {
 		getReadyProcess(data) {
 			return super.getReadyProcess(data).next(async () => {
 				let archiveConfig
+				let subpagesResponse
 				try {
-					archiveConfig = (await Promise.all(this.initRequests))[2]
-				} catch {
+					const results = await Promise.all(this.initRequests)
+					archiveConfig = results[2]
+					subpagesResponse = results[3]
+				} catch (error) {
+					console.log(error)
 					this.abort({ message: cd.sParse('cf-error-getpagecode'), recoverable: false })
 
 					return
@@ -295,7 +316,7 @@ export default function getMoveSectionDialogClass() {
 
 				// Handle archive action
 				if (this.action === 'archive') {
-					this.setupArchiveAction(archiveConfig || undefined, archivePath)
+					this.setupArchiveAction(archiveConfig || undefined, archivePath, subpagesResponse)
 				}
 
 				this.stack.setItem(this.movePanel)
@@ -732,13 +753,17 @@ export default function getMoveSectionDialogClass() {
 		 *
 		 * @param {ArchiveConfig | undefined} archiveConfig
 		 * @param {string} [archivePath]
+		 * @param {any} [subpagesResponse]
 		 * @protected
 		 */
-		setupArchiveAction(archiveConfig, archivePath) {
+		setupArchiveAction(archiveConfig, archivePath, subpagesResponse) {
+			let titleText
 			let targetPageName
 			let summaryKey = 'msd-summaryending-archive'
 
 			if (cd.page.isArchive()) {
+				titleText = cd.s('msg-title-unarchive')
+
 				// Unarchiving: move from archive to source page
 				const sourcePage = cd.page.getArchivedPage()
 				if (sourcePage !== cd.page) {
@@ -747,28 +772,52 @@ export default function getMoveSectionDialogClass() {
 				}
 
 				// Archiving: move from source to archive page
-			} else if (archivePath) {
-				targetPageName = archivePath
-				summaryKey = 'msd-summaryending-archive'
+			} else {
+				titleText = cd.s('msd-title-archive')
+
+				if (archivePath) {
+					targetPageName = archivePath
+					summaryKey = 'msd-summaryending-archive'
+				}
 			}
+
+			// @ts-ignore: private prop
+			this.title.setLabel(titleText)
+
+			// Always set checkboxes and summary when archiving/unarchiving (even without target page)
+			this.controls.keepLink.input.setSelected(false)
+			this.controls.keepLink.field.toggle(false)
+			this.controls.chronologicalOrder.input.setSelected(
+				archiveConfig?.isSorted ?? cd.config.archivingConfig.areArchivesSorted ?? false,
+			)
+			this.controls.summaryEnding.input.setValue(cd.s(summaryKey))
 
 			if (targetPageName) {
 				// Set the target page
 				this.controls.title.input.setValue(targetPageName)
 
-				// Uncheck keepLink
-				this.controls.keepLink.input.setSelected(false)
-
-				// Check chronologicalOrder if archiving (not unarchiving)
-				this.controls.chronologicalOrder.input.setSelected(
-					cd.page.isArchive() || archiveConfig?.isSorted || false,
-				)
-
-				// Set the summary
-				this.controls.summaryEnding.input.setValue(cd.s(summaryKey))
-
 				// Trigger validation
 				this.onTitleInputChange()
+			} else if (!cd.page.isArchive() && subpagesResponse?.query?.search) {
+				// No archive path found, show subpage pseudolinks from search results
+				const searchResults = subpagesResponse.query.search
+				if (searchResults.length > 0) {
+					this.subpagePseudolinks = searchResults.map((/** @type {{ title: string }} */ result) => {
+						const pseudolink = new Pseudolink({
+							label: result.title,
+							input: this.controls.title.input,
+						})
+						// No need for click handler - checkboxes and summary are already set when dialog opens
+
+						return pseudolink
+					})
+
+					// Insert subpage pseudolinks after the title field
+					const subpageElements = this.subpagePseudolinks.map(
+						(/** @type {Pseudolink} */ pl) => pl.element,
+					)
+					this.controls.title.field.$element.after(...subpageElements)
+				}
 			}
 		}
 	}

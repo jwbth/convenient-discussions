@@ -1581,13 +1581,13 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
-	 * Load archive configuration and add an "Archive" button to the menu if archiving is possible.
+	 * Add an "Archive" menu item if applicable.
 	 *
 	 * @param {OO.ui.MenuSelectWidget} menu
 	 * @private
 	 */
-	async maybeAddArchiveButton(menu) {
-		// Quick checks before making network requests
+	maybeAddArchiveButton(menu) {
+		// Quick checks before adding the button
 		if (
 			!this.isTopic() ||
 			this.isTranscludedFromTemplate ||
@@ -1597,35 +1597,26 @@ class Section extends SectionSkeleton {
 			return
 		}
 
-		try {
-			const archiveConfig = await this.manager.loadArchiveConfig(this)
-			const archivePath = archiveConfig?.path || cd.page.getArchivePrefix(true)
+		// Find the position to insert the archive button (after move, before unarchive/addSubsection)
+		const items = menu.getItems()
+		let insertIndex = items.findIndex(
+			(item) => /** @type {OO.ui.MenuOptionWidget} */ (item).getData() === 'move',
+		)
 
-			if (archivePath) {
-				// Find the position to insert the archive button (after move, before unarchive/addSubsection)
-				const items = menu.getItems()
-				let insertIndex = items.findIndex(
-					(item) => /** @type {OO.ui.MenuOptionWidget} */ (item).getData() === 'move',
-				)
-
-				if (insertIndex === -1) {
-					insertIndex = items.length
-				} else {
-					insertIndex++
-				}
-
-				const archiveButton = new OO.ui.MenuOptionWidget({
-					data: 'archive',
-					label: cd.s('sm-archive'),
-					title: cd.s('sm-archive-tooltip'),
-					icon: 'archive',
-				})
-
-				menu.addItems([archiveButton], insertIndex)
-			}
-		} catch {
-			// Silently fail if we can't determine archive config
+		if (insertIndex === -1) {
+			insertIndex = items.length
+		} else {
+			insertIndex++
 		}
+
+		const archiveButton = new OO.ui.MenuOptionWidget({
+			data: 'archive',
+			label: cd.s('sm-archive'),
+			title: cd.s('sm-archive-tooltip'),
+			icon: 'archive',
+		})
+
+		menu.addItems([archiveButton], insertIndex)
 	}
 
 	/**
@@ -2204,11 +2195,9 @@ class Section extends SectionSkeleton {
 	updateVisibility(show) {
 		if (show !== this.isHidden) return
 
-		this.elements ??= /** @type {HTMLElement[]} */ (
-			getRangeContents(this.headingElement, this.findRealLastElement(), controller.rootElement)
-		)
+		this.elements ??= getRangeContents(this.headingElement, this.findRealLastElement(), controller.rootElement)
 		this.isHidden = !show
-		this.elements.forEach((el) => {
+		this.elements?.forEach((el) => {
 			el.classList.toggle('cd-section-hidden', !show)
 		})
 	}
