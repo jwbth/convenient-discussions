@@ -2335,7 +2335,7 @@ class CommentForm extends EventEmitter {
 		 * Will the comment be indented (is a reply or an edited reply).
 		 *
 		 * This is mostly to tell if unconverted newlines will cause problems in the comment layout and
-		 * prevent it. Theoretically, this value can change.
+		 * prevent it. This value can change for a comment, e.g. when we fix the layout for it.
 		 *
 		 * @type {boolean|undefined}
 		 */
@@ -3204,10 +3204,7 @@ class CommentForm extends EventEmitter {
 			submittedCommentForm: this,
 			commentIds: doDelete
 				? undefined
-				: [
-						// Generate an ID for the comment to jump to.
-						this.isMode('edit') ? this.target.id : this.generateIdOfSubmittedComment(editDate),
-					],
+				: [this.isMode('edit') ? this.target.id : this.generateIdOfSubmittedComment(editDate)],
 		})
 
 		if (this.watchCheckbox) {

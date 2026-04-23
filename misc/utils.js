@@ -4,6 +4,7 @@ import config from '../config.js'
  * Encode a URL using MediaWiki's escaping style.
  *
  * @param {string | number | boolean} string
+ * @returns {string}
  */
 function wikiUrlencode(string) {
 	return encodeURIComponent(string)
@@ -21,6 +22,7 @@ function wikiUrlencode(string) {
  * @param {string} server
  * @param {string} page
  * @param {{ [x: string]: any }} [params]
+ * @returns {string}
  */
 function getUrl(server, page, params = {}) {
 	const base = `${config.protocol}://${server}`
@@ -30,16 +32,18 @@ function getUrl(server, page, params = {}) {
 		Object.keys(params).forEach((param) => {
 			url.searchParams.set(param, params[param])
 		})
+
 		return url.toString()
-	} else {
-		return base + config.articlePath.replace('$1', wikiUrlencode(page))
 	}
+
+	return base + config.articlePath.replace('$1', wikiUrlencode(page))
 }
 
 /**
  * @param {any} item
  * @param {any} i
  * @param {string | any[]} arr
+ * @returns {boolean}
  */
 function unique(item, i, arr) {
 	return arr.indexOf(item) === i
@@ -47,13 +51,14 @@ function unique(item, i, arr) {
 
 /**
  * @param {string} string
+ * @returns {string}
  */
 function replaceEntitiesInI18n(string) {
 	return string
-		.replace(/&nbsp;/g, '\u00a0')
+		.replace(/&nbsp;/g, '\u00A0')
 		.replace(/&#32;/g, ' ')
-		.replace(/&rlm;/g, '\u200f')
-		.replace(/&lrm;/g, '\u200e')
+		.replace(/&rlm;/g, '\u200F')
+		.replace(/&lrm;/g, '\u200E')
 }
 
 export { getUrl, replaceEntitiesInI18n, unique }

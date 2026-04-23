@@ -11,10 +11,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * Get list of available config files from config/wikis directory
+ *
  * @returns {string[]}
  */
 function getAvailableConfigs() {
 	const configDir = path.join(__dirname, 'config', 'wikis')
+
 	return fs
 		.readdirSync(configDir)
 		.filter((file) => file.endsWith('.js'))
@@ -23,10 +25,12 @@ function getAvailableConfigs() {
 
 /**
  * Get list of available i18n files from i18n directory
+ *
  * @returns {string[]}
  */
 function getAvailableI18ns() {
 	const i18nDir = path.join(__dirname, 'i18n')
+
 	return fs
 		.readdirSync(i18nDir)
 		.filter((file) => file.endsWith('.json'))
@@ -108,6 +112,7 @@ const dateFnsMap = {
 
 /**
  * Convert config name to import variable name
+ *
  * @param {string} config
  * @returns {string}
  */
@@ -123,6 +128,7 @@ function configToVarName(config) {
 
 /**
  * Convert i18n code to import variable name
+ *
  * @param {string} lang
  * @returns {string}
  */
@@ -138,6 +144,7 @@ function i18nToVarName(lang) {
 
 /**
  * Convert locale code to import variable name
+ *
  * @param {string} locale
  * @returns {string}
  */
@@ -153,6 +160,7 @@ function localeToVarName(locale) {
 
 /**
  * Convert date-fns locale code to import variable name
+ *
  * @param {string} locale
  * @returns {string}
  */
@@ -201,21 +209,21 @@ export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {
 			}
 
 			// Generate only the needed imports
-			let imports = []
+			const imports = []
 
 			// Always import these
-			imports.push(`import '../shared/polyfills'`)
-			imports.push(`import './convenientDiscussions'`)
-			imports.push(`import '../../dist/convenientDiscussions-i18n/en'`)
-			imports.push(`import defaultConfig from '../../config/default'`)
-			imports.push(`import configUrls from '../../config/urls.json'`)
-			imports.push(`import i18nList from '../../data/i18nList.json'`)
 			imports.push(
+				`import '../shared/polyfills'`,
+				`import './convenientDiscussions'`,
+				`import '../../dist/convenientDiscussions-i18n/en'`,
+				`import defaultConfig from '../../config/default'`,
+				`import configUrls from '../../config/urls.json'`,
+				`import i18nList from '../../data/i18nList.json'`,
 				`import languageFallbacks from '../../data/languageFallbacks.json'`,
+				`import { unique } from '../shared/utils-general'`,
+				`import cd from './cd'`,
+				``,
 			)
-			imports.push(`import { unique } from '../shared/utils-general'`)
-			imports.push(`import cd from './cd'`)
-			imports.push(``)
 
 			// Import only the needed config
 			if (wiki) {
@@ -261,6 +269,7 @@ export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {
 			const bootstrapIndex = code.indexOf(bootstrapMarker)
 			if (bootstrapIndex === -1) {
 				console.error('❌ Could not find bootstrap function in startup.js')
+
 				return null
 			}
 
@@ -269,6 +278,7 @@ export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {
 			const hookIndex = code.indexOf(hookMarker, bootstrapIndex)
 			if (hookIndex === -1) {
 				console.error('❌ Could not find hook marker in startup.js')
+
 				return null
 			}
 
@@ -311,6 +321,7 @@ export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {
 			const codeStartIndex = code.indexOf(codeStartMarker)
 			if (codeStartIndex === -1) {
 				console.error('❌ Could not find code start marker in startup.js')
+
 				return null
 			}
 
@@ -322,9 +333,7 @@ export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {
 				initCode +
 				afterHook
 
-			console.log(
-				`✅ Tree-shaken startup.js: ${neededLangs.size} languages, 1 config`,
-			)
+			console.log(`✅ Tree-shaken startup.js: ${neededLangs.size} languages, 1 config`)
 
 			return {
 				code: newCode,

@@ -685,7 +685,7 @@ export default defineConfig(({ mode, command }) => {
 			// File watching configuration
 			watch: {
 				// Watch source files for changes
-				ignored: ['**/node_modules/**', '**/dist/**'],
+				ignored: ['**/node_modules/**'], // , '**/dist/**'
 			},
 		},
 
