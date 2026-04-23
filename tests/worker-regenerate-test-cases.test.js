@@ -52,6 +52,8 @@ describe.skipIf(!isDirectRun)('Regenerate expected test data', () => {
 		console.log('\n\nRegenerating expected test data...\n')
 
 		for (const group of testGroups) {
+			delete group.url
+
 			console.log(`\nProcessing group: ${group.name}`)
 
 			for (const testCase of group.tests) {

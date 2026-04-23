@@ -398,6 +398,9 @@ const config = defineConfig(
 			'@stylistic/multiline-ternary': 'off',
 			'@stylistic/no-mixed-operators': 'off',
 
+			// Doesn't like empty conditions in for loop
+			'@stylistic/space-in-parens': 'off',
+
 			'@stylistic/padding-line-between-statements': [
 				'warn',
 				// Always require a blank line before any return

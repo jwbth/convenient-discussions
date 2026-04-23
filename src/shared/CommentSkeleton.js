@@ -311,7 +311,7 @@ class CommentSkeleton {
 	 */
 
 	/**
-	 * Get nodes to start the traversal from.
+	 * Get the nodes to start the traversal from.
 	 *
 	 * @param {ElementsAndTextTreeWalker} treeWalker
 	 * @returns {[CommentPart[], ElementLike | undefined]}
@@ -324,7 +324,7 @@ class CommentSkeleton {
 		const farthestInlineAncestor = treeWalker.currentNode
 
 		/*
-			The code:
+			The markup:
 
 				* Smth. [signature]
 				** Smth.
@@ -376,7 +376,7 @@ class CommentSkeleton {
 			// https://ru.wikipedia.org/wiki/Википедия:Голосования/Срочное_включение_нового_Vector#c-Iniquity-20240204205500-AndyVolykhov-20240204201000)
 			this.parser
 				.getChildElements(fiaParentElement)
-				.some((child) => this.parser.rejectClasses.some((name) => child.classList.contains(name)))
+				.some((child) => CommentSkeleton.elementHasAnyClass(child, this.parser.rejectClasses))
 		) {
 			// Collect inline parts after the signature
 			treeWalker.currentNode = farthestInlineAncestor
@@ -438,6 +438,18 @@ class CommentSkeleton {
 	}
 
 	/**
+	 * Check if an element has any of the specified classes.
+	 *
+	 * @param {ElementLike} element
+	 * @param {string[]} classes
+	 * @returns {boolean}
+	 * @private
+	 */
+	static elementHasAnyClass(element, classes) {
+		return classes.some((name) => element.classList.contains(name))
+	}
+
+	/**
 	 * Check if an element is eligible to be a comment part.
 	 *
 	 * @param {ElementLike} element
@@ -447,9 +459,6 @@ class CommentSkeleton {
 	 * @private
 	 */
 	isElementEligible(element, treeWalker, step) {
-		const elementHasAnyClass = (/** @type {string[]} */ classes) =>
-			classes.some((/** @type {string} */ name) => element.classList.contains(name))
-
 		return !(
 			element === treeWalker.root ||
 			// When the parser "moves out" of a closed discussion, it should stop the comment at the
@@ -457,8 +466,9 @@ class CommentSkeleton {
 			// https://en.wikipedia.org/wiki/Project:Requests_for_comment/Archive.is_RFC_5). A closed
 			// discussion may not be a comment part altogether. Other elements with reject classes (e.g.
 			// `ombox`), however, may be parts of the comment altogether.
-			((step !== 'up' || elementHasAnyClass(cd.config.closedDiscussionClasses)) &&
-				(elementHasAnyClass(this.parser.rejectClasses) ||
+			((step !== 'up' ||
+				CommentSkeleton.elementHasAnyClass(element, cd.config.closedDiscussionClasses)) &&
+				(CommentSkeleton.elementHasAnyClass(element, this.parser.rejectClasses) ||
 					// Talk page message box
 					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox')))) ||
 			(element.tagName === 'META' && element.getAttribute('property') === 'mw:PageProp/toc') ||
@@ -736,6 +746,14 @@ class CommentSkeleton {
 	 * @private
 	 */
 	traverseDom(parts, treeWalker, firstForeignComponentAfter, precedingHeadingElement) {
+		const hasOutdents = (/** @type {AnyNode} */ node) =>
+			this.parser.context.areThereOutdents() &&
+			isElement(node) &&
+			this.parser.context.getElementByClassName(
+				/** @type {ElementFor<N>} */ (node),
+				cd.config.outdentClass,
+			)
+
 		// 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
 		for (let i = 0; i < 500; i++) {
 			/*
@@ -753,29 +771,30 @@ class CommentSkeleton {
 			if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
 				/*
 					Here we dive to the bottom of the element subtree to find parts of the _current_ comment
-					that may be present. This happens with code like this:
+					that may be present. This happens with markup like this:
 
 						:* Smth. [signature]
 						:* Smth. <!-- The comment part that we need to grab while it's in the same element as
-													the signature above. -->
+						              the signature above. -->
 						:: Smth. [signature] <!-- The comment part we are at. -->
 				*/
 
 				// Get the last not inline child of the current node.
-				for (
-					let parentNode = treeWalker.currentNode;
-					treeWalker.lastChild();
-					parentNode = treeWalker.currentNode
-				) {
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				let parentNode
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				while ((parentNode = treeWalker.currentNode) && treeWalker.lastChild()) {
 					while (
 						isText(treeWalker.currentNode) &&
 						!treeWalker.currentNode.textContent.trim() &&
 						treeWalker.previousSibling()
 					);
 					if (
-						isInline(treeWalker.currentNode, true) ||
-						// Cases like
+						(isInline(treeWalker.currentNode, true) && !hasOutdents(parentNode)) ||
+						// Workaround for cases like
 						// https://en.wikipedia.org/w/index.php?title=User_talk:MBHbot&oldid=1228999533#c-1AmNobody24-20240614071000-June_2024
+						// where we shouldn't step into an element with background set as it's clearly a
+						// different block. It'll be filtered out later
 						/** @type {ElementFor<N>} */ (previousPart.node)
 							.getAttribute('style')
 							?.includes('background-')
@@ -855,7 +874,8 @@ class CommentSkeleton {
 						// https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
 						(precedingHeadingElement &&
 							node !== precedingHeadingElement &&
-							this.parser.constructor.contains(node, precedingHeadingElement))),
+							this.parser.constructor.contains(node, precedingHeadingElement)) ||
+						hasOutdents(node)),
 				)
 
 				// A trace from ~~~ at the end of a line most likely means an incorrectly signed comment.
@@ -1035,11 +1055,7 @@ class CommentSkeleton {
 						this.parts[i - 1].node) ||
 				// E.g. `mw-notalk` elements at the beginning of the comment (example:
 				// https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Wikisaurus#c-Khidistavi-20240209164000-Против)
-				this.parser.noSignatureElements.some((el) => this.parser.constructor.contains(el, node)) ||
-				// In most cases outdent template will be filtered by this.parser.rejectClasses
-				(this.parts[i].step !== 'up' &&
-					this.parser.context.areThereOutdents() &&
-					this.parser.context.getElementByClassName(node, cd.config.outdentClass))
+				this.parser.noSignatureElements.some((el) => this.parser.constructor.contains(el, node))
 			) {
 				this.parts.splice(i, 1)
 			} else {
