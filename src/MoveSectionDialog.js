@@ -244,36 +244,6 @@ export default function getMoveSectionDialogClass() {
 					}
 				})
 
-				const archivePath =
-					archiveConfig?.path || (cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true))
-				if (this.action !== 'archive') {
-					if (archivePath) {
-						this.insertArchivePageButton = new Pseudolink({
-							label: archivePath,
-							input: this.controls.title.input,
-						})
-						$(this.insertArchivePageButton.buttonElement).on('click', () => {
-							this.controls.keepLink.input.setSelected(false)
-							this.controls.chronologicalOrder.input.setSelected(archiveConfig?.isSorted || false)
-							this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-archive'))
-						})
-					}
-
-					// If on an archive page, create a button to unarchive to the source page
-					if (cd.page.isArchive()) {
-						const sourcePage = cd.page.getArchivedPage()
-						if (sourcePage !== cd.page) {
-							this.insertSourcePageButton = new Pseudolink({
-								label: sourcePage.name,
-								input: this.controls.title.input,
-							})
-							$(this.insertSourcePageButton.buttonElement).on('click', () => {
-								this.controls.summaryEnding.input.setValue(cd.s('msd-summaryending-unarchive'))
-							})
-						}
-					}
-				}
-
 				this.controls.keepLink = createCheckboxControl({
 					value: 'keepLink',
 					selected: !cd.page.isArchive(),
@@ -306,8 +276,6 @@ export default function getMoveSectionDialogClass() {
 				this.movePanel.$element.append(
 					[
 						this.controls.title.field.$element,
-						this.insertArchivePageButton?.element,
-						this.insertSourcePageButton?.element,
 						this.controls.keepLink.field.$element,
 						this.controls.chronologicalOrder.field.$element,
 						this.controls.summaryEnding.field.$element,
@@ -316,7 +284,7 @@ export default function getMoveSectionDialogClass() {
 
 				// Handle archive action
 				if (this.action === 'archive') {
-					this.setupArchiveAction(archiveConfig || undefined, archivePath, subpagesResponse)
+					this.setupArchiveAction(archiveConfig || undefined, subpagesResponse)
 				}
 
 				this.stack.setItem(this.movePanel)
@@ -752,11 +720,10 @@ export default function getMoveSectionDialogClass() {
 		 * appropriate options.
 		 *
 		 * @param {ArchiveConfig | undefined} archiveConfig
-		 * @param {string} [archivePath]
 		 * @param {any} [subpagesResponse]
 		 * @protected
 		 */
-		setupArchiveAction(archiveConfig, archivePath, subpagesResponse) {
+		setupArchiveAction(archiveConfig, subpagesResponse) {
 			let titleText
 			let targetPageName
 			let summaryKey = 'msd-summaryending-archive'
@@ -775,6 +742,8 @@ export default function getMoveSectionDialogClass() {
 			} else {
 				titleText = cd.s('msd-title-archive')
 
+				const archivePath =
+					archiveConfig?.path || (cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true))
 				if (archivePath) {
 					targetPageName = archivePath
 					summaryKey = 'msd-summaryending-archive'
