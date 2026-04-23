@@ -115,7 +115,7 @@ function replaceEntities(string) {
  *
  * @param {string} lang
  */
-async function loadSingleLangInDevOrSingleMode(lang) {
+async function loadSingleLangInDevMode(lang) {
 	const langModule = await import(/* @vite-ignore */ `../../i18n/${lang}.json`)
 	const langObj = langModule.default
 	Object.keys(langObj)
@@ -239,8 +239,8 @@ async function getStrings() {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			.filter((lang) => lang !== 'en' && (!cd.i18n || !(lang in cd.i18n)))
 			.map((lang) => {
-				if (IS_DEV || IS_SINGLE) {
-					return loadSingleLangInDevOrSingleMode(lang)
+				if (IS_DEV) {
+					return loadSingleLangInDevMode(lang)
 				}
 
 				return cd.loader.loadPreferablyFromDiskCache({
