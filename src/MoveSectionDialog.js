@@ -60,7 +60,7 @@ export default function getMoveSectionDialogClass() {
 		successPanel
 
 		/** @type {Array<Promise<any> | JQuery.Promise<any>>} */
-		initRequests
+		initRequests = []
 
 		/**
 		 * @typedef {object} MoveSectionDialogControlTypes
@@ -107,28 +107,7 @@ export default function getMoveSectionDialogClass() {
 			this.pushPending()
 
 			const sourcePage = this.section.getSourcePage()
-
-			// Create a promise for searching subpages (for archive action)
-			const archivePrefix = cd.page.getArchivePrefix()
-			const subpagesPromise =
-				cd.page.isArchive() || !archivePrefix
-					? Promise.resolve(undefined)
-					: Promise.resolve(
-							cd.getApi().get({
-								action: 'query',
-								list: 'search',
-								srsearch: `prefix:${archivePrefix}`,
-								srsort: 'last_edit_desc',
-								srlimit: 5,
-							}),
-						)
-
-			this.initRequests = [
-				sourcePage.loadCode(),
-				mw.loader.using('mediawiki.widgets'),
-				this.section.manager.loadArchiveConfig(this.section).catch(() => undefined),
-				subpagesPromise,
-			]
+			this.initRequests.push(sourcePage.loadCode(), mw.loader.using('mediawiki.widgets'))
 
 			this.loadingPanel = new OO.ui.PanelLayout({
 				padded: true,
@@ -171,6 +150,26 @@ export default function getMoveSectionDialogClass() {
 				this.action = data?.action || 'move'
 				this.stack.setItem(this.loadingPanel)
 				this.actions.setMode('move')
+
+				const archivePrefix = cd.page.getArchivePrefix()
+
+				this.initRequests.push(
+					this.action === 'archive' && !cd.page.isArchive()
+						? this.section.manager.loadArchiveConfig(this.section).catch(() => undefined)
+						: Promise.resolve(undefined),
+					this.action === 'archive' && archivePrefix
+						? // Search for subpages
+							Promise.resolve(
+								cd.getApi().get({
+									action: 'query',
+									list: 'search',
+									srsearch: `prefix:${archivePrefix}`,
+									srsort: 'last_edit_desc',
+									srlimit: 5,
+								}),
+							)
+						: Promise.resolve(undefined),
+				)
 			})
 		}
 
