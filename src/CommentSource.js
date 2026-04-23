@@ -590,6 +590,8 @@ class CommentSource {
 		this.excludeSmallFontWrappers()
 	}
 
+	// TODO: We need tests for toInputValue()
+
 	/**
 	 * Convert the comment's source code to code to set as a value of an input (practically, to the
 	 * {@link CommentForm#commentInput comment form's input}).
@@ -658,13 +660,21 @@ class CommentSource {
 							cd.config.paragraphTemplates.length ? m1 + '<br>' : s,
 					)
 
-					// Replace the temporary marker.
+					// Replace the temporary marker
 					.replace(/\u0001\n/g, '\n')
+
+					// Remove paragraphs made with an empty but indented line (e.g. `:Text\n:\n:\n:Text`).
+					// This is done in a separate step because single indentation chars are replaced with
+					// `\n\n` as well, so that we don't end up with `\n\n\n\n`.
+					.replace(
+						new RegExp(String.raw`(?:\n([:*#]${originalIndentationLength})[ \t]*){2}`, 'g'),
+						'\n\n',
+					)
 
 					// Remove indentation characters
 					.replace(
-						/\n([:*#]*)([ \t]*)/g,
-						/** @type {ReplaceCallback} */ (_s, chars, spacing) => {
+						/(?<=(\u0004)?)\n([:*#]*)([ \t]*)(?=(\u0003)?)/g,
+						/** @type {ReplaceCallback} */ (_s, isTableBefore, chars, spacing, isTableAfter) => {
 							let newChars
 							if (chars.length >= originalIndentationLength) {
 								newChars = chars.slice(originalIndentationLength)
@@ -675,7 +685,15 @@ class CommentSource {
 								newChars = chars + spacing
 							}
 
-							return '\n' + newChars
+							const newlines =
+								commentLevel === 0 ||
+								chars.length !== originalIndentationLength ||
+								isTableBefore ||
+								isTableAfter
+									? '\n'
+									: '\n\n'
+
+							return newlines + newChars
 						},
 					)
 
