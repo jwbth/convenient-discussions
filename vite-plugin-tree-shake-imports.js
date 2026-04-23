@@ -1,6 +1,6 @@
 /**
  * Vite plugin to tree-shake imports in startup.js for single builds.
- * This plugin dynamically generates the entry point with only the needed imports.
+ * This plugin replaces dynamic imports with static imports of pre-built i18n files.
  */
 
 import fs from 'node:fs'
@@ -24,90 +24,17 @@ function getAvailableConfigs() {
 }
 
 /**
- * Get list of available i18n files from i18n directory
+ * Get list of available i18n files from dist/convenientDiscussions-i18n directory
  *
  * @returns {string[]}
  */
 function getAvailableI18ns() {
-	const i18nDir = path.join(__dirname, 'i18n')
+	const i18nDir = path.join(__dirname, 'dist', 'convenientDiscussions-i18n')
 
 	return fs
 		.readdirSync(i18nDir)
-		.filter((file) => file.endsWith('.json'))
-		.map((file) => file.replace(/\.json$/, ''))
-}
-
-// Map i18n codes to dayjs locale codes
-const dayjsMap = {
-	'ar': 'ar',
-	'az': 'az',
-	'bn': 'bn',
-	'de': 'de',
-	'el': 'el',
-	'es': 'es',
-	'fa': 'fa',
-	'fi': 'fi',
-	'fr': 'fr',
-	'ga': 'ga',
-	'he': 'he',
-	'hi': 'hi',
-	'id': 'id',
-	'it': 'it',
-	'ja': 'ja',
-	'ko': 'ko',
-	'lb': 'lb',
-	'lt': 'lt',
-	'mk': 'mk',
-	'nl': 'nl',
-	'pl': 'pl',
-	'pt-br': 'pt-br',
-	'ru': 'ru',
-	'sk': 'sk',
-	'sl': 'sl',
-	'sv': 'sv',
-	'te': 'te',
-	'th': 'th',
-	'tr': 'tr',
-	'uk': 'uk',
-	'vi': 'vi',
-	'zh-hans': 'zh-cn',
-	'zh-hant': 'zh-tw',
-}
-
-// Map i18n codes to date-fns locale codes
-const dateFnsMap = {
-	'ar': 'ar',
-	'az': 'az',
-	'bn': 'bn',
-	'de': 'de',
-	'el': 'el',
-	'es': 'es',
-	'fa': 'fa-IR',
-	'fi': 'fi',
-	'fr': 'fr',
-	'he': 'he',
-	'hi': 'hi',
-	'id': 'id',
-	'it': 'it',
-	'ja': 'ja',
-	'ko': 'ko',
-	'lb': 'lb',
-	'lt': 'lt',
-	'mk': 'mk',
-	'nl': 'nl',
-	'pl': 'pl',
-	'pt-br': 'pt-BR',
-	'ru': 'ru',
-	'sk': 'sk',
-	'sl': 'sl',
-	'sv': 'sv',
-	'te': 'te',
-	'th': 'th',
-	'tr': 'tr',
-	'uk': 'uk',
-	'vi': 'vi',
-	'zh-hans': 'zh-CN',
-	'zh-hant': 'zh-TW',
+		.filter((file) => file.endsWith('.js'))
+		.map((file) => file.replace(/\.js$/, ''))
 }
 
 /**
@@ -124,48 +51,6 @@ function configToVarName(config) {
 			.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
 			.join('')
 	)
-}
-
-/**
- * Convert i18n code to import variable name
- *
- * @param {string} lang
- * @returns {string}
- */
-function i18nToVarName(lang) {
-	return (
-		'i18n' +
-		lang
-			.split('-')
-			.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-			.join('')
-	)
-}
-
-/**
- * Convert locale code to import variable name
- *
- * @param {string} locale
- * @returns {string}
- */
-function localeToVarName(locale) {
-	return (
-		'dayjs' +
-		locale
-			.split('-')
-			.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-			.join('')
-	)
-}
-
-/**
- * Convert date-fns locale code to import variable name
- *
- * @param {string} locale
- * @returns {string}
- */
-function dateFnsToVarName(locale) {
-	return 'dateFns' + locale.replace(/-/g, '')
 }
 
 /**
@@ -205,138 +90,93 @@ export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {
 				console.error(
 					`❌ Language '${lang}' not found. Available languages: ${availableI18ns.join(', ')}`,
 				)
-				throw new Error(`Language '${lang}' not found in i18n/`)
+				throw new Error(`Language '${lang}' not found in dist/convenientDiscussions-i18n/`)
 			}
 
-			// Generate only the needed imports
-			const imports = []
-
-			// Always import these
-			imports.push(
-				`import '../shared/polyfills'`,
-				`import './convenientDiscussions'`,
-				`import '../../dist/convenientDiscussions-i18n/en'`,
-				`import defaultConfig from '../../config/default'`,
-				`import configUrls from '../../config/urls.json'`,
-				`import i18nList from '../../data/i18nList.json'`,
-				`import languageFallbacks from '../../data/languageFallbacks.json'`,
-				`import { unique } from '../shared/utils-general'`,
-				`import cd from './cd'`,
-				``,
+			// Replace the import of English i18n with the pre-built version
+			// This ensures entities are already replaced
+			let transformedCode = code.replace(
+				/import '\.\.\/\.\.\/dist\/convenientDiscussions-i18n\/en'/g,
+				`import '../../dist/convenientDiscussions-i18n/en.js'`,
 			)
 
-			// Import only the needed config
-			if (wiki) {
-				const varName = configToVarName(wiki)
-				imports.push(`import ${varName} from '../../config/wikis/${wiki}.js'`)
-			}
-
-			// Import only the needed i18n files (always include 'en')
-			const neededLangs = new Set(['en'])
+			// If we have a specific language (not English), import it statically
 			if (lang && lang !== 'en') {
-				neededLangs.add(lang)
-			}
+				// Find the import section (after the English i18n import)
+				const enImportLine = transformedCode.indexOf(
+					`import '../../dist/convenientDiscussions-i18n/en.js'`,
+				)
 
-			for (const l of neededLangs) {
-				const varName = i18nToVarName(l)
-				imports.push(`import ${varName} from '../../i18n/${l}.json'`)
-			}
+				if (enImportLine === -1) {
+					console.error('❌ Could not find English i18n import line')
 
-			// Import only the needed dayjs locales
-			for (const l of neededLangs) {
-				if (l !== 'en' && dayjsMap[l]) {
-					const dayjsLocale = dayjsMap[l]
-					const varName = localeToVarName(dayjsLocale)
-					imports.push(
-						`import ${varName} from '../../node_modules/dayjs/esm/locale/${dayjsLocale}.js'`,
-					)
+					return null
+				}
+
+				const nextLineAfterEn = transformedCode.indexOf('\n', enImportLine) + 1
+
+				// Insert the language-specific i18n import
+				transformedCode =
+					transformedCode.slice(0, nextLineAfterEn) +
+					`import '../../dist/convenientDiscussions-i18n/${lang}.js'\n` +
+					transformedCode.slice(nextLineAfterEn)
+
+				// Also ensure the i18n is available on cd object after the hook
+				const hookMarker = "mw.hook('convenientDiscussions.started').fire(cd)"
+				const hookIndex = transformedCode.indexOf(hookMarker)
+				if (hookIndex === -1) {
+					console.error('❌ Could not find hook marker for initialization')
+				} else {
+					const hookEndIndex = transformedCode.indexOf('\n', hookIndex)
+					transformedCode =
+						transformedCode.slice(0, hookEndIndex) +
+						`\n\n\t// Ensure ${lang} i18n is available on cd object\n\tif (window.convenientDiscussions?.i18n?.['${lang}']) {\n\t\tcd.i18n = cd.i18n || {}\n\t\tcd.i18n['${lang}'] = window.convenientDiscussions.i18n['${lang}']\n\t}` +
+						transformedCode.slice(hookEndIndex)
 				}
 			}
 
-			// Import only the needed date-fns locales
-			for (const l of neededLangs) {
-				if (dateFnsMap[l]) {
-					const dateFnsLocale = dateFnsMap[l]
-					const varName = dateFnsToVarName(dateFnsLocale)
-					imports.push(
-						`import * as ${varName} from '../../node_modules/date-fns/locale/${dateFnsLocale}.js'`,
-					)
-				}
-			}
-
-			// Find the bootstrap function in the original code
-			const bootstrapMarker = 'async function bootstrap() {'
-			const bootstrapIndex = code.indexOf(bootstrapMarker)
-			if (bootstrapIndex === -1) {
-				console.error('❌ Could not find bootstrap function in startup.js')
-
-				return null
-			}
-
-			// Find where to inject config/i18n initialization (after mw.hook line)
-			const hookMarker = "mw.hook('convenientDiscussions.started').fire(cd)"
-			const hookIndex = code.indexOf(hookMarker, bootstrapIndex)
-			if (hookIndex === -1) {
-				console.error('❌ Could not find hook marker in startup.js')
-
-				return null
-			}
-
-			// Find the end of the hook line
-			const hookEndIndex = code.indexOf('\n', hookIndex)
-
-			// Generate initialization code for config
-			let initCode = '\n\n'
+			// If we have a specific wiki config, import it statically
 			if (wiki) {
+				const defaultConfigLine = transformedCode.indexOf('import defaultConfig from')
+				const nextLineAfterDefault = transformedCode.indexOf('\n', defaultConfigLine) + 1
+
 				const varName = configToVarName(wiki)
-				initCode += `\tcd.config = ${varName}\n`
-			}
+				transformedCode =
+					transformedCode.slice(0, nextLineAfterDefault) +
+					`import ${varName} from '../../config/wikis/${wiki}.js'\n` +
+					transformedCode.slice(nextLineAfterDefault)
 
-			// Generate initialization code for i18n
-			initCode += `\tcd.i18n = {}\n`
-			for (const l of neededLangs) {
-				const varName = i18nToVarName(l)
-				initCode += `\tcd.i18n['${l}'] = ${varName}\n`
-
-				// Add locale data for non-English languages
-				if (l !== 'en' && dayjsMap[l]) {
-					const dayjsLocale = dayjsMap[l]
-					const dayjsVarName = localeToVarName(dayjsLocale)
-					initCode += `\tcd.i18n['${l}'].dayjsLocale = ${dayjsVarName}\n`
-				}
-
-				if (dateFnsMap[l]) {
-					const dateFnsLocale = dateFnsMap[l]
-					const dateFnsVarName = dateFnsToVarName(dateFnsLocale)
-					initCode += `\tcd.i18n['${l}'].dateFnsLocale = ${dateFnsVarName}\n`
+				// Set cd.config to the imported config right after the mw.hook line
+				const hookMarker = "mw.hook('convenientDiscussions.started').fire(cd)"
+				const hookIndex = transformedCode.indexOf(hookMarker)
+				if (hookIndex !== -1) {
+					const hookEndIndex = transformedCode.indexOf('\n', hookIndex)
+					transformedCode =
+						transformedCode.slice(0, hookEndIndex) +
+						`\n\n\tcd.config = ${varName}` +
+						transformedCode.slice(hookEndIndex)
 				}
 			}
 
-			// Inject the initialization code after the hook line
-			const beforeHook = code.slice(0, hookEndIndex)
-			const afterHook = code.slice(hookEndIndex)
+			// Remove the loadSingleLangInDevOrSingleMode function since we're importing pre-built i18n
+			// This function is only used in dev mode, not in single builds
+			transformedCode = transformedCode.replace(
+				/\/\*\*\s*\n\s*\* Load the i18n file for the single language code\. This function is used in dev mode and\s*\n\s*\* single mode \(where it's replaced to just return Promise\.resolve\(\) by the tree-shake plugin\)\.\s*\n\s*\*\s*\n\s*\* @param \{string\} lang\s*\n\s*\*\/\s*\nasync function loadSingleLangInDevOrSingleMode\([^)]+\) \{[\s\S]*?\n\}/,
+				'',
+			)
 
-			// Find the start of the actual code (before bootstrap function)
-			const codeStartMarker = ';(async () => {'
-			const codeStartIndex = code.indexOf(codeStartMarker)
-			if (codeStartIndex === -1) {
-				console.error('❌ Could not find code start marker in startup.js')
+			// Replace the IS_DEV || IS_SINGLE branch in getStrings() to remove dynamic imports
+			// Since we're importing pre-built i18n files statically, we don't need the dynamic import logic
+			transformedCode = transformedCode.replace(
+				/if \(IS_DEV \|\| IS_SINGLE\) \{\s*return loadSingleLangInDevOrSingleMode\(lang\)\s*\}/g,
+				`// In single mode, i18n is already loaded statically
+				return Promise.resolve()`,
+			)
 
-				return null
-			}
-
-			// Replace the imports section and inject initialization
-			const newCode =
-				imports.join('\n') +
-				'\n' +
-				beforeHook.slice(codeStartIndex, hookEndIndex) +
-				initCode +
-				afterHook
-
-			console.log(`✅ Tree-shaken startup.js: ${neededLangs.size} languages, 1 config`)
+			console.log(`✅ Tree-shaken startup.js for ${wiki} (${lang})`)
 
 			return {
-				code: newCode,
+				code: transformedCode,
 				map: null,
 			}
 		},

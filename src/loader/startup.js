@@ -110,12 +110,12 @@ function replaceEntities(string) {
 }
 
 /**
- * Load the i18n file for the single language code. This function shouldn't run or be present in
- * production mode.
+ * Load the i18n file for the single language code. This function is used in dev mode and
+ * single mode (where it's replaced to just return Promise.resolve() by the tree-shake plugin).
  *
  * @param {string} lang
  */
-async function loadSingleLangInDevMode(lang) {
+async function loadSingleLangInDevOrSingleMode(lang) {
 	const langModule = await import(/* @vite-ignore */ `../../i18n/${lang}.json`)
 	const langObj = langModule.default
 	Object.keys(langObj)
@@ -239,8 +239,8 @@ async function getStrings() {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			.filter((lang) => lang !== 'en' && (!cd.i18n || !(lang in cd.i18n)))
 			.map((lang) => {
-				if (IS_DEV) {
-					return loadSingleLangInDevMode(lang)
+				if (IS_DEV || IS_SINGLE) {
+					return loadSingleLangInDevOrSingleMode(lang)
 				}
 
 				return cd.loader.loadPreferablyFromDiskCache({

@@ -21,7 +21,7 @@
 		"./src/shared/polyfills.js",
 		"./src/worker/worker.js",
 		"./src/worker/extendDomhandler.js",
-		"./dist/convenientDiscussions-i18n/en.js"
+		"./dist/convenientDiscussions-i18n/*.js"
 	],
 	"browser": "src/loader/startup.js",
 	"scripts": {
