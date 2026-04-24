@@ -614,7 +614,7 @@ export function isDomHandlerElement(node) {
  * @returns {boolean}
  */
 export function isMetadataNode(node) {
-	return isElement(node) && ['STYLE', 'LINK'].includes(node.tagName)
+	return isElement(node) && ['STYLE', 'LINK', 'META'].includes(node.tagName)
 }
 
 /**
