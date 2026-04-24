@@ -80,7 +80,7 @@ class CommentFormBuilder {
 			accessKey: 'b',
 
 			// Summary input should not support external links with labels
-			supportsExternalLinks: false,
+			supportsComplexMarkup: false,
 		})
 		this.form.updateAutoSummary(initialState.summary === undefined)
 

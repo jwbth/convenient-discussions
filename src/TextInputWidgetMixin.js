@@ -47,7 +47,7 @@ class TextInputWidgetMixin {
 	 * @type {boolean}
 	 * @private
 	 */
-	supportsExternalLinks = true
+	supportsComplexMarkup = true
 
 	constructor() {
 		// NOTE: ths is *not* called. construct() is called instead.
@@ -72,12 +72,12 @@ class TextInputWidgetMixin {
 	 *
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 * @param {object} [config]
-	 * @param {boolean} [config.supportsExternalLinks] Whether this input supports external
+	 * @param {boolean} [config.supportsComplexMarkup] Whether this input supports external
 	 *   links. If false, external links that cannot be converted to wikilinks will be inserted as
 	 *   plain URLs without labels.
 	 */
 	construct(config) {
-		this.supportsExternalLinks = config?.supportsExternalLinks ?? true
+		this.supportsComplexMarkup = config?.supportsComplexMarkup ?? true
 
 		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin and
 		// not classes that extend it.
@@ -444,7 +444,7 @@ class TextInputWidgetMixin {
 
 		if (hasOtherParams) {
 			// Can't convert to wikilink - use external link format if supported
-			if (!this.supportsExternalLinks) {
+			if (!this.supportsComplexMarkup) {
 				return
 			}
 
@@ -466,7 +466,7 @@ class TextInputWidgetMixin {
 			return await this.convertUrlToWikilinkWithPrefix(url, urlObj, params, label, isShiftPressed)
 		} catch {
 			// Fall back to external link format on any error (if supported)
-			if (!this.supportsExternalLinks) {
+			if (!this.supportsComplexMarkup) {
 				return
 			}
 
@@ -653,12 +653,15 @@ class TextInputWidgetMixin {
 		}
 
 		// For regular textarea/input, use document.caretPositionFromPoint or document.caretRangeFromPoint
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (document.caretPositionFromPoint) {
 			const caretPosition = document.caretPositionFromPoint(event.clientX, event.clientY)
 			if (caretPosition?.offsetNode === element) {
 				return caretPosition.offset
 			}
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-deprecated
 		} else if (document.caretRangeFromPoint) {
+			// eslint-disable-next-line @typescript-eslint/no-deprecated
 			const range = document.caretRangeFromPoint(event.clientX, event.clientY)
 			if (range?.startContainer === element) {
 				return range.startOffset
