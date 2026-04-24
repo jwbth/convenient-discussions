@@ -357,8 +357,18 @@ class TextInputWidgetMixin {
 			value[cursorPos - 2] === '`' &&
 			value[cursorPos - 3] === '`'
 		) {
-			// Find all triple backtick sequences in the content
-			const tripleBacktickRegex = /```/g
+			// Make sure it's not part of a longer sequence (e.g., ````)
+			// Check if there's a backtick before or after the triple backtick
+			if (
+				(cursorPos >= 4 && value[cursorPos - 4] === '`') ||
+				(cursorPos < value.length && value[cursorPos] === '`')
+			) {
+				return false
+			}
+
+			// Find all triple backtick sequences in the content (exactly 3, not more)
+			// Use a regex that matches exactly 3 backticks not preceded or followed by another backtick
+			const tripleBacktickRegex = /(?<!`)```(?!`)/g
 			const matches = [...value.matchAll(tripleBacktickRegex)]
 
 			// If more than 2 pairs already exist, halt
@@ -368,8 +378,8 @@ class TextInputWidgetMixin {
 			const beforeCursor = value.substring(0, cursorPos - 3)
 			const afterCursor = value.substring(cursorPos)
 
-			const tripleBackticksBeforeCursor = (beforeCursor.match(/```/g) || []).length
-			const tripleBackticksAfterCursor = (afterCursor.match(/```/g) || []).length
+			const tripleBackticksBeforeCursor = (beforeCursor.match(/(?<!`)```(?!`)/g) || []).length
+			const tripleBackticksAfterCursor = (afterCursor.match(/(?<!`)```(?!`)/g) || []).length
 
 			let firstTripleBacktickPos
 			let secondTripleBacktickPos
@@ -378,13 +388,23 @@ class TextInputWidgetMixin {
 			// Scenario 1: Exactly 1 triple backtick before, 0 after (typed closing triple backtick)
 			if (tripleBackticksBeforeCursor === 1 && tripleBackticksAfterCursor === 0) {
 				firstTripleBacktickPos = beforeCursor.lastIndexOf('```')
+				// Verify it's exactly 3 backticks at this position
+				if (
+					(firstTripleBacktickPos > 0 && beforeCursor[firstTripleBacktickPos - 1] === '`') ||
+					(firstTripleBacktickPos + 3 < beforeCursor.length &&
+						beforeCursor[firstTripleBacktickPos + 3] === '`')
+				) {
+					return false
+				}
 				secondTripleBacktickPos = cursorPos - 3
 				cursorAfterOpening = false
 			}
 			// Scenario 2: 0 triple backticks before, exactly 1 after (typed opening triple backtick)
 			else if (tripleBackticksBeforeCursor === 0 && tripleBackticksAfterCursor === 1) {
 				firstTripleBacktickPos = cursorPos - 3
-				secondTripleBacktickPos = afterCursor.indexOf('```') + cursorPos
+				const afterMatch = afterCursor.match(/(?<!`)```(?!`)/)
+				if (!afterMatch) return false
+				secondTripleBacktickPos = afterCursor.indexOf(afterMatch[0]) + cursorPos
 				cursorAfterOpening = true
 			}
 			// No valid pair found
