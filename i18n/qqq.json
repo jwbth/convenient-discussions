@@ -444,7 +444,6 @@
 	"warning-performance": "\"They\" in \"them\" are performance issues mentioned in {{msg-wm|Convenient-discussions-warning-performance-title}}.\n\nText of the warning notification that appears when the script has detected that the page is slow. The text with a class will be converted into a link. See also the title: {{msg-wm|Convenient-discussions-warning-performance-title}}.",
 	"discussiontools-incompatible": "Text of the notification that appears when the user has the commenting features of [[mw:Extension:DiscussionTools|DiscussionTools]] enabled.",
 	"discussiontools-disabled": "Text of the notification that appears when [[mw:Extension:DiscussionTools|DiscussionTools]] has been disabled after a user click.",
-	"wl-button-settings-tooltip": "Text of the tooltip for the button in the script's block in the watchlist.\n\nLikely identical messages:\n* {{msg-wm|Convenient-discussions-sd-title}}\n* {{msg-wm|Convenient-discussions-footer-settings}}\n* {{msg-wm|Convenient-discussions-cf-settings-tooltip}}",
 	"lp-comment": "Label of the link pointing to a comment. This link is displayed on log pages such as the watchlist.",
 	"lp-comment-tooltip": "Text of the tooltip for the link labeled with the {{msg-wm|Convenient-discussions-lp-comment}} message.",
 	"lp-comment-toyou": "Text that sometimes appears in parentheses (see {{msg-mw|parentheses}}) at the end of the tooltip for the link labeled with the {{msg-wm|Convenient-discussions-lp-comment}} message.",

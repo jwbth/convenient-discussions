@@ -154,7 +154,6 @@
 	"error-pagedeleted": "หน้าถูกลบไปแล้ว",
 	"error-pagenotedited": "หน้าไม่ได้ถูกแก้ไข",
 	"error-anoneditwatning": "<strong>คุณไม่ได้อยู่ในระบบ</strong> เลขที่อยู่ IP ของคุณจะเป็นสาธารณะหากทำการแก้ไขใด ๆ",
-	"wl-button-settings-tooltip": "การตั้งค่า Convenient Discussions",
 	"lp-comment": "ความเห็น",
 	"lp-comment-tooltip": "ไปยังความเห็น",
 	"lp-comment-toyou": "ความเห็นนั้นส่งถึงคุณ",

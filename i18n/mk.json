@@ -408,7 +408,6 @@
 	"warning-performance": "Згодните разговори можат да се обидат да ги решат со поставката „{{int:convenient-discussions-sd-improveperformance}}“. <span class=\"cd-notification-talkPageSettings\">[[$1|Отвори го дијалогот за нагодувања]]</span>.",
 	"discussiontools-incompatible": "Згодните разговори се претежно нескладни со Разговорни алатки. <b><span class=\"cd-notification-disabledt\">[[$1|Оневозможете]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(или <b><span class=\"cd-notification-disableDtGlobally\">[[$2|глобално оневозможете]]</span></b>)</span> ги Разговорни алатки за да можат Згодните разговори да работат правилно.",
 	"discussiontools-disabled": "Разоворните алатки се успешно оневозможени. <span class=\"cd-notification-refresh\">[[$1|Превчитајте ја страницава]]</span>.",
-	"wl-button-settings-tooltip": "Нагодувања за „Згодни разговори“",
 	"lp-comment": "коментар",
 	"lp-comment-tooltip": "Појди на коментарот",
 	"lp-comment-toyou": "коментарот ви е упатен вам",

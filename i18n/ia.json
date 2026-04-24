@@ -404,7 +404,6 @@
 	"warning-performance": "“Discussiones practic” pote tentar resolver le problema con le parametro “{{int:convenient-discussions-sd-improveperformance}}”. <span class=\"cd-notification-talkPageSettings\">[[$1|Aperir le dialogo de parametros]]</span>.",
 	"discussiontools-incompatible": "Pro le major parte, “Discussiones practic” es incompatibile con “DiscussionTools”. Per favor <b><span class=\"cd-notification-disabledt\">[[$1|disactiva]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(o <b><span class=\"cd-notification-disableDtGlobally\">[[$2|disactiva globalmente]]</span></b>)</span> \"DiscussionTools\" pro facer “Discussiones practic” functionar correctemente.",
 	"discussiontools-disabled": "DiscussionTools ha essite disactivate. <span class=\"cd-notification-refresh\">[[$1|Refresca le pagina]]</span>.",
-	"wl-button-settings-tooltip": "Parametros de “Discussiones practic”",
 	"lp-comment": "commento",
 	"lp-comment-tooltip": "Ir al commento",
 	"lp-comment-toyou": "le commento es adressate a te",
