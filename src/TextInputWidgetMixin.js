@@ -625,6 +625,50 @@ class TextInputWidgetMixin {
 	}
 
 	/**
+	 * Get the drop position from a drop event.
+	 *
+	 * @param {DragEvent} event
+	 * @returns {number | undefined}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	getDropPosition(event) {
+		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (
+			this.getEditableElement()[0]
+		)
+
+		// For CodeMirror, we need to use its API
+		if ('codeMirror' in this && this.codeMirror) {
+			const codeMirror =
+				/** @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>>} */ (
+					this.codeMirror
+				)
+			const view = codeMirror.view
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			if (view) {
+				const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
+
+				return pos ?? undefined
+			}
+		}
+
+		// For regular textarea/input, use document.caretPositionFromPoint or document.caretRangeFromPoint
+		if (document.caretPositionFromPoint) {
+			const caretPosition = document.caretPositionFromPoint(event.clientX, event.clientY)
+			if (caretPosition?.offsetNode === element) {
+				return caretPosition.offset
+			}
+		} else if (document.caretRangeFromPoint) {
+			const range = document.caretRangeFromPoint(event.clientX, event.clientY)
+			if (range?.startContainer === element) {
+				return range.startOffset
+			}
+		}
+
+		return undefined
+	}
+
+	/**
 	 * Handle paste/drop events for URL conversion.
 	 *
 	 * @param {ClipboardEvent | DragEvent} event
@@ -646,7 +690,7 @@ class TextInputWidgetMixin {
 			? (isShiftPressedForPaste ?? false)
 			: /** @type {DragEvent} */ (event).shiftKey
 
-		// Determine if text is selected (for paste events)
+		// Determine if text is selected and get the position
 		let selectedText
 		let selectionStart
 		let selectionEnd
@@ -657,10 +701,18 @@ class TextInputWidgetMixin {
 			if (selectionStart !== selectionEnd) {
 				selectedText = this.getValue().substring(selectionStart, selectionEnd)
 			}
+		} else {
+			// For drop events, get the drop position
+			const dropPosition = this.getDropPosition(/** @type {DragEvent} */ (event))
+			if (dropPosition !== undefined) {
+				selectionStart = dropPosition
+				selectionEnd = dropPosition
+			}
 		}
 
 		// Check if we're pasting/dropping inside existing link markup like [^ link label]
-		const linkMarkupContext = this.detectLinkMarkupContext(selectionStart ?? 0)
+		const linkMarkupContext =
+			selectionStart === undefined ? null : this.detectLinkMarkupContext(selectionStart)
 
 		// Extract URL and label
 		const extracted = this.extractUrlFromData(data, selectedText)
