@@ -664,6 +664,38 @@ class CommentForm extends EventEmitter {
 		this.operations = new CommentFormOperationRegistry(this)
 
 		/**
+		 * Subst aliases string for regexps.
+		 *
+		 * @type {string}
+		 * @private
+		 */
+		this.substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
+
+		/**
+		 * Regexp to match subst templates.
+		 *
+		 * @type {RegExp}
+		 * @private
+		 */
+		this.substRegexp = new RegExp(`\\{\\{ *(${this.substAliasesString})`, 'i')
+
+		/**
+		 * Regexp to match templates that are not subst.
+		 *
+		 * @type {RegExp}
+		 * @private
+		 */
+		this.substTemplateRegexp = new RegExp(`\\{\\{(?! *(${this.substAliasesString}))`, 'i')
+
+		/**
+		 * Regexp to match if comment starts with subst templates.
+		 *
+		 * @type {RegExp}
+		 * @private
+		 */
+		this.substStartsWithRegexp = new RegExp(`^\\{\\{ *(${this.substAliasesString})`, 'i')
+
+		/**
 		 * List of timestamps of last keypresses.
 		 *
 		 * @type {number[]}
@@ -1538,7 +1570,6 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	addEventListenersToTextInputs(emitChange, preview) {
-		const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
 		const textReactions = /** @type {import('../config/default').Reaction[]} */ ([
 			{
 				regexp: new RegExp(cd.g.signCode + String.raw`\s*$`),
@@ -1558,7 +1589,7 @@ class CommentForm extends EventEmitter {
 				type: 'warning',
 			},
 			{
-				regexp: new RegExp(`\\{\\{(?! *(${substAliasesString}))`, 'i'),
+				regexp: this.substTemplateRegexp,
 				message: cd.sParse('cf-reaction-templateinheadline'),
 				type: 'warning',
 				name: 'templateInHeadline',
@@ -2634,8 +2665,7 @@ class CommentForm extends EventEmitter {
 		// Workaround to omit the signature when templates containing a signature, like
 		// https://en.wikipedia.org/wiki/Template:Requested_move, are substituted.
 		if (this.omitSignatureCheckbox && !this.omitSignatureCheckboxAltered) {
-			const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
-			if (new RegExp(`{{ *(${substAliasesString})`, 'i').test(commentInputValue)) {
+			if (this.substRegexp.test(commentInputValue)) {
 				const signatureText = this.$previewArea.find('.cd-commentForm-signature').text()
 				const previewText = this.$previewArea.text()
 				if (
@@ -2805,7 +2835,7 @@ class CommentForm extends EventEmitter {
 	runChecks({ doDelete }) {
 		const checks = [
 			{
-				condition: !doDelete && this.headlineInput?.getValue() === '',
+				condition: !doDelete && this.headlineInput?.getValue() === '' && !this.substStartsWithRegexp.test(this.commentInput.getValue()),
 				confirmation: () => {
 					const ending =
 						this.headlineInputPlaceholder === cd.s('cf-headline-topic') ? 'topic' : 'subsection'
