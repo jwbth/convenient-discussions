@@ -79,7 +79,7 @@ class ProcessDialogMixin {
 		if (error instanceof CdError) {
 			message ??= cd.s(/** @type {string} */ (messageName))
 			if (error.getType() === 'network') {
-				message += ' ' + cd.s('error-network')
+				message += cd.mws('word-separator') + cd.s('error-network')
 			}
 			errorInstance = new OO.ui.Error(message, { recoverable })
 		} else {

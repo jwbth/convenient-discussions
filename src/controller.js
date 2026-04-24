@@ -1838,7 +1838,7 @@ class Controller extends EventEmitter {
 		try {
 			await this.bootProcess.execute(isReload)
 		} catch (error) {
-			mw.notify(cd.s('error-processpage'), { type: 'error' })
+			mw.notify(cd.prependScriptName(cd.s('error-processpage')), { type: 'error' })
 			cd.debug.logError(error)
 		}
 		cd.loader.hideBootingOverlay()

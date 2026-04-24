@@ -953,7 +953,7 @@ class Settings extends EventEmitter {
 		try {
 			;[loadedSettings] = await this.dialogPromise
 		} catch {
-			mw.notify(cd.s('error-settings-load'), { type: 'error' })
+			mw.notify(cd.prependScriptName(cd.s('error-settings-load')), { type: 'error' })
 
 			return
 		} finally {
@@ -1113,7 +1113,7 @@ class Settings extends EventEmitter {
 					try {
 						await promise
 					} catch (error) {
-						mw.notify(cd.s('error-settings-save'), { type: 'error' })
+						mw.notify(cd.prependScriptName(cd.s('error-settings-save')), { type: 'error' })
 						cd.debug.logWarn(error)
 					}
 				}

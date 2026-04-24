@@ -154,7 +154,7 @@ class DtSubscriptions extends Subscriptions {
 				})
 				.catch(handleApiReject)
 		} catch (error) {
-			mw.notify(cd.s('error-settings-save'), { type: 'error' })
+			mw.notify(cd.prependScriptName(cd.s('error-settings-save')), { type: 'error' })
 			throw error
 		}
 

@@ -998,7 +998,7 @@ class BootProcess {
 				: cd.getApi().saveOptions(options).catch(handleApiReject)
 			await request
 		} catch {
-			mw.notify(wrapHtml(cd.sParse('error-settings-save')))
+			mw.notify(wrapHtml(cd.prependScriptName(cd.sParse('error-settings-save'))))
 
 			return
 		} finally {

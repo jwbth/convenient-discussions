@@ -119,6 +119,18 @@ const convenientDiscussionsWindow = {
 	},
 
 	/**
+	 * Prepend the script name to an error message string. Uses the appropriate word separator for the
+	 * language.
+	 *
+	 * @param {string} message Error message string.
+	 * @returns {string}
+	 * @memberof convenientDiscussions
+	 */
+	prependScriptName(message) {
+		return cd.s('script-name') + cd.mws('colon-separator') + message
+	},
+
+	/**
 	 * A foolproof method to access MediaWiki messages intended to be used instead of
 	 * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.msg mw.msg()} to eliminate
 	 * any possibility of an XSS injection. By programmer's mistake some `mw.msg()` value could be
