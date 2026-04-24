@@ -179,6 +179,78 @@ class CommentFormBuilder {
 	}
 
 	/**
+	 * Build the help popup content from individual message components.
+	 *
+	 * @returns {JQuery}
+	 * @private
+	 */
+	buildHelpPopupContent() {
+		const $container = $('<div>')
+
+		// Autocomplete section
+		$container.append(
+			$('<p>').append($('<strong>').text(cd.s('cf-help-heading-autocomplete'))),
+			$('<ul>').append(
+				$('<li>').append(
+					wrapHtml(cd.sParse('cf-help-autocomplete-mention', cd.config.mentionCharacter), {
+						targetBlank: true,
+					}),
+				),
+				$('<li>').append(
+					wrapHtml(cd.sParse('cf-help-autocomplete-punctuation'), { targetBlank: true }),
+				),
+				$('<li>').append(
+					wrapHtml(cd.sParse('cf-help-autocomplete-commentlink'), { targetBlank: true }),
+				),
+				$('<li>').append(
+					wrapHtml(cd.sParse('cf-help-autocomplete-displaytext'), { targetBlank: true }),
+				),
+				$('<li>').append(
+					wrapHtml(cd.sParse('cf-help-autocomplete-nameonly'), { targetBlank: true }),
+				),
+				$('<li>').append(
+					wrapHtml(cd.sParse('cf-help-autocomplete-wraptext'), { targetBlank: true }),
+				),
+			),
+		)
+
+		// Hotkeys section
+		$container.append(
+			$('<p>').append($('<strong>').text(cd.s('cf-help-heading-hotkeys'))),
+			$('<ul>').append(
+				$('<li>').append(
+					wrapHtml(cd.sParse('cf-help-hotkeys-post', cd.g.cmdModifier), { targetBlank: true }),
+				),
+				$('<li>').append(wrapHtml(cd.sParse('cf-help-hotkeys-cancel'), { targetBlank: true })),
+				$('<li>').append(wrapHtml(cd.sParse('cf-help-hotkeys-toolbar'), { targetBlank: true })),
+			),
+		)
+
+		// Problems section (hidden for reformatted comments)
+		$container.append(
+			$('<div>')
+				.addClass('cd-helpPopup-hideForReformattedComments')
+				.append(
+					$('<p>').append($('<strong>').text(cd.s('cf-help-heading-problems'))),
+					$('<ul>').append(
+						$('<li>').append(wrapHtml(cd.sParse('cf-help-problems-menu'), { targetBlank: true })),
+					),
+				),
+		)
+
+		// Footer with documentation and feedback links
+		$container.append(
+			$('<p>').append(
+				wrapHtml(cd.sParse('cf-help-footer-documentation'), { targetBlank: true }),
+				cd.s('dot-separator'),
+				wrapHtml(cd.sParse('cf-help-footer-feedback'), { targetBlank: true }),
+			),
+		)
+
+		return $container
+	}
+
+	/**
 	 * Create the buttons based on OOUI widgets.
 	 */
 	buildButtons() {
@@ -204,20 +276,7 @@ class CommentFormBuilder {
 			classes: ['cd-button-ooui'],
 			popup: {
 				head: false,
-				$content: /** @type {JQuery} */ (
-					wrapHtml(
-						cd.sParse(
-							'cf-help-content',
-							cd.config.mentionCharacter,
-							cd.g.cmdModifier,
-							cd.s('dot-separator'),
-						),
-						{
-							tagName: 'div',
-							targetBlank: true,
-						},
-					).contents()
-				),
+				$content: this.buildHelpPopupContent(),
 				padded: true,
 				align: 'center',
 				width: 500,

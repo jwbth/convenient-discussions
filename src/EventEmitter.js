@@ -11,7 +11,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @this {EventEmitter & OO.EventEmitter}
 	 */
 	construct() {
-		// For Comment class where EventEmitter is used as a mixin
+		// For the Comment class where EventEmitter is used as a mixin
 		OO.EventEmitter.call(this)
 	}
 
