@@ -288,8 +288,9 @@ class TextInputWidgetMixin {
 		const $element = this.getEditableElement()
 		$element[0].cdInput = this
 		$element
-			.on('input.cd', () => {
+			.on('input.cd', (event) => {
 				this.emit('manualChange', this.getValue())
+				this.handleBacktickInput(event)
 			})
 			.on('autocomplete-attached.cd', (_event, data) => {
 				this.autocompleteManager = data.autocompleteManager
@@ -306,6 +307,98 @@ class TextInputWidgetMixin {
 				// Set the autocomplete menu as inactive to allow selection changes again
 				this.setAutocompleteMenuActive(false)
 			})
+	}
+
+	/**
+	 * Handle backtick input for code markup conversion.
+	 *
+	 * @param {JQuery.TriggeredEvent} event Input event
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	handleBacktickInput(event) {
+		if (!this.supportsComplexMarkup) return
+
+		// Get the input data - either from originalEvent (native) or from the event itself (CodeMirror)
+		const inputEvent = /** @type {InputEvent} */ (event.originalEvent || event)
+		if (inputEvent.data !== '`') return
+
+		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (
+			this.getEditableElement()[0]
+		)
+		const value = element.value
+		const cursorPos = element.selectionStart
+		if (cursorPos === null) return
+
+		// Find the current line boundaries
+		const lineStart = value.lastIndexOf('\n', cursorPos - 1) + 1
+		const lineEnd = value.indexOf('\n', cursorPos)
+		const lineEndPos = lineEnd === -1 ? value.length : lineEnd
+
+		// Get the line content and cursor position within the line
+		const line = value.substring(lineStart, lineEndPos)
+		const cursorInLine = cursorPos - lineStart
+
+		// The just-typed backtick is at cursorInLine - 1
+		// Find backticks before the just-typed backtick (excluding it)
+		const beforeTypedBacktick = line.substring(0, cursorInLine - 1)
+		const backticksBeforeTyped = beforeTypedBacktick.match(/`/g)
+
+		// Find backticks after the just-typed backtick (excluding it)
+		const afterTypedBacktick = line.substring(cursorInLine)
+		const backticksAfterTyped = afterTypedBacktick.match(/`/g)
+
+		let firstBacktickInLine
+		let secondBacktickInLine
+		let cursorAfterOpening
+
+		// Scenario 1: Exactly 1 backtick before, 0 after (typed closing backtick)
+		if (backticksBeforeTyped?.length === 1 && !backticksAfterTyped) {
+			firstBacktickInLine = beforeTypedBacktick.lastIndexOf('`')
+			secondBacktickInLine = cursorInLine - 1 // The just-typed backtick
+			cursorAfterOpening = false // Cursor should be after closing tag
+		}
+		// Scenario 2: 0 backticks before, exactly 1 after (typed opening backtick)
+		else if (!backticksBeforeTyped && backticksAfterTyped?.length === 1) {
+			firstBacktickInLine = cursorInLine - 1 // The just-typed backtick
+			secondBacktickInLine = cursorInLine + afterTypedBacktick.indexOf('`')
+			cursorAfterOpening = true // Cursor should be after opening tag
+		}
+		// No valid pair found
+		else {
+			return
+		}
+
+		const firstBacktickPos = lineStart + firstBacktickInLine
+		const secondBacktickPos = lineStart + secondBacktickInLine
+
+		// Replace both backticks with code markup
+		const openTag = '<code><nowiki>'
+		const closeTag = '</nowiki></code>'
+
+		// Calculate new cursor position
+		const newCursorPos = cursorAfterOpening
+			? firstBacktickPos + openTag.length
+			: firstBacktickPos +
+				openTag.length +
+				(secondBacktickPos - firstBacktickPos - 1) +
+				closeTag.length
+
+		// Set the new value and cursor position
+		// Select the range to replace (both backticks and content between them)
+		this.focus()
+		this.$input.textSelection('setSelection', {
+			start: firstBacktickPos,
+			end: secondBacktickPos + 1,
+		})
+
+		// Insert the new content (this makes it undoable with a single Ctrl+Z)
+		const replacement =
+			openTag + value.substring(firstBacktickPos + 1, secondBacktickPos) + closeTag
+		this.insertContent(replacement)
+
+		// Set cursor position
+		this.$input.textSelection('setSelection', { start: newCursorPos, end: newCursorPos })
 	}
 
 	/**

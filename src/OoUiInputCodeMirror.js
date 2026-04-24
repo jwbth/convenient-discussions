@@ -63,12 +63,27 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 
 				// Dispatch the event from the contenteditable element.
 				if (update.docChanged) {
-					update.view.contentDOM.dispatchEvent(
-						new Event('input', {
-							bubbles: true,
-							cancelable: true,
-						}),
-					)
+					// Extract the inserted text for the input event
+					let insertedText = null
+					update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+						// Only capture single character insertions (user typing)
+						if (toA === fromA && inserted.length === 1) {
+							insertedText = inserted.toString()
+						}
+					})
+
+					// Create an InputEvent-like object with the data property
+					const inputEvent = new Event('input', {
+						bubbles: true,
+						cancelable: true,
+					})
+					// Add the data property to mimic InputEvent
+					Object.defineProperty(inputEvent, 'data', {
+						value: insertedText,
+						writable: false,
+					})
+
+					update.view.contentDOM.dispatchEvent(inputEvent)
 				}
 			})
 			this.cdContentClassExtension = this.lib.EditorView.contentAttributes.of({
