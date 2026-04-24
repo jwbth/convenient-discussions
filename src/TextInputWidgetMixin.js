@@ -330,6 +330,116 @@ class TextInputWidgetMixin {
 		const cursorPos = element.selectionStart
 		if (cursorPos === null) return
 
+		// Check if we just completed a triple backtick sequence
+		if (this.handleTripleBacktickInput(value, cursorPos)) {
+			return
+		}
+
+		// Handle single backtick conversion
+		this.handleSingleBacktickInput(value, cursorPos)
+	}
+
+	/**
+	 * Handle triple backtick input for code block markup conversion.
+	 *
+	 * @param {string} value Current input value
+	 * @param {number} cursorPos Current cursor position
+	 * @returns {boolean} Whether triple backtick conversion was performed
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	handleTripleBacktickInput(value, cursorPos) {
+		// Check if the just-typed backtick completes a triple backtick sequence
+		// Look for ``` at cursor position - 3
+		if (
+			cursorPos >= 3 &&
+			value[cursorPos - 1] === '`' &&
+			value[cursorPos - 2] === '`' &&
+			value[cursorPos - 3] === '`'
+		) {
+			// Find all triple backtick sequences in the content
+			const tripleBacktickRegex = /```/g
+			const matches = [...value.matchAll(tripleBacktickRegex)]
+
+			// If more than 2 pairs already exist, halt
+			if (matches.length > 2) return false
+
+			// Determine if this is the first or second triple backtick
+			const beforeCursor = value.substring(0, cursorPos - 3)
+			const afterCursor = value.substring(cursorPos)
+
+			const tripleBackticksBeforeCursor = (beforeCursor.match(/```/g) || []).length
+			const tripleBackticksAfterCursor = (afterCursor.match(/```/g) || []).length
+
+			let firstTripleBacktickPos
+			let secondTripleBacktickPos
+			let cursorAfterOpening
+
+			// Scenario 1: Exactly 1 triple backtick before, 0 after (typed closing triple backtick)
+			if (tripleBackticksBeforeCursor === 1 && tripleBackticksAfterCursor === 0) {
+				firstTripleBacktickPos = beforeCursor.lastIndexOf('```')
+				secondTripleBacktickPos = cursorPos - 3
+				cursorAfterOpening = false
+			}
+			// Scenario 2: 0 triple backticks before, exactly 1 after (typed opening triple backtick)
+			else if (tripleBackticksBeforeCursor === 0 && tripleBackticksAfterCursor === 1) {
+				firstTripleBacktickPos = cursorPos - 3
+				secondTripleBacktickPos = afterCursor.indexOf('```') + cursorPos
+				cursorAfterOpening = true
+			}
+			// No valid pair found
+			else {
+				return false
+			}
+
+			// Extract content between the triple backticks
+			const contentBetween = value.substring(firstTripleBacktickPos + 3, secondTripleBacktickPos)
+
+			// Ensure at least one newline after opening and before closing
+			const openTag = '<syntaxhighlight lang="wikitext">'
+			const closeTag = '</syntaxhighlight>'
+
+			// Add newlines if needed
+			const startsWithNewline = contentBetween.startsWith('\n')
+			const endsWithNewline = contentBetween.endsWith('\n')
+
+			const processedContent =
+				(startsWithNewline ? '' : '\n') + contentBetween + (endsWithNewline ? '' : '\n')
+
+			// Calculate new cursor position
+			const newCursorPos = cursorAfterOpening
+				? firstTripleBacktickPos + openTag.length + (startsWithNewline ? 0 : 1)
+				: firstTripleBacktickPos + openTag.length + processedContent.length + closeTag.length
+
+			// Select the range to replace (both triple backticks and content between them)
+			this.focus()
+			this.$input.textSelection('setSelection', {
+				start: firstTripleBacktickPos,
+				end: secondTripleBacktickPos + 3,
+			})
+
+			// Insert the new content
+			const replacement = openTag + processedContent + closeTag
+			this.insertContent(replacement)
+
+			// Set cursor position
+			this.$input.textSelection('setSelection', { start: newCursorPos, end: newCursorPos })
+
+			return true
+		}
+
+		return false
+	}
+
+	/**
+	 * Handle single backtick input for inline code markup conversion.
+	 *
+	 * @param {string} value Current input value
+	 * @param {number} cursorPos Current cursor position
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	handleSingleBacktickInput(value, cursorPos) {
 		// Find the current line boundaries
 		const lineStart = value.lastIndexOf('\n', cursorPos - 1) + 1
 		const lineEnd = value.indexOf('\n', cursorPos)
@@ -357,12 +467,28 @@ class TextInputWidgetMixin {
 			firstBacktickInLine = beforeTypedBacktick.lastIndexOf('`')
 			secondBacktickInLine = cursorInLine - 1 // The just-typed backtick
 			cursorAfterOpening = false // Cursor should be after closing tag
+
+			// Check if there's a backtick immediately before or after to form ``
+			if (
+				(cursorInLine >= 2 && line[cursorInLine - 2] === '`') ||
+				(cursorInLine < line.length && line[cursorInLine] === '`')
+			) {
+				return
+			}
 		}
 		// Scenario 2: 0 backticks before, exactly 1 after (typed opening backtick)
 		else if (!backticksBeforeTyped && backticksAfterTyped?.length === 1) {
 			firstBacktickInLine = cursorInLine - 1 // The just-typed backtick
 			secondBacktickInLine = cursorInLine + afterTypedBacktick.indexOf('`')
 			cursorAfterOpening = true // Cursor should be after opening tag
+
+			// Check if there's a backtick immediately before or after to form ``
+			if (
+				(cursorInLine >= 2 && line[cursorInLine - 2] === '`') ||
+				(cursorInLine < line.length && line[cursorInLine] === '`')
+			) {
+				return
+			}
 		}
 		// No valid pair found
 		else {
