@@ -108,7 +108,7 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  * @property {string} summaryPostfix
  * @property {number} summaryLengthLimit
  * @property {ReturnType<JQueryStatic['client']['profile']>} clientProfile
- * @property {'Ctrl' | 'Cmd'} cmdModifier
+ * @property {string} cmdModifier
  * @property {(typeof mw)['util']['isIPv6Address']} [isIPv6Address]
  * @property {ApiErrorFormatHtml} apiErrorFormatHtml
  * @property {TimestampTools} timestampTools

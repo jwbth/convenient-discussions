@@ -168,7 +168,6 @@
 	"cf-help-autocomplete-wraptext": "Help text explaining how to quickly wrap text in a tag.",
 	"cf-help-heading-hotkeys": "Heading for the hotkeys section in the help popup.\n{{Identical|Hotkeys}}",
 	"cf-help-hotkeys-post": "Help text showing the hotkey to post a comment.\n\n* $1: \"Ctrl\" or \"Cmd\" (on Macs).",
-	"cf-help-hotkeys-cancel": "Help text showing the hotkey to cancel editing.",
 	"cf-help-hotkeys-toolbar": "Help text about toolbar button tooltips.",
 	"cf-help-heading-problems": "Heading for the problems section in the help popup.\n{{Identical|Problems}}",
 	"cf-help-problems-menu": "Help text explaining how to deal with obstructing comment menus.",
@@ -469,5 +468,6 @@
 	"addtopic": "Label of the button at the end of the page. It opens an \"Add topic\" form.",
 	"addtopicbutton-tooltip": "Text of the tooltip for buttons (interface-standard or not) used to add a topic. Since their main function becomes to open an \"Add topic\" form provided by Conveneint Discussion, we instruct the user how to create a topic the standard way.",
 	"pseudolink-tooltip": "Text of the tooltip for links that insert some text into text inputs (like the \"charinsert\" tag)",
-	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}"
+	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}",
+	"key-ctrl": "{{Optional}}\nThe common identifier of the control key. Used for building keyboard shortcut messages.\n\n{{identical|Visualeditor-key-ctrl}}"
 }

@@ -49,7 +49,7 @@ export function initGlobals() {
 	// We don't need it in the script - keep it for now for compatibility with `s-ru` config
 	cd.g.clientProfile = $.client.profile()
 
-	cd.g.cmdModifier = $.client.profile().platform === 'mac' ? 'Cmd' : 'Ctrl'
+	cd.g.cmdModifier = $.client.profile().platform === 'mac' ? '⌘' : cd.s('key-ctrl')
 
 	cd.g.isIPv6Address = mw.util.isIPv6Address
 

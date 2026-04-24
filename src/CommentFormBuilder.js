@@ -192,9 +192,16 @@ class CommentFormBuilder {
 			$('<p>').append($('<strong>').text(cd.s('cf-help-heading-autocomplete'))),
 			$('<ul>').append(
 				$('<li>').append(
-					wrapHtml(cd.sParse('cf-help-autocomplete-mention', cd.config.mentionCharacter), {
-						targetBlank: true,
-					}),
+					wrapHtml(
+						cd.sParse(
+							'cf-help-autocomplete-mention',
+							cd.config.mentionCharacter,
+							'mw:Special:MyLanguage/Help:Notifications/Mention',
+						),
+						{
+							targetBlank: true,
+						},
+					),
 				),
 				$('<li>').append(
 					wrapHtml(cd.sParse('cf-help-autocomplete-punctuation'), { targetBlank: true }),
@@ -209,7 +216,9 @@ class CommentFormBuilder {
 					wrapHtml(cd.sParse('cf-help-autocomplete-nameonly'), { targetBlank: true }),
 				),
 				$('<li>').append(
-					wrapHtml(cd.sParse('cf-help-autocomplete-wraptext'), { targetBlank: true }),
+					wrapHtml(cd.sParse('cf-help-autocomplete-wraptext', '<blockquote>'), {
+						targetBlank: true,
+					}),
 				),
 			),
 		)
@@ -240,9 +249,21 @@ class CommentFormBuilder {
 		// Footer with documentation and feedback links
 		$container.append(
 			$('<p>').append(
-				wrapHtml(cd.sParse('cf-help-footer-documentation'), { targetBlank: true }),
+				wrapHtml(
+					cd.sParse(
+						'cf-help-footer-documentation',
+						'mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions',
+					),
+					{ targetBlank: true },
+				),
 				cd.s('dot-separator'),
-				wrapHtml(cd.sParse('cf-help-footer-feedback'), { targetBlank: true }),
+				wrapHtml(
+					cd.sParse(
+						'cf-help-footer-feedback',
+						'mw:c:User talk:Jack who built the house/Convenient Discussions',
+					),
+					{ targetBlank: true },
+				),
 			),
 		)
 
