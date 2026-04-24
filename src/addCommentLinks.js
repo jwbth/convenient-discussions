@@ -87,7 +87,7 @@ async function bootstrap() {
 	;[moveFromStringStart] = cd.s('es-move-from').match(/^[^[$]+/) || []
 	;[moveToStringStart] = cd.s('es-move-to').match(/^[^[$]+/) || []
 
-	goToCommentToYou = cd.s('lp-comment-tooltip') + ' '
+	goToCommentToYou = cd.s('lp-comment-tooltip') + cd.mws('word-separator')
 	goToCommentToYou += cd.mws('parentheses', cd.s('lp-comment-toyou'))
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
