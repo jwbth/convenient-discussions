@@ -78,7 +78,7 @@ export function mixIntoClass(Base, Mixin) {
 			super(...args)
 
 			if ('construct' in Mixin.prototype) {
-				Mixin.prototype.construct.call(this)
+				Mixin.prototype.construct.call(this, ...args)
 			}
 		}
 	}

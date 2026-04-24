@@ -40,8 +40,18 @@ class TextInputWidgetMixin {
 	 */
 	autocompleteManager
 
-	// eslint-disable-next-line jsdoc/require-jsdoc
+	/**
+	 * Whether this input supports external links (whether they will be turned into <a> tags or not).
+	 * If false, external links that cannot be converted to wikilinks will be inserted as plain URLs.
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	supportsExternalLinks = true
+
 	constructor() {
+		// NOTE: ths is *not* called. construct() is called instead.
+
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof TextInputWidgetMixin} */
 		// eslint-disable-next-line no-self-assign
@@ -61,8 +71,14 @@ class TextInputWidgetMixin {
 	 * Construct the instance. A separate method is used to allow the class to be used as a mixin.
 	 *
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 * @param {object} [config]
+	 * @param {boolean} [config.supportsExternalLinks] Whether this input supports external
+	 *   links. If false, external links that cannot be converted to wikilinks will be inserted as
+	 *   plain URLs without labels.
 	 */
-	construct() {
+	construct(config) {
+		this.supportsExternalLinks = config?.supportsExternalLinks ?? true
+
 		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin and
 		// not classes that extend it.
 		this.handleSelectionChange = () => {
@@ -427,7 +443,11 @@ class TextInputWidgetMixin {
 		)
 
 		if (hasOtherParams) {
-			// Can't convert to wikilink - use external link format
+			// Can't convert to wikilink - use external link format if supported
+			if (!this.supportsExternalLinks) {
+				return
+			}
+
 			return this.formatExternalLink(url, label)
 		}
 
@@ -445,7 +465,11 @@ class TextInputWidgetMixin {
 
 			return await this.convertUrlToWikilinkWithPrefix(url, urlObj, params, label, isShiftPressed)
 		} catch {
-			// Fall back to external link format on any error
+			// Fall back to external link format on any error (if supported)
+			if (!this.supportsExternalLinks) {
+				return
+			}
+
 			return this.formatExternalLink(url, label)
 		} finally {
 			this.popPending().setDisabled(false).focus()
@@ -595,9 +619,9 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	formatExternalLink(url, label) {
-		const escapedLabel = encodeLinkLabel(label)
+		const escapedLabel = label && encodeLinkLabel(label)
 
-		return `[${url} ${escapedLabel}]`
+		return escapedLabel ? `[${url} ${escapedLabel}]` : undefined
 	}
 
 	/**
@@ -801,13 +825,9 @@ class TextInputWidgetMixin {
 
 		// Try to convert the URL
 		const convertedLink = await this.convertUrlToWikilink(url, label, isShiftPressed)
-		if (!convertedLink) {
-			return
-		}
-
-		// If the converted link is the same as the original URL (no label, couldn't convert to wikilink),
-		// don't replace it - the browser already pasted it correctly
-		if (convertedLink === url) {
+		// If the converted link is the same as the original URL (no label, couldn't convert to
+		// wikilink), don't replace it - the browser already pasted it correctly
+		if (!convertedLink || convertedLink === url) {
 			return
 		}
 
