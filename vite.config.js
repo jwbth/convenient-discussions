@@ -114,6 +114,10 @@ function licenseExtractionPlugin() {
 			const generateBannerText = (url) =>
 				url
 					? `
+ * This file is built and deployed automatically from
+ * https://github.com/jwbth/convenient-discussions. Your edits to this file will be overwritten!
+ * Consider making a pull request, creating a task on Phabricator, or posting to the talk page.
+ *
  * For documentation and feedback, see the script's homepage:
  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
  *
