@@ -128,7 +128,7 @@ class NavPanel {
 			tagName: 'div',
 			classes: ['cd-navPanel-button', 'cd-icon'],
 			id: 'cd-navPanel-previousButton',
-			tooltip: `${cd.s('navpanel-previous')} ${cd.mws('parentheses', 'W')}`,
+			tooltip: cd.s('navpanel-previous') + cd.mws('word-separator') + cd.mws('parentheses', 'W'),
 			action: () => {
 				commentManager.goToPreviousNewComment()
 			},
@@ -143,7 +143,7 @@ class NavPanel {
 			tagName: 'div',
 			classes: ['cd-navPanel-button', 'cd-icon'],
 			id: 'cd-navPanel-nextButton',
-			tooltip: `${cd.s('navpanel-next')} ${cd.mws('parentheses', 'S')}`,
+			tooltip: cd.s('navpanel-next') + cd.mws('word-separator') + cd.mws('parentheses', 'S'),
 			action: () => {
 				commentManager.goToNextNewComment()
 			},
@@ -158,7 +158,7 @@ class NavPanel {
 			tagName: 'div',
 			classes: ['cd-navPanel-button'],
 			id: 'cd-navPanel-firstUnseenButton',
-			tooltip: `${cd.s('navpanel-firstunseen')} ${cd.mws('parentheses', 'F')}`,
+			tooltip: cd.s('navpanel-firstunseen') + cd.mws('word-separator') + cd.mws('parentheses', 'F'),
 			action: () => {
 				commentManager.goToFirstUnseenComment()
 			},
@@ -168,7 +168,7 @@ class NavPanel {
 			tagName: 'div',
 			classes: ['cd-navPanel-button', 'cd-icon'],
 			id: 'cd-navPanel-commentFormButton',
-			tooltip: `${cd.s('navpanel-commentform')} ${cd.mws('parentheses', 'C')}`,
+			tooltip: cd.s('navpanel-commentform') + cd.mws('word-separator') + cd.mws('parentheses', 'C'),
 			action: () => {
 				commentFormManager.goToNextCommentForm()
 			},
@@ -316,9 +316,9 @@ class NavPanel {
 		if (commentCount) {
 			tooltipText =
 				cd.s('navpanel-newcomments-count', String(commentCount)) +
-				' ' +
+				cd.mws('word-separator') +
 				cd.s('navpanel-newcomments-refresh') +
-				' ' +
+				cd.mws('word-separator') +
 				cd.mws('parentheses', 'R')
 			if (areThereNew && cd.settings.get('highlightNewInterval')) {
 				tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier)
@@ -355,7 +355,7 @@ class NavPanel {
 				this.utirbtTimeout = setTimeout(this.updateTimestampsInRefreshButtonTooltip, cd.g.msInMin)
 			}
 		} else {
-			tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R')
+			tooltipText = cd.s('navpanel-refresh') + cd.mws('word-separator') + cd.mws('parentheses', 'R')
 			if (areThereNew && cd.settings.get('highlightNewInterval')) {
 				tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier)
 			}

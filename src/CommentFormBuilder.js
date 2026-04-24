@@ -200,7 +200,7 @@ class CommentFormBuilder {
 					wrapHtml(cd.sParse('cf-help-autocomplete-punctuation'), { targetBlank: true }),
 				),
 				$('<li>').append(
-					wrapHtml(cd.sParse('cf-help-autocomplete-commentlink'), { targetBlank: true }),
+					wrapHtml(cd.sParse('cf-help-autocomplete-commentlink', '[[#'), { targetBlank: true }),
 				),
 				$('<li>').append(
 					wrapHtml(cd.sParse('cf-help-autocomplete-displaytext'), { targetBlank: true }),
@@ -221,7 +221,6 @@ class CommentFormBuilder {
 				$('<li>').append(
 					wrapHtml(cd.sParse('cf-help-hotkeys-post', cd.g.cmdModifier), { targetBlank: true }),
 				),
-				$('<li>').append(wrapHtml(cd.sParse('cf-help-hotkeys-cancel'), { targetBlank: true })),
 				$('<li>').append(wrapHtml(cd.sParse('cf-help-hotkeys-toolbar'), { targetBlank: true })),
 			),
 		)
@@ -515,10 +514,10 @@ class CommentFormBuilder {
 			group: 'convenient-discussions',
 			tools: {
 				quote: {
-					label: `${cd.s('cf-quote-tooltip')} ${cd.mws(
-						'parentheses',
-						`Q${cd.mws('comma-separator')}${cd.g.cmdModifier}+Alt+Q`,
-					)}`,
+					label:
+						cd.s('cf-quote-tooltip') +
+						cd.mws('word-separator') +
+						cd.mws('parentheses', `Q${cd.mws('comma-separator')}${cd.g.cmdModifier}+Alt+Q`),
 					type: 'button',
 					// icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
 					action: {
@@ -577,10 +576,10 @@ class CommentFormBuilder {
 					},
 				},
 				underline: {
-					label: `${cd.s('cf-underline-tooltip')} ${cd.mws(
-						'parentheses',
-						`${cd.g.cmdModifier}+U`,
-					)}`,
+					label:
+						cd.s('cf-underline-tooltip') +
+						cd.mws('word-separator') +
+						cd.mws('parentheses', `${cd.g.cmdModifier}+U`),
 					type: 'button',
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
 					action: {
@@ -589,10 +588,10 @@ class CommentFormBuilder {
 					},
 				},
 				strikethrough: {
-					label: `${cd.s('cf-strikethrough-tooltip')} ${cd.mws(
-						'parentheses',
-						`${cd.g.cmdModifier}+Shift+5`,
-					)}`,
+					label:
+						cd.s('cf-strikethrough-tooltip') +
+						cd.mws('word-separator') +
+						cd.mws('parentheses', `${cd.g.cmdModifier}+Shift+5`),
 					type: 'button',
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
 					action: {
@@ -607,40 +606,36 @@ class CommentFormBuilder {
 			.find('.tool[rel="bold"] a')
 			.attr(
 				'title',
-				`${mw.msg('wikieditor-toolbar-tool-bold')} ${cd.mws(
-					'parentheses',
-					`${cd.g.cmdModifier}+B`,
-				)}`,
+				mw.msg('wikieditor-toolbar-tool-bold') +
+					cd.mws('word-separator') +
+					cd.mws('parentheses', `${cd.g.cmdModifier}+B`),
 			)
 
 		this.form.$element
 			.find('.tool[rel="italic"] a')
 			.attr(
 				'title',
-				`${mw.msg('wikieditor-toolbar-tool-italic')} ${cd.mws(
-					'parentheses',
-					`${cd.g.cmdModifier}+I`,
-				)}`,
+				mw.msg('wikieditor-toolbar-tool-italic') +
+					cd.mws('word-separator') +
+					cd.mws('parentheses', `${cd.g.cmdModifier}+I`),
 			)
 
 		this.form.$element
 			.find('.tool[rel="link"] a')
 			.attr(
 				'title',
-				`${mw.msg('wikieditor-toolbar-tool-link')} ${cd.mws(
-					'parentheses',
-					`${cd.g.cmdModifier}+K`,
-				)}`,
+				mw.msg('wikieditor-toolbar-tool-link') +
+					cd.mws('word-separator') +
+					cd.mws('parentheses', `${cd.g.cmdModifier}+K`),
 			)
 
 		this.form.$element
 			.find('.tool[rel="ulist"] a')
 			.attr(
 				'title',
-				`${mw.msg('wikieditor-toolbar-tool-ulist')} ${cd.mws(
-					'parentheses',
-					`${cd.g.cmdModifier}+Shift+8`,
-				)}`,
+				mw.msg('wikieditor-toolbar-tool-ulist') +
+					cd.mws('word-separator') +
+					cd.mws('parentheses', `${cd.g.cmdModifier}+Shift+8`),
 			)
 
 		this.form.$element.find('.tool[rel="link"] a, .tool[rel="file"] a').on('click', (event) => {
