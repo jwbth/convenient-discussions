@@ -591,7 +591,7 @@ async function deployToServer(serverEdits) {
 		const response = await clients[edit.server].save(edit.title, edit.content, edit.summary)
 
 		// To avoid hitting the edit rate limit
-		await sleep(2000)
+		await sleep(2500)
 
 		if (response.nochange) {
 			success(`No changes in ${edit.url}`)
