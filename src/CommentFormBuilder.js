@@ -523,6 +523,7 @@ class CommentFormBuilder {
 		const $input = this.form.commentInput.$input
 		const scriptPath = mw.config.get('wgScriptPath')
 		const lang = cd.g.userLanguage
+		const shiftKey = cd.s('key-shift')
 
 		$input.wikiEditor('addToToolbar', {
 			section: 'main',
@@ -612,7 +613,7 @@ class CommentFormBuilder {
 					label:
 						cd.s('cf-strikethrough-tooltip') +
 						cd.mws('word-separator') +
-						cd.mws('parentheses', `${cd.g.cmdModifier}+Shift+5`),
+						cd.mws('parentheses', `${cd.g.cmdModifier}+${shiftKey}+5`),
 					type: 'button',
 					icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
 					action: {
@@ -651,12 +652,21 @@ class CommentFormBuilder {
 			)
 
 		this.form.$element
+			.find('.tool[rel="code"] a')
+			.attr(
+				'title',
+				mw.msg('wikieditor-toolbar-tool-code') +
+					cd.mws('word-separator') +
+					cd.mws('parentheses', `${cd.g.cmdModifier}+${shiftKey}+6`),
+			)
+
+		this.form.$element
 			.find('.tool[rel="ulist"] a')
 			.attr(
 				'title',
 				mw.msg('wikieditor-toolbar-tool-ulist') +
 					cd.mws('word-separator') +
-					cd.mws('parentheses', `${cd.g.cmdModifier}+Shift+8`),
+					cd.mws('parentheses', `${cd.g.cmdModifier}+${shiftKey}+8`),
 			)
 
 		this.form.$element.find('.tool[rel="link"] a, .tool[rel="file"] a').on('click', (event) => {

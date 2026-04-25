@@ -1483,12 +1483,12 @@ class CommentForm extends EventEmitter {
 					this.encapsulateSelection(CommentForm.getEncapsulateOptions('code'))
 					event.preventDefault()
 				}
-			}
 
-			// Ctrk+Shift+5
-			if (keyCombination(event, 53, ['cmd', 'shift'])) {
-				this.encapsulateSelection(CommentForm.getEncapsulateOptions('strikethrough'))
-				event.preventDefault()
+				// Ctrk+Shift+5
+				if (keyCombination(event, 53, ['cmd', 'shift'])) {
+					this.encapsulateSelection(CommentForm.getEncapsulateOptions('strikethrough'))
+					event.preventDefault()
+				}
 			}
 
 			// Ctrk+Shift+8
@@ -2835,7 +2835,10 @@ class CommentForm extends EventEmitter {
 	runChecks({ doDelete }) {
 		const checks = [
 			{
-				condition: !doDelete && this.headlineInput?.getValue() === '' && !this.substStartsWithRegexp.test(this.commentInput.getValue()),
+				condition:
+					!doDelete &&
+					this.headlineInput?.getValue() === '' &&
+					!this.substStartsWithRegexp.test(this.commentInput.getValue()),
 				confirmation: () => {
 					const ending =
 						this.headlineInputPlaceholder === cd.s('cf-headline-topic') ? 'topic' : 'subsection'

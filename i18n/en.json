@@ -164,7 +164,7 @@
 	"cf-help-autocomplete-punctuation": "Hold <b>Alt</b> while choosing a user to add punctuation after the name.",
 	"cf-help-autocomplete-commentlink": "Type <code><nowiki>$1</nowiki></code> to link a comment in the current section.",
 	"cf-help-autocomplete-displaytext": "Hold <b>Shift</b> while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
-	"cf-help-autocomplete-nameonly": "Press <code>Tab</code> to only insert the name of a page or template (without finalizing the markup).",
+	"cf-help-autocomplete-nameonly": "Press <b>Tab</b> to only insert the name of a page or template (without finalizing the markup).",
 	"cf-help-autocomplete-wraptext": "To quickly wrap text in a tag, select text, then start typing in a tag (e.g. <code><nowiki><blockquote></nowiki></code>), then choose it from the autocomplete menu.",
 	"cf-help-heading-hotkeys": "Hotkeys",
 	"cf-help-hotkeys-post": "<b>$1+Enter</b> — post",
@@ -502,5 +502,6 @@
 	"addtopicbutton-tooltip": "Open in a new tab to create a new topic using the standard page, not Convenient Discussions",
 	"pseudolink-tooltip": "Click to insert",
 	"copy": "Copy",
-	"key-ctrl": "Ctrl"
+	"key-ctrl": "Ctrl",
+	"key-shift": "Shift"
 }

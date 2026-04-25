@@ -163,7 +163,7 @@
 	"cf-help-autocomplete-mention": "ניתן להקליד <code>$1</code> ולבחור משתמש כדי [[$2|לתייג]].",
 	"cf-help-autocomplete-punctuation": "ניתן להחזיק <b>Alt</b> בעת בחירת משתמש כדי להוסיף סימני פיסוק אחרי השם.",
 	"cf-help-autocomplete-commentlink": "ניתן להקליד <code><nowiki>$1</nowiki></code> כדי לקשר תגובה בנושא הזה.",
-	"cf-help-autocomplete-nameonly": "ניתן ללחוץ <code>Tab</code> כדי להכניס רק את השם של הדף או התבנית (ללא השלמת העיצוב).",
+	"cf-help-autocomplete-nameonly": "ניתן ללחוץ <b>Tab</b> כדי להכניס רק את השם של הדף או התבנית (ללא השלמת העיצוב).",
 	"cf-help-autocomplete-wraptext": "כדי לעטוף טקסט בתג במהירות, יש לבחור את טקסט הזה, להתחיל להקליד את התג (למשל, <code><nowiki><blockquote></nowiki></code>), ולבחור את הנדרש מתפריט ההשלמה האוטומטית.",
 	"cf-help-hotkeys-post": "<b>$1+Enter</b> — פרסום",
 	"cf-help-footer-documentation": "[[$1|תיעוד הסקריפט]]",
