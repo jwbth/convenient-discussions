@@ -563,7 +563,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 
 	closedDiscussionClasses: ['archived', 'boilerplate'],
 
-	noHighlightClasses: ['infobox', 'unresolved', 'resolved'],
+	noHighlightClasses: ['infobox', 'unresolved', 'resolved', 'hmbox-outer'],
 
 	undoTexts: ['Undid revision', 'Reverted edits'],
 
