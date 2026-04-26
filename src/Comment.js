@@ -3159,6 +3159,9 @@ class Comment extends mixIntoClass(
 			}
 			$dummy.find(selectorParts.join(', ')).remove()
 			let text = $dummy.cdGetText()
+
+			// I forgot why we do this honestly given that the signature is already removed, but probably
+			// it's to remove any remaining traces.
 			if (cleanUpSignature) {
 				if (cd.g.signatureEndingRegexp) {
 					text = text.replace(cd.g.signatureEndingRegexp, '')

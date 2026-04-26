@@ -870,7 +870,7 @@ export class CommentManager extends EventEmitter {
 	 * _For internal use._ Reformat the comments (moving the author and date up and links down) if the
 	 * relevant setting is enabled.
 	 */
-	async reformatComments() {
+	async maybeReformatComments() {
 		$(document.body).removeClass('cd-reformattedComments')
 		if (!this.isCommentDisplaySpacious()) return
 

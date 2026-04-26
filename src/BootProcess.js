@@ -278,7 +278,7 @@ class BootProcess {
 		// and comment levels as this may alter that.
 		commentManager.reviewHighlightables()
 
-		commentManager.reformatComments()
+		commentManager.maybeReformatComments()
 
 		// This updates some styles, shifting the offsets.
 		controller.$root.addClass('cd-parsed')
@@ -492,14 +492,14 @@ class BootProcess {
 			new RegExp(cd.g.captureUserNamePattern, 'i'),
 		)
 		/*
-			Extract signature contents before the user name - in order to cut it out from comment
-			endings when editing.
+			Extract signature contents before the user name - in order to cut it out from comment endings
+			when editing.
 
 			Use the signature prefix only if it is other than `' '` (the default value).
 			* If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
-				specific comment using the native editor instead of CD. So we would want to remove the
-				signature from such comments correctly. The space would be included in the signature anyway
-				using `cd.config.signaturePrefixRegexp`.
+			  specific comment using the native editor instead of CD. So we would want to remove the
+			  signature from such comments correctly. The space would be included in the signature anyway
+			  using `cd.config.signaturePrefixRegexp`.
 			* If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
 		*/
 		cd.g.userSignaturePrefixRegexp = authorInSignatureMatch
@@ -733,7 +733,7 @@ class BootProcess {
 
 		/**
 		 * The script has processed comments, except for reformatting them in
-		 * {@link commentManager.reformatComments} if the user opted in for that.
+		 * {@link commentManager.maybeReformatComments} if the user opted in for that.
 		 *
 		 * @event commentsReady
 		 * @param {object} comments {@link convenientDiscussions.comments} object.

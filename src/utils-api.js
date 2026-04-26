@@ -574,6 +574,9 @@ function callTransformApi(url, html) {
 			scrub_wikitext: true,
 		},
 		timeout: 5000,
+		headers: {
+			'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
+		},
 	})
 }
 
