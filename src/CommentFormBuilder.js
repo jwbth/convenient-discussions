@@ -252,7 +252,9 @@ class CommentFormBuilder {
 				wrapHtml(
 					cd.sParse(
 						'cf-help-footer-documentation',
-						'mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions',
+						// FIXME: April 2026: Wait for some time for translations to catch up, then add
+						// Special:MyLanguage/ prefix to the following page name.
+						'mw:c:User:Jack who built the house/Convenient Discussions',
 					),
 					{ targetBlank: true },
 				),
