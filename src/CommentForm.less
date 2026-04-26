@@ -1,5 +1,6 @@
 @line-height: 1.4285714em;
 @codemirror-editor-additional-padding: 5px;
+@border-color-var: var(--border-color-base, #a2a9b1);
 
 // Keep this synced with CommentForm#createTextInputs
 @num-rows-comment: 4;
@@ -151,10 +152,11 @@
 
 	.cm-panels,
 	.cm-scroller {
-		border: 1px solid var(--border-color-base, #a2a9b1);
+		border: 1px solid @border-color-var;
 	}
 
-	.cm-panels {
+	.cm-panels,
+	.cm-panel.cm-panel.cm-panel:last-child {
 		border-bottom: 0;
 	}
 
@@ -272,7 +274,7 @@ body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-
 	}
 
 	.wikiEditor-ui-top {
-		border: 1px solid var(--border-color-base, #a2a9b1);
+		border: 1px solid @border-color-var;
 		border-bottom-width: 0;
 	}
 
@@ -462,7 +464,7 @@ body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-
 }
 
 .cd-insertButtons {
-	border: 1px solid var(--border-color-base, #a2a9b1);
+	border: 1px solid @border-color-var;
 	background-color: var(--background-color-base, #fff);
 	border-top: 0;
 	font-size: 0.928571em;
@@ -499,7 +501,7 @@ body:not(.skin-monobook) .cd-commentForm .group-codemirror .oo-ui-buttonElement-
 
 .cd-toolbarPlaceholder {
 	background-color: var(--background-color-base, #fff);
-	border: 1px solid var(--border-color-base, #a2a9b1);
+	border: 1px solid @border-color-var;
 	border-bottom: 0;
 	height: 2.2857143em;
 
