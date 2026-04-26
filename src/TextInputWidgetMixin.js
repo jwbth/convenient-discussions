@@ -451,6 +451,8 @@ class TextInputWidgetMixin {
 				contentBetween = contentBetween.substring(langMatch[0].length)
 			}
 
+			const shouldSelectLang = !langMatch
+
 			// Ensure at least one newline after opening and before closing
 			const openTag = `<syntaxhighlight lang="${lang}">`
 			const closeTag = '</syntaxhighlight>'
@@ -479,7 +481,15 @@ class TextInputWidgetMixin {
 			this.insertContent(replacement)
 
 			// Set cursor position
-			this.$input.textSelection('setSelection', { start: newCursorPos, end: newCursorPos })
+			if (shouldSelectLang) {
+				const langStart = firstTripleBacktickPos + '<syntaxhighlight lang="'.length
+				this.$input.textSelection('setSelection', {
+					start: langStart,
+					end: langStart + lang.length,
+				})
+			} else {
+				this.$input.textSelection('setSelection', { start: newCursorPos, end: newCursorPos })
+			}
 
 			return true
 		}
