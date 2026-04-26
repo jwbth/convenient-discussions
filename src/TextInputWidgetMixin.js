@@ -453,9 +453,19 @@ class TextInputWidgetMixin {
 			}
 
 			const isBlock = Boolean(langMatch)
-			const shouldSelectLang = !langMatch?.[1]
+			let shouldSelectLang = isBlock ? !(/** @type {RegExpMatchArray} */ (langMatch)[1]) : true
 
-			const openTag = `<syntaxhighlight lang="${lang}">`
+			// For one-liners, the first word is considered a language only if it's followed by a space.
+			if (!isBlock) {
+				const inlineLangMatch = contentBetween.match(/^([^\s\n]+) /)
+				if (inlineLangMatch) {
+					lang = inlineLangMatch[1]
+					contentBetween = contentBetween.substring(inlineLangMatch[0].length)
+					shouldSelectLang = false
+				}
+			}
+
+			const openTag = `<syntaxhighlight lang="${lang}"${isBlock ? '' : ' inline'}>`
 			const closeTag = '</syntaxhighlight>'
 
 			// For blocks, ensure at least one newline after opening and before closing. If there is an
