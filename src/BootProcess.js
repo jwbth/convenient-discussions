@@ -115,6 +115,15 @@ function processAndRemoveDtElements(elements) {
 }
 
 /**
+ * Data about the page's Y offset to avoid reflow.
+ *
+ * @typedef {object} ScrollData
+ * @property {number} [scrollY] Y offset from the top of the page.
+ * @property {number} [offsetBottom] Distance from the bottom of the viewport to the bottom of the
+ *   page.
+ */
+
+/**
  * Data passed from the previous page state.
  *
  * @typedef {object} PassedData
@@ -125,7 +134,7 @@ function processAndRemoveDtElements(elements) {
  *   avoid the notification "The comment is in a collapsed thread").
  * @property {string} [sectionId] ID of a section to scroll to.
  * @property {boolean} [pushState] Whether to add a state to the browser history.
- * @property {number} [scrollY] Page's Y offset.
+ * @property {ScrollData} [scrollData] Data about the page's Y offset to avoid reflow.
  * @property {Comment[]} [unseenComments] Unseen comments on this page.
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
  * @property {boolean} [isPageReloadedExternally] Whether the page was reloaded externally (e.g. by
@@ -186,9 +195,10 @@ class BootProcess {
 		cd.debug.startTimer('main code')
 
 		if (this.firstRun) {
-			// TODO: scrollY is never passed to execute() currently. Is it actually useful to avoid
-			// reflow?
-			controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY)
+			// When scrollY is 0 or offsetBottom is <100, passing pre-calculated scrollData to
+			// saveRelativeScrollPosition saves at least 20ms (in my (JWBTH) Chrome on a page with 200
+			// comments) by avoiding reflow.
+			controller.saveRelativeScrollPosition(undefined, this.passedData.scrollData)
 
 			userRegistry.loadMuted()
 		}

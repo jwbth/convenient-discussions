@@ -341,12 +341,13 @@ class Controller extends EventEmitter {
 	 * Save the scroll position relative to the first element in the viewport looking from the top of
 	 * the page.
 	 *
-	 * @param {boolean | undefined} [switchToAbsolute] If this value is `true` or `false` and the viewport
-	 *   is above the bottom of the table of contents, then use
+	 * @param {boolean | undefined} [switchToAbsolute] If this value is `true` or `false` and the
+	 *   viewport is above the bottom of the table of contents, then use
 	 *   {@link Controller#saveScrollPosition} (this allows for better precision).
-	 * @param {number} scrollY Cached horizontal scroll value used to avoid reflow.
+	 * @param {import('./BootProcess').ScrollData} [scrollData] Data about the page's Y offset to
+	 *   avoid reflow.
 	 */
-	saveRelativeScrollPosition(switchToAbsolute, scrollY = window.scrollY) {
+	saveRelativeScrollPosition(switchToAbsolute, { scrollY = window.scrollY, offsetBottom } = {}) {
 		// The viewport has the TOC bottom or is above it.
 		if (
 			switchToAbsolute !== undefined &&
@@ -360,10 +361,11 @@ class Controller extends EventEmitter {
 			this.scrollData.elementTop = undefined
 			this.scrollData.touchesBottom = false
 			this.scrollData.offsetBottom =
-				document.documentElement.scrollHeight - (scrollY + window.innerHeight)
+				offsetBottom ?? document.documentElement.scrollHeight - (scrollY + window.innerHeight)
 
-			// The number 100 is to capture various episodes of shifting the content down by scripts
-			// running on the page (like HotCat that may add an empty category list).
+			// How far is the bottom of the viewport from the bottom of the page. The number 100 is to
+			// capture various episodes of shifting the content down by scripts running on the page (like
+			// HotCat that may add an empty category list).
 			if (this.scrollData.offsetBottom < 100) {
 				this.scrollData.touchesBottom = true
 			} else if (
@@ -1833,7 +1835,15 @@ class Controller extends EventEmitter {
 	 */
 	async bootTalkPage(bootProcess, isReload = false) {
 		cd.loader.setBooting(true)
-		this.bootProcess = bootProcess || new BootProcess()
+		this.bootProcess =
+			bootProcess ||
+			new BootProcess({
+				scrollData: {
+					scrollY: window.scrollY,
+					offsetBottom:
+						document.documentElement.scrollHeight - (window.scrollY + window.innerHeight),
+				},
+			})
 
 		try {
 			await this.bootProcess.execute(isReload)
