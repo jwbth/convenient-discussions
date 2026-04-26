@@ -159,6 +159,22 @@ class SpaciousCommentActions extends CommentActions {
 	}
 
 	/**
+	 * Create a "Quote" button for spacious comments.
+	 *
+	 * @override
+	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 */
+	createQuoteButton(action) {
+		return new CommentButton({
+			label: cd.s('cm-quote'),
+			tooltip: cd.s('cf-quote-tooltip'),
+			classes: ['cd-comment-button-labeled'],
+			action,
+		})
+	}
+
+	/**
 	 * Add a button to the spacious comment menu.
 	 *
 	 * @override

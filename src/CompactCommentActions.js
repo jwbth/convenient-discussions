@@ -298,6 +298,41 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
+	 * Create a "Quote" button for compact comments.
+	 *
+	 * @override
+	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 */
+	createQuoteButton(action) {
+		return new CommentButton({
+			element: this.createQuoteWidget().$element[0],
+			action,
+			widgetConstructor: this.createQuoteWidget,
+		})
+	}
+
+	/**
+	 * Create a "Quote" widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createQuoteWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-quote'),
+			icon: 'quotes',
+			invisibleLabel: true,
+			title: cd.s('cf-quote-tooltip'),
+			framed: false,
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-quote',
+			],
+		})
+
+	/**
 	 * Get the overlay menu container.
 	 *
 	 * @override

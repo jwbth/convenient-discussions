@@ -71,6 +71,13 @@ class CommentActions {
 		 * @type {CommentButton | undefined}
 		 */
 		this.toggleChildThreadsButton = undefined
+
+		/**
+		 * Quote button. Only displayed when text in the comment is selected.
+		 *
+		 * @type {CommentButton | undefined}
+		 */
+		this.quoteButton = undefined
 	}
 
 	/**
@@ -148,6 +155,19 @@ class CommentActions {
 	 */
 	onFixAction = () => {
 		this.comment.edit({ fixBrokenMarkup: true })
+	}
+
+	/**
+	 * Reusable action for quote button. Quotes selected text and opens/focuses reply form.
+	 */
+	onQuoteAction = () => {
+		this.comment.fixSelection()
+
+		if (!this.comment.replyForm) {
+			this.comment.reply()
+		}
+
+		this.comment.replyForm?.quote(true, this.comment)
 	}
 
 	/**
@@ -295,6 +315,27 @@ class CommentActions {
 	}
 
 	/**
+	 * Create a "Quote" button and add it to the appropriate container when text is selected.
+	 *
+	 * This method should be overridden by subclasses for specific styling.
+	 */
+	addQuoteButton() {
+		if (!this.comment.isActionable || this.quoteButton?.isConnected()) return
+
+		this.quoteButton = this.createQuoteButton(this.onQuoteAction)
+		this.insertQuoteButton()
+	}
+
+	/**
+	 * Remove the "Quote" button when selection is cleared.
+	 */
+	removeQuoteButton() {
+		if (this.quoteButton?.isConnected()) {
+			this.quoteButton.element.remove()
+		}
+	}
+
+	/**
 	 * Set the thank button to thanked state.
 	 */
 	setThanked() {
@@ -377,6 +418,15 @@ class CommentActions {
 	 */
 	insertFixButton() {
 		this.addButton(/** @type {CommentButton} */ (this.fixButton))
+	}
+
+	/**
+	 * Insert the "Quote" button into the DOM. Default implementation uses {@link addButton}.
+	 *
+	 * @protected
+	 */
+	insertQuoteButton() {
+		this.addButton(/** @type {CommentButton} */ (this.quoteButton))
 	}
 
 	/**
@@ -466,6 +516,17 @@ class CommentActions {
 	 */
 	createFixButton(_action) {
 		throw new Error('createFixButton must be implemented by subclasses')
+	}
+
+	/**
+	 * Create a "Quote" button. To be overridden by subclasses.
+	 *
+	 * @param {import('./Button').Action} _action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 * @abstract
+	 */
+	createQuoteButton(_action) {
+		throw new Error('createQuoteButton must be implemented by subclasses')
 	}
 
 	/**

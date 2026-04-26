@@ -3813,6 +3813,9 @@ class Comment extends mixIntoClass(
 		this.isSelected = selected
 		if (selected && this.isActionable) {
 			this.updateLayers()
+			this.actions?.addQuoteButton()
+		} else if (!selected) {
+			this.actions?.removeQuoteButton()
 		}
 	}
 
