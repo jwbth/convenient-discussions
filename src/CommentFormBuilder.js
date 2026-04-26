@@ -224,17 +224,11 @@ class CommentFormBuilder {
 						targetBlank: true,
 					}),
 				),
-			),
-		)
-
-		// Hotkeys section
-		$container.append(
-			$('<p>').append($('<strong>').text(cd.s('cf-help-heading-hotkeys'))),
-			$('<ul>').append(
 				$('<li>').append(
-					wrapHtml(cd.sParse('cf-help-hotkeys-post', cd.g.cmdModifier), { targetBlank: true }),
+					wrapHtml(cd.sParse('cf-help-autocomplete-backticks', '`...`', '```lang ...`'), {
+						targetBlank: true,
+					}),
 				),
-				$('<li>').append(wrapHtml(cd.sParse('cf-help-hotkeys-toolbar'), { targetBlank: true })),
 			),
 		)
 
@@ -363,6 +357,8 @@ class CommentFormBuilder {
 
 			// As on the regular edit page
 			accessKey: 's',
+
+			title: cd.mws('parentheses', cd.s('key-ctrl') + '+' + cd.s('key-enter')),
 		})
 	}
 

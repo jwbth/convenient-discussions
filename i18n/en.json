@@ -166,10 +166,8 @@
 	"cf-help-autocomplete-commentlink": "Type <code>$1</code> to link a comment in the current section.",
 	"cf-help-autocomplete-displaytext": "Hold <b>Shift</b> while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
 	"cf-help-autocomplete-nameonly": "Press <b>Tab</b> to only insert the name of a page or template (without finalizing the markup).",
-	"cf-help-autocomplete-wraptext": "To quickly wrap text in a tag, select text, then start typing the tag (e.g. <code><nowiki><blockquote></nowiki></code>), then choose it from the autocomplete menu.",
-	"cf-help-heading-hotkeys": "Hotkeys",
-	"cf-help-hotkeys-post": "<b>$1+Enter</b> — post",
-	"cf-help-hotkeys-toolbar": "Toolbar buttons: hover over them to see",
+	"cf-help-autocomplete-wraptext": "To quickly wrap text in a tag, select text, then start typing the tag (e.g. <code>$1</code>), then choose it from the autocomplete menu.",
+	"cf-help-autocomplete-backticks": "Type <code>$1</code> or <code>$2</code> to get code fragment markup, like in [[w:Markdown|Markdown]].",
 	"cf-help-heading-problems": "Problems",
 	"cf-help-problems-menu": "If the comment menu obstructs a link behind it, make a long click/tap on it—it will disappear.",
 	"cf-help-footer-documentation": "[[$1|Script documentation]]",
@@ -504,5 +502,6 @@
 	"pseudolink-tooltip": "Click to insert",
 	"copy": "Copy",
 	"key-ctrl": "Ctrl",
-	"key-shift": "Shift"
+	"key-shift": "Shift",
+	"key-enter": "Enter"
 }
