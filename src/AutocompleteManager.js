@@ -11,8 +11,6 @@ import { handleApiReject } from './utils-api'
  * @import {AutocompleteType} from './AutocompleteFactory';
  */
 
-/** @typedef {[string, string[], string[], string[]]} OpenSearchResults */
-
 /**
  * @typedef {Parameters<
  *   Exclude<

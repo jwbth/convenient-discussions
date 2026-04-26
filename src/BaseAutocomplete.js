@@ -1,5 +1,4 @@
 import AutocompleteCache from './AutocompleteCache'
-import cd from './loader/cd'
 import CdError from './shared/CdError'
 import {
 	charAt,
@@ -9,7 +8,6 @@ import {
 	sleep,
 	unique,
 } from './shared/utils-general'
-import { handleApiReject } from './utils-api'
 
 /**
  * @import {AutocompleteConfigShared} from './AutocompleteManager';
@@ -30,6 +28,20 @@ import { handleApiReject } from './utils-api'
  * @property {number} defaultEntriesCount
  * @property {number} lastEntriesCount
  * @property {string} lastQuery
+ */
+
+/**
+ * @typedef {object} TitleSearchPage
+ * @property {number} id
+ * @property {string} key
+ * @property {string} title
+ * @property {string} [matched_title] Present when the match came via a redirect
+ * @property {string} [description]
+ */
+
+/**
+ * @typedef {object} TitleSearchResponse
+ * @property {TitleSearchPage[]} pages
  */
 
 /**
@@ -502,28 +514,36 @@ class BaseAutocomplete {
 	}
 
 	/**
-	 * Make an OpenSearch API request.
+	 * Make a title search request using the REST API.
 	 *
-	 * @param {import('types-mediawiki/api_params').UnknownApiParams} params API parameters
-	 * @returns {Promise<import('./AutocompleteManager').OpenSearchResults>} OpenSearch results
+	 * @param {string} query Search query
+	 * @param {number} [limit] Maximum number of results
+	 * @returns {Promise<TitleSearchResponse>}
 	 */
-	static async makeOpenSearchRequest(params) {
+	static async makeTitleSearchRequest(query, limit = 10) {
 		return this.createDelayedPromise(async (resolve) => {
-			const response = /** @type {import('./AutocompleteManager').OpenSearchResults} */ (
-				await cd
-					.getApi(this.apiConfig)
-					.get({
-						action: 'opensearch',
-						limit: 10,
-						...params,
-					})
-					.catch(handleApiReject)
-			)
+			const scriptPath = mw.config.get('wgScriptPath')
+			const url =
+				`${scriptPath}/rest.php/v1/search/title?` +
+				new URLSearchParams({ q: query, limit: String(limit) }).toString()
+			const response = await fetch(url, {
+				headers: {
+					'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
+				},
+			})
+			if (!response.ok) {
+				throw new CdError({
+					type: 'network',
+					message: `Title search request failed: ${response.status}`,
+				})
+			}
+
+			const data = /** @type {TitleSearchResponse} */ (await response.json())
 
 			if (this.currentPromise) {
 				this.promiseIsNotSuperseded(this.currentPromise)
 			}
-			resolve(response)
+			resolve(data)
 		})
 	}
 

@@ -1,6 +1,7 @@
 import BaseAutocomplete from './BaseAutocomplete'
 import CrossSiteMwTitle from './CrossSiteMwTitle'
 import cd from './loader/cd'
+import CdError from './shared/CdError'
 import { parseWikiUrl } from './shared/utils-general'
 import { handleApiReject } from './utils-api'
 import { interlanguagePrefixes } from './utils-window'
@@ -16,6 +17,8 @@ import { interlanguagePrefixes } from './utils-window'
  * @property {boolean} [isWikidataEntity] Whether this is a Wikidata entity search result
  * @property {string} [description] Description of the Wikidata entity
  * @property {string} [displayLabel] Original display label for the Wikidata entity
+ * @property {boolean} [isRedirectSource] Whether this entry is a redirect source page
+ * @property {string} [redirectTarget] The canonical target title when this is a redirect source
  */
 
 /**
@@ -57,7 +60,7 @@ import { interlanguagePrefixes } from './utils-window'
  */
 
 /**
- * Autocomplete class for wikilinks (page links). Handles page name validation, OpenSearch API
+ * Autocomplete class for wikilinks (page links). Handles page name validation, title search API
  * integration, colon prefixes, namespace logic, case sensitivity, section autocomplete, and
  * interwiki prefix resolution.
  *
@@ -278,7 +281,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
-	 * Get page name suggestions using OpenSearch API.
+	 * Get page name suggestions using the title search REST API.
 	 *
 	 * @param {string} text The search text
 	 * @returns {Promise<WikilinkEntry[]>} Promise resolving to array of page name suggestions
@@ -301,34 +304,60 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			return await this.getCrossSitePageSuggestions(textForApi, interwiki, colonPrefix)
 		}
 
-		const response = await BaseAutocomplete.makeOpenSearchRequest({
-			search: textForApi,
-			redirects: 'resolve',
-		})
+		const response = await BaseAutocomplete.makeTitleSearchRequest(textForApi)
 
-		return response[1].flatMap((/** @type {string} */ apiName) => {
-			const title = CrossSiteMwTitle.newFromText(apiName)
+		return response.pages.flatMap((page) => {
+			const title = CrossSiteMwTitle.newFromText(page.title)
 			if (!title) return []
 
 			// Only apply case fix for main namespace (no prefix)
-			let pageName = apiName
+			let pageName = page.title
 			if (title.getNamespaceId() === 0) {
 				const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
 				const isCaseSensitive =
 					caseSensitiveNamespaces.length && caseSensitiveNamespaces.includes(0)
 				if (!isCaseSensitive) {
-					pageName = this.useOriginalFirstCharCase(apiName, textForApi)
+					pageName = this.useOriginalFirstCharCase(page.title, textForApi)
 				}
 			}
 
 			const label = (colonPrefix ? ':' : '') + pageName
+			const entries = [/** @type {WikilinkEntry} */ ({ title, pageName, colonPrefix, label })]
 
-			return /** @type {WikilinkEntry} */ ({ title, pageName, colonPrefix, label })
+			// When the match came via a redirect, add the redirect source below the target
+			if (page.matched_title && page.matched_title !== page.title) {
+				const redirectTitle = CrossSiteMwTitle.newFromText(page.matched_title)
+				if (redirectTitle) {
+					let redirectPageName = page.matched_title
+					if (redirectTitle.getNamespaceId() === 0) {
+						const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
+						const isCaseSensitive =
+							caseSensitiveNamespaces.length && caseSensitiveNamespaces.includes(0)
+						if (!isCaseSensitive) {
+							redirectPageName = this.useOriginalFirstCharCase(page.matched_title, textForApi)
+						}
+					}
+
+					const redirectLabel = (colonPrefix ? ':' : '') + redirectPageName
+					entries.push(
+						/** @type {WikilinkEntry} */ ({
+							title: redirectTitle,
+							pageName: redirectPageName,
+							colonPrefix,
+							label: redirectLabel,
+							isRedirectSource: true,
+							redirectTarget: pageName,
+						}),
+					)
+				}
+			}
+
+			return entries
 		})
 	}
 
 	/**
-	 * Get page suggestions from a remote wiki using a ForeignApi OpenSearch request.
+	 * Get page suggestions from a remote wiki using the title search REST API.
 	 *
 	 * @param {string} text The full input text including interwiki prefix(es)
 	 * @param {InterwikiResolution} interwiki Resolved interwiki data
@@ -339,9 +368,8 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	async getCrossSitePageSuggestions(text, interwiki, colonPrefix = false) {
 		const { hostname, pageName } = interwiki
 		const wgScriptPath = mw.config.get('wgScriptPath')
-		const foreignApi = new mw.ForeignApi(`https://${hostname}${wgScriptPath}/api.php`, {
-			anonymous: true,
-		})
+		const foreignApiUrl = `https://${hostname}${wgScriptPath}/api.php`
+		const foreignApi = new mw.ForeignApi(foreignApiUrl, { anonymous: true })
 
 		await CrossSiteMwTitle.loadHostData(hostname, foreignApi)
 
@@ -403,41 +431,71 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			}
 		}
 
-		const response = /** @type {import('./AutocompleteManager').OpenSearchResults} */ (
+		const response = /** @type {import('./BaseAutocomplete').TitleSearchResponse} */ (
 			await BaseAutocomplete.createDelayedPromise(async (resolve) => {
-				const apiResponse = await foreignApi
-					.get({
-						action: 'opensearch',
-						search: pageName,
-						redirects: 'resolve',
-						limit: 10,
+				const url =
+					`https://${hostname}${wgScriptPath}/rest.php/v1/search/title?` +
+					new URLSearchParams({ q: pageName, limit: '10' }).toString()
+				const resp = await fetch(url, {
+					headers: {
+						'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
+					},
+				})
+				if (!resp.ok) {
+					throw new CdError({
+						type: 'network',
+						message: `Cross-site title search failed: ${resp.status}`,
 					})
-					.catch(handleApiReject)
+				}
+
+				const data = await resp.json()
 
 				if (BaseAutocomplete.currentPromise) {
 					BaseAutocomplete.promiseIsNotSuperseded(BaseAutocomplete.currentPromise)
 				}
-				resolve(apiResponse)
+				resolve(data)
 			})
 		)
 
 		// The interwiki prefix is everything before the remote page name in the original text
 		const interwikiPrefix = this.extractInterwikiPrefix(text, pageName)
 
-		return response[1].flatMap((/** @type {string} */ apiName) => {
-			const title = CrossSiteMwTitle.newFromText(apiName, undefined, hostname)
+		return response.pages.flatMap((page) => {
+			const title = CrossSiteMwTitle.newFromText(page.title, undefined, hostname)
 			if (!title) return []
 
 			// For interwiki links, never apply case fix - use API name as-is
-			const label = (colonPrefix ? ':' : '') + interwikiPrefix + apiName
+			const label = (colonPrefix ? ':' : '') + interwikiPrefix + page.title
+			const entries = [
+				/** @type {WikilinkEntry} */ ({
+					title,
+					pageName: page.title,
+					colonPrefix,
+					interwikiPrefix,
+					label,
+				}),
+			]
 
-			return /** @type {WikilinkEntry} */ ({
-				title,
-				pageName: apiName,
-				colonPrefix,
-				interwikiPrefix,
-				label,
-			})
+			// When the match came via a redirect, add the redirect source below the target
+			if (page.matched_title && page.matched_title !== page.title) {
+				const redirectTitle = CrossSiteMwTitle.newFromText(page.matched_title, undefined, hostname)
+				if (redirectTitle) {
+					const redirectLabel = (colonPrefix ? ':' : '') + interwikiPrefix + page.matched_title
+					entries.push(
+						/** @type {WikilinkEntry} */ ({
+							title: redirectTitle,
+							pageName: page.matched_title,
+							colonPrefix,
+							interwikiPrefix,
+							label: redirectLabel,
+							isRedirectSource: true,
+							redirectTarget: page.title,
+						}),
+					)
+				}
+			}
+
+			return entries
 		})
 	}
 
@@ -727,6 +785,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 					}
 
 					return fragment
+				}
+
+				if (entry.isRedirectSource) {
+					const span = document.createElement('span')
+					span.className = 'cd-autocomplete-redirect'
+					span.textContent = '⬑ ' + (item.string || entry.label)
+
+					return span
 				}
 
 				return item.string

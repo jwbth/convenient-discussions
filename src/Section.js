@@ -679,7 +679,7 @@ class Section extends SectionSkeleton {
 				this.lastElementInFirstChunk === this.headingElement
 			) &&
 			// May mean complex formatting, so we better keep out
-			this.isNestingRegular(nextSection) &&
+			this.isNestingRegular(nextSection || undefined) &&
 			// Is the section buried in a table.
 			// https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
 			!['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName)

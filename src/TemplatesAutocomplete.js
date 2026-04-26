@@ -59,6 +59,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 		let isExplicitNamespace = false
 		const hasLeadingColon = text.startsWith(':')
 
+		const templatePrefix = mw.config.get('wgFormattedNamespaces')[10] || 'Template'
 		if (hasLeadingColon) {
 			// Leading colon means main namespace or explicit namespace
 			searchString = text.slice(1)
@@ -66,22 +67,22 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 		} else {
 			// Try to parse as a title to detect if a namespace is specified
 			const title = mw.Title.newFromText(text)
-			if (title && title.getNamespaceId() !== 10) {
-				// Namespace is specified and it's not the Template namespace (ID 10)
+			if (title && title.getNamespaceId() !== 0) {
+				// Namespace is specified. If it's the Template namespace, treat it as implicit
+				// (the prefix will be stripped).
 				searchString = text
-				isExplicitNamespace = true
+				isExplicitNamespace = title.getNamespaceId() !== 10
 			} else {
-				// No namespace or Template namespace - use default Template: prefix
-				searchString = 'Template:' + text
+				// No namespace - use default Template: prefix
+				searchString = templatePrefix + ':' + text
+				isExplicitNamespace = false
 			}
 		}
 
-		const response = await BaseAutocomplete.makeOpenSearchRequest({
-			search: searchString,
-			redirects: 'return',
-		})
+		const response = await BaseAutocomplete.makeTitleSearchRequest(searchString)
 
-		return response[1]
+		return response.pages
+			.map((page) => page.title)
 			.filter((name) => !/(\/doc(?:umentation)?|\.css)$/.test(name))
 			.map((name) => {
 				if (isExplicitNamespace) {

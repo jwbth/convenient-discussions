@@ -121,14 +121,13 @@ class MentionsAutocomplete extends BaseAutocomplete {
 
 		// First, try to use the search to get only users that have talk pages. Most legitimate
 		// users do, while spammers don't.
-		const response = await BaseAutocomplete.makeOpenSearchRequest({
-			search: text,
-			namespace: 3,
-			redirects: 'resolve',
-		})
+		const userTalkPrefix = mw.config.get('wgFormattedNamespaces')[3]
+		const response = await BaseAutocomplete.makeTitleSearchRequest(
+			userTalkPrefix + ':' + text,
+		)
 
-		const users = response[1]
-			.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
+		const users = response.pages
+			.map((page) => (page.title.match(cd.g.userNamespacesRegexp) || [])[1])
 			.filter(defined)
 			.filter((name) => !name.includes('/'))
 
