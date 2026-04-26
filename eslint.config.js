@@ -4,6 +4,7 @@ import { defineConfig } from 'eslint/config'
 import esX from 'eslint-plugin-es-x'
 import importPlugin from 'eslint-plugin-import'
 import { jsdoc } from 'eslint-plugin-jsdoc'
+import jsonc from 'eslint-plugin-jsonc'
 import noOneTimeVars from 'eslint-plugin-no-one-time-vars'
 import unicorn from 'eslint-plugin-unicorn'
 import unusedImports from 'eslint-plugin-unused-imports'
@@ -11,7 +12,7 @@ import tseslint from 'typescript-eslint'
 
 const config = defineConfig(
 	{
-		ignores: ['dist/**', '*.json5', '*.jsonc', 'src/tribute/**', 'sandbox/**', 'backup/**'],
+		ignores: ['dist/**', 'src/tribute/**', 'sandbox/**', 'backup/**'],
 	},
 	{
 		settings: {
@@ -602,6 +603,14 @@ const config = defineConfig(
 			'@typescript-eslint/adjacent-overload-signatures': 'error',
 			'@typescript-eslint/consistent-type-imports': 'error',
 			'@typescript-eslint/no-empty-interface': 'error',
+		},
+	},
+
+	...jsonc.configs['flat/recommended-with-json'],
+	{
+		files: ['**/*.json', '**/*.jsonc', '**/*.json5'],
+		rules: {
+			'jsonc/indent': ['warn', 'tab'],
 		},
 	},
 )
