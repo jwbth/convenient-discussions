@@ -638,6 +638,22 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
+	 * Check if the section's nesting is regular relative to another section. E.g. a section may be
+	 * inside a `<div>` with a specific style - don't touch in that case.
+	 *
+	 * @param {Section} [otherSection]
+	 * @returns {boolean}
+	 */
+	isNestingRegular(otherSection) {
+		if (!otherSection) return true
+
+		return cd.g.isParsoidUsed
+			? otherSection.headingNestingLevel - otherSection.level ===
+					this.headingNestingLevel - this.level
+			: otherSection.headingNestingLevel === this.headingNestingLevel
+	}
+
+	/**
 	 * Check whether the user should get the affordance to add a reply to the section.
 	 *
 	 * @returns {this is {
@@ -663,7 +679,7 @@ class Section extends SectionSkeleton {
 				this.lastElementInFirstChunk === this.headingElement
 			) &&
 			// May mean complex formatting, so we better keep out
-			(!nextSection || nextSection.headingNestingLevel === this.headingNestingLevel) &&
+			this.isNestingRegular(nextSection) &&
 			// Is the section buried in a table.
 			// https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
 			!['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName)
@@ -690,11 +706,7 @@ class Section extends SectionSkeleton {
 			// While the "Reply" button is added to the end of the first chunk, the "Add subsection"
 			// button is added to the end of the whole section, so we look the next section of the same
 			// level.
-			(!nextSameLevelSection ||
-				// If the next section of the same level has another nesting level (e.g., is inside a <div>
-				// with a specific style), don't add the "Add subsection" button - it would appear in a
-				// wrong place.
-				nextSameLevelSection.headingNestingLevel === this.headingNestingLevel)
+			this.isNestingRegular(nextSameLevelSection)
 		)
 	}
 
