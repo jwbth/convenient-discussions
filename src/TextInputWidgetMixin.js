@@ -443,30 +443,33 @@ class TextInputWidgetMixin {
 			// Extract content between the triple backticks
 			let contentBetween = value.substring(firstTripleBacktickPos + 3, secondTripleBacktickPos)
 
-			// Extract language if present (e.g., ```javascript\n...)
+			// Extract language if present (e.g., ```javascript\n...). If no language is specified but
+			// there is a newline (```\n...), we still consider it a block and strip the newline.
 			let lang = 'text'
-			const langMatch = contentBetween.match(/^([^\s\n]+)\n/)
+			const langMatch = contentBetween.match(/^([^\s\n]*)\n/)
 			if (langMatch) {
-				lang = langMatch[1]
+				lang = langMatch[1] || 'text'
 				contentBetween = contentBetween.substring(langMatch[0].length)
 			}
 
-			const shouldSelectLang = !langMatch
+			const isBlock = Boolean(langMatch)
+			const shouldSelectLang = !langMatch?.[1]
 
-			// Ensure at least one newline after opening and before closing
 			const openTag = `<syntaxhighlight lang="${lang}">`
 			const closeTag = '</syntaxhighlight>'
 
-			// Add newlines if needed
-			const startsWithNewline = contentBetween.startsWith('\n')
-			const endsWithNewline = contentBetween.endsWith('\n')
-
-			const processedContent =
-				(startsWithNewline ? '' : '\n') + contentBetween + (endsWithNewline ? '' : '\n')
+			// For blocks, ensure at least one newline after opening and before closing. If there is an
+			// empty line between backticks, there are two newlines between tags. For one-liners, use
+			// no newlines.
+			const processedContent = isBlock
+				? '\n' +
+					contentBetween +
+					(contentBetween === '' || contentBetween.endsWith('\n') ? '' : '\n')
+				: contentBetween.trim()
 
 			// Calculate new cursor position
 			const newCursorPos = cursorAfterOpening
-				? firstTripleBacktickPos + openTag.length + (startsWithNewline ? 0 : 1)
+				? firstTripleBacktickPos + openTag.length + (isBlock ? 1 : 0)
 				: firstTripleBacktickPos + openTag.length + processedContent.length + closeTag.length
 
 			// Select the range to replace (both triple backticks and content between them)
