@@ -244,7 +244,7 @@ export default {
 		isDtTopicSubscriptionEnabled: false,
 		isDtVisualEnhancementsEnabled: true,
 		isCodeMirror6Installed: true,
-		isParsoidUsed: false,
+		isParsoidUsed: true,
 		timestampTools: {
 			content: {
 				dateFormat: 'H:i, j F Y',

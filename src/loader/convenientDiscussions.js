@@ -535,7 +535,7 @@ const globalProperties = {
 		.get()
 		// NB: not _our_ Comment, the global one
 		.filter((node) => node instanceof window.Comment)
-		.some((c) => c.textContent.startsWith('Parsoid')),
+		.some((c) => c.textContent.trim().startsWith('Parsoid')),
 
 	timestampTools: /** @type {import('../shared/cd').TimestampTools} */ ({
 		content: {},
