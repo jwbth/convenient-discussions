@@ -552,7 +552,7 @@ class TextInputWidgetMixin {
 	 *
 	 * @param {DataTransfer} data
 	 * @param {string} [selectedText]
-	 * @returns {{ url: string; label: string | undefined } | null}
+	 * @returns {{ url: string; label: string | undefined } | undefined}
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
@@ -583,48 +583,53 @@ class TextInputWidgetMixin {
 				label = cleanUpPasteDom(links[0], this.$element[0]).text.trim() || selectedText
 			}
 		}
-		// 3. text/uri-list
-		else if (data.types.includes('text/uri-list')) {
-			const uriList = data.getData('text/uri-list')
-			const urls = uriList.split(/\r?\n/).filter((line) => line && !line.startsWith('#'))
 
-			// Only process if it's a single URL
-			if (urls.length === 1) {
-				url = urls[0]
-				label = selectedText
-			} else if (urls.length > 1) {
-				// Multiple URLs - don't convert
-				return null
-			}
-		}
-		// 4. text/plain
-		else if (data.types.includes('text/plain')) {
-			const plainText = data.getData('text/plain').trim()
+		// When dropping an image from a web page, text/html can be present but not contain an <a>
+		// element, so we need to check for other types.
+		if (!url) {
+			// 3. text/uri-list
+			if (data.types.includes('text/uri-list')) {
+				const uriList = data.getData('text/uri-list')
+				const urls = uriList.split(/\r?\n/).filter((line) => line && !line.startsWith('#'))
 
-			// Check if the entire text is a URL
-			let isValidUrl = false
-			try {
-				// eslint-disable-next-line no-new
-				new URL(plainText)
-				isValidUrl = true
-			} catch {
-				// Not a valid URL
-			}
-
-			if (isValidUrl) {
-				// Check for spaces - if present, don't convert
-				if (plainText.includes(' ')) {
-					return null
+				// Only process if it's a single URL
+				if (urls.length === 1) {
+					url = urls[0]
+					label = selectedText
+				} else if (urls.length > 1) {
+					// Multiple URLs - don't convert
+					return
 				}
-				url = plainText
-				label = selectedText
-			} else {
-				return null
+			}
+			// 4. text/plain
+			else if (data.types.includes('text/plain')) {
+				const plainText = data.getData('text/plain').trim()
+
+				// Check if the entire text is a URL
+				let isValidUrl = false
+				try {
+					// eslint-disable-next-line no-new
+					new URL(plainText)
+					isValidUrl = true
+				} catch {
+					// Not a valid URL
+				}
+
+				if (isValidUrl) {
+					// Check for spaces - if present, don't convert
+					if (plainText.includes(' ')) {
+						return
+					}
+					url = plainText
+					label = selectedText
+				} else {
+					return
+				}
 			}
 		}
 
 		if (!url) {
-			return null
+			return
 		}
 
 		// Trim the label if it exists
@@ -744,7 +749,7 @@ class TextInputWidgetMixin {
 			label = pageNameWithFragment
 		}
 
-		if (label && label !== target) {
+		if (label && underlinesToSpaces(label) !== target) {
 			const encodedLabel = encodeLinkLabel(label)
 			wikilink += `|${encodedLabel}`
 		}
