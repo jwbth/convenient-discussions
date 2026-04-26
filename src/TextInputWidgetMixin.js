@@ -413,10 +413,18 @@ class TextInputWidgetMixin {
 			}
 
 			// Extract content between the triple backticks
-			const contentBetween = value.substring(firstTripleBacktickPos + 3, secondTripleBacktickPos)
+			let contentBetween = value.substring(firstTripleBacktickPos + 3, secondTripleBacktickPos)
+
+			// Extract language if present (e.g., ```javascript\n...)
+			let lang = 'text'
+			const langMatch = contentBetween.match(/^([^\s\n]+)\n/)
+			if (langMatch) {
+				lang = langMatch[1]
+				contentBetween = contentBetween.substring(langMatch[0].length)
+			}
 
 			// Ensure at least one newline after opening and before closing
-			const openTag = '<syntaxhighlight lang="wikitext">'
+			const openTag = `<syntaxhighlight lang="${lang}">`
 			const closeTag = '</syntaxhighlight>'
 
 			// Add newlines if needed
