@@ -41,6 +41,12 @@ class TextInputWidgetMixin {
 	autocompleteManager
 
 	/**
+	 * @type {typeof import('./controller').default}
+	 * @private
+	 */
+	controller
+
+	/**
 	 * Whether this input supports external links (whether they will be turned into <a> tags or not).
 	 * If false, external links that cannot be converted to wikilinks will be inserted as plain URLs.
 	 *
@@ -71,13 +77,15 @@ class TextInputWidgetMixin {
 	 * Construct the instance. A separate method is used to allow the class to be used as a mixin.
 	 *
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
-	 * @param {object} [config]
+	 * @param {object} config
+	 * @param {typeof import('./controller').default} config.controller
 	 * @param {boolean} [config.supportsComplexMarkup] Whether this input supports external
 	 *   links. If false, external links that cannot be converted to wikilinks will be inserted as
 	 *   plain URLs without labels.
 	 */
 	construct(config) {
-		this.supportsComplexMarkup = config?.supportsComplexMarkup ?? true
+		this.controller = config.controller
+		this.supportsComplexMarkup = config.supportsComplexMarkup ?? true
 
 		// Can't define it as a class field, because then this would be set to TextInputWidgetMixin and
 		// not classes that extend it.
@@ -282,9 +290,10 @@ class TextInputWidgetMixin {
 	/**
 	 * Add autocomplete listeners.
 	 *
+	 * @param {boolean} [addPasteDropListeners]
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	addEventListeners() {
+	addEventListeners(addPasteDropListeners = true) {
 		const $element = this.getEditableElement()
 		$element[0].cdInput = this
 		$element
@@ -307,6 +316,24 @@ class TextInputWidgetMixin {
 				// Set the autocomplete menu as inactive to allow selection changes again
 				this.setAutocompleteMenuActive(false)
 			})
+
+		if (addPasteDropListeners) {
+			const pasteDropHandler = this.createTextInputPasteDropHandler()
+			$element[0].addEventListener('paste', pasteDropHandler, true)
+			$element[0].addEventListener('drop', pasteDropHandler, true)
+		}
+	}
+
+	/**
+	 * Creates a handler for `paste` and `drop` events for text inputs (headline and summary).
+	 *
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 * @returns {(event: ClipboardEvent | DragEvent) => void}
+	 */
+	createTextInputPasteDropHandler() {
+		return (event) => {
+			this.handleUrlConversion(event, this.controller.getIsShiftPressed())
+		}
 	}
 
 	/**
@@ -331,7 +358,8 @@ class TextInputWidgetMixin {
 		if (cursorPos === null) return
 
 		// Check if we just completed a triple backtick sequence
-		if (this.handleTripleBacktickInput(value, cursorPos)) {
+		// @ts-ignore
+		if (this.allowLinebreaks && this.handleTripleBacktickInput(value, cursorPos)) {
 			return
 		}
 

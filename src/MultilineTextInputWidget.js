@@ -19,6 +19,14 @@ class MultilineTextInputWidget extends mixIntoClass(
 	TextInputWidgetMixin,
 ) {
 	/**
+	 * @param {OO.ui.MultilineTextInputWidget.ConfigOptions & import('./TextInputWidget').TextInputWidgetExtension} [config]
+	 */
+	// eslint-disable-next-line @typescript-eslint/no-useless-constructor
+	constructor(config) {
+		super(config)
+	}
+
+	/**
 	 * Focus the input and select a specified range within the text.
 	 *
 	 * @param {number} start Select from offset

@@ -48,6 +48,7 @@ class CommentFormBuilder {
 				placeholder: this.form.headlineInputPlaceholder,
 				classes: ['cd-commentForm-headlineInput', `cd-commentForm-headlineInput-${sectionType}`],
 				tabIndex: this.form.getTabIndex(11),
+				controller,
 			})
 		}
 
@@ -66,6 +67,7 @@ class CommentFormBuilder {
 			maxRows: 9999,
 			classes: ['cd-commentForm-commentInput'],
 			tabIndex: this.form.getTabIndex(12),
+			controller,
 		})
 		this.form.commentInput.$input.addClass('ime-position-inside')
 
@@ -78,6 +80,8 @@ class CommentFormBuilder {
 
 			// As on the regular edit page
 			accessKey: 'b',
+
+			controller,
 
 			// Summary input should not support external links with labels
 			supportsComplexMarkup: false,

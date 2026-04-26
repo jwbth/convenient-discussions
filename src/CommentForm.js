@@ -1378,19 +1378,6 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Handle `paste` and `drop` events for text inputs (headline and summary).
-	 *
-	 * @param {import('./TextInputWidget').default | import('./MultilineTextInputWidget').default} input
-	 * @returns {(event: ClipboardEvent | DragEvent) => void}
-	 */
-	createTextInputPasteDropHandler(input) {
-		return (event) => {
-			// Only handle URL conversion for text inputs
-			input.handleUrlConversion(event, controller.getIsShiftPressed())
-		}
-	}
-
-	/**
 	 * Add event listeners to form elements.
 	 *
 	 * @private
@@ -1614,12 +1601,7 @@ class CommentForm extends EventEmitter {
 				.on('change', emitChange)
 
 			this.headlineInput.on('enter', this.submit)
-
-			// Add paste/drop handlers for URL conversion
-			const headlineElement = this.headlineInput.getEditableElement()[0]
-			this.headlinePasteDropHandler = this.createTextInputPasteDropHandler(this.headlineInput)
-			headlineElement.addEventListener('paste', this.headlinePasteDropHandler, true)
-			headlineElement.addEventListener('drop', this.headlinePasteDropHandler, true)
+			this.headlineInput.addEventListeners()
 		}
 
 		this.commentInput
@@ -1670,12 +1652,7 @@ class CommentForm extends EventEmitter {
 			.on('change', emitChange)
 
 		this.summaryInput.on('enter', this.submit)
-
-		// Add paste/drop handlers for URL conversion
-		const summaryElement = this.summaryInput.getEditableElement()[0]
-		this.summaryPasteDropHandler = this.createTextInputPasteDropHandler(this.summaryInput)
-		summaryElement.addEventListener('paste', this.summaryPasteDropHandler, true)
-		summaryElement.addEventListener('drop', this.summaryPasteDropHandler, true)
+		this.summaryInput.addEventListeners()
 	}
 
 	/**
@@ -1738,12 +1715,12 @@ class CommentForm extends EventEmitter {
 				}
 			})
 
+		this.commentInput.addEventListeners(false)
+
 		// Use native addEventListener with capture phase to intercept paste/drop before CodeMirror
 		const editableElement = this.commentInput.getEditableElement()[0]
 		editableElement.addEventListener('paste', this.handlePasteDrop, true)
 		editableElement.addEventListener('drop', this.handlePasteDrop, true)
-
-		this.commentInput.addEventListeners()
 	}
 
 	/**
