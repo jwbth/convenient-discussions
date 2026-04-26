@@ -172,7 +172,8 @@ class SpaciousComment extends Comment {
 	 * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
 	 */
 	replaceSignatureWithHeader() {
-		const pagesToCheckExistence = []
+		// Capture the signature text before the signature is taken apart.
+		const signatureText = this.signatureElement.textContent
 
 		const headerWrapper = SpaciousComment.prototypes.get('headerWrapperElement')
 		this.headerElement = /** @type {HTMLElement} */ (headerWrapper.firstChild)
@@ -206,6 +207,7 @@ class SpaciousComment extends Comment {
 			userInfoCardButton.remove()
 		}
 
+		const pagesToCheckExistence = []
 		if (this.authorLink) {
 			// Move the existing author link to the header.
 
@@ -296,6 +298,25 @@ class SpaciousComment extends Comment {
 
 		this.rewrapHighlightables()
 		this.highlightables[0].insertBefore(headerWrapper, this.highlightables[0].firstChild)
+
+		// Clean the signature text for the tooltip.
+		let cleanedSignatureText = signatureText.replace(cd.g.timestampTools.content.regexp, '').trim()
+		if (cd.g.signatureEndingRegexp) {
+			cleanedSignatureText = cleanedSignatureText.replace(cd.g.signatureEndingRegexp, '')
+		}
+		if (cd.config.signaturePrefixRegexp) {
+			cleanedSignatureText = cleanedSignatureText.replace(
+				new RegExp('^' + cd.config.signaturePrefixRegexp.source.replace(/\$$/, '')),
+				'',
+			)
+		}
+		cleanedSignatureText = cleanedSignatureText.replace(/\n/g, ' ').replace(/ {2,}/g, ' ').trim()
+		if (cleanedSignatureText) {
+			this.authorLink.title =
+				cd.s('comment-author-tooltip-signature-prefix') +
+				cd.mws('colon-separator') +
+				cleanedSignatureText
+		}
 
 		if (!this.extraSignatures.length) {
 			this.cleanUpSignature()

@@ -54,6 +54,7 @@
 	"comment-timestamp-lessthanminute": "less than a minute ago",
 	"comment-author-talk": "talk",
 	"comment-author-contribs": "contribs",
+	"comment-author-tooltip-signature-prefix": "Signature",
 	"comment-changed": "The comment has changed.",
 	"comment-changed-short": "Changed",
 	"comment-changed-refresh": "Refresh to see the changes",
