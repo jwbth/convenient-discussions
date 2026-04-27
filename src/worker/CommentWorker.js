@@ -358,7 +358,11 @@ export default class CommentWorker extends CommentSkeleton {
 	 */
 	static removeDataAndParsoidAttributes = (element) => {
 		Object.keys(element.attribs).forEach((name) => {
-			if (name.startsWith('data-') || (name === 'id' && /^mw.{2,3}$/.test(element.attribs[name]))) {
+			if (
+				name.startsWith('data-') ||
+				name === 'about' ||
+				(name === 'id' && /^mw.{2,3}$/.test(element.attribs[name]))
+			) {
 				element.removeAttribute(name)
 			}
 		})
