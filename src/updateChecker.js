@@ -809,14 +809,12 @@ class UpdateChecker extends EventEmitter {
 	 * @param {number} newerRevisionId
 	 */
 	async markCommentsAsChanged(type, data, olderRevisionId, newerRevisionId) {
-		if (!data.length) return
+		// Don't process >20 diffs; that's too much and probably means something is broken
+		if (!data.length || data.length > 20) return
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const revisionIdAtStart = mw.config.get('wgRevisionId')
-
-		// Don't process >20 diffs; that's too much and probably means something is broken
-		const verifyDiffs =
-			data.length <= 20 && data.some(({ comment }) => comment.getSourcePage().isCurrent())
+		const verifyDiffs = data.some(({ comment }) => comment.getSourcePage().isCurrent())
 
 		/** @type {Revision<['content']>[] | undefined} */
 		let revisions
