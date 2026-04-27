@@ -44,8 +44,6 @@ class TributeRange {
 
 			this.tribute.menu.style.cssText = positionStyle + ' position: absolute; display: block;'
 
-			if (scrollTo) this.scrollIntoView()
-
 			// jwbth: Removed setTimeout part entirely as it seems to have no effect after other
 			// changes.
 		}
@@ -555,47 +553,6 @@ class TributeRange {
 			`right: ${coordinates.right}${typeof coordinates.right === 'number' ? 'px' : ''}; ` +
 			additionalStyles
 		)
-	}
-
-	scrollIntoView() {
-		let reasonableBuffer = 20,
-			clientRect
-		let maxScrollDisplacement = 100
-		let element = this.tribute.menu
-
-		if (typeof element === 'undefined') return
-
-		while (clientRect === undefined || clientRect.height === 0) {
-			clientRect = element.getBoundingClientRect()
-
-			if (clientRect.height === 0) {
-				element = element.childNodes[0]
-				if (element === undefined || !element.getBoundingClientRect) {
-					return
-				}
-			}
-		}
-
-		let elemTop = clientRect.top
-		let elemBottom = elemTop + clientRect.height
-
-		if (elemTop < 0) {
-			window.scrollTo(0, window.pageYOffset + clientRect.top - reasonableBuffer)
-		} else if (elemBottom > window.innerHeight) {
-			let maxY = window.pageYOffset + clientRect.top - reasonableBuffer
-
-			if (maxY - window.pageYOffset > maxScrollDisplacement) {
-				maxY = window.pageYOffset + maxScrollDisplacement
-			}
-
-			let targetY = window.pageYOffset - (window.innerHeight - elemBottom)
-
-			if (targetY > maxY) {
-				targetY = maxY
-			}
-
-			window.scrollTo(0, targetY)
-		}
 	}
 }
 
