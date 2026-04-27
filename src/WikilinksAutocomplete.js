@@ -96,7 +96,15 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @returns {import('./tribute/Tribute').Insertion & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
-		const { title, pageName, fragment, colonPrefix, interwikiPrefix = '' } = entry
+		const {
+			title,
+			pageName,
+			fragment,
+			colonPrefix,
+			interwikiPrefix = '',
+			isWikidataEntity,
+			displayLabel,
+		} = entry
 		const pageNameForInsertion = pageName ?? title.getPrefixedText()
 		const needsColon = !colonPrefix && this.needsColonPrefix(title, interwikiPrefix)
 		const colonStr = colonPrefix ? ':' : needsColon ? ':' : ''
@@ -107,7 +115,10 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			end: ']]',
 			content: selectedText,
 			shiftModify() {
-				this.content ||= pageNameForInsertion + fragmentStr
+				const insertText = /** @type {string} */ (
+					isWikidataEntity ? displayLabel : pageNameForInsertion
+				)
+				this.content ||= insertText + fragmentStr
 				this.start += '|'
 			},
 		}
