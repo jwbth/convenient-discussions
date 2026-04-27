@@ -146,7 +146,6 @@
 	"cf-help-autocomplete-punctuation": "Coinnigh <b>Alt</b> síos agus tú ag roghnú úsáideoir le poncaíocht a chur i ndiaidh an ainm.",
 	"cf-help-autocomplete-displaytext": "Coinnigh <b>Shift</b> síos agus tú ag roghnú mír uathchríochnaithe chun an téacs a thaispeántar a athrú (mar shampla, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
 	"cf-help-autocomplete-wraptext": "Chun téacs a fhilleadh go tapa i gclib, roghnaigh téacs, ansin tosaigh ag clóscríobh clib (m.sh. <code><nowiki><code></nowiki></code>), ansin roghnaigh é ón roghchlár uathchríochnaithe.",
-	"cf-help-hotkeys-toolbar": "Cnaipí Barra Uirlisí: luch thar iad le feiceáil",
 	"cf-help-footer-documentation": "[[$1|Doiciméadú Scripte]]",
 	"cf-strikethrough-tooltip": "Stríoc tríd",
 	"cf-strikethrough-placeholder": "Téacs trína chéile",

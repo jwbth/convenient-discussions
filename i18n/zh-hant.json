@@ -153,8 +153,6 @@
 	"cf-help-autocomplete-mention": "輸入 <code>$1</code> 並挑選使用者來[[$2|提到]]他們。",
 	"cf-help-autocomplete-commentlink": "輸入 <code><nowiki>$1</nowiki></code> 來連結在目前段落的意見。",
 	"cf-help-autocomplete-displaytext": "在挑選自動完成項目時壓住 <b>Shift</b> 鍵能更改所顯示文字（例如：<code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>）。",
-	"cf-help-hotkeys-post": "<b>$1+Enter</b> — 發布",
-	"cf-help-hotkeys-toolbar": "要查看工具列按鈕的熱鍵，請將滑鼠懸停在按鈕上方。",
 	"cf-help-footer-documentation": "[[$1|腳本文件]]",
 	"cf-help-footer-feedback": "[[$2|意見回饋]]",
 	"cf-strikethrough-tooltip": "刪除線",

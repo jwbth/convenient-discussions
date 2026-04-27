@@ -158,8 +158,6 @@
 	"cf-help-autocomplete-punctuation": "Nhấn giữ <b>Alt</b> khi chọn người dùng để thêm dấu chấm câu sau tên.",
 	"cf-help-autocomplete-commentlink": "Nếu menu bình luận cản trở một liên kết đằng sau nó, hãy nhấn/giữ vào nó — nó sẽ biến mất.",
 	"cf-help-autocomplete-wraptext": "Để bọc nhanh một đoạn văn bản trong thẻ, chọn văn bản, sau đó bắt đầu nhập một thẻ (v.d. <code><nowiki><code></nowiki></code>), cuối cùng chọn nó từ menu tự động điền.",
-	"cf-help-hotkeys-post": "<b>$1+Enter</b> — đăng",
-	"cf-help-hotkeys-toolbar": "Nút trên thanh công cụ: di chuột qua chúng để xem",
 	"cf-help-footer-documentation": "[[$1|Tài liệu công cụ]]",
 	"cf-help-footer-feedback": "[[$2|Phản hồi]]",
 	"cf-strikethrough-tooltip": "Gạch ngang lên chữ",

@@ -147,8 +147,6 @@
 	"cf-help-autocomplete-mention": "Skriv <code>$1</code> och välj en användare att [[$2|nämna]].",
 	"cf-help-autocomplete-commentlink": "Om kommentarsmenyn skymmer en länk bakom den, klicka/tryck länge på den – den kommer att försvinna.",
 	"cf-help-autocomplete-wraptext": "Håll ner <b>Alt</b> medan du väljer ett auto-kompletterat objekt för att använda texten efter cirkumflektionstecknet som visad text.",
-	"cf-help-hotkeys-post": "<b>$1 +Enter</b> — posta",
-	"cf-help-hotkeys-toolbar": "För att se snabbtangenterna för verktygsfältsknapparna, håll muspekaren över dem.",
 	"cf-help-footer-documentation": "[[$1|Feedback]]",
 	"cf-help-footer-feedback": "[[$2|Feedback]]",
 	"cf-strikethrough-tooltip": "Överstruken",
