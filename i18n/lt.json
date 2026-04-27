@@ -140,7 +140,6 @@
 	"cf-help-autocomplete-mention": "Rašykite <code>$1</code> ir pasirinkite naudotoją, kad jį [[$2|paminėtumėte]].",
 	"cf-help-autocomplete-commentlink": "Jei komentaro meniu trukdo nuorodai, esančiai už jo, atlikite ilgą paspaudimą arba bakstelkite jį – meniu pranyks.",
 	"cf-help-autocomplete-displaytext": "Laikykite <b>Shift</b>, kai renkatės automatinio užbaigimo elementą, kad pakeistumėte rodomą tekstą (pvz., <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
-	"cf-help-hotkeys-post": "<b>$1+Enter</b> — paskelbti",
 	"cf-help-footer-documentation": "[[$1|Kodo dokumentacija]]",
 	"cf-help-footer-feedback": "[[$2|Grįžtamasis ryšys]]",
 	"cf-strikethrough-tooltip": "Perbraukti",

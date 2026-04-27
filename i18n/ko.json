@@ -123,7 +123,6 @@
 	"cf-help-autocomplete-commentlink": "If the comment menu obstructs a link behind it, make a long click/tap on it—it will disappear.",
 	"cf-help-autocomplete-displaytext": "Hold <b>Shift</b> while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
 	"cf-help-autocomplete-wraptext": "<b>Q</b> (<b>Ctrl+Alt+Q</b>) — 선택한 텍스트 인용",
-	"cf-help-hotkeys-post": "<b>Ctrl+Enter</b> — 게시",
 	"cf-help-footer-documentation": "[[$1| 스크립트 문서]]",
 	"cf-strikethrough-tooltip": "취소선",
 	"cf-strikethrough-placeholder": "취소선이 그어진 텍스트",

@@ -158,8 +158,6 @@
 	"cf-help-autocomplete-commentlink": "リンクの上にコメントメニューが重なって見えない場合は、メニューを長めにクリック・タップすると隠せます。",
 	"cf-help-autocomplete-displaytext": "オートコンプリート候補を選択中に「<b>Shift</b>」キーを長押しすると、表示テキストを変更します (例: <code><nowiki>[[記事名|</nowiki><var>テキスト</var><nowiki>]]</nowiki></code>)。",
 	"cf-help-autocomplete-wraptext": "オートコンプリート候補を選択中に「<b>Alt</b>」キーを長押しすると、キャレットの後の文字列を表示テキストとして使用します。",
-	"cf-help-hotkeys-post": "<b>Enter</b>: 投稿",
-	"cf-help-hotkeys-toolbar": "ツールバーのボタンにカーソルを合わせるとホットキーを確認できます。",
 	"cf-help-footer-documentation": "[[$1|スクリプトの解説]]",
 	"cf-help-footer-feedback": "[[$2|フィードバック]]",
 	"cf-strikethrough-tooltip": "取り消し線",

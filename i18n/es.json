@@ -146,8 +146,6 @@
 	"cf-settings-tooltip": "Configuración de Discusiones Prácticas",
 	"cf-help-autocomplete-mention": "Escribe <code>$1</code> y elige un usuario para [[$2|mencionarlo]].",
 	"cf-help-autocomplete-commentlink": "Si el menú de comentarios obstruye un enlace detrás de él, un clic o un toque prolongado sobre él lo hará desaparecer.",
-	"cf-help-hotkeys-post": "<b>$1+Enter</b> — publicar",
-	"cf-help-hotkeys-toolbar": "Para ver las teclas de acceso rápido de los botones de la barra de herramientas, coloca el cursor sobre ellas.",
 	"cf-help-footer-documentation": "[[$1|Documentación del script]]",
 	"cf-strikethrough-tooltip": "Tachado",
 	"cf-strikethrough-placeholder": "Texto tachado",

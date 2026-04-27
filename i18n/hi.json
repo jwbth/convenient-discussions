@@ -133,7 +133,6 @@
 	"cf-help-autocomplete-mention": "किसी सदस्य का [[$2|उल्लेख]] करने के लिए <code>$1</code> लिखें और वह सदस्य चुनें।",
 	"cf-help-autocomplete-commentlink": "अगर टिप्पणी के मेन्यू के पीछे कोई कड़ी छिप जाती है, एक लंबा क्लिक/टैप करें — यह गायब हो जाएगा।",
 	"cf-help-autocomplete-wraptext": "<b>Q</b> (<b>$2+Alt+Q</b>) — चयनित टेक्स्ट को उद्धृत करें",
-	"cf-help-hotkeys-post": "<b>$1+Enter</b> — पोस्ट करें",
 	"cf-help-footer-documentation": "[[$1|स्क्रिप्ट का प्रलेख]]",
 	"cf-strikethrough-tooltip": "स्ट्राइकथ्रू",
 	"cf-strikethrough-placeholder": "स्ट्राइकथ्रू किया हुआ टेक्स्ट",

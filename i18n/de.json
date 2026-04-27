@@ -162,7 +162,6 @@
 	"cf-help-autocomplete-mention": "Gib <code>$1</code> ein und wähle einen Benutzer, um ihn zu [[$2|erwähnen]].",
 	"cf-help-autocomplete-punctuation": "Halte $2 gedrückt, während du einen Benutzer auswählst, um eine Interpunktion nach dem Namen hinzuzufügen.",
 	"cf-help-autocomplete-commentlink": "Wenn das Kommentarmenü einen dahinter liegenden Link verdeckt, klicke oder tippe lange darauf, damit es verschwindet.",
-	"cf-help-hotkeys-post": "<b>Ctrl+Enter</b> — post",
 	"cf-help-footer-documentation": "[[$1|Skript-Dokumentation]]",
 	"cf-help-footer-feedback": "[[$2|Feedback]]",
 	"cf-strikethrough-tooltip": "Durchstreichen",

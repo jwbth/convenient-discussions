@@ -143,7 +143,6 @@
 	"cf-help-autocomplete-mention": "Tipar <code>$1</code> para [[mw:Help:Notifications/Mention|mention]] do usuário.",
 	"cf-help-autocomplete-commentlink": "Se o menu de comentários obstruir um link atrás dele, dê um clique / toque longo nele — ele desaparecerá.",
 	"cf-help-autocomplete-displaytext": "Segure a tecla <b>Shift</b> ao escolher um item de preenchimento automático para alterar o texto exibido (por exemplo, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
-	"cf-help-hotkeys-post": "<b>Ctrl+Enter</b> — postar",
 	"cf-help-footer-documentation": "[[$1|Documentação de script]]",
 	"cf-strikethrough-tooltip": "Tachado",
 	"cf-strikethrough-placeholder": "Texto tachado",

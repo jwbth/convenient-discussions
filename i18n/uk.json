@@ -147,8 +147,6 @@
 	"cf-help-autocomplete-punctuation": "Утримуйте <b>Alt</b>, обираючи користувача, аби додати розділові знаки після імені.",
 	"cf-help-autocomplete-commentlink": "Якщо меню коментарів закриває посилання за ним, зробіть довге клацання по ньому чи натисніть на екран по ньому — воно зникне.",
 	"cf-help-autocomplete-wraptext": "Щоб швидко перенести текст у тег, виділіть його, а потім почніть вводити тег (наприклад <code><nowiki><code></nowiki></code>), потім виберіть його з меню автозаповнення.",
-	"cf-help-hotkeys-post": "<b>$1+Enter</b> — надіслати",
-	"cf-help-hotkeys-toolbar": "Кнопки панелі інструментів: наведіть на них курсор, щоб побачити",
 	"cf-help-footer-documentation": "[[$1|Документація скрипту]]",
 	"cf-help-footer-feedback": "[[$2|Надіслати відгук]]",
 	"cf-strikethrough-tooltip": "Закреслення",
