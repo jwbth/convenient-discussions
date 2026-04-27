@@ -2571,7 +2571,7 @@ class Comment extends mixIntoClass(
 	/**
 	 * Create a {@link Comment#replyForm reply form} for the comment.
 	 *
-	 * @param {object} [initialState]
+	 * @param {import('./CommentForm').CommentFormInitialState} [initialState]
 	 * @param {import('./CommentForm').default} [commentForm]
 	 */
 	reply(initialState, commentForm) {
@@ -2694,7 +2694,8 @@ class Comment extends mixIntoClass(
 	/**
 	 * Create an {@link Comment#editForm edit form} for the comment.
 	 *
-	 * @param {object} [initialState] See {@link CommentForm}'s constructor.
+	 * @param {import('./CommentForm').CommentFormInitialState} [initialState] See
+	 *   {@link CommentForm}'s constructor.
 	 * @param {import('./CommentForm').default} [commentForm]
 	 * @returns {import('./CommentForm').default}
 	 */

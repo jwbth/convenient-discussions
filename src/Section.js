@@ -1415,7 +1415,7 @@ class Section extends SectionSkeleton {
 	/**
 	 * Create an {@link Section#replyForm add reply form}.
 	 *
-	 * @param {object} [initialState]
+	 * @param {import('./CommentForm').CommentFormInitialState} [initialState]
 	 * @param {import('./CommentForm').default} [commentForm]
 	 * @returns {import('./CommentForm').default}
 	 */
@@ -1454,7 +1454,7 @@ class Section extends SectionSkeleton {
 	/**
 	 * Create an {@link Section#addSubsectionForm add subsection form} form or focus an existing one.
 	 *
-	 * @param {object} [initialState]
+	 * @param {import('./CommentForm').CommentFormInitialState} [initialState]
 	 * @param {import('./CommentForm').default} [commentForm]
 	 * @returns {import('./CommentForm').default}
 	 * @throws {CdError}
