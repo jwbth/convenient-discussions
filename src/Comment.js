@@ -1496,10 +1496,17 @@ class Comment extends mixIntoClass(
 	 *
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {boolean} add
-	 * @protected
 	 */
 	updateClassesForFlag(flag, add) {
 		this.layers?.updateClassesForFlag(flag, add)
+
+		if (flag === 'deleted') {
+			this.actions?.replyButton?.setDisabled(add)
+			this.actions?.editButton?.setDisabled(add)
+			if (add) {
+				this.actions?.removeQuoteButton()
+			}
+		}
 	}
 
 	/**

@@ -175,7 +175,7 @@ class CommentLayers {
 		// Apply common layer styling
 		const styleFlags = this.comment.getStyleFlags()
 		styleFlags.forEach(({ name, value }) => {
-			this.updateClassesForFlag(name, value)
+			this.comment.updateClassesForFlag(name, value)
 		})
 
 		if (wereJustCreated && this.comment.isLineGapped) {
@@ -194,11 +194,6 @@ class CommentLayers {
 
 		this.underlay.classList.toggle(`cd-comment-underlay-${flag}`, add)
 		this.overlay.classList.toggle(`cd-comment-overlay-${flag}`, add)
-
-		if (flag === 'deleted') {
-			this.comment.actions?.replyButton?.setDisabled(add)
-			this.comment.actions?.editButton?.setDisabled(add)
-		}
 
 		const thisTyped = /** @type {any} */ (this)
 		if (flag === 'hovered' && !add && thisTyped.overlayInnerWrapper) {

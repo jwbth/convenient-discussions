@@ -90,6 +90,10 @@ class CommentActions {
 		this.addCopyLinkButton()
 		this.addToggleChildThreadsButton()
 		this.addGoToParentButton()
+
+		if (this.comment.hasFlag('deleted')) {
+			this.comment.updateClassesForFlag('deleted', true)
+		}
 	}
 
 	/**
