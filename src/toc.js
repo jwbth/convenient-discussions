@@ -61,11 +61,11 @@ class Toc {
 			// otherwise the user can be confused, especially if there are few topics on an unpopular
 			// page.)
 			if (
-				commentManager.query((c) => c.isSeen === false || !c.date).length !==
+				commentManager.query((c) => c.isSeen() === false || !c.date).length !==
 				commentManager.getCount()
 			) {
 				this.addNewComments(
-					Comment.groupBySection(commentManager.query((c) => c.isSeen === false)),
+					Comment.groupBySection(commentManager.query((c) => c.isSeen() === false)),
 					controller.getBootProcess(),
 				)
 			}

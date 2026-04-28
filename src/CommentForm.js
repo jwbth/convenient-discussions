@@ -3972,7 +3972,7 @@ class CommentForm extends EventEmitter {
 	 */
 	restore() {
 		const newSelf = this.target.findNewSelf()
-		if (newSelf?.isActionable) {
+		if (newSelf?.isActionable()) {
 			try {
 				const addingMethod = /** @type {CommentFormAddingMethod} */ (
 					newSelf[/** @type {keyof typeof newSelf} */ (newSelf.getCommentFormMethodName(this.mode))]

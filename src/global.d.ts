@@ -496,7 +496,7 @@ declare global {
 		 * Whether the target is actionable (can be interacted with, replied to, etc.).
 		 * False for closed discussions, old revisions, or transcluded content.
 		 */
-		isActionable: boolean
+		isActionable(): boolean
 
 		/**
 		 * Get the relevant section for this target.

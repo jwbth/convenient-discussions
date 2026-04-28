@@ -180,14 +180,14 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addReplyButton() {
-		if (!this.comment.isActionable) return
+		if (!this.comment.isActionable()) return
 
 		this.replyButton = this.createReplyButton(this.onReplyAction)
 		this.insertReplyButton()
 
 		// Check if reply should be disabled due to outdented comments
 		if (
-			commentManager.getByIndex(this.comment.index + 1)?.isOutdented &&
+			commentManager.getByIndex(this.comment.index + 1)?.isOutdented() &&
 			(!this.comment.section ||
 				// Probably shouldn't add a comment to a numbered list
 				this.comment.elements[0].matches('ol *'))
@@ -203,7 +203,7 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addEditButton() {
-		if (!this.comment.isEditable) return
+		if (!this.comment.isEditable()) return
 
 		this.editButton = this.createEditButton(this.onEditAction)
 		this.insertEditButton()
@@ -324,7 +324,7 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addQuoteButton() {
-		if (!this.comment.isActionable || this.quoteButton?.isConnected()) return
+		if (!this.comment.isActionable() || this.quoteButton?.isConnected()) return
 
 		this.quoteButton = this.createQuoteButton(this.onQuoteAction)
 		this.insertQuoteButton()

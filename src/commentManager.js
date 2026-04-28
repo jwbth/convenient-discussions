@@ -279,7 +279,7 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Set the {@link Comment#isNew} and {@link Comment#isSeen} properties to comments.
+	 * Set the `new` flag and {@link Comment#seen} property to comments.
 	 *
 	 * @param {string[]} currentPageData Visits data for the current page.
 	 * @param {number} currentTime Unix timestamp.
@@ -359,10 +359,7 @@ export class CommentManager extends EventEmitter {
 			.reverse()
 			.some((comment) => {
 				const shouldBeHighlighted =
-					!comment.isCollapsed &&
-					(comment.hasAnyFlag() ||
-						// Need to generate a gray line to close the gaps between adjacent list item elements.
-						comment.isLineGapped)
+					!comment.isCollapsed() && (comment.hasAnyFlag() || comment.isLineGapped())
 
 				if (
 					comment.layers &&
@@ -744,7 +741,7 @@ export class CommentManager extends EventEmitter {
 	reviewHighlightables() {
 		this.items.forEach((comment) => {
 			comment.reviewHighlightables()
-			comment.isLineGapped = comment.highlightables.length > 1 && comment.level > 0
+			comment.lineGapped = comment.highlightables.length > 1 && comment.level > 0
 		})
 	}
 
@@ -838,7 +835,7 @@ export class CommentManager extends EventEmitter {
 			$classed = $buttoned = $wrappingItem
 
 			// Update the collapsed range for the thread.
-			if (parent.thread?.isCollapsed) {
+			if (parent.thread?.isCollapsed()) {
 				parent.thread.expand()
 				parent.thread.collapse(true)
 			}
@@ -931,7 +928,7 @@ export class CommentManager extends EventEmitter {
 	 * @private
 	 */
 	resetSelectedComment() {
-		const comment = this.items.find((c) => c.isSelected)
+		const comment = this.items.find((c) => c.isSelected())
 		if (comment) {
 			comment.setSelected(false)
 			this.emit('unselect', comment)
@@ -967,7 +964,7 @@ export class CommentManager extends EventEmitter {
 			} else {
 				comment = this.getByIndex(Number(commentIndex))
 				if (comment) {
-					if (!comment.isSelected) {
+					if (!comment.isSelected()) {
 						this.resetSelectedComment()
 						comment.setSelected(true)
 						this.emit('select', comment)
@@ -1018,7 +1015,7 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * _For internal use._ Set the {@link Comment#isTableComment} property for each "table comment",
+	 * _For internal use._ Set the {@link Comment#tableComment} property for each "table comment",
 	 * i.e. a comment that is (or its signature is) inside a table containing only that comment.
 	 */
 	findAndUpdateTableComments() {
@@ -1031,7 +1028,7 @@ export class CommentManager extends EventEmitter {
 				const index = /** @type {HTMLElement} */ (signature.closest('.cd-comment-part')).dataset
 					.cdCommentIndex
 				if (index !== undefined) {
-					this.items[Number(index)].isTableComment = true
+					this.items[Number(index)].tableComment = true
 				}
 			})
 	}
@@ -1372,7 +1369,7 @@ export class CommentManager extends EventEmitter {
 	goToFirstUnseenComment() {
 		if (controller.isAutoScrolling()) return
 
-		const candidates = this.query((c) => c.isSeen === false)
+		const candidates = this.query((c) => c.isSeen() === false)
 		const comment = candidates.find((c) => c.isInViewport() === false) || candidates[0]
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		comment?.scrollTo({

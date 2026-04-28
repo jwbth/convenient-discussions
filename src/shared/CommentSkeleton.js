@@ -162,8 +162,9 @@ class CommentSkeleton {
 	 * Does the comment belong to the current user.
 	 *
 	 * @type {boolean}
+	 * @private
 	 */
-	isOwn
+	own
 
 	/**
 	 * Is the comment unsigned or not properly signed (an unsigned template class is present).
@@ -171,8 +172,9 @@ class CommentSkeleton {
 	 * Not used anywhere in the script yet.
 	 *
 	 * @type {boolean}
+	 * @private
 	 */
-	isUnsigned
+	unsigned
 
 	/**
 	 * _For internal use._ Elements containing all parts of the comment.
@@ -194,8 +196,9 @@ class CommentSkeleton {
 	 * Is the comment outdented with the `{{outdent}}` template.
 	 *
 	 * @type {boolean}
+	 * @private
 	 */
-	isOutdented
+	outdented
 
 	/**
 	 * Create a comment skeleton instance.
@@ -252,8 +255,8 @@ class CommentSkeleton {
 		this.extraSignatures = signature.extraSignatures
 		this.authorLink = signature.authorLink
 		this.authorTalkLink = signature.authorTalkLink
-		this.isOwn = this.authorName === cd.g.userName
-		this.isUnsigned = signature.isUnsigned
+		this.own = this.authorName === cd.g.userName
+		this.unsigned = signature.isUnsigned
 		this.elements = this.parts.map((part) => /** @type {ElementFor<N>} */ (part.node))
 
 		this.updateHighlightables()
@@ -269,7 +272,7 @@ class CommentSkeleton {
 		this.addAttributes()
 
 		this.section = undefined
-		this.isOutdented = false
+		this.outdented = false
 
 		signature.comment = this
 	}
@@ -295,6 +298,33 @@ class CommentSkeleton {
 	 */
 	hasTimestamp() {
 		return CommentSkeleton.hasTimestamp(this)
+	}
+
+	/**
+	 * Does the comment belong to the current user.
+	 *
+	 * @returns {boolean}
+	 */
+	isOwn() {
+		return this.own
+	}
+
+	/**
+	 * Is the comment unsigned or not properly signed (an unsigned template class is present).
+	 *
+	 * @returns {boolean}
+	 */
+	isUnsigned() {
+		return this.unsigned
+	}
+
+	/**
+	 * Is the comment outdented with the `{{outdent}}` template.
+	 *
+	 * @returns {boolean}
+	 */
+	isOutdented() {
+		return this.outdented
 	}
 
 	/** @typedef {'start'|'back'|'up'|'dive'|'replaced'} Step */
@@ -1671,7 +1701,7 @@ class CommentSkeleton {
 					(prop === 'level' &&
 						allowSiblings &&
 						comment[prop] === this[prop] &&
-						comment.isOutdented))
+						comment.isOutdented()))
 			) {
 				// `comment.getParent() === this` to allow comments mistakenly indented with more than one
 				// level.
@@ -1859,7 +1889,7 @@ class CommentSkeleton {
 
 					this.updateOutdentStyle(element, parser)
 
-					childComment.isOutdented = true
+					childComment.outdented = true
 					childComment.elements[0].classList.add('cd-comment-outdented')
 
 					const narrowedParrentComment = parentComment

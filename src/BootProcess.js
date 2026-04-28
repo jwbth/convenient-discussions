@@ -319,7 +319,7 @@ class BootProcess {
 					// Need to generate a gray line to close the gaps between adjacent list item elements. Do it
 					// here, not after processing comments, to group all operations requiring reflow
 					// together for performance reasons.
-					c.isLineGapped,
+					c.isLineGapped(),
 			)
 
 			// Should be below Thread.init() as these functions may want to scroll to a comment in a

@@ -135,7 +135,7 @@ class Thread extends mixIntoObject(
 	 * @type {boolean}
 	 * @private
 	 */
-	isAutocollapseTarget = false
+	autocollapseTarget = false
 
 	/**
 	 * Create a comment thread object.
@@ -182,7 +182,8 @@ class Thread extends mixIntoObject(
 		 * @private
 		 */
 		this.hasOutdents =
-			controller.areThereOutdents() && this.comments.slice(1).some((comment) => comment.isOutdented)
+			controller.areThereOutdents() &&
+			this.comments.slice(1).some((comment) => comment.isOutdented())
 
 		/**
 		 * Last comment of the thread _visually_, not logically (differs from {@link Thread#lastComment}
@@ -215,8 +216,9 @@ class Thread extends mixIntoObject(
 		 * Is the thread collapsed.
 		 *
 		 * @type {boolean}
+		 * @private
 		 */
-		this.isCollapsed = false
+		this.collapsed = false
 
 		this.navMode = false
 		this.blockClickEvent = false
@@ -230,7 +232,7 @@ class Thread extends mixIntoObject(
 	 */
 	handleBeforeMatch = (event) => {
 		// Check if the event target is within this thread's collapsed range
-		if (this.isCollapsed && this.collapsedRange) {
+		if (this.isCollapsed() && this.collapsedRange) {
 			const target = /** @type {HTMLElement} */ (event.target)
 			const isInCollapsedRange = this.collapsedRange.some(
 				(element) => element === target || element.contains(target),
@@ -301,7 +303,7 @@ class Thread extends mixIntoObject(
 					.getAll()
 					.slice(0, this.lastComment.index + 1)
 					.reverse()
-					.find((comment) => comment.isOutdented)
+					.find((comment) => comment.isOutdented())
 			if (lastOutdentedComment) {
 				endElement =
 					lastOutdentedComment.level === 0
@@ -634,6 +636,25 @@ class Thread extends mixIntoObject(
 	}
 
 	/**
+	 * Is the thread collapsed.
+	 *
+	 * @returns {boolean}
+	 */
+	isCollapsed() {
+		return this.collapsed
+	}
+
+	/**
+	 * Should the thread be automatically collapsed on page load if taking only comment
+	 * level into account and not remembering the user's previous actions.
+	 *
+	 * @returns {boolean}
+	 */
+	isAutocollapseTarget() {
+		return this.autocollapseTarget
+	}
+
+	/**
 	 * Quit navigation mode and remove its traces.
 	 *
 	 * @private
@@ -702,10 +723,10 @@ class Thread extends mixIntoObject(
 			let areOutdentedCommentsShown = false
 			for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
 				const comment = /** @type {import('./Comment').default} */ (commentManager.getByIndex(i))
-				if (comment.isOutdented) {
+				if (comment.isOutdented()) {
 					areOutdentedCommentsShown = true
 				}
-				if (comment.thread?.isCollapsed) {
+				if (comment.thread?.isCollapsed()) {
 					i = comment.thread.lastComment.index
 					continue
 				}
@@ -787,7 +808,7 @@ class Thread extends mixIntoObject(
 	 * @private
 	 */
 	getAdjustedStartElement() {
-		if (this.isCollapsed) {
+		if (this.isCollapsed()) {
 			return /** @type {HTMLElement} */ (this.expandNote)
 		}
 
@@ -900,7 +921,7 @@ class Thread extends mixIntoObject(
 	 * thread.
 	 */
 	toggleAllOflevel() {
-		if (this.isCollapsed) {
+		if (this.isCollapsed()) {
 			commentManager.expandAllThreadsOfLevel(this.rootComment.level)
 			this.comments[0].scrollTo()
 		} else {
@@ -918,7 +939,7 @@ class Thread extends mixIntoObject(
 	 */
 	toggleWithSiblings(clickedThread = false) {
 		const wasCollapsed = clickedThread
-			? this.isCollapsed
+			? this.collapsed
 			: Boolean(this.rootComment.getParent()?.areChildThreadsCollapsed())
 		this.rootComment.getSiblingsAndSelf().forEach((sibling) => {
 			sibling.thread?.toggle(wasCollapsed, undefined, true)
@@ -940,7 +961,7 @@ class Thread extends mixIntoObject(
 	 * @private
 	 */
 	toggle(expand, auto, isBatchOperation) {
-		if (expand || (expand === undefined && this.isCollapsed)) {
+		if (expand || (expand === undefined && this.isCollapsed())) {
 			this.expand(auto, isBatchOperation)
 		} else {
 			this.collapse(auto, isBatchOperation)
@@ -958,7 +979,7 @@ class Thread extends mixIntoObject(
 	 */
 	// eslint-disable-next-line jsdoc/require-jsdoc
 	collapse(auto = false, isBatchOperation = auto, loadUserGendersPromise) {
-		if (this.isCollapsed) return
+		if (this.isCollapsed()) return
 
 		this.collapsedRange = getRangeContents(
 			this.getAdjustedStartElement(),
@@ -972,7 +993,7 @@ class Thread extends mixIntoObject(
 		})
 		this.updateEndOfCollapsedRange(controller.getClosedDiscussions())
 
-		this.isCollapsed = true
+		this.collapsed = true
 
 		for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
 			i =
@@ -1026,7 +1047,7 @@ class Thread extends mixIntoObject(
 	 *   scrolling or updating the parent comment's "Toggle child threads" button look).
 	 */
 	expand(auto = false, isBatchOperation = auto) {
-		if (!this.isCollapsed) return
+		if (!this.isCollapsed()) return
 
 		const collapsedRangeTyped = /** @type {HTMLElement[]} */ (this.collapsedRange)
 		collapsedRangeTyped.forEach((element) => {
@@ -1049,12 +1070,12 @@ class Thread extends mixIntoObject(
 			editOpeningCommentItem?.setDisabled(false)
 		}
 
-		this.isCollapsed = false
+		this.collapsed = false
 		let areOutdentedCommentsShown = false
 		for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
 			const comment = /** @type {import('./Comment').default} */ (commentManager.getByIndex(i))
 			i = comment.expand() ?? i
-			if (comment.isOutdented) {
+			if (comment.isOutdented()) {
 				areOutdentedCommentsShown = true
 			}
 		}
@@ -1202,7 +1223,7 @@ class Thread extends mixIntoObject(
 		try {
 			const comment = this.rootComment
 
-			if (comment.isCollapsed && !this.isCollapsed) {
+			if (comment.isCollapsed() && !this.isCollapsed()) {
 				throw new CdError()
 			}
 
@@ -1216,8 +1237,8 @@ class Thread extends mixIntoObject(
 				this.startElement.tagName === 'DIV'
 
 			const elTop =
-				this.isCollapsed || !needCalculateMargins ? this.getAdjustedStartElement() : undefined
-			const elBottom = this.isCollapsed ? elTop : this.getAdjustedEndElement(true)
+				this.isCollapsed() || !needCalculateMargins ? this.getAdjustedStartElement() : undefined
+			const elBottom = this.isCollapsed() ? elTop : this.getAdjustedEndElement(true)
 
 			let rectTop
 			if (elTop) {
@@ -1552,7 +1573,7 @@ class Thread extends mixIntoObject(
 				if (
 					![...thread.rootComment.getAncestors(), ...thread.comments].some((c) => c.hasFlag('own'))
 				) {
-					thread.isAutocollapseTarget = true
+					thread.autocollapseTarget = true
 
 					if (!thread.wasManuallyExpanded) {
 						threads.push(thread)
@@ -1714,12 +1735,13 @@ class Thread extends mixIntoObject(
 				commentManager
 					.query((comment) =>
 						Boolean(
-							comment.thread && comment.thread.isCollapsed !== comment.thread.isAutocollapseTarget,
+							comment.thread &&
+							comment.thread.isCollapsed() !== comment.thread.isAutocollapseTarget(),
 						),
 					)
 					.map((comment) => ({
 						id: comment.id,
-						collapsed: /** @type {Thread} */ (comment.thread).isCollapsed,
+						collapsed: /** @type {Thread} */ (comment.thread).isCollapsed(),
 					})),
 			)
 			.save()

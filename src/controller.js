@@ -450,7 +450,7 @@ class Controller extends EventEmitter {
 						.getAll()
 						.map((comment) => comment.thread)
 						.filter(defined)
-						.filter((thread) => thread.isCollapsed)
+						.filter((thread) => thread.isCollapsed())
 						.find((thread) =>
 							/** @type {HTMLElement[]} */ (thread.collapsedRange).includes(closestHidden),
 						)
@@ -1356,7 +1356,7 @@ class Controller extends EventEmitter {
 		if (cd.settings.get('notifications') === 'all') {
 			filteredComments = comments
 		} else if (cd.settings.get('notifications') === 'toMe') {
-			filteredComments = comments.filter((comment) => comment.isToMe)
+			filteredComments = comments.filter((comment) => comment.toMe)
 		}
 
 		if (cd.settings.get('notifications') !== 'none' && filteredComments.length) {
@@ -1381,7 +1381,7 @@ class Controller extends EventEmitter {
 			)
 			if (filteredComments.length === 1) {
 				const comment = filteredComments[0]
-				html = comment.isToMe
+				html = comment.toMe
 					? cd.sParse(
 							'notification-toyou',
 							comment.author.getName(),
@@ -1460,7 +1460,7 @@ class Controller extends EventEmitter {
 		if (cd.settings.get('desktopNotifications') === 'all') {
 			filteredComments = comments
 		} else if (cd.settings.get('desktopNotifications') === 'toMe') {
-			filteredComments = comments.filter((comment) => comment.isToMe)
+			filteredComments = comments.filter((comment) => comment.toMe)
 		}
 
 		if (
@@ -1478,7 +1478,7 @@ class Controller extends EventEmitter {
 		const comment = filteredComments[0]
 		const currentPageName = cd.page.name
 		if (filteredComments.length === 1) {
-			body = comment.isToMe
+			body = comment.toMe
 				? cd.s(
 						'notification-toyou-desktop',
 						comment.author.getName(),
@@ -1926,7 +1926,7 @@ class Controller extends EventEmitter {
 		mw.config.set(bootProcess.passedData.parseData.jsconfigvars)
 
 		bootProcess.passedData.unseenComments = commentManager.query(
-			(comment) => comment.isSeen === false,
+			(comment) => comment.isSeen() === false,
 		)
 
 		if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {

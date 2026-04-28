@@ -178,7 +178,7 @@ class CommentLayers {
 			this.comment.updateClassesForFlag(name, value)
 		})
 
-		if (wereJustCreated && this.comment.isLineGapped) {
+		if (wereJustCreated && this.comment.isLineGapped()) {
 			this.line.classList.add('cd-comment-overlay-line-gapCloser')
 		}
 	}

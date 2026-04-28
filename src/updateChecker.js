@@ -916,14 +916,14 @@ class UpdateChecker extends EventEmitter {
 						) {
 							parentMatch = c.parentMatch
 						}
-						if (parentMatch?.isCollapsed) {
+						if (parentMatch?.isCollapsed()) {
 							return false
 						}
 					}
-					if (comment.isOwn || comment.author.isMuted()) {
+					if (comment.own || comment.author.isMuted()) {
 						return false
 					}
-					if (comment.isToMe) {
+					if (comment.toMe) {
 						return true
 					}
 					if (comment.section) {

@@ -744,7 +744,7 @@ class CommentSource {
 	matchProperPlaceRegexps(adjustedChunkCodeAfter) {
 		const anySignaturePattern =
 			'^(' +
-			(this.comment.isTableComment ? String.raw`[^]*?(?:(?:\s*\n\|\})+|</table>).*\n` : '') +
+			(this.comment.isTableComment() ? String.raw`[^]*?(?:(?:\s*\n\|\})+|</table>).*\n` : '') +
 			'[^]*?(?:' +
 			mw.util.escapeRegExp(this.signatureCode) +
 			'|' +

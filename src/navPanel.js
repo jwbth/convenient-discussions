@@ -388,7 +388,7 @@ class NavPanel {
 	updateFirstUnseenButton = () => {
 		if (!this.state) return
 
-		const unseenCommentCount = commentManager.query((c) => c.isSeen === false).length
+		const unseenCommentCount = commentManager.query((c) => c.isSeen() === false).length
 		this.state.firstUnseenButton
 			.toggle(Boolean(unseenCommentCount))
 			.setLabel(String(unseenCommentCount))

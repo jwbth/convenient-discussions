@@ -139,8 +139,19 @@ export default class Page {
 		 * page.
 		 *
 		 * @type {boolean}
+		 * @private
 		 */
-		this.isActionable = false
+		this.actionable = false
+	}
+
+	/**
+	 * Is the page actionable, i.e. you can add a section to it. Can be `true` only for the current
+	 * page.
+	 *
+	 * @returns {boolean}
+	 */
+	isActionable() {
+		return this.actionable
 	}
 
 	/**

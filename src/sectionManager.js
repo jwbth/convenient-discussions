@@ -417,7 +417,8 @@ export class SectionManager {
 		}
 		this.items
 			.filter(
-				(section) => section.level === 2 || section.isHidden || subsectionsToHide.includes(section),
+				(section) =>
+					section.level === 2 || section.isHidden() || subsectionsToHide.includes(section),
 			)
 			.forEach((section) => {
 				section.updateVisibility(!(firstSectionToHide && section.index >= firstSectionToHide.index))

@@ -51,8 +51,11 @@ export default class CommentWorker extends CommentSkeleton {
 	/** @type {CommentWorker|undefined} */
 	parent
 
-	/** @type {boolean|undefined} */
-	isToMe
+	/**
+	 * @type {boolean|undefined}
+	 * @private
+	 */
+	toMe
 
 	/**
 	 * @override
@@ -383,7 +386,7 @@ export default class CommentWorker extends CommentSkeleton {
 			comment.children = comment.getChildren()
 			comment.children.forEach((reply) => {
 				reply.parent = comment
-				reply.isToMe = comment.isOwn
+				reply.toMe = comment.isOwn()
 			})
 
 			comment.previousComments = comments.slice(Math.max(0, i - 2), i).reverse()

@@ -233,23 +233,25 @@ class Section extends SectionSkeleton {
 		 * https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления.)
 		 *
 		 * @type {boolean}
+		 * @private
 		 */
-		this.isTranscludedFromTemplate = this.sourcePage.namespaceId === 10
+		this.transcludedFromTemplate = this.sourcePage.namespaceId === 10
 
 		/**
 		 * Is the section actionable. (If it is in a closed discussion or on an old version page, then
 		 * no).
 		 *
 		 * @type {boolean}
+		 * @private
 		 */
-		this.isActionable =
+		this.actionable =
 			cd.page.isActive() &&
 			!controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
-			!this.isTranscludedFromTemplate
+			!this.isTranscludedFromTemplate()
 
-		if (this.isTranscludedFromTemplate) {
+		if (this.isTranscludedFromTemplate()) {
 			this.comments.forEach((comment) => {
-				comment.isActionable = false
+				comment.actionable = false
 			})
 		}
 
@@ -274,8 +276,9 @@ class Section extends SectionSkeleton {
 		 * `true` when the `improvePerformance` setting is enabled.
 		 *
 		 * @type {boolean}
+		 * @private
 		 */
-		this.isHidden = false
+		this.hidden = false
 
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof Section} */
@@ -606,11 +609,11 @@ class Section extends SectionSkeleton {
 	 */
 	canFirstCommentBeEdited() {
 		return Boolean(
-			this.isActionable &&
+			this.isActionable() &&
 			this.commentsInFirstChunk.length &&
 			this.comments[0].isOpeningSection() &&
 			this.comments[0].canBeEdited() &&
-			!this.comments[0].isCollapsed,
+			!this.comments[0].isCollapsed(),
 		)
 	}
 
@@ -620,7 +623,7 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeMoved() {
-		return this.isTopic() && !this.isTranscludedFromTemplate && cd.page.isActive()
+		return this.isTopic() && !this.isTranscludedFromTemplate() && cd.page.isActive()
 	}
 
 	/**
@@ -631,7 +634,7 @@ class Section extends SectionSkeleton {
 	canBeUnarchived() {
 		return (
 			this.isTopic() &&
-			!this.isTranscludedFromTemplate &&
+			!this.isTranscludedFromTemplate() &&
 			cd.page.isArchive() &&
 			cd.page.getArchivedPage() !== cd.page
 		)
@@ -657,7 +660,7 @@ class Section extends SectionSkeleton {
 	 * Check whether the user should get the affordance to add a reply to the section.
 	 *
 	 * @returns {this is {
-	 *   isActionable: true;
+	 *   actionable: true;
 	 *   replyButton: Button;
 	 *   $replyButtonWrapper: JQuery;
 	 *   $replyButtonContainer: JQuery;
@@ -667,11 +670,11 @@ class Section extends SectionSkeleton {
 		const nextSection = this.manager.getByIndex(this.index + 1)
 
 		return (
-			this.isActionable &&
+			this.isActionable() &&
 			// Is the first chunk closed
 			!(
 				this.commentsInFirstChunk[0]?.level === 0 &&
-				this.commentsInFirstChunk.every((comment) => !comment.isActionable)
+				this.commentsInFirstChunk.every((comment) => !comment.isActionable())
 			) &&
 			// Is the first chunk empty and precedes a subsection
 			!(
@@ -698,11 +701,13 @@ class Section extends SectionSkeleton {
 			.find((otherSection) => otherSection.level === this.level)
 
 		return (
-			this.isActionable &&
+			this.isActionable() &&
 			this.level >= 2 &&
 			this.level <= 5 &&
 			// Is closed
-			!(this.comments[0]?.level === 0 && this.comments.every((comment) => !comment.isActionable)) &&
+			!(
+				this.comments[0]?.level === 0 && this.comments.every((comment) => !comment.isActionable())
+			) &&
 			// While the "Reply" button is added to the end of the first chunk, the "Add subsection"
 			// button is added to the end of the whole section, so we look the next section of the same
 			// level.
@@ -877,6 +882,33 @@ class Section extends SectionSkeleton {
 		stack.setItem(getPanelByName(authorsSortSetting))
 
 		return $().add(sortSelect.$element).add(stack.$element)
+	}
+
+	/**
+	 * Is the section actionable.
+	 *
+	 * @returns {boolean}
+	 */
+	isActionable() {
+		return this.actionable
+	}
+
+	/**
+	 * Is the section transcluded from a template.
+	 *
+	 * @returns {boolean}
+	 */
+	isTranscludedFromTemplate() {
+		return this.transcludedFromTemplate
+	}
+
+	/**
+	 * Is the section visible.
+	 *
+	 * @returns {boolean}
+	 */
+	isHidden() {
+		return this.hidden
 	}
 
 	/**
@@ -1349,7 +1381,7 @@ class Section extends SectionSkeleton {
 		 *
 		 * @type {import('./Comment').default[] | undefined}
 		 */
-		this.newComments = this.comments.filter((comment) => comment.isSeen === false)
+		this.newComments = this.comments.filter((comment) => comment.isSeen() === false)
 
 		if (
 			!this.isTopic() ||
@@ -1606,7 +1638,7 @@ class Section extends SectionSkeleton {
 		// Quick checks before adding the button
 		if (
 			!this.isTopic() ||
-			this.isTranscludedFromTemplate ||
+			this.isTranscludedFromTemplate() ||
 			cd.page.isArchive() ||
 			!cd.page.canHaveArchives()
 		) {
@@ -2209,14 +2241,14 @@ class Section extends SectionSkeleton {
 	 * @param {boolean} show Show or hide.
 	 */
 	updateVisibility(show) {
-		if (show !== this.isHidden) return
+		if (show !== !this.hidden) return
 
 		this.elements ??= getRangeContents(
 			this.headingElement,
 			this.findRealLastElement(),
 			controller.rootElement,
 		)
-		this.isHidden = !show
+		this.hidden = !show
 		this.elements?.forEach((el) => {
 			el.classList.toggle('cd-section-hidden', !show)
 		})

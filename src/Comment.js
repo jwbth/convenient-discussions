@@ -202,15 +202,16 @@ class Comment extends mixIntoClass(
 	 * need to know if the comment is highlighted as new and unseen.
 	 *
 	 * @type {boolean | undefined}
+	 * @private
 	 */
-	isSeen
+	seen
 
 	/**
 	 * Has the comment changed since the previous visit.
 	 *
 	 * @type {boolean | undefined}
 	 */
-	isChangedSincePreviousVisit
+	changedSincePreviousVisit
 
 	/**
 	 * The current flash flag being animated (if any). Used to clean up the flag if layers are
@@ -270,14 +271,15 @@ class Comment extends mixIntoClass(
 	 *
 	 * @type {boolean}
 	 */
-	isTableComment = false
+	tableComment = false
 
 	/**
 	 * Is the comment a part of a collapsed thread.
 	 *
 	 * @type {boolean}
+	 * @private
 	 */
-	isCollapsed = false
+	collapsed = false
 
 	/**
 	 * If the comment is collapsed, that's the closest collapsed thread that this comment is related
@@ -303,7 +305,7 @@ class Comment extends mixIntoClass(
 	 *
 	 * @type {boolean}
 	 */
-	isLineGapped
+	lineGapped
 
 	/**
 	 * Has the comment been seen before it was changed.
@@ -311,7 +313,7 @@ class Comment extends mixIntoClass(
 	 * @type {boolean | undefined}
 	 * @private
 	 */
-	isSeenBeforeChanged
+	seenBeforeChanged
 
 	/** @type {import('./Thread').default | undefined} */
 	thread
@@ -366,8 +368,9 @@ class Comment extends mixIntoClass(
 	 * Is the comment selected.
 	 *
 	 * @type {boolean}
+	 * @private
 	 */
-	isSelected = false
+	selected = false
 
 	/**
 	 * Was the menu hidden (used for compact comments).
@@ -395,7 +398,7 @@ class Comment extends mixIntoClass(
 		this.manager = manager
 
 		this.flags = new CommentFlagSet()
-		if (this.isOwn) {
+		if (this.isOwn()) {
 			this.addFlag('own')
 		}
 
@@ -425,13 +428,11 @@ class Comment extends mixIntoClass(
 		 * also checked, but currently all comments should have an author.)
 		 *
 		 * @type {boolean}
+		 * @private
 		 */
-		this.isActionable =
+		this.actionable =
 			cd.page.isActive() &&
 			!controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
-
-		this.isEditable =
-			this.isActionable && (this.hasFlag('own') || cd.settings.get('allowEditOthersComments'))
 
 		// Delay bindEvents call until after construction is complete
 		setTimeout(() => {
@@ -472,6 +473,106 @@ class Comment extends mixIntoClass(
 
 			this.mhContainerListType = getContainerListType(this.marginHighlightable)
 		}
+	}
+
+	/**
+	 * Is the comment editable, i.e. you can edit it.
+	 *
+	 * @returns {boolean}
+	 */
+	isEditable() {
+		return this.isActionable() && (this.isOwn() || cd.settings.get('allowEditOthersComments'))
+	}
+
+	/**
+	 * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
+	 * not in a closed discussion or an old diff page.
+	 *
+	 * @returns {boolean}
+	 */
+	isActionable() {
+		return this.actionable && !this.hasFlag('deleted')
+	}
+
+	/**
+	 * Has the comment been seen if it is new.
+	 *
+	 * @returns {boolean | undefined}
+	 */
+	isSeen() {
+		return this.seen
+	}
+
+	/**
+	 * Has the comment changed since the previous visit.
+	 *
+	 * @returns {boolean | undefined}
+	 */
+	isChangedSincePreviousVisit() {
+		return this.changedSincePreviousVisit
+	}
+
+	/**
+	 * Is the comment a part of a collapsed thread.
+	 *
+	 * @returns {boolean}
+	 */
+	isCollapsed() {
+		return this.collapsed
+	}
+
+	/**
+	 * Is the comment selected.
+	 *
+	 * @returns {boolean}
+	 */
+	isSelected() {
+		return this.selected
+	}
+
+	/**
+	 * Is the comment (or its signature) inside a table containing only one comment.
+	 *
+	 * @returns {boolean}
+	 */
+	isTableComment() {
+		return this.tableComment
+	}
+
+	/**
+	 * Is there a "gap" in the comment between highlightables.
+	 *
+	 * @returns {boolean}
+	 */
+	isLineGapped() {
+		return this.lineGapped
+	}
+
+	/**
+	 * Has the comment been seen before it was changed.
+	 *
+	 * @returns {boolean | undefined}
+	 */
+	isSeenBeforeChanged() {
+		return this.seenBeforeChanged
+	}
+
+	/**
+	 * Is the comment's start stretched.
+	 *
+	 * @returns {boolean | undefined}
+	 */
+	isStartStretched() {
+		return this.startStretched
+	}
+
+	/**
+	 * Is the comment's end stretched.
+	 *
+	 * @returns {boolean | undefined}
+	 */
+	isEndStretched() {
+		return this.endStretched
 	}
 
 	/**
@@ -552,7 +653,7 @@ class Comment extends mixIntoClass(
 	 * @returns {boolean}
 	 */
 	canBeEdited() {
-		return this.isEditable
+		return this.isEditable()
 	}
 
 	/**
@@ -672,7 +773,7 @@ class Comment extends mixIntoClass(
 	 * @returns {boolean}
 	 */
 	areChildThreadsCollapsed() {
-		return this.getChildren().every((child) => !child.thread || child.thread.isCollapsed)
+		return this.getChildren().every((child) => !child.thread || child.thread.isCollapsed())
 	}
 
 	/**
@@ -1004,9 +1105,8 @@ class Comment extends mixIntoClass(
 	 *
 	 * It gets the coordinates of the comment; optionally saves them as the `offset` or `roughOffset`
 	 * property; returns the offset or (if `save: true` option is passed) the fact that the comment
-	 * was displaced. Also updates the {@link Comment#isStartStretched isStartStretched} and
-	 * {@link Comment#isEndStretched isEndStretched} properties (if `options.considerFloating` is
-	 * `true`).
+	 * was displaced. Also updates the {@link Comment#startStretched startStretched} and
+	 * {@link Comment#endStretched endStretched} properties (if `options.considerFloating` is `true`).
 	 *
 	 * Note that comment coordinates are not static, obviously, but we need to recalculate them only
 	 * occasionally.
@@ -1200,8 +1300,8 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Update the {@link Comment#isStartStretched isStartStretched} and
-	 * {@link Comment#isEndStretched isEndStretched} properties.
+	 * Update the {@link Comment#startStretched startStretched} and
+	 * {@link Comment#endStretched endStretched} properties.
 	 *
 	 * @param {number} left Left offset.
 	 * @param {number} right Right offset.
@@ -1214,7 +1314,7 @@ class Comment extends mixIntoClass(
 		 *
 		 * @type {boolean|undefined}
 		 */
-		this.isStartStretched = false
+		this.startStretched = false
 
 		/**
 		 * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
@@ -1222,7 +1322,7 @@ class Comment extends mixIntoClass(
 		 *
 		 * @type {boolean|undefined}
 		 */
-		this.isEndStretched = false
+		this.endStretched = false
 
 		if (!this.getLayersContainer().cdIsTopLayersContainer) return
 
@@ -1233,11 +1333,11 @@ class Comment extends mixIntoClass(
 			const leftStretched = left - offsets.startMargin - 2
 			const rightStretched = right + offsets.startMargin + 2
 
-			this.isStartStretched =
+			this.startStretched =
 				this.getDirection() === 'ltr'
 					? leftStretched <= offsets.start
 					: rightStretched >= offsets.start
-			this.isEndStretched =
+			this.endStretched =
 				this.getDirection() === 'ltr' ? rightStretched >= offsets.end : leftStretched <= offsets.end
 		}
 	}
@@ -1374,8 +1474,8 @@ class Comment extends mixIntoClass(
 
 	/**
 	 * Get the left and right margins of the comment layers or the expand note.
-	 * {@link Comment#isStartStretched isStartStretched} and
-	 * {@link Comment#isEndStretched isEndStretched} should have already been set.
+	 * {@link Comment#startStretched startStretched} and {@link Comment#endStretched endStretched}
+	 * should have already been set.
 	 *
 	 * @returns {CommentMargins}
 	 */
@@ -1388,7 +1488,7 @@ class Comment extends mixIntoClass(
 				this.highlightables.length === 1
 					? cd.g.contentFontSize * 3.2
 					: cd.g.contentFontSize * 2.2 - 1
-		} else if (this.isStartStretched) {
+		} else if (this.isStartStretched()) {
 			startMargin = controller.getContentColumnOffsets().startMargin
 		} else {
 			const marginElement =
@@ -1412,7 +1512,7 @@ class Comment extends mixIntoClass(
 				startMargin = this.level === 0 ? cd.g.commentFallbackSideMargin : cd.g.contentFontSize
 			}
 		}
-		const endMargin = this.isEndStretched
+		const endMargin = this.isEndStretched()
 			? controller.getContentColumnOffsets().startMargin
 			: cd.g.commentFallbackSideMargin
 
@@ -1539,7 +1639,7 @@ class Comment extends mixIntoClass(
 	 * @param {number} delay
 	 */
 	flash(flag, delay) {
-		if (this.isCollapsed) return
+		if (this.isCollapsed()) return
 
 		this.updateLayers()
 		if (!this.layers) return
@@ -1801,7 +1901,7 @@ class Comment extends mixIntoClass(
 				break
 
 			case 'changedSince':
-				this.isChangedSincePreviousVisit = true
+				this.changedSincePreviousVisit = true
 				stringName = 'comment-changedsince'
 				break
 
@@ -1881,8 +1981,8 @@ class Comment extends mixIntoClass(
 		}
 
 		if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
-			this.isSeenBeforeChanged ??= this.isSeen
-			this.isSeen = false
+			this.seenBeforeChanged ??= this.seen
+			this.seen = false
 			this.manager.registerSeen()
 		}
 
@@ -1942,11 +2042,11 @@ class Comment extends mixIntoClass(
 
 		if (
 			this.countEditsAsNewComments &&
-			this.isSeen === false &&
-			this.isSeenBeforeChanged === true
+			this.seen === false &&
+			this.isSeenBeforeChanged() === true
 		) {
-			this.isSeen = true
-			this.isSeenBeforeChanged = undefined
+			this.seen = true
+			this.seenBeforeChanged = undefined
 			this.manager.emit('registerSeen')
 		}
 
@@ -2079,7 +2179,7 @@ class Comment extends mixIntoClass(
 			history.pushState({ ...history.state, cdLinkedComment: false, cdTargetComment: true }, '')
 		}
 
-		if (this.isCollapsed) {
+		if (this.isCollapsed()) {
 			const visibleExpandNote = /** @type {JQuery} */ (this.getVisibleExpandNote())
 			visibleExpandNote.cdScrollIntoView(alignment || 'top', smooth, callback)
 			const $message = wrapHtml(cd.sParse('navpanel-firstunseen-hidden', '$1'), {
@@ -2097,7 +2197,7 @@ class Comment extends mixIntoClass(
 					'cd-notification-markThreadAsRead': () => {
 						const threadTyped = /** @type {import('./Thread').default} */ (this.thread)
 						threadTyped.getComments().forEach((comment) => {
-							comment.isSeen = true
+							comment.seen = true
 						})
 						this.manager.emit('registerSeen')
 						this.manager.goToFirstUnseenComment()
@@ -2105,7 +2205,7 @@ class Comment extends mixIntoClass(
 					},
 				},
 			})
-			if (this.isSeen) {
+			if (this.isSeen()) {
 				$message.find('.cd-notification-markThreadAsRead').remove()
 			}
 			const notification = mw.notification.notify($message, {
@@ -2584,7 +2684,7 @@ class Comment extends mixIntoClass(
 	reply(initialState, commentForm) {
 		if (this.replyForm) return
 
-		if (this.manager.getByIndex(this.index + 1)?.isOutdented && this.section) {
+		if (this.manager.getByIndex(this.index + 1)?.isOutdented() && this.section) {
 			let replyForm = this.section.replyForm
 			if (replyForm?.targetWithOutdentedReplies === this) {
 				replyForm.$element.cdScrollIntoView('center')
@@ -2976,7 +3076,7 @@ class Comment extends mixIntoClass(
 		if (
 			registerAllInDirection &&
 			// Makes sense to register further?
-			this.manager.getAll().some((comment) => comment.isSeen || comment.willFlashChangedOnSight)
+			this.manager.getAll().some((comment) => comment.isSeen() || comment.willFlashChangedOnSight)
 		) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const change = registerAllInDirection === 'backward' ? -1 : 1
@@ -2996,8 +3096,8 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} flash Whether to flash the comment as a target.
 	 */
 	async handleInViewport(flash) {
-		if (this.isSeen === false) {
-			this.isSeen = true
+		if (this.seen === false) {
+			this.seen = true
 			if (flash) {
 				this.flashTarget()
 			}
@@ -3353,7 +3453,7 @@ class Comment extends mixIntoClass(
 	 * @private
 	 */
 	getVisibleExpandNote() {
-		if (!this.isCollapsed) {
+		if (!this.isCollapsed()) {
 			return
 		}
 
@@ -3592,14 +3692,14 @@ class Comment extends mixIntoClass(
 		;[this, ...this.getAncestors()]
 			.map((comment) => comment.thread)
 			.filter(defined)
-			.filter((thread) => thread.isCollapsed)
+			.filter((thread) => thread.isCollapsed())
 			.forEach((thread) => {
 				thread.expand()
 			})
 	}
 
 	/**
-	 * Set the `new` {@link CommentFlagSet comment} and {@link Comment#isSeen} property for the
+	 * Set the `new` {@link CommentFlagSet comment} and {@link Comment#seen} property for the
 	 * comment given the list of the current page visits.
 	 *
 	 * @param {string[]} currentPageVisits
@@ -3616,7 +3716,7 @@ class Comment extends mixIntoClass(
 			this.date.getTime() > Date.now() + cd.g.msInMin * 3
 		) {
 			this.removeFlag('new')
-			this.isSeen = true
+			this.seen = true
 
 			return false
 		}
@@ -3631,12 +3731,12 @@ class Comment extends mixIntoClass(
 		} else {
 			this.removeFlag('new')
 		}
-		this.isSeen =
+		this.seen =
 			(commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) ||
 				this.hasFlag('own')) &&
 			!unseenComment
 
-		if (unseenComment?.isChangedSincePreviousVisit && unseenComment.$changeNote) {
+		if (unseenComment?.isChangedSincePreviousVisit() && unseenComment.$changeNote) {
 			this.addChangeNote(unseenComment.$changeNote)
 			if (unseenComment.willFlashChangedOnSight) {
 				this.flashChangedOnSight()
@@ -3785,10 +3885,10 @@ class Comment extends mixIntoClass(
 	 *   collapsed thread.
 	 */
 	collapse(thread) {
-		if (this.thread?.isCollapsed && this.thread !== thread) {
+		if (this.thread?.isCollapsed() && this.thread !== thread) {
 			return this.thread.lastComment.index
 		}
-		this.isCollapsed = true
+		this.collapsed = true
 		this.collapsedThread = thread
 		this.removeLayers()
 
@@ -3802,10 +3902,10 @@ class Comment extends mixIntoClass(
 	 *   thread.
 	 */
 	expand() {
-		if (this.thread?.isCollapsed) {
+		if (this.thread?.isCollapsed()) {
 			return this.thread.lastComment.index
 		}
-		this.isCollapsed = false
+		this.collapsed = false
 		this.collapsedThread = undefined
 		this.updateLayers()
 
@@ -3818,8 +3918,8 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} selected
 	 */
 	setSelected(selected) {
-		this.isSelected = selected
-		if (selected && this.isActionable) {
+		this.selected = selected
+		if (selected && this.isActionable()) {
 			this.updateLayers()
 			this.actions?.addQuoteButton()
 		} else if (!selected) {
