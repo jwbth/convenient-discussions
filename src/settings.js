@@ -276,7 +276,7 @@ class Settings extends EventEmitter {
 			'autopreview': true,
 			'collapseThreads': true,
 			'collapseThreadsLevel': 5,
-			'commentDisplay': null,
+			'commentDisplay': cd.user.isRegistered() ? null : 'spacious',
 			'countEditsAsNewComments': false,
 			'desktopNotifications': 'unknown',
 			'enableThreads': true,
