@@ -330,13 +330,31 @@ class Parser {
 			treeWalker.previousSibling()
 		}
 
+		const changeLengthForMathElement = (/** @type {string} */ textContent) => {
+			length -= textContent.length
+			length += 3
+		}
+
 		// Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
 		// so we need to walk the tree anyway.
 		/** @type {ElementLike | TextLike | null} */
 		let node = treeWalker.currentNode
 		do {
-			length += node.textContent.length
+			const textContent = node.textContent
+			length += textContent.length
 			if (isElement(node)) {
+				// <math> tags have long invisible text content. And they may be nested in some other
+				// elements. We can detect such cases using the `\displaystyle` in the text content.
+				if (textContent.includes(String.raw`{\displaystyle`)) {
+					if (node.classList.contains('mwe-math-element')) {
+						changeLengthForMathElement(textContent)
+					} else {
+						;[...node.getElementsByClassName('mwe-math-element')].forEach((el) => {
+							changeLengthForMathElement(el.textContent)
+						})
+					}
+				}
+
 				authorData.isLastLinkAuthorLink = /** @type {boolean} */ (false)
 
 				if (node.tagName === 'A') {
@@ -448,7 +466,7 @@ class Parser {
 		/** @type {Partial<SignatureTarget<N>>[]} */
 		const unsigneds = []
 		const unsignedElements = /** @type {HTMLElementFor<N>[]} */ ([
-			...this.context.rootElement.getElementsByClassName(cd.config.unsignedClass),
+			...this.getElementsByClassName(cd.config.unsignedClass),
 		])
 		unsignedElements
 			.filter((element) => {

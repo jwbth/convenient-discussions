@@ -223,7 +223,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	indentationCharMode: 'unify',
 
 	signaturePrefixRegexp:
-		/(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
+		/(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―⹃─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
 	signatureEndingRegexp: / \(обс\.\)$/,
 

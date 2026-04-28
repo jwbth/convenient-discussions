@@ -358,10 +358,10 @@ const defaultConfig = {
 	 *
 	 * @type {RegExp | null}
 	 * @default
-	 * /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200e\u200f\u2060]|&amp;\w+;|&amp;#\d+;)*(?:\s+\()?$/
+	 * /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─⹃~⁓/→⇒\s\u200e\u200f\u2060]|&amp;\w+;|&amp;#\d+;)*(?:\s+\()?$/
 	 */
 	signaturePrefixRegexp:
-		/(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
+		/(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─⹃~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
 	/**
 	 * Unchangable text (usually a user talk page link) at the end of Mediawiki:Signature (visible
