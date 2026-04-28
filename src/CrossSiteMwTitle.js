@@ -60,6 +60,47 @@ export default class CrossSiteMwTitle extends mw.Title {
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
 	hostname = this.hostname
 
+	/** @type {string|undefined} */
+	originalNamespaceAlias = undefined
+
+	/**
+	 * Attempt to extract the namespace alias as written in the title string, mirroring the
+	 * pre-processing that `mw.Title`'s internal `parse()` function applies before matching the
+	 * namespace prefix. Returns `undefined` when no namespace prefix is present (main namespace,
+	 * leading-colon titles, or titles where the prefix didn't resolve to a known namespace).
+	 *
+	 * @param {string} title Raw title string as passed to the constructor.
+	 * @param {number} resolvedNamespace The namespace id that `super()` resolved to.
+	 * @returns {string|undefined}
+	 */
+	static #extractNamespaceAlias(title, resolvedNamespace) {
+		// No prefix possible when the namespace is main
+		if (resolvedNamespace === 0) return undefined
+
+		// Mirror parse()'s pre-processing: strip bidi overrides, collapse whitespace to
+		// underscores (including existing underscores), then trim leading/trailing underscores
+		const rUnicodeBidi = /[\u200E\u200F\u202A-\u202E]+/g
+		const rWhitespace = /[ _\u00A0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+/g
+		const rUnderscoreTrim = /^_+|_+$/g
+		// Same regex used by parse() to split off the namespace prefix
+		const rSplit = /^(.+?)_*:_*(.*)$/
+
+		const normalized = title
+			.replace(rUnicodeBidi, '')
+			.replace(rWhitespace, '_')
+			.replace(rUnderscoreTrim, '')
+
+		// A leading colon forces main namespace — no alias was involved
+		if (normalized.startsWith(':')) return undefined
+
+		const m = normalized.match(rSplit)
+		if (!m) return undefined
+
+		// m[1] has underscores in place of spaces; restore spaces to match the formatted
+		// namespace style used elsewhere (e.g. "Wikipedia talk", not "Wikipedia_talk")
+		return m[1].replace(/_/g, ' ')
+	}
+
 	/**
 	 * @param {string} title
 	 * @param {number} [namespace]
@@ -85,6 +126,8 @@ export default class CrossSiteMwTitle extends mw.Title {
 		}
 
 		this.hostname = hostname
+
+		this.originalNamespaceAlias = CrossSiteMwTitle.#extractNamespaceAlias(title, this.namespace)
 
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof CrossSiteMwTitle} */
@@ -304,6 +347,29 @@ export default class CrossSiteMwTitle extends mw.Title {
 	 */
 	getHostname() {
 		return this.hostname
+	}
+
+	/**
+	 * Get the namespace alias as it appeared in the original title string passed to the constructor,
+	 * with spaces restored and leading/trailing whitespace-equivalent characters removed. Returns
+	 * `undefined` for main-namespace titles, leading-colon titles, or titles where no namespace
+	 * prefix was present.
+	 *
+	 * @returns {string|undefined}
+	 */
+	getOriginalNamespaceAlias() {
+		return this.originalNamespaceAlias
+	}
+
+	/**
+	 * Get the prefixed text with the original namespace alias (if present).
+	 *
+	 * @returns {string}
+	 */
+	getPrefixedTextWithOriginalNamespaceAlias() {
+		return this.originalNamespaceAlias
+			? this.originalNamespaceAlias + ':' + this.getMainText()
+			: this.getPrefixedText()
 	}
 
 	/**

@@ -315,6 +315,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			return await this.getCrossSitePageSuggestions(textForApi, interwiki, colonPrefix)
 		}
 
+		const inputTitle = CrossSiteMwTitle.newFromText(textForApi)
 		const response = await BaseAutocomplete.makeTitleSearchRequest(textForApi)
 
 		return response.pages.flatMap((page) => {
@@ -339,7 +340,10 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			if (page.matched_title && page.matched_title !== page.title) {
 				const redirectTitle = CrossSiteMwTitle.newFromText(page.matched_title)
 				if (redirectTitle) {
-					let redirectPageName = page.matched_title
+					// Use the namespace alias from the user's input if available
+					let redirectPageName = inputTitle
+						? inputTitle.getPrefixedTextWithOriginalNamespaceAlias()
+						: page.matched_title
 					if (redirectTitle.getNamespaceId() === 0) {
 						const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
 						const isCaseSensitive =
@@ -470,6 +474,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 		// The interwiki prefix is everything before the remote page name in the original text
 		const interwikiPrefix = this.extractInterwikiPrefix(text, pageName)
+		const inputTitle = CrossSiteMwTitle.newFromText(pageName, undefined, hostname)
 
 		return response.pages.flatMap((page) => {
 			const title = CrossSiteMwTitle.newFromText(page.title, undefined, hostname)
@@ -491,11 +496,16 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			if (page.matched_title && page.matched_title !== page.title) {
 				const redirectTitle = CrossSiteMwTitle.newFromText(page.matched_title, undefined, hostname)
 				if (redirectTitle) {
-					const redirectLabel = (colonPrefix ? ':' : '') + interwikiPrefix + page.matched_title
+					// Use the namespace alias from the user's input if available
+					const redirectPageName = inputTitle
+						? inputTitle.getPrefixedTextWithOriginalNamespaceAlias()
+						: page.matched_title
+					const redirectLabel = (colonPrefix ? ':' : '') + interwikiPrefix + redirectPageName
+
 					entries.push(
 						/** @type {WikilinkEntry} */ ({
 							title: redirectTitle,
-							pageName: page.matched_title,
+							pageName: redirectPageName,
 							colonPrefix,
 							interwikiPrefix,
 							label: redirectLabel,
