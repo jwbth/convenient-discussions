@@ -54,8 +54,8 @@ function highlightNewComments(noScroll = false) {
 			commentsToCheck.forEach((comment) => {
 				if (comment.date && comment.date.getTime() >= sinceTimestamp) {
 					if (sinceThread) {
-						// Check that we are in a thread that is newer than sinceTimestamp
-						// Thread age is determined by looking at the oldest comment
+						// Check that we are in a thread that is newer than sinceTimestamp. Thread age is
+						// determined by looking at the oldest comment
 						const section = comment.section
 						if (section) {
 							const oldestComment = section.oldestComment
@@ -82,7 +82,7 @@ function highlightNewComments(noScroll = false) {
 
 	// Highlight and scroll to the first comment
 	if (commentsToHighlight.length) {
-		Comment.markAsLinkedOnLoad(commentsToHighlight, !noScroll, false)
+		Comment.markAsLinked(commentsToHighlight, !noScroll, false)
 	}
 }
 
@@ -178,7 +178,7 @@ export function processCommentReferencesInUrl(noScroll = false) {
 	const { fragment, comment, date, author } = parseFragment()
 
 	if (comment) {
-		Comment.markAsLinkedOnLoad([comment])
+		Comment.markAsLinked([comment])
 	} else {
 		// Handle URL parameters for highlighting multiple comments
 		highlightNewComments(noScroll)

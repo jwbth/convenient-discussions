@@ -763,7 +763,7 @@ class Section extends SectionSkeleton {
 						.attr('href', `#${comments[0].getUrlFragment() || ''}`)
 						.on('click', (event) => {
 							event.preventDefault()
-							Comment.scrollToFirstFlashAll(comments)
+							Comment.markAsLinked(comments, true, false)
 						}),
 				}
 			})

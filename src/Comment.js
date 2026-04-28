@@ -3990,13 +3990,15 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Mark a group of comments as linked on load, optionally scrolling to the first and replacing the URL state.
+	 * Mark a group of comments as linked, optionally scrolling to the first and replacing the URL
+	 * state.
 	 *
 	 * @param {Comment[]} comments The comments to mark as linked.
 	 * @param {boolean} [scroll] Whether to scroll to the first comment.
-	 * @param {boolean} [replaceState] Whether to replace the URL fragment with the first comment's dtId.
+	 * @param {boolean} [replaceState] Whether to replace the URL fragment with the first comment's
+	 *   dtId.
 	 */
-	static async markAsLinkedOnLoad(comments, scroll = true, replaceState = true) {
+	static async markAsLinked(comments, scroll = true, replaceState = true) {
 		if (!comments.length) return
 
 		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
