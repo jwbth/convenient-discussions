@@ -1081,10 +1081,6 @@ export class CommentManager extends EventEmitter {
 	 */
 	handleDtTimestampsClick = () => {
 		if (this.isCommentDisplaySpacious()) return
-
-		this.items.forEach((comment) => {
-			comment.handleDtTimestampClick()
-		})
 	}
 
 	/**

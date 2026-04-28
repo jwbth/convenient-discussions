@@ -3828,23 +3828,6 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * _For internal use._ Remove DT's event listener from its comment link and attach ours.
-	 */
-	handleDtTimestampClick() {
-		if (!this.id) return
-
-		this.$elements
-			.find('.ext-discussiontools-init-timestamplink')
-			.off()
-			.on('click', (event) => {
-				// Browsers reserve Alt+click for selecting link text
-				if (!event.altKey) {
-					this.copyLink(event)
-				}
-			})
-	}
-
-	/**
 	 * Get the sibling comments - all children of a parent, whether the parent is a comment or
 	 * section.
 	 *
