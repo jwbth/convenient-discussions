@@ -1708,7 +1708,7 @@ class Controller extends EventEmitter {
 		$('#ca-addsection a').updateTooltipAccessKeys()
 
 		// In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
-		const dtHandler = $._data(document.body, 'events').click?.find(
+		const dtHandler = $._data(document.body, 'events')?.click?.find(
 			(/** @type {JQuery.HandleObject<EventTarget, any>} */ event) =>
 				event.selector?.includes('data-mw-comment'),
 		)?.handler

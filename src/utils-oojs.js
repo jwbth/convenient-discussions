@@ -408,11 +408,12 @@ export function createCopyTextControl({
 		return { type: 'copyText', field, input: field.textInput }
 	}
 
-	// MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout instead
+	// MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout instead.
+	// They are also likely not to have the `copy` icon - use `articles`.
 	const input = new OO.ui.TextInputWidget({ value, disabled })
 	const button = new OO.ui.ButtonWidget({
 		label: cd.s('copy'),
-		icon: 'copy',
+		icon: 'articles',
 		disabled,
 	})
 	button.on('click', () => {

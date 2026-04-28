@@ -161,8 +161,9 @@ class Loader {
 	maybeLoadTalkPageModules() {
 		if (this.shouldInitTalkPage()) {
 			const modules = [
-				'ext.checkUser.styles',
-				'ext.checkUser.userInfoCard',
+				...(mw.loader.getState('ext.checkUser.userInfoCard')
+					? ['ext.checkUser.styles', 'ext.checkUser.userInfoCard']
+					: []),
 				'jquery.client',
 				'jquery.ui',
 				'mediawiki.Title',

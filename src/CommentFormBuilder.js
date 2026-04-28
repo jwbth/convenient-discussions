@@ -799,6 +799,9 @@ class CommentFormBuilder {
 	 * @private
 	 */
 	tweakTabs() {
+		// Old versions don't support `type: 'element'`
+		if (!cd.utils.isMwVersionEqualOrHigher('1.38')) return
+
 		const $specialCharactersTab = this.form.$element.find('.tab-characters a')
 		if (!$specialCharactersTab.length) return
 

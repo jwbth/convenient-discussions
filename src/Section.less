@@ -129,13 +129,17 @@ ol .cd-section-button {
 .cd-popup-authors {
 	font-size: 0.9285714em;
 
-	> .oo-ui-popupWidget-popup > .oo-ui-popupWidget-body {
-		// Override the `style` attribute
-		width: max-content !important;
-		max-width: 30em !important;
+	> .oo-ui-popupWidget-popup {
+		width: unset !important;
 
-		// Make sure the buttons fit
-		min-width: min-content;
+		> .oo-ui-popupWidget-body {
+			// Override the `style` attribute
+			width: max-content !important;
+			max-width: 30em !important;
+
+			// Make sure the buttons fit
+			min-width: min-content;
+		}
 	}
 
 	&-sort {
