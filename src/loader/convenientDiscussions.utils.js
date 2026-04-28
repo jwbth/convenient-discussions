@@ -91,6 +91,95 @@ const utils = {
 	},
 
 	/**
+	 * Check if the current MediaWiki version is equal to or higher than the specified version.
+	 * Useful for feature availability checks based on release versions. Supports partial versions
+	 * (e.g., '1.35.6', '1.35', '1', '1.46.0-wmf.24').
+	 *
+	 * @param {string} requiredVersion The minimum version required (e.g., '1.35.6', '1.35', '1')
+	 * @returns {boolean} True if current version >= required version, false otherwise
+	 */
+	isMwVersionEqualOrHigher(requiredVersion) {
+		return this.compareMediaWikiVersions(mw.config.get('wgVersion'), requiredVersion) >= 0
+	},
+
+	/**
+	 * Compare two MediaWiki version strings. Handles standard versions (e.g., 1.35.6),
+	 * partial versions (e.g., 1.35, 1), and WMF versions (e.g., 1.46.0-wmf.24).
+	 *
+	 * @param {string} versionA
+	 * @param {string} versionB
+	 * @returns {number} Positive if versionA > versionB, 0 if equal, negative if versionA < versionB
+	 */
+	compareMediaWikiVersions(versionA, versionB) {
+		// Parse versions into parts: [main, suffix] where suffix is optional (e.g., 'wmf.24')
+		const parseVersion = (/** @type {string} */ version) => {
+			const [main, suffix] = version.split('-')
+			const parts = main.split('.').map((/** @type {string} */ part) => Number.parseInt(part, 10))
+
+			return { parts, suffix: suffix || '' }
+		}
+
+		const a = parseVersion(versionA)
+		const b = parseVersion(versionB)
+
+		// Compare main version numbers (major, minor, patch, etc.)
+		const maxLength = Math.max(a.parts.length, b.parts.length)
+
+		for (let i = 0; i < maxLength; i++) {
+			const aPart = a.parts[i] || 0
+			const bPart = b.parts[i] || 0
+
+			if (aPart !== bPart) {
+				return aPart - bPart
+			}
+		}
+
+		// Main versions are equal, compare suffixes
+		// No suffix (release) > wmf versions
+		if (!a.suffix && b.suffix) {
+			return 1 // Release version is higher than WMF
+		}
+
+		if (a.suffix && !b.suffix) {
+			return -1 // WMF version is lower than release
+		}
+
+		if (!a.suffix && !b.suffix) {
+			return 0 // Both are releases
+		}
+
+		// Both have suffixes, compare them
+		const aSuffixParts = a.suffix
+			.split('.')
+			.map((/** @type {string} */ part) =>
+				Number.isNaN(Number.parseInt(part, 10)) ? part : Number.parseInt(part, 10),
+			)
+		const bSuffixParts = b.suffix
+			.split('.')
+			.map((/** @type {string} */ part) =>
+				Number.isNaN(Number.parseInt(part, 10)) ? part : Number.parseInt(part, 10),
+			)
+
+		for (let i = 0; i < Math.max(aSuffixParts.length, bSuffixParts.length); i++) {
+			const aPart = aSuffixParts[i] ?? ''
+			const bPart = bSuffixParts[i] ?? ''
+
+			// If both are numbers, compare numerically
+			if (typeof aPart === 'number' && typeof bPart === 'number') {
+				if (aPart !== bPart) {
+					return aPart - bPart
+				}
+
+				// String comparison for non-numeric parts
+			} else if (aPart !== bPart) {
+				return String(aPart).localeCompare(String(bPart))
+			}
+		}
+
+		return 0
+	},
+
+	/**
 	 * Get elements using the right selector for the current skin given an object with skin names as
 	 * keys and selectors as values. If no value for the skin is provided, the `default` value is used.
 	 *
