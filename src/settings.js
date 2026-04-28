@@ -520,7 +520,20 @@ class Settings extends EventEmitter {
 						placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
 						tagLimit: 100,
 						label: cd.s('sd-insertbuttons'),
-						help: wrapHtml(cd.sParse('sd-insertbuttons-help', '{{+}}', '<code>+</code>;<code />', '\\', '2\\+2') + ' ' + cd.sParse('sd-localsetting')),
+						help: wrapHtml(
+							cd.sParse(
+								'sd-insertbuttons-help',
+								'+',
+								'<nowiki>{{+}}</nowiki>',
+								';',
+								'<nowiki><code>+</code>;<code /></nowiki>',
+								String.raw`\\n`,
+								'\\\\',
+								String.raw`2\\+2`,
+							) +
+								' ' +
+								cd.sParse('sd-localsetting'),
+						),
 						dataToUi: (/** @type {Array<string|string[]>} */ value) =>
 							value.map((button) => (Array.isArray(button) ? button.join(';') : button)),
 						uiToData: (/** @type {string[]} */ value) =>
