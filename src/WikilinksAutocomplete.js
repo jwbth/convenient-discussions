@@ -115,9 +115,9 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			end: ']]',
 			content: selectedText,
 			shiftModify() {
-				const insertText = /** @type {string} */ (
-					isWikidataEntity ? displayLabel : pageNameForInsertion
-				)
+				const insertText = isWikidataEntity
+					? /** @type {string} */ (displayLabel)
+					: pageNameForInsertion
 				this.content ||= insertText + fragmentStr
 				this.start += '|'
 			},
@@ -530,35 +530,25 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		// Attempt interwiki resolution for cross-site pages (use stripped page name)
 		const interwiki = await this.resolveInterwikiPrefix(pageNameForApi)
 
-		/** @type {string} */
-		let normalizedPageName
 		/** @type {mw.ForeignApi | undefined} */
 		let foreignApi
-		/** @type {CrossSiteMwTitle | null} */
-		let pageTitle
-
+		/** @type {string | undefined} */
+		let hostname
 		if (interwiki) {
-			const { hostname, pageName: remotePageName } = interwiki
+			;({ hostname, pageName } = interwiki)
 			const wgScriptPath = mw.config.get('wgScriptPath')
 			foreignApi = new mw.ForeignApi(`https://${hostname}${wgScriptPath}/api.php`, {
 				anonymous: true,
 			})
 			await CrossSiteMwTitle.loadHostData(hostname, foreignApi)
-
-			pageTitle = CrossSiteMwTitle.newFromText(remotePageName, undefined, hostname)
-			if (!pageTitle) {
-				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
-			}
-
-			normalizedPageName = pageTitle.getPrefixedText()
-		} else {
-			pageTitle = CrossSiteMwTitle.newFromText(pageNameForApi)
-			if (!pageTitle) {
-				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
-			}
-
-			normalizedPageName = pageTitle.getPrefixedText()
 		}
+
+		const pageTitle = CrossSiteMwTitle.newFromText(pageName, undefined, hostname)
+		if (!pageTitle) {
+			return this.makeFallbackSectionEntry(pageName, fragmentQuery)
+		}
+
+		const normalizedPageName = pageTitle.getPrefixedText()
 
 		// The interwiki prefix is everything before the remote page name in the original pageNameForApi
 		const interwikiPrefix = interwiki
