@@ -762,6 +762,8 @@ class Section extends SectionSkeleton {
 						.text(author.getName())
 						.attr('href', `#${comments[0].getUrlFragment() || ''}`)
 						.on('click', (event) => {
+							if (event.altKey) return
+
 							event.preventDefault()
 							Comment.markAsLinked(comments, true, false)
 						}),
@@ -853,6 +855,8 @@ class Section extends SectionSkeleton {
 									// Without the event handler, there will be a problem jumping to the comment when
 									// the URL already has its ID.
 									.on('click', (event) => {
+										if (event.altKey) return
+
 										event.preventDefault()
 										datum.newestComment.scrollTo({ pushState: true })
 									}),
@@ -878,10 +882,12 @@ class Section extends SectionSkeleton {
 	/**
 	 * Scroll to the latest comment in the section.
 	 *
-	 * @param {Event} event
+	 * @param {MouseEvent} event
 	 * @private
 	 */
 	scrollToLatestComment = (event) => {
+		if (event.altKey) return
+
 		event.preventDefault()
 		const latestCommentTyped = /** @type {Comment} */ (this.latestComment)
 		latestCommentTyped.scrollTo({ pushState: true })
@@ -1323,10 +1329,12 @@ class Section extends SectionSkeleton {
 	/**
 	 * Flash the unseen comments in the section and scroll to the first one of them.
 	 *
-	 * @param {Event} event
+	 * @param {MouseEvent} event
 	 * @private
 	 */
 	scrollToNewComments = (event) => {
+		if (event.altKey) return
+
 		event.preventDefault()
 		Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.newComments))
 	}
