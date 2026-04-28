@@ -1460,7 +1460,6 @@ export class CommentManager extends EventEmitter {
 				// Clear linked state if the fragment no longer matches this comment
 				if (!currentFragment || currentFragment !== commentFragment) {
 					comment.removeFlag('linked')
-					comment.updateLayers()
 				}
 			}
 		}

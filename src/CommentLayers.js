@@ -165,16 +165,14 @@ class CommentLayers {
 	}
 
 	/**
-	 * Update layer styles and positioning.
+	 * Update layer styling based on style flags.
 	 *
 	 * This method should be overridden by subclasses for specific styling needs.
 	 *
 	 * @param {boolean} wereJustCreated Whether the layers were just created.
 	 */
 	updateStyles(wereJustCreated = false) {
-		// Apply common layer styling
-		const styleFlags = this.comment.getStyleFlags()
-		styleFlags.forEach(({ name, value }) => {
+		this.comment.getStyleFlags().forEach(({ name, value }) => {
 			this.comment.updateClassesForFlag(name, value)
 		})
 

@@ -247,8 +247,7 @@ class CompactComment extends Comment {
 		// removed and created again when the next event fires.
 		if (this.updateLayers() !== false) return
 
-		this.flags.add('hovered')
-		this.updateClassesForFlag('hovered', true)
+		this.addFlag('hovered')
 	}
 
 	/**
@@ -264,10 +263,7 @@ class CompactComment extends Comment {
 		this.stopAnimations()
 
 		this.layers?.dontHideMenu()
-
-		this.flags.remove('hovered')
-		this.updateClassesForFlag('hovered', false)
-
+		this.removeFlag('hovered')
 		this.teardownOnboardOntoToggleChildThreadsPopup()
 	}
 

@@ -227,12 +227,15 @@ class Comment extends mixIntoClass(
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
 	 * @param {boolean} [isFlashFlag] Whether this is a temporary flash flag that should be tracked
 	 *   for cleanup when layers are removed.
+	 * @param {boolean} [updateStyles] Whether to update the comment styles after adding the flag.
 	 */
-	addFlag(flag, isFlashFlag = false) {
+	addFlag(flag, isFlashFlag = false, updateStyles = true) {
 		this.flags.add(flag)
-		this.updateClassesForFlag(flag, true)
 		if (isFlashFlag) {
 			this.currentFlashFlag = flag
+		}
+		if (updateStyles) {
+			this.updateClassesForFlag(flag, true)
 		}
 	}
 
@@ -399,7 +402,7 @@ class Comment extends mixIntoClass(
 
 		this.flags = new CommentFlagSet()
 		if (this.isOwn()) {
-			this.addFlag('own')
+			this.addFlag('own', false, false)
 		}
 
 		this.showContribsLink = cd.settings.get('showContribsLink')
@@ -1598,7 +1601,11 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} add
 	 */
 	updateClassesForFlag(flag, add) {
-		this.layers?.updateClassesForFlag(flag, add)
+		if (this.layers) {
+			this.layers.updateClassesForFlag(flag, add)
+		} else {
+			this.updateLayers()
+		}
 
 		if (flag === 'deleted') {
 			this.actions?.replyButton?.setDisabled(add)
@@ -1642,9 +1649,8 @@ class Comment extends mixIntoClass(
 		if (this.isCollapsed()) return
 
 		this.updateLayers()
-		if (!this.layers) return
-
-		this.layers.flash(flag, delay)
+		const layersTyped = /** @type {import('./CommentLayers').default} */ (this.layers)
+		layersTyped.flash(flag, delay)
 	}
 
 	/**
@@ -1653,14 +1659,6 @@ class Comment extends mixIntoClass(
 	 */
 	flashTarget() {
 		this.flash('target', 1500)
-	}
-
-	/**
-	 * Mark the comment as linked (opened via URL fragment) with persistent highlighting.
-	 */
-	markAsLinked() {
-		this.addFlag('linked')
-		this.updateLayers()
 	}
 
 	/**
@@ -4088,8 +4086,10 @@ class Comment extends mixIntoClass(
 		// incorrectly. (TODO: does it still? Need to check.)
 		await sleep()
 
+		// TODO: Add flags and update layers separately to minimize reflow? (Pass `false` as a third
+		// parameter to addFlag())
 		comments.forEach((comment) => {
-			comment.markAsLinked()
+			comment.addFlag('linked')
 		})
 
 		if (scroll) {
