@@ -29,54 +29,67 @@ declare global {
 				 * Overlay to use for widgets in the booklet.
 				 */
 				$overlay?: JQuery
+
 				/**
 				 * Filekey for a file already stashed on the server.
 				 */
 				filekey?: string
+
 				/**
 				 * The form rendered in the first step to get the file object.
 				 */
 				uploadForm: OO.ui.FormLayout
+
 				/**
 				 * The form rendered in the second step to get metadata.
 				 */
 				infoForm: OO.ui.FormLayout
+
 				/**
 				 * The form rendered in the third step to show usage.
 				 */
 				insertForm: OO.ui.FormLayout
+
 				/**
 				 * Widget for selecting a file. May be an OO.ui.SelectFileInputWidget or an mw.widgets.StashedFileWidget.
 				 */
 				selectFileWidget: OO.ui.SelectFileInputWidget | mw.widgets.StashedFileWidget
+
 				/**
 				 * Widget for displaying the file preview.
 				 */
 				filePreview: OO.ui.Widget
+
 				/**
 				 * Progress bar widget to show upload progress.
 				 */
 				progressBarWidget: OO.ui.ProgressBarWidget
+
 				/**
 				 * Text input widget for the filename.
 				 */
 				filenameWidget: OO.ui.TextInputWidget
+
 				/**
 				 * Multiline text input widget for the description.
 				 */
 				descriptionWidget: OO.ui.MultilineTextInputWidget
+
 				/**
 				 * Text input widget for file usage.
 				 */
 				filenameUsageWidget: OO.ui.TextInputWidget
+
 				/**
 				 * The upload model.
 				 */
 				upload: mw.Upload
+
 				/**
 				 * Promise representing the current upload process.
 				 */
 				uploadPromise: JQuery.Promise<any>
+
 				/**
 				 * The file's extension (if any).
 				 */

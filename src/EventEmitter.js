@@ -117,7 +117,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	}
 
 	// @ts-expect-error: TypeScript-in-JSDoc bug
-	// eslint-disable-next-line jsdoc/multiline-blocks
+	// eslint-disable-next-line jsdoc/multiline-blocks, jsdoc/escape-inline-tags
 	/** @template {keyof EventMap} K @overload
 	 * @param {K} event Thse event name.
 	 * @param {...EventMap[K]} args Arguments to pass to the listeners.
@@ -150,7 +150,7 @@ export default class EventEmitter extends OO.EventEmitter {
 	}
 
 	// @ts-expect-error: TypeScript-in-JSDoc bug
-	// eslint-disable-next-line jsdoc/multiline-blocks
+	// eslint-disable-next-line jsdoc/multiline-blocks, jsdoc/escape-inline-tags
 	/** @template {keyof EventMap} K @overload
 	 * @param {K} event
 	 * @param {...EventMap[K]} args

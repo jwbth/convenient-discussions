@@ -9,7 +9,7 @@ import { es6ClassToOoJsClass, mixIntoClass } from './utils-oojs-class'
 
 /**
  * @typedef {object} TextInputWidgetExtension
- * @property {typeof import('./controller').default} controller
+ * @property {typeof import('./controller').default} [controller]
  * @property {boolean} [supportsComplexMarkup] Whether this input supports external links. If false,
  *   external links that cannot be converted to wikilinks will be inserted as plain URLs without
  *   labels.

@@ -58,6 +58,7 @@ declare class CodeMirror {
 	/**
 	 * The VisualEditor surface CodeMirror is bound to.
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 	surface: ve.ui.Surface | null
 
 	/**
@@ -99,6 +100,7 @@ declare class CodeMirror {
 	/**
 	 * jQuery.textSelection overrides for CodeMirror.
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 	textSelection: CodeMirrorTextSelection | null
 
 	/**

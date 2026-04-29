@@ -14,6 +14,7 @@ declare global {
 				constructor(config?: TitleInputWidget.ConfigOptions)
 
 				suggestions: boolean
+
 				lookupCache: any
 
 				/**
@@ -63,7 +64,8 @@ declare global {
 
 			namespace TitleInputWidget {
 				interface ConfigOptions
-					extends OO.ui.TextInputWidget.ConfigOptions,
+					extends
+						OO.ui.TextInputWidget.ConfigOptions,
 						mw.widgets.TitleWidget.ConfigOptions,
 						OO.ui.mixin.LookupElement.ConfigOptions {
 					/**
@@ -85,9 +87,7 @@ declare global {
 			}
 
 			interface TitleInputWidget
-				extends OO.ui.TextInputWidget,
-					mw.widgets.TitleWidget,
-					OO.ui.mixin.LookupElement {
+				extends OO.ui.TextInputWidget, mw.widgets.TitleWidget, OO.ui.mixin.LookupElement {
 				// #region EventEmitter overloads
 				on<K extends keyof TitleInputWidget.EventMap, A extends OO.ArgTuple = [], C = null>(
 					event: K,
@@ -143,12 +143,12 @@ declare global {
 					...args: any[]
 				): boolean
 
-				connect<T extends Partial<Record<keyof TitleInputWidget.EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
+				connect<T extends Partial<Record<keyof TitleInputWidget.EventMap, any>>, C>(
 					context: C,
 					methods: OO.EventConnectionMap<T, C, TitleInputWidget.EventMap>,
 				): this
 
-				disconnect<T extends Partial<Record<keyof TitleInputWidget.EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
+				disconnect<T extends Partial<Record<keyof TitleInputWidget.EventMap, any>>, C>(
 					context: C,
 					methods?: OO.EventConnectionMap<T, C, TitleInputWidget.EventMap>,
 				): this

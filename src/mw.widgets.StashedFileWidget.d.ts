@@ -27,18 +27,22 @@ declare global {
 				 * API to use for thumbnail retrieval.
 				 */
 				api: mw.Api
+
 				/**
 				 * The filekey of the stashed file.
 				 */
 				filekey: string | null
+
 				/**
 				 * A jQuery element holding additional information.
 				 */
 				$info: JQuery
+
 				/**
 				 * The jQuery element used as the thumbnail container.
 				 */
 				$thumbnail: JQuery
+
 				/**
 				 * The jQuery element that wraps the thumbnail and info.
 				 */
@@ -79,7 +83,8 @@ declare global {
 			}
 
 			interface StashedFileWidget
-				extends OO.ui.Widget,
+				extends
+					OO.ui.Widget,
 					OO.ui.mixin.IconElement,
 					OO.ui.mixin.LabelElement,
 					OO.ui.mixin.PendingElement {}
@@ -89,7 +94,8 @@ declare global {
 				 * Configuration options for {@link mw.widgets.StashedFileWidget}.
 				 */
 				interface ConfigOptions
-					extends OO.ui.Widget.ConfigOptions,
+					extends
+						OO.ui.Widget.ConfigOptions,
 						OO.ui.mixin.IconElement.ConfigOptions,
 						OO.ui.mixin.LabelElement.ConfigOptions,
 						OO.ui.mixin.PendingElement.ConfigOptions {

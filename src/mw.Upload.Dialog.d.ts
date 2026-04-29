@@ -27,8 +27,9 @@ declare global {
 			 * } );
 			 * ```
 			 */
-			class Dialog<C extends typeof BookletLayout = typeof BookletLayout> extends OO.ui
-				.ProcessDialog {
+			class Dialog<C extends typeof BookletLayout = typeof BookletLayout>
+				extends OO.ui.ProcessDialog
+			{
 				/**
 				 *
 				 * @param {Dialog.Config<C>} [config] Configuration options.
@@ -37,10 +38,13 @@ declare global {
 
 				/** The booklet class to be used for the upload steps. */
 				bookletClass: typeof BookletLayout
+
 				/** The configuration for the booklet. */
 				bookletConfig: any
+
 				/** The upload booklet instance. */
 				uploadBooklet: InstanceType<C>
+
 				/** The upload result (if any). */
 				upload: any
 
@@ -124,11 +128,13 @@ declare global {
 				 * @property {string} name
 				 */
 				static name: string
+
 				/**
 				 * @inheritdoc
 				 * @property {(() => string)|string} title
 				 */
 				static title: string | (() => string)
+
 				/**
 				 * @inheritdoc
 				 * @property {Object[]} actions

@@ -102,7 +102,7 @@ import {
 /**
  * @typedef {object} CommentFormInitialStateExtension
  * @property {boolean} [focus]
- * @property {string} [focusHeadline]
+ * @property {boolean} [focusHeadline]
  * @property {Comment} [targetWithOutdentedReplies]
  * @property {boolean} [fixBrokenMarkup]
  */

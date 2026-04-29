@@ -25,8 +25,14 @@ const config = defineConfig(
 	},
 
 	js.configs.recommended,
-	tseslint.configs.strictTypeChecked,
-	tseslint.configs.stylisticTypeChecked,
+	...tseslint.configs.strictTypeChecked.map((cfg) => ({
+		...cfg,
+		files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.ts', '**/*.mts', '**/*.cts'],
+	})),
+	...tseslint.configs.stylisticTypeChecked.map((cfg) => ({
+		...cfg,
+		files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.ts', '**/*.mts', '**/*.cts'],
+	})),
 	unicorn.configs.recommended,
 	jsdoc({
 		config: 'flat/recommended-typescript-flavor',
@@ -103,13 +109,10 @@ const config = defineConfig(
 
 	// Main configuration
 	{
+		files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.ts', '**/*.mts', '**/*.cts'],
 		languageOptions: {
 			sourceType: 'module',
 			ecmaVersion: 2022,
-			// parser: '@typescript-eslint/parser',
-			// parserOptions: {
-			//   requireConfigFile: false,
-			// },
 			parserOptions: /** @type {import('@typescript-eslint/parser').ParserOptions} */ ({
 				project: [
 					'./jsconfig.json',
@@ -122,7 +125,6 @@ const config = defineConfig(
 					// './sandbox/jsconfig.json',
 				],
 				tsconfigRootDir: import.meta.dirname,
-				// jsDocParsingMode: 'all',
 			}),
 		},
 		plugins: {
@@ -293,6 +295,8 @@ const config = defineConfig(
 
 			// Handled by unused-imports/no-unused-vars
 			'@typescript-eslint/no-unused-vars': 'off',
+
+			'@typescript-eslint/no-deprecated': 'warn',
 
 			// Wait until enough browsers support it
 			'unicorn/prefer-string-replace-all': 'off',
@@ -600,6 +604,9 @@ const config = defineConfig(
 			// Prettier adds some, e.g. to src\global.d.ts
 			'@stylistic/no-mixed-spaces-and-tabs': 'off',
 
+			// Prettier handles this
+			'@stylistic/member-delimiter-style': 'off',
+
 			'@typescript-eslint/adjacent-overload-signatures': 'error',
 			'@typescript-eslint/consistent-type-imports': 'error',
 			'@typescript-eslint/no-empty-interface': 'error',
@@ -611,6 +618,7 @@ const config = defineConfig(
 		files: ['**/*.json', '**/*.jsonc', '**/*.json5'],
 		rules: {
 			'jsonc/indent': ['warn', 'tab'],
+			'jsonc/no-comments': 'off',
 		},
 	},
 )

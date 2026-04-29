@@ -21,42 +21,52 @@ declare global {
 				 * A jQuery object representing the "own work" message element.
 				 */
 				$ownWorkMessage: JQuery
+
 				/**
 				 * A jQuery object representing the "not own work" message element.
 				 */
 				$notOwnWorkMessage: JQuery
+
 				/**
 				 * A jQuery object representing the "not own work (local)" message element.
 				 */
 				$notOwnWorkLocal: JQuery
+
 				/**
 				 * A label widget for displaying messages.
 				 */
 				messageLabel: OO.ui.LabelWidget
+
 				/**
 				 * A checkbox widget for selecting whether the work is owned.
 				 */
 				ownWorkCheckbox: OO.ui.CheckboxInputWidget
+
 				/**
 				 * A widget for selecting categories.
 				 */
 				categoriesWidget: mw.widgets.CategoryMultiselectWidget
+
 				/**
 				 * A date input widget.
 				 */
 				dateWidget: mw.widgets.DateInputWidget
+
 				/**
 				 * A field layout wrapping the filename input widget.
 				 */
 				filenameField: OO.ui.FieldLayout
+
 				/**
 				 * A field layout wrapping the description input widget.
 				 */
 				descriptionField: OO.ui.FieldLayout
+
 				/**
 				 * A field layout wrapping the categories widget.
 				 */
 				categoriesField: OO.ui.FieldLayout
+
 				/**
 				 * A field layout wrapping the date widget.
 				 */

@@ -41,7 +41,7 @@ class TextInputWidgetMixin {
 	autocompleteManager
 
 	/**
-	 * @type {typeof import('./controller').default}
+	 * @type {typeof import('./controller').default | undefined}
 	 * @private
 	 */
 	controller
@@ -332,7 +332,7 @@ class TextInputWidgetMixin {
 	 */
 	createTextInputPasteDropHandler() {
 		return (event) => {
-			this.handleUrlConversion(event, this.controller.getIsShiftPressed())
+			this.handleUrlConversion(event, this.controller?.getIsShiftPressed())
 		}
 	}
 

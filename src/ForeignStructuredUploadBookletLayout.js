@@ -439,7 +439,7 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 								cd.g.serverName,
 								'commons.wikimedia.org',
 							)
-							pageNameOrProjectName = `[[:${prefix}${pageName}]]`
+							pageNameOrProjectName = prefix ? `[[:${prefix}${pageName}]]` : pageName
 						} else {
 							pageNameOrProjectName = projectNameOrPageLink
 						}

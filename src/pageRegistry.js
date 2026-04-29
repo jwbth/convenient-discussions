@@ -118,7 +118,7 @@ const pageRegistry = {
 		}
 
 		// If it's already in Template namespace, use as-is
-		if (title && title.getNamespaceId() === 10) {
+		if (title?.getNamespaceId() === 10) {
 			return this.get(templateName)
 		}
 

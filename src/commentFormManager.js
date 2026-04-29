@@ -86,9 +86,7 @@ class CommentFormManager extends EventEmitter {
 			})
 
 		mw.hook('ext.CodeMirror.toggle').add((enabled, codeMirror) => {
-			this.items
-				.find((item) => item.commentInput.codeMirror === codeMirror)
-				?.updateEventListeners(enabled)
+			this.items.find((item) => item.commentInput.codeMirror === codeMirror)?.updateEventListeners()
 			if (enabled !== cd.settings.get('useCodeMirror')) {
 				cd.settings.saveSettingOnTheFly('useCodeMirror', enabled)
 			}

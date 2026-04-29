@@ -1,4 +1,4 @@
-import LZString from 'lz-string'
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 
 import EventEmitter from './EventEmitter'
 import commentManager from './commentManager'
@@ -138,7 +138,7 @@ class Visits extends EventEmitter {
 	pack() {
 		// The format of the items:
 		// <Page ID>,<List of visits, from oldest to newest, separated by comma>\n
-		return LZString.compressToEncodedURIComponent(
+		return compressToEncodedURIComponent(
 			typedKeysOf(this.data)
 				.map((key) => `${key},${this.data[key].join(',')}\n`)
 				.join('')
@@ -156,7 +156,7 @@ class Visits extends EventEmitter {
 		this.data = {}
 		if (!compressed) return
 
-		const string = LZString.decompressFromEncodedURIComponent(compressed)
+		const string = decompressFromEncodedURIComponent(compressed)
 		if (string) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const regexp = /^(\d+),(.+)$/gm

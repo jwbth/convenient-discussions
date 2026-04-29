@@ -107,12 +107,12 @@ declare global {
 					...args: any[]
 				): boolean
 
-				connect<T extends Partial<Record<keyof TitleWidget.EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
+				connect<T extends Partial<Record<keyof TitleWidget.EventMap, any>>, C>(
 					context: C,
 					methods: OO.EventConnectionMap<T, C, TitleWidget.EventMap>,
 				): this
 
-				disconnect<T extends Partial<Record<keyof TitleWidget.EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
+				disconnect<T extends Partial<Record<keyof TitleWidget.EventMap, any>>, C>(
 					context: C,
 					methods?: OO.EventConnectionMap<T, C, TitleWidget.EventMap>,
 				): this
@@ -132,46 +132,67 @@ declare global {
 
 				/** Number of results to show */
 				limit: number
+
 				/** Maximum query length */
 				maxLength: number
+
 				/** Namespace to prepend to queries, or null */
 				namespace: number | null
+
 				/** If a namespace is set, display titles relative to it */
 				relative: boolean
+
 				/** Display search suggestions */
 				suggestions: boolean
+
 				/** Show the targets of redirects */
 				showRedirectTargets: boolean
+
 				/** Show page images */
 				showImages: boolean
+
 				/** Show page descriptions */
 				showDescriptions: boolean
+
 				/** Show disambiguation pages as the last results */
 				showDisambigsLast: boolean
+
 				/** Show the user's input as a missing page when a page with this exact name doesn't exist */
 				showMissing: boolean
+
 				/** Show pages with a valid interwiki prefix */
 				showInterwikis: boolean
+
 				/** Search for hash fragments on a specific page when typed */
 				searchFragments: boolean
+
 				/** Add exact user's input query to results */
 				addQueryInput: boolean
+
 				/** Exclude the current page from suggestions */
 				excludeCurrentPage: boolean
+
 				/** Exclude pages whose namespace is negative */
 				excludeDynamicNamespaces: boolean
+
 				/** Whether the input must be a valid title */
 				validateTitle: boolean
+
 				/** Whether the input must not be empty */
 				required: boolean
+
 				/** Highlight the partial query the user used for this title */
 				highlightSearchQuery: boolean
+
 				/** Result cache */
 				cache: any
+
 				/** API object for title requests */
 				api: mw.Api
+
 				/** Function for comparing two strings */
 				compare: (a: string, b: string) => number
+
 				/** Cache for section suggestions */
 				sectionsCache: Record<string, JQuery.Promise<any>>
 

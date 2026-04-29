@@ -1455,12 +1455,11 @@ export class CommentManager extends EventEmitter {
 	 */
 	clearLinkedComments(currentFragment) {
 		for (const comment of this.items) {
-			if (comment.hasFlag('linked')) {
-				const commentFragment = comment.getUrlFragment()
-				// Clear linked state if the fragment no longer matches this comment
-				if (!currentFragment || currentFragment !== commentFragment) {
-					comment.removeFlag('linked')
-				}
+			if (
+				comment.hasFlag('linked') &&
+				(!currentFragment || currentFragment !== comment.getUrlFragment())
+			) {
+				comment.removeFlag('linked')
 			}
 		}
 	}
