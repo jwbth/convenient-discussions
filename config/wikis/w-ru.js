@@ -285,8 +285,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	clearTemplates: ['Clear', 'Clr', '-'],
 
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
-		var pre = '{{цс|1=';
-		var post = '';
+		const pre = '{{цс|1=';
+		let post = '';
 		if (mentionSource) {
 			if (author) {
 				post += '|2=' + author;

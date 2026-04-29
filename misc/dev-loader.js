@@ -17,6 +17,7 @@
 	// Check if already loaded
 	if (window.convenientDiscussions) {
 		console.log('[CD Dev] Already loaded. Reload the page to load a fresh version.')
+
 		return
 	}
 
@@ -28,6 +29,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 			}
+
 			return response.text()
 		})
 		.then(code => {
@@ -38,16 +40,16 @@
 			script.type = 'module'
 			script.src = blobUrl
 
-			script.onload = () => {
+			script.addEventListener('load', () => {
 				console.log('[CD Dev] Loaded with HMR support')
 				console.log('[CD Dev] Edit source files to see changes instantly')
-			}
+			})
 
 			script.onerror = () => {
 				console.error('[CD Dev] Failed to load script')
 			}
 
-			document.head.appendChild(script)
+			document.head.append(script)
 		})
 		.catch(error => {
 			console.error('[CD Dev] Failed to fetch script:', error)

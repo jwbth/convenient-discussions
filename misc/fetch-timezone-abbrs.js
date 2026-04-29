@@ -3,10 +3,11 @@
 // uses "MEZ" which is a translated version of "CET"). Also, Convenient Discussions could be used on
 // other wikis than WMF's, where other timezones could be used.
 
-import fs from 'fs'
+import fs from 'node:fs'
 
 import JSON5 from 'json5'
 import fetch from 'node-fetch'
+
 import { unique } from './utils.js'
 
 async function getZoneToAbbr() {
@@ -20,6 +21,7 @@ async function getZoneToAbbr() {
 		const tokens = zone.split('|')
 		zoneToAbbr[tokens[0]] = tokens[1].split(' ')
 	})
+
 	return zoneToAbbr
 }
 
@@ -34,6 +36,7 @@ async function getUsedZones() {
 	const length = body.slice(startIndex).indexOf(endNeedle) + 1
 	const json = body.substr(startIndex, length).replace(/^.+=>/gm, '')
 	const timezones = JSON5.parse(json).filter(unique)
+
 	return timezones
 }
 

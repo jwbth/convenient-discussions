@@ -13,10 +13,7 @@ import { pipeline } from 'node:stream/promises'
 
 import { extract } from 'tar'
 
-const __dirname = new URL('.', import.meta.url).pathname.replace(
-	/^\/([A-Z]:)/,
-	'$1',
-)
+const __dirname = new URL('.', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1')
 
 /**
  * Download and extract language messages from Wikimedia.
@@ -57,9 +54,7 @@ async function downloadAndExtractMessages() {
 						return
 					}
 
-					pipeline(response, createWriteStream(tempFile))
-						.then(resolve)
-						.catch(reject)
+					pipeline(response, createWriteStream(tempFile)).then(resolve).catch(reject)
 				})
 				.on('error', reject)
 		})
@@ -139,7 +134,7 @@ readdirSync(messagesDir).forEach((file) => {
 	}
 })
 
-writeFileSync(outputFile, JSON.stringify(output, null, 2) + '\n', 'utf8')
+writeFileSync(outputFile, JSON.stringify(output, null, '\t') + '\n', 'utf8')
 console.log('languageFallbacks.json generated in data directory!')
 
 await rm(messagesDir, { recursive: true, force: true })

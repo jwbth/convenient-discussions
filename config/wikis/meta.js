@@ -110,8 +110,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	outdentTemplates: ['outdent', 'Unindent', 'Od', 'OUTDENT'],
 	clearTemplates: ['Clear', 'Br'],
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
-		var pre = '';
-		var post = '';
+		let pre = '';
+		let post = '';
 		if (mentionSource) {
 			pre = '{{tqb|text=';
 			if (author) {

@@ -274,8 +274,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	outdentTemplates: ['outdent', 'Od', 'Unindent', 'Out', 'Quito sangría', 'Quitar sangría', 'OD'],
 	clearTemplates: ['Clear', 'Clr', '-'],
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
-		var pre = '';
-		var post = '';
+		let pre = '';
+		let post = '';
 		if (mentionSource) {
 			pre = '{{tqb|text=';
 			if (author) {

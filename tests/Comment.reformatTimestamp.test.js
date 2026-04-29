@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, test, expect } from 'vitest'
 
 // Mock mw global before imports
 const mwConfig = new Map()
@@ -73,7 +73,6 @@ vi.mock('../src/notifications', () => ({
 }))
 
 import { enUS } from 'date-fns/locale'
-import { test, expect } from 'vitest'
 
 import * as mock_i18n_en_json from '../i18n/en.json'
 import * as mock_src_Comment from '../src/Comment'

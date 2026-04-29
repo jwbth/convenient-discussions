@@ -368,8 +368,8 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 	reflistTalkClasses: ['reflist-talk'],
 
 	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
-		var pre = '';
-		var post = '';
+		let pre = '';
+		let post = '';
 		if (mentionSource) {
 			pre = '{{tqb|text=';
 			if (author) {

@@ -15,7 +15,7 @@ globalThis.mw = {
 	},
 }
 
-import { vi } from 'vitest'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 vi.mock('../src/CrossSiteMwTitle', () => ({
 	default: class MockCrossSiteMwTitle {
@@ -64,8 +64,6 @@ vi.mock('../src/userRegistry', () => ({
 vi.mock('../src/notifications', () => ({
 	default: {},
 }))
-
-import { describe, it, expect, beforeEach } from 'vitest'
 
 import CommentForm from '../src/CommentForm'
 
