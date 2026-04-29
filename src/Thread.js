@@ -645,6 +645,15 @@ class Thread extends mixIntoObject(
 	}
 
 	/**
+	 * Set whether the thread is collapsed.
+	 *
+	 * @param {boolean} value
+	 */
+	setCollapsed(value) {
+		this.collapsed = value
+	}
+
+	/**
 	 * Should the thread be automatically collapsed on page load if taking only comment
 	 * level into account and not remembering the user's previous actions.
 	 *
@@ -652,6 +661,15 @@ class Thread extends mixIntoObject(
 	 */
 	isAutocollapseTarget() {
 		return this.autocollapseTarget
+	}
+
+	/**
+	 * Set whether the thread is an autocollapse target.
+	 *
+	 * @param {boolean} value
+	 */
+	setAutocollapseTarget(value) {
+		this.autocollapseTarget = value
 	}
 
 	/**
@@ -1573,7 +1591,7 @@ class Thread extends mixIntoObject(
 				if (
 					![...thread.rootComment.getAncestors(), ...thread.comments].some((c) => c.hasFlag('own'))
 				) {
-					thread.autocollapseTarget = true
+					thread.setAutocollapseTarget(true)
 
 					if (!thread.wasManuallyExpanded) {
 						threads.push(thread)

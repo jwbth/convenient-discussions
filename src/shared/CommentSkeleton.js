@@ -327,6 +327,15 @@ class CommentSkeleton {
 		return this.outdented
 	}
 
+	/**
+	 * Set whether the comment is outdented.
+	 *
+	 * @param {boolean} value
+	 */
+	setOutdented(value) {
+		this.outdented = value
+	}
+
 	/** @typedef {'start'|'back'|'up'|'dive'|'replaced'} Step */
 
 	/**
@@ -1889,7 +1898,7 @@ class CommentSkeleton {
 
 					this.updateOutdentStyle(element, parser)
 
-					childComment.outdented = true
+					childComment.setOutdented(true)
 					childComment.elements[0].classList.add('cd-comment-outdented')
 
 					const narrowedParrentComment = parentComment

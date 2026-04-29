@@ -504,12 +504,30 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
+	 * Set whether the comment is actionable.
+	 *
+	 * @param {boolean} value
+	 */
+	setActionable(value) {
+		this.actionable = value
+	}
+
+	/**
 	 * Has the comment been seen if it is new.
 	 *
 	 * @returns {boolean | undefined}
 	 */
 	isSeen() {
 		return this.seen
+	}
+
+	/**
+	 * Set whether the comment has been seen.
+	 *
+	 * @param {boolean | undefined} value
+	 */
+	setSeen(value) {
+		this.seen = value
 	}
 
 	/**
@@ -528,6 +546,15 @@ class Comment extends mixIntoClass(
 	 */
 	isCollapsed() {
 		return this.collapsed
+	}
+
+	/**
+	 * Set whether the comment is collapsed.
+	 *
+	 * @param {boolean} value
+	 */
+	setCollapsed(value) {
+		this.collapsed = value
 	}
 
 	/**
@@ -1986,8 +2013,8 @@ class Comment extends mixIntoClass(
 		}
 
 		if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
-			this.seenBeforeChanged ??= this.seen
-			this.seen = false
+			this.seenBeforeChanged ??= this.isSeen()
+			this.setSeen(false)
 			this.manager.registerSeen()
 		}
 
@@ -2202,7 +2229,7 @@ class Comment extends mixIntoClass(
 					'cd-notification-markThreadAsRead': () => {
 						const threadTyped = /** @type {import('./Thread').default} */ (this.thread)
 						threadTyped.getComments().forEach((comment) => {
-							comment.seen = true
+							comment.setSeen(true)
 						})
 						this.manager.emit('registerSeen')
 						this.manager.goToFirstUnseenComment()

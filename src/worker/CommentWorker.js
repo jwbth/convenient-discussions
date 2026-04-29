@@ -51,11 +51,15 @@ export default class CommentWorker extends CommentSkeleton {
 	/** @type {CommentWorker|undefined} */
 	parent
 
-	/**
-	 * @type {boolean|undefined}
-	 * @private
-	 */
+	/** @type {boolean|undefined} */
 	toMe
+
+	/**
+	 * @override
+	 * @public
+	 */
+	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
+	own = this.own
 
 	/**
 	 * @override

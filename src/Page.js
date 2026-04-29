@@ -83,6 +83,15 @@ export default class Page {
 	queryTimestamp
 
 	/**
+	 * Is the page actionable, i.e. you can add a section to it. Can be `true` only for the current
+	 * page.
+	 *
+	 * @type {boolean}
+	 * @protected
+	 */
+	actionable = false
+
+	/**
 	 * Create a page instance.
 	 *
 	 * @param {mw.Title} mwTitle
@@ -133,15 +142,6 @@ export default class Page {
 		 * @type {PageSource}
 		 */
 		this.source = new PageSource(this)
-
-		/**
-		 * Is the page actionable, i.e. you can add a section to it. Can be `true` only for the current
-		 * page.
-		 *
-		 * @type {boolean}
-		 * @private
-		 */
-		this.actionable = false
 	}
 
 	/**

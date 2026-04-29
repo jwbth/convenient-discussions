@@ -101,7 +101,6 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 
 						// Only update the preferences property directly to avoid making API calls already made by
 						// the primary instance.
-						// @ts-expect-error: the source library uses "@type {Object}"
 						this.preferences.preferences[prefName] = enabled
 					}
 				},
@@ -159,7 +158,7 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 			// `dispatch()` lets to avoid another error when *opening* a new comment form. MusikAnimal, if
 			// you see this, consider fixing it in the source xD
 			this.view = {
-				// @ts-ignore
+				// @ts-expect-error
 				state: { field: () => null, config: { compartments: { get: () => null } } },
 				dispatch: () => null,
 			}
@@ -171,6 +170,7 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 		updateAutocompletePreference(enabled) {
 			if (!this.extensionRegistry.isRegistered('autocomplete', this.view)) return
 
+			// @ts-expect-error
 			this.preferences.lockPreference('autocomplete', this.view, enabled)
 		}
 

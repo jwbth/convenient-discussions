@@ -39,7 +39,8 @@ export default class CurrentPage extends Page {
 	 */
 	constructor(mwTitle, pageRegistry, genderedName) {
 		super(mwTitle, pageRegistry, genderedName)
-		/** @private */
+
+		/** @protected */
 		this.actionable = this.isCommentable()
 	}
 

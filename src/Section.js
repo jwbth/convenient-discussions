@@ -252,7 +252,7 @@ class Section extends SectionSkeleton {
 
 		if (this.isTranscludedFromTemplate()) {
 			this.comments.forEach((comment) => {
-				comment.actionable = false
+				comment.setActionable(false)
 			})
 		}
 
@@ -661,7 +661,6 @@ class Section extends SectionSkeleton {
 	 * Check whether the user should get the affordance to add a reply to the section.
 	 *
 	 * @returns {this is {
-	 *   actionable: true;
 	 *   replyButton: Button;
 	 *   $replyButtonWrapper: JQuery;
 	 *   $replyButtonContainer: JQuery;
@@ -914,6 +913,15 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
+	 * Set whether the section is actionable.
+	 *
+	 * @param {boolean} value
+	 */
+	setActionable(value) {
+		this.actionable = value
+	}
+
+	/**
 	 * Is the section transcluded from a template.
 	 *
 	 * @returns {boolean}
@@ -923,12 +931,30 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
+	 * Set whether the section is transcluded from a template.
+	 *
+	 * @param {boolean} value
+	 */
+	setTranscludedFromTemplate(value) {
+		this.transcludedFromTemplate = value
+	}
+
+	/**
 	 * Is the section visible.
 	 *
 	 * @returns {boolean}
 	 */
 	isHidden() {
 		return this.hidden
+	}
+
+	/**
+	 * Set whether the section is hidden.
+	 *
+	 * @param {boolean} value
+	 */
+	setHidden(value) {
+		this.hidden = value
 	}
 
 	/**
