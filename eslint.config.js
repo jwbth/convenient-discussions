@@ -622,6 +622,7 @@ const config = defineConfig(
 		rules: {
 			'jsonc/indent': ['warn', 'tab'],
 			'jsonc/no-comments': 'off',
+			'no-irregular-whitespace': 'off',
 		},
 	},
 )

@@ -11,6 +11,7 @@ playwright-report/
 sandbox/
 scripts/messages/
 src/test*
+tests/worker-test-cases-regenerated.json
 test-results/
 playwright/.auth/
 .env
