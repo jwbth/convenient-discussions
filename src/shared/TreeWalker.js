@@ -107,7 +107,7 @@ class TreeWalker {
 		}
 
 		do {
-			node = /** @type {NodeWithProps | null} */ (node[prop] || null)
+			node = /** @type {NodeWithProps | null} */ (node[prop])
 		} while (node && !this.acceptNode(node))
 		if (node) {
 			this.currentNode = node
@@ -169,20 +169,16 @@ class TreeWalker {
 	 */
 	nextNode(startNode) {
 		/** @type {NodeWithProps | null} */
-		let node = /** @type {NodeWithProps | null} */ (startNode || this.currentNode)
+		let node = startNode || this.currentNode
 
 		do {
 			if (node[this.firstChildProp]) {
-				node = /** @type {NodeWithProps | null} */ (node[this.firstChildProp] || null)
+				node = /** @type {NodeWithProps} */ (node[this.firstChildProp])
 			} else {
-				while (
-					node &&
-					!node[this.nextSiblingProp] &&
-					node.parentNode !== this.root
-				) {
-					node = /** @type {NodeWithProps | null} */ (node.parentNode || null)
+				while (node && !node[this.nextSiblingProp] && node.parentNode !== this.root) {
+					node = node.parentNode
 				}
-				node &&= /** @type {NodeWithProps | null} */ (node[this.nextSiblingProp] || null)
+				node &&= /** @type {NodeWithProps | null} */ (node[this.nextSiblingProp])
 			}
 		} while (node && !this.acceptNode(node))
 		if (node) {
@@ -199,20 +195,20 @@ class TreeWalker {
 	 */
 	previousNode() {
 		/** @type {NodeWithProps | null} */
-		let node = /** @type {NodeWithProps | null} */ (this.currentNode)
+		let node = this.currentNode
 		if (node === this.root) {
 			return null
 		}
 
 		do {
-			let test = /** @type {NodeWithProps | null} */ (node[this.previousSiblingProp] || null)
+			let test = /** @type {NodeWithProps | null} */ (node[this.previousSiblingProp])
 			if (test) {
 				node = test
-				while ((test = /** @type {NodeWithProps | null} */ (node[this.lastChildProp] || null))) {
+				while ((test = /** @type {NodeWithProps | null} */ (node[this.lastChildProp]))) {
 					node = test
 				}
 			} else {
-				node = /** @type {NodeWithProps | null} */ (node.parentNode || null)
+				node = node.parentNode
 			}
 		} while (node && !this.acceptNode(node))
 		if (node) {
