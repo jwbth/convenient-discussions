@@ -1,3 +1,4 @@
+// @ts-nocheck
 class TributeEvents {
 	/**
 	 * @param {import('./Tribute').default} tribute

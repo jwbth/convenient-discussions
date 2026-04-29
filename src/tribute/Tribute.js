@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tribute.js
  * Native ES6 JavaScript @mention Plugin

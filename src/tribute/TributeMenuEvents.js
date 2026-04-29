@@ -1,3 +1,4 @@
+// @ts-nocheck
 class TributeMenuEvents {
 	/**
 	 * @param {import('./Tribute').default} tribute

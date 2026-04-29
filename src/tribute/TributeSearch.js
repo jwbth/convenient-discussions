@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Thanks to https://github.com/mattyork/fuzzy
 class TributeSearch {
 	/**

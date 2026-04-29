@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { inputPropsAffectingCoords } from '../utils-window'
 
 // A replacement for unicode property escapes

@@ -14,5 +14,8 @@
 		"../misc/convenientDiscussions-generateBasicConfig.js",
 		"../data/**/*",
 		"../node_modules/types-mediawiki"
-	]
+	],
+	// This has no effect unfortunately - worker files are included due to references from
+	// updateChecker.js.
+	"exclude": ["worker/**/*"]
 }
