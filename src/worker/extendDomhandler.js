@@ -1,5 +1,6 @@
 /* eslint-disable unicorn/prefer-dom-node-append */
 /* eslint-disable unicorn/prefer-includes */
+import render from 'dom-serializer'
 import { DataNode, Document, Element, Node, NodeWithChildren, Text } from 'domhandler'
 import { DomUtils } from 'htmlparser2'
 
@@ -348,14 +349,14 @@ Object.defineProperty(Element.prototype, 'textContent', {
 Object.defineProperty(Element.prototype, 'innerHTML', {
 	get() {
 		// decodeEntities acts opposite to its value ¯\_(ツ)_/¯
-		return DomUtils.getInnerHTML(this, { decodeEntities: false })
+		return render(this.childNodes, { decodeEntities: false })
 	},
 })
 
 Object.defineProperty(Element.prototype, 'outerHTML', {
 	get() {
 		// decodeEntities acts opposite to its value ¯\_(ツ)_/¯
-		return DomUtils.getOuterHTML(this, { decodeEntities: false })
+		return render(this, { decodeEntities: false })
 	},
 })
 
