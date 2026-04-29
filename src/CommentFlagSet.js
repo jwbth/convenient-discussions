@@ -30,7 +30,7 @@ export default class CommentFlagSet {
 	 * @param {CommentFlag[]|undefined} [initialFlags]
 	 */
 	constructor(initialFlags) {
-		this.flags = new Set(initialFlags || [])
+		this.set = new Set(initialFlags || [])
 	}
 
 	/**
@@ -38,7 +38,7 @@ export default class CommentFlagSet {
 	 * @returns {boolean}
 	 */
 	has(flag) {
-		return this.flags.has(flag)
+		return this.set.has(flag)
 	}
 
 	/**
@@ -46,7 +46,7 @@ export default class CommentFlagSet {
 	 * @returns {void}
 	 */
 	add(flag) {
-		this.flags.add(flag)
+		this.set.add(flag)
 	}
 
 	/**
@@ -54,7 +54,7 @@ export default class CommentFlagSet {
 	 * @returns {void}
 	 */
 	remove(flag) {
-		this.flags.delete(flag)
+		this.set.delete(flag)
 	}
 
 	/**
@@ -74,14 +74,14 @@ export default class CommentFlagSet {
 	 * @returns {boolean}
 	 */
 	hasAny() {
-		return this.flags.size > 0
+		return this.set.size > 0
 	}
 
 	/**
 	 * @returns {CommentFlag[]}
 	 */
 	toArray() {
-		return [...this.flags]
+		return [...this.set]
 	}
 
 	/**

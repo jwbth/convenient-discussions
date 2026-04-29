@@ -392,7 +392,7 @@ class CommentLayers {
 
 		// TODO: This should better reside in Comment, but we need to add the flag *after* rejecting the
 		// deferred and stopping the animation because that would remove the flag.
-		this.comment.addFlag(flag, true)
+		this.comment.addFlag(flag, true, true)
 
 		this.$animatedBackground = this.$underlay.add(/** @type {any} */ (this).$overlayMenu || $())
 

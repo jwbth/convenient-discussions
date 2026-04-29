@@ -225,16 +225,17 @@ class Comment extends mixIntoClass(
 	 * Adds a comment flag.
 	 *
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
+	 * @param {boolean} [updateStyles] Whether to update the comment styles after adding the flag.
 	 * @param {boolean} [isFlashFlag] Whether this is a temporary flash flag that should be tracked
 	 *   for cleanup when layers are removed.
-	 * @param {boolean} [updateStyles] Whether to update the comment styles after adding the flag.
 	 */
-	addFlag(flag, isFlashFlag = false, updateStyles = true) {
+	addFlag(flag, updateStyles = true, isFlashFlag = false) {
 		this.flags.add(flag)
 		if (isFlashFlag) {
 			this.currentFlashFlag = flag
 		}
 		if (updateStyles) {
+			this.updateLayers()
 			this.updateClassesForFlag(flag, true)
 		}
 	}
@@ -243,10 +244,14 @@ class Comment extends mixIntoClass(
 	 * Removes a comment flag.
 	 *
 	 * @param {import('./CommentFlagSet').CommentFlag} flag
+	 * @param {boolean} [updateStyles] Whether to update the comment styles after removing the flag.
 	 */
-	removeFlag(flag) {
+	removeFlag(flag, updateStyles = true) {
 		this.flags.remove(flag)
-		this.updateClassesForFlag(flag, false)
+		if (updateStyles) {
+			this.updateLayers()
+			this.updateClassesForFlag(flag, false)
+		}
 		if (this.currentFlashFlag === flag) {
 			this.currentFlashFlag = undefined
 		}
@@ -402,7 +407,7 @@ class Comment extends mixIntoClass(
 
 		this.flags = new CommentFlagSet()
 		if (this.isOwn()) {
-			this.addFlag('own', false, false)
+			this.addFlag('own', false)
 		}
 
 		this.showContribsLink = cd.settings.get('showContribsLink')
@@ -3725,9 +3730,9 @@ class Comment extends mixIntoClass(
 		// has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
 		// it's a *changed* old comment.
 		if (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment?.hasFlag('new')) {
-			this.addFlag('new')
+			this.addFlag('new', false)
 		} else {
-			this.removeFlag('new')
+			this.removeFlag('new', false)
 		}
 		this.seen =
 			(commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) ||
