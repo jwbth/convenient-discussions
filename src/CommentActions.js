@@ -324,7 +324,7 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addQuoteButton() {
-		if (!this.comment.isActionable() || this.quoteButton?.isConnected()) return
+		if (!this.comment.isActionable() || this.comment.hasFlag('deleted') || this.quoteButton?.isConnected()) return
 
 		this.quoteButton = this.createQuoteButton(this.onQuoteAction)
 		this.insertQuoteButton()

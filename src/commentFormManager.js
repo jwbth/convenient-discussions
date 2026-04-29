@@ -70,7 +70,7 @@ class CommentFormManager extends EventEmitter {
 					if (lastActiveCommentForm) {
 						event.preventDefault()
 						lastActiveCommentForm.quote(isCmdModifierPressed(event), comment)
-					} else if (comment?.isActionable()) {
+					} else if (comment?.isActionable() && !comment.hasFlag('deleted')) {
 						event.preventDefault()
 						comment.reply()
 					}
@@ -352,7 +352,8 @@ class CommentFormManager extends EventEmitter {
 					}
 					if (
 						target?.isActionable() &&
-						(!('canBeReplied' in target) || target.canBeReplied()) &&
+						(target.TYPE !== 'comment' || !target.hasFlag('deleted')) &&
+						(target.TYPE !== 'section' || target.canBeReplied()) &&
 						// Check if there is another form already
 						!target[CommentForm.getPropertyNameOnTarget(target, data.mode)]
 					) {
