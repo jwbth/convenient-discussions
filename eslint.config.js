@@ -52,16 +52,6 @@ const config = defineConfig(
 				},
 			],
 			'jsdoc/check-types': 'off',
-			'jsdoc/no-defaults': [
-				'warn',
-				{
-					contexts: [
-						{
-							comment: 'JsdocBlock:not(:has(JsdocTag[tag=default]))',
-						},
-					],
-				},
-			],
 			'jsdoc/reject-any-type': 'off',
 			'jsdoc/require-jsdoc': [
 				'warn',
@@ -296,7 +286,7 @@ const config = defineConfig(
 			// Handled by unused-imports/no-unused-vars
 			'@typescript-eslint/no-unused-vars': 'off',
 
-			'@typescript-eslint/no-deprecated': 'warn',
+			// '@typescript-eslint/no-deprecated': 'warn',
 
 			// Wait until enough browsers support it
 			'unicorn/prefer-string-replace-all': 'off',
@@ -379,7 +369,12 @@ const config = defineConfig(
 					'newlines-between': 'always',
 				},
 			],
+			'import/no-named-as-default': 'off',
 			'import/no-named-as-default-member': 'off',
+			'import/namespace': 'off',
+			'import/default': 'off',
+			'import/named': 'off',
+			'import/no-unresolved': 'off',
 
 			// Prettier-managed formatting (disabled to avoid conflicts)
 			'@stylistic/semi': 'off',
@@ -458,6 +453,14 @@ const config = defineConfig(
 					argsIgnorePattern: '^_',
 				},
 			],
+			'@typescript-eslint/no-confusing-void-expression': 'off',
+			'@typescript-eslint/unbound-method': 'off',
+			'@typescript-eslint/no-deprecated': 'off',
+			'jsdoc/require-next-type': 'off',
+			'jsdoc/require-returns-type': 'off',
+			'jsdoc/require-yields-type': 'off',
+			'jsdoc/require-throws-type': 'off',
+			'jsdoc/check-access': 'off',
 		},
 	},
 

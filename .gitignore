@@ -14,3 +14,4 @@ src/test*
 test-results/
 playwright/.auth/
 .env
+.eslintcache
