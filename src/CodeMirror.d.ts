@@ -18,7 +18,7 @@ import type { EditorView } from '@codemirror/view'
 // Use the file from the actual CodeMirror extension for types as long as we don't need upstream
 // CodeMirror imports from there (TypeScript engine can't handle imports like `require(
 // 'ext.CodeMirror.v6.lib' )`).
-import type CodeMirrorPreferences from '../../mediawiki-extensions-CodeMirror/resources/codemirror.preferences.js'
+import type CodeMirrorPreferences from './types/codemirror.preferences.d.ts'
 // import CodeMirrorPreferences from './CodeMirrorPreferences';
 
 // import CodeMirrorLint from './codemirror.lint.js';
