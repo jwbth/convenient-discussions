@@ -18,6 +18,10 @@ import { isElement, isNode } from './utils-general'
  */
 
 /**
+ * @typedef {NodeLike & Partial<Record<FirstChildProp | LastChildProp | PreviousSiblingProp | NextSiblingProp | 'parentNode', NodeLike | null>>} NodeWithProps
+ */
+
+/**
  * Generalization and simplification of the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the
  * normal and worker contexts.
@@ -96,14 +100,14 @@ class TreeWalker {
 	 * @protected
 	 */
 	tryMove(prop) {
-		/** @type {NodeLike | null} */
-		let node = this.currentNode
+		/** @type {NodeWithProps | null} */
+		let node = /** @type {NodeWithProps} */ (this.currentNode)
 		if (node === this.root && !prop.includes('Child')) {
 			return null
 		}
 
 		do {
-			node = node[/** @type {keyof node} */ (prop)]
+			node = /** @type {NodeWithProps | null} */ (node[prop] || null)
 		} while (node && !this.acceptNode(node))
 		if (node) {
 			this.currentNode = node
@@ -164,21 +168,21 @@ class TreeWalker {
 	 * @returns {?AcceptedNode}
 	 */
 	nextNode(startNode) {
-		/** @type {NodeLike | null} */
-		let node = startNode || this.currentNode
+		/** @type {NodeWithProps | null} */
+		let node = /** @type {NodeWithProps | null} */ (startNode || this.currentNode)
 
 		do {
-			if (node[/** @type {keyof node} */ (this.firstChildProp)]) {
-				node = node[/** @type {keyof node} */ (this.firstChildProp)]
+			if (node[this.firstChildProp]) {
+				node = /** @type {NodeWithProps | null} */ (node[this.firstChildProp] || null)
 			} else {
 				while (
 					node &&
-					!node[/** @type {keyof node} */ (this.nextSiblingProp)] &&
+					!node[this.nextSiblingProp] &&
 					node.parentNode !== this.root
 				) {
-					node = node.parentNode
+					node = /** @type {NodeWithProps | null} */ (node.parentNode || null)
 				}
-				node &&= node[/** @type {keyof node} */ (this.nextSiblingProp)]
+				node &&= /** @type {NodeWithProps | null} */ (node[this.nextSiblingProp] || null)
 			}
 		} while (node && !this.acceptNode(node))
 		if (node) {
@@ -194,23 +198,21 @@ class TreeWalker {
 	 * @returns {?AcceptedNode}
 	 */
 	previousNode() {
-		/** @type {NodeLike | null} */
-		let node = this.currentNode
+		/** @type {NodeWithProps | null} */
+		let node = /** @type {NodeWithProps | null} */ (this.currentNode)
 		if (node === this.root) {
 			return null
 		}
 
 		do {
-			let test = /** @type {NodeLike | null} */ (
-				node[/** @type {keyof node} */ (this.previousSiblingProp)]
-			)
+			let test = /** @type {NodeWithProps | null} */ (node[this.previousSiblingProp] || null)
 			if (test) {
 				node = test
-				while ((test = node[/** @type {keyof node} */ (this.lastChildProp)])) {
+				while ((test = /** @type {NodeWithProps | null} */ (node[this.lastChildProp] || null))) {
 					node = test
 				}
 			} else {
-				node = node.parentNode
+				node = /** @type {NodeWithProps | null} */ (node.parentNode || null)
 			}
 		} while (node && !this.acceptNode(node))
 		if (node) {
