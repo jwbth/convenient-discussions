@@ -2012,6 +2012,7 @@ class Controller extends EventEmitter {
 		delete newQuery.cdaddtopic
 		delete newQuery.dtnewcommentssince
 		delete newQuery.dtinthread
+		delete newQuery.cdauthor
 
 		/** @type {'pushState' | 'replaceState' | undefined} */
 		let methodName

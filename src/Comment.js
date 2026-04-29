@@ -21,6 +21,7 @@ import {
 	decodeHtmlEntities,
 	defined,
 	getHeadingLevel,
+	isElement,
 	removeFromArrayIfPresent,
 	sleep,
 	underlinesToSpaces,
@@ -4056,20 +4057,36 @@ class Comment extends mixIntoClass(
 
 	/**
 	 * Clear the linked state by removing URL parameters and clearing linked comments.
+	 *
+	 * @param {JQuery.ClickEvent} [event]
 	 */
-	static clearLinkedState = () => {
+	static clearLinkedStateOnBodyClick = (event) => {
+		if (
+			isElement(event?.target) &&
+			(event.target.classList.contains('cd-thread-clickArea') ||
+				event.target.tagName === 'A' ||
+				event.target.tagName === 'BUTTON')
+		)
+			return
+
+		$(document.body).off('click.cd', this.clearLinkedStateOnBodyClick)
+
 		const url = new URL(location.href)
 		if (
 			url.hash ||
 			url.searchParams.has('dtnewcomments') ||
-			url.searchParams.has('dtnewcommentssince')
+			url.searchParams.has('dtnewcommentssince') ||
+			url.searchParams.has('cdauthor')
 		) {
 			url.searchParams.delete('dtnewcomments')
 			url.searchParams.delete('dtnewcommentssince')
 			url.searchParams.delete('dtinthread')
 			url.searchParams.delete('dtsincethread')
+			url.searchParams.delete('cdauthor')
 			url.hash = ''
-			history.pushState(null, '', url)
+			if (event) {
+				history.pushState(null, '', url)
+			}
 		}
 
 		commentManager.clearLinkedComments()
@@ -4090,6 +4107,8 @@ class Comment extends mixIntoClass(
 		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
 		// incorrectly. (TODO: does it still? Need to check.)
 		await sleep()
+
+		this.clearLinkedStateOnBodyClick()
 
 		// TODO: Add flags and update layers separately to minimize reflow? (Pass `false` as a third
 		// parameter to addFlag())
@@ -4115,7 +4134,7 @@ class Comment extends mixIntoClass(
 			)
 		}
 
-		document.body.addEventListener('click', this.clearLinkedState, { once: true })
+		$(document.body).off('click.cd').on('click.cd', this.clearLinkedStateOnBodyClick)
 	}
 
 	/**

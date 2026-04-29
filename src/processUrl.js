@@ -26,12 +26,12 @@ import { isExistentAnchor, wrapHtml } from './utils-window'
 let searchResults
 
 /**
- * Highlight new comments based on URL parameters.
+ * Highlight linked comments based on URL parameters.
  *
  * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
  * @private
  */
-function highlightNewComments(noScroll = false) {
+export function highlightLinkedComments(noScroll = false) {
 	const url = new URL(location.href)
 	const newCommentIds = url.searchParams.get('dtnewcomments')?.split('|') || []
 	const newCommentsSinceId = url.searchParams.get('dtnewcommentssince')
@@ -39,7 +39,7 @@ function highlightNewComments(noScroll = false) {
 	const sinceThread = url.searchParams.get('dtsincethread')
 
 	/** @type {Comment[]} */
-	const commentsToHighlight = []
+	let commentsToHighlight = []
 
 	if (newCommentsSinceId) {
 		const newCommentsSince = commentManager.getByDtId(newCommentsSinceId)
@@ -78,6 +78,17 @@ function highlightNewComments(noScroll = false) {
 				commentsToHighlight.push(comment)
 			}
 		})
+	}
+
+	// Filter by author name if specified
+	const cdauthor = url.searchParams.get('cdauthor')
+	if (cdauthor) {
+		if (!newCommentsSinceId && !newCommentIds.length) {
+			commentsToHighlight = commentManager.getAll()
+		}
+		commentsToHighlight = commentsToHighlight.filter(
+			(comment) => comment.author.getName() === cdauthor,
+		)
 	}
 
 	// Highlight and scroll to the first comment
@@ -181,7 +192,7 @@ export function processCommentReferencesInUrl(noScroll = false) {
 		Comment.markAsLinked([comment])
 	} else {
 		// Handle URL parameters for highlighting multiple comments
-		highlightNewComments(noScroll)
+		highlightLinkedComments(noScroll)
 	}
 
 	return { fragment, comment, date, author }

@@ -8,6 +8,7 @@ import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
+import { highlightLinkedComments } from './processUrl'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
 import { defined, underlinesToSpaces, unique } from './shared/utils-general'
@@ -757,6 +758,17 @@ class Section extends SectionSkeleton {
 				const comments = this.comments.filter((comment) => comment.author === author)
 				const newestComment = /** @type {Comment} */ (Comment.getNewest(comments, true))
 
+				let href
+				if (this.comments[0].dtId) {
+					const url = new URL(location.href)
+					url.searchParams.set('cdauthor', author.getName())
+					url.searchParams.set('dtnewcommentssince', this.comments[0].dtId)
+					url.searchParams.set('dtinthread', '1')
+					href = url.toString()
+				} else {
+					href = `#${comments[0].getUrlFragment() || ''}`
+				}
+
 				return {
 					name: author.getName(),
 					count: comments.length,
@@ -765,12 +777,17 @@ class Section extends SectionSkeleton {
 					newestComment,
 					$authorLink: $('<a>')
 						.text(author.getName())
-						.attr('href', `#${comments[0].getUrlFragment() || ''}`)
+						.attr('href', href)
 						.on('click', (event) => {
+							event.preventDefault()
 							if (event.altKey) return
 
-							event.preventDefault()
-							Comment.markAsLinked(comments, true, false)
+							if (this.comments[0].dtId) {
+								history.pushState(history.state, '', href)
+								highlightLinkedComments()
+							} else {
+								Comment.markAsLinked(comments, true, false)
+							}
 						}),
 				}
 			})

@@ -543,24 +543,20 @@ export function isText(node) {
  * @overload
  * @param {Node} node
  * @returns {node is Element}
- */
-
-/**
+ *
  * @overload
  * @param {import('domhandler').Node} node
  * @returns {node is import('domhandler').Element}
- */
-
-/**
+ *
  * @overload
- * @param {?NodeLike} [node]
+ * @param {any} [node]
  * @returns {node is ElementLike}
  */
 
 /**
  * Checks if the argument is an element.
  *
- * @param {?NodeLike} [node]
+ * @param {any} [node]
  * @returns {node is ElementLike}
  */
 export function isElement(node) {
@@ -570,7 +566,7 @@ export function isElement(node) {
 /**
  * Checks if the argument is a node.
  *
- * @param {?NodeLike} [node]
+ * @param {any} [node]
  * @returns {node is NodeLike}
  */
 export function isNode(node) {
@@ -580,7 +576,7 @@ export function isNode(node) {
 /**
  * Checks if the argument is a native element.
  *
- * @param {?NodeLike} [node]
+ * @param {any} [node]
  * @returns {node is Element}
  */
 export function isNativeElement(node) {
@@ -590,7 +586,7 @@ export function isNativeElement(node) {
 /**
  * Checks if the argument is a node from the `domhandler` library.
  *
- * @param {NodeLike} [node]
+ * @param {any} [node]
  * @returns {node is import('domhandler').Node}
  */
 export function isDomHandlerNode(node) {
@@ -600,7 +596,7 @@ export function isDomHandlerNode(node) {
 /**
  * Checks if the given node is a node from the `domhandler` library.
  *
- * @param {NodeLike} [node]
+ * @param {any} [node]
  * @returns {node is import('domhandler').Element}
  */
 export function isDomHandlerElement(node) {
@@ -610,7 +606,7 @@ export function isDomHandlerElement(node) {
 /**
  * Check whether the provided node is a metadata node (`<style>`, `<link>`).
  *
- * @param {NodeLike} node
+ * @param {any} node
  * @returns {boolean}
  */
 export function isMetadataNode(node) {
