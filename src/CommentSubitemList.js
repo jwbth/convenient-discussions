@@ -32,7 +32,7 @@ class CommentSubitemList {
 	 * @param {string} name
 	 */
 	remove(name) {
-		if ('name' in this.content) {
+		if (name in this.content) {
 			const $element = this.content[name]
 			delete this.content[name]
 			const $wrappingList = $element.parent('dl, ul, ol')
@@ -55,7 +55,7 @@ class CommentSubitemList {
 	 * @returns {?JQuery}
 	 */
 	get(name) {
-		return 'name' in this.content ? this.content[name] : null
+		return name in this.content ? this.content[name] : null
 	}
 }
 
