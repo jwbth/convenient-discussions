@@ -36,7 +36,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 			['section', '<section />'],
 			['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
 			['syntaxhighlight inline lang=""', '<syntaxhighlight inline lang="', '"></syntaxhighlight>'],
-			['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
+			['syntaxhighlight', '<syntaxhighlight lang="text">\n', '\n</syntaxhighlight>'],
 			['templatestyles', '<templatestyles src="', '" />'],
 		]
 
