@@ -2,6 +2,8 @@
 // mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js&action=raw&ctype=text/javascript');
 console.log(`Collecting data for ${mw.config.get('wgServerName')}…`)
 
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+
 /**
  * @typedef {object} SiteInfoResponse
  * @property {object} query
@@ -248,12 +250,14 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		})
 	).entities
 
-	const titles = /** @type {Partial<Record<string, string[]>>} */ ({})
+	const titles = /** @type {Record<string, mw.Title[]>} */ ({})
 	if (wikidataData) {
 		Object.keys(idsToProps).forEach((id) => {
 			const sitelinks = wikidataData[id].sitelinks
 			if (sitelinks?.[dbName]) {
-				titles[idsToProps[id]] = [mw.Title.newFromText(sitelinks[dbName].title)]
+				titles[idsToProps[id]] = [
+					/** @type {mw.Title} */ (mw.Title.newFromText(sitelinks[dbName].title)),
+				]
 			}
 		})
 	}
@@ -278,7 +282,11 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 
 			// Should always be the case, logically
 			if (prop) {
-				titles[prop].push(...page.redirects.map((redirect) => mw.Title.newFromText(redirect.title)))
+				titles[prop].push(
+					...page.redirects.map(
+						(redirect) => /** @type {mw.Title} */ (mw.Title.newFromText(redirect.title)),
+					),
+				)
 			}
 		})
 	}
@@ -338,14 +346,14 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 	config.commentAntipatterns = []
 	config.excludeFromHeadlineClasses = []
 
-	const closedTitles = /** @type {string[]} */ ([]).concat(
+	const closedTitles = /** @type {mw.Title[]} */ ([]).concat(
 		titles.closed || [],
 		titles.discussionTop || [],
 		titles.archiveTop || [],
 		titles.hiddenArchiveTop || [],
 		titles.afdTop || [],
 	)
-	const closedEndTitles = /** @type {string[]} */ ([]).concat(
+	const closedEndTitles = /** @type {mw.Title[]} */ ([]).concat(
 		titles.closedEnd || [],
 		titles.discussionBottom || [],
 		titles.hiddenArchiveBottom || [],

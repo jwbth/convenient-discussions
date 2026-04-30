@@ -162,7 +162,7 @@ class CommentSkeleton {
 	 * Does the comment belong to the current user.
 	 *
 	 * @type {boolean}
-	 * @private
+	 * @protected
 	 */
 	own
 
