@@ -2,7 +2,37 @@
 // mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js&action=raw&ctype=text/javascript');
 console.log(`Collecting data for ${mw.config.get('wgServerName')}…`)
 
+/**
+ * @typedef {object} SiteInfoResponse
+ * @property {object} query
+ * @property {object[]} query.specialpagealiases
+ * @property {string} query.specialpagealiases.realname
+ * @property {string[]} query.specialpagealiases.aliases
+ * @property {object[]} query.magicwords
+ * @property {string} query.magicwords.name
+ * @property {string[]} query.magicwords.aliases
+ * @property {object} query.general
+ * @property {string} query.general.timezone
+ * @property {object[]} query.extensions
+ * @property {string} query.extensions.name
+ */
+
+/**
+ * @typedef {object} ApiResponseWbGetEntities
+ * @property {Record<string, { id: string, sitelinks?: Record<string, { title: string }> }>} [entities]
+ */
+
+/**
+ * @typedef {object} RedirectsResponse
+ * @property {object} [query]
+ * @property {object[]} [query.pages]
+ * @property {string} query.pages.title
+ * @property {object[]} [query.pages.redirects]
+ * @property {string} query.pages.redirects.title
+ */
+// eslint-disable-next-line unicorn/prefer-top-level-await
 mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
+	/** @type {Partial<typeof import('../config/default').default>} */
 	const config = {
 		messages: {},
 	}
@@ -98,14 +128,18 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		const messages = await api.getMessages(nextNames, {
 			amlang: mw.config.get('wgContentLanguage'),
 		})
-		Object.assign(config.messages, messages)
+		config.messages = Object.assign(config.messages || {}, messages)
 	}
 
-	const siteInfoResponse = await api.get({
-		action: 'query',
-		meta: 'siteinfo',
-		siprop: ['specialpagealiases', 'general', 'extensions', 'magicwords'],
-	})
+	const siteInfoResponse = /** @type {SiteInfoResponse} */ (
+		/** @type {unknown} */ (
+			await api.get({
+				action: 'query',
+				meta: 'siteinfo',
+				siprop: ['specialpagealiases', 'general', 'extensions', 'magicwords'],
+			})
+		)
+	)
 
 	const specialPageAliases = siteInfoResponse.query.specialpagealiases.filter((obj) =>
 		['Contributions', 'Diff', 'PermanentLink'].includes(obj.realname),
@@ -123,7 +157,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		.find((obj) => obj.name === 'subst')
 		?.aliases.map((alias) => alias.toLowerCase())
 		.filter((alias) => alias !== 'subst:')
-	if (substAliases.length) {
+	if (substAliases?.length) {
 		config.substAliases = substAliases
 	}
 
@@ -131,7 +165,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		.find((obj) => obj.name === 'img_thumbnail')
 		?.aliases.map((alias) => alias.toLowerCase())
 		.filter((alias) => alias !== 'thumb' && alias !== 'thumbnail')
-	if (thumbAliases.length) {
+	if (thumbAliases?.length) {
 		config.thumbAliases = thumbAliases
 	}
 
@@ -158,10 +192,10 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 	const signatureMessage = (
 		await api.getMessages('Signature', {
 			amlang: mw.config.get('wgContentLanguage'),
-			amincludelocal: 1,
+			amincludelocal: true,
 		})
 	).Signature
-	const parsedSignature = await api.parse(signatureMessage, { disablelimitreport: true })
+	const parsedSignature = await api.parse(String(signatureMessage), { disablelimitreport: true })
 	if (!parsedSignature.includes('{{')) {
 		const $signature = $(parsedSignature)
 		const [, signatureEnding] =
@@ -174,6 +208,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		}
 	}
 
+	/** @type {Record<string, string>} */
 	const idsToProps = {
 		Q5573785: 'unsigned',
 		Q10684709: 'unsigned2',
@@ -204,7 +239,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		anonymous: true,
 	})
 	const dbName = mw.config.get('wgDBname')
-	const wikidataData = (
+	const wikidataData = /** @type {ApiResponseWbGetEntities} */ (
 		await foreignApi.get({
 			action: 'wbgetentities',
 			ids: Object.keys(idsToProps),
@@ -213,27 +248,32 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		})
 	).entities
 
-	const titles = {}
-	Object.keys(idsToProps)
-		.filter((id) => wikidataData[id].sitelinks[dbName])
-		.forEach((id) => {
-			titles[idsToProps[id]] = [mw.Title.newFromText(wikidataData[id].sitelinks[dbName].title)]
+	const titles = /** @type {Partial<Record<string, string[]>>} */ ({})
+	if (wikidataData) {
+		Object.keys(idsToProps).forEach((id) => {
+			const sitelinks = wikidataData[id].sitelinks
+			if (sitelinks?.[dbName]) {
+				titles[idsToProps[id]] = [mw.Title.newFromText(sitelinks[dbName].title)]
+			}
 		})
+	}
 
-	const redirectsResp = await api.get({
-		action: 'query',
-		titles: Object.keys(titles).map((prop) => titles[prop][0].getPrefixedText()),
-		prop: 'redirects',
-		rdlimit: 500,
-		formatversion: 2,
-	})
+	const redirectsResp = /** @type {RedirectsResponse} */ (
+		await api.get({
+			action: 'query',
+			titles: Object.keys(titles).map((prop) => titles[prop][0].getPrefixedText()),
+			prop: 'redirects',
+			rdlimit: 500,
+			formatversion: 2,
+		})
+	)
 
 	if (redirectsResp.query?.pages) {
 		redirectsResp.query.pages.forEach((page) => {
 			if (!page.redirects) return
 
 			const prop = Object.keys(titles).find(
-				(prop) => titles[prop][0].getPrefixedText() === page.title,
+				(prp) => titles[prp][0].getPrefixedText() === page.title,
 			)
 
 			// Should always be the case, logically
@@ -243,7 +283,16 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		})
 	}
 
+	/**
+	 * @param {mw.Title} title
+	 * @returns {string}
+	 */
 	const getTitleText = (title) => title.getMainText()
+
+	/**
+	 * @param {string} s
+	 * @returns {string}
+	 */
 	const toLowerCaseFirst = (s) => (s.length ? s[0].toLowerCase() + s.slice(1) : '')
 
 	config.unsignedTemplates =
@@ -264,7 +313,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 
 	config.paragraphTemplates = titles.paragraph
 		?.map(getTitleText)
-		.sort((title1, title2) => (title2 === 'Pb') - (title1 === 'Pb'))
+		.sort((title1, title2) => Number(title2 === 'Pb') - Number(title1 === 'Pb'))
 	if (config.paragraphTemplates) {
 		config.paragraphTemplates[0] = toLowerCaseFirst(config.paragraphTemplates[0])
 	}
@@ -289,23 +338,26 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 	config.commentAntipatterns = []
 	config.excludeFromHeadlineClasses = []
 
-	const closedTitles = [].concat(
+	const closedTitles = /** @type {string[]} */ ([]).concat(
 		titles.closed || [],
 		titles.discussionTop || [],
 		titles.archiveTop || [],
 		titles.hiddenArchiveTop || [],
 		titles.afdTop || [],
 	)
-	const closedEndTitles = [].concat(
+	const closedEndTitles = /** @type {string[]} */ ([]).concat(
 		titles.closedEnd || [],
 		titles.discussionBottom || [],
 		titles.hiddenArchiveBottom || [],
 		titles.afdBottom || [],
 	)
 
-	config.closedDiscussionTemplates = (closedTitles.length ||
-		closedEndTitles.length ||
-		undefined) && [closedTitles.map(getTitleText), closedEndTitles.map(getTitleText)]
+	if (closedTitles.length || closedEndTitles.length) {
+		config.closedDiscussionTemplates = [
+			closedTitles.map(getTitleText),
+			closedEndTitles.map(getTitleText),
+		]
+	}
 
 	config.closedDiscussionClasses = []
 
@@ -316,7 +368,7 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 		.replace(/"/g, "'")
 		.replace(
 			/signatureEndingRegexp: \{\}/,
-			`signatureEndingRegexp: ${config.signatureEndingRegexp}`,
+			`signatureEndingRegexp: ${String(config.signatureEndingRegexp)}`,
 		)
 
 	// When updating this code, update the code in build-configs.js as well.
