@@ -24,6 +24,7 @@ class SpaciousCommentActions extends CommentActions {
 	 * }>}
 	 */
 	static prototypes = new PrototypeRegistry()
+
 	/**
 	 * Create a reply button for spacious comments.
 	 *

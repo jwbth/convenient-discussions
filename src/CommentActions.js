@@ -11,6 +11,62 @@ import cd from './loader/cd'
  */
 class CommentActions {
 	/**
+	 * Reply button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	replyButton
+
+	/**
+	 * Edit button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	editButton
+
+	/**
+	 * Thank button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	thankButton
+
+	/**
+	 * Copy link button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	copyLinkButton
+
+	/**
+	 * "Go to parent" button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	goToParentButton
+
+	/**
+	 * "Go to child" button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	goToChildButton
+
+	/**
+	 * "Toggle child threads" button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	toggleChildThreadsButton
+
+	/**
+	 * Quote button. Only displayed when text in the comment is selected.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	quoteButton
+
+	/**
 	 * Create a CommentActions instance.
 	 *
 	 * @param {import('./Comment').default} comment The comment this actions instance belongs to.
@@ -22,62 +78,6 @@ class CommentActions {
 		 * @type {import('./Comment').default}
 		 */
 		this.comment = comment
-
-		/**
-		 * Reply button.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.replyButton = undefined
-
-		/**
-		 * Edit button.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.editButton = undefined
-
-		/**
-		 * Thank button.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.thankButton = undefined
-
-		/**
-		 * Copy link button.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.copyLinkButton = undefined
-
-		/**
-		 * "Go to parent" button.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.goToParentButton = undefined
-
-		/**
-		 * "Go to child" button.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.goToChildButton = undefined
-
-		/**
-		 * "Toggle child threads" button.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.toggleChildThreadsButton = undefined
-
-		/**
-		 * Quote button. Only displayed when text in the comment is selected.
-		 *
-		 * @type {CommentButton | undefined}
-		 */
-		this.quoteButton = undefined
 	}
 
 	/**
@@ -324,7 +324,12 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addQuoteButton() {
-		if (!this.comment.isActionable() || this.comment.hasFlag('deleted') || this.quoteButton?.isConnected()) return
+		if (
+			!this.comment.isActionable() ||
+			this.comment.hasFlag('deleted') ||
+			this.quoteButton?.isConnected()
+		)
+			return
 
 		this.quoteButton = this.createQuoteButton(this.onQuoteAction)
 		this.insertQuoteButton()
