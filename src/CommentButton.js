@@ -72,6 +72,7 @@ class CommentButton extends Button {
 		const element = this.buttonWidget.$element[0]
 		this.element.replaceWith(element)
 		this.element = element
+		this.element.classList.add('cd-comment-button')
 		this.buttonElement = /** @type {HTMLElement} */ (element.firstChild)
 		this.iconElement = this.buttonWidget.$icon[0]
 		if (this.action) {
@@ -95,6 +96,10 @@ class CommentButton extends Button {
 	 * @override
 	 */
 	setDisabled(disabled) {
+		if (disabled === this.isDisabled()) {
+			return this
+		}
+
 		if (this.widgetConstructor) {
 			this.getButtonWidget().setDisabled(disabled)
 		} else {
