@@ -1,6 +1,7 @@
 @line-height: 1.4285714em;
 @codemirror-editor-additional-padding: 5px;
-@border-color-var: var(--border-color-base, #a2a9b1);
+// @border-color-var: var(--border-color-base, #a2a9b1);
+@border-color-var: var(--border-color-subtle, #c8ccd1);
 
 // Keep this synced with CommentForm#createTextInputs
 @num-rows-comment: 4;
@@ -44,6 +45,7 @@
 	}
 
 	.oo-ui-textInputWidget .oo-ui-inputWidget-input {
+		border-color: @border-color-var;
 		border-radius: 0;
 	}
 
