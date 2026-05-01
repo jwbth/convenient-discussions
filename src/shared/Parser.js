@@ -370,7 +370,12 @@ class Parser {
 					}
 				}
 
-				if (authorData.isLastLinkAuthorLink) {
+				if (
+					authorData.isLastLinkAuthorLink ||
+					// Some users put their username into a bold node which they follow with links, e.g. https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Jay8g-20260430034500-Robert_McClenon-20260429055600
+					(authorData.name === textContent &&
+						['B', 'STRONG', 'I', 'EM', 'SPAN'].includes(node.tagName))
+				) {
 					firstSignatureElement = node
 				}
 			}
