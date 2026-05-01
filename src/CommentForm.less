@@ -131,7 +131,12 @@
 		}
 	}
 
-	.cm-gutters,
+	.cm-gutters {
+		// -4px is a compensation for the +4px padding which is itself caused by the 4px padding of
+		// .cm-content. We do all this because we need to stretch the gutters to the height of the
+		// content. Probably there is a more elegant way to do this, but this works for now.
+		min-height: calc(@line-height * (@num-rows-comment + 1) + @codemirror-editor-additional-padding - 4px) !important;
+	}
 
 	// Override `.ͼ1 .cm-content`
 	.cm-content.cm-content {
@@ -141,7 +146,13 @@
 	&-addSection,
 	&-addSubsection,
 	&-sectionOpeningComment {
-		.cm-gutters,
+		.cm-gutters {
+		// -4px is a compensation for the +4px padding which is itself caused by the 4px padding of
+		// .cm-content. We do all this because we need to stretch the gutters to the height of the
+		// content. Probably there is a more elegant way to do this, but this works for now.
+		min-height: calc(@line-height * (@num-rows-section + 1) + @codemirror-editor-additional-padding - 4px) !important;
+		}
+
 		.cm-content.cm-content {
 			min-height: calc(@line-height * (@num-rows-section + 1) + @codemirror-editor-additional-padding) !important;
 		}
@@ -172,13 +183,13 @@
 	}
 
 	.cm-gutters {
-		padding: 1px 0 1px 1px;
+		padding: 1px 0 5px 1px;
 		box-sizing: content-box;
 	}
 
 	.cm-focused .cm-gutters {
 		// Replace padding with margin to prevent the gutters from obstructing the blue outline.
-		padding: 0;
+		padding: 0 0 4px 0;
 		margin: 1px 0 1px 1px;
 	}
 
