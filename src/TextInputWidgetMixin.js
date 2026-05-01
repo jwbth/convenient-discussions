@@ -1048,7 +1048,7 @@ class TextInputWidgetMixin {
 			// Check if it's a URL
 			try {
 				const parsedLabel = new URL(trimmedLabel)
-				// I see two protocols at https://en.wikipedia.org/wiki/Special:Interwiki
+				// I see only three protocols at https://en.wikipedia.org/wiki/Special:Interwiki
 				if (/^(https?|irc):$/.test(parsedLabel.protocol)) {
 					label = undefined
 				}

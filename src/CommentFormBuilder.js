@@ -220,7 +220,7 @@ class CommentFormBuilder {
 					wrapHtml(cd.sParse('cf-help-autocomplete-nameonly'), { targetBlank: true }),
 				),
 				$('<li>').append(
-					wrapHtml(cd.sParse('cf-help-autocomplete-wraptext', '<blockquote>'), {
+					wrapHtml(cd.sParse('cf-help-autocomplete-wraptext', '<nowiki><blockquote></nowiki>'), {
 						targetBlank: true,
 					}),
 				),
