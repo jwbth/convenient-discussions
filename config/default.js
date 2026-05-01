@@ -55,7 +55,6 @@ const defaultConfig = {
 	 * in your browser's console while the page of your wiki is open.
 	 *
 	 * @type {{ [name: string]: string }}
-	 * @default {}
 	 */
 	messages: {},
 
@@ -67,7 +66,6 @@ const defaultConfig = {
 	 * Each special page can have either an array of alias strings or an alias string.
 	 *
 	 * @type {{ [name: string]: string | string[] }}
-	 * @default {}
 	 */
 	specialPageAliases: {},
 
@@ -77,7 +75,6 @@ const defaultConfig = {
 	 * in your browser's console while the page of your wiki is open.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	substAliases: [],
 
@@ -87,7 +84,6 @@ const defaultConfig = {
 	 * in your browser's console while the page of your wiki is open.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	thumbAliases: [],
 
@@ -97,7 +93,6 @@ const defaultConfig = {
 	 * in your browser's console while the page of your wiki is open.
 	 *
 	 * @type {?string}
-	 * @default null
 	 */
 	timezone: null,
 
@@ -111,7 +106,6 @@ const defaultConfig = {
 	 * GlobalPreferences is not installed too.
 	 *
 	 * @type {?boolean}
-	 * @default Boolean(mw.loader.getState('ext.globalCssJs.user'))
 	 */
 	useGlobalPreferences: Boolean(mw.loader.getState('ext.globalCssJs.user')),
 
@@ -129,7 +123,6 @@ const defaultConfig = {
 	 * circumstances. (For example, you can specify the entire namespace, e.g., `/^Wikipedia:/`).
 	 *
 	 * @type {number[]}
-	 * @default mw.config.get('wgExtraSignatureNamespaces')
 	 */
 	customTalkNamespaces: mw.config.get('wgExtraSignatureNamespaces'),
 
@@ -145,7 +138,6 @@ const defaultConfig = {
 	 * The blacklist has priority over the whitelist.
 	 *
 	 * @type {RegExp[]}
-	 * @default []
 	 */
 	pageWhitelist: [],
 
@@ -153,7 +145,6 @@ const defaultConfig = {
 	 * Pages where the script shouldn't run. The blacklist has priority over the whitelist.
 	 *
 	 * @type {RegExp[]}
-	 * @default []
 	 */
 	pageBlacklist: [],
 
@@ -169,7 +160,6 @@ const defaultConfig = {
 	 * we can't get this using API, see {@link https://phabricator.wikimedia.org/T204610}.
 	 *
 	 * @type {?UserNamespacesByGender}
-	 * @default null
 	 * @example
 	 * // If only the female form differs from the standard name
 	 * {
@@ -183,7 +173,6 @@ const defaultConfig = {
 	 * gender-neutral, specify it here.
 	 *
 	 * @type {?string}
-	 * @default null
 	 * @example
 	 * // Russian Wikipedia
 	 * 'У'
@@ -228,7 +217,6 @@ const defaultConfig = {
 	 * two patterns, the one closer to the beginning of the array is used.
 	 *
 	 * @type {Array.<ArchivePathEntry|RegExp>}
-	 * @default []
 	 * @example
 	 * [
 	 *   {
@@ -251,7 +239,6 @@ const defaultConfig = {
 	 * suggest to search in the archives if the page name doesn't match one of these regexps.
 	 *
 	 * @type {RegExp[]}
-	 * @default []
 	 */
 	pagesWithoutArchives: [],
 
@@ -271,7 +258,6 @@ const defaultConfig = {
 	 * https://en.wikipedia.org/wiki/User:MiszaBot/config.
 	 *
 	 * @type {ArchivingConfig}
-	 * @default {}
 	 * @example
 	 * {
 	 *   templates: [
@@ -298,7 +284,6 @@ const defaultConfig = {
 	 * Regexps for fragments that shouldn't trigger the "Section not found" notification.
 	 *
 	 * @type {RegExp[]}
-	 * @default []
 	 */
 	idleFragments: [],
 
@@ -307,7 +292,6 @@ const defaultConfig = {
 	 * `'#'` is used automatically.
 	 *
 	 * @type {string}
-	 * @default ':'
 	 */
 	defaultIndentationChar: ':',
 
@@ -315,7 +299,6 @@ const defaultConfig = {
 	 * Whether to put a space between the indentation chars and the comment text.
 	 *
 	 * @type {boolean}
-	 * @default true
 	 */
 	spaceAfterIndentationChars: true,
 
@@ -327,7 +310,6 @@ const defaultConfig = {
 	 * for the comment independent of this value.
 	 *
 	 * @type {'mimic'|'unify'}
-	 * @default 'mimic'
 	 */
 	indentationCharMode: 'mimic',
 
@@ -336,7 +318,6 @@ const defaultConfig = {
 	 * the beginning if it is needed.
 	 *
 	 * @type {string}
-	 * @default ' '
 	 */
 	defaultSignaturePrefix: ' ',
 
@@ -353,12 +334,10 @@ const defaultConfig = {
 	 * ```
 	 * Here, the second `''` is not a part of the signature.
 	 *
-	 * `(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?` is for cases like
+	 * `(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?` is for cases like
 	 * {@link https://en.wikipedia.org/?diff=1033395227}.
 	 *
 	 * @type {RegExp | null}
-	 * @default
-	 * /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─⹃~⁓/→⇒\s\u200e\u200f\u2060]|&amp;\w+;|&amp;#\d+;)*(?:\s+\()?$/
 	 */
 	signaturePrefixRegexp:
 		/(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─⹃~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
@@ -371,7 +350,6 @@ const defaultConfig = {
 	 * Should end with `$`.
 	 *
 	 * @type {?RegExp}
-	 * @default null
 	 * @example / \(talk\)$/
 	 */
 	signatureEndingRegexp: null,
@@ -381,7 +359,6 @@ const defaultConfig = {
 	 * admin. Set to `null` of there is no tag.
 	 *
 	 * @type {?string}
-	 * @default null
 	 */
 	tagName: null,
 
@@ -390,7 +367,6 @@ const defaultConfig = {
 	 * {@link https://www.mediawiki.org/wiki/Extension:Thanks#API_documentation}.
 	 *
 	 * @type {string}
-	 * @default 'convenient-discussions'
 	 */
 	scriptCodeName: 'convenient-discussions',
 
@@ -399,7 +375,6 @@ const defaultConfig = {
 	 * {@link defaultConfig.tagName tag}, in summary.
 	 *
 	 * @type {string}
-	 * @default 'mw:c:Special:MyLanguage/User:JWBTH/CD'
 	 */
 	scriptPageWikilink: 'mw:c:Special:MyLanguage/User:JWBTH/CD',
 
@@ -412,7 +387,6 @@ const defaultConfig = {
 	 * whole page content if it runs later than CD. But typically CD runs relatively late.
 	 *
 	 * @type {string}
-	 * @default 'wikipage.content'
 	 */
 	hookToFireWithAuthorWrappers: 'wikipage.content',
 
@@ -422,12 +396,6 @@ const defaultConfig = {
 	 * {@link https://en.wikipedia.org/wiki/Template:Unsigned_IP}. Please include aliases.
 	 *
 	 * @type {string[]}
-	 * @default [
-	 *   'unsigned',
-	 *   'unsignedIP',
-	 *   'unsigned2',
-	 *   'unsignedIP2',
-	 * ]
 	 */
 	unsignedTemplates: ['unsigned', 'unsignedIP', 'unsigned2', 'unsignedIP2'],
 
@@ -435,7 +403,6 @@ const defaultConfig = {
 	 * Name of the class that the unsigned templates set to its container element.
 	 *
 	 * @type {string}
-	 * @default 'autosigned'
 	 */
 	unsignedClass: 'autosigned',
 
@@ -445,10 +412,6 @@ const defaultConfig = {
 	 * for beginning templates, the second one for ending templates.
 	 *
 	 * @type {Array.<Array.<string>>}
-	 * @default [
-	 *   [],
-	 *   [],
-	 * ]
 	 */
 	pairQuoteTemplates: [[], []],
 
@@ -458,7 +421,6 @@ const defaultConfig = {
 	 * in `<small></small>` (with some exceptions when that could break the layout).
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	smallDivTemplates: [],
 
@@ -468,7 +430,6 @@ const defaultConfig = {
 	 * when posting comments.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	paragraphTemplates: [],
 
@@ -478,7 +439,6 @@ const defaultConfig = {
 	 * posting comments if this feature is implemented.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	outdentTemplates: [],
 
@@ -486,7 +446,6 @@ const defaultConfig = {
 	 * Name of the class that the outdent templates set to its container element.
 	 *
 	 * @type {string}
-	 * @default 'outdent-template'
 	 */
 	outdentClass: 'outdent-template',
 
@@ -495,7 +454,6 @@ const defaultConfig = {
 	 * {@link https://en.wikipedia.org/wiki/Template:Clear}.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	clearTemplates: [],
 
@@ -504,7 +462,6 @@ const defaultConfig = {
 	 * {@link https://en.wikipedia.org/wiki/Template:Reflist-talk}.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	reflistTalkTemplates: [],
 
@@ -513,7 +470,6 @@ const defaultConfig = {
 	 * {@link defaultConfig.reflistTalkTemplates} have.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	reflistTalkClasses: [],
 
@@ -521,7 +477,6 @@ const defaultConfig = {
 	 * Character used to trigger user mention (ping) autocomplete.
 	 *
 	 * @type {string}
-	 * @default '@'
 	 */
 	mentionCharacter: '@',
 
@@ -531,7 +486,6 @@ const defaultConfig = {
 	 * for languages where spaces are used less.
 	 *
 	 * @type {boolean}
-	 * @default true
 	 */
 	mentionRequiresLeadingSpace: true,
 
@@ -563,7 +517,6 @@ const defaultConfig = {
 	 * {@link https://github.com/jwbth/convenient-discussions/blob/31a1c1bdf3d92f60cbd1b5bf8b6d8fcddca1e046/config/w-en.js#L251 the example of English Wikipedia configuration}.
 	 *
 	 * @type {string[]|QuoteFormattingFunction}
-	 * @default ["> ''", "''"]
 	 */
 	quoteFormatting: ["> ''", "''"],
 
@@ -579,7 +532,6 @@ const defaultConfig = {
 	 * When it comes to the wikitext, all lines containing these classes are ignored.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	noSignatureClasses: [],
 
@@ -590,7 +542,6 @@ const defaultConfig = {
 	 * {@link defaultConfig.noSignatureClasses}.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	noSignatureTemplates: [],
 
@@ -599,7 +550,6 @@ const defaultConfig = {
 	 * wikitext.
 	 *
 	 * @type {RegExp[]}
-	 * @default []
 	 */
 	commentAntipatterns: [],
 
@@ -612,7 +562,6 @@ const defaultConfig = {
 	 * properly.
 	 *
 	 * @type {RegExp[]}
-	 * @default []
 	 * @example
 	 * [
 	 *   /^<!--[^]*?--> *\n+/,
@@ -628,11 +577,6 @@ const defaultConfig = {
 	 * least one `\n` and allow a newline character at the end (for example, by using `\s*`).
 	 *
 	 * @type {RegExp[]}
-	 * @default [
-	 *   /\n{2,}(?:&lt;!--[^]*?--&gt;\s*)+$/,
-	 *   /\n+(?:&lt;!--[^]*?--&gt;\s*)*&lt;\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^&lt;&gt;]+?)?)? *\/?&gt;\s*(?:&lt;!--[^]*?--&gt;\s*)*$/i,
-	 *   /\n+&lt;noinclude&gt;([^]*?)&lt;\/noinclude&gt;\s*$/i,
-	 * ]
 	 */
 	keepInSectionEnding: [
 		/\n{2,}(?:<!--[^]*?-->\s*)+$/,
@@ -645,7 +589,6 @@ const defaultConfig = {
 	 * link.
 	 *
 	 * @type {number}
-	 * @default 100
 	 */
 	signatureScanLimit: 100,
 
@@ -654,7 +597,6 @@ const defaultConfig = {
 	 * added by gadgets.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	excludeFromHeadlineClasses: [],
 
@@ -667,10 +609,6 @@ const defaultConfig = {
 	 * These templates are ignored when searching for a place to insert a comment in the wikitext.
 	 *
 	 * @type {Array.<Array.<string>>}
-	 * @default [
-	 *   [],
-	 *   [],
-	 * ]
 	 */
 	closedDiscussionTemplates: [[], []],
 
@@ -678,7 +616,6 @@ const defaultConfig = {
 	 * Classes of elements that are wrapped around closed discussions.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	closedDiscussionClasses: [],
 
@@ -688,7 +625,6 @@ const defaultConfig = {
 	 * default (images, "move topic" marks, empty list elements).
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	noHighlightClasses: [],
 
@@ -698,7 +634,6 @@ const defaultConfig = {
 	 * using this value.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	addTopicButtonSelectors: [],
 
@@ -706,7 +641,6 @@ const defaultConfig = {
 	 * Default collection of insert buttons displayed under the comment input in comment forms.
 	 *
 	 * @type {Array.<string|[string, string]>}
-	 * @default []
 	 */
 	defaultInsertButtons: [],
 
@@ -715,7 +649,6 @@ const defaultConfig = {
 	 * characters will need confirmation to be sent.
 	 *
 	 * @type {number}
-	 * @default 10000
 	 */
 	longCommentThreshold: 10_000,
 
@@ -725,7 +658,6 @@ const defaultConfig = {
 	 * etc.).
 	 *
 	 * @type {number}
-	 * @default 50
 	 */
 	bytesToDeemComment: 50,
 
@@ -733,7 +665,6 @@ const defaultConfig = {
 	 * The maximum length of a comment at which its whole content is copied into the edit summary.
 	 *
 	 * @type {number}
-	 * @default 50
 	 */
 	commentToSummaryLengthLimit: 50,
 
@@ -742,7 +673,6 @@ const defaultConfig = {
 	 * confirmed (e.g., voting pages).
 	 *
 	 * @type {RegExp[]}
-	 * @default []
 	 */
 	dontConfirmEmptyCommentPages: [],
 
@@ -753,7 +683,6 @@ const defaultConfig = {
 	 * spacing).
 	 *
 	 * @type {string}
-	 * @default '([:*#]+)( *)'
 	 */
 	indentationCharsPattern: '([:*#]+)( *)',
 
@@ -763,7 +692,6 @@ const defaultConfig = {
 	 * text, not wikitext. Take from MediaWiki:Undo-summary, MediaWiki:Revertpage.
 	 *
 	 * @type {string[]}
-	 * @default []
 	 */
 	undoTexts: [],
 
@@ -771,7 +699,6 @@ const defaultConfig = {
 	 * Custom {@link Reaction reactions}.
 	 *
 	 * @type {Reaction[]}
-	 * @default []
 	 */
 	textReactions: [],
 
@@ -790,7 +717,6 @@ const defaultConfig = {
 	 * which allows to specify actions after the modules listed in this value are loaded.
 	 *
 	 * @type {Module[]}
-	 * @default []
 	 */
 	customCommentFormModules: [],
 
@@ -798,7 +724,6 @@ const defaultConfig = {
 	 * Function that transforms the automatically generated summary text.
 	 *
 	 * @type {((summary: string) => string) | null}
-	 * @default null
 	 */
 	transformSummary: null,
 
@@ -807,7 +732,6 @@ const defaultConfig = {
 	 * submitted. See also {@link defaultConfig.postTransformCode}.
 	 *
 	 * @type {((code: string, commentForm: import('../src/CommentForm').default) => string) | null}
-	 * @default null
 	 */
 	preTransformCode: null,
 
@@ -818,7 +742,6 @@ const defaultConfig = {
 	 * {@link defaultConfig.preTransformCode}.
 	 *
 	 * @type {((code: string, commentForm: import('../src/CommentForm').default) => string) | null}
-	 * @default null
 	 */
 	postTransformCode: null,
 
@@ -838,7 +761,6 @@ const defaultConfig = {
 	 * this}.
 	 *
 	 * @type {((node: ElementLike, context: ParsingContext) => boolean) | null}
-	 * @default null
 	 */
 	rejectNode: null,
 
@@ -856,7 +778,6 @@ const defaultConfig = {
 	 * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js}.
 	 *
 	 * @type {((authorLink: Element, authorLinkPrototype: Element) => void) | null}
-	 * @default null
 	 */
 	beforeAuthorLinkParse: null,
 
@@ -872,7 +793,6 @@ const defaultConfig = {
 	 * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js}.
 	 *
 	 * @type {((authorLink: Element, data: any) => void) | null}
-	 * @default null
 	 */
 	afterAuthorLinkParse: null,
 
@@ -881,7 +801,6 @@ const defaultConfig = {
 	 * parameter, `false` if not, `null` if couldn't tell.
 	 *
 	 * @type {((title: string, code: string) => boolean | null) | null}
-	 * @default null
 	 */
 	areNewTopicsOnTop: null,
 
@@ -890,12 +809,6 @@ const defaultConfig = {
 	 * string normally ends with `\n`. If `null`, the section is just removed from the page.
 	 *
 	 * @type {(targetPageWikilink: string, signature: string, timestamp?: string) => string}
-	 * @default function (targetPageWikilink, signature, timestamp) {
-	 *   return (
-	 *     convenientDiscussions.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) +
-	 *     '\n'
-	 *   );
-	 * }
 	 */
 	getMoveSourcePageCode(targetPageWikilink, signature, timestamp) {
 		return (
@@ -911,9 +824,6 @@ const defaultConfig = {
 	 * respectively. The strings normally end with `\n`. If `null`, no code will be added.
 	 *
 	 * @type {(targetPageWikilink: string, signature: string) => string | string[]}
-	 * @default function (targetPageWikilink, signature) {
-	 *   return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
-	 * }
 	 */
 	getMoveTargetPageCode(targetPageWikilink, signature) {
 		return (
@@ -927,9 +837,6 @@ const defaultConfig = {
 	 * Code that creates an anchor on the page.
 	 *
 	 * @type {(id: string) => string}
-	 * @default function (id) {
-	 *   return '&lt;span id="' + id + '"&gt;&lt;/span&gt;';
-	 * }
 	 */
 	getAnchorCode(id) {
 		return '<span id="' + id + '"></span>'
