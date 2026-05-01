@@ -3107,10 +3107,10 @@ class Comment extends mixIntoClass(
 	 * offset.
 	 *
 	 * @param {boolean} partially Return `true` even if only a part of the comment is in the viewport.
-	 * @param {CommentOffset | undefined} [offset] Prefetched offset.
 	 * @returns {boolean | undefined}
 	 */
-	isInViewport(partially = false, offset = this.getAndOrSaveOffset()) {
+	isInViewport(partially = false) {
+		const offset = this.getAndOrSaveOffset()
 		if (!offset) {
 			return
 		}
@@ -3318,7 +3318,11 @@ class Comment extends mixIntoClass(
 	getText(cleanUpSignature = true) {
 		if (this.cachedText === undefined) {
 			const $dummy = $('<div>').append(
-				this.$elements.not(':header, .mw-heading').clone().removeClass('cd-hidden'),
+				this.$elements
+					.not(':header, .mw-heading')
+					.clone()
+					.removeClass('cd-hidden')
+					.removeAttr('hidden'),
 			)
 			const selectorParts = [
 				'.cd-signature',

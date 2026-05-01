@@ -721,17 +721,18 @@ export function isVisible(elements, rootElement) {
 		// Use modern checkVisibility API if available
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (element?.checkVisibility) {
-			return element.checkVisibility()
+			return (
+				element.checkVisibility() &&
+				// Elements that directly have hidden="until-found" are considered visible
+				element.getAttribute('hidden') !== 'until-found'
+			)
 		}
 
 		// Fallback: check rectangles first
-		const rect = element.getBoundingClientRect()
-		if (!getVisibilityByRects(rect)) {
-			return false
-		}
-
-		// Then check for hidden="until-found" ancestors
-		return !isHiddenByUntilFound(element, rootElement)
+		return (
+			getVisibilityByRects(element.getBoundingClientRect()) &&
+			!isHiddenByUntilFound(element, rootElement)
+		)
 	})
 }
 
@@ -743,14 +744,14 @@ export function isVisible(elements, rootElement) {
  * @returns {boolean}
  */
 export function isHiddenByUntilFound(element, rootElement) {
-	let current = element.parentElement
-
-	while (current && current !== rootElement) {
+	for (
+		let current = /** @type {Element | null} */ (element);
+		current && current !== rootElement;
+		current = current.parentElement
+	) {
 		if (current.getAttribute('hidden') === 'until-found') {
 			return true
 		}
-
-		current = current.parentElement
 	}
 
 	return false
