@@ -398,6 +398,7 @@ export default class CommentWorker extends CommentSkeleton {
 			keepSafeKeys(comment, [
 				'authorLink',
 				'authorTalkLink',
+				'contribsNotForeignLink',
 				'cachedParent',
 				'elements',
 				'extraSignatures',
