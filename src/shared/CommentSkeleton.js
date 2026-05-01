@@ -159,6 +159,14 @@ class CommentSkeleton {
 	authorTalkLink
 
 	/**
+	 * _For internal use._ User contributions link element. (This is only for checking the class for
+	 * the "indefinitely blocked" state.)
+	 *
+	 * @type {ElementFor<N> | undefined}
+	 */
+	contribsNotForeignLink
+
+	/**
 	 * Does the comment belong to the current user.
 	 *
 	 * @type {boolean}
@@ -255,6 +263,7 @@ class CommentSkeleton {
 		this.extraSignatures = signature.extraSignatures
 		this.authorLink = signature.authorLink
 		this.authorTalkLink = signature.authorTalkLink
+		this.contribsNotForeignLink = signature.contribsNotForeignLink
 		this.own = this.authorName === cd.g.userName
 		this.unsigned = signature.isUnsigned
 		this.elements = this.parts.map((part) => /** @type {ElementFor<N>} */ (part.node))
@@ -479,13 +488,13 @@ class CommentSkeleton {
 	/**
 	 * Check if an element has any of the specified classes.
 	 *
-	 * @param {ElementLike} element
+	 * @param {ElementLike | undefined} element
 	 * @param {string[]} classes
 	 * @returns {boolean}
-	 * @private
+	 * @protected
 	 */
 	static elementHasAnyClass(element, classes) {
-		return classes.some((name) => element.classList.contains(name))
+		return classes.some((name) => element?.classList.contains(name))
 	}
 
 	/**

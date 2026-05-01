@@ -139,6 +139,13 @@ class Comment extends mixIntoClass(
 
 	/**
 	 * @override
+	 * @type {HTMLAnchorElement | undefined}
+	 */
+	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
+	contribsNotForeignLink = this.contribsNotForeignLink
+
+	/**
+	 * @override
 	 * @type {HTMLElement[]}
 	 */
 	// @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
@@ -4163,31 +4170,6 @@ class Comment extends mixIntoClass(
 		}
 
 		$(document.body).off('click.cd').on('click.cd', this.clearLinkedStateOnBodyClick)
-	}
-
-	/**
-	 * Create the user info card button element.
-	 *
-	 * @returns {HTMLAnchorElement} The created button element
-	 */
-	static createUserInfoCardButton() {
-		const button = document.createElement('a')
-
-		// Set attributes
-		button.role = 'button'
-		button.setAttribute('tabindex', '0')
-		button.setAttribute('aria-label', cd.mws('checkuser-userinfocard-toggle-button-aria-label'))
-		button.setAttribute('aria-haspover', 'dialog')
-		button.className =
-			'ext-checkuser-userinfocard-button cdx-button cdx-button--action-default cdx-button--weight-quiet cdx-button--fake-button cdx-button--fake-button--enabled cdx-button--icon-only cd-comment-author-userInfoCard-button'
-
-		// Create and append the icon span
-		const iconSpan = document.createElement('span')
-		iconSpan.className =
-			'cdx-button__icon ext-checkuser-userinfocard-button__icon ext-checkuser-userinfocard-button__icon--userAvatar'
-		button.append(iconSpan)
-
-		return button
 	}
 
 	/**

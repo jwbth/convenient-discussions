@@ -213,3 +213,16 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 .cd-signature .cd-timestamp:not(a .cd-timestamp) {
 	color: var(--color-subtle, #54595d);
 }
+
+// When the markblocked gadget is enabled, replace the icon for blocked users on page reloads or
+// when markblocked gadget was slow to run (when it executed earlier than CD, which is often the
+// case, this is taken care of by SpacioucComment#createUserInfoCardButton() which directly adds the
+// .ext-checkuser-userinfocard-button__icon--userBlocked class. NOTE: if the icon is updated, this
+// needs to be updated as well.
+.cd-comment-author-userInfoCard-button:has(+ .user-blocked-indef)
+	> :is(
+		.ext-checkuser-userinfocard-button__icon--userAvatar,
+		.ext-checkuser-userinfocard-button__icon--userTemporary
+	) {
+	mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="%23000"><path d="M11.153 10.24c3.563.285 4.847 2.232 4.847 3.565v1.28l-4.847-4.846Zm-.916-7.241a3.242 3.242 0 01.156 6.48L6.998 6.084a3.244 3.244 0 013.24-3.085Z"/><path fill-rule="evenodd" d="M10 0c5.523 0 10 4.477 10 10s-4.477 10-10 10S0 15.523 0 10 4.477 0 10 0M4.71 16A7.97 7.97 0 0010 18c1.062 0 2.074-.21 3.001-.585L11.586 16zM10 2a7.99 7.99 0 00-6.395 3.191l11.203 11.203A8 8 0 0010 2M2.584 6.998A8 8 0 002 10a7.97 7.97 0 002.474 5.781v-1.976c0-.902.587-2.086 2.07-2.846z"/></svg>');
+}

@@ -47,6 +47,7 @@ import { parseTimestamp } from './utils-timestamp'
  * @property {Date} [date]
  * @property {HTMLElementFor<N>} [authorLink]
  * @property {HTMLElementFor<N>} [authorTalkLink]
+ * @property {HTMLElementFor<N>} [contribsNotForeignLink]
  * @property {string} authorName
  * @property {boolean} isUnsigned
  * @property {boolean} isExtraSignature
@@ -445,6 +446,7 @@ class Parser {
 			date: timestamp.date,
 			authorLink: /** @type {HTMLElementFor<N>} */ (authorData.link),
 			authorTalkLink: /** @type {HTMLElementFor<N>} */ (authorData.talkLink),
+			contribsNotForeignLink: /** @type {HTMLElementFor<N>} */ (authorData.contribsNotForeignLink),
 			authorName: authorData.name,
 			isUnsigned: Boolean(unsignedElement),
 			isExtraSignature,
@@ -750,8 +752,8 @@ class Parser {
 					}
 					authorData.talkLink = link
 				} else if (['contribs', 'contribsForeign'].includes(linkType)) {
-					// authorData.contribsNotForeignLink is used only to make sure there are no two contribs
-					// links to the current hostname in a signature.
+					// authorData.contribsNotForeignLink is used to make sure there are no two contribs links
+					// to the current hostname in a signature.
 					if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
 						return false
 					}

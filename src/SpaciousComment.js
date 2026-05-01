@@ -198,10 +198,18 @@ class SpaciousComment extends Comment {
 
 		if (mw.user.options.get('checkuser-userinfocard-enable') && this.author.isRegistered()) {
 			userInfoCardButton.dataset.username = this.author.getName()
-			if (this.author.isTemporary()) {
-				const span = /** @type {HTMLElement} */ (userInfoCardButton.firstChild)
-				span.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
-				span.classList.add('ext-checkuser-userinfocard-button__icon--userTemporary')
+			const icon = /** @type {HTMLElement} */ (userInfoCardButton.firstChild)
+			if (
+				// The class that markblocked gadgets add
+				this.authorLink?.classList.contains('user-blocked-indef') ||
+				this.authorTalkLink?.classList.contains('user-blocked-indef') ||
+				this.contribsNotForeignLink?.classList.contains('user-blocked-indef')
+			) {
+				icon.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
+				icon.classList.add('ext-checkuser-userinfocard-button__icon--userBlocked')
+			} else if (this.author.isTemporary()) {
+				icon.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
+				icon.classList.add('ext-checkuser-userinfocard-button__icon--userTemporary')
 			}
 		} else {
 			userInfoCardButton.remove()
@@ -519,7 +527,7 @@ class SpaciousComment extends Comment {
 		authorWrapper.className = 'cd-comment-author-wrapper'
 
 		// Add user info card button
-		authorWrapper.append(Comment.createUserInfoCardButton())
+		authorWrapper.append(SpaciousComment.createUserInfoCardButton())
 
 		const authorLink = document.createElement('a')
 		authorLink.className = 'cd-comment-author mw-userlink'
@@ -586,6 +594,31 @@ class SpaciousComment extends Comment {
 		SpaciousCommentActions.initPrototypes()
 
 		this.prototypesInitted = true
+	}
+
+	/**
+	 * Create the user info card button element.
+	 *
+	 * @returns {HTMLAnchorElement} The created button element
+	 */
+	static createUserInfoCardButton() {
+		const button = document.createElement('a')
+
+		// Set attributes
+		button.role = 'button'
+		button.setAttribute('tabindex', '0')
+		button.setAttribute('aria-label', cd.mws('checkuser-userinfocard-toggle-button-aria-label'))
+		button.setAttribute('aria-haspover', 'dialog')
+		button.className =
+			'ext-checkuser-userinfocard-button cdx-button cdx-button--action-default cdx-button--weight-quiet cdx-button--fake-button cdx-button--fake-button--enabled cdx-button--icon-only cd-comment-author-userInfoCard-button'
+
+		// Create and append the icon span
+		const iconSpan = document.createElement('span')
+		iconSpan.className =
+			'cdx-button__icon ext-checkuser-userinfocard-button__icon ext-checkuser-userinfocard-button__icon--userAvatar'
+		button.append(iconSpan)
+
+		return button
 	}
 }
 
