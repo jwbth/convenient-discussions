@@ -264,7 +264,7 @@ const compiledPrefixes = prefixData.map(([prefix, urlTemplate]) =>
  * @param {string} url
  * @returns {{ prefix: string; pageName: string; prefixedPageName: string } | undefined}
  */
-export function urlToInterwikiLink(url) {
+export function externalUrlToInterwikiLink(url) {
 	const qIdx = url.indexOf('?')
 	const inputPath = qIdx === -1 ? url : url.slice(0, qIdx)
 	const inputQueryStr = qIdx === -1 ? '' : url.slice(qIdx + 1)

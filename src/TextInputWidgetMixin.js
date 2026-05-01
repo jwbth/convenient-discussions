@@ -1,4 +1,4 @@
-import { urlToInterwikiLink } from './interwikiPrefixes'
+import { externalUrlToInterwikiLink } from './externalInterwikiPrefixes'
 import cd from './loader/cd'
 import { parseWikiUrl, sleep, underlinesToSpaces } from './shared/utils-general'
 import { encodeLinkLabel, encodeWikilink } from './shared/utils-wikitext'
@@ -727,13 +727,14 @@ class TextInputWidgetMixin {
 		const params = new URLSearchParams(urlObj.search)
 		const paramKeys = [...params.keys()]
 
-		// Try to get interwiki link directly from URL
-		const interwikiLink = urlToInterwikiLink(url)
-		if (interwikiLink) {
+		// Try to get an interwiki link from the URL of a known external interwiki prefix (only for WMF
+		// wikis)
+		const externalInterwikiLink = cd.g.isProbablyWmfSulWiki && externalUrlToInterwikiLink(url)
+		if (externalInterwikiLink) {
 			return this.buildWikilink({
-				target: interwikiLink.prefixedPageName,
+				target: externalInterwikiLink.prefixedPageName,
 				label,
-				pageNameWithFragment: interwikiLink.pageName,
+				pageNameWithFragment: externalInterwikiLink.pageName,
 				isShiftPressed,
 				hostname: urlObj.hostname,
 			})
