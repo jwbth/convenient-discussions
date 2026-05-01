@@ -1,6 +1,6 @@
 # Convenient Discussions ![lic](https://img.shields.io/github/license/jwbth/convenient-discussions)
 
-![Convenient Discussions Logo](assets/logo_textless.svg)
+<img src="assets/logo_textless.svg" alt="Convenient Discussions Logo" width="200">
 
 **Convenient Discussions** (**CD**) is a JavaScript tool that enhances [MediaWiki](https://www.mediawiki.org/) talk pages, redesigning threads, adding more comment and section actions, new comment navigation, real-time updates, autocomplete, and dozens of other features to make wiki discussions smooth and efficient.
 
