@@ -3307,8 +3307,10 @@ class Comment extends mixIntoClass(
 			$dummy.find(selectorParts.join(', ')).remove()
 			let text = $dummy.cdGetText()
 
-			// I forgot why we do this honestly given that the signature is already removed, but probably
-			// it's to remove any remaining traces.
+			// I forgot why we do this honestly given that the signature is already removed (and it was
+			// like this from the start, see
+			// https://github.com/jwbth/convenient-discussions/blob/11c1f5604d30f1cf8dddba1006cab0f1fbd4bd99/src/js/Comment.js#L1265),
+			// but probably it's to remove any remaining traces.
 			if (cleanUpSignature) {
 				if (cd.g.signatureEndingRegexp) {
 					text = text.replace(cd.g.signatureEndingRegexp, '')

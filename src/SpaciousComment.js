@@ -172,8 +172,7 @@ class SpaciousComment extends Comment {
 	 * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
 	 */
 	replaceSignatureWithHeader() {
-		// Capture the signature text before the signature is taken apart.
-		const signatureText = this.signatureElement.textContent
+		const signatureText = this.getSignatureTextWithoutHeadlineClasses()
 
 		const headerWrapper = SpaciousComment.prototypes.get('headerWrapperElement')
 		this.headerElement = /** @type {HTMLElement} */ (headerWrapper.firstChild)
@@ -196,24 +195,7 @@ class SpaciousComment extends Comment {
 			}
 		}
 
-		if (mw.user.options.get('checkuser-userinfocard-enable') && this.author.isRegistered()) {
-			userInfoCardButton.dataset.username = this.author.getName()
-			const icon = /** @type {HTMLElement} */ (userInfoCardButton.firstChild)
-			if (
-				// The class that markblocked gadgets add
-				this.authorLink?.classList.contains('user-blocked-indef') ||
-				this.authorTalkLink?.classList.contains('user-blocked-indef') ||
-				this.contribsNotForeignLink?.classList.contains('user-blocked-indef')
-			) {
-				icon.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
-				icon.classList.add('ext-checkuser-userinfocard-button__icon--userBlocked')
-			} else if (this.author.isTemporary()) {
-				icon.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
-				icon.classList.add('ext-checkuser-userinfocard-button__icon--userTemporary')
-			}
-		} else {
-			userInfoCardButton.remove()
-		}
+		this.updateUserInfoCardButton(userInfoCardButton)
 
 		const pagesToCheckExistence = []
 		if (this.authorLink) {
@@ -307,18 +289,7 @@ class SpaciousComment extends Comment {
 		this.rewrapHighlightables()
 		this.highlightables[0].insertBefore(headerWrapper, this.highlightables[0].firstChild)
 
-		// Clean the signature text for the tooltip.
-		let cleanedSignatureText = signatureText.replace(cd.g.timestampTools.content.regexp, '').trim()
-		if (cd.g.signatureEndingRegexp) {
-			cleanedSignatureText = cleanedSignatureText.replace(cd.g.signatureEndingRegexp, '')
-		}
-		if (cd.config.signaturePrefixRegexp) {
-			cleanedSignatureText = cleanedSignatureText.replace(
-				new RegExp('^' + cd.config.signaturePrefixRegexp.source.replace(/\$$/, '')),
-				'',
-			)
-		}
-		cleanedSignatureText = cleanedSignatureText.replace(/\n/g, ' ').replace(/ {2,}/g, ' ').trim()
+		const cleanedSignatureText = this.getCleanedSignatureText(signatureText)
 		if (cleanedSignatureText) {
 			this.authorLink.title =
 				cd.s('comment-author-tooltip-signature-prefix') +
@@ -332,6 +303,77 @@ class SpaciousComment extends Comment {
 		}
 
 		return pagesToCheckExistence
+	}
+
+	/**
+	 * Get the signature text with excluded headline elements removed.
+	 *
+	 * TODO: cd.config.excludeFromHeadlineClasses wasn't intended for this purpose, so either
+	 * repurpose it or use other means.
+	 *
+	 * @returns {string}
+	 * @private
+	 */
+	getSignatureTextWithoutHeadlineClasses() {
+		const dummy = document.createElement('div')
+		dummy.append(this.signatureElement.cloneNode(true))
+
+		cd.config.excludeFromHeadlineClasses.forEach((className) => {
+			dummy.querySelectorAll(`.${className}`).forEach((element) => {
+				element.remove()
+			})
+		})
+
+		return dummy.textContent || ''
+	}
+
+	/**
+	 * Update the user info card button for spacious comment headers.
+	 *
+	 * @param {HTMLAnchorElement} userInfoCardButton
+	 * @protected
+	 */
+	updateUserInfoCardButton(userInfoCardButton) {
+		if (mw.user.options.get('checkuser-userinfocard-enable') && this.author.isRegistered()) {
+			userInfoCardButton.dataset.username = this.author.getName()
+			const icon = /** @type {HTMLElement} */ (userInfoCardButton.firstChild)
+			if (
+				this.authorLink?.classList.contains('user-blocked-indef') ||
+				this.authorTalkLink?.classList.contains('user-blocked-indef') ||
+				this.contribsNotForeignLink?.classList.contains('user-blocked-indef')
+			) {
+				icon.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
+				icon.classList.add('ext-checkuser-userinfocard-button__icon--userBlocked')
+			} else if (this.author.isTemporary()) {
+				icon.classList.remove('ext-checkuser-userinfocard-button__icon--userAvatar')
+				icon.classList.add('ext-checkuser-userinfocard-button__icon--userTemporary')
+			}
+		} else {
+			userInfoCardButton.remove()
+		}
+	}
+
+	/**
+	 * Prepare cleaned signature text for the author tooltip.
+	 *
+	 * @param {string} signatureText
+	 * @returns {string}
+	 * @protected
+	 */
+	getCleanedSignatureText(signatureText) {
+		let cleanedSignatureText = signatureText.replace(cd.g.timestampTools.content.regexp, '').trim()
+
+		if (cd.g.signatureEndingRegexp) {
+			cleanedSignatureText = cleanedSignatureText.replace(cd.g.signatureEndingRegexp, '')
+		}
+		if (cd.config.signaturePrefixRegexp) {
+			cleanedSignatureText = cleanedSignatureText.replace(
+				new RegExp('^' + cd.config.signaturePrefixRegexp.source.replace(/\$$/, '')),
+				'',
+			)
+		}
+
+		return cleanedSignatureText.replace(/\n/g, ' ').replace(/ {2,}/g, ' ').trim()
 	}
 
 	/**
