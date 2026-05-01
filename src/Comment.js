@@ -1812,7 +1812,8 @@ class Comment extends mixIntoClass(
 				}
 				if (!$tr.children('.diff-marker').length) return
 
-				let addToDiff = false
+				const sidePresent = [false, false]
+				const sideRelevant = [false, false]
 				for (let j = 0; j < 2; j++) {
 					if (
 						!$tr
@@ -1820,14 +1821,39 @@ class Comment extends mixIntoClass(
 							.eq(j * 2)
 							.hasClass('diff-empty')
 					) {
+						sidePresent[j] = true
 						if (lineNumbers[j].includes(currentLineNumbers[j])) {
-							addToDiff = true
+							sideRelevant[j] = true
 						}
 						currentLineNumbers[j]++
 					}
 				}
-				if (addToDiff) {
-					cleanDiffBody += $tr[0].outerHTML
+
+				// To test hiding of halves of a diff, go to
+				// https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Alex_NB_IT, run
+				// cd.tests.visits.rollBack(new Date(1776447136102)) and then open the diff of the comment
+				// "этот год у нас насыщенный получается по заявкам)". page.
+				if (sideRelevant[0] || sideRelevant[1]) {
+					const clearSide =
+						sideRelevant[0] && !sideRelevant[1] && sidePresent[1]
+							? 1
+							: sideRelevant[1] && !sideRelevant[0] && sidePresent[0]
+								? 0
+								: undefined
+					if (clearSide === undefined) {
+						cleanDiffBody += $tr[0].outerHTML
+					} else {
+						const $clone = $tr.clone()
+						$clone
+							.children()
+							.eq(clearSide * 2)
+							.replaceWith('<td colspan="2" class="diff-empty"></td>')
+						$clone
+							.children()
+							.eq(clearSide * 2 + 1)
+							.remove()
+						cleanDiffBody += $clone[0].outerHTML
+					}
 				}
 			})
 

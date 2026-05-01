@@ -809,7 +809,9 @@ class UpdateChecker extends EventEmitter {
 	 * @param {number} newerRevisionId
 	 */
 	async markCommentsAsChanged(type, data, olderRevisionId, newerRevisionId) {
-		// Don't process >20 diffs; that's too much and probably means something is broken
+		// Don't process >20 diffs; that's too much and probably means something is broken, even though
+		// exceptions are possible, e.g. mass revote at
+		// https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Alex_NB_IT.
 		if (!data.length || data.length > 20) return
 
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
