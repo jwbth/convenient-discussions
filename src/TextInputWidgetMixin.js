@@ -1047,9 +1047,11 @@ class TextInputWidgetMixin {
 
 			// Check if it's a URL
 			try {
-				// eslint-disable-next-line no-new
-				new URL(trimmedLabel)
-				label = undefined
+				const parsedLabel = new URL(trimmedLabel)
+				// I see two protocols at https://en.wikipedia.org/wiki/Special:Interwiki
+				if (/^(https?|irc):$/.test(parsedLabel.protocol)) {
+					label = undefined
+				}
 			} catch {
 				// Not a URL, check for wikilinks, templates, and MediaWiki placeholders like [1]
 				if (
