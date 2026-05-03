@@ -9,7 +9,7 @@ i18nList.json
 node_modules/
 playwright-report/
 sandbox/
-scripts/messages/
+misc/messages/
 src/test*
 tests/worker-test-cases-regenerated.json
 test-results/
