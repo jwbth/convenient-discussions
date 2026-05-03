@@ -761,14 +761,14 @@ class Section extends SectionSkeleton {
 				const newestComment = /** @type {Comment} */ (Comment.getNewest(comments, true))
 
 				let href
-				if (this.comments[0].dtId) {
+				if (this.oldestComment?.dtId) {
 					const url = new URL(location.href)
 					url.searchParams.set('cdauthor', author.getName())
-					url.searchParams.set('dtnewcommentssince', this.comments[0].dtId)
+					url.searchParams.set('dtnewcommentssince', this.oldestComment.dtId)
 					url.searchParams.set('dtinthread', '1')
 					href = url.toString()
 				} else {
-					href = `#${comments[0].getUrlFragment() || ''}`
+					href = `#${this.oldestComment?.getUrlFragment() || ''}`
 				}
 
 				return {
@@ -784,7 +784,7 @@ class Section extends SectionSkeleton {
 							event.preventDefault()
 							if (event.altKey) return
 
-							if (this.comments[0].dtId) {
+							if (this.oldestComment?.dtId) {
 								history.pushState(history.state, '', href)
 								highlightLinkedComments()
 							} else {
