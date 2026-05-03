@@ -14,12 +14,13 @@ import navPanel from './navPanel'
 import notifications from './notifications'
 import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
-import ElementsTreeWalker from './shared/ElementsTreeWalker'
 import Parser from './shared/Parser'
+import TreeWalker from './shared/TreeWalker'
 import {
 	defined,
 	definedAndNotNull,
 	getLastArrayElementOrSelf,
+	isElement,
 	isHeadingNode,
 	isInline,
 	parseWikiUrl,
@@ -372,8 +373,12 @@ class Controller extends EventEmitter {
 				scrollY !== 0 &&
 				this.rootElement.getBoundingClientRect().top <= this.getBodyScrollPaddingTop()
 			) {
-				const treeWalker = new ElementsTreeWalker(
+				const treeWalker = new TreeWalker(
 					this.rootElement,
+					/** @type {(node: NodeLike) => node is Element} */ (
+						(node) => isElement(node) && !node.className.startsWith('ext-discussiontools')
+					),
+					true,
 					this.rootElement.firstElementChild || undefined,
 				)
 				while (true) {

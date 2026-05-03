@@ -236,10 +236,9 @@ class SectionSkeleton {
 			nextNotDescendantHeadingElement = targets[nndheIndex]?.element
 		}
 
-		/** @typedef {ElementLike} TreeWalkerAcceptedNode */
 		const treeWalker = new TreeWalker(
 			this.parser.context.rootElement,
-			/** @type {(node: NodeLike) => node is TreeWalkerAcceptedNode} */ (node) =>
+			/** @type {(node: NodeLike) => node is ElementLike} */ (node) =>
 				!isMetadataNode(node) &&
 				!(/** @type {ElementLike} */ (node).classList.contains('cd-section-button-container')),
 			true,
