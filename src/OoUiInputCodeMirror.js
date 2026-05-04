@@ -146,10 +146,16 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 		 * @override
 		 */
 		destroy() {
+			// Monkey-patch mw.user.isNamed() so that CodeMirrorWikiEditor doesn't change the user
+			// preference
+			const isNamedOriginal = mw.user.isNamed
+			mw.user.isNamed = () => false
 			try {
 				super.destroy()
 			} catch {
 				// Empty
+			} finally {
+				mw.user.isNamed = isNamedOriginal
 			}
 
 			// Monkey-patch an error in CodeMirror in codemirror.wikieditor.js on line `button.setValue(

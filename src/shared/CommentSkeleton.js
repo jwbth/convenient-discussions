@@ -838,6 +838,8 @@ class CommentSkeleton {
 						treeWalker.previousSibling()
 					);
 					if (
+						// Look at outdents in comments with more than one indented block, e.g.
+						// https://en.wikipedia.org/wiki/Wikipedia_talk:Notability/Archive_85#c-SmokeyJoe-20251225232200-WhatamIdoing-20251221002400
 						(isInline(treeWalker.currentNode, true) && !hasOutdents(parentNode)) ||
 						// Workaround for cases like
 						// https://en.wikipedia.org/w/index.php?title=User_talk:MBHbot&oldid=1228999533#c-1AmNobody24-20240614071000-June_2024
