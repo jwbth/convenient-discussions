@@ -728,7 +728,7 @@ export default function getMoveSectionDialogClass() {
 			let summaryKey = 'msd-summaryending-archive'
 
 			if (cd.page.isArchive()) {
-				titleText = cd.s('msg-title-unarchive')
+				titleText = cd.s('msd-title-unarchive')
 
 				// Unarchiving: move from archive to source page
 				const sourcePage = cd.page.getArchivedPage()
