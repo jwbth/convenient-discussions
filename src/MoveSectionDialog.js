@@ -574,7 +574,10 @@ export default function getMoveSectionDialogClass() {
 						) +
 						code.slice(target.targetIndex),
 					summary: buildEditSummary({
-						text: cd.s('es-move-from', source.sectionWikilink) + summaryEnding,
+						text:
+							this.action === 'archive'
+								? cd.s('es-archive-from', source.sectionWikilink) + summaryEnding
+								: cd.s('es-move-from', source.sectionWikilink) + summaryEnding,
 						section: this.section.headline,
 					}),
 					baserevid: target.page.revisionId,
@@ -638,7 +641,10 @@ export default function getMoveSectionDialogClass() {
 							: '') +
 						code.slice(source.sectionSource.endIndex),
 					summary: buildEditSummary({
-						text: cd.s('es-move-to', target.sectionWikilink) + summaryEnding,
+						text:
+							this.action === 'archive'
+								? cd.s('es-archive-to', target.sectionWikilink) + summaryEnding
+								: cd.s('es-move-to', target.sectionWikilink) + summaryEnding,
 						section: this.section.headline,
 					}),
 					baserevid: source.page.revisionId,
@@ -725,7 +731,6 @@ export default function getMoveSectionDialogClass() {
 		setupArchiveAction(archiveConfig, subpagesResponse) {
 			let titleText
 			let targetPageName
-			let summaryKey = 'msd-summaryending-archive'
 
 			if (cd.page.isArchive()) {
 				titleText = cd.s('msd-title-unarchive')
@@ -734,7 +739,6 @@ export default function getMoveSectionDialogClass() {
 				const sourcePage = cd.page.getArchivedPage()
 				if (sourcePage !== cd.page) {
 					targetPageName = sourcePage.name
-					summaryKey = 'msd-summaryending-unarchive'
 				}
 
 				// Archiving: move from source to archive page
@@ -745,7 +749,6 @@ export default function getMoveSectionDialogClass() {
 					archiveConfig?.path || (cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true))
 				if (archivePath) {
 					targetPageName = archivePath
-					summaryKey = 'msd-summaryending-archive'
 				}
 			}
 
@@ -761,7 +764,6 @@ export default function getMoveSectionDialogClass() {
 			if (archiveConfig?.isSorted !== undefined) {
 				this.controls.chronologicalOrder.field.toggle()
 			}
-			this.controls.summaryEnding.input.setValue(cd.s(summaryKey))
 
 			if (targetPageName) {
 				// Set the target page

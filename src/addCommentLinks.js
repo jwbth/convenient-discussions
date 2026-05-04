@@ -23,6 +23,14 @@ import { parseTimestamp } from './shared/utils-timestamp'
 let moveFromStringStart
 /** @type {string | undefined} */
 let moveToStringStart
+/** @type {string | undefined} */
+let archiveFromStringStart
+/** @type {string | undefined} */
+let archiveToStringStart
+/** @type {string | undefined} */
+let unarchiveFromStringStart
+/** @type {string | undefined} */
+let unarchiveToStringStart
 /** @type {string} */
 let goToCommentToYou
 /** @type {RegExp} */
@@ -86,6 +94,10 @@ async function bootstrap() {
 	}`)
 	;[moveFromStringStart] = cd.s('es-move-from').match(/^[^[$]+/) || []
 	;[moveToStringStart] = cd.s('es-move-to').match(/^[^[$]+/) || []
+	;[archiveFromStringStart] = cd.s('es-archive-from').match(/^[^[$]+/) || []
+	;[archiveToStringStart] = cd.s('es-archive-to').match(/^[^[$]+/) || []
+	;[unarchiveFromStringStart] = cd.s('es-unarchive-from').match(/^[^[$]+/) || []
+	;[unarchiveToStringStart] = cd.s('es-unarchive-to').match(/^[^[$]+/) || []
 
 	goToCommentToYou = cd.s('lp-comment-tooltip') + cd.mws('word-separator')
 	goToCommentToYou += cd.mws('parentheses', cd.s('lp-comment-toyou'))
@@ -556,5 +568,11 @@ function setWrapperLinkAttr(wrapper, attr, value) {
  * @private
  */
 function isArchiving(summary) {
-	return summary.includes('Archiving')
+	return Boolean(
+		summary.includes('Archiving') ||
+		(archiveFromStringStart && summary.includes(': ' + archiveFromStringStart)) ||
+		(archiveToStringStart && summary.includes(': ' + archiveToStringStart)) ||
+		(unarchiveFromStringStart && summary.includes(': ' + unarchiveFromStringStart)) ||
+		(unarchiveToStringStart && summary.includes(': ' + unarchiveToStringStart)),
+	)
 }
