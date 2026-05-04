@@ -1185,10 +1185,16 @@ class Controller extends EventEmitter {
 		event.preventDefault()
 
 		const fragment = /** @type {string} */ (object.getUrlFragment())
+
+		// For sections, check if there's a first comment to use for permanent links
+		const relevantComment = object instanceof Comment ? null : object.getRelevantComment()
+		const relevantCommentFragment = relevantComment?.getUrlFragment()
+		const permanentFragment = relevantCommentFragment || fragment
+
 		const permalinkSpecialPagePrefix =
 			mw.config.get('wgFormattedNamespaces')[-1] +
 			':' +
-			(object instanceof Comment
+			(object instanceof Comment || relevantCommentFragment
 				? 'GoToComment/'
 				: cd.g.specialPageAliases.PermanentLink[0] +
 					'/' +
@@ -1204,7 +1210,7 @@ class Controller extends EventEmitter {
 			fragment,
 			wikilink: `[[${cd.page.name}#${fragment}]]`,
 			currentPageWikilink: `[[#${fragment}]]`,
-			permanentWikilink: `[[${permalinkSpecialPagePrefix}${fragment}]]`,
+			permanentWikilink: `[[${permalinkSpecialPagePrefix}${permanentFragment}]]`,
 
 			// This dialog should be shown only for comments that have a timestamp; therefore a date;
 			// therefore an ID. In that case Comment#getUrl() returns a string.
@@ -1217,7 +1223,16 @@ class Controller extends EventEmitter {
 								mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment,
 							)
 						).getDecodedUrlWithFragment()
-					: object.getUrl(true),
+					: relevantCommentFragment
+						? /** @type {import('./Page').default} */ (
+								pageRegistry.get(
+									mw.config.get('wgFormattedNamespaces')[-1] +
+										':' +
+										'GoToComment/' +
+										permanentFragment,
+								)
+							).getDecodedUrlWithFragment()
+						: object.getUrl(true),
 			jsCall:
 				object instanceof Comment
 					? `let c = convenientDiscussions.api.getCommentById('${object.id || ''}');`
