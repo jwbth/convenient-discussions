@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Jack who built the house",
 			"Kareyac",
 			"Luku123",
 			"MarMi wiki",
@@ -112,7 +113,7 @@
 	"cf-advanced": "Zaawansowane",
 	"cf-settings-tooltip": "Ustawienia Convenient Discussions",
 	"cf-help-autocomplete-mention": "Wpisz <code>$1</code> i wybierz użytkownika aby go [[$2|wspomnieć]] (ang.).",
-	"cf-help-autocomplete-commentlink": "Wstaw <code><nowiki>$1</nowiki></code> aby dodać link do komentarza w bieżącej sekcji.",
+	"cf-help-autocomplete-commentlink": "Wstaw <code>$1</code> aby dodać link do komentarza w bieżącej sekcji.",
 	"cf-help-autocomplete-displaytext": "Przytrzymaj <b>Shift</b> przy wybieraniu pozycji z listy aby zmienić wyświetlany tekst (np. <code><nowiki>[[Artykuł|</nowiki><var>tekst</var><nowiki>]]</nowiki></code>).",
 	"cf-help-problems-menu": "Aby zobaczyć skróty klawiszowe przycisków paska narzędzi, najedź na nie kursorem.",
 	"cf-help-footer-documentation": "[[$1|Dokumentacja skryptu]]",

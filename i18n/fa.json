@@ -130,7 +130,7 @@
 	"cf-advanced": "پیشرفته",
 	"cf-settings-tooltip": "تنظیمات گفتگوی آسان",
 	"cf-help-autocomplete-mention": "<code>$1</code> را تایپ کرده و کاربری را برای برای [[$2|اشاره]] انتخاب کنید.",
-	"cf-help-autocomplete-commentlink": "برای پیوند دادن به نظری در بخش کنونی، <code><nowiki>$1</nowiki></code> را تایپ کنید.",
+	"cf-help-autocomplete-commentlink": "برای پیوند دادن به نظری در بخش کنونی، <code>$1</code> را تایپ کنید.",
 	"cf-help-autocomplete-wraptext": "<b>Q</b> (<b>Ctrl+Alt+Q</b>) — نقل کردن متن انتخاب‌شده",
 	"cf-help-problems-menu": "اگر منوی نظر پیوندی را در پشت خود پنهان کرده است، برای مدت طولانی بر روی آن کلیک/انگشت خود را نگه دارید—با این کار، منو ناپدید خواهد شد.",
 	"cf-help-footer-documentation": "[[$1|مستندات اسکریپت]]",
