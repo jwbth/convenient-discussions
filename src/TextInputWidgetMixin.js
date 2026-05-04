@@ -298,6 +298,14 @@ class TextInputWidgetMixin {
 		$element[0].cdInput = this
 		$element
 			.on('input.cd', (event) => {
+				// We send our own CustomEvent in CodeMirror. In Firefox, we otherwise get a double event
+				if (
+					'codeMirror' in this &&
+					this.codeMirror &&
+					!(/** @type {CustomEvent} */ (event.originalEvent).detail)
+				)
+					return
+
 				this.emit('manualChange', this.getValue())
 				this.handleBacktickInput(event)
 			})
@@ -346,9 +354,13 @@ class TextInputWidgetMixin {
 	handleBacktickInput(event) {
 		if (!this.supportsComplexMarkup) return
 
-		// Get the input data - either from originalEvent (native) or from the event itself (CodeMirror)
-		const inputEvent = /** @type {InputEvent} */ (event.originalEvent || event)
-		if (inputEvent.data !== '`') return
+		const insertedText =
+			event.originalEvent instanceof CustomEvent
+				? // CodeMirror
+					event.originalEvent.detail.insertedText
+				: // Native event
+					/** @type {InputEvent} */ (event.originalEvent).data
+		if (insertedText !== '`') return
 
 		const element = /** @type {HTMLInputElement | HTMLTextAreaElement} */ (
 			this.getEditableElement()[0]

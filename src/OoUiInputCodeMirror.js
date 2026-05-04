@@ -73,14 +73,10 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 					})
 
 					// Create an InputEvent-like object with the data property
-					const inputEvent = new Event('input', {
+					const inputEvent = new CustomEvent('input', {
 						bubbles: true,
 						cancelable: true,
-					})
-					// Add the data property to mimic InputEvent
-					Object.defineProperty(inputEvent, 'data', {
-						value: insertedText,
-						writable: false,
+						detail: { insertedText },
 					})
 
 					update.view.contentDOM.dispatchEvent(inputEvent)
