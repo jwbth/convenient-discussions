@@ -155,7 +155,7 @@
 	"cf-help": "؟",
 	"cf-help-short": "؟",
 	"cf-help-autocomplete-mention": "اكتب <code>$1</code> واختر مستخدمًا للإشارة إليه [[$2|mention]].",
-	"cf-help-autocomplete-commentlink": "اكتب <code><nowiki>$1</nowiki></code> لربط تعليق في القسم الحالي.",
+	"cf-help-autocomplete-commentlink": "اكتب <code>$1</code> لربط تعليق في القسم الحالي.",
 	"cf-help-autocomplete-displaytext": "اضغط باستمرار على <b>Shift</b> أثناء اختيار عنصر من عناصر الإكمال التلقائي لتغيير النص المعروض (على سبيل المثال، <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
 	"cf-help-footer-documentation": "[[$1| توثيق البرنامج النصي]]",
 	"cf-help-footer-feedback": "[[$2| ملاحظات]]",

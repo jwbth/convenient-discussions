@@ -46,6 +46,7 @@
 	"comment-timestamp-lessthanminute": "alle minuutti sitten",
 	"comment-author-talk": "keskustelu",
 	"comment-author-contribs": "muokkaukset",
+	"comment-author-tooltip-signature-prefix": "Allekirjoitus",
 	"comment-changed": "Kommentti on muuttunut.",
 	"comment-changed-short": "Muutettu",
 	"comment-changed-refresh": "Päivitä sivu nähdäksesi muutokset",
@@ -111,6 +112,8 @@
 	"cf-cancel": "Peruuta",
 	"cf-cancel-short": "Peruuta",
 	"cf-advanced": "Lisäasetukset",
+	"cf-help-heading-autocomplete": "Automaattinen täydennys",
+	"cf-help-autocomplete-commentlink": "Linkitä kommentti nykyiseen osioon kommennolla <code>$1</code>.",
 	"cf-strikethrough-tooltip": "Yliviivaus",
 	"cf-strikethrough-placeholder": "Yliviivattu teksti",
 	"cf-code-tooltip": "Koodi",
@@ -189,6 +192,7 @@
 	"msd-error-editingtargetpage": "Kohdesivua ei voitu muokata.",
 	"msd-error-editingsourcepage": "Kohdesivua muokattiin, mutta lähdesivua ei voitu muokata. Sinun on muokattava sitä manuaalisesti.",
 	"msd-moved": "Aihe on siirretty. Voit [[$1|siirtyä sivulle, jolle aihe siirrettiin]].",
+	"error-settings-save": "Asetusten tallentaminen palvelimelle epäonnistui.",
 	"error-api": "API-virhe: $1.",
 	"error-network": "Tarkista internetyhteytesi.",
 	"error-unknown": "Tuntematon virhe.",
@@ -200,5 +204,6 @@
 	"loading-ellipsis": "Ladataan…",
 	"addtopic": "Uusi keskustelu",
 	"addtopicbutton-tooltip": "Avaa uudessa välilehdessä luodaksesi keskusteluketjun tavaliselle sivulle Kätevät Keskustelut -sivun sijasta",
-	"copy": "Kopioi"
+	"copy": "Kopioi",
+	"key-ctrl": "Ctrl"
 }
