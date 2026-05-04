@@ -428,7 +428,7 @@
 	"msd-move": "Move",
 	"msd-targetpage": "Enter the name of the discussion page to move the topic to:",
 	"msd-keeplink": "Leave a link to the new location",
-	"msd-chronologicalorder": "Find the place for the topic based on chronological order",
+	"msd-chronologicalorder": "Restore the topic to its chronological position",
 	"msd-summaryending": "Edit summary (will be added to the standard one)",
 	"msd-error-wrongpage": "Wrong page.",
 	"msd-error-sourcepagedeleted": "The current page was deleted.",
