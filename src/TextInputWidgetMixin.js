@@ -372,10 +372,7 @@ class TextInputWidgetMixin {
 		// Check if we just completed a triple backtick sequence
 		// @ts-ignore
 		if (
-			this.$input.prop('tagName') !== 'TEXTAREA' ||
-			// Old MediaWiki versions don't have allowsLinebreaks so we check for the existence of the
-			// prop
-			('allowsLinebreaks' in this && !this.allowsLinebreaks) ||
+			this.$input.prop('tagName') === 'TEXTAREA' &&
 			this.handleTripleBacktickInput(value, cursorPos)
 		) {
 			return
