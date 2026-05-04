@@ -14,7 +14,14 @@ import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
 import CdError from './shared/CdError'
 import Parser from './shared/Parser'
-import { defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './shared/utils-general'
+import {
+	defined,
+	getDayTimestamp,
+	getNativePromiseState,
+	removeDoubleSpaces,
+	sleep,
+	unique,
+} from './shared/utils-general'
 import {
 	escapePipesOutsideLinks,
 	generateTagsRegexp,
@@ -4215,11 +4222,14 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Update the event listeners for the comment input.
 	 */
-	updateEventListeners() {
+	async updateEventListeners() {
+		// Haven't build the UI yet!
+		if ((await getNativePromiseState(this.buildPromise)) !== 'resolved') return
+
 		this.removeEventListenersFromCommentInput()
 
-		// Autocomplete is initialized indirectly by the settings' `set` event. Perhaps we should
-		// initialize it directly here as well?
+		// Autocomplete is initialized (this.initAutocomplete()) indirectly by the settings' `set`
+		// event. Perhaps we should initialize it directly here as well?
 		this.addEventListenersToCommentInput()
 	}
 
