@@ -650,7 +650,7 @@ class SpaciousComment extends Comment {
 		button.role = 'button'
 		button.setAttribute('tabindex', '0')
 		button.setAttribute('aria-label', cd.mws('checkuser-userinfocard-toggle-button-aria-label'))
-		button.setAttribute('aria-haspover', 'dialog')
+		button.setAttribute('aria-haspopover', 'dialog')
 		button.className =
 			'ext-checkuser-userinfocard-button cdx-button cdx-button--action-default cdx-button--weight-quiet cdx-button--fake-button cdx-button--fake-button--enabled cdx-button--icon-only cd-comment-author-userInfoCard-button'
 
