@@ -410,7 +410,6 @@
 	"msd-keeplink": "Оставить ссылку на новое место",
 	"msd-chronologicalorder": "Вернуть тему на её место в хронологическом порядке",
 	"msd-summaryending": "Описание правки (будет добавлено к стандартному)",
-	"msd-error-wrongpage": "Неверно указана страница.",
 	"msd-error-sourcepagedeleted": "Текущая страница была удалена.",
 	"msd-error-invalidpagename": "Указано невозможное название страницы.",
 	"msd-error-editconflict-retry": "Просто нажмите «{{int:ooui-dialog-process-retry}}».",

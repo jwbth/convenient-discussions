@@ -430,7 +430,6 @@
 	"msd-keeplink": "Leave a link to the new location",
 	"msd-chronologicalorder": "Restore the topic to its chronological position",
 	"msd-summaryending": "Edit summary (will be added to the standard one)",
-	"msd-error-wrongpage": "Wrong page.",
 	"msd-error-sourcepagedeleted": "The current page was deleted.",
 	"msd-error-invalidpagename": "Invalid page name.",
 	"msd-error-editconflict-retry": "Just click \"{{int:ooui-dialog-process-retry}}\".",

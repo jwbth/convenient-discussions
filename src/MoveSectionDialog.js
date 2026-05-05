@@ -329,16 +329,6 @@ export default function getMoveSectionDialogClass() {
 						pageRegistry.get(/** @type {mw.Title} */ (this.controls.title.input.getMWTitle()))
 					)
 
-					// Should be ruled out by making the button disabled.
-					if (targetPage === this.section.getSourcePage()) {
-						this.abort({
-							message: cd.sParse('msd-error-wrongpage'),
-							recoverable: false,
-						})
-
-						return
-					}
-
 					let source
 					let target
 					try {
