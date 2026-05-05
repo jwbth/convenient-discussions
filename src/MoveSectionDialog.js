@@ -194,7 +194,11 @@ export default function getMoveSectionDialogClass() {
 					subpagesResponse = results[3]
 				} catch (error) {
 					console.log(error)
-					this.abort({ message: cd.sParse('cf-error-getpagecode'), recoverable: false })
+					this.abort({
+						message: cd.sParse('cf-error-getpagecode'),
+						recoverable: false,
+						closeDialog: true,
+					})
 
 					return
 				}
@@ -211,12 +215,14 @@ export default function getMoveSectionDialogClass() {
 								cd.page.name,
 							),
 							recoverable: false,
+							closeDialog: true,
 						})
 					} else {
 						cd.debug.logWarn(error)
 						this.abort({
 							message: cd.sParse('error-javascript'),
 							recoverable: false,
+							closeDialog: true,
 						})
 					}
 
@@ -428,7 +434,7 @@ export default function getMoveSectionDialogClass() {
 					cd.debug.logWarn(error)
 					throw new CdError({
 						message: cd.sParse('error-javascript'),
-						details: { recoverable: false },
+						details: { recoverable: false, closeDialog: true },
 					})
 				}
 			}
@@ -451,7 +457,7 @@ export default function getMoveSectionDialogClass() {
 					cd.debug.logWarn(error)
 					throw new CdError({
 						message: cd.sParse('error-javascript'),
-						details: { recoverable: false },
+						details: { recoverable: false, closeDialog: true },
 					})
 				}
 			}
@@ -509,7 +515,7 @@ export default function getMoveSectionDialogClass() {
 					cd.debug.logWarn(error)
 					throw new CdError({
 						message: cd.sParse('error-javascript'),
-						details: { recoverable: false },
+						details: { recoverable: false, closeDialog: true },
 					})
 				}
 			}
@@ -606,7 +612,7 @@ export default function getMoveSectionDialogClass() {
 					cd.debug.logWarn(error)
 					throw new CdError({
 						message: genericMessage + ' ' + cd.sParse('error-javascript'),
-						details: { recoverable: false },
+						details: { recoverable: false, closeDialog: true },
 					})
 				}
 			}
@@ -690,6 +696,9 @@ export default function getMoveSectionDialogClass() {
 		 * @protected
 		 */
 		abort({ message, recoverable, closeDialog = false }) {
+			// TODO: Can we just reuse ProcessDialogMixin#handleError() here? Add parameter (or rather a
+			// config option) for closing dialog if necessary.
+
 			this.showErrors(
 				new OO.ui.Error(
 					wrapHtml(message, {
