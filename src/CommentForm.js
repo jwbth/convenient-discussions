@@ -113,6 +113,7 @@ import {
  * @property {boolean} [focusHeadline]
  * @property {Comment} [targetWithOutdentedReplies]
  * @property {boolean} [fixBrokenMarkup]
+ * @property {boolean} [submit]
  */
 
 /**
@@ -965,7 +966,9 @@ class CommentForm extends EventEmitter {
 
 			await this.buildPromise
 
-			if (initialState.focusHeadline && this.headlineInput) {
+			if (initialState.submit) {
+				this.submit(true, false, true)
+			} else if (initialState.focusHeadline && this.headlineInput) {
 				this.headlineInput.selectRange(this.originalHeadline.length)
 			} else {
 				this.commentInput.selectRange(this.originalComment.length)
@@ -3177,10 +3180,19 @@ class CommentForm extends EventEmitter {
 	 *
 	 * @param {boolean} [clearMessages]
 	 * @param {boolean} [suppressTag]
+	 * @param {boolean} [isAutoSubmit]
 	 */
-	submit = async (clearMessages = true, suppressTag = false) => {
+	submit = async (clearMessages = true, suppressTag = false, isAutoSubmit = false) => {
 		const doDelete = Boolean(this.deleteCheckbox?.isSelected())
-		if (this.isBeingSubmitted() || this.isContentBeingLoaded() || !this.runChecks({ doDelete })) {
+		if (this.isBeingSubmitted() || this.isContentBeingLoaded()) {
+			return
+		}
+
+		if (!this.runChecks({ doDelete })) {
+			if (isAutoSubmit) {
+				this.cancel(false)
+			}
+
 			return
 		}
 

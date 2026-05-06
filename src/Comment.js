@@ -1672,6 +1672,7 @@ class Comment extends mixIntoClass(
 		if (flag === 'deleted') {
 			this.actions?.replyButton?.setDisabled(add)
 			this.actions?.editButton?.setDisabled(add)
+			this.actions?.deleteButton?.setDisabled(add)
 			this.actions?.fixButton?.setDisabled(add)
 			if (add) {
 				this.actions?.removeQuoteButton()

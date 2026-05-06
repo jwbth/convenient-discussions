@@ -80,6 +80,41 @@ class CompactCommentActions extends CommentActions {
 		})
 
 	/**
+	 * Create a delete button for compact comments.
+	 *
+	 * @override
+	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 */
+	createDeleteButton(action) {
+		return new CommentButton({
+			element: this.createDeleteWidget().$element[0],
+			action,
+			widgetConstructor: this.createDeleteWidget,
+		})
+	}
+
+	/**
+	 * Create a delete widget for compact comments.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	createDeleteWidget = () =>
+		new OO.ui.ButtonWidget({
+			label: cd.s('cm-delete'),
+			icon: 'trash',
+			invisibleLabel: true,
+			title: cd.s('cm-delete-tooltip'),
+			framed: false,
+			classes: [
+				'cd-button-ooui',
+				'cd-comment-button-ooui',
+				'cd-comment-button-ooui-icon',
+				'cd-comment-button-delete',
+			],
+		})
+
+	/**
 	 * Create a thank button for compact comments.
 	 *
 	 * @override

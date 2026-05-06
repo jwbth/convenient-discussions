@@ -32,6 +32,8 @@
 	"cm-thanked-tooltip": "Text of the tooltip for the {{msg-wm|Convenient-discussions-cm-thank}} comment menu item in the disabled form.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cm-thank-tooltip}}",
 	"cm-edit": "Label of the comment menu item that opens an edit form the comment.",
 	"cm-edit-tooltip": "Tooltip of the comment menu item that opens an edit form for the comment.",
+	"cm-delete": "Label of the comment menu item that deletes the comment.",
+	"cm-delete-tooltip": "Tooltip of the comment menu item that deletes the comment.",
 	"cm-fix": "Label of the comment menu item that opens an edit form to fix broken comment layout (incorrect indentation).",
 	"cm-fix-tooltip": "Tooltip of the comment menu item that opens an edit form to fix broken comment layout (incorrect indentation).",
 	"cm-reply": "Label of the comment menu item that opens a reply form for the comment and inserts the selected text into the form as a quote.",

@@ -57,6 +57,21 @@ class SpaciousCommentActions extends CommentActions {
 	}
 
 	/**
+	 * Create a delete button for spacious comments.
+	 *
+	 * @override
+	 * @param {import('./Button').Action} action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 */
+	createDeleteButton(action) {
+		return new CommentButton({
+			label: cd.s('cm-delete'),
+			classes: ['cd-comment-button-labeled'],
+			action,
+		})
+	}
+
+	/**
 	 * Create a thank button for spacious comments.
 	 *
 	 * @override

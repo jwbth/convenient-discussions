@@ -94,6 +94,7 @@ export default {
 					'oojs-ui.styles.icons-editing-citation',
 					'oojs-ui.styles.icons-editing-core',
 					'oojs-ui.styles.icons-interactions',
+					'oojs-ui.styles.icons-moderation',
 					'oojs-ui.styles.icons-movement',
 					'user.options',
 				],

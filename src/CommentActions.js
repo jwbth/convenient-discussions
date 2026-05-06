@@ -25,6 +25,13 @@ class CommentActions {
 	editButton
 
 	/**
+	 * Delete button.
+	 *
+	 * @type {CommentButton | undefined}
+	 */
+	deleteButton
+
+	/**
 	 * Thank button.
 	 *
 	 * @type {CommentButton | undefined}
@@ -86,6 +93,7 @@ class CommentActions {
 	create() {
 		this.addReplyButton()
 		this.addEditButton()
+		this.addDeleteButton()
 		this.addThankButton()
 		this.addCopyLinkButton()
 		this.addToggleChildThreadsButton()
@@ -112,6 +120,13 @@ class CommentActions {
 	 */
 	onEditAction = () => {
 		this.comment.edit()
+	}
+
+	/**
+	 * Reusable action for delete button.
+	 */
+	onDeleteAction = () => {
+		this.comment.edit({ delete: true, submit: true })
 	}
 
 	/**
@@ -207,6 +222,18 @@ class CommentActions {
 
 		this.editButton = this.createEditButton(this.onEditAction)
 		this.insertEditButton()
+	}
+
+	/**
+	 * Create a delete button and add it to the appropriate container.
+	 *
+	 * This method should be overridden by subclasses for specific styling.
+	 */
+	addDeleteButton() {
+		if (!this.comment.isEditable() || !this.comment.isDeletable() || !this.comment.hasFlag('own')) return
+
+		this.deleteButton = this.createDeleteButton(this.onDeleteAction)
+		this.insertDeleteButton()
 	}
 
 	/**
@@ -375,6 +402,13 @@ class CommentActions {
 	}
 
 	/**
+	 * Insert the delete button into the DOM.
+	 */
+	insertDeleteButton() {
+		this.addButton(/** @type {CommentButton} */ (this.deleteButton))
+	}
+
+	/**
 	 * Insert the thank button into the DOM. Default implementation uses {@link addButton}.
 	 *
 	 * @protected
@@ -458,6 +492,17 @@ class CommentActions {
 	 */
 	createEditButton(_action) {
 		throw new Error('createEditButton must be implemented by subclasses')
+	}
+
+	/**
+	 * Create a delete button. To be overridden by subclasses.
+	 *
+	 * @param {import('./Button').Action} _action The action to perform when clicked.
+	 * @returns {CommentButton} The created button.
+	 * @abstract
+	 */
+	createDeleteButton(_action) {
+		throw new Error('createDeleteButton must be implemented by subclasses')
 	}
 
 	/**
