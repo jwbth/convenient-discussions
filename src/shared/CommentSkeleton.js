@@ -538,7 +538,7 @@ class CommentSkeleton {
 	}
 
 	/**
-	 * Check whether the element is an other kind of list than a comment thread, like a gallery
+	 * Check whether the element is a different kind of list than a comment thread, like a gallery
 	 * created by the `<gallery>` tag.
 	 *
 	 * @param {ElementLike} element
@@ -619,10 +619,10 @@ class CommentSkeleton {
 	 * numbered) list.
 	 *
 	 * @param {AnyNode} [node]
-	 * @param {boolean} [isDefinitionListOnly]
+	 * @param {boolean} [checkDefinitionListOnly]
 	 * @returns {boolean}
 	 */
-	isPartOfList(node, isDefinitionListOnly = false) {
+	isPartOfList(node, checkDefinitionListOnly = false) {
 		/*
 			* The checks for DD help in cases like
 				https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
@@ -633,7 +633,7 @@ class CommentSkeleton {
 				(see the original HTML source)
 		 */
 		const tagNames = ['DD', 'DL']
-		if (!isDefinitionListOnly) {
+		if (!checkDefinitionListOnly) {
 			tagNames.push('LI', 'UL')
 		}
 
@@ -1186,43 +1186,53 @@ class CommentSkeleton {
 			!(
 				part.step === 'up' &&
 				this.parts[i + 1] &&
-				// Watch these cases that are similar in DOM but should behave differently ("→" means the
-				// next part):
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:20:00.000Z-Example-2021-10-13T18:00:00.000Z
-				// ** ol "up" → div "replaced"
-				// ** The condition should be true.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:40:00.000Z-Example-2021-10-13T18:00:00.000Z
-				// ** dl "up" → dd "back"
-				// ** The condition should be true.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:10:00.000Z-Example-2020-09-22T20:00:00.000Z
-				// ** ul "up" → ol "back"
-				// ** The condition should be false.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T19:10:00.000Z-Example-2021-10-14T19:00:00.000Z
-				// ** ul "up" → div "replaced"
-				// ** The condition should be false.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-01-15T12:00:00.000Z-Example-2019-01-15T11:50:00.000Z
-				// ** ul "up" → dd "replaced"
-				// ** The condition should be false.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T20:10:00.000Z-Example-2021-10-14T20:00:00.000Z
-				// ** ul "up" → dd "back"
-				// ** The condition should be false.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:10:00.000Z-List_inside_a_comment
-				// ** ul "up" → div "replaced"
-				// ** The condition should be true.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:40:00.000Z-List_inside_a_comment
-				// ** ul "up" → dd "start"
-				// ** The condition should be true.
-				// * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:05:00.000Z-Example-2020-09-22T20:04:00.000Z
-				// ** dl "up" → blockquote "back"
-				// ** The condition should be false.
-				// * https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_191#c-Snævar-2021-07-15T16:19:00.000Z-Klein_Muçi-2021-07-15T12:15:00.000Z
-				// ** dl "up" → li "replaced"
-				// ** The condition should be false.
+				/*
+					Watch these cases that are similar in DOM but should behave differently ("→" means the
+					next part; the string is part.step; the boolean is the expected value of the condition
+					below):
+
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:20:00.000Z-Example-2021-10-13T18:00:00.000Z
+						- ol "up" → div "replaced"
+						- true
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:40:00.000Z-Example-2021-10-13T18:00:00.000Z
+						- dl "up" → dd "back"
+						- true
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:10:00.000Z-Example-2020-09-22T20:00:00.000Z
+						- ul "up" → ol "back"
+						- false
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T19:10:00.000Z-Example-2021-10-14T19:00:00.000Z
+						- ul "up" → div "replaced"
+						- false
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-01-15T12:00:00.000Z-Example-2019-01-15T11:50:00.000Z
+						- ul "up" → dd "replaced"
+						- false
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T20:10:00.000Z-Example-2021-10-14T20:00:00.000Z
+						- ul "up" → dd "back"
+						- false
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:10:00.000Z-List_inside_a_comment
+						- ul "up" → div "replaced"
+						- true
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:40:00.000Z-List_inside_a_comment
+						- ul "up" → dd "start"
+						- true
+					- https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:05:00.000Z-Example-2020-09-22T20:04:00.000Z
+						- dl "up" → blockquote "back"
+						- false
+					- https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_191#c-Snævar-2021-07-15T16:19:00.000Z-Klein_Muçi-2021-07-15T12:15:00.000Z
+						- dl "up" → li "replaced"
+						- false
+					- https://en.wikipedia.org/wiki/Special:GoToComment/c-Andrei_MYCRANE-20260504182400-Mathglot-20260504180800
+						- dl "up" → link "back"
+						- false
+				*/
 				((part.node.tagName !== 'UL' &&
 					this.isPartOfList(this.parts[i + 1].node, false) &&
 					this.parts[i + 1].step !== 'replaced') ||
 					this.parser.getChildElements(part.node).length > 1) &&
-				this.isPartOfList(lastPartNode, true)
+				this.isPartOfList(lastPartNode, true) &&
+				// For https://en.wikipedia.org/wiki/Special:GoToComment/c-Andrei_MYCRANE-20260504182400-Mathglot-20260504180800
+				this.parser.getNestingLevel(/** @type {ElementLike} */ (this.parts[i].node)) >=
+					this.parser.getNestingLevel(lastPartNode) - 1
 			) &&
 			// Exclude lists that are parts of the comment.
 			((part.step === 'up' && this.parts[i - 1]?.step !== 'back') ||

@@ -793,7 +793,7 @@ class Parser {
 	/**
 	 * Get a nesting level of an element relative to the root element.
 	 *
-	 * @param {ElementFor<N>} element
+	 * @param {ElementLike} element
 	 * @returns {number}
 	 */
 	getNestingLevel(element) {
