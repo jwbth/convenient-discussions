@@ -518,7 +518,14 @@ class CommentSkeleton {
 			// elements with reject classes (e.g. `ombox`), however, may be parts of a comment altogether.
 			((step !== 'up' ||
 				CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses)) &&
-				(CommentSkeleton.elementHasAnyClass(element, this.parser.rejectClasses) ||
+				((CommentSkeleton.elementHasAnyClass(element, this.parser.rejectClasses) &&
+					// Special case with an element that presents itself as a collapsed thread but the
+					// comment's signature is not inside that element, e.g.
+					// https://en.wikipedia.org/wiki/Special:GoToComment/c-Oklopfer-20260504060500-Test
+					!(
+						CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses) &&
+						!this.parser.constructor.contains(element, this.signatureElement)
+					)) ||
 					// Talk page message box
 					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox')))) ||
 			(element.tagName === 'META' && element.getAttribute('property') === 'mw:PageProp/toc') ||
@@ -806,6 +813,16 @@ class CommentSkeleton {
 
 		// 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
 		for (let i = 0; i < 500; i++) {
+			if (i === 499) {
+				const id = this.id || `by ${this.authorName}`
+				cd.debug.logWarn(`Infinite or a very long loop when parsing a comment ${id}`, {
+					parts,
+					treeWalker,
+					firstForeignComponentAfter,
+					precedingHeadingElement,
+				})
+			}
+
 			/*
 				`step` may be:
 					* "start" (parts added at the beginning)
@@ -861,6 +878,11 @@ class CommentSkeleton {
 						break
 					}
 					step = 'dive'
+					if (
+						isElement(treeWalker.currentNode) &&
+						CommentSkeleton.elementHasAnyClass(treeWalker.currentNode, cd.g.closedDiscussionClasses)
+					)
+						break
 				}
 				if (step !== 'dive') {
 					break
@@ -872,6 +894,17 @@ class CommentSkeleton {
 					break
 				}
 				step = 'up'
+
+				// We might have dived in an element and then get back to the element from which we started.
+				// So, rather than a step "up", it will actually be a step "back" in that case. TODO: But
+				// need to check for issues in cases where the previous part is expected to contain the
+				// node we stepped back from.
+				if (
+					parts.some((part) => part.node === treeWalker.currentNode) &&
+					treeWalker.previousSibling()
+				) {
+					step = 'back'
+				}
 			}
 
 			const node = treeWalker.currentNode
@@ -932,7 +965,11 @@ class CommentSkeleton {
 						// https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
 						(precedingHeadingElement &&
 							node !== precedingHeadingElement &&
-							this.parser.constructor.contains(node, precedingHeadingElement)) ||
+							this.parser.constructor.contains(node, precedingHeadingElement) &&
+							// Special case: heading in an element classified as a collapsed thread,
+							// e.g.
+							// https://en.wikipedia.org/wiki/Special:GoToComment/c-Oklopfer-20260504060500-Test
+							!CommentSkeleton.elementHasAnyClass(node, cd.g.closedDiscussionClasses)) ||
 						hasOutdents(node)),
 				)
 
