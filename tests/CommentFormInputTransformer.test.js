@@ -545,6 +545,27 @@ describe('Tags and templates', () => {
 		commentForm: firstCommentReplyForm,
 	})
 	testWithData({
+		label: 'List in a template closing on the same line, a link inside the last item',
+		code: 'Quoted list:\n{{quote|1=\n* Item 1.\n** Subitem 1.\n* [[Page|Item 2]].}}\nEnd.',
+		expected:
+			': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>[[Page|Item 2]].</li></ul>}}End. ~~~~\n',
+		commentForm: firstCommentReplyForm,
+	})
+	testWithData({
+		label: 'List in a template having a parameter on the same line',
+		code: 'Quoted list:\n{{quote|1=\n* Item 1.\n** Subitem 1.\n* Item 2.|param=val}}\nEnd.',
+		expected:
+			': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>|param=val}}End. ~~~~\n',
+		commentForm: firstCommentReplyForm,
+	})
+	testWithData({
+		label: 'List in a template having a parameter on the same line, a link inside the last item',
+		code: 'Quoted list:\n{{quote|1=\n* Item 1.\n** Subitem 1.\n* [[Page|Item 2]].|param=val}}\nEnd.',
+		expected:
+			': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>[[Page|Item 2]].</li></ul>|param=val}}End. ~~~~\n',
+		commentForm: firstCommentReplyForm,
+	})
+	testWithData({
 		label: 'Gallery tag in a vote',
 		code: 'Start.\n<gallery>\nGallery.\n</gallery>\nEnd.',
 		expected: new Error('parse/numberedList'),

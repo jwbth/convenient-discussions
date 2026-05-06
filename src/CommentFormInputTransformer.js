@@ -236,7 +236,7 @@ class CommentFormInputTransformer extends TextMasker {
 				// will work.
 				code = code.replace(/\|(?:[^|=}]*=)?(?=[:*#;])/, '$&\n')
 			}
-			code = CommentFormInputTransformer.listMarkupToTags(code)
+			code = CommentFormInputTransformer.listMarkupToTags(code, isInTemplate)
 		}
 
 		code = code.replace(
@@ -621,14 +621,18 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 
 	/**
-	 * Replace list markup (`:*#;`) inside code with respective tags.
+	 * Replace list markup (`:*#;`) in the code with respective tags.
 	 *
 	 * @param {string} code
+	 * @param {boolean} isInTemplate
 	 * @returns {string}
 	 * @private
 	 */
-	static listMarkupToTags(code) {
-		code = code.replace(/^([:*#;].*?)(\}\}[ \t]*)$/gm, '$1\n$2')
+	static listMarkupToTags(code, isInTemplate) {
+		if (isInTemplate) {
+			// We miss the case with an unnamed parameter though. Should be mask all the wikilinks?
+			code = code.replace(/^([:*#;].*?)(\}\}|\|[^}|\]]*=)/gm, '$1\n$2')
+		}
 
 		return CommentFormInputTransformer.listsToTags(
 			CommentFormInputTransformer.linesToLists(code.split('\n').map((line) => ({ text: line }))),
