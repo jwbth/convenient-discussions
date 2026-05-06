@@ -513,7 +513,11 @@ class Comment extends mixIntoClass(
 	 * @returns {boolean}
 	 */
 	isEditable() {
-		return this.isActionable() && (this.isOwn() || cd.settings.get('allowEditOthersComments'))
+		return (
+			this.isActionable() &&
+			(this.isOwn() || cd.settings.get('allowEditOthersComments')) &&
+			!this.headingAfterFirstElement
+		)
 	}
 
 	/**

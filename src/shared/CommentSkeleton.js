@@ -67,6 +67,14 @@ class CommentSkeleton {
 	cachedParent = {}
 
 	/**
+	 * Is the heading that was thought to precede the comment actually placed after the first comment
+	 * element (due to weird markup).
+	 *
+	 * @type {boolean}
+	 */
+	headingAfterFirstElement
+
+	/**
 	 * Is the comment preceded by a heading.
 	 *
 	 * @type {boolean}
@@ -231,7 +239,8 @@ class CommentSkeleton {
 
 		// Identify all comment nodes and save a path to them. The parameter is the heading element
 		// preceding the comment.
-		this.collectParts(this.followsHeading ? targets[signatureIndex - 1].element : undefined)
+		const precedingHeadingElement = this.followsHeading ? targets[signatureIndex - 1].element : undefined
+		this.collectParts(precedingHeadingElement)
 
 		// Remove parts contained by other parts.
 		this.removeNestedParts()
@@ -267,6 +276,13 @@ class CommentSkeleton {
 		this.own = this.authorName === cd.g.userName
 		this.unsigned = signature.isUnsigned
 		this.elements = this.parts.map((part) => /** @type {ElementFor<N>} */ (part.node))
+
+		this.headingAfterFirstElement = Boolean(
+			precedingHeadingElement &&
+				this.elements[0] &&
+				(this.elements[0].compareDocumentPosition?.(precedingHeadingElement) & 4 ||
+					this.elements[0].follows?.(precedingHeadingElement)),
+		)
 
 		this.updateHighlightables()
 		this.updateLevels()
