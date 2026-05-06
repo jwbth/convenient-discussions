@@ -138,7 +138,10 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @private
 	 */
 	needsColonPrefix(title, interwikiPrefix) {
-		if (title.getNamespaceId() === 14) {
+		if (
+			title.getNamespaceId() === 14 ||
+			(!interwikiPrefix && title.getMainText().startsWith('/'))
+		) {
 			return true
 		}
 

@@ -812,8 +812,8 @@ class TextInputWidgetMixin {
 	buildWikilink({ target, label, pageNameWithFragment, isShiftPressed = false, hostname }) {
 		let wikilink = `[[${target}`
 
-		// If Shift is pressed and there's no existing label, and it's an interwiki link (different domain),
-		// use the page name as the label
+		// If Shift is pressed and there's no existing label, and it's an interwiki link (different
+		// domain), use the page name as the label
 		if (
 			isShiftPressed &&
 			!label &&
@@ -824,9 +824,12 @@ class TextInputWidgetMixin {
 			label = pageNameWithFragment
 		}
 
-		if (label && underlinesToSpaces(label) !== target) {
-			const encodedLabel = encodeLinkLabel(label)
-			wikilink += `|${encodedLabel}`
+		if (label) {
+			const normalizedLabel = underlinesToSpaces(label)
+			if (normalizedLabel !== target && normalizedLabel !== target.replace(/^:/, '')) {
+				const encodedLabel = encodeLinkLabel(label)
+				wikilink += `|${encodedLabel}`
+			}
 		}
 
 		wikilink += ']]'
@@ -898,7 +901,10 @@ class TextInputWidgetMixin {
 			if (!mwTitle) {
 				throw new Error('Failed to parse page name')
 			}
-			needsLeadingColon = mwTitle.getNamespaceId() === 6 || mwTitle.getNamespaceId() === 14
+			needsLeadingColon =
+				mwTitle.getNamespaceId() === 6 ||
+				mwTitle.getNamespaceId() === 14 ||
+				mwTitle.getMainText().startsWith('/')
 		} else {
 			needsLeadingColon =
 				interwikiPrefix && interlanguagePrefixes.has(interwikiPrefix.split(':')[0])
