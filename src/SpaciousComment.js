@@ -78,7 +78,14 @@ class SpaciousComment extends Comment {
 	$menu
 
 	/**
-	 * Create the comment's underlay and overlay with contents for spacious comments.
+	 * Cleaned signature text.
+	 *
+	 * @type {string | undefined}
+	 */
+	cleanSignatureText
+
+	/**
+	 * Create the comment's underlay and overlay with contents.
 	 *
 	 * @fires commentLayersCreated
 	 * @protected
@@ -158,6 +165,10 @@ class SpaciousComment extends Comment {
 	 * @override
 	 */
 	initializeCommentStructureImpl() {
+		if (this.author.isRegistered()) {
+			this.cleanSignatureText = this.getCleanSignatureText()
+		}
+
 		this.actions = new SpaciousCommentActions(this)
 		const pagesToCheckExistence = this.replaceSignatureWithHeader()
 		this.addMenu()
@@ -172,8 +183,6 @@ class SpaciousComment extends Comment {
 	 * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
 	 */
 	replaceSignatureWithHeader() {
-		const signatureText = this.getSignatureTextWithoutHeadlineClasses()
-
 		const headerWrapper = SpaciousComment.prototypes.get('headerWrapperElement')
 		this.headerElement = /** @type {HTMLElement} */ (headerWrapper.firstChild)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -289,14 +298,6 @@ class SpaciousComment extends Comment {
 		this.rewrapHighlightables()
 		this.highlightables[0].insertBefore(headerWrapper, this.highlightables[0].firstChild)
 
-		const cleanedSignatureText = this.getCleanedSignatureText(signatureText)
-		if (cleanedSignatureText) {
-			this.authorLink.title =
-				cd.s('comment-author-tooltip-signature-prefix') +
-				cd.mws('colon-separator') +
-				cleanedSignatureText
-		}
-
 		if (!this.extraSignatures.length) {
 			this.cleanUpSignature()
 			this.signatureElement.remove()
@@ -306,25 +307,16 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Get the signature text with excluded headline elements removed.
-	 *
-	 * TODO: cd.config.excludeFromHeadlineClasses wasn't intended for this purpose, so either
-	 * repurpose it or use other means.
-	 *
-	 * @returns {string}
-	 * @private
+	 * Set the author link title.
 	 */
-	getSignatureTextWithoutHeadlineClasses() {
-		const dummy = document.createElement('div')
-		dummy.append(this.signatureElement.cloneNode(true))
+	setAuthorLinkTitle() {
+		if (this.cleanSignatureText === undefined) return
 
-		cd.config.excludeFromHeadlineClasses.forEach((className) => {
-			dummy.querySelectorAll(`.${className}`).forEach((element) => {
-				element.remove()
-			})
-		})
-
-		return dummy.textContent || ''
+		const authorLinkTyped = /** @type {HTMLAnchorElement} */ (this.authorLink)
+		authorLinkTyped.title =
+			cd.s('comment-author-tooltip-signature-prefix') +
+			cd.mws('colon-separator') +
+			this.cleanSignatureText
 	}
 
 	/**
@@ -356,12 +348,24 @@ class SpaciousComment extends Comment {
 	/**
 	 * Prepare cleaned signature text for the author tooltip.
 	 *
-	 * @param {string} signatureText
 	 * @returns {string}
 	 * @protected
 	 */
-	getCleanedSignatureText(signatureText) {
-		let cleanedSignatureText = signatureText.replace(cd.g.timestampTools.content.regexp, '').trim()
+	getCleanSignatureText() {
+		const dummy = document.createElement('div')
+		dummy.append(this.signatureElement.cloneNode(true))
+
+		// TODO: cd.config.excludeFromHeadlineClasses wasn't intended for this purpose, so either
+		// repurpose it or use other means.
+		cd.config.excludeFromHeadlineClasses.forEach((className) => {
+			dummy.querySelectorAll(`.${className}`).forEach((element) => {
+				element.remove()
+			})
+		})
+
+		let cleanedSignatureText = dummy.textContent
+			.replace(cd.g.timestampTools.content.regexp, '')
+			.trim()
 
 		if (cd.g.signatureEndingRegexp) {
 			cleanedSignatureText = cleanedSignatureText.replace(cd.g.signatureEndingRegexp, '')

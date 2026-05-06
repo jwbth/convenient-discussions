@@ -626,7 +626,6 @@ export class CommentManager extends EventEmitter {
 
 		const isObstructingElementHovered = controller.isObstructingElementHovered()
 
-		// Since we've confirmed this is a CompactCommentManager, we know items are CompactComment[]
 		const itemsTyped = /** @type {import('./CompactComment').default[]} */ (this.items)
 		itemsTyped
 			.filter((comment) => Boolean(comment.layers))
@@ -1466,6 +1465,18 @@ export class CommentManager extends EventEmitter {
 				comment.removeFlag('linked')
 			}
 		}
+	}
+
+	/**
+	 * Set author link titles for spacious comments.
+	 */
+	setAuthorLinkTitles() {
+		if (!this.isCommentDisplaySpacious()) return
+
+		const itemsTyped = /** @type {import('./SpaciousComment').default[]} */ (this.items)
+		itemsTyped.forEach((comment) => {
+			comment.setAuthorLinkTitle()
+		})
 	}
 
 	/**

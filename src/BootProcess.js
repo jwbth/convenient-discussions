@@ -399,6 +399,7 @@ class BootProcess {
 		if (isReload) {
 			mw.hook('wikipage.content').fire(cd.loader.$content)
 		}
+		commentManager.setAuthorLinkTitles()
 		cd.debug.stopTimer('wikipage.content hook handlers')
 	}
 
