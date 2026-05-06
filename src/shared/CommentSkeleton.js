@@ -687,7 +687,7 @@ class CommentSkeleton {
 	 * @param {number} options.stage
 	 * @param {AnyNode} options.node
 	 * @param {AnyNode} options.nextNode
-	 * @param {ElementFor<N>} [options.lastPartNode]
+	 * @param {ElementLike} [options.lastPartNode]
 	 * @param {CommentPart} [options.previousPart]
 	 * @returns {boolean}
 	 * @private
@@ -745,7 +745,7 @@ class CommentSkeleton {
 					nextNode.tagName === 'DL' &&
 					(stage === 2 ||
 						(nextNode.parentElement !== this.parser.context.rootElement &&
-							/** @type {ElementFor<N>} */ (nextNode.parentElement).parentElement !==
+							/** @type {ElementLike} */ (nextNode.parentElement).parentElement !==
 								this.parser.context.rootElement)))) &&
 			// Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602#202002071806_G2ii2g.
 			// Supplying `true` as the second parameter to this.isIntroList() at stage 1 is costly so we
@@ -875,7 +875,6 @@ class CommentSkeleton {
 				}
 
 				// Get the last not inline child of the current node.
-				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				let parentNode
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				while ((parentNode = treeWalker.currentNode) && treeWalker.lastChild()) {
@@ -1023,7 +1022,7 @@ class CommentSkeleton {
 	/**
 	 * Collect the parts of the comment given a signature element.
 	 *
-	 * @param {ElementFor<N>} [precedingHeadingElement]
+	 * @param {ElementLike} [precedingHeadingElement]
 	 * @private
 	 */
 	collectParts(precedingHeadingElement) {
@@ -1079,7 +1078,7 @@ class CommentSkeleton {
 			) {
 				if (startIndex === undefined) {
 					// Don't enclose nodes whose parent is an inline element.
-					if (isInline(/** @type {ElementFor<N>} */ (part.node.parentElement))) {
+					if (isInline(/** @type {ElementLike} */ (part.node.parentElement))) {
 						for (let j = i + 1; j < this.parts.length; j++) {
 							if (this.parts[j].step === 'up') {
 								i = j - 1
@@ -1118,9 +1117,7 @@ class CommentSkeleton {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const nextSibling = this.parts[sequence.startIndex].node.nextSibling
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const parent = /** @type {ElementFor<N>} */ (
-				this.parts[sequence.startIndex].node.parentElement
-			)
+			const parent = /** @type {ElementLike} */ (this.parts[sequence.startIndex].node.parentElement)
 			for (let j = sequence.endIndex; j >= sequence.startIndex; j--) {
 				this.parser.constructor.appendChild(wrapper, this.parts[j].node)
 			}
@@ -1150,7 +1147,7 @@ class CommentSkeleton {
 		// templates (will need to generalize this, possibly via wiki configuration, if other wikis
 		// employ a differently named class).
 		for (let i = this.parts.length - 1; i >= 1; i--) {
-			const node = /** @type {ElementFor<N>} */ (this.parts[i].node)
+			const node = /** @type {ElementLike} */ (this.parts[i].node)
 			if (
 				(node.tagName === 'P' &&
 					!node.textContent.trim() &&
@@ -1175,21 +1172,21 @@ class CommentSkeleton {
 		}
 
 		// When the first comment part starts with <br>
-		const firstNode = /** @type {ElementFor<N>} */ (this.parts[this.parts.length - 1].node)
+		const firstNode = /** @type {ElementLike} */ (this.parts[this.parts.length - 1].node)
 		if (
 			firstNode.tagName === 'P' &&
 			isElement(firstNode.firstChild) &&
 			firstNode.firstChild.tagName === 'BR'
 		) {
 			this.parser.constructor.insertBefore(
-				/** @type {ElementFor<N>} */ (firstNode.parentElement),
+				/** @type {ElementLike} */ (firstNode.parentElement),
 				/** @type {AnyNode} */ (firstNode.firstChild),
 				firstNode,
 			)
 		}
 
 		for (let i = this.parts.length - 1, startNode; i >= 1; i--) {
-			const part = /** @type {CommentPart<ElementFor<N>>} */ (this.parts[i])
+			const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
 			if (part.isHeading) continue
 
 			if (this.isUnsignedItem(part)) {
@@ -1201,7 +1198,7 @@ class CommentSkeleton {
 				startNode = part.node
 				if (
 					['DL', 'UL', 'OL', 'DD', 'LI'].includes(startNode.tagName) &&
-					!this.isIntroList(startNode, true, /** @type {ElementFor<N>} */ (this.parts[0].node))
+					!this.isIntroList(startNode, true, /** @type {ElementLike} */ (this.parts[0].node))
 				) {
 					break
 				}
@@ -1216,7 +1213,7 @@ class CommentSkeleton {
 					stage: 2,
 					node: part.node,
 					nextNode: nextElement,
-					lastPartNode: /** @type {ElementFor<N>} */ (this.parts[0].node),
+					lastPartNode: /** @type {ElementLike} */ (this.parts[0].node),
 				})
 			) {
 				this.parts.splice(i)
@@ -1366,7 +1363,7 @@ class CommentSkeleton {
 	 */
 	wrapNumberedList() {
 		if (this.parts.length > 1) {
-			const firstNodeParent = /** @type {ElementFor<N>} */ (this.parts[0].node.parentElement)
+			const firstNodeParent = /** @type {ElementLike} */ (this.parts[0].node.parentElement)
 
 			if (
 				firstNodeParent.tagName === 'OL' &&
@@ -1385,7 +1382,7 @@ class CommentSkeleton {
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 				const nextSibling = firstNodeParent.nextSibling
 				// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-				const parentParent = /** @type {ElementFor<N>} */ (firstNodeParent.parentElement)
+				const parentParent = /** @type {ElementLike} */ (firstNodeParent.parentElement)
 
 				// Is `#` used as an indentation character instead of `:` or `*`, or is the comments just
 				// starts with a list and ends on a correct level (without `#`)?
@@ -1538,7 +1535,7 @@ class CommentSkeleton {
 			}
 		}
 
-		return /** @type {ElementFor<N>[]} */ (listElements)
+		return /** @type {ElementLike[]} */ (listElements)
 	}
 
 	/**
@@ -2037,8 +2034,9 @@ class CommentSkeleton {
 	}
 }
 
-// Parallel to import('../updateChecker').CommentWorkerCropped
 /**
+ * Parallel to {@link import('../updateChecker').CommentWorkerCropped}.
+ *
  * @typedef {Omit<
  *   RemoveMethods<CommentSkeleton>,
  *   'children' | 'previousComments' | 'parent'

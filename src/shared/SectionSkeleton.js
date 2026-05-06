@@ -395,8 +395,9 @@ class SectionSkeleton {
 	}
 }
 
-// Parallel to import('../updateChecker').SectionWorkerCropped
 /**
+ * Parallel to {@link import('../updateChecker').SectionWorkerCropped}.
+ *
  * @typedef {Omit<RemoveMethods<SectionSkeleton>, 'parent'>} SectionBase
  */
 
