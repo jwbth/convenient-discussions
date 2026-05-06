@@ -231,6 +231,7 @@
 
 	"cf-confirm-fixindentation": "It looks like this comment has incorrect indentation. Try to fix it?",
 	"cf-confirm-fixindentation-success": "The comment's markup has been fixed. Save to apply the fix.",
+	"cf-confirm-fixindentation-fail": "Couldn't fix the comment's markup. Saving may lead to broken formatting.",
 	"cf-confirm-noheadline-topic": "You didn't enter the topic subject. The comment will be added to the previous section, without a headline.",
 	"cf-confirm-noheadline-subsection": "You didn't enter the section subject. The comment will be added to the previous section, without a headline.",
 	"cf-confirm-noheadline-question": "Are you sure you want to post the comment?",

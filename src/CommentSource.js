@@ -464,6 +464,16 @@ class CommentSource {
 			return false
 		}
 
+		// Don't fix if there are <pre>...</pre> blocks with content - that's the sign of the markup
+		// with lines starting with a space. No way we can convert that.
+		if (
+			this.comment.elements.some(
+				(el) => (el.tagName === 'PRE' && el.firstElementChild) || el.querySelector('pre *'),
+			)
+		) {
+			return false
+		}
+
 		const children = this.comment.getChildren()
 
 		// If no children, it's safe to fix

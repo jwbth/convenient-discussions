@@ -924,24 +924,28 @@ class CommentForm extends EventEmitter {
 
 			let commentInputValue = source.toInputValue()
 			if (source.detectedActualLevel) {
-				// If fixBrokenMarkup is set in initialState, skip confirmation and fix automatically
-				if (initialState.fixBrokenMarkup) {
-					commentInputValue = this.fixBrokenMarkup(source)
-					// Mark that layout was fixed for the edit summary
-					this.layoutWasFixed = true
-					// Show success message
-					OO.ui.alert(cd.s('cf-confirm-fixindentation-success'))
-				} else {
-					// Ask user if they want to fix the broken indentation
-					const confirmed = await showConfirmDialog(cd.s('cf-confirm-fixindentation'), {
-						size: 'medium',
-					})
-
-					if (confirmed === 'accept') {
+				try {
+					// If fixBrokenMarkup is set in initialState, skip confirmation and fix automatically
+					if (initialState.fixBrokenMarkup) {
 						commentInputValue = this.fixBrokenMarkup(source)
 						// Mark that layout was fixed for the edit summary
 						this.layoutWasFixed = true
+						// Show success message
+						OO.ui.alert(cd.s('cf-confirm-fixindentation-success'))
+					} else {
+						// Ask user if they want to fix the broken indentation
+						const confirmed = await showConfirmDialog(cd.s('cf-confirm-fixindentation'), {
+							size: 'medium',
+						})
+
+						if (confirmed === 'accept') {
+							commentInputValue = this.fixBrokenMarkup(source)
+							// Mark that layout was fixed for the edit summary
+							this.layoutWasFixed = true
+						}
 					}
+				} catch {
+					OO.ui.alert(cd.s('cf-confirm-fixindentation-fail'))
 				}
 			}
 

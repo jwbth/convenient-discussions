@@ -6,6 +6,7 @@
 
 import TextMasker from '../TextMasker'
 
+import CdError from './CdError'
 import cd from './cd'
 import { decodeHtmlEntities } from './utils-general'
 
@@ -59,13 +60,14 @@ export function maskDistractingCode(code) {
 /**
  * Remove certain kinds of wiki markup from code, such as formatting, links, tags, and comments.
  * Also replace multiple spaces with one and trim the input. The product of this function is usually
- * not for display (for example, it just removes template names making the resulting code look
- * silly), but for comparing purposes.
+ * not for display (for example, it just removes template names making the result look silly), but
+ * for comparing purposes.
  *
  * @param {string} code
+ * @param {boolean} [replaceBrAndMultipleSpaces]
  * @returns {string}
  */
-export function removeWikiMarkup(code) {
+export function removeWikiMarkup(code, replaceBrAndMultipleSpaces = true) {
 	// Ideally, only text from images in the `thumb` format should be captured, because in the
 	// standard format the text is not displayed. See img_thumbnail in
 	// https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
@@ -107,17 +109,17 @@ export function removeWikiMarkup(code) {
 			.replace(/''(.+?)''/g, '$1')
 
 			// Replace <br> with a space
-			.replace(/<br ?\/?>/g, ' ')
+			.replace(/<br ?\/?>/g, replaceBrAndMultipleSpaces ? ' ' : '$&')
 
-			// Remove opening and self-closing tags (won't work with <smth param=">">, but the native parser
-			// fails too).
+			// Remove opening and self-closing tags (won't work with <smth param=">">, but the native
+			// parser fails too).
 			.replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| *\/?)>/g, '')
 
 			// Remove closing tags
 			.replace(/<\/\w+(?: [\w ]+)? *>/g, '')
 
 			// Replace multiple spaces with one space
-			.replace(/ {2,}/g, ' ')
+			.replace(/ {2,}/g, replaceBrAndMultipleSpaces ? ' ' : '$&')
 
 			.trim()
 	)
@@ -256,6 +258,7 @@ export function encodeLinkLabel(label) {
  *
  * @param {string} code
  * @returns {string}
+ * @throws {CdError}
  */
 export function replacePreBlocksWithSyntaxHighlight(code) {
 	const textMasker = new TextMasker(code)
@@ -275,6 +278,15 @@ export function replacePreBlocksWithSyntaxHighlight(code) {
 				.replace(
 					/(?:^|\n)((?: [^\n]*(?:\n|$))+)/g,
 					/** @type {ReplaceCallback} */ (s, m) => {
+						if (m.trim() === '') {
+							return s
+						}
+
+						// We can't convert wiki markup
+						if (removeWikiMarkup(m) !== m.trim()) {
+							throw new CdError(`Can't convert wiki markup inside blocks starting with a space`)
+						}
+
 						const prefix = s.startsWith('\n') ? '\n' : ''
 
 						return (
