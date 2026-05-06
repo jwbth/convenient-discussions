@@ -9,15 +9,15 @@ import cd from './loader/cd'
 import { isInline } from './shared/utils-general'
 
 /**
- * A compact comment class that handles compact MediaWiki talk page formatting
- * with traditional layout and overlay menu-based actions.
+ * A compact comment class that handles compact MediaWiki talk page formatting with traditional
+ * layout and overlay menu-based actions.
  *
  * @template {boolean} [OpeningSection=boolean]
  * @augments Comment<OpeningSection>
  */
 class CompactComment extends Comment {
 	/**
-	 * Comment layers for compact comments.
+	 * Comment layers.
 	 *
 	 * @type {CompactCommentLayers | undefined}
 	 * @override
@@ -26,7 +26,7 @@ class CompactComment extends Comment {
 	layers
 
 	/**
-	 * Comment actions for compact comments.
+	 * Comment actions.
 	 *
 	 * @type {CompactCommentActions | undefined}
 	 * @override
@@ -35,7 +35,7 @@ class CompactComment extends Comment {
 	actions
 
 	/**
-	 * Create the comment's underlay and overlay with contents for compact comments.
+	 * Create the comment's underlay and overlay with contents.
 	 *
 	 * @fires commentLayersCreated
 	 * @protected
@@ -61,8 +61,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Bind the standard events to a comment part.
-	 * For compact comments, handles hover events for overlay menu display.
+	 * Bind the standard events to a comment part. Handles hover events for overlay menu display.
 	 *
 	 * @param {HTMLElement} element
 	 * @protected
@@ -77,8 +76,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Implementation-specific logic for adding change note to compact comments. Adds the note to the
-	 * last block element.
+	 * Implementation-specific logic for adding a change note to compact comments. Adds the note to
+	 * the last block element.
 	 *
 	 * @param {JQuery} $changeNote
 	 * @protected
@@ -101,8 +100,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Get the start point for selection range in compact comments.
-	 * Uses the beginning of first element.
+	 * Get the start point for selection range. Uses the beginning of first element.
 	 *
 	 * @returns {{ startNode: Node, startOffset: number }}
 	 * @protected
@@ -116,8 +114,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Get the end point for selection range in compact comments.
-	 * Uses the beginning of signature element.
+	 * Get the end point for selection range. Uses the beginning of signature element.
 	 *
 	 * @returns {{ endNode: Node, endOffset: number }}
 	 * @protected
@@ -131,8 +128,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Get the end boundary element for compact comments.
-	 * Creates a temporary boundary element.
+	 * Get the end boundary element. Creates a temporary boundary element.
 	 *
 	 * @returns {Element}
 	 * @protected
@@ -146,7 +142,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Clean up the temporary boundary element for compact comments.
+	 * Clean up the temporary boundary element.
 	 *
 	 * @param {Element} endBoundary
 	 * @protected
@@ -157,8 +153,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Update the toggle child threads button implementation for compact comments.
-	 * Uses OOUI icons.
+	 * Update the toggle child threads button implementation for compact comments. Uses OOUI icons.
 	 *
 	 * @this {this & { actions: { toggleChildThreadsButton: { element: HTMLElement } } }}
 	 * @override
@@ -170,8 +165,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Update the main timestamp element for compact comments. Always updates since compact comments
-	 * don't use headers.
+	 * Update the main timestamp element. Always updates since compact comments don't use headers
+	 * where the update otherwise happens separately.
 	 *
 	 * @param {string} timestamp
 	 * @param {string} title
@@ -186,8 +181,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Get separators for change note links in compact comments. Uses space separators with
-	 * conditional dot separator for diff link.
+	 * Get separators for change note links. Uses space separators with conditional dot separator for
+	 * diff link.
 	 *
 	 * @param {string} stringName
 	 * @param {import('./Button').default} [refreshLink]
@@ -203,8 +198,8 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Implementation-specific structure initialization for compact comments.
-	 * Sets up timestamp element and reformats timestamp.
+	 * Implementation-specific structure initialization for compact comments. Sets up timestamp
+	 * element and reformats timestamp.
 	 *
 	 * @override
 	 */
@@ -214,8 +209,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Handle hover event for compact comments.
-	 * Shows the underlay and overlay when the comment is hovered.
+	 * Handle hover event. Shows the underlay and overlay when the comment is hovered.
 	 *
 	 * @param {MouseEvent | TouchEvent} [event] The triggering event
 	 * @override
@@ -251,7 +245,7 @@ class CompactComment extends Comment {
 	}
 
 	/**
-	 * Handle unhover event for compact comments. Cleans up hover state and hides menu.
+	 * Handle unhover event. Cleans up hover state and hides menu.
 	 *
 	 * @param {boolean} [force] Unhover even if the "Toggle child threads" popup is open.
 	 * @override
@@ -312,7 +306,7 @@ class CompactComment extends Comment {
 	static prototypesInitted = false
 
 	/**
-	 * Initialize prototypes for compact comments.
+	 * Initialize prototypes.
 	 *
 	 * @override
 	 */

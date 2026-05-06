@@ -25,7 +25,7 @@ import { isInline } from './shared/utils-general'
  */
 class SpaciousComment extends Comment {
 	/**
-	 * Comment layers for spacious comments.
+	 * Comment layers.
 	 *
 	 * @type {SpaciousCommentLayers | undefined}
 	 * @override
@@ -34,7 +34,7 @@ class SpaciousComment extends Comment {
 	layers
 
 	/**
-	 * Comment actions for spacious comments.
+	 * Comment actions.
 	 *
 	 * @type {SpaciousCommentActions}
 	 * @override
@@ -43,7 +43,7 @@ class SpaciousComment extends Comment {
 	actions
 
 	/**
-	 * Header element for spacious comments.
+	 * Header element.
 	 *
 	 * @type {HTMLElement}
 	 */
@@ -107,8 +107,8 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Update the toggle child threads button implementation for spacious comments.
-	 * Uses SVG icons from prototypes.
+	 * Update the toggle child threads button implementation for compact comments. Uses SVG icons from
+	 * prototypes.
 	 *
 	 * @this {this & { actions: { toggleChildThreadsButton: { element: HTMLElement } } }}
 	 * @override
@@ -125,8 +125,8 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Update the main timestamp element for spacious comments. Only updates if there are extra
-	 * signatures (timestamp is handled in header otherwise).
+	 * Update the main timestamp element. Only updates if there are extra signatures (timestamp is
+	 * handled in header otherwise).
 	 *
 	 * @param {string} timestamp
 	 * @param {string} title
@@ -141,8 +141,7 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Get separators for change note links in spacious comments.
-	 * Uses short format with dot separators.
+	 * Get separators for change note links. Uses short format with dot separators.
 	 *
 	 * @param {string} stringName
 	 * @param {import('./Button').default} [_refreshLink]
@@ -158,8 +157,8 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Implementation-specific structure initialization for spacious comments.
-	 * Replaces signature with header and adds menu.
+	 * Implementation-specific structure initialization for spacious comments. Replaces signature with
+	 * header and adds menu.
 	 *
 	 * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
 	 * @override
@@ -468,8 +467,8 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Implementation-specific logic for adding change note to spacious comments.
-	 * Adds the note to the header.
+	 * Implementation-specific logic for adding change note to spacious comments. Adds the note to the
+	 * header.
 	 *
 	 * @param {JQuery} $changeNote
 	 * @protected
@@ -480,8 +479,7 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Get the start point for selection range in spacious comments.
-	 * Uses the end of header element.
+	 * Get the start point for selection range. Uses the end of header element.
 	 *
 	 * @returns {{ startNode: Node, startOffset: number }}
 	 * @protected
@@ -495,8 +493,7 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Get the end point for selection range in spacious comments.
-	 * Uses the beginning of menu element.
+	 * Get the end point for selection range. Uses the beginning of menu element.
 	 *
 	 * @returns {{ endNode: Node, endOffset: number }}
 	 * @protected
@@ -510,8 +507,7 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Get the end boundary element for spacious comments.
-	 * Uses the menu element as the boundary.
+	 * Get the end boundary element. Uses the menu element as the boundary.
 	 *
 	 * @returns {HTMLElement}
 	 * @protected
@@ -564,7 +560,7 @@ class SpaciousComment extends Comment {
 	static prototypesInitted = false
 
 	/**
-	 * Initialize prototypes for spacious comments. Creates header wrapper and SVG icon prototypes.
+	 * Initialize prototypes. Creates header wrapper and SVG icon prototypes.
 	 *
 	 * @override
 	 */
