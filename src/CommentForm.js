@@ -26,6 +26,7 @@ import {
 	escapePipesOutsideLinks,
 	generateTagsRegexp,
 	removeWikiMarkup,
+	replacePreBlocksWithSyntaxHighlight,
 } from './shared/utils-wikitext'
 import userRegistry from './userRegistry'
 import { handleApiReject, parseCode, getDtPreview } from './utils-api'
@@ -1008,11 +1009,9 @@ class CommentForm extends EventEmitter {
 		this.applyActualLevel(source)
 		let commentInputValue = source.toInputValue(source.detectedActualLevel)
 
-		// Replace <pre>...</pre> with <syntaxhighlight lang="wikitext">...</syntaxhighlight>
-		commentInputValue = commentInputValue.replace(
-			/<pre\b([^>]*)>([\s\S]*?)<\/pre>/gi,
-			'<syntaxhighlight lang="wikitext"$1>$2</syntaxhighlight>',
-		)
+		// Replace <pre>...</pre> and sequences of lines starting with a space
+		// with <syntaxhighlight lang="wikitext">...</syntaxhighlight>
+		commentInputValue = replacePreBlocksWithSyntaxHighlight(commentInputValue)
 
 		return commentInputValue
 	}

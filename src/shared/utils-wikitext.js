@@ -250,3 +250,43 @@ export function encodeLinkLabel(label) {
 		.replace(/\[/g, '&#91;')
 		.replace(/\]/g, '&#93;')
 }
+
+/**
+ * Replace `<pre>` tags and sequences of lines starting with a space with `<syntaxhighlight>` tags.
+ *
+ * @param {string} code
+ * @returns {string}
+ */
+export function replacePreBlocksWithSyntaxHighlight(code) {
+	const textMasker = new TextMasker(code)
+
+	textMasker.maskTags(
+		['syntaxhighlight', 'source', 'nowiki', 'math', 'score', 'hiero', 'chem', 'ce'],
+		'block',
+	)
+
+	return textMasker
+		.withText((text) =>
+			text
+				.replace(
+					/<pre\b([^>]*)>([\s\S]*?)<\/pre>/gi,
+					'<syntaxhighlight lang="text"$1>$2</syntaxhighlight>',
+				)
+				.replace(
+					/(?:^|\n)((?: [^\n]*(?:\n|$))+)/g,
+					/** @type {ReplaceCallback} */ (s, m) => {
+						const prefix = s.startsWith('\n') ? '\n' : ''
+
+						return (
+							prefix +
+							'<syntaxhighlight lang="text">\n' +
+							m.replace(/^ /gm, '').replace(/\n$/, '') +
+							'\n</syntaxhighlight>' +
+							(m.endsWith('\n') ? '\n' : '')
+						)
+					},
+				),
+		)
+		.unmask()
+		.getText()
+}
