@@ -4,8 +4,15 @@
 	position: absolute;
 	z-index: -1;
 
+	// Can't do that for comments in compact mode due to the need to coordinate with the overlay menu
 	.cd-reformattedComments & {
 		mix-blend-mode: color;
+	}
+
+	// Backgrounds don't work at all when an ancestor has a background and mix-blend-mode is set, e.g.
+	// https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(proposals)#c-DanielRigal-20260417111500-Banning_product_comparison_articles
+	.cd-reformattedComments .cd-commentLayersContainer-parent-relative & {
+		mix-blend-mode: initial;
 	}
 }
 
