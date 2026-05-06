@@ -14,7 +14,7 @@ import controller from './controller'
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification.notify(...)}.
  *
  * @typedef {ReturnType<mw['notification']['notify']>} Notification
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/Notification.html
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.Notification.html
  */
 
 export default {

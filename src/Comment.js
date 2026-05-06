@@ -230,6 +230,14 @@ class Comment extends mixIntoClass(
 	changedSincePreviousVisit
 
 	/**
+	 * Notification suggesting to expand the thread when the comment is scrolled to while collapsed.
+	 *
+	 * @type {import('./notifications').Notification | undefined}
+	 * @private
+	 */
+	collapsedNotification
+
+	/**
 	 * The current flash flag being animated (if any). Used to clean up the flag if layers are
 	 * destroyed before the animation completes.
 	 *
@@ -2256,6 +2264,8 @@ class Comment extends mixIntoClass(
 
 		if (this.isCollapsed()) {
 			if (this.isScrolledToWhileCollapsed) {
+				// Second attempt to scroll to the comment - expand the thread without asking
+				this.collapsedNotification?.close()
 				this.scrollTo({
 					smooth,
 					expandThreads: true,
@@ -2282,7 +2292,7 @@ class Comment extends mixIntoClass(
 							callback,
 							alignment,
 						})
-						notification.close()
+						this.collapsedNotification?.close()
 					},
 					'cd-notification-markThreadAsRead': () => {
 						const threadTyped = /** @type {import('./Thread').default} */ (this.thread)
@@ -2291,19 +2301,20 @@ class Comment extends mixIntoClass(
 						})
 						this.manager.emit('registerSeen')
 						this.manager.goToFirstUnseenComment()
-						notification.close()
+						this.collapsedNotification?.close()
 					},
 				},
 			})
 			if (this.isSeen()) {
 				$message.find('.cd-notification-markThreadAsRead').remove()
 			}
-			const notification = mw.notification.notify($message, {
+			this.collapsedNotification = mw.notification.notify($message, {
 				title: cd.s('navpanel-firstunseen-hidden-title'),
 				tag: 'cd-commentInCollapsedThread',
 			})
 		} else {
 			this.isScrolledToWhileCollapsed = false
+			this.collapsedNotification?.close()
 			const offset = this.getAndOrSaveOffset({ considerFloating: true })
 			;(this.editForm?.$element || this.$elements).cdScrollIntoView(
 				alignment ||
