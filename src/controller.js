@@ -527,12 +527,7 @@ class Controller extends EventEmitter {
 	 */
 	getClosedDiscussions() {
 		this.content.closedDiscussions ??= this.$root
-			.find(
-				cd.config.closedDiscussionClasses
-					.concat('mw-archivedtalk')
-					.map((name) => `.${name}`)
-					.join(', '),
-			)
+			.find(cd.g.closedDiscussionClasses.map((name) => `.${name}`).join(', '))
 			.get()
 
 		return this.content.closedDiscussions

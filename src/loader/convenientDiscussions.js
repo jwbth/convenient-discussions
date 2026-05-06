@@ -432,6 +432,8 @@ const globalProperties = {
 	 */
 	noSignatureClasses: ['mw-notalk', 'ext-discussiontools-emptystate', 'cd-moveMark'],
 
+	closedDiscussionClasses: ['mw-archivedtalk'],
+
 	/**
 	 * Names of elements that shouldn't be the first or last highlightable element. CD wraps these
 	 * elements into `<div>` containers. It allows for comment headers to be displayed correctly when

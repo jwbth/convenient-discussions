@@ -103,14 +103,11 @@ class Parser {
 			// Extension:Translate
 			'mw-pt-languages',
 
-			// Likely won't have much effect, but won't hurt
-			'mw-archivedtalk',
-
 			// For templates like https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение (perhaps they
 			// need to be `tmbox` too?).
 			'ombox',
 
-			...cd.config.closedDiscussionClasses,
+			...cd.g.closedDiscussionClasses,
 			cd.config.outdentClass,
 		]
 

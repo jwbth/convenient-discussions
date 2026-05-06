@@ -512,10 +512,12 @@ class CommentSkeleton {
 			// When the parser "moves out" of a closed discussion, it should stop the comment at the
 			// discussion boundary (e.g.
 			// https://en.wikipedia.org/wiki/Project:Requests_for_comment/Archive.is_RFC_5). A closed
-			// discussion may not be a comment part altogether. Other elements with reject classes (e.g.
-			// `ombox`), however, may be parts of the comment altogether.
+			// discussion may not be a comment part altogether (unless the comment's last part is outside
+			// that discussion which means the class is used incorrectly as in
+			// https://en.wikipedia.org/wiki/Special:GoToComment/c-Oklopfer-20260504060500-Test). Other
+			// elements with reject classes (e.g. `ombox`), however, may be parts of a comment altogether.
 			((step !== 'up' ||
-				CommentSkeleton.elementHasAnyClass(element, cd.config.closedDiscussionClasses)) &&
+				CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses)) &&
 				(CommentSkeleton.elementHasAnyClass(element, this.parser.rejectClasses) ||
 					// Talk page message box
 					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox')))) ||

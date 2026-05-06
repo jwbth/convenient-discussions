@@ -87,6 +87,7 @@ export default {
 			'VAR',
 		],
 		noSignatureClasses: ['mw-notalk', 'ext-discussiontools-emptystate', 'cd-moveMark'],
+		closedDiscussionClasses: ['mw-archivedtalk'],
 		badHighlightableElements: ['BLOCKQUOTE', 'DL', 'FORM', 'HR', 'OL', 'PRE', 'TABLE', 'UL'],
 		noHighlightClasses: [
 			'mw-empty-elt',

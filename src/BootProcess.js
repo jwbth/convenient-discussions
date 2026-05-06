@@ -629,6 +629,7 @@ class BootProcess {
 		)
 
 		cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses)
+		cd.g.closedDiscussionClasses.push(...cd.config.closedDiscussionClasses)
 		cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses)
 
 		const fileNssPattern = joinNsNames(6)
