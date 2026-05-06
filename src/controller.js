@@ -1011,10 +1011,9 @@ class Controller extends EventEmitter {
 	 * wrong behavior when the user clicks a link.
 	 *
 	 * @param {JQuery} $content
-	 * @private
 	 */
 	connectToCommentLinks = ($content) => {
-		if (!$content.is('#mw-content-text, .cd-commentForm-previewArea')) return
+		if (!$content.is('#mw-content-text, #mw-content-subtitle, .cd-commentForm-previewArea')) return
 
 		const goToCommentUrl = mw.util.getUrl('Special:GoToComment/')
 		const extractCommentId = (/** @type {HTMLElement} */ el) =>

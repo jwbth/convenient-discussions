@@ -302,6 +302,8 @@ class BootProcess {
 		}
 
 		if (cd.page.exists()) {
+			controller.connectToCommentLinks($('#mw-content-subtitle'))
+
 			// Should be below the comment form restoration for threads to be expanded correctly and also
 			// to avoid repositioning threads after the addition of comment forms. Should be above the
 			// viewport position restoration as it may shift the layout (if the viewport position
