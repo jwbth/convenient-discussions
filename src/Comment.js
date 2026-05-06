@@ -215,6 +215,14 @@ class Comment extends mixIntoClass(
 	seen
 
 	/**
+	 * Has the comment been scrolled to while it was in a collapsed thread.
+	 *
+	 * @type {boolean | undefined}
+	 * @private
+	 */
+	isScrolledToWhileCollapsed
+
+	/**
 	 * Has the comment changed since the previous visit.
 	 *
 	 * @type {boolean | undefined}
@@ -559,9 +567,11 @@ class Comment extends mixIntoClass(
 	 * Set whether the comment is collapsed.
 	 *
 	 * @param {boolean} value
+	 * @private
 	 */
 	setCollapsed(value) {
 		this.collapsed = value
+		this.isScrolledToWhileCollapsed = false
 	}
 
 	/**
@@ -2245,6 +2255,20 @@ class Comment extends mixIntoClass(
 		}
 
 		if (this.isCollapsed()) {
+			if (this.isScrolledToWhileCollapsed) {
+				this.scrollTo({
+					smooth,
+					expandThreads: true,
+					flash,
+					pushState,
+					callback,
+					alignment,
+				})
+
+				return
+			}
+
+			this.isScrolledToWhileCollapsed = true
 			const visibleExpandNote = /** @type {JQuery} */ (this.getVisibleExpandNote())
 			visibleExpandNote.cdScrollIntoView(alignment || 'top', smooth, callback)
 			const $message = wrapHtml(cd.sParse('navpanel-firstunseen-hidden', '$1'), {
@@ -2256,6 +2280,7 @@ class Comment extends mixIntoClass(
 							flash,
 							pushState,
 							callback,
+							alignment,
 						})
 						notification.close()
 					},
@@ -2278,6 +2303,7 @@ class Comment extends mixIntoClass(
 				tag: 'cd-commentInCollapsedThread',
 			})
 		} else {
+			this.isScrolledToWhileCollapsed = false
 			const offset = this.getAndOrSaveOffset({ considerFloating: true })
 			;(this.editForm?.$element || this.$elements).cdScrollIntoView(
 				alignment ||
@@ -3949,14 +3975,15 @@ class Comment extends mixIntoClass(
 	 * Collapse the comment in a thread.
 	 *
 	 * @param {import('./Thread').default} thread
-	 * @returns {number | undefined} If the comment is already collapsed, the index of the last comment in the
-	 *   collapsed thread.
+	 * @returns {number | undefined} If the comment's thread is collapsed and different from the
+	 *   given one, the index of the last comment in the collapsed thread.
 	 */
 	collapse(thread) {
 		if (this.thread?.isCollapsed() && this.thread !== thread) {
 			return this.thread.lastComment.index
 		}
-		this.collapsed = true
+
+		this.setCollapsed(true)
 		this.collapsedThread = thread
 		this.removeLayers()
 
@@ -3966,14 +3993,15 @@ class Comment extends mixIntoClass(
 	/**
 	 * Expand the comment in a thread.
 	 *
-	 * @returns {number | undefined} If the comment is collapsed, the index of the last comment in the collapsed
-	 *   thread.
+	 * @returns {number | undefined} If the comment's thread is collapsed, the index of the last
+	 *   comment in the collapsed thread.
 	 */
 	expand() {
 		if (this.thread?.isCollapsed()) {
 			return this.thread.lastComment.index
 		}
-		this.collapsed = false
+
+		this.setCollapsed(false)
 		this.collapsedThread = undefined
 		this.updateLayers()
 
