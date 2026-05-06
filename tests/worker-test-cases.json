@@ -21,14 +21,14 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Subsection\nComment. —",
+						"htmlToCompare": "Subsection\nComment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:00, 24 March 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-03-24T10:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">10:00, 25 March 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-03-25T10:00:00.000Z"
 					}
@@ -47,7 +47,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:00, 26 March 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-03-26T10:00:00.000Z"
 					}
@@ -71,35 +71,35 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Simple thread\nComment 1. —",
+						"htmlToCompare": "Simple thread\nComment 1. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:00, 17 January 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-01-17T07:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment 2. —",
+						"htmlToCompare": "Comment 2. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:10, 17 January 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-01-17T07:10:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment 4 with a gap in indentation. —",
+						"htmlToCompare": "Comment 4 with a gap in indentation. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:20, 17 January 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-01-17T07:20:00.000Z"
 					},
 					{
 						"level": 4,
 						"authorName": "Example",
-						"text": "Comment 5. —",
+						"htmlToCompare": "Comment 5. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:30, 17 January 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-01-17T07:30:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment at a lower level at the end. —",
+						"htmlToCompare": "Comment at a lower level at the end. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:40, 17 January 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-01-17T07:40:00.000Z"
 					}
@@ -123,7 +123,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Invalid signature\nTest. —",
+						"htmlToCompare": "Invalid signature\nTest. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:00, 12 January 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-01-12T18:00:00.000Z"
 					}
@@ -142,21 +142,21 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Signature without a date\nTry to edit the comments.\nComment 1.",
+						"htmlToCompare": "Signature without a date\nTry to edit the comments.\nComment 1. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">09:00, 18 May 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-05-18T09:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment 2. Example (talk)\n\nComment 3.",
+						"htmlToCompare": "Comment 2. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)\n\n<ul><li><div>Comment 3. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">09:10, 18 May 2020 (UTC)</span></span>\n</div></li></ul>",
 						"followsHeading": false,
 						"date": "2020-05-18T09:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment 4. Example (talk)\nComment 5. Example (talk)\nComment 6.",
+						"htmlToCompare": "Comment 4. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)\nComment 5. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)\nComment 6. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">09:20, 18 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-18T09:20:00.000Z"
 					}
@@ -175,21 +175,21 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "No signature\nTry to edit the comments.\nComment 1.",
+						"htmlToCompare": "No signature\nTry to edit the comments.\nComment 1. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:00, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-05-19T10:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment 2.\nComment 3.",
+						"htmlToCompare": "Comment 2.\n<ul><li>Comment 3. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:10, 19 May 2020 (UTC)</span></span></li></ul>",
 						"followsHeading": false,
 						"date": "2020-05-19T10:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment indented by ::.",
+						"htmlToCompare": "Comment indented by <code>::</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:20, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-19T10:20:00.000Z"
 					}
@@ -208,42 +208,42 @@
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">11:00, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-05-19T11:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">11:10, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-19T11:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">12:00, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-19T12:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:10, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-19T12:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "Example\nExample",
+						"htmlToCompare": "<a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a>\n<a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a>\n<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">13:00, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-19T13:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">13:10, 19 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-19T13:10:00.000Z"
 					}
@@ -262,14 +262,14 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Foreign signature inside a comment\nFirst comment (the problem is unlikely here).\nHere comes a foreign signature. Example (talk) 06:00, 27 July 2018 (UTC)\n—",
+						"htmlToCompare": "Foreign signature inside a comment\nFirst comment (the problem is unlikely here).\nHere comes a foreign signature. Example (talk) <span class=\"cd-timestamp\">06:00, 27 July 2018 (UTC)</span>\n— <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">14:50, 5 March 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-03-05T14:50:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Here comes a foreign signature. Example (talk) 06:00, 27 July 2018 (UTC)\nAnd another foreign signature. Example (talk) 06:10, 27 July 2018 (UTC) This time with some text after it.\nLast foreign signature at this line. - Example2 (talk) 06:20, 27 July 2018 (UTC). Some text after. —",
+						"htmlToCompare": "Here comes a foreign signature. Example (talk) 06:00, 27 July 2018 (UTC)\nAnd another foreign signature. Example (talk) 06:10, 27 July 2018 (UTC) This time with some text after it.\nLast foreign signature at this line. - Example2 (talk) <span class=\"cd-timestamp\">06:20, 27 July 2018 (UTC)</span>. Some text after. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:00, 5 March 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-03-05T15:00:00.000Z"
 					}
@@ -288,7 +288,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Explicit boundary of a signature with a \"span\" tag\nComment.",
+						"htmlToCompare": "Explicit boundary of a signature with a \"span\" tag\nComment. <span class=\"cd-signature\"><span>Example (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>)</span> <span class=\"cd-timestamp\">10:00, 17 July 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-07-17T10:00:00.000Z"
 					}
@@ -307,7 +307,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><span style=\"color:#AAA\"><small>&#123;{u&#124;</small><span style=\"border-radius:9em;padding:0 5px;background:#088\"><a href=\"/wiki/User:Example\" title=\"User:Example\"><span style=\"color:#FFF\"><b>Example</b></span></a></span><small>}&#125;</small></span> <sup><a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\"><b>talk</b></a></sup> <span class=\"cd-timestamp\">18:00, 31 August 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-08-31T18:00:00.000Z"
 					}
@@ -326,68 +326,68 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Without time.",
+						"htmlToCompare": "Without time. <small class=\"autosigned cd-signature\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) </small>",
 						"followsHeading": true
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "With time, with UTC.",
+						"htmlToCompare": "With time, with UTC. <span class=\"cd-signature\"><small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) <span class=\"cd-timestamp\">19:00, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T19:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "With time, without UTC.",
+						"htmlToCompare": "With time, without UTC. <span class=\"cd-signature\"><small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) <span class=\"cd-timestamp\">19:10, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T19:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "127.0.0.1",
-						"text": "IP, without time.",
+						"htmlToCompare": "IP, without time. <small class=\"autosigned cd-signature\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/w/index.php?title=User:127.0.0.1&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:127.0.0.1 (page does not exist)\">127.0.0.1</a></bdi> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">contribs</a>) </small>",
 						"followsHeading": false
 					},
 					{
 						"level": 1,
 						"authorName": "127.0.0.1",
-						"text": "IP, with time, with UTC.",
+						"htmlToCompare": "IP, with time, with UTC. <span class=\"cd-signature\"><small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/w/index.php?title=User:127.0.0.1&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:127.0.0.1 (page does not exist)\">127.0.0.1</a></bdi> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">contribs</a>) <span class=\"cd-timestamp\">19:20, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T19:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "127.0.0.1",
-						"text": "IP, with time, without UTC.",
+						"htmlToCompare": "IP, with time, without UTC. <span class=\"cd-signature\"><small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/w/index.php?title=User:127.0.0.1&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:127.0.0.1 (page does not exist)\">127.0.0.1</a></bdi> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">contribs</a>) <span class=\"cd-timestamp\">19:30, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T19:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Undated.",
+						"htmlToCompare": "Undated. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <small>—Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">undated comment</a> was added at <span class=\"cd-timestamp\">19:40, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T19:40:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "{{Unsigned2}}.",
+						"htmlToCompare": "<a href=\"/wiki/Template:Unsigned2\" title=\"Template:Unsigned2\">&#123;&#123;Unsigned2&#125;&#125;</a>. <span class=\"cd-signature\"><small class=\"autosigned\" lang=\"en\" dir=\"ltr\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment added by <bdi><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a></bdi> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>&#160;&#8226;&#160;<a href=\"/wiki/Special:Contributions/Example\" title=\"Special:Contributions/Example\">contribs</a>) <span class=\"cd-timestamp\">19:50, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T19:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "127.0.0.1",
-						"text": "{{UnsignedIP}}.",
+						"htmlToCompare": "<a href=\"/wiki/Template:UnsignedIP\" title=\"Template:UnsignedIP\">&#123;&#123;UnsignedIP&#125;&#125;</a>. <span class=\"cd-signature\"><small class=\"autosigned\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment was added by <a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">127.0.0.1</a> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>) <span class=\"cd-timestamp\">20:00, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T20:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "127.0.0.1",
-						"text": "{{UnsignedIP2}}.",
+						"htmlToCompare": "<a href=\"/wiki/Template:UnsignedIP2\" title=\"Template:UnsignedIP2\">&#123;&#123;UnsignedIP2&#125;&#125;</a>. <span class=\"cd-signature\"><small class=\"autosigned\">—&#160;Preceding <a href=\"/wiki/Commons:Signatures\" title=\"Commons:Signatures\">unsigned</a> comment was added by <a href=\"/wiki/Special:Contributions/127.0.0.1\" title=\"Special:Contributions/127.0.0.1\">127.0.0.1</a> (<a href=\"/wiki/User_talk:127.0.0.1\" title=\"User talk:127.0.0.1\">talk</a>) <span class=\"cd-timestamp\">20:10, 1 September 2020 (UTC)</span></small></span>",
 						"followsHeading": false,
 						"date": "2020-09-01T20:10:00.000Z"
 					}
@@ -406,7 +406,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Text after a signature\nComment. —  Text after the signature.",
+						"htmlToCompare": "Text after a signature\nComment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">12:00, 27 March 2020 (UTC)</span></span> Text after the signature.",
 						"followsHeading": true,
 						"date": "2020-03-27T12:00:00.000Z"
 					}
@@ -430,21 +430,21 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:00, 18 January 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-01-18T07:00:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment ending\nat the 0th level. —",
+						"htmlToCompare": "Comment ending\nat the 0th level. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:10, 18 January 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-01-18T07:10:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Lorem\nipsum\ndolor\nsit\n\nament,\nconsectetur\nadipiscing. —",
+						"htmlToCompare": "<dl><dd>Lorem</dd>\n<dd>ipsum</dd>\n<dd>dolor</dd></dl>\nsit\n\n<dd>ament,</dd>\n<dd>consectetur</dd>\nadipiscing. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:20, 18 January 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-01-18T07:20:00.000Z"
 					}
@@ -463,7 +463,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Section starting with a bulleted list\nLorem\nipsum\ndolor\nComment end.",
+						"htmlToCompare": "Section starting with a bulleted list\n<ul><li>Lorem</li>\n<li>ipsum</li>\n<li>dolor</li></ul>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">00:00, 17 April 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-04-17T00:00:00.000Z"
 					}
@@ -482,7 +482,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Section starting with a description list\nLorem\nipsum\ndolor\nText. —",
+						"htmlToCompare": "Section starting with a description list\n<dl><dd>Lorem</dd>\n<dd>ipsum</dd>\n<dd>dolor</dd></dl>\nText. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">01:00, 18 October 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-10-18T01:00:00.000Z"
 					}
@@ -501,42 +501,42 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment indented with :.\nEnd.",
+						"htmlToCompare": "Comment indented with <code>:</code>.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">11:50, 10 January 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-01-10T11:50:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment indented with ::.\nEnd.",
+						"htmlToCompare": "Comment indented with <code>::</code>.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:00, 10 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-10T12:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment indented with ::.\nSecond line.\nEnd.",
+						"htmlToCompare": "Comment indented with <code>::</code>.\nSecond line.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:10, 10 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-10T12:10:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment indented with :::.\nEnd.",
+						"htmlToCompare": "Comment indented with <code>:::</code>.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:20, 10 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-10T12:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment indented with :::.\nSecond line.\nEnd.",
+						"htmlToCompare": "Comment indented with <code>:::</code>.\nSecond line.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:30, 10 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-10T12:30:00.000Z"
 					},
 					{
 						"level": 4,
 						"authorName": "Example",
-						"text": "Comment indented with ::::.\nSecond line.\nEnd.",
+						"htmlToCompare": "Comment indented with <code>::::</code>.\nSecond line.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:40, 10 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-10T12:40:00.000Z"
 					}
@@ -555,105 +555,105 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment indented with *.",
+						"htmlToCompare": "Comment indented with <code>*</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">11:50, 15 January 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-01-15T11:50:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment started with **.\nComment part indented with ::.",
+						"htmlToCompare": "Comment started with <code>**</code>.\nComment part indented with <code>::</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:00, 15 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-15T12:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment started with **.\nComment part indented with ::.\nComment part indented with ::.",
+						"htmlToCompare": "Comment started with <code>**</code>.\nComment part indented with <code>::</code>.\nComment part indented with <code>::</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:01, 15 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-15T12:01:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment indented with :.",
+						"htmlToCompare": "Comment indented with <code>:</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:09, 15 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-15T12:09:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "(Incorrect markup.) Comment started with ::.\nComment part indented with **.",
+						"htmlToCompare": "(Incorrect markup.) Comment started with <code>::</code>.\nComment part indented with <code>**</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:10, 15 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-15T12:10:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "(Incorrect markup.) Comment started with ::.\nComment part indented with ::.\nComment part indented with **.",
+						"htmlToCompare": "<dl><dd><dl><dd>(Incorrect markup.) Comment started with <code>::</code>.</dd>\n<dd>Comment part indented with <code>::</code>.</dd></dl></dd></dl>\nComment part indented with <code>**</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:20, 15 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-15T12:20:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "(Incorrect markup.) Comment started with ::.\nComment part indented with **.\nComment part indented with **.",
+						"htmlToCompare": "<dl><dd><dl><dd>(Incorrect markup.) Comment started with <code>::</code>.</dd></dl></dd></dl>\nComment part indented with <code>**</code>.\nComment part indented with <code>**</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:30, 15 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-15T12:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment started with *.\nComment end.",
+						"htmlToCompare": "Comment started with <code>*</code>.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:00, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T18:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:10, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T18:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment indented with *.",
+						"htmlToCompare": "Comment indented with <code>*</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">19:00, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T19:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment started with **.\nComment end.",
+						"htmlToCompare": "Comment started with <code>**</code>.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">19:10, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T19:10:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">19:20, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T19:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment indented with *.",
+						"htmlToCompare": "Comment indented with <code>*</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">20:00, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T20:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment started with **.\nComment part indented with ::.\nComment end.",
+						"htmlToCompare": "Comment started with <code>**</code>.\nComment part indented with <code>::</code>.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">20:10, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T20:10:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">20:20, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T20:20:00.000Z"
 					}
@@ -672,28 +672,28 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment started with :.\nComment end.",
+						"htmlToCompare": "Comment started with <code>:</code>.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:00, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-10-08T15:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment start (with :).\nComment continuation.\nComment end.",
+						"htmlToCompare": "Comment start (with <code>:</code>).\nComment continuation.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:10, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-08T15:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment start (with *).\nComment continuation.\nComment end.",
+						"htmlToCompare": "Comment start (with <code>*</code>).\nComment continuation.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:20, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-08T15:20:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment start.\n\nList item followed by an empty line.\nList item followed by an empty line.\nList item followed by an empty line.\nComment end.",
+						"htmlToCompare": "Comment start.\n\n<li>List item followed by an empty line.</li>\n<li>List item followed by an empty line.</li>\n<li>List item followed by an empty line.</li>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:30, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-08T15:30:00.000Z"
 					}
@@ -712,49 +712,49 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment part.\nAnother comment part. —",
+						"htmlToCompare": "Comment part.\nAnother comment part. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:00, 6 October 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-10-06T18:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment part.\nAnother comment part, but after an empty line this time. —",
+						"htmlToCompare": "Comment part.\nAnother comment part, but after an empty line this time. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:10, 6 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-06T18:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment part.\nAnother comment part, empty line.\nAnother comment part, no empty line. —",
+						"htmlToCompare": "Comment part.\nAnother comment part, empty line.\nAnother comment part, no empty line. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:20, 6 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-06T18:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment part.\nAnother comment part, empty line.\nAnother comment part, empty line. —",
+						"htmlToCompare": "Comment part.\nAnother comment part, empty line.\nAnother comment part, empty line. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:30, 6 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-06T18:30:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:40, 6 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-06T18:40:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment part, empty line.\nAnother comment part, empty line. —",
+						"htmlToCompare": "Comment part, empty line.\nAnother comment part, empty line. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:50, 6 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-06T18:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment part, empty line.\nAnother comment part, no empty line.",
+						"htmlToCompare": "Comment part, empty line.\nAnother comment part, no empty line. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">19:00, 6 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-06T19:00:00.000Z"
 					}
@@ -773,21 +773,21 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:00, 16 July 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-07-16T01:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "List item not at the beginning of a section.\nComment.",
+						"htmlToCompare": "List item <i>not</i> at the beginning of a section.\nComment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:10, 16 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-16T01:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "List item not at the beginning of a section.\nComment indented with :.",
+						"htmlToCompare": "List item <i>not</i> at the beginning of a section.\nComment indented with <code>:</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:20, 16 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-16T01:20:00.000Z"
 					}
@@ -806,7 +806,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Some section note, followed by an empty line and a comment indented with :.\nComment.",
+						"htmlToCompare": "Some section note, followed by an empty line and a comment indented with <code>:</code>.\nComment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:30, 17 July 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-07-17T01:30:00.000Z"
 					}
@@ -825,7 +825,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:00, 7 October 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-10-07T10:00:00.000Z"
 					}
@@ -844,91 +844,91 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Text.\nItem 1.\nItem 2.\n—",
+						"htmlToCompare": "Text.\n<ul><li>Item 1.</li>\n<li>Item 2.</li></ul>\n— <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:00, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-10-07T08:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.",
+						"htmlToCompare": "<ul><li>Item 1.</li>\n<li>Item 2.</li></ul>\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:10, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.",
+						"htmlToCompare": "<ul><li>Item 1.</li>\n<li>Item 2.</li></ul>\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:20, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.",
+						"htmlToCompare": "<ul><li>Item 1.</li>\n<li>Item 2.</li></ul>\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:30, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\n—",
+						"htmlToCompare": "<ul><li>Item 1.</li>\n<li>Item 2.</li></ul>\n— <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:40, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "(Non-trivial markup – OK to fail here.) Item 1.\nItem 2.",
+						"htmlToCompare": "(Non-trivial markup – OK to fail here.) Item 1.\nItem 2.\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:41, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:41:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment indented with *.",
+						"htmlToCompare": "Comment indented with <code>*</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:45, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:45:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "(Non-trivial markup – OK to fail here.) Item 1.\nItem 2.",
+						"htmlToCompare": "(Non-trivial markup – OK to fail here.) Item 1.\nItem 2.\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:46, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:46:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:47, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:47:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment indented with *.",
+						"htmlToCompare": "Comment indented with <code>*</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:45, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:45:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment mistakenly indented with *** instead of **.\nEnd.",
+						"htmlToCompare": "Comment mistakenly indented with <code>***</code> instead of <code>**</code>.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:50, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T08:50:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:00, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T10:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Text.\nItem 1.\nItem 2.\n—",
+						"htmlToCompare": "Text.\n<ul><li>Item 1.</li>\n<li>Item 2.</li></ul>\n— <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">10:10, 7 October 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-10-07T10:10:00.000Z"
 					}
@@ -947,35 +947,35 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comments starting with a list\nThere can be problems with editing them as well.",
+						"htmlToCompare": "Comments starting with a list\nThere can be problems with editing them as well. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:00, 13 October 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-10-13T18:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item.\nItem.\nEnd.",
+						"htmlToCompare": "<ul><li>Item.</li>\n<li>Item.</li></ul>\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:10, 13 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-13T18:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item.\nItem.\nEnd.",
+						"htmlToCompare": "<ol><li>Item.</li>\n<li>Item.</li></ol>\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:20, 13 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-13T18:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item.\nItem.\nEnd.",
+						"htmlToCompare": "<dl><dd>Item.</dd>\n<dd>Item.</dd></dl>\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:30, 13 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-13T18:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item.\nItem.\nContinuation.\nEnd.",
+						"htmlToCompare": "<dl><dd>Item.</dd>\n<dd>Item.</dd></dl>\nContinuation.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">18:40, 13 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-13T18:40:00.000Z"
 					}
@@ -994,49 +994,49 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">00:00, 20 July 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-07-20T00:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment with a gap.\nGap.\nComment.",
+						"htmlToCompare": "Comment with a gap.\n<p>Gap.</p>\nComment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">00:10, 20 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-20T00:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">00:20, 20 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-20T00:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment after an empty line.",
+						"htmlToCompare": "Comment after an empty line. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">00:30, 20 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-20T00:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment intented with an asterisk (*).",
+						"htmlToCompare": "Comment intented with an asterisk (<code>*</code>). <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">00:40, 20 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-20T00:40:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment that genuinely includes a DT tag.\n\nPseudo-heading using a DT tag.\nContent.\nEnd.",
+						"htmlToCompare": "Comment that genuinely includes a DT tag.\n\n<dt>Pseudo-heading using a DT tag.</dt>\n<dd>Content.</dd>\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">00:50, 20 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-20T00:50:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Another comment that genuinely includes a DT tag.\n\nPseudo-heading using a DT tag.\nEnd.",
+						"htmlToCompare": "Another comment that genuinely includes a DT tag.\n\n<dt>Pseudo-heading using a DT tag.</dt>\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:00, 20 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-20T01:00:00.000Z"
 					}
@@ -1055,14 +1055,14 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment start.\nTitle\nTitle\nComment end.",
+						"htmlToCompare": "Comment start.\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:00, 21 July 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-07-21T01:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment start.\nTitle\nTitle\nComment end.",
+						"htmlToCompare": "Comment start.\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:10, 21 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-21T01:10:00.000Z"
 					}
@@ -1081,14 +1081,14 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment start.\nTitle\nComment end.",
+						"htmlToCompare": "Comment start.\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:20, 22 July 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-07-22T01:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment start.\nTitle\nComment end.",
+						"htmlToCompare": "Comment start.\n<div role=\"navigation\" class=\"navbox\" aria-labelledby=\"Title\" style=\"padding:3px\"><table class=\"nowraplinks collapsible autocollapse navbox-inner\" style=\"border-spacing:0;background:transparent;color:inherit\"><tbody><tr><th scope=\"col\" class=\"navbox-title\" colspan=\"2\"><div id=\"Title\" style=\"font-size:114%;margin:0 4em\">Title</div></th></tr></tbody></table></div>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">01:30, 22 July 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-07-22T01:30:00.000Z"
 					}
@@ -1107,98 +1107,98 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:00, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-09-19T19:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">19:01, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:01:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:10, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">19:11, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:11:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:15, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:15:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">19:16, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:16:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:20, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">19:21, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:21:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:30, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">19:31, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:31:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Joint statement, signatures indented with :.\n\nList item.\nList item.\nList item.",
+						"htmlToCompare": "Joint statement, signatures indented with <code>:</code>.\n\nList item.\nList item.\nList item.\n<dl><dd><span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:30, 19 September 2020 (UTC)</span></span></dd></dl>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">19:31, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:31:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Joint statement, signatures indented with *.\n\nList item.\nList item.\nList item.",
+						"htmlToCompare": "Joint statement, signatures indented with <code>*</code>.\n\n<li>List item.</li>\n<li>List item.</li>\n<li>List item.</li>\n<ul><li><span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:30, 19 September 2020 (UTC)</span></span></li></ul>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Jack who built the house",
-						"text": "",
+						"htmlToCompare": "<span class=\"cd-signature\"><a href=\"/wiki/User:Jack_who_built_the_house\" title=\"User:Jack who built the house\">Jack who built the house</a> <span class=\"cd-timestamp\">19:31, 19 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-19T19:31:00.000Z"
 					}
@@ -1217,14 +1217,14 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "File:Gallery.",
+						"htmlToCompare": "<li class=\"gallerybox\" style=\"width: 155px\">\n\t\t\t<div class=\"thumb\" style=\"height: 150px;\"><span typeof=\"mw:Error mw:File\"><a href=\"/w/index.php?title=Special:Upload&amp;wpDestFile=Gallery.\" class=\"new\" title=\"File:Gallery.\"><span class=\"mw-file-element mw-broken-media\">File:Gallery.</span></a></span></div>\n\t\t\t<div class=\"gallerytext\"></div>\n\t\t</li>\n\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">19:00, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-10-14T19:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Poem line.\nPoem line.\nPoem line.",
+						"htmlToCompare": "<div class=\"poem\">\n<p>Poem line.<br>\nPoem line.<br>\nPoem line.\n</p></div>\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">19:10, 14 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-14T19:10:00.000Z"
 					}
@@ -1247,28 +1247,28 @@
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:46, 9 April 2026 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2026-04-09T06:46:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:47, 9 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-09T06:47:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:48, 9 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-09T06:48:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Here continues the original post.",
+						"htmlToCompare": "Here continues the original post. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">05:48, 9 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-09T05:48:00.000Z"
 					}
@@ -1286,35 +1286,35 @@
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:46, 10 April 2026 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2026-04-10T06:46:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">06:46, 10 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-10T06:46:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:47, 10 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-10T06:47:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:48, 10 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-10T06:48:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Here continues the original post.",
+						"htmlToCompare": "Here continues the original post. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">05:48, 10 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-10T05:48:00.000Z"
 					}
@@ -1332,35 +1332,35 @@
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:46, 11 April 2026 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2026-04-11T06:46:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Another reply.",
+						"htmlToCompare": "Another reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:46, 11 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-11T06:46:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:47, 11 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-11T06:47:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:48, 11 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-11T06:48:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Here continues the original post.",
+						"htmlToCompare": "Here continues the original post. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">05:48, 11 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-11T05:48:00.000Z"
 					}
@@ -1378,14 +1378,14 @@
 					{
 						"level": 1,
 						"authorName": "Example2",
-						"text": "Comment from Example2.\nA genuine list item from Example2.\nA genuine list item from Example2.",
+						"htmlToCompare": "Comment from Example2.\n<ul><li>A genuine list item from Example2.</li>\n<li>A genuine list item from Example2. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:46, 12 April 2026 (UTC)</span></span></li></ul>",
 						"followsHeading": true,
 						"date": "2026-04-12T06:46:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Here continues the original post.",
+						"htmlToCompare": "Here continues the original post. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">05:48, 12 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-12T05:48:00.000Z"
 					}
@@ -1403,28 +1403,28 @@
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:46, 13 April 2026 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2026-04-13T06:46:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:47, 13 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-13T06:47:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example2",
-						"text": "Here a user breaks the list with their reply.",
+						"htmlToCompare": "Here a user breaks the list with their reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example2\" title=\"User:Example2\">Example2</a> (<a href=\"/w/index.php?title=User_talk:Example2&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User talk:Example2 (page does not exist)\">talk</a>) <span class=\"cd-timestamp\">06:48, 13 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-13T06:48:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Here continues the original post.",
+						"htmlToCompare": "Here continues the original post. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">05:48, 13 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-13T05:48:00.000Z"
 					}
@@ -1443,42 +1443,42 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Signature in the last item\nList:\n\nItem 1.\nItem 2.\nItem 3. Comment end.",
+						"htmlToCompare": "Signature in the last item\nList:\n\n<ul><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. Comment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:00, 20 September 2020 (UTC)</span></span></li></ul>",
 						"followsHeading": true,
 						"date": "2020-09-20T20:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">20:10, 20 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-20T20:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "List:\n\nItem 1.\nItem 2.\nItem 3. Comment end.",
+						"htmlToCompare": "List:\n\n<ul><li>Item 1.</li>\n<li>Item 2.</li>\n<li><div>Item 3. Comment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:20, 20 September 2020 (UTC)</span></span>\n</div></li></ul>",
 						"followsHeading": false,
 						"date": "2020-09-20T20:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">20:30, 20 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-20T20:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "List:\nItem.\nItem. Comment end.",
+						"htmlToCompare": "List:\n<ul><li>Item.</li>\n<li>Item. Comment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:00, 20 September 2020 (UTC)</span></span></li></ul>",
 						"followsHeading": false,
 						"date": "2020-09-20T21:00:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply indented with ***.",
+						"htmlToCompare": "Reply indented with <code>***</code>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:10, 20 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-20T21:10:00.000Z"
 					}
@@ -1497,84 +1497,84 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment started with *.\nQuote at the zeroth level.\nComment end.",
+						"htmlToCompare": "Comment started with <code>*</code>.\n<p>Quote at the zeroth level.</p>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:00, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-09-22T20:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment started with **.\nQuote at the zeroth level.\nComment end.",
+						"htmlToCompare": "Comment started with <code>**</code>.\n<p>Quote at the zeroth level.</p>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:01, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T20:01:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Regular comment.",
+						"htmlToCompare": "Regular comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:02, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T20:02:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment started with **.\nComment part started with ::.\nQuote at the zeroth level.\nComment end.",
+						"htmlToCompare": "Comment started with <code>**</code>.\nComment part started with <code>::</code>.\n<p>Quote at the zeroth level.</p>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:03, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T20:03:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment started with :.\nQuote at the zeroth level.\nComment end.",
+						"htmlToCompare": "Comment started with <code>:</code>.\n<p>Quote at the zeroth level.</p>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:04, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T20:04:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment started with ::.\nQuote at the zeroth level.\nComment end.",
+						"htmlToCompare": "Comment started with <code>::</code>.\n<p>Quote at the zeroth level.</p>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:05, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T20:05:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Regular comment.",
+						"htmlToCompare": "Regular comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:09, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T20:09:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment starting with :*. Start.\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"htmlToCompare": "Comment starting with <code>:*</code>. Start.\n<li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:10, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T20:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Regular comment.",
+						"htmlToCompare": "Regular comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:00, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T21:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment starting with **. Start.\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"htmlToCompare": "Comment starting with <code>**</code>. Start.\n<li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:10, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T21:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment starting with *. Start. Check how this comment is edited!\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"htmlToCompare": "Comment starting with <code>*</code>. Start. Check how this comment is edited!\n<li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:00, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T22:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment starting with :. Start. Check how this comment is edited!\nList item 1.\nList item 2.\nList item 3.\nComment end.",
+						"htmlToCompare": "Comment starting with <code>:</code>. Start. Check how this comment is edited!\n<li>List item 1.</li>\n<li>List item 2.</li>\n<li>List item 3.</li>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:10, 22 September 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-09-22T22:10:00.000Z"
 					}
@@ -1598,21 +1598,21 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Normal\nText. —",
+						"htmlToCompare": "Normal\nText. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">20:00, 19 June 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-06-19T20:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Vote 1.",
+						"htmlToCompare": "Vote 1. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:10, 19 June 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-06-19T20:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Vote 2.",
+						"htmlToCompare": "Vote 2. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:20, 19 June 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-06-19T20:20:00.000Z"
 					}
@@ -1642,7 +1642,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Vote. —",
+						"htmlToCompare": "Vote. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">17:00, 12 December 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-12-12T17:00:00.000Z"
 					}
@@ -1661,14 +1661,14 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Vote 1. —",
+						"htmlToCompare": "Vote 1. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">17:00, 13 December 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-12-13T17:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Vote 2. —",
+						"htmlToCompare": "Vote 2. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">17:10, 13 December 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-12-13T17:10:00.000Z"
 					}
@@ -1687,7 +1687,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "No intro text\nVote 1. —",
+						"htmlToCompare": "No intro text\n<ol><li>Vote 1. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">17:00, 14 December 2019 (UTC)</span></span></li></ol>",
 						"followsHeading": true,
 						"date": "2019-12-14T17:00:00.000Z"
 					}
@@ -1706,7 +1706,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "No intro text, empty line before the first vote\nVote 1. —",
+						"htmlToCompare": "No intro text, empty line before the first vote\n<ol><li>Vote 1. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">17:00, 15 December 2019 (UTC)</span></span></li></ol>",
 						"followsHeading": true,
 						"date": "2019-12-15T17:00:00.000Z"
 					}
@@ -1725,7 +1725,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Not a voting\nThis is.\n\nNot.\nA voting. I just end my comment with a list. —",
+						"htmlToCompare": "Not a voting\nThis is.\n\n<ol><li>Not.</li>\n<li>A voting. I just end my comment with a list. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">02:00, 17 January 2020 (UTC)</span></span></li></ol>",
 						"followsHeading": true,
 						"date": "2020-01-17T02:00:00.000Z"
 					}
@@ -1744,14 +1744,14 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Reply to not-a-voting keeping # indentation\nThis is.\n\nNot.\nA voting. I just end my comment with a list. —",
+						"htmlToCompare": "Reply to not-a-voting keeping <code>#</code> indentation\nThis is.\n\n<ol><li>Not.</li>\n<li><div>A voting. I just end my comment with a list. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">02:00, 18 January 2020 (UTC)</span></span>\n</div></li></ol>",
 						"followsHeading": true,
 						"date": "2020-01-18T02:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">02:10, 18 January 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-01-18T02:10:00.000Z"
 					}
@@ -1770,14 +1770,14 @@
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Vote.",
+						"htmlToCompare": "Vote. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">02:00, 19 January 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-01-19T02:00:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Another vote.",
+						"htmlToCompare": "Another vote. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">02:10, 19 January 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-01-19T02:10:00.000Z"
 					}
@@ -1801,203 +1801,203 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Reply with a numbered list\nComment.",
+						"htmlToCompare": "Reply with a numbered list\nComment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">09:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-05-16T09:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"htmlToCompare": "<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">09:10, 16 May 2020 (UTC)</span></span></li></ol>",
 						"followsHeading": false,
 						"date": "2020-05-16T09:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Reply starting with :#. Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"htmlToCompare": "<ol><li>Reply starting with <code>:#</code>. Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">09:20, 16 May 2020 (UTC)</span></span></li></ol>",
 						"followsHeading": false,
 						"date": "2020-05-16T09:20:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"htmlToCompare": "<li>Item 1.</li>\nItem 2.\nItem 3. The whole comment is a list without any other indentation. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">09:30, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T09:30:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Reply starting with ##. Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"htmlToCompare": "<ol><li>Reply starting with <code>##</code>. Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. The whole comment is a list without any other indentation. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">09:40, 16 May 2020 (UTC)</span></span></li></ol>",
 						"followsHeading": false,
 						"date": "2020-05-16T09:40:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">10:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T10:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3.",
+						"htmlToCompare": "<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">10:10, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T10:10:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">11:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T11:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">11:10, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T11:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3.\nIncorrect reply (but common mistake, see w:ru:Обсуждение:Minecraft#Агнес Ларссон).",
+						"htmlToCompare": "<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\nIncorrect reply (but common mistake, see <a href=\"https://en.wikipedia.org/wiki/ru:%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5:Minecraft#Агнес_Ларссон\" class=\"extiw\" title=\"w:ru:Обсуждение:Minecraft\">w:ru:Обсуждение:Minecraft#Агнес Ларссон</a>). <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">11:20, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T11:20:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T12:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:10, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T12:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3.\nIncorrect reply (but common mistake, see w:ru:Обсуждение:Minecraft#Агнес Ларссон).",
+						"htmlToCompare": "<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\nIncorrect reply (but common mistake, see <a href=\"https://en.wikipedia.org/wiki/ru:%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5:Minecraft#Агнес_Ларссон\" class=\"extiw\" title=\"w:ru:Обсуждение:Minecraft\">w:ru:Обсуждение:Minecraft#Агнес Ларссон</a>). <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:20, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T12:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply to it.",
+						"htmlToCompare": "Reply to it. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:30, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T12:30:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">13:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T13:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">13:10, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T13:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3.\nCorrect reply.",
+						"htmlToCompare": "<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\nCorrect reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">13:20, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T13:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply to it.",
+						"htmlToCompare": "Reply to it. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">13:30, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T13:30:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T14:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:10, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T14:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3. The whole comment is a list without any other indentation.",
+						"htmlToCompare": "<li>Item 1.</li>\nItem 2.\nItem 3. The whole comment is a list without any other indentation. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:20, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T14:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "And a reply to it.",
+						"htmlToCompare": "And a reply to it. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:30, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T14:30:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "One more reply.",
+						"htmlToCompare": "One more reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:40, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T14:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "One more reply.",
+						"htmlToCompare": "One more reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:50, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T14:50:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">15:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T15:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">15:10, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T15:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Item 1.\nItem 2.\nItem 3.\nReply to the 0-level comment.",
+						"htmlToCompare": "<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li></ol>\nReply to the 0-level comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">15:20, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T15:20:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Text.\nItem 1.\nItem 2.\nItem 3. Another super-weird case: a numbered list without any other indentation after normal indentation.",
+						"htmlToCompare": "<dl><dd>Text.</dd></dl>\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. Another super-weird case: a numbered list without any other indentation <i>after</i> normal indentation. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">16:00, 16 May 2020 (UTC)</span></span></li></ol>",
 						"followsHeading": false,
 						"date": "2020-05-16T16:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Text.\nItem 1.\nItem 2.\nItem 3.\nAnother super-weird case: a numbered list without any other indentation after normal indentation and ending with normal indentation.",
+						"htmlToCompare": "Text.\n<li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3.</li>\nAnother super-weird case: a numbered list without any other indentation <i>after</i> normal indentation and ending with normal indentation. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">17:00, 16 May 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-05-16T17:00:00.000Z"
 					}
@@ -2016,7 +2016,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Zero level comment\nItem 1.\nItem 2.\nItem 3. It is not a reply (unlike #202005160901_Example that has the same markup). It is a 0-level comment starting a section!",
+						"htmlToCompare": "Zero level comment\n<ol><li>Item 1.</li>\n<li>Item 2.</li>\n<li>Item 3. It is <i>not</i> a reply (unlike <a href=\"#202005160901_Example\">#202005160901_Example</a> that has the same markup). It is a 0-level comment starting a section! <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">18:00, 17 May 2020 (UTC)</span></span></li></ol>",
 						"followsHeading": true,
 						"date": "2020-05-17T18:00:00.000Z"
 					}
@@ -2035,21 +2035,21 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply 1.",
+						"htmlToCompare": "Reply 1. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:00, 20 June 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-06-20T20:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply 2.",
+						"htmlToCompare": "Reply 2. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:10, 20 June 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-06-20T20:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply 3.",
+						"htmlToCompare": "Reply 3<small style=\"font-size:85%;\"></small>. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:20, 20 June 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-06-20T20:20:00.000Z"
 					}
@@ -2073,7 +2073,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Paragraphs\nParagraph 1.\n\nParagraph 2. \n\nParagraph 3.",
+						"htmlToCompare": "Paragraphs\nParagraph 1.\n\nParagraph 2. \n\nParagraph 3. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">00:00, 1 March 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-03-01T00:00:00.000Z"
 					}
@@ -2092,294 +2092,294 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Outdent templates\nComment.",
+						"htmlToCompare": "Outdent templates\nComment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:00, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-04-25T12:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:10, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T12:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:20, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T12:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:30, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T12:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Test outdent.",
+						"htmlToCompare": "<div class=\"cd-comment-outdented\"> Test outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">User:Example</a> <span class=\"cd-timestamp\">12:40, 25 April 2021 (UTC)</span></span></div>",
 						"followsHeading": false,
 						"date": "2021-04-25T12:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Reply to an outdented comment.",
+						"htmlToCompare": "Reply to an outdented comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">User:Example</a> <span class=\"cd-timestamp\">12:50, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T12:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply to the 0-level comment.",
+						"htmlToCompare": "Reply to the 0-level comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">User:Example</a> <span class=\"cd-timestamp\">13:00, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T13:00:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:00, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T14:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:10, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T14:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:20, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T14:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:30, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T14:30:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "Outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:40, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T14:40:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply to an outdented comment.",
+						"htmlToCompare": "Reply to an outdented comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">14:50, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T14:50:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Standalone comment.",
+						"htmlToCompare": "Standalone comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">15:00, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T15:00:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">16:00, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T16:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">16:10, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T16:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">16:20, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T16:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">16:30, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T16:30:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "<div class=\"cd-comment-outdented\"> Outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">16:40, 25 April 2021 (UTC)</span></span></div>",
 						"followsHeading": false,
 						"date": "2021-04-25T16:40:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Reply to an outdented comment.",
+						"htmlToCompare": "Reply to an outdented comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">16:50, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T16:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">18:10, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T18:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">18:20, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T18:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment. The comment being replied to with an outdent.",
+						"htmlToCompare": "Comment. The comment being replied to with an outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">18:30, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T18:30:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment added later than the outdented comment.",
+						"htmlToCompare": "Comment added later than the outdented comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">18:50, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T18:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "<div class=\"cd-comment-outdented\"> Outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">18:40, 25 April 2021 (UTC)</span></span></div>",
 						"followsHeading": false,
 						"date": "2021-04-25T18:40:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:00, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T19:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:10, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T19:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:20, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T19:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:30, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T19:30:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "Outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:50, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T19:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply not to an outdented comment (earlier in time).",
+						"htmlToCompare": "Reply <b>not</b> to an outdented comment (earlier in time). <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">19:40, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T19:40:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:10, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T21:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:20, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T21:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:30, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T21:30:00.000Z"
 					},
 					{
 						"level": 4,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:40, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T21:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "<div class=\"cd-comment-outdented\"> Outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:50, 25 April 2021 (UTC)</span></span></div>",
 						"followsHeading": false,
 						"date": "2021-04-25T21:50:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:00, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T22:00:00.000Z"
 					},
 					{
 						"level": 4,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:10, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T22:10:00.000Z"
 					},
 					{
 						"level": 5,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:20, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T22:20:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "Outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:30, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T22:30:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:40, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T22:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">22:50, 25 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-25T22:50:00.000Z"
 					}
@@ -2402,105 +2402,105 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:10, 25 April 2026 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2026-04-25T21:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:20, 25 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-25T21:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:30, 25 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-25T21:30:00.000Z"
 					},
 					{
 						"level": 4,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:40, 25 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-25T21:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "<div class=\"cd-comment-outdented\"> Outdent.</div>\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:50, 25 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-25T21:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:10, 26 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-26T21:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:20, 26 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-26T21:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:30, 26 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-26T21:30:00.000Z"
 					},
 					{
 						"level": 4,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:40, 26 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-26T21:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Outdent.",
+						"htmlToCompare": "Outdent. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:50, 26 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-26T21:50:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:10, 27 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-27T21:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:20, 27 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-27T21:20:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:30, 27 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-27T21:30:00.000Z"
 					},
 					{
 						"level": 4,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:40, 27 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-27T21:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Outdent.\nContinue.",
+						"htmlToCompare": "<div class=\"cd-comment-outdented\"> Outdent.</div>\nContinue.\n<span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">21:50, 27 April 2026 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2026-04-27T21:50:00.000Z"
 					}
@@ -2514,49 +2514,49 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Closed thread\nComment. —",
+						"htmlToCompare": "Closed thread\nComment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:00, 26 April 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-04-26T07:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:10, 26 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-26T07:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:20, 26 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-26T07:20:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:30, 26 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-26T07:30:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:40, 26 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-26T07:40:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:00, 26 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-26T08:00:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "The following discussion is closed, and will be archived soon.\n\nComment at the 0th level. — \n\n\nThe above discussion is closed, and will be archived soon.",
+						"htmlToCompare": "<div class=\"boilerplate metadata discussion-closed\" style=\"background-color: #f5f3ef; margin: 2em 0 0 0; padding: 0 10px 0 10px; border: 1px solid #AAAAAA;\">\n<dl><dd><i>The following discussion is closed, and will be archived soon.</i></dd></dl>\n<hr>\n<p>Comment at the 0th level. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:10, 26 April 2021 (UTC)</span></span>\n</p>\n<hr>\n<dl><dd><i>The above discussion is closed, and will be archived soon.</i></dd></dl>\n</div>",
 						"followsHeading": false,
 						"date": "2021-04-26T08:10:00.000Z"
 					}
@@ -2575,49 +2575,49 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Closed thread inside a parameter\nAdd User:Jack who built the house/closed to the first array of the closedDiscussionTemplates configuration property to test this.\n\nComment. —",
+						"htmlToCompare": "Closed thread inside a parameter\nAdd <code>User:Jack who built the house/closed</code> to the first array of the <code>closedDiscussionTemplates</code> configuration property to test this.\n\nComment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:00, 27 April 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-04-27T07:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:10, 27 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-27T07:10:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:20, 27 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-27T07:20:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:30, 27 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-27T07:30:00.000Z"
 					},
 					{
 						"level": 3,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:40, 27 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-27T07:40:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:50, 27 April 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-04-27T07:50:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "The following discussion is closed and will soon be archived.   \n\nComment at the 0th level. —",
+						"htmlToCompare": "<div style=\"background:#E3F9DF; padding:0 10px; border:1px solid #AAA;\" class=\"ruwiki-closedDiscussion\"><i>The following discussion is closed&#32;and will soon be archived.</i> <b> </b>&#32;\n<hr>\nComment at the 0th level. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:00, 27 April 2021 (UTC)</span></span></div>",
 						"followsHeading": false,
 						"date": "2021-04-27T08:00:00.000Z"
 					}
@@ -2636,7 +2636,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Moved section\n Moved to User talk:Jack who built the house/sandbox#Moved section:",
+						"htmlToCompare": "Moved section\n<div role=\"note\" style=\"margin: 1em;\" class=\"resolved\"><span style=\"border: 1px solid #aaa; background-color: var(--background-color-neutral-subtle, #f9fcf9); color:inherit; margin-right: 0.5em; padding: 0.5em;\"><span style><span typeof=\"mw:File\"><span><img alt src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Go-next-purple.svg/20px-Go-next-purple.svg.png\" decoding=\"async\" width=\"20\" height=\"20\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Go-next-purple.svg/40px-Go-next-purple.svg.png 2x\"></span></span></span> Moved to User talk:Jack who built the house/sandbox#Moved section&#58;</span> <span style=\"font-size: 85%\"><span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">07:49, 11 March 2018 (UTC)</span></span></span></div>",
 						"followsHeading": true,
 						"date": "2018-03-11T07:49:00.000Z"
 					}
@@ -2655,7 +2655,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Section after two empty lines\nComment. —",
+						"htmlToCompare": "Section after two empty lines\nComment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">12:10, 28 March 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-03-28T12:10:00.000Z"
 					}
@@ -2674,7 +2674,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Section after zero empty lines\nComment. —",
+						"htmlToCompare": "Section after zero empty lines\nComment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">12:10, 29 March 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-03-29T12:10:00.000Z"
 					}
@@ -2693,14 +2693,14 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. [note 1] —",
+						"htmlToCompare": "Comment. <sup id=\"cite&#95;ref-1\" class=\"reference\"><a href=\"#cite_note-1\"><span class=\"cite-bracket\">&#91;</span>note 1<span class=\"cite-bracket\">&#93;</span></a></sup> — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">21:00, 20 January 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-01-20T21:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment. —",
+						"htmlToCompare": "Comment. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">21:10, 20 January 2020 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2020-01-20T21:10:00.000Z"
 					}
@@ -2719,7 +2719,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "<small> tag. —",
+						"htmlToCompare": "<small>&lt;small&gt; tag. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">23:30, 18 February 2018 (UTC)</span></span></small>",
 						"followsHeading": true,
 						"date": "2018-02-18T23:30:00.000Z"
 					}
@@ -2738,7 +2738,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Image\nOld editor panel 2006\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nSed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
+						"htmlToCompare": "Image\n<figure class=\"mw-default-size mw-halign-left\" typeof=\"mw:File\"><a href=\"/wiki/File:Edit_toolbar_-_2.png\" class=\"mw-file-description\" title=\"Old editor panel 2006\"><img alt=\"Old editor panel 2006\" src=\"https://upload.wikimedia.org/wikipedia/commons/1/1f/Edit_toolbar_-_2.png\" decoding=\"async\" width=\"369\" height=\"100\" class=\"mw-file-element\"></a><figcaption>Old editor panel 2006</figcaption></figure>\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nSed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">23:00, 7 November 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-11-07T23:00:00.000Z"
 					}
@@ -2757,21 +2757,21 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Images from both sides\nCaption\nCaption\nLook at the comment markers. The replies don't look good without CD as well, so...",
+						"htmlToCompare": "Images from both sides\n<a href=\"/wiki/File:Example.png\" class=\"mw-file-description\"><img src=\"https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png\" decoding=\"async\" width=\"172\" height=\"178\" class=\"mw-file-element\"></a><figcaption>Caption</figcaption>\n<a href=\"/wiki/File:Example.png\" class=\"mw-file-description\"><img src=\"https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png\" decoding=\"async\" width=\"172\" height=\"178\" class=\"mw-file-element\"></a><figcaption>Caption</figcaption>\nLook at the comment markers. The replies don't look good without CD as well, so... <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">23:00, 8 November 2018 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2018-11-08T23:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply.",
+						"htmlToCompare": "Reply. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">23:10, 8 November 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-11-08T23:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Reply 2.",
+						"htmlToCompare": "Reply 2. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">23:20, 8 November 2018 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2018-11-08T23:20:00.000Z"
 					}
@@ -2790,14 +2790,14 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">12:40, 16 January 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-01-16T12:40:00.000Z"
 					},
 					{
 						"level": 2,
 						"authorName": "Example",
-						"text": "Comment after an image. —",
+						"htmlToCompare": "Comment after an image. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">12:50, 16 January 2019 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2019-01-16T12:50:00.000Z"
 					}
@@ -2816,7 +2816,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Table in a comment\n\n\nBarnstar\n\nBarnstar\n\n\nTake that barnstar!",
+						"htmlToCompare": "Table in a comment\n<table style=\"background:#FDFFE7; border: solid 1px #C2C2C2; width: 88%; padding: 2px;\">\n<tbody><tr>\n<td rowspan=\"2\" valign=\"middle\" width=\"110px\"><figure class=\"mw-halign-center\" typeof=\"mw:File\"><a href=\"/wiki/File:Minor_Barnstar_Hires.png\" class=\"mw-file-description\" title=\"Barnstar\"><img alt=\"Barnstar\" src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Minor_Barnstar_Hires.png/120px-Minor_Barnstar_Hires.png\" decoding=\"async\" width=\"100\" height=\"95\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Minor_Barnstar_Hires.png/250px-Minor_Barnstar_Hires.png 2x\"></a><figcaption>Barnstar</figcaption></figure>\n</td>\n<td style=\"font-size: large; padding: 0; vertical-align: middle; height: 1.1em;\"><b>Barnstar</b>\n</td></tr>\n<tr>\n<td style=\"vertical-align: middle; border-top: 1px solid #C2C2C2;\">Take that barnstar! <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">23:00, 24 June 2018 (UTC)</span></span>\n</td></tr></tbody></table>",
 						"followsHeading": true,
 						"date": "2018-06-24T23:00:00.000Z"
 					}
@@ -2835,7 +2835,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment.",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">12:00, 9 October 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-10-09T12:00:00.000Z"
 					}
@@ -2854,7 +2854,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Comment inside a talk message box\n\u00011_templateStyles\u0002\nComment.",
+						"htmlToCompare": "Comment inside a talk message box\n\u00011_templateStyles\u0002\n<table class=\"plainlinks tmbox tmbox-notice\" role=\"presentation\"><tbody><tr><td class=\"mbox-image\"><span typeof=\"mw:File\"><span><img alt src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/60px-Information_icon4.svg.png\" decoding=\"async\" width=\"45\" height=\"45\" class=\"mw-file-element\" srcset=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Information_icon4.svg/120px-Information_icon4.svg.png 2x\"></span></span></td><td class=\"mbox-text\">Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">12:00, 10 October 2021 (UTC)</span></span></td></tr></tbody></table>",
 						"followsHeading": true,
 						"date": "2021-10-10T12:00:00.000Z"
 					}
@@ -2873,7 +2873,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"text": "Text.<p>Text in the syntaxhighlight tag.</p>\nText in the blockquote tag.Text. —",
+						"htmlToCompare": "Text.<div class=\"mw-highlight mw-highlight-lang-html mw-content-ltr mw-highlight-lines mw-highlight-copy\" dir=\"ltr\"><pre><span></span><span class=\"linenos\"></span><span class=\"p\">&lt;</span><span class=\"nt\">p</span><span class=\"p\">&gt;</span>Text in the syntaxhighlight tag.<span class=\"p\">&lt;/</span><span class=\"nt\">p</span><span class=\"p\">&gt;</span>\n</pre></div><blockquote><p>Text in the blockquote tag.</p></blockquote>Text. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">08:00, 5 November 2019 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2019-11-05T08:00:00.000Z"
 					}
@@ -2903,7 +2903,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Section with {{clear}} before it\nTest. —",
+						"htmlToCompare": "Section with {{clear}} before it\nTest. — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">12:00, 19 January 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-01-19T12:00:00.000Z"
 					}
@@ -2922,7 +2922,7 @@
 					{
 						"level": 0,
 						"authorName": "Example",
-						"text": "Section ending with a HTML comment\nSection text. Both on section reply and comment reply, the comment should be added above the HTML comment.",
+						"htmlToCompare": "Section ending with a HTML comment\nSection text. Both on section reply and comment reply, the comment should be added above the HTML comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> <span class=\"cd-timestamp\">20:00, 30 September 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-09-30T20:00:00.000Z"
 					}

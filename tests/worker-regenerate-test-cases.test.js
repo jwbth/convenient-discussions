@@ -106,7 +106,7 @@ describe.skipIf(!isDirectRun)('Regenerate expected test data', () => {
 						const expectedComment = {
 							level: comment.level,
 							authorName: comment.authorName,
-							text: comment.text,
+							htmlToCompare: comment.htmlToCompare,
 							followsHeading: comment.followsHeading,
 						}
 

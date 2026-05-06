@@ -78,7 +78,9 @@ describe('worker - merged test cases', () => {
 						}
 
 						// Check text (trimmed for comparison)
-						expect(actualComment.text?.trim()).toBe(expectedComment.text?.trim())
+						expect(actualComment.htmlToCompare?.trim()).toEqual(
+							expectedComment.htmlToCompare?.trim(),
+						)
 
 						// Check followsHeading
 						expect(actualComment.followsHeading).toBe(expectedComment.followsHeading)
