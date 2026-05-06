@@ -814,7 +814,7 @@ class Thread extends mixIntoObject(
 					(this.rootComment === lastComment && this.rootComment.subitemList.get('replyForm')))) ||
 			undefined
 
-		return $lastSubitem?.is(':visible')
+		return isVisible($lastSubitem?.[0])
 			? Thread.findItemElement($lastSubitem[0], this.rootComment.level)
 			: endElement
 	}

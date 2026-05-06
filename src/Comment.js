@@ -3565,7 +3565,7 @@ class Comment extends mixIntoClass(
 		let $note
 		for (let t = this.collapsedThread; t; t = t.rootComment.getParent()?.collapsedThread) {
 			$note = t.$expandNote
-			if ($note?.is(':visible')) break
+			if (isVisible($note?.[0])) break
 		}
 
 		return $note

@@ -708,16 +708,23 @@ export function getVisibilityByRects(...rects) {
  * Check if elements are visible, using modern checkVisibility API when available, falling back to
  * rectangle-based and hidden="until-found" checks.
  *
- * @param {Element|Element[]} elements
+ * @param {Element | (Element | undefined)[] | undefined} elements
  * @param {HTMLElement} [rootElement]
- * @returns {boolean} `true` if all elements are visible, `false` otherwise.
+ * @returns {boolean} `true` if all elements exist and are visible, `false` otherwise.
  */
 export function isVisible(elements, rootElement) {
 	if (!Array.isArray(elements)) {
 		elements = [elements]
 	}
+	if (!elements.length) {
+		return false
+	}
 
 	return elements.every((element) => {
+		if (!element) {
+			return false
+		}
+
 		// Use modern checkVisibility API if available
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (element?.checkVisibility) {

@@ -7,7 +7,7 @@
 import controller from './controller'
 import cd from './loader/cd'
 import { isMetadataNode, sleep } from './shared/utils-general'
-import { isHiddenByUntilFound } from './utils-window'
+import { isHiddenByUntilFound, isVisible } from './utils-window'
 
 /**
  * jQuery. See {@link JQuery.fn jQuery.fn} for extensions.
@@ -62,9 +62,8 @@ export default {
 				elements.reverse()
 			}
 			for (const el of elements) {
-				const offset = /** @type {JQuery.Coordinates} */ ($(el).offset())
-				if (!(offset.top === 0 && offset.left === 0)) {
-					return offset
+				if (isVisible(el)) {
+					return /** @type {JQuery.Coordinates} */ ($(el).offset())
 				}
 			}
 		}
@@ -73,10 +72,14 @@ export default {
 		let offsetLast = findFirstVisibleElementOffset($elements, 'backward')
 		if (!offsetFirst || !offsetLast) {
 			// Find closest visible ancestor
-			const $firstVisibleAncestor = $elements.first().closest(':visible')
+			let $firstVisibleAncestor = $elements.first()
+			while ($firstVisibleAncestor.length && !isVisible($firstVisibleAncestor[0])) {
+				$firstVisibleAncestor = $firstVisibleAncestor.parent()
+			}
 			if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(controller.$root)) {
 				offsetFirst = findFirstVisibleElementOffset($firstVisibleAncestor, 'forward')
 				offsetLast = offsetFirst
+				alignment = 'top'
 				mw.notify(cd.s('error-elementhidden-container'), {
 					tag: 'cd-elementhidden-container',
 				})
