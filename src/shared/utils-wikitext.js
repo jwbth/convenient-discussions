@@ -19,7 +19,10 @@ import { decodeHtmlEntities } from './utils-general'
 export function generateTagsRegexp(tags) {
 	const tagsJoined = tags.join('|')
 
-	return new RegExp(`(<(${tagsJoined})(?: [\\w ]+(?:=[^<>]+?)?| *)>)([^]*?)(</\\2>)`, 'ig')
+	return new RegExp(
+		`(<(${tagsJoined})(?: [\\w ]+(?:=[^<>]+?)?| *?)(?:/?)>)(?:(?<=/>)|([^]*?)(</\\2>))`,
+		'ig',
+	)
 }
 
 /**
@@ -38,7 +41,7 @@ export function maskDistractingCode(code) {
 		.replace(
 			generateTagsRegexp(['nowiki', 'syntaxhighlight', 'source', 'pre']),
 			/** @type {ReplaceCallback} */ (_s, before, _tagName, content, after) =>
-				before + ' '.repeat(content.length) + after,
+				before + ' '.repeat((content || '').length) + (after || ''),
 		)
 		.replace(
 			/<!--([^]*?)-->/g,

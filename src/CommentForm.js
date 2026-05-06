@@ -1114,7 +1114,7 @@ class CommentForm extends EventEmitter {
 			let onlyInclude
 			while ((match = regexp.exec(code))) {
 				onlyInclude ??= ''
-				onlyInclude += match[3]
+				onlyInclude += match[3] || ''
 			}
 			if (onlyInclude !== undefined) {
 				code = onlyInclude
