@@ -526,7 +526,7 @@ export default function getSettingsDialogClass() {
 			this.controls.collapseThreadsLevel.input.setDisabled(
 				!threadsEnabled || !this.controls.collapseThreads.input.isSelected(),
 			)
-			this.controls.collapseMutedThreads.input.setDisabled(!threadsEnabled)
+			this.controls.collapseThreadsByMutees.input.setDisabled(!threadsEnabled)
 			this.controls.hideTimezone.input.setDisabled(
 				this.controls.timestampFormat.input.findSelectedItem()?.getData() === 'relative',
 			)

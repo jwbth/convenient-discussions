@@ -1530,8 +1530,8 @@ class Thread extends mixIntoObject(
 		if (autocollapse) {
 			this.autocollapseThreads()
 			mw.hook('convenientDiscussions.mutedUsers').add(() => {
-				if (cd.settings.get('collapseMutedThreads')) {
-					this.collapseMutedThreads()
+				if (cd.settings.get('collapseThreadsByMutees')) {
+					this.collapseThreadsByMutees()
 				}
 			})
 		}
@@ -1607,8 +1607,8 @@ class Thread extends mixIntoObject(
 			}
 		}
 
-		if (cd.settings.get('collapseMutedThreads')) {
-			this.collectMutedThreads(threads)
+		if (cd.settings.get('collapseThreadsByMutees')) {
+			this.collectThreadsByMutees(threads)
 		}
 
 		this.collapseThreads(threads)
@@ -1627,7 +1627,7 @@ class Thread extends mixIntoObject(
 	 * @param {Thread[]} threads Array to push threads into.
 	 * @private
 	 */
-	static collectMutedThreads(threads) {
+	static collectThreadsByMutees(threads) {
 		for (let i = 0; i < commentManager.getCount(); i++) {
 			const thread = /** @type {import('./Comment').default} */ (commentManager.getByIndex(i))
 				.thread
@@ -1650,10 +1650,10 @@ class Thread extends mixIntoObject(
 	 *
 	 * @private
 	 */
-	static collapseMutedThreads() {
+	static collapseThreadsByMutees() {
 		/** @type {Thread[]} */
 		const threads = []
-		this.collectMutedThreads(threads)
+		this.collectThreadsByMutees(threads)
 		this.collapseThreads(threads)
 	}
 

@@ -374,7 +374,7 @@
 	"sd-autocompletetypes-tags": "tags",
 	"sd-autopreview": "Preview the comment as I type",
 	"sd-collapsethreadslevel": "Autocollapse threads at level",
-	"sd-collapsemutedthreads": "Autocollapse threads started by muted users",
+	"sd-collapsethreadsbymutees": "Autocollapse threads started by [[$1|muted users]]",
 	"sd-counteditsasnewcomments": "Include edits to existing comments in the number of unseen comments in the navigation panel",
 	"sd-desktopnotifications": "Desktop notifications",
 	"sd-desktopnotifications-radio-all": "Notify me about replies to my comments and comments in topic I'm {{gender:$1|subscribed to}}",
