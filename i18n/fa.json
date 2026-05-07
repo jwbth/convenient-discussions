@@ -312,7 +312,6 @@
 	"msd-targetpage": "نام صفحهٔ بحث مقصد برای انتقال بحث را وارد کنید:",
 	"msd-keeplink": "نگه‌داشتن پیوندی به موقعیت جدید",
 	"msd-summaryending": "خلاصهٔ ویرایش (به خلاصهٔ استاندارد افزوده خواهد شد)",
-	"msd-error-wrongpage": "صفحهٔ اشتباه",
 	"msd-error-sourcepagedeleted": "صفحهٔ کنونی حذف شده است.",
 	"msd-error-invalidpagename": "نام صفحه نامعتبر است.",
 	"msd-error-editconflict-retry": "فقط روی «{{int:ooui-dialog-process-retry}}» کلیک کنید.",

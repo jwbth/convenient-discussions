@@ -283,7 +283,6 @@
 	"msd-targetpage": "Konuyu taşımak için tartışma sayfasının adını girin:",
 	"msd-keeplink": "Yeni konumun bağlantısını saklayın",
 	"msd-summaryending": "Değişiklik özeti (standart olana eklenir)",
-	"msd-error-wrongpage": "Yanlış sayfa.",
 	"msd-error-sourcepagedeleted": "Geçerli sayfa silindi.",
 	"msd-error-invalidpagename": "Geçersiz sayfa adı.",
 	"msd-error-editconflict-retry": "Yalnızca \"{{int:ooui-dialog-process-retry}}\" düğmesine tıklayın.",

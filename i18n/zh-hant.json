@@ -371,7 +371,6 @@
 	"msd-targetpage": "輸入將話題移至的討論頁面名稱：",
 	"msd-keeplink": "保留指向新位置的連結",
 	"msd-summaryending": "編輯摘要（會添加在標準摘要）",
-	"msd-error-wrongpage": "錯誤頁面。",
 	"msd-error-sourcepagedeleted": "目前的頁面已被刪除。",
 	"msd-error-invalidpagename": "無效頁面名稱。",
 	"msd-error-editconflict-retry": "點擊「{{int:ooui-dialog-process-retry}}」。",

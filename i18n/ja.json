@@ -376,7 +376,6 @@
 	"msd-targetpage": "話題の移動先ページ名を入力:",
 	"msd-keeplink": "移動元に移動先へのリンクを残す",
 	"msd-summaryending": "編集の要約 (標準の要約に追加)",
-	"msd-error-wrongpage": "ページに誤りがあります。",
 	"msd-error-sourcepagedeleted": "閲覧中のページが削除されています。",
 	"msd-error-invalidpagename": "無効なページ名です。",
 	"msd-error-editconflict-retry": "「{{int:ooui-dialog-process-retry}}」をクリックしてください。",

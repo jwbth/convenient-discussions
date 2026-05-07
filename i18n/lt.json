@@ -352,7 +352,6 @@
 	"msd-targetpage": "Įveskite diskusijos puslapio pavadinimą, į kurį norite perkelti temą:",
 	"msd-keeplink": "Išsaugoti nuorodą į naują vietą",
 	"msd-summaryending": "Keitimo suvestinė (bus pridėta prie standartinės)",
-	"msd-error-wrongpage": "Neteisingas puslapis.",
 	"msd-error-sourcepagedeleted": "Dabartinis puslapis buvo ištrintas.",
 	"msd-error-invalidpagename": "Neteisingas puslapio pavadinimas.",
 	"msd-error-editconflict-retry": "Tiesiog paspauskite „{{int:ooui-dialog-process-retry}}“.",

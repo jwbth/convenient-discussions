@@ -186,7 +186,6 @@
 	"sd-watchsectiononreply": "Tilaa keskustelut, joihin {{gender:$1|olen osallistunut}}",
 	"msd-title": "Siirrä ketju",
 	"msd-targetpage": "Anna keskustelusivun nimi jolle haluat siirtää ketjun:",
-	"msd-summaryending-archive": "arkistoidaan",
 	"msd-error-invalidpagename": "Virheellinen sivun nimi.",
 	"msd-error-editconflict-retry": "Napsauta vain \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Kohdesivua ei voitu muokata.",

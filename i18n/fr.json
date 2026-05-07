@@ -382,8 +382,6 @@
 	"msd-targetpage": "Saisissez le nom de la page de discussion vers laquelle déplacer le sujet :",
 	"msd-keeplink": "Conserver sur la page un lien vers le nouvel emplacement.",
 	"msd-summaryending": "Résumé des modifications (sera ajouté au résumé standard) :",
-	"msd-summaryending-unarchive": "désarchivage",
-	"msd-error-wrongpage": "Mauvaise page.",
 	"msd-error-sourcepagedeleted": "La page actuelle a été supprimée.",
 	"msd-error-invalidpagename": "Nom de page non valide.",
 	"msd-error-editconflict-retry": "Cliquez simplement sur « {{int:ooui-dialog-process-retry}} ».",
