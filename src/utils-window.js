@@ -963,7 +963,7 @@ export function cleanUpPasteDom(element, containerElement) {
 	})
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map(
+	const syntaxHighlightLanguages = [...element.querySelectorAll('pre, .mw-highlight')].map(
 		(el) =>
 			((el.tagName === 'PRE' ? /** @type {HTMLElement} */ (el.parentElement) : el).className.match(
 				'mw-highlight-lang-([0-9a-z_-]+)',
