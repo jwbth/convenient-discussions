@@ -639,7 +639,8 @@ export function isInputFocused() {
 	const $active = $(document.activeElement)
 
 	return Boolean(
-		$active.is(':input') || ('isContentEditable' in $active[0] && $active[0].isContentEditable),
+		$active.is(':input, [role="textbox"]') ||
+		('isContentEditable' in $active[0] && $active[0].isContentEditable),
 	)
 }
 

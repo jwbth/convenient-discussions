@@ -225,6 +225,15 @@
 	.group-panels.group-panels {
 		border-inline-end: none;
 	}
+
+	// Duplicate style for .oo-ui-textInputWidget.oo-ui-widget-disabled
+	.oo-ui-textInputWidget.oo-ui-widget-disabled .cm-content {
+		background-color: var(--background-color-disabled-subtle, #eaecf0);
+		-webkit-text-fill-color: var(--color-disabled, #72777d);
+		color: var(--color-disabled, #72777d);
+		text-shadow: 0 1px 1px var(--color-inverted, #fff);
+		border-color: var(--border-color-disabled, #c8ccd1);
+	}
 }
 
 body:not(.skin-monobook) .cd-commentForm {
