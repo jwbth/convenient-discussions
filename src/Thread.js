@@ -120,8 +120,8 @@ class Thread extends mixIntoObject(
 	collapsedRange
 
 	/**
-	 * Whether the thread should have been autocollapsed, but haven't been because the user
-	 * expanded it manually in previous sessions.
+	 * Whether the thread should have been autocollapsed, but haven't been because the user expanded
+	 * it manually in previous sessions.
 	 *
 	 * @type {boolean}
 	 * @private
@@ -129,8 +129,8 @@ class Thread extends mixIntoObject(
 	wasManuallyExpanded = false
 
 	/**
-	 * Should the thread be automatically collapsed on page load if taking only comment
-	 * level into account and not remembering the user's previous actions.
+	 * Should the thread be automatically collapsed on page load if taking only comment level into
+	 * account and not remembering the user's previous actions.
 	 *
 	 * @type {boolean}
 	 * @private
@@ -654,8 +654,8 @@ class Thread extends mixIntoObject(
 	}
 
 	/**
-	 * Should the thread be automatically collapsed on page load if taking only comment
-	 * level into account and not remembering the user's previous actions.
+	 * Should the thread be automatically collapsed on page load if taking only comment level into
+	 * account and not remembering the user's previous actions.
 	 *
 	 * @returns {boolean}
 	 */
@@ -815,7 +815,7 @@ class Thread extends mixIntoObject(
 			undefined
 
 		return isVisible($lastSubitem?.[0])
-			? Thread.findItemElement($lastSubitem[0], this.rootComment.level)
+			? Thread.findItemElement(/** @type {JQuery} */ ($lastSubitem)[0], this.rootComment.level)
 			: endElement
 	}
 
@@ -1529,6 +1529,11 @@ class Thread extends mixIntoObject(
 
 		if (autocollapse) {
 			this.autocollapseThreads()
+			mw.hook('convenientDiscussions.mutedUsers').add(() => {
+				if (cd.settings.get('collapseMutedThreads')) {
+					this.collapseMutedThreads()
+				}
+			})
 		}
 		this.isInited = true
 		this.emit('init')
@@ -1586,8 +1591,8 @@ class Thread extends mixIntoObject(
 			if (!thread) continue
 
 			if (thread.rootComment.level >= /** @type {number} */ (this.collapseThreadsLevel)) {
-				// Exclude threads where the user participates at any level up and down the tree or that
-				// the user has specifically expanded.
+				// Exclude threads where the user participates at any level up and down the tree or that the
+				// user has specifically expanded.
 				if (
 					![...thread.rootComment.getAncestors(), ...thread.comments].some((c) => c.hasFlag('own'))
 				) {
@@ -1602,6 +1607,63 @@ class Thread extends mixIntoObject(
 			}
 		}
 
+		if (cd.settings.get('collapseMutedThreads')) {
+			this.collectMutedThreads(threads)
+		}
+
+		this.collapseThreads(threads)
+
+		if (cd.utils.isCurrentRevision() && collapsedThreads) {
+			collapsedThreadsStorageItem.setWithTime(mw.config.get('wgArticleId'), collapsedThreads).save()
+		}
+	}
+
+	/**
+	 * Collect threads started by muted users that should be collapsed, pushing them into the provided
+	 * array. Iterates all threads at every level (not just top-level). Checks for own comments among
+	 * descendants only, so that a muted user replying to the current user still gets collapsed, but a
+	 * thread where the current user replied to a muted user does not.
+	 *
+	 * @param {Thread[]} threads Array to push threads into.
+	 * @private
+	 */
+	static collectMutedThreads(threads) {
+		for (let i = 0; i < commentManager.getCount(); i++) {
+			const thread = /** @type {import('./Comment').default} */ (commentManager.getByIndex(i))
+				.thread
+			if (!thread) continue
+
+			if (thread.rootComment.author.isMuted() && !thread.comments.some((c) => c.hasFlag('own'))) {
+				thread.setAutocollapseTarget(true)
+
+				if (!thread.wasManuallyExpanded && !thread.isCollapsed() && !threads.includes(thread)) {
+					threads.push(thread)
+				}
+			}
+		}
+	}
+
+	/**
+	 * Collapse threads started by muted users. Called when the `convenientDiscussions.mutedUsers`
+	 * hook fires and the muted state has become available after `autocollapseThreads()` has already
+	 * run.
+	 *
+	 * @private
+	 */
+	static collapseMutedThreads() {
+		/** @type {Thread[]} */
+		const threads = []
+		this.collectMutedThreads(threads)
+		this.collapseThreads(threads)
+	}
+
+	/**
+	 * Load user genders if needed, then sort and collapse the provided threads.
+	 *
+	 * @param {Thread[]} threads
+	 * @private
+	 */
+	static collapseThreads(threads) {
 		const loadUserGendersPromise = cd.g.genderAffectsUserString
 			? loadUserGenders(threads.flatMap((thread) => thread.getUsers()))
 			: undefined
@@ -1613,10 +1675,6 @@ class Thread extends mixIntoObject(
 				thread.collapse(true, undefined, loadUserGendersPromise)
 			})
 		this.emit('toggle')
-
-		if (cd.utils.isCurrentRevision() && collapsedThreads) {
-			collapsedThreadsStorageItem.setWithTime(mw.config.get('wgArticleId'), collapsedThreads).save()
-		}
 	}
 
 	/**

@@ -24,6 +24,7 @@ import { wrapHtml } from './utils-window'
  * @property {import('./AutocompleteFactory').AutocompleteType[]} autocompleteTypes
  * @property {boolean} autopreview
  * @property {boolean} collapseThreads
+ * @property {boolean} collapseMutedThreads
  * @property {number} collapseThreadsLevel
  * @property {boolean} countEditsAsNewComments
  * @property {'all'|'toMe'|'none'|'unknown'} desktopNotifications
@@ -215,6 +216,7 @@ class Settings extends EventEmitter {
 			autocompleteTypes: 'multicheckbox',
 			collapseThreads: 'checkbox',
 			collapseThreadsLevel: 'number',
+			collapseMutedThreads: 'checkbox',
 			countEditsAsNewComments: 'checkbox',
 			desktopNotifications: 'radio',
 			enableThreads: 'checkbox',
@@ -276,6 +278,7 @@ class Settings extends EventEmitter {
 			'autopreview': true,
 			'collapseThreads': true,
 			'collapseThreadsLevel': 5,
+			'collapseMutedThreads': true,
 			'commentDisplay': cd.user.isRegistered() ? null : 'spacious',
 			'countEditsAsNewComments': false,
 			'desktopNotifications': 'unknown',
@@ -395,6 +398,12 @@ class Settings extends EventEmitter {
 						min: 0,
 						max: 999,
 						classes: ['cd-setting--indented-twice', 'cd-setting-collapseThreadsLevel'],
+					},
+					{
+						name: 'collapseMutedThreads',
+						type: this.scheme.controlTypes.collapseMutedThreads,
+						label: cd.s('sd-collapsemutedthreads'),
+						classes: ['cd-setting--indented'],
 					},
 					{
 						name: 'modifyToc',

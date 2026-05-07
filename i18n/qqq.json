@@ -353,6 +353,7 @@
 	"sd-autocompletetypes-tags": "Label of the checkbox in the settings dialog. \"Tags\" are HTML tags (typing \"<\" could trigger a tag list to appear).\n\nThis message may require accusative case depending on the content of the {{msg-wm|Convenient-discussions-sd-autocompletetypes}} message that prefixes the set of checkboxes.",
 	"sd-autopreview": "Label of the checkbox in the settings dialog.",
 	"sd-collapsethreadslevel": "The number input follows the label (for example, \"Autocollapse threads at level... 10\"). The user is supposed to set the level of comments.\n\n----\nLabel of the number input in the settings dialog.",
+	"sd-collapsemutedthreads": "Label of the checkbox in the settings dialog. \"Muted users\" are users muted via the notification preferences (Echo's blacklist).",
 	"sd-counteditsasnewcomments": "\"Include\" here is [[wikt:imperfective aspect|imperfective]]: include each time.\n\n----\nLabel of the checkbox in the settings dialog.",
 	"sd-desktopnotifications": "Label of the radio select in the settings dialog.",
 	"sd-desktopnotifications-radio-all": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-desktopnotifications}} message in the settings dialog.\n\n* $1 (optional): [[mw:Manual:Messages API#GENDER in JavaScript|the user object]], for use with <nowiki>{{gender:}}</nowiki> (<code><nowiki>{{gender:</nowiki>$2|''male text''|''female text''|''text for unspecified''}}</code>).",
