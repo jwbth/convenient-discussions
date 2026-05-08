@@ -323,7 +323,7 @@ class TextInputWidgetMixin {
 				this.handleBacktickInput(event)
 			})
 			.on('keydown.cd', (event) => {
-				this.handleSelectionWrapping(event)
+				this.handleBacktickSelectionWrapping(event)
 			})
 			.on('autocomplete-attached.cd', (_event, data) => {
 				this.autocompleteManager = data.autocompleteManager
@@ -361,20 +361,15 @@ class TextInputWidgetMixin {
 	}
 
 	/**
-	 * Handle keydown event for selection wrapping in markup.
+	 * Handle keydown event for selection wrapping in backticks.
 	 *
 	 * @param {JQuery.TriggeredEvent} event Keydown event
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	handleSelectionWrapping(event) {
+	handleBacktickSelectionWrapping(event) {
 		if (
-			(event.key === "'" ||
-				event.key === '"' ||
-				event.key === '`' ||
-				event.key === '(' ||
-				event.key === '[' ||
-				event.key === '{') &&
+			event.key === '`' &&
 			this.supportsComplexMarkup &&
 			!event.ctrlKey &&
 			!event.altKey &&
@@ -400,52 +395,40 @@ class TextInputWidgetMixin {
 				let endTag
 				let selectLang = false
 
+				const beforeSelection = value.substring(0, selectionStart)
+				const afterSelection = value.substring(selectionEnd)
+
 				if (
-					event.key === "'" ||
-					event.key === '"' ||
-					event.key === '(' ||
-					event.key === '[' ||
-					event.key === '{'
+					beforeSelection.endsWith('<code><nowiki>') &&
+					afterSelection.startsWith('</nowiki></code>')
 				) {
-					const map = { "'": "'", '"': '"', '(': ')', '[': ']', '{': '}' }
-					startTag = event.key
-					endTag = map[event.key]
-				} else {
-					const beforeSelection = value.substring(0, selectionStart)
-					const afterSelection = value.substring(selectionEnd)
+					selectionStart -= '<code><nowiki>'.length
+					selectionEnd += '</nowiki></code>'.length
+					this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
+					startTag = '``'
+					endTag = '``'
+				} else if (
+					beforeSelection.endsWith('``') &&
+					!beforeSelection.endsWith('```') &&
+					afterSelection.startsWith('``') &&
+					!afterSelection.startsWith('```')
+				) {
+					selectionStart -= 2
+					selectionEnd += 2
+					this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
 
-					if (
-						beforeSelection.endsWith('<code><nowiki>') &&
-						afterSelection.startsWith('</nowiki></code>')
-					) {
-						selectionStart -= '<code><nowiki>'.length
-						selectionEnd += '</nowiki></code>'.length
-						this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
-						startTag = '``'
-						endTag = '``'
-					} else if (
-						beforeSelection.endsWith('``') &&
-						!beforeSelection.endsWith('```') &&
-						afterSelection.startsWith('``') &&
-						!afterSelection.startsWith('```')
-					) {
-						selectionStart -= 2
-						selectionEnd += 2
-						this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
-
-						const isBlock = selectedText.includes('\n')
-						if (isBlock) {
-							startTag = '<syntaxhighlight lang="text">\n'
-							endTag = selectedText.endsWith('\n') ? '</syntaxhighlight>' : '\n</syntaxhighlight>'
-						} else {
-							startTag = '<syntaxhighlight lang="text" inline>'
-							endTag = '</syntaxhighlight>'
-						}
-						selectLang = true
+					const isBlock = selectedText.includes('\n')
+					if (isBlock) {
+						startTag = '<syntaxhighlight lang="text">\n'
+						endTag = selectedText.endsWith('\n') ? '</syntaxhighlight>' : '\n</syntaxhighlight>'
 					} else {
-						startTag = '<code><nowiki>'
-						endTag = '</nowiki></code>'
+						startTag = '<syntaxhighlight lang="text" inline>'
+						endTag = '</syntaxhighlight>'
 					}
+					selectLang = true
+				} else {
+					startTag = '<code><nowiki>'
+					endTag = '</nowiki></code>'
 				}
 
 				this.insertContent(startTag + selectedText + endTag)
