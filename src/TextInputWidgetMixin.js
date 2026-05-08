@@ -231,11 +231,34 @@ class TextInputWidgetMixin {
 			return
 		}
 
+		// This allows for this use case:
+		// 1. Have auto-closing brackets enabled in CodeMirror preferences
+		// 2. Select text
+		// 3. Type [[
+		// 4. Select a pagename
+		// 5. Press Shift+Enter
+		//
+		// (Without auto-closing brackets, it works without this block)
+		let savedStart = start
+		if (selectedText && start !== null) {
+			const triggerBefore = this.autocompleteManager
+				?.getTriggers()
+				.sort((a, b) => b.length - a.length)
+				.find(
+					(trigger) =>
+						start >= trigger.length &&
+						element.value.substring(start - trigger.length, start) === trigger,
+				)
+			if (triggerBefore) {
+				savedStart = start - triggerBefore.length
+			}
+		}
+
 		this.autocompleteSavedSelection =
 			selectedText.length > 0
 				? {
 						selectedText,
-						start: /** @type {number} */ (start),
+						start: /** @type {number} */ (savedStart),
 						leadingSpaces,
 						trailingSpaces,
 					}
