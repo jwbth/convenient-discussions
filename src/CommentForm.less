@@ -187,9 +187,13 @@
 		border: 1px solid @border-color-var;
 	}
 
-	.cm-panels,
+	.cm-panels-top,
 	.cm-panel.cm-panel.cm-panel:last-child {
 		border-bottom: 0;
+	}
+
+	.cm-panels-bottom {
+		border-top: 0;
 	}
 
 	.cm-focused .cm-scroller {
@@ -204,6 +208,8 @@
 	.cm-gutters {
 		padding: 1px 0 5px 1px;
 		box-sizing: content-box;
+		height: stretch;
+		height: -webkit-fill-available;
 	}
 
 	.cm-focused .cm-gutters {
