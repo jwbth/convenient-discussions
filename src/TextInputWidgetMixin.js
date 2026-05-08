@@ -369,23 +369,33 @@ class TextInputWidgetMixin {
 	 */
 	handleSelectionWrapping(event) {
 		if (
-			(event.key === "'" || event.key === '`') &&
+			(event.key === "'" || event.key === '"' || event.key === '`') &&
 			this.supportsComplexMarkup &&
 			!event.ctrlKey &&
 			!event.altKey &&
 			!event.metaKey
 		) {
-			const [selectionStart, selectionEnd] = this.$input.textSelection('getCaretPosition', {
+			let [selectionStart, selectionEnd] = this.$input.textSelection('getCaretPosition', {
 				startAndEnd: true,
 			})
 			if (selectionStart !== selectionEnd) {
+				const value = this.getValue()
+				let selectedText = value.substring(selectionStart, selectionEnd)
+
+				// Exclude trailing spaces from selection
+				const trailingSpaces = selectedText.substring(selectedText.trimEnd().length)
+				if (trailingSpaces) {
+					selectionEnd -= trailingSpaces.length
+					selectedText = selectedText.substring(0, selectedText.length - trailingSpaces.length)
+					this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
+				}
+
 				event.preventDefault()
-				const selectedText = this.getValue().substring(selectionStart, selectionEnd)
 				let startTag
 				let endTag
-				if (event.key === "'") {
-					startTag = "'"
-					endTag = "'"
+				if (event.key === "'" || event.key === '"') {
+					startTag = event.key
+					endTag = event.key
 				} else {
 					startTag = '<code><nowiki>'
 					endTag = '</nowiki></code>'
