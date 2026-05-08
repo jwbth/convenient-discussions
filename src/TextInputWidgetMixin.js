@@ -41,6 +41,13 @@ class TextInputWidgetMixin {
 	autocompleteManager
 
 	/**
+	 * CodeMirror instance.
+	 *
+	 * @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>> | undefined}
+	 */
+	codeMirror
+
+	/**
 	 * @type {typeof import('./controller').default | undefined}
 	 * @private
 	 */
@@ -97,6 +104,16 @@ class TextInputWidgetMixin {
 	}
 
 	/**
+	 * Check if CodeMirror is active in the input.
+	 *
+	 * @returns {boolean}
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	isCodeMirrorActive() {
+		return Boolean(this.codeMirror?.isActive)
+	}
+
+	/**
 	 * Insert text while keeping the undo/redo functionality.
 	 *
 	 * @param {string} content
@@ -108,7 +125,7 @@ class TextInputWidgetMixin {
 		// CodeMirror implements undo/redo with its own means. Using document.execCommand causes issues
 		// in Firefox.
 		if (
-			('codeMirror' in this && this.codeMirror) ||
+			this.isCodeMirrorActive() ||
 			// eslint-disable-next-line @typescript-eslint/no-deprecated
 			!document.execCommand('insertText', false, content)
 		) {
@@ -299,11 +316,7 @@ class TextInputWidgetMixin {
 		$element
 			.on('input.cd', (event) => {
 				// We send our own CustomEvent in CodeMirror. In Firefox, we otherwise get a double event
-				if (
-					'codeMirror' in this &&
-					this.codeMirror &&
-					!(/** @type {CustomEvent} */ (event.originalEvent).detail)
-				)
+				if (this.isCodeMirrorActive() && !(/** @type {CustomEvent} */ (event.originalEvent).detail))
 					return
 
 				this.emit('manualChange', this.getValue())
@@ -996,12 +1009,8 @@ class TextInputWidgetMixin {
 		)
 
 		// For CodeMirror, we need to use its API
-		if ('codeMirror' in this && this.codeMirror) {
-			const codeMirror =
-				/** @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>>} */ (
-					this.codeMirror
-				)
-			const view = codeMirror.view
+		if (this.isCodeMirrorActive()) {
+			const view = this.codeMirror?.view
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (view) {
 				const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
@@ -1215,12 +1224,8 @@ class TextInputWidgetMixin {
 
 		// Force CodeMirror to create a history boundary (if CodeMirror is available)
 		// This ensures the paste/drop is saved as a separate undo event before we convert it
-		if ('codeMirror' in this && this.codeMirror) {
-			const codeMirror =
-				/** @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>>} */ (
-					this.codeMirror
-				)
-			const view = codeMirror.view
+		if (this.isCodeMirrorActive()) {
+			const view = this.codeMirror?.view
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (view) {
 				const currentSelection = view.state.selection.main

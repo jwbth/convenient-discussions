@@ -64,7 +64,6 @@ class MultilineTextInputWidget extends mixIntoClass(
 	 * @param {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>>} codeMirror
 	 */
 	setCodeMirror(codeMirror) {
-		/** @type {InstanceType<ReturnType<typeof import('./OoUiInputCodeMirror').default>> | undefined} */
 		this.codeMirror = codeMirror
 
 		this.updateCodeMirrorPendingClass()
