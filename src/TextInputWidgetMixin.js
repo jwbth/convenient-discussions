@@ -323,7 +323,7 @@ class TextInputWidgetMixin {
 				this.handleBacktickInput(event)
 			})
 			.on('keydown.cd', (event) => {
-				this.handleQuoteInput(event)
+				this.handleSelectionWrapping(event)
 			})
 			.on('autocomplete-attached.cd', (_event, data) => {
 				this.autocompleteManager = data.autocompleteManager
@@ -361,15 +361,15 @@ class TextInputWidgetMixin {
 	}
 
 	/**
-	 * Handle quote input for wrapping selected text in single quotes.
+	 * Handle keydown event for selection wrapping in markup.
 	 *
 	 * @param {JQuery.TriggeredEvent} event Keydown event
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	handleQuoteInput(event) {
+	handleSelectionWrapping(event) {
 		if (
-			event.key === "'" &&
+			(event.key === "'" || event.key === '`') &&
 			this.supportsComplexMarkup &&
 			!event.ctrlKey &&
 			!event.altKey &&
@@ -381,10 +381,19 @@ class TextInputWidgetMixin {
 			if (selectionStart !== selectionEnd) {
 				event.preventDefault()
 				const selectedText = this.getValue().substring(selectionStart, selectionEnd)
-				this.insertContent(`'${selectedText}'`)
+				let startTag
+				let endTag
+				if (event.key === "'") {
+					startTag = "'"
+					endTag = "'"
+				} else {
+					startTag = '<code><nowiki>'
+					endTag = '</nowiki></code>'
+				}
+				this.insertContent(startTag + selectedText + endTag)
 				this.$input.textSelection('setSelection', {
-					start: selectionStart + 1,
-					end: selectionEnd + 1,
+					start: selectionStart + startTag.length,
+					end: selectionEnd + startTag.length,
 				})
 			}
 		}
