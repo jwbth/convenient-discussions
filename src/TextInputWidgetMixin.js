@@ -393,18 +393,63 @@ class TextInputWidgetMixin {
 				event.preventDefault()
 				let startTag
 				let endTag
+				let selectLang = false
+
 				if (event.key === "'" || event.key === '"') {
 					startTag = event.key
 					endTag = event.key
 				} else {
-					startTag = '<code><nowiki>'
-					endTag = '</nowiki></code>'
+					const beforeSelection = value.substring(0, selectionStart)
+					const afterSelection = value.substring(selectionEnd)
+
+					if (
+						beforeSelection.endsWith('<code><nowiki>') &&
+						afterSelection.startsWith('</nowiki></code>')
+					) {
+						selectionStart -= '<code><nowiki>'.length
+						selectionEnd += '</nowiki></code>'.length
+						this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
+						startTag = '``'
+						endTag = '``'
+					} else if (
+						beforeSelection.endsWith('``') &&
+						!beforeSelection.endsWith('```') &&
+						afterSelection.startsWith('``') &&
+						!afterSelection.startsWith('```')
+					) {
+						selectionStart -= 2
+						selectionEnd += 2
+						this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
+
+						const isBlock = selectedText.includes('\n')
+						if (isBlock) {
+							startTag = '<syntaxhighlight lang="text">\n'
+							endTag = selectedText.endsWith('\n') ? '</syntaxhighlight>' : '\n</syntaxhighlight>'
+						} else {
+							startTag = '<syntaxhighlight lang="text" inline>'
+							endTag = '</syntaxhighlight>'
+						}
+						selectLang = true
+					} else {
+						startTag = '<code><nowiki>'
+						endTag = '</nowiki></code>'
+					}
 				}
+
 				this.insertContent(startTag + selectedText + endTag)
-				this.$input.textSelection('setSelection', {
-					start: selectionStart + startTag.length,
-					end: selectionEnd + startTag.length,
-				})
+
+				if (selectLang) {
+					const langStart = selectionStart + '<syntaxhighlight lang="'.length
+					this.$input.textSelection('setSelection', {
+						start: langStart,
+						end: langStart + 4,
+					})
+				} else {
+					this.$input.textSelection('setSelection', {
+						start: selectionStart + startTag.length,
+						end: selectionStart + startTag.length + selectedText.length,
+					})
+				}
 			}
 		}
 	}
