@@ -369,7 +369,12 @@ class TextInputWidgetMixin {
 	 */
 	handleSelectionWrapping(event) {
 		if (
-			(event.key === "'" || event.key === '"' || event.key === '`') &&
+			(event.key === "'" ||
+				event.key === '"' ||
+				event.key === '`' ||
+				event.key === '(' ||
+				event.key === '[' ||
+				event.key === '{') &&
 			this.supportsComplexMarkup &&
 			!event.ctrlKey &&
 			!event.altKey &&
@@ -395,9 +400,16 @@ class TextInputWidgetMixin {
 				let endTag
 				let selectLang = false
 
-				if (event.key === "'" || event.key === '"') {
+				if (
+					event.key === "'" ||
+					event.key === '"' ||
+					event.key === '(' ||
+					event.key === '[' ||
+					event.key === '{'
+				) {
+					const map = { "'": "'", '"': '"', '(': ')', '[': ']', '{': '}' }
 					startTag = event.key
-					endTag = event.key
+					endTag = map[event.key]
 				} else {
 					const beforeSelection = value.substring(0, selectionStart)
 					const afterSelection = value.substring(selectionEnd)
