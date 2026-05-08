@@ -479,7 +479,7 @@ class TextInputWidgetMixin {
 		const insertedText =
 			event.originalEvent instanceof CustomEvent
 				? // CodeMirror
-					event.originalEvent.detail.insertedText
+					event.originalEvent.detail?.insertedText
 				: // Native event
 					/** @type {InputEvent} */ (event.originalEvent).data
 		if (insertedText !== '`') return

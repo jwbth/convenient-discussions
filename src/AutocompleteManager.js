@@ -1,6 +1,5 @@
 import AutocompleteFactory from './AutocompleteFactory'
 import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor'
-import MultilineTextInputWidget from './MultilineTextInputWidget'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { typedEntries } from './shared/utils-general'
@@ -147,11 +146,7 @@ class AutocompleteManager {
 	 */
 	init() {
 		this.elements = this.inputs.flatMap((input) => {
-			if (
-				cd.settings.get('useNativeAutocomplete') &&
-				input instanceof MultilineTextInputWidget &&
-				input.codeMirror
-			) {
+			if (cd.settings.get('useNativeAutocomplete') && input.isCodeMirrorActive()) {
 				return []
 			}
 

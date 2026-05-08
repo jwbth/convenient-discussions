@@ -85,8 +85,10 @@ class CommentFormManager extends EventEmitter {
 				this.toggleQuoteButtonsHighlighting(false)
 			})
 
-		mw.hook('ext.CodeMirror.toggle').add((enabled, codeMirror) => {
-			this.items.find((item) => item.commentInput.codeMirror === codeMirror)?.updateEventListeners()
+		mw.hook('ext.CodeMirror.toggle').add(async (enabled, codeMirror) => {
+			await this.items
+				.find((item) => item.commentInput.codeMirror === codeMirror)
+				?.updateEventListeners()
 			if (enabled !== cd.settings.get('useCodeMirror')) {
 				cd.settings.saveSettingOnTheFly('useCodeMirror', enabled)
 			}
