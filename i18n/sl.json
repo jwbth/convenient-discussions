@@ -333,7 +333,6 @@
 	"msd-targetpage": "Vnesite ime strani za razpravo, na katero želite prestaviti temo:",
 	"msd-keeplink": "Ohranite povezavo do nove lokacije",
 	"msd-summaryending": "Povzetek urejanja (dodan bo standardnemu)",
-	"msd-error-wrongpage": "Napačna stran.",
 	"msd-error-sourcepagedeleted": "Trenutna stran je bila izbrisana.",
 	"msd-error-invalidpagename": "Neveljavno ime strani.",
 	"msd-error-editconflict-retry": "Samo kliknite »{{int:ooui-dialog-process-retry}}«.",

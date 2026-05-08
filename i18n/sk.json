@@ -319,7 +319,6 @@
 	"msd-targetpage": "Zadajte názov diskusnej stránky do ktorej chcete presunúť tému:",
 	"msd-keeplink": "Na novej lokácii podržať odkaz",
 	"msd-summaryending": "Zhrnutie úprav (bude pridané do štandardného)",
-	"msd-error-wrongpage": "Nesprávna stránka.",
 	"msd-error-sourcepagedeleted": "Aktuálna stránka bola zmazaná.",
 	"msd-error-invalidpagename": "Neplatný názov stránky.",
 	"msd-error-editconflict-retry": "Len kliknite \"{{int:ooui-dialog-process-retry}}\".",

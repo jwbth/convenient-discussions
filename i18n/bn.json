@@ -194,7 +194,6 @@
 	"msd-targetpage": "আলোচনাটি যেখানে নিতে চান সেই পাতার নাম লিখুন",
 	"msd-keeplink": "নতুন অবস্থানের একটি লিঙ্ক এই পাতায় রেখে দিন",
 	"msd-summaryending": "সম্পাদনা সারাংশ (মানকটির সাথে যোগ করা হবে)",
-	"msd-error-wrongpage": "ভুল পাতা।",
 	"msd-error-editconflict-retry": "শুধু \"{{int:ooui-dialog-process-retry}}\" ক্লিক করুন।",
 	"move-targetpagecode": "''[[$1]] থেকে আনা হয়েছে। $2''",
 	"error-loaddata": "স্ক্রিপ্টের জন্য প্রয়োজনীয় উপাত্ত লোড করা যায়নি।",

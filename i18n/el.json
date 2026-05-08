@@ -224,7 +224,6 @@
 	"sd-watchsectiononreply-help": "Αυτό επηρεάζει τις ειδοποιήσεις.",
 	"msd-title": "Μετακίνηση θέματος",
 	"msd-move": "Μετακίνηση",
-	"msd-error-wrongpage": "Λάθος σελίδα.",
 	"msd-error-sourcepagedeleted": "Η τρέχουσα σελίδα διαγράφηκε.",
 	"msd-error-invalidpagename": "Μη έγκυρο όνομα σελίδας.",
 	"msd-error-editconflict-retry": "Απλώς κάντε κλικ στο \"{{int:ooui-dialog-process-retry}}\".",

@@ -322,7 +322,6 @@
 	"msd-targetpage": "उस चर्चा पृष्ठ का नाम दें जहाँ विषय को स्थानांतरित करना है:",
 	"msd-keeplink": "नए स्थान की एक कड़ी रखें",
 	"msd-summaryending": "संपादन सारांश (मानक सारांश में जोड़ी जाएगी)",
-	"msd-error-wrongpage": "गलत पृष्ठ।",
 	"msd-error-sourcepagedeleted": "वर्तमान पृष्ठ हटा दी गई थी।",
 	"msd-error-invalidpagename": "पृष्ठ का नाम अमान्य है।",
 	"msd-error-editconflict-retry": "बस \"{{int:ooui-dialog-process-retry}}\" पर क्लिक करें।",

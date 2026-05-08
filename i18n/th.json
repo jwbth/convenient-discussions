@@ -145,7 +145,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "เพิ่มปุ่ม",
 	"msd-title": "ย้ายหัวข้อ",
 	"msd-move": "ย้าย",
-	"msd-error-wrongpage": "ผิดหน้า",
 	"move-sourcepagecode": "''ย้ายไปที่ [[$1]] $2''",
 	"move-targetpagecode": "''ย้ายจาก [[$1]] $2''",
 	"error-api": "ข้อผิดพลาดของ API: $1",

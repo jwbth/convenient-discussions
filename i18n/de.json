@@ -379,7 +379,6 @@
 	"msd-targetpage": "Gib den Namen der Diskussionsseite ein, auf die das Thema verschoben werden soll:",
 	"msd-keeplink": "Verlinken Sie den neuen Zielort",
 	"msd-summaryending": "Bearbeitungszusammenfassung (wird der Standardzusammenfassung hinzugefügt)",
-	"msd-error-wrongpage": "Falsche Seite.",
 	"msd-error-sourcepagedeleted": "Die aktuelle Seite wurde gelöscht.",
 	"msd-error-invalidpagename": "Ungültiger Seitenname",
 	"msd-error-editconflict-retry": "Klicke einfach auf „{{int:ooui-dialog-process-retry}}“.",

@@ -337,7 +337,6 @@
 	"msd-targetpage": "Introduce el nombre de una página de discusión hacia donde mover este tema.",
 	"msd-keeplink": "Conserva un enlace hacia la nueva ubicación",
 	"msd-summaryending": "Resumen de edición (se añadirá al resumen estándar)",
-	"msd-error-wrongpage": "Página incorrecta.",
 	"msd-error-sourcepagedeleted": "La página actual ha sido borrada.",
 	"msd-error-invalidpagename": "El título de la página no es válido.",
 	"msd-error-editconflict-retry": "Basta con pulsar en «{{int:ooui-dialog-process-retry}}».",

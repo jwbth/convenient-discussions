@@ -282,7 +282,6 @@
 	"msd-targetpage": "టాపిక్కును తరలించాల్సిన చర్చ పేజీ పేరు ఇవ్వండి:",
 	"msd-keeplink": "కొత్త స్థానానికి లంకెను ఉంచు",
 	"msd-summaryending": "దిద్దుబాటు సారాంశం (ప్రామాణిక సారాంశానికి దీన్ని చేరుస్తాం)",
-	"msd-error-wrongpage": "తప్పు పేజీ.",
 	"msd-error-sourcepagedeleted": "ప్రస్తుత పేజీని తొలగించారు.",
 	"msd-error-invalidpagename": "చెల్లని పేజీ పేరు.",
 	"msd-error-editconflict-retry": "\"{{int:ooui-dialog-process-retry}}\" ను నొక్కండి చాలు.",
