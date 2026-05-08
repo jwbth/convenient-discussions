@@ -309,6 +309,9 @@ class TextInputWidgetMixin {
 				this.emit('manualChange', this.getValue())
 				this.handleBacktickInput(event)
 			})
+			.on('keydown.cd', (event) => {
+				this.handleQuoteInput(event)
+			})
 			.on('autocomplete-attached.cd', (_event, data) => {
 				this.autocompleteManager = data.autocompleteManager
 				this.addSelectionChangeListener()
@@ -341,6 +344,36 @@ class TextInputWidgetMixin {
 	createTextInputPasteDropHandler() {
 		return (event) => {
 			this.handleUrlConversion(event, this.controller?.getIsShiftPressed())
+		}
+	}
+
+	/**
+	 * Handle quote input for wrapping selected text in single quotes.
+	 *
+	 * @param {JQuery.TriggeredEvent} event Keydown event
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	handleQuoteInput(event) {
+		if (
+			event.key === "'" &&
+			this.supportsComplexMarkup &&
+			!event.ctrlKey &&
+			!event.altKey &&
+			!event.metaKey
+		) {
+			const [selectionStart, selectionEnd] = this.$input.textSelection('getCaretPosition', {
+				startAndEnd: true,
+			})
+			if (selectionStart !== selectionEnd) {
+				event.preventDefault()
+				const selectedText = this.getValue().substring(selectionStart, selectionEnd)
+				this.insertContent(`'${selectedText}'`)
+				this.$input.textSelection('setSelection', {
+					start: selectionStart + 1,
+					end: selectionEnd + 1,
+				})
+			}
 		}
 	}
 
