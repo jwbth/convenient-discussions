@@ -240,7 +240,12 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			.insertContent(paramsString)
 
 			// `input.getRange().to` is the current caret index
-			.selectRange(/** @type {number} */ (input.getRange().to || 0) + firstValueIndex - 1)
+			.selectRange(
+				/** @type {number} */ (input.getRange().to || 0) -
+					paramsString.length +
+					firstValueIndex -
+					1,
+			)
 
 			.popPending()
 	}
