@@ -67,7 +67,7 @@ function processAndRemoveDtElements(elements) {
 	/** @type {HTMLSpanElement | undefined} */
 	let dtMarkupHavenElement
 	if (moveNotRemove) {
-		if (!controller.getBootProcess().isFirstRun()) {
+		if (!controller.getBootProcess().isFirstBoot()) {
 			dtMarkupHavenElement = cd.loader.$content.children('.cd-dtMarkupHaven')[0]
 		}
 		if (dtMarkupHavenElement) {
@@ -151,7 +151,7 @@ function processAndRemoveDtElements(elements) {
  */
 class BootProcess {
 	/** @type {boolean} */
-	firstRun
+	firstBoot
 
 	/** @type {Parser<Node>} */
 	parser
@@ -183,8 +183,8 @@ class BootProcess {
 	 * @fires pageReadyFirstTime
 	 */
 	async execute(isReload) {
-		this.firstRun = !isReload
-		if (this.firstRun) {
+		this.firstBoot = !isReload
+		if (this.firstBoot) {
 			cd.debug.stopTimer('load data')
 		}
 
@@ -194,7 +194,7 @@ class BootProcess {
 
 		cd.debug.startTimer('main code')
 
-		if (this.firstRun) {
+		if (this.firstBoot) {
 			// When scrollY is 0 or offsetBottom is <100, passing pre-calculated scrollData to
 			// saveRelativeScrollPosition saves at least 20ms (in my (JWBTH) Chrome on a page with 200
 			// comments) by avoiding reflow.
@@ -245,7 +245,7 @@ class BootProcess {
 			cd.debug.stopTimer('process comments')
 		}
 
-		if (this.firstRun && !cd.loader.isPageOfType('talkStrict') && !commentManager.getCount()) {
+		if (this.firstBoot && !cd.loader.isPageOfType('talkStrict') && !commentManager.getCount()) {
 			this.retractTalkPageType()
 
 			return
@@ -286,7 +286,7 @@ class BootProcess {
 		// Should be below navPanel.setup() as commentFormManager.restoreSession() indirectly calls
 		// navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
 		if (cd.page.isCommentable()) {
-			if (this.firstRun) {
+			if (this.firstBoot) {
 				cd.page.addAddTopicButton()
 			}
 			controller.connectToAddTopicButtons()
@@ -295,7 +295,7 @@ class BootProcess {
 			// (when editing a comment), it can't be restored properly, but this is relatively minor
 			// detail.
 			commentFormManager.restoreSession(
-				Boolean(this.firstRun || this.passedData.isPageReloadedExternally),
+				Boolean(this.firstBoot || this.passedData.isPageReloadedExternally),
 			)
 
 			cd.page.autoAddSection(this.hideDtNewTopicForm())
@@ -326,7 +326,7 @@ class BootProcess {
 
 			// Should be below Thread.init() as these functions may want to scroll to a comment in a
 			// collapsed thread.
-			if (this.firstRun) {
+			if (this.firstBoot) {
 				this.deactivateDtHighlight()
 				processUrlOnLoad()
 			}
@@ -338,7 +338,7 @@ class BootProcess {
 
 			pageNav.setup()
 
-			if (this.firstRun) {
+			if (this.firstBoot) {
 				controller.addEventListeners()
 			}
 
@@ -349,7 +349,7 @@ class BootProcess {
 			if (
 				cd.settings.get('commentDisplay') !== 'compact' &&
 				commentManager.getCount() &&
-				this.isFirstRun()
+				this.isFirstBoot()
 			) {
 				// Using the wikipage.content hook could theoretically disrupt code that needs to process
 				// the whole page content (#mw-content-text), if it runs later than CD which would override
@@ -358,7 +358,7 @@ class BootProcess {
 			}
 		}
 
-		if (this.firstRun) {
+		if (this.firstBoot) {
 			// Restore the initial viewport position in terms of visible elements, which is how the user
 			// sees it.
 			controller.restoreRelativeScrollPosition()
@@ -374,7 +374,7 @@ class BootProcess {
 		 */
 		mw.hook('convenientDiscussions.pageReady').fire(cd)
 
-		if (this.firstRun) {
+		if (this.firstBoot) {
 			/**
 			 * The script has processed the page for the first time since the page load. Use this hook
 			 * for operations that should run only once.
@@ -385,7 +385,7 @@ class BootProcess {
 			mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd)
 		}
 
-		if (this.firstRun && cd.page.isActive() && cd.user.isRegistered()) {
+		if (this.firstBoot && cd.page.isActive() && cd.user.isRegistered()) {
 			this.showPopups()
 		}
 
@@ -412,7 +412,7 @@ class BootProcess {
 	 * @private
 	 */
 	async init() {
-		if (this.firstRun) {
+		if (this.firstBoot) {
 			if (cd.g.isMobileClient) {
 				$(document.body).addClass('cd-mobile-client')
 			}
@@ -428,7 +428,7 @@ class BootProcess {
 
 		commentManager.setupCommentClass()
 
-		if (this.firstRun) {
+		if (this.firstBoot) {
 			initTimestampTools()
 			this.initPatterns()
 			$.fn.extend(jqueryExtensions)
@@ -438,7 +438,7 @@ class BootProcess {
 		}
 		this.initPrototypes()
 		this.subscriptions = controller.getSubscriptionsInstance()
-		if (this.firstRun) {
+		if (this.firstBoot) {
 			// The order of the subsequent calls matters because the modules depend on others in a certain
 			// way.
 
@@ -1038,8 +1038,8 @@ class BootProcess {
 	 *
 	 * @returns {boolean}
 	 */
-	isFirstRun() {
-		return this.firstRun
+	isFirstBoot() {
+		return this.firstBoot
 	}
 
 	/**

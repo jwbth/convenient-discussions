@@ -44,7 +44,7 @@ class DtSubscriptions extends Subscriptions {
 	 * @param {import('./BootProcess').default} [bootProcess]
 	 */
 	processOnTalkPage(bootProcess) {
-		if (bootProcess?.isFirstRun()) {
+		if (bootProcess?.isFirstBoot()) {
 			this.addPageSubscribeButton()
 		}
 

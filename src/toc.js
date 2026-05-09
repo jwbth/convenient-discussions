@@ -661,7 +661,7 @@ class Toc {
 					// When unrendered (in gray) comments are added. (Boot process is also not specified at
 					// those times.)
 					!bootProcess ||
-					bootProcess.isFirstRun() ||
+					bootProcess.isFirstBoot() ||
 					// When the comment or section is opened by a link from the TOC
 					bootProcess.passedData.commentIds ||
 					bootProcess.passedData.sectionId,
