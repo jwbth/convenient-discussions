@@ -384,6 +384,29 @@ class TextInputWidgetMixin {
 	}
 
 	/**
+	 * Get all selection ranges from the input element.
+	 *
+	 * @returns {Array<{from: number, to: number}>} Array of selection ranges
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	getSelectionRanges() {
+		const element = /** @type {any} */ (this.getEditableElement()[0])
+
+		// Check if CodeMirror has saved multiple selection ranges
+		if (element.cdSelectionRanges && element.cdSelectionRanges.length > 0) {
+			return element.cdSelectionRanges
+		}
+
+		// Fall back to single selection range
+		const [selectionStart, selectionEnd] = this.$input.textSelection('getCaretPosition', {
+			startAndEnd: true,
+		})
+
+		return [{ from: selectionStart, to: selectionEnd }]
+	}
+
+	/**
 	 * Handle keydown event for selection wrapping in backticks.
 	 *
 	 * @param {JQuery.TriggeredEvent} event Keydown event

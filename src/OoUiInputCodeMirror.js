@@ -37,51 +37,7 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 			this.lib = mw.loader.require('ext.CodeMirror.lib')
 			this.cdPlaceholderCompartment = new this.lib.Compartment()
 			this.cdDisabledCompartment = new this.lib.Compartment()
-			this.cdChangeExtension = this.lib.EditorView.updateListener.of((update) => {
-				// Make CodeMirror dispatch `input` events like OOUI's TextInputWidget. Also maintain `value`,
-				// `selectionStart`, and `selectionEnd` properties on the textarea (for autocomplete by
-				// Tribute).
-
-				// Only calculate if the selection actually changed to avoid layout thrashing.
-				if (update.selectionSet) {
-					const target = /** @type {any} */ (update.view.contentDOM)
-
-					// Sync the state to the DOM element properties. Third-party scripts usually check .value
-					// and selection indices.
-					target.value = update.state.doc.toString()
-					target.selectionStart = update.state.selection.main.from
-					target.selectionEnd = update.state.selection.main.to
-
-					// Set the update object on the target element for other scripts to use.
-					target.cdCodeMirrorUpdate = update
-
-					if (!target.value) {
-						// Natively it doesn't emit for some reason
-						document.dispatchEvent(new Event('selectionchange'))
-					}
-				}
-
-				// Dispatch the event from the contenteditable element.
-				if (update.docChanged) {
-					// Extract the inserted text for the input event
-					let insertedText = null
-					update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
-						// Only capture single character insertions (user typing)
-						if (toA === fromA && inserted.length === 1) {
-							insertedText = inserted.toString()
-						}
-					})
-
-					// Create an InputEvent-like object with the data property
-					const inputEvent = new CustomEvent('input', {
-						bubbles: true,
-						cancelable: true,
-						detail: { insertedText },
-					})
-
-					update.view.contentDOM.dispatchEvent(inputEvent)
-				}
-			})
+			this.cdChangeExtension = this.lib.EditorView.updateListener.of(this.onCodeMirrorUpdate)
 			this.cdContentClassExtension = this.lib.EditorView.contentAttributes.of({
 				class: 'ime-position-inside',
 			})
@@ -101,6 +57,63 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 					}
 				},
 			)
+		}
+
+		/**
+		 * Handles updates from the CodeMirror view.
+		 *
+		 * @param {import('@codemirror/view').ViewUpdate} update
+		 */
+		onCodeMirrorUpdate = (update) => {
+			// Make CodeMirror dispatch `input` events like OOUI's TextInputWidget. Also maintain `value`,
+			// `selectionStart`, and `selectionEnd` properties on the textarea (for autocomplete by
+			// Tribute).
+
+			// Only calculate if the selection actually changed to avoid layout thrashing.
+			if (update.selectionSet) {
+				const target = /** @type {any} */ (update.view.contentDOM)
+
+				// Sync the state to the DOM element properties. Third-party scripts usually check .value
+				// and selection indices.
+				target.value = update.state.doc.toString()
+				target.selectionStart = update.state.selection.main.from
+				target.selectionEnd = update.state.selection.main.to
+
+				// Set the update object on the target element for other scripts to use.
+				target.cdCodeMirrorUpdate = update
+
+				// Save all selection ranges for multi-selection wrapping
+				target.cdSelectionRanges = update.state.selection.ranges.map((range) => ({
+					from: range.from,
+					to: range.to,
+				}))
+
+				if (!target.value) {
+					// Natively it doesn't emit for some reason
+					document.dispatchEvent(new Event('selectionchange'))
+				}
+			}
+
+			// Dispatch the event from the contenteditable element.
+			if (update.docChanged) {
+				// Extract the inserted text for the input event
+				let insertedText = null
+				update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+					// Only capture single character insertions (user typing)
+					if (toA === fromA && inserted.length === 1) {
+						insertedText = inserted.toString()
+					}
+				})
+
+				// Create an InputEvent-like object with the data property
+				const inputEvent = new CustomEvent('input', {
+					bubbles: true,
+					cancelable: true,
+					detail: { insertedText },
+				})
+
+				update.view.contentDOM.dispatchEvent(inputEvent)
+			}
 		}
 
 		/**
