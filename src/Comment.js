@@ -438,7 +438,6 @@ class Comment extends mixIntoClass(
 		this.hideTimezone = cd.settings.get('hideTimezone')
 		this.timestampFormat = cd.settings.get('timestampFormat')
 		this.useUiTime = cd.settings.get('useUiTime')
-		this.countEditsAsNewComments = cd.settings.get('countEditsAsNewComments')
 
 		/**
 		 * Comment author user object.
@@ -2068,7 +2067,10 @@ class Comment extends mixIntoClass(
 			this.flashChangedOnSight()
 		}
 
-		if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
+		if (
+			cd.settings.get('countEditsAsNewComments') &&
+			(type === 'changed' || type === 'changedSince')
+		) {
 			this.seenBeforeChanged ??= this.isSeen()
 			this.setSeen(false)
 			this.manager.registerSeen()
@@ -2129,7 +2131,7 @@ class Comment extends mixIntoClass(
 		delete this.$changeNote
 
 		if (
-			this.countEditsAsNewComments &&
+			cd.settings.get('countEditsAsNewComments') &&
 			this.seen === false &&
 			this.isSeenBeforeChanged() === true
 		) {
