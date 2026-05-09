@@ -188,6 +188,7 @@ export async function showConfirmDialog(message, options = {}) {
  * @property {string[]} [classes]
  * @property {boolean} [required]
  * @property {boolean} [disabled]
+ * @property {boolean} [requiresReboot]
  */
 
 /**

@@ -364,12 +364,14 @@ class Settings extends EventEmitter {
 							},
 						],
 						classes: ['cd-setting-commentDisplay'],
+						requiresReboot: true,
 					},
 					{
 						name: 'showContribsLink',
 						type: this.scheme.controlTypes.showContribsLink,
 						label: cd.s('sd-showcontribslink'),
 						help: cd.s('sd-showcontribslink-help'),
+						requiresReboot: true,
 					},
 					{
 						name: 'confirmThanks',
@@ -380,17 +382,20 @@ class Settings extends EventEmitter {
 						name: 'allowEditOthersComments',
 						type: this.scheme.controlTypes.allowEditOthersComments,
 						label: cd.s('sd-alloweditotherscomments'),
+						requiresReboot: true,
 					},
 					{
 						name: 'enableThreads',
 						type: this.scheme.controlTypes.enableThreads,
 						label: cd.s('sd-enablethreads'),
+						requiresReboot: true,
 					},
 					{
 						name: 'collapseThreads',
 						type: this.scheme.controlTypes.collapseThreads,
 						label: cd.s('sd-collapsethreadslevel'),
 						classes: ['cd-setting--indented'],
+						requiresReboot: true,
 					},
 					{
 						name: 'collapseThreadsLevel',
@@ -398,6 +403,7 @@ class Settings extends EventEmitter {
 						min: 0,
 						max: 999,
 						classes: ['cd-setting--indented-twice', 'cd-setting-collapseThreadsLevel'],
+						requiresReboot: true,
 					},
 					{
 						name: 'collapseThreadsByMutees',
@@ -410,11 +416,13 @@ class Settings extends EventEmitter {
 							{ targetBlank: true },
 						),
 						classes: ['cd-setting--indented'],
+						requiresReboot: true,
 					},
 					{
 						name: 'modifyToc',
 						type: this.scheme.controlTypes.modifyToc,
 						label: cd.s('sd-modifytoc'),
+						requiresReboot: true,
 					},
 					{
 						name: 'useBackgroundHighlighting',
@@ -429,6 +437,7 @@ class Settings extends EventEmitter {
 						buttonStep: 5,
 						label: cd.s('sd-highlightnewinterval'),
 						help: cd.s('sd-highlightnewinterval-help'),
+						requiresReboot: true,
 					},
 					{
 						name: 'countEditsAsNewComments',
@@ -587,11 +596,13 @@ class Settings extends EventEmitter {
 							cd.sParse('sd-useuitime', 'Special:Preferences#mw-prefsection-rendering-timeoffset'),
 							{ targetBlank: true },
 						),
+						requiresReboot: true,
 					},
 					{
 						name: 'hideTimezone',
 						type: this.scheme.controlTypes.hideTimezone,
 						label: cd.s('sd-hidetimezone'),
+						requiresReboot: true,
 					},
 					{
 						name: 'timestampFormat',
@@ -620,6 +631,7 @@ class Settings extends EventEmitter {
 							},
 						],
 						help: cd.s('sd-timestampformat-help'),
+						requiresReboot: true,
 					},
 				],
 			},

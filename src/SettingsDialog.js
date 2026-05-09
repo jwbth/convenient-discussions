@@ -233,18 +233,23 @@ export default function getSettingsDialogClass() {
 
 						try {
 							const collectedSettings = this.collectSettings()
+							const requiresReboot = this.areRebootSettingsChanged(collectedSettings)
 							await cd.settings.save(collectedSettings)
 							cd.settings.set(collectedSettings)
+
+							controller.removePreventUnloadCondition('dialog')
+
+							if (requiresReboot) {
+								this.stack.setItem(this.rebootPanel)
+								this.actions.setMode('reboot')
+							} else {
+								this.close()
+							}
 						} catch (error) {
 							this.handleError(error, 'error-settings-save', true)
 
 							return
 						}
-
-						controller.removePreventUnloadCondition('dialog')
-
-						this.stack.setItem(this.rebootPanel)
-						this.actions.setMode('reboot')
 
 						this.popPending()
 					})
@@ -513,6 +518,31 @@ export default function getSettingsDialogClass() {
 					JSON.stringify(this.collectedSettings.insertButtons) !==
 					JSON.stringify(cd.settings.scheme.default.insertButtons),
 			}
+		}
+
+		/**
+		 * Check if any setting whose control requires reboot has been changed.
+		 *
+		 * @param {Partial<import('./settings').SettingsValues>} collectedSettings
+		 * @returns {boolean}
+		 * @protected
+		 */
+		areRebootSettingsChanged(collectedSettings) {
+			const loadedSettings = {
+				...cd.settings.scheme.default,
+				...this.loadedSettings,
+			}
+
+			return cd.settings.scheme.ui
+				.flatMap((pageData) => pageData.controls)
+				.some((controlData) => {
+					const name = /** @type {keyof import('./settings').SettingsValues} */ (controlData.name)
+
+					return (
+						controlData.requiresReboot &&
+						!areObjectsEqual(collectedSettings[name], loadedSettings[name])
+					)
+				})
 		}
 
 		/**
