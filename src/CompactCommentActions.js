@@ -103,6 +103,7 @@ class CompactCommentActions extends CommentActions {
 		new OO.ui.ButtonWidget({
 			label: cd.s('cm-delete'),
 			icon: 'trash',
+			flags: ['destructive'],
 			invisibleLabel: true,
 			title: cd.s('cm-delete-tooltip'),
 			framed: false,
