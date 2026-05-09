@@ -12,6 +12,16 @@ import {
 } from './utils-window'
 
 /**
+ * @typedef {object} BacktickWrapping
+ * @property {number} from Selection start, possibly expanded to include surrounding tags being toggled
+ * @property {number} to Selection end, possibly expanded to include surrounding tags being toggled
+ * @property {string} selectedText Text between the original selection boundaries, trimmed of trailing spaces
+ * @property {string} startTag
+ * @property {string} endTag
+ * @property {boolean} selectLang Whether to select the lang attribute value after wrapping
+ */
+
+/**
  * Mixin that is intended to be used on classes that extend
  * {@link OO.ui.TextInputWidget OO.ui.TextInputWidget} and adds some features we need.
  */
@@ -421,78 +431,146 @@ class TextInputWidgetMixin {
 			!event.altKey &&
 			!event.metaKey
 		) {
-			let [selectionStart, selectionEnd] = this.$input.textSelection('getCaretPosition', {
-				startAndEnd: true,
-			})
-			if (selectionStart !== selectionEnd) {
-				const value = this.getValue()
-				let selectedText = value.substring(selectionStart, selectionEnd)
+			const value = this.getValue()
+			const wrappings = /** @type {BacktickWrapping[]} */ (
+				this.getSelectionRanges()
+					.filter(({ from, to }) => from !== to)
+					.map(({ from, to }) => this.computeBacktickWrapping(value, from, to))
+					.filter((w) => w !== undefined)
+			)
 
-				// Exclude trailing spaces from selection
-				const trailingSpaces = selectedText.substring(selectedText.trimEnd().length)
-				if (trailingSpaces) {
-					selectionEnd -= trailingSpaces.length
-					selectedText = selectedText.substring(0, selectedText.length - trailingSpaces.length)
-					this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
-				}
+			if (!wrappings.length) return
 
-				event.preventDefault()
-				let startTag
-				let endTag
-				let selectLang = false
+			event.preventDefault()
 
-				const beforeSelection = value.substring(0, selectionStart)
-				const afterSelection = value.substring(selectionEnd)
-
-				if (
-					beforeSelection.endsWith('<code><nowiki>') &&
-					afterSelection.startsWith('</nowiki></code>')
-				) {
-					selectionStart -= '<code><nowiki>'.length
-					selectionEnd += '</nowiki></code>'.length
-					this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
-					startTag = '``'
-					endTag = '``'
-				} else if (
-					beforeSelection.endsWith('``') &&
-					!beforeSelection.endsWith('```') &&
-					afterSelection.startsWith('``') &&
-					!afterSelection.startsWith('```')
-				) {
-					selectionStart -= 2
-					selectionEnd += 2
-					this.$input.textSelection('setSelection', { start: selectionStart, end: selectionEnd })
-
-					const isBlock = selectedText.includes('\n')
-					if (isBlock) {
-						startTag = '<syntaxhighlight lang="text">\n'
-						endTag = selectedText.endsWith('\n') ? '</syntaxhighlight>' : '\n</syntaxhighlight>'
-					} else {
-						startTag = '<syntaxhighlight lang="text" inline>'
-						endTag = '</syntaxhighlight>'
-					}
-					selectLang = true
-				} else {
-					startTag = '<code><nowiki>'
-					endTag = '</nowiki></code>'
-				}
-
+			if (this.isCodeMirrorActive()) {
+				this.applyBacktickWrappingCodeMirror(wrappings)
+			} else {
+				const [{ from, to, selectedText, startTag, endTag, selectLang }] = wrappings
+				this.$input.textSelection('setSelection', { start: from, end: to })
 				this.insertContent(startTag + selectedText + endTag)
-
 				if (selectLang) {
-					const langStart = selectionStart + '<syntaxhighlight lang="'.length
+					const langStart = from + '<syntaxhighlight lang="'.length
 					this.$input.textSelection('setSelection', {
 						start: langStart,
 						end: langStart + 4,
 					})
 				} else {
 					this.$input.textSelection('setSelection', {
-						start: selectionStart + startTag.length,
-						end: selectionStart + startTag.length + selectedText.length,
+						start: from + startTag.length,
+						end: from + startTag.length + selectedText.length,
 					})
 				}
 			}
 		}
+	}
+
+	/**
+	 * Compute the tags to wrap around a selected range on a backtick keypress, accounting for
+	 * cycling between markup forms and expansion to include surrounding tags.
+	 *
+	 * @param {string} value Current input value
+	 * @param {number} from Selection start
+	 * @param {number} to Selection end
+	 * @returns {BacktickWrapping | undefined}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	computeBacktickWrapping(value, from, to) {
+		let selectedText = value.substring(from, to)
+
+		// Exclude trailing spaces from the selection
+		const trailingSpaceCount = selectedText.length - selectedText.trimEnd().length
+		if (trailingSpaceCount) {
+			to -= trailingSpaceCount
+			selectedText = selectedText.trimEnd()
+		}
+
+		if (!selectedText) return
+
+		const beforeSelection = value.substring(0, from)
+		const afterSelection = value.substring(to)
+
+		let startTag
+		let endTag
+		let selectLang = false
+
+		if (
+			beforeSelection.endsWith('<code><nowiki>') &&
+			afterSelection.startsWith('</nowiki></code>')
+		) {
+			from -= '<code><nowiki>'.length
+			to += '</nowiki></code>'.length
+			startTag = '``'
+			endTag = '``'
+		} else if (
+			beforeSelection.endsWith('``') &&
+			!beforeSelection.endsWith('```') &&
+			afterSelection.startsWith('``') &&
+			!afterSelection.startsWith('```')
+		) {
+			from -= 2
+			to += 2
+			const isBlock = selectedText.includes('\n')
+			if (isBlock) {
+				startTag = '<syntaxhighlight lang="text">\n'
+				endTag = selectedText.endsWith('\n') ? '</syntaxhighlight>' : '\n</syntaxhighlight>'
+			} else {
+				startTag = '<syntaxhighlight lang="text" inline>'
+				endTag = '</syntaxhighlight>'
+			}
+			selectLang = true
+		} else {
+			startTag = '<code><nowiki>'
+			endTag = '</nowiki></code>'
+		}
+
+		return { from, to, selectedText, startTag, endTag, selectLang }
+	}
+
+	/**
+	 * Apply backtick wrapping to multiple ranges via a single CodeMirror transaction.
+	 *
+	 * @param {BacktickWrapping[]} wrappings
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	applyBacktickWrappingCodeMirror(wrappings) {
+		const view = this.codeMirror?.view
+		if (!view) return
+
+		const EditorSelection = /** @type {any} */ (this.codeMirror?.lib).EditorSelection
+
+		const changes = []
+		const selectionRanges = []
+		let cumulativeOffset = 0
+
+		for (const { from, to, selectedText, startTag, endTag, selectLang } of wrappings) {
+			const insert = startTag + selectedText + endTag
+			changes.push({ from, to, insert })
+
+			const adjustedFrom = from + cumulativeOffset
+			let newFrom
+			let newTo
+			if (selectLang) {
+				newFrom = adjustedFrom + '<syntaxhighlight lang="'.length
+				newTo = newFrom + 4 // 'text'.length
+			} else {
+				newFrom = adjustedFrom + startTag.length
+				newTo = newFrom + selectedText.length
+			}
+			selectionRanges.push(EditorSelection.range(newFrom, newTo))
+
+			cumulativeOffset += insert.length - (to - from)
+		}
+
+		// Separate dispatches to force CodeMirror to create a history boundary
+		view.dispatch({
+			changes,
+		})
+		view.dispatch({
+			selection: EditorSelection.create(selectionRanges),
+		})
 	}
 
 	/**
@@ -1327,16 +1405,16 @@ class TextInputWidgetMixin {
 		// Wait for the paste/drop to complete naturally
 		await sleep()
 
-		// Force CodeMirror to create a history boundary (if CodeMirror is available)
-		// This ensures the paste/drop is saved as a separate undo event before we convert it
+		// Force CodeMirror to create a history boundary (if CodeMirror is available). This ensures the
+		// paste/drop is saved as a separate undo event before we convert it
 		if (this.isCodeMirrorActive()) {
 			const view = this.codeMirror?.view
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			if (view) {
 				const currentSelection = view.state.selection.main
 
-				// Dispatch a selection change to the same range (preserves selection for drop events)
-				// This creates a history boundary without changing the document
+				// Dispatch a selection change to the same range (preserves selection for drop events).
+				// This creates a history boundary without changing the document.
 				view.dispatch({
 					selection: { anchor: currentSelection.anchor, head: currentSelection.head },
 				})
