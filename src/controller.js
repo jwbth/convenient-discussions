@@ -266,12 +266,35 @@ class Controller extends EventEmitter {
 		// reason, the page can go into an infinite rebooting loop.
 		this.$root.addClass('cd-parse-started')
 
-		this.commentLayersOptionalBackgroundHighlightingCss ??= mw.util.addCSS(
-			CommentLayersOptionalBackgroundHighlightingCss,
-		)
-		this.commentLayersOptionalBackgroundHighlightingCss.disabled = !cd.settings.get(
-			'useBackgroundHighlighting',
-		)
+		this.setupBackgroundHighlightingCss()
+	}
+
+	/**
+	 * Set up the optional background highlighting CSS and attach a settings listener to update it.
+	 *
+	 * @private
+	 */
+	setupBackgroundHighlightingCss() {
+		if (!this.commentLayersOptionalBackgroundHighlightingCss) {
+			this.commentLayersOptionalBackgroundHighlightingCss = mw.util.addCSS(
+				CommentLayersOptionalBackgroundHighlightingCss,
+			)
+			cd.settings.on('set', this.updateBackgroundHighlightingCss)
+		}
+		this.updateBackgroundHighlightingCss()
+	}
+
+	/**
+	 * Update the background highlighting CSS based on the current setting.
+	 *
+	 * @private
+	 */
+	updateBackgroundHighlightingCss = () => {
+		if (this.commentLayersOptionalBackgroundHighlightingCss) {
+			this.commentLayersOptionalBackgroundHighlightingCss.disabled = !cd.settings.get(
+				'useBackgroundHighlighting',
+			)
+		}
 	}
 
 	/**
