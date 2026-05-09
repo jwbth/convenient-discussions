@@ -3626,42 +3626,16 @@ class CommentForm extends EventEmitter {
 	 *   link), if available. This makes sense when quoting a comment other than the one you reply to.
 	 */
 	async quote(allowEmptySelection, comment, mentionSource) {
-		let selection
-		if (isInputFocused()) {
-			const activeElement = /** @type {HTMLElement} */ (document.activeElement)
-			if (
-				activeElement instanceof HTMLInputElement ||
-				activeElement instanceof HTMLTextAreaElement
-			) {
-				const selectionStart = activeElement.selectionStart
-				if (selectionStart !== null) {
-					selection = activeElement.value.substring(
-						selectionStart,
-						/** @type {number} */ (activeElement.selectionEnd),
-					)
-				}
-			} else {
-				// `contenteditable` element
-				selection = window.getSelection().toString()
-			}
-		}
-
-		comment?.fixSelection()
-		if (!isInputFocused() || selection === undefined) {
-			selection = await this.commentInput.getWikitextFromSelection()
-		}
-		selection = selection.trim()
+		const { selection, isCommentInputSelection } = await this.getQuoteSelection(comment)
 
 		// With just "Q" pressed, empty selection doesn't count.
 		if (selection || allowEmptySelection) {
-			const range = this.commentInput.getRange()
-			let rangeStart = Math.min(range.to, range.from)
-			let rangeEnd = Math.max(range.to, range.from)
-
 			// Reset the selection if the input is not focused to prevent losing text.
-			if (!this.commentInput.isFocused() && rangeStart !== rangeEnd) {
-				this.commentInput.selectRange(range.to)
-				rangeStart = rangeEnd = range.to
+			if (!isCommentInputSelection) {
+				const range = this.commentInput.getRange()
+				if (range.from !== range.to) {
+					this.commentInput.selectRange(range.to)
+				}
 			}
 
 			const [pre, post] =
@@ -3682,17 +3656,65 @@ class CommentForm extends EventEmitter {
 						)
 					: cd.config.quoteFormatting
 
-			if (pre.includes('{{')) {
-				selection = escapePipesOutsideLinks(selection)
-			}
+			const selectionTransform = pre.includes('{{')
+				? (/** @type {string} */ selectedText) => escapePipesOutsideLinks(selectedText.trim())
+				: (/** @type {string} */ selectedText) => selectedText.trim()
 
 			this.encapsulateSelection({
 				pre,
 				peri: cd.s('cf-quote-placeholder'),
 				post,
-				selection,
+				selection: isCommentInputSelection ? undefined : selectionTransform(selection),
+				selectionTransform: isCommentInputSelection ? selectionTransform : undefined,
 				ownline: true,
 			})
+		}
+	}
+
+	/**
+	 * Get text selected for quoting, either in the comment input or elsewhere on the page.
+	 *
+	 * @param {Comment} [comment] Quoted comment.
+	 * @returns {Promise<{selection: string, isCommentInputSelection: boolean}>}
+	 * @private
+	 */
+	async getQuoteSelection(comment) {
+		let selection
+		const isCommentInputSelection = this.commentInput.isFocused()
+
+		if (isCommentInputSelection) {
+			const value = this.commentInput.getValue()
+			selection = this.commentInput
+				.getSelectionRanges()
+				.map(({ from, to }) => value.substring(Math.min(from, to), Math.max(from, to)))
+				.join('\n')
+		} else if (isInputFocused()) {
+			const activeElement = /** @type {HTMLElement} */ (document.activeElement)
+			if (
+				activeElement instanceof HTMLInputElement ||
+				activeElement instanceof HTMLTextAreaElement
+			) {
+				const selectionStart = activeElement.selectionStart
+				if (selectionStart !== null) {
+					selection = activeElement.value.substring(
+						selectionStart,
+						/** @type {number} */ (activeElement.selectionEnd),
+					)
+				}
+			} else {
+				// `contenteditable` element or any other selection on the page
+				selection = window.getSelection().toString()
+			}
+		}
+
+		comment?.fixSelection()
+		if (!isInputFocused() || selection === undefined) {
+			selection = await this.commentInput.getWikitextFromSelection()
+		}
+
+		return {
+			selection: selection.trim(),
+			isCommentInputSelection,
 		}
 	}
 
@@ -3758,6 +3780,8 @@ class CommentForm extends EventEmitter {
 	 *   `peri`, `post` instead of leaving it alone.
 	 * @param {string} [options.selection] Selected text. Use if the selection is outside of the
 	 *   input.
+	 * @param {(selection: string) => string} [options.selectionTransform] Function to modify each
+	 *   selection before wrapping.
 	 * @param {boolean} [options.ownline] Put the inserted text on a line of its own.
 	 */
 	encapsulateSelection({
@@ -3765,6 +3789,7 @@ class CommentForm extends EventEmitter {
 		peri = '',
 		post = '',
 		selection: selectionParam,
+		selectionTransform,
 		replace = false,
 		ownline = false,
 	}) {
@@ -3782,6 +3807,7 @@ class CommentForm extends EventEmitter {
 					selection = value.substring(selectionStartIndex, selectionEndIndex)
 				}
 				selection ??= ''
+				selection = selectionTransform?.(selection) ?? selection
 
 				const middleText = selection || peri
 				const leadingNewline =
