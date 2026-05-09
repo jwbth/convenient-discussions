@@ -1541,7 +1541,7 @@ class CommentForm extends EventEmitter {
 		this.builder.buildInsertButtons()
 
 		this.previewButton.toggle(!cd.settings.get('autopreview'))
-		this.viewChangesButton.toggle(cd.settings.get('autopreview'))
+		this.viewChangesButton.toggle(true)
 	}
 
 	/**
