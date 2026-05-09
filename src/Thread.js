@@ -1639,6 +1639,8 @@ class Thread extends mixIntoObject(
 				if (!thread.wasManuallyExpanded && !thread.isCollapsed() && !threads.includes(thread)) {
 					threads.push(thread)
 				}
+
+				i = thread.lastComment.index
 			}
 		}
 	}
