@@ -271,7 +271,7 @@ class BootProcess {
 
 		// Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
 		// in this section.
-		cd.debug.startTimer('final code and rendering')
+		cd.debug.startTimer('final code')
 
 		// This should be done on rendering stage (would have resulted in unnecessary reflows were it
 		// done earlier). Should be above all code that deals with highlightable elements of comments
@@ -389,11 +389,7 @@ class BootProcess {
 			this.showPopups()
 		}
 
-		// This is needed to calculate the rendering time: it won't complete until everything gets
-		// rendered.
-		controller.rootElement.getBoundingClientRect()
-
-		cd.debug.stopTimer('final code and rendering')
+		cd.debug.stopTimer('final code')
 
 		cd.debug.startTimer('wikipage.content hook handlers')
 		if (isReload) {
@@ -401,6 +397,12 @@ class BootProcess {
 		}
 		commentManager.setAuthorLinkTitles()
 		cd.debug.stopTimer('wikipage.content hook handlers')
+
+		cd.debug.startTimer('final rendering')
+		// This is needed to calculate the rendering time: it won't complete until everything gets
+		// rendered.
+		controller.rootElement.getBoundingClientRect()
+		cd.debug.stopTimer('final rendering')
 	}
 
 	/**

@@ -1879,9 +1879,12 @@ class Controller extends EventEmitter {
 		cd.debug.stopTimer('total time')
 
 		const totalTimeOnComments =
-			// @ts-ignore
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-			cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')
+			/** @type {number} */ (cd.debug.getTimerTotal('main code')) +
+			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+			/** @type {number} */ (cd.debug.getTimerTotal('final code')) +
+			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+			/** @type {number} */ (cd.debug.getTimerTotal('final rendering'))
 		const timePerComment = (totalTimeOnComments / commentManager.getCount()).toFixed(2)
 
 		cd.debug.logAndResetTimer('total time')
