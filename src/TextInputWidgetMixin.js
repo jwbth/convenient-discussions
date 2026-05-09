@@ -132,10 +132,14 @@ class TextInputWidgetMixin {
 	 */
 	insertContent(content) {
 		this.focus()
-		// CodeMirror implements undo/redo with its own means. Using document.execCommand causes issues
-		// in Firefox.
+		// CodeMirror implements undo/redo with its own means.
+		if (this.isCodeMirrorActive()) {
+			this.$input.textSelection('replaceSelection', content)
+
+			return this
+		}
+
 		if (
-			this.isCodeMirrorActive() ||
 			// eslint-disable-next-line @typescript-eslint/no-deprecated
 			!document.execCommand('insertText', false, content)
 		) {
