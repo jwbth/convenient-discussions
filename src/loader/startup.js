@@ -246,10 +246,7 @@ async function getStrings() {
 				return cd.loader.loadPreferablyFromDiskCache({
 					domain: 'commons.wikimedia.org',
 					pageName: `User:Jack who built the house/convenientDiscussions-i18n/${lang}.js`,
-
-					// Load every hour until things settle down after a release. TODO: Replace with 1 after
-					// April 30, 2026
-					ttlInDays: 0.0417,
+					ttlInDays: 1,
 				})
 			}),
 	)
