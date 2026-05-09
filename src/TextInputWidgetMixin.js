@@ -12,6 +12,21 @@ import {
 } from './utils-window'
 
 /**
+ * @typedef {object} SelectionRange
+ * @property {number} from
+ * @property {number} to
+ */
+
+/**
+ * @typedef {object} TextReplacement
+ * @property {number} from Range start to replace.
+ * @property {number} to Range end to replace.
+ * @property {string} insert Replacement text.
+ * @property {SelectionRange} [selection] Selection range in the inserted text. If omitted, the
+ *   caret is placed after the inserted text.
+ */
+
+/**
  * @typedef {object} BacktickWrapping
  * @property {number} from Selection start, possibly expanded to include surrounding tags being toggled
  * @property {number} to Selection end, possibly expanded to include surrounding tags being toggled
@@ -149,6 +164,76 @@ class TextInputWidgetMixin {
 				'TextInputWidgetMixin',
 			).insertContent.call(this, content)
 		}
+
+		return this
+	}
+
+	/**
+	 * Replace ranges with different content while keeping the resulting selections consistent.
+	 *
+	 * @param {TextReplacement[]} replacements
+	 * @returns {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	replaceSelections(replacements) {
+		this.focus()
+
+		const sortedReplacements = [...replacements].sort((a, b) => a.from - b.from)
+		if (!sortedReplacements.length) return this
+
+		if (this.isCodeMirrorActive()) {
+			const view = this.codeMirror?.view
+			const EditorSelection = /** @type {any} */ (this.codeMirror?.lib).EditorSelection
+			if (!view || !EditorSelection) return this
+
+			const changes = []
+			const selectionRanges = []
+			let cumulativeOffset = 0
+
+			for (const replacement of sortedReplacements) {
+				const { from, to, insert } = replacement
+				const selection = replacement.selection || { from: insert.length, to: insert.length }
+
+				changes.push({ from, to, insert })
+				selectionRanges.push(
+					EditorSelection.range(
+						from + cumulativeOffset + selection.from,
+						from + cumulativeOffset + selection.to,
+					),
+				)
+
+				cumulativeOffset += insert.length - (to - from)
+			}
+
+			// Separate dispatches to force CodeMirror to create a history boundary
+			view.dispatch({ changes })
+			view.dispatch({
+				selection: EditorSelection.create(selectionRanges),
+			})
+
+			return this
+		}
+
+		let cumulativeOffset = 0
+		let finalSelection
+
+		for (const replacement of sortedReplacements) {
+			const { from, to, insert } = replacement
+			const adjustedFrom = from + cumulativeOffset
+			const selection = replacement.selection || { from: insert.length, to: insert.length }
+
+			this.selectRange(adjustedFrom, to + cumulativeOffset).insertContent(insert)
+			finalSelection = {
+				from: adjustedFrom + selection.from,
+				to: adjustedFrom + selection.to,
+			}
+			cumulativeOffset += insert.length - (to - from)
+		}
+
+		this.selectRange(
+			/** @type {SelectionRange} */ (finalSelection).from,
+			/** @type {SelectionRange} */ (finalSelection).to,
+		)
 
 		return this
 	}
@@ -401,7 +486,6 @@ class TextInputWidgetMixin {
 	 * Get all selection ranges from the input element.
 	 *
 	 * @returns {Array<{from: number, to: number}>} Array of selection ranges
-	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	getSelectionRanges() {
@@ -540,41 +624,22 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	applyBacktickWrappingCodeMirror(wrappings) {
-		const view = this.codeMirror?.view
-		if (!view) return
-
-		const EditorSelection = /** @type {any} */ (this.codeMirror?.lib).EditorSelection
-
-		const changes = []
-		const selectionRanges = []
-		let cumulativeOffset = 0
-
-		for (const { from, to, selectedText, startTag, endTag, selectLang } of wrappings) {
-			const insert = startTag + selectedText + endTag
-			changes.push({ from, to, insert })
-
-			const adjustedFrom = from + cumulativeOffset
-			let newFrom
-			let newTo
-			if (selectLang) {
-				newFrom = adjustedFrom + '<syntaxhighlight lang="'.length
-				newTo = newFrom + 4 // 'text'.length
-			} else {
-				newFrom = adjustedFrom + startTag.length
-				newTo = newFrom + selectedText.length
-			}
-			selectionRanges.push(EditorSelection.range(newFrom, newTo))
-
-			cumulativeOffset += insert.length - (to - from)
-		}
-
-		// Separate dispatches to force CodeMirror to create a history boundary
-		view.dispatch({
-			changes,
-		})
-		view.dispatch({
-			selection: EditorSelection.create(selectionRanges),
-		})
+		this.replaceSelections(
+			wrappings.map(({ from, to, selectedText, startTag, endTag, selectLang }) => ({
+				from,
+				to,
+				insert: startTag + selectedText + endTag,
+				selection: selectLang
+					? {
+							from: '<syntaxhighlight lang="'.length,
+							to: '<syntaxhighlight lang="text'.length,
+						}
+					: {
+							from: startTag.length,
+							to: startTag.length + selectedText.length,
+						},
+			})),
+		)
 	}
 
 	/**

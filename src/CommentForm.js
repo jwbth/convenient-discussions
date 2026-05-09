@@ -3768,50 +3768,57 @@ class CommentForm extends EventEmitter {
 		replace = false,
 		ownline = false,
 	}) {
-		const range = this.commentInput.getRange()
-		const selectionStartIndex = Math.min(range.from, range.to)
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const selectionEndIndex = Math.max(range.from, range.to)
 		const value = this.commentInput.getValue()
+		this.commentInput.replaceSelections(
+			(selectionParam === undefined
+				? this.commentInput.getSelectionRanges()
+				: [this.commentInput.getRange()]
+			).map(({ from, to }) => {
+				const selectionStartIndex = Math.min(from, to)
+				const selectionEndIndex = Math.max(from, to)
 
-		let selection = selectionParam
-		if (selection === undefined && !replace) {
-			selection = value.substring(selectionStartIndex, selectionEndIndex)
-		}
-		selection ??= ''
+				let selection = selectionParam
+				if (selection === undefined && !replace) {
+					selection = value.substring(selectionStartIndex, selectionEndIndex)
+				}
+				selection ??= ''
 
-		const middleText = selection || peri
-		const leadingNewline =
-			ownline &&
-			!/(^|\n)$/.test(value.slice(0, selectionStartIndex)) &&
-			!middleText.startsWith('\n')
-				? '\n'
-				: ''
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const trailingNewline =
-			ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n')
-				? '\n'
-				: ''
+				const middleText = selection || peri
+				const leadingNewline =
+					ownline &&
+					!/(^|\n)$/.test(value.slice(0, selectionStartIndex)) &&
+					!middleText.startsWith('\n')
+						? '\n'
+						: ''
+				const trailingNewline =
+					ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n')
+						? '\n'
+						: ''
 
-		// Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
-		const [leadingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/^ */))
-		const [trailingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/ *$/))
+				// Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
+				const [leadingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/^ */))
+				const [trailingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/ *$/))
 
-		this.commentInput.insertContent(
-			leadingNewline +
-				leadingSpace +
-				pre +
-				middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
-				post +
-				trailingSpace +
-				trailingNewline,
+				return {
+					from: selectionStartIndex,
+					to: selectionEndIndex,
+					insert:
+						leadingNewline +
+						leadingSpace +
+						pre +
+						middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
+						post +
+						trailingSpace +
+						trailingNewline,
+					selection: selection
+						? undefined
+						: {
+								from: leadingNewline.length + leadingSpace.length + pre.length,
+								to: leadingNewline.length + leadingSpace.length + pre.length + middleText.length,
+							},
+				}
+			}),
 		)
-
-		if (!selection) {
-			const periStartIndex =
-				selectionStartIndex + leadingNewline.length + leadingSpace.length + pre.length
-			this.commentInput.selectRange(periStartIndex, periStartIndex + middleText.length)
-		}
 	}
 
 	/**
