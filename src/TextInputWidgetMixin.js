@@ -12,6 +12,15 @@ import {
 } from './utils-window'
 
 /**
+ * @typedef {object} AutocompleteSavedSelection
+ * @property {string} selectedText
+ * @property {number} start
+ * @property {string} leadingSpaces
+ * @property {string} trailingSpaces
+ * @property {number} length
+ */
+
+/**
  * @typedef {object} SelectionRange
  * @property {number} from
  * @property {number} to
@@ -53,7 +62,7 @@ class TextInputWidgetMixin {
 	/**
 	 * Text that was selected before typing an autocomplete trigger.
 	 *
-	 * @type {{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string} | undefined}
+	 * @type {{ selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string, length?: number } | { selections: AutocompleteSavedSelection[] } | undefined}
 	 * @private
 	 */
 	autocompleteSavedSelection
@@ -308,27 +317,46 @@ class TextInputWidgetMixin {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (start === undefined) return
 
-		const end = element.selectionEnd
+		const savedSelection = this.autocompleteSavedSelection
+		const ranges = [...this.getSelectionRanges()].sort((a, b) => a.from - b.from)
+		const savedSelections = ranges
+			.map((range) => this.prepareAutocompleteSavedSelection(range, element.value))
+			.filter((selection) => selection !== undefined)
 
-		const rawSelectedText =
-			start !== null && end !== null ? element.value.substring(start, end) : ''
+		if (
+			!savedSelections.length &&
+			savedSelection &&
+			this.shouldKeepAutocompleteSavedSelection(ranges, savedSelection, element.value)
+		) {
+			return
+		}
+
+		this.autocompleteSavedSelection = savedSelections.length
+			? savedSelections.length === 1
+				? savedSelections[0]
+				: { selections: savedSelections }
+			: undefined
+	}
+
+	/**
+	 * Prepare data about selected text to use after an autocomplete trigger is typed.
+	 *
+	 * @param {SelectionRange} range Selection range.
+	 * @param {string} value Input value.
+	 * @returns {AutocompleteSavedSelection | undefined}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	prepareAutocompleteSavedSelection(range, value) {
+		const start = Math.min(range.from, range.to)
+		const end = Math.max(range.from, range.to)
+		const rawSelectedText = value.substring(start, end)
 		const selectedText = rawSelectedText.trimEnd()
 		const leadingSpaces = rawSelectedText.substring(
 			0,
 			rawSelectedText.length - rawSelectedText.trimStart().length,
 		)
 		const trailingSpaces = rawSelectedText.substring(selectedText.length + leadingSpaces.length)
-
-		const savedSelection = this.autocompleteSavedSelection
-		if (
-			!selectedText &&
-			savedSelection &&
-			this.autocompleteManager
-				?.getTriggers()
-				.some((trigger) => start === savedSelection.start + trigger.length)
-		) {
-			return
-		}
 
 		// This allows for this use case:
 		// 1. Have auto-closing brackets enabled in CodeMirror preferences
@@ -339,29 +367,88 @@ class TextInputWidgetMixin {
 		//
 		// (Without auto-closing brackets, it works without this block)
 		let savedStart = start
-		if (selectedText && start !== null) {
+		if (selectedText) {
 			const triggerBefore = this.autocompleteManager
 				?.getTriggers()
 				.sort((a, b) => b.length - a.length)
 				.find(
 					(trigger) =>
-						start >= trigger.length &&
-						element.value.substring(start - trigger.length, start) === trigger,
+						start >= trigger.length && value.substring(start - trigger.length, start) === trigger,
 				)
 			if (triggerBefore) {
 				savedStart = start - triggerBefore.length
 			}
 		}
 
-		this.autocompleteSavedSelection =
-			selectedText.length > 0
-				? {
-						selectedText,
-						start: /** @type {number} */ (savedStart),
-						leadingSpaces,
-						trailingSpaces,
-					}
-				: undefined
+		if (selectedText.length > 0) {
+			return {
+				selectedText,
+				start: savedStart,
+				leadingSpaces,
+				trailingSpaces,
+				length: rawSelectedText.length,
+			}
+		}
+	}
+
+	/**
+	 * Check whether the saved selection should be retained after it has just been replaced with an
+	 * autocomplete trigger.
+	 *
+	 * @param {SelectionRange[]} ranges Current selection ranges.
+	 * @param {NonNullable<TextInputWidgetMixin['autocompleteSavedSelection']>} savedSelection Saved
+	 *   selected text.
+	 * @param {string} value Current input value.
+	 * @returns {boolean}
+	 * @private
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	shouldKeepAutocompleteSavedSelection(ranges, savedSelection, value) {
+		const savedSelections = this.getAutocompleteSavedSelections(savedSelection)
+		if (
+			ranges.length !== savedSelections.length ||
+			ranges.some((range) => range.from !== range.to)
+		) {
+			return false
+		}
+
+		return Boolean(
+			this.autocompleteManager?.getTriggers().some((trigger) => {
+				let offset = 0
+
+				return ranges.every((range, index) => {
+					const savedStart = savedSelections[index].start + offset
+					const caretPosition = savedStart + trigger.length
+					const keep =
+						range.from === caretPosition && value.substring(savedStart, caretPosition) === trigger
+
+					offset += trigger.length - savedSelections[index].length
+
+					return keep
+				})
+			}),
+		)
+	}
+
+	/**
+	 * Get saved selections as an array.
+	 *
+	 * @param {NonNullable<TextInputWidgetMixin['autocompleteSavedSelection']>} savedSelection Saved
+	 *   selected text.
+	 * @returns {AutocompleteSavedSelection[]}
+	 * @private
+	 */
+	getAutocompleteSavedSelections(savedSelection) {
+		return 'selections' in savedSelection
+			? savedSelection.selections
+			: [
+					{
+						...savedSelection,
+						length:
+							savedSelection.length ??
+							savedSelection.selectedText.length + savedSelection.trailingSpaces.length,
+					},
+				]
 	}
 
 	/**
@@ -387,8 +474,8 @@ class TextInputWidgetMixin {
 	/**
 	 * Get the text that was selected before typing an autocomplete trigger.
 	 *
-	 * @returns {{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string} | undefined} The selected text and its
-	 *   start position, or undefined if none
+	 * @returns {TextInputWidgetMixin['autocompleteSavedSelection']} The selected text and its start
+	 *   position, or undefined if none.
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	getAutocompleteSavedSelection() {

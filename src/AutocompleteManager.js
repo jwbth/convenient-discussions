@@ -254,7 +254,7 @@ class AutocompleteManager {
 	 * Get the selected text from the input widget if it should be used for autocomplete insertion.
 	 *
 	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>>} option
-	 * @returns {{selectedText: string, leadingSpaces: string, trailingSpaces: string} | undefined}
+	 * @returns {{selectedText: string, leadingSpaces: string, trailingSpaces: string, selections?: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined}
 	 */
 	getSelectedTextForInsertion(option) {
 		const autocomplete = option.original.autocomplete
@@ -263,21 +263,43 @@ class AutocompleteManager {
 			element?.cdInput && typeof element.cdInput.getAutocompleteSavedSelection === 'function'
 				? element.cdInput.getAutocompleteSavedSelection()
 				: undefined
+		const savedSelections = savedSelection
+			? this.getAutocompleteSavedSelections(savedSelection)
+			: undefined
+		const insertion = autocomplete.getInsertionFromEntry(option.original.entry)
 
 		if (
-			savedSelection &&
-			savedSelection.start === autocomplete.manager?.tribute.current.triggerPos &&
-			(!savedSelection.selectedText.includes(autocomplete.getTrigger()) ||
-				autocomplete.manager.tribute.current.collection?.allowNesting) &&
+			savedSelections?.length &&
+			(savedSelections.length > 1 ||
+				savedSelections[0].start === autocomplete.manager?.tribute.current.triggerPos) &&
+			savedSelections.every(
+				(selection) =>
+					!selection.selectedText.includes(autocomplete.getTrigger()) ||
+					autocomplete.manager.tribute.current.collection?.allowNesting,
+			) &&
 			// Self-closing tags like `<references />` don't have `end`
-			autocomplete.getInsertionFromEntry(option.original.entry).end
+			insertion.end
 		) {
+			const [firstSelection] = savedSelections
+
 			return {
-				selectedText: savedSelection.selectedText,
-				leadingSpaces: savedSelection.leadingSpaces,
-				trailingSpaces: savedSelection.trailingSpaces,
+				selectedText: firstSelection.selectedText,
+				leadingSpaces: firstSelection.leadingSpaces,
+				trailingSpaces: firstSelection.trailingSpaces,
+				selections: savedSelections.length > 1 ? savedSelections : undefined,
 			}
 		}
+	}
+
+	/**
+	 * Get saved selections as an array.
+	 *
+	 * @param {{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string} | {selections: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>}} savedSelection Saved selection data.
+	 * @returns {Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>}
+	 * @private
+	 */
+	getAutocompleteSavedSelections(savedSelection) {
+		return 'selections' in savedSelection ? savedSelection.selections : [savedSelection]
 	}
 
 	/**
@@ -302,8 +324,27 @@ class AutocompleteManager {
 			selectionData?.selectedText,
 		)
 
-		// If we have preserved spaces, wrap the insertion with them
-		if (selectionData && (selectionData.leadingSpaces || selectionData.trailingSpaces)) {
+		this.applySelectionDataToInsertion(insertion, selectionData)
+
+		return insertion
+	}
+
+	/**
+	 * Apply saved selection data to insertion data.
+	 *
+	 * @param {import('./tribute/Tribute').Insertion} insertion Insertion data.
+	 * @param {{leadingSpaces: string, trailingSpaces: string, selections?: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined} selectionData Selection data.
+	 */
+	applySelectionDataToInsertion(insertion, selectionData) {
+		if (!selectionData) return
+
+		if (selectionData.selections) {
+			insertion.autocompleteSelections = selectionData.selections
+
+			return
+		}
+
+		if (selectionData.leadingSpaces || selectionData.trailingSpaces) {
 			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 			insertion.start = selectionData.leadingSpaces + insertion.start
 			if (insertion.end) {
@@ -311,8 +352,6 @@ class AutocompleteManager {
 				insertion.end = insertion.end + selectionData.trailingSpaces
 			}
 		}
-
-		return insertion
 	}
 
 	// Static properties and methods for backward compatibility

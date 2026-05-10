@@ -110,17 +110,20 @@ class TributeRange {
 				typeof this.tribute.replaceTextSuffix == 'string' ? this.tribute.replaceTextSuffix : ' '
 			const selectionRanges = myField.cdSelectionRanges
 			if (selectionRanges?.length > 1 && myField.cdInput) {
-				const replacements = selectionRanges.map((range) =>
-					this.prepareTriggerTextReplacement(
-						range,
-						info,
-						data,
-						context,
-						originalEvent,
-						isTab,
-						myField.value,
-						textSuffix,
-					),
+				const replacements = [...selectionRanges]
+					.sort((a, b) => a.from - b.from)
+					.map((range, index) =>
+						this.prepareTriggerTextReplacement(
+							range,
+							info,
+							data,
+							context,
+							originalEvent,
+							isTab,
+							myField.value,
+							textSuffix,
+							data.autocompleteSelections?.[index],
+						),
 				)
 
 				if (replacements.every((replacement) => replacement !== undefined)) {
@@ -179,7 +182,17 @@ class TributeRange {
 		}
 	}
 
-	prepareTriggerTextReplacement(range, info, data, context, originalEvent, isTab, value, textSuffix) {
+	prepareTriggerTextReplacement(
+		range,
+		info,
+		data,
+		context,
+		originalEvent,
+		isTab,
+		value,
+		textSuffix,
+		autocompleteSelection,
+	) {
 		const triggerText = info.mentionTriggerChar + info.mentionText
 		const endPos = range.to
 		const startPos = endPos - triggerText.length
@@ -192,7 +205,14 @@ class TributeRange {
 			return
 		}
 
-		let end = data.end
+		const start = autocompleteSelection
+			? autocompleteSelection.leadingSpaces + data.start
+			: data.start
+		const content = autocompleteSelection ? autocompleteSelection.selectedText : data.content
+		let end =
+			autocompleteSelection && data.end
+				? data.end + autocompleteSelection.trailingSpaces
+				: data.end
 		let to = endPos
 
 		if (context.collection.keepAsEnd && !isTab) {
@@ -205,11 +225,11 @@ class TributeRange {
 			}
 		}
 
-		const insert = data.start + data.content + end + textSuffix
+		const insert = start + content + end + textSuffix
 		const selection =
-			!isTab && (originalEvent.shiftKey || (data.selectContent && !data.content))
+			!isTab && (originalEvent.shiftKey || (data.selectContent && !content))
 				? {
-						from: data.start.length,
+						from: start.length,
 						to: insert.length - end.length,
 					}
 				: undefined

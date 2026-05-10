@@ -161,15 +161,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 					selectionData?.selectedText,
 				)
 
-				// If we have preserved spaces, wrap the insertion with them
-				if (selectionData && (selectionData.leadingSpaces || selectionData.trailingSpaces)) {
-					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-					insertion.start = selectionData.leadingSpaces + insertion.start
-					if (insertion.end) {
-						// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-						insertion.end = insertion.end + selectionData.trailingSpaces
-					}
-				}
+				this.manager?.applySelectionDataToInsertion(insertion, selectionData)
 
 				return insertion
 			},
