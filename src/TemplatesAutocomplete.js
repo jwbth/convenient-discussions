@@ -243,8 +243,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			.selectRange(
 				/** @type {number} */ (input.getRange().to || 0) -
 					paramsString.length +
-					firstValueIndex -
-					1,
+					(firstValueIndex ? firstValueIndex - 1 : 0),
 			)
 
 			.popPending()
