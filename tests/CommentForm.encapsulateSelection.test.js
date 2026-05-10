@@ -75,9 +75,9 @@ import CommentForm from '../src/CommentForm'
 /**
  * @typedef {object} WidgetMockExtension
  * @property {Mock} getRange
+ * @property {Mock} getSelectionRanges
  * @property {Mock} getValue
- * @property {Mock} insertContent
- * @property {Mock} selectRange
+ * @property {Mock} replaceSelections
  */
 
 /**
@@ -87,9 +87,9 @@ import CommentForm from '../src/CommentForm'
 /** @type {WidgetMock} */
 const mockCommentInput = {
 	getRange: vi.fn(),
+	getSelectionRanges: vi.fn(),
 	getValue: vi.fn(),
-	insertContent: vi.fn(),
-	selectRange: vi.fn(),
+	replaceSelections: vi.fn(),
 }
 
 /**
@@ -107,7 +107,9 @@ const mockCommentInput = {
  * @param {import('../src/MultilineTextInputWidget').default | WidgetMock} commentInput
  */
 function encapsulateSelection(options, commentInput) {
-	CommentForm.prototype.encapsulateSelection.call({ commentInput }, options)
+	const commentForm = Object.create(CommentForm.prototype)
+	commentForm.commentInput = commentInput
+	commentForm.encapsulateSelection(options)
 }
 
 describe('encapsulateSelection logic', () => {
@@ -117,42 +119,70 @@ describe('encapsulateSelection logic', () => {
 
 	it('Scenario 1: No selection, no peri -> caret between pre and post', () => {
 		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 5 })
+		mockCommentInput.getSelectionRanges.mockReturnValue([{ from: 5, to: 5 }])
 		mockCommentInput.getValue.mockReturnValue('Some text.')
 
 		encapsulateSelection({ pre: '<code>', post: '</code>' }, mockCommentInput)
 
-		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('<code></code>')
-		expect(mockCommentInput.selectRange).toHaveBeenCalledWith(5 + 6, 5 + 6) // selectionStartIndex + pre.length
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 5,
+				to: 5,
+				insert: '<code></code>',
+				selection: { from: 6, to: 6 },
+			},
+		])
 	})
 
 	it('Scenario 2: No selection, with peri -> peri inserted and selected', () => {
 		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 5 })
+		mockCommentInput.getSelectionRanges.mockReturnValue([{ from: 5, to: 5 }])
 		mockCommentInput.getValue.mockReturnValue('Some text.')
 
 		encapsulateSelection({ pre: '<code>', post: '</code>', peri: 'example' }, mockCommentInput)
 
-		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('<code>example</code>')
-		expect(mockCommentInput.selectRange).toHaveBeenCalledWith(5 + 6, 5 + 6 + 7)
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 5,
+				to: 5,
+				insert: '<code>example</code>',
+				selection: { from: 6, to: 13 },
+			},
+		])
 	})
 
 	it('Scenario 3: With selection -> selection wrapped, caret after post (no selectRange call)', () => {
 		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 8 }) // selecting "tex" in "Some text."
+		mockCommentInput.getSelectionRanges.mockReturnValue([{ from: 5, to: 8 }])
 		mockCommentInput.getValue.mockReturnValue('Some text.')
 
 		encapsulateSelection({ pre: '<code>', post: '</code>', peri: 'unused' }, mockCommentInput)
 
-		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('<code>tex</code>')
-		expect(mockCommentInput.selectRange).not.toHaveBeenCalled()
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 5,
+				to: 8,
+				insert: '<code>tex</code>',
+				selection: undefined,
+			},
+		])
 	})
 
 	it('Scenario 4: Selection with spaces -> spaces moved outside', () => {
 		mockCommentInput.getRange.mockReturnValue({ from: 4, to: 9 }) // selecting " text" in "Some text."
+		mockCommentInput.getSelectionRanges.mockReturnValue([{ from: 4, to: 9 }])
 		mockCommentInput.getValue.mockReturnValue('Some text.')
 
 		encapsulateSelection({ pre: '<code>', post: '</code>' }, mockCommentInput)
 
-		expect(mockCommentInput.insertContent).toHaveBeenCalledWith(' <code>text</code>')
-		expect(mockCommentInput.selectRange).not.toHaveBeenCalled()
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 4,
+				to: 9,
+				insert: ' <code>text</code>',
+				selection: undefined,
+			},
+		])
 	})
 
 	it('Scenario 5: Provided selection param -> uses it, caret after post', () => {
@@ -164,12 +194,19 @@ describe('encapsulateSelection logic', () => {
 			mockCommentInput,
 		)
 
-		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('<code>provided</code>')
-		expect(mockCommentInput.selectRange).not.toHaveBeenCalled()
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 5,
+				to: 5,
+				insert: '<code>provided</code>',
+				selection: undefined,
+			},
+		])
 	})
 
 	it('Scenario 6: ownline: true -> adds newlines if needed', () => {
 		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 5 })
+		mockCommentInput.getSelectionRanges.mockReturnValue([{ from: 5, to: 5 }])
 		mockCommentInput.getValue.mockReturnValue('Some text.')
 
 		encapsulateSelection(
@@ -181,12 +218,19 @@ describe('encapsulateSelection logic', () => {
 		// middleText is "example", no leading newline.
 		// value.slice(5) is "text.", no leading newline.
 		// post is "</code>", no trailing newline.
-		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('\n<code>example</code>\n')
-		expect(mockCommentInput.selectRange).toHaveBeenCalledWith(5 + 1 + 6, 5 + 1 + 6 + 7)
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 5,
+				to: 5,
+				insert: '\n<code>example</code>\n',
+				selection: { from: 7, to: 14 },
+			},
+		])
 	})
 
 	it('Scenario 7: replace: true -> peri replaces selection', () => {
 		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 8 }) // selecting "tex"
+		mockCommentInput.getSelectionRanges.mockReturnValue([{ from: 5, to: 8 }])
 		mockCommentInput.getValue.mockReturnValue('Some text.')
 
 		encapsulateSelection(
@@ -194,7 +238,13 @@ describe('encapsulateSelection logic', () => {
 			mockCommentInput,
 		)
 
-		expect(mockCommentInput.insertContent).toHaveBeenCalledWith('<code>replaced</code>')
-		expect(mockCommentInput.selectRange).toHaveBeenCalledWith(5 + 6, 5 + 6 + 8)
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 5,
+				to: 8,
+				insert: '<code>replaced</code>',
+				selection: { from: 6, to: 14 },
+			},
+		])
 	})
 })
