@@ -69,8 +69,8 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 			// `selectionStart`, and `selectionEnd` properties on the textarea (for autocomplete by
 			// Tribute).
 
-			// Only calculate if the selection actually changed to avoid layout thrashing.
-			if (update.selectionSet) {
+			// `update.selectionSet` is somehow false when cutting text which causes errors, so we need both conditions
+			if (update.selectionSet || update.docChanged) {
 				const target = /** @type {any} */ (update.view.contentDOM)
 
 				// Sync the state to the DOM element properties. Third-party scripts usually check .value
