@@ -413,11 +413,10 @@ class TextInputWidgetMixin {
 
 				return ranges.every((range, index) => {
 					const savedStart = savedSelections[index].start + offset
-					const caretPosition = savedStart + trigger.length
-					const keep =
-						range.from === caretPosition && value.substring(savedStart, caretPosition) === trigger
+					const triggerText = value.substring(savedStart, range.from)
+					const keep = Boolean(triggerText) && trigger.startsWith(triggerText)
 
-					offset += trigger.length - savedSelections[index].length
+					offset += triggerText.length - savedSelections[index].length
 
 					return keep
 				})
