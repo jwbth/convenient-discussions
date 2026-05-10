@@ -239,7 +239,9 @@ class CommentSkeleton {
 
 		// Identify all comment nodes and save a path to them. The parameter is the heading element
 		// preceding the comment.
-		const precedingHeadingElement = this.followsHeading ? targets[signatureIndex - 1].element : undefined
+		const precedingHeadingElement = this.followsHeading
+			? targets[signatureIndex - 1].element
+			: undefined
 		this.collectParts(precedingHeadingElement)
 
 		// Remove parts contained by other parts.
@@ -279,9 +281,11 @@ class CommentSkeleton {
 
 		this.headingAfterFirstElement = Boolean(
 			precedingHeadingElement &&
-				this.elements[0] &&
-				(this.elements[0].compareDocumentPosition?.(precedingHeadingElement) & 4 ||
-					this.elements[0].follows?.(precedingHeadingElement)),
+			this.elements[0] &&
+			this.parser.context.follows(
+				/** @type {NodeFor<N>} */ (precedingHeadingElement),
+				/** @type {NodeFor<N>} */ (this.elements[0]),
+			),
 		)
 
 		this.updateHighlightables()
