@@ -3580,10 +3580,9 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		const value = this.commentInput.getValue()
 		const selections = this.commentInput.getSelectionRanges().map((range) => ({
 			range,
-			selection: this.getCommentInputSelection(range, value),
+			selection: this.getCommentInputSelection(range),
 		}))
 
 		if (
@@ -3753,8 +3752,7 @@ class CommentForm extends EventEmitter {
 	 * Insert markup for a comment or section link.
 	 */
 	insertCommentLink() {
-		const range = this.commentInput.getRange()
-		const selection = this.getCommentInputSelection(range)
+		const selection = this.getCommentInputSelection()
 		if (selection && (commentManager.getByAnyId(selection) || isExistentAnchor(selection, true))) {
 			// Valid ID
 
@@ -3769,12 +3767,15 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Get the selected text from the comment input for a specific range.
 	 *
-	 * @param {import('./TextInputWidgetMixin').SelectionRange} range
+	 * @param {import('./TextInputWidgetMixin').SelectionRange} [range]
 	 * @param {string} [value] Input value.
 	 * @returns {string}
 	 * @private
 	 */
-	getCommentInputSelection(range, value = this.commentInput.getValue()) {
+	getCommentInputSelection(
+		range = this.commentInput.getRange(),
+		value = this.commentInput.getValue(),
+	) {
 		return value.substring(Math.min(range.from, range.to), Math.max(range.from, range.to))
 	}
 
