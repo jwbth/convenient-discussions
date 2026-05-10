@@ -30,9 +30,7 @@ export default class User {
 	}
 
 	/**
-	 * Is the user registered (not an IP user).
-	 * {@link https://www.mediawiki.org/wiki/Help:Temporary_accounts Temporary accounts} are
-	 * considered registered users.
+	 * Is the user registered (not an IP user or a {@link https://www.mediawiki.org/wiki/Help:Temporary_accounts temporary account}).
 	 *
 	 * @returns {boolean}
 	 */
