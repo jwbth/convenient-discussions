@@ -108,6 +108,41 @@ class TributeRange {
 			}
 
 			let startPos = info.mentionPosition
+			let textSuffix =
+				typeof this.tribute.replaceTextSuffix == 'string' ? this.tribute.replaceTextSuffix : ' '
+			const selectionRanges = myField.cdSelectionRanges
+			if (selectionRanges?.length > 1 && myField.cdInput) {
+				const replacements = selectionRanges.map((range) =>
+					this.getTriggerTextReplacement(
+						range,
+						info,
+						data,
+						context,
+						originalEvent,
+						isTab,
+						myField.value,
+						textSuffix,
+					),
+				)
+
+				if (replacements.every((replacement) => replacement !== undefined)) {
+					myField.cdInput.replaceSelections(replacements)
+
+					let replaceEvent = new CustomEvent('tribute-replaced', {
+						detail: {
+							item: item,
+							instance: context,
+							context: info,
+							event: originalEvent,
+						},
+					})
+
+					context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
+					context.element.dispatchEvent(replaceEvent)
+
+					return
+				}
+			}
 
 			myField.selectionStart = startPos
 			myField.selectionEnd = endPos
@@ -125,8 +160,6 @@ class TributeRange {
 			}
 
 			let text = data.start + data.content + data.end
-			let textSuffix =
-				typeof this.tribute.replaceTextSuffix == 'string' ? this.tribute.replaceTextSuffix : ' '
 			text += textSuffix
 
 			// jwbth: Preserve the undo/redo functionality in browsers that support it.
@@ -165,6 +198,49 @@ class TributeRange {
 
 			context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
 			context.element.dispatchEvent(replaceEvent)
+		}
+	}
+
+	getTriggerTextReplacement(range, info, data, context, originalEvent, isTab, value, textSuffix) {
+		const triggerText = info.mentionTriggerChar + info.mentionText
+		const endPos = range.to
+		const startPos = endPos - triggerText.length
+
+		if (
+			range.from !== range.to ||
+			startPos < 0 ||
+			value.substring(startPos, endPos) !== triggerText
+		) {
+			return
+		}
+
+		let end = data.end
+		let to = endPos
+
+		if (context.collection.keepAsEnd && !isTab) {
+			const [keptEnd] = value.substring(endPos).match(context.collection.keepAsEnd) || []
+			if (keptEnd) {
+				to += keptEnd.length
+				if (context.collection.replaceEnd) {
+					end = keptEnd
+				}
+			}
+		}
+
+		const insert = data.start + data.content + end + textSuffix
+		const selection =
+			!isTab && (originalEvent.shiftKey || (data.selectContent && !data.content))
+				? {
+						from: data.start.length,
+						to: insert.length - end.length,
+					}
+				: undefined
+
+		return {
+			from: startPos,
+			to,
+			insert,
+			selection,
 		}
 	}
 
