@@ -3567,18 +3567,9 @@ class CommentForm extends EventEmitter {
 	 *   the addressee to the beginning of the comment input.
 	 */
 	mention(mentionAddressee) {
-		const range = this.commentInput.getRange()
-
 		if (mentionAddressee && this.parentComment) {
-			const data = MentionsAutocomplete.prototype.getInsertionFromEntry(
-				this.parentComment.author.getName(),
-			)
-			if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
-				data.content = ''
-			}
-			const altModifyTyped = /** @type {NonNullable<typeof data.altModify>} */ (data.altModify)
-			altModifyTyped.call(data)
-			const text = data.start + (data.content || '') + (data.end || '')
+			const range = this.commentInput.getRange()
+			const text = this.getMentionText(this.parentComment.author.getName(), true)
 			this.commentInput
 				.selectRange(0)
 				.insertContent(text)
@@ -3589,19 +3580,23 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		const selection = this.getCommentInputSelection(range)
+		const value = this.commentInput.getValue()
+		const selections = this.commentInput.getSelectionRanges().map((range) => ({
+			range,
+			selection: this.getCommentInputSelection(range, value),
+		}))
+
 		if (
-			selection &&
-			// Valid username
-			mw.Title.newFromText(selection) &&
-			!selection.includes('/') &&
-			selection.length <= 85
+			selections.length &&
+			selections.every(({ selection }) => this.isValidMentionSelection(selection))
 		) {
-			const data = MentionsAutocomplete.prototype.getInsertionFromEntry(selection)
-			if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
-				data.content = ''
-			}
-			this.commentInput.insertContent(data.start + data.content + data.end)
+			this.commentInput.replaceSelections(
+				selections.map(({ range, selection }) => ({
+					from: Math.min(range.from, range.to),
+					to: Math.max(range.from, range.to),
+					insert: this.getMentionText(selection),
+				})),
+			)
 
 			return
 		}
@@ -3614,6 +3609,44 @@ class CommentForm extends EventEmitter {
 		}
 
 		this.insertContentAfter(content)
+	}
+
+	/**
+	 * Check if text selected in the comment input can be converted into a user mention.
+	 *
+	 * @param {string} selection
+	 * @returns {boolean}
+	 * @private
+	 */
+	isValidMentionSelection(selection) {
+		return Boolean(
+			selection &&
+			// Valid username
+			mw.Title.newFromText(selection) &&
+			!selection.includes('/') &&
+			selection.length <= 85,
+		)
+	}
+
+	/**
+	 * Get mention wikitext for a user name.
+	 *
+	 * @param {string} userName
+	 * @param {boolean} [addColon] Add a colon after the mention.
+	 * @returns {string}
+	 * @private
+	 */
+	getMentionText(userName, addColon = false) {
+		const data = MentionsAutocomplete.prototype.getInsertionFromEntry(userName)
+		if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
+			data.content = ''
+		}
+		if (addColon) {
+			const altModifyTyped = /** @type {NonNullable<typeof data.altModify>} */ (data.altModify)
+			altModifyTyped.call(data)
+		}
+
+		return data.start + (data.content || '') + (data.end || '')
 	}
 
 	/**
@@ -3683,6 +3716,8 @@ class CommentForm extends EventEmitter {
 		const isCommentInputSelection = this.commentInput.isFocused()
 
 		if (isCommentInputSelection) {
+			// This is AI-generated, and I don't think this does anything. Do we ever need multiple
+			// selections joined by a newline?
 			selection = this.getCommentInputSelections()
 		} else if (isInputFocused()) {
 			const activeElement = /** @type {HTMLElement} */ (document.activeElement)
@@ -3766,20 +3801,20 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	insertContentAfter(content) {
-		const range = this.commentInput.getRange()
-		const rangeEnd = Math.max(range.to, range.from)
+		const value = this.commentInput.getValue()
 
-		// Prevent removal of text
-		if (range.from !== range.to) {
-			this.commentInput.selectRange(rangeEnd)
-		}
+		this.commentInput.replaceSelections(
+			this.commentInput.getSelectionRanges().map(({ from, to }) => {
+				const rangeEnd = Math.max(from, to)
 
-		// Insert a space if the preceding text doesn't end with one
-		if (rangeEnd && !/\s/.test(this.commentInput.getValue().slice(rangeEnd - 1, rangeEnd))) {
-			this.commentInput.insertContent(' ')
-		}
-
-		this.encapsulateSelection({ pre: content })
+				return {
+					from: rangeEnd,
+					to: rangeEnd,
+					insert:
+						rangeEnd && !/\s/.test(value.slice(rangeEnd - 1, rangeEnd)) ? ` ${content}` : content,
+				}
+			}),
+		)
 
 		// Trigger the autocomplete menu
 		this.commentInput.getEditableElement()[0].dispatchEvent(
