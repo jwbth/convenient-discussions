@@ -3582,7 +3582,7 @@ class CommentForm extends EventEmitter {
 
 		const selections = this.commentInput.getSelectionRanges().map((range) => ({
 			range,
-			selection: this.getCommentInputSelection(range),
+			selection: this.commentInput.getSelection(range),
 		}))
 
 		if (
@@ -3717,7 +3717,7 @@ class CommentForm extends EventEmitter {
 		if (isCommentInputSelection) {
 			// This is AI-generated, and I don't think this does anything. Do we ever need multiple
 			// selections joined by a newline?
-			selection = this.getCommentInputSelections()
+			selection = this.commentInput.getSelections()
 		} else if (isInputFocused()) {
 			const activeElement = /** @type {HTMLElement} */ (document.activeElement)
 			if (
@@ -3752,7 +3752,7 @@ class CommentForm extends EventEmitter {
 	 * Insert markup for a comment or section link.
 	 */
 	insertCommentLink() {
-		const selection = this.getCommentInputSelection()
+		const selection = this.commentInput.getSelection()
 		if (selection && (commentManager.getByAnyId(selection) || isExistentAnchor(selection, true))) {
 			// Valid ID
 
@@ -3764,35 +3764,6 @@ class CommentForm extends EventEmitter {
 		this.insertContentAfter('[[#')
 	}
 
-	/**
-	 * Get the selected text from the comment input for a specific range.
-	 *
-	 * @param {import('./TextInputWidgetMixin').SelectionRange} [range]
-	 * @param {string} [value] Input value.
-	 * @returns {string}
-	 * @private
-	 */
-	getCommentInputSelection(
-		range = this.commentInput.getRange(),
-		value = this.commentInput.getValue(),
-	) {
-		return value.substring(Math.min(range.from, range.to), Math.max(range.from, range.to))
-	}
-
-	/**
-	 * Get the selected text from the comment input for all selection ranges, joined with a newline.
-	 *
-	 * @returns {string}
-	 * @private
-	 */
-	getCommentInputSelections() {
-		const value = this.commentInput.getValue()
-
-		return this.commentInput
-			.getSelectionRanges()
-			.map((range) => this.getCommentInputSelection(range, value))
-			.join('\n')
-	}
 
 	/**
 	 * Insert some content after the caret, making sure it's separated with a space and the selected

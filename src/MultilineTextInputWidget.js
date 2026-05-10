@@ -35,6 +35,10 @@ class MultilineTextInputWidget extends mixIntoClass(
 	 * @override
 	 */
 	selectRange(start, end = start) {
+		if (!this.isCodeMirrorActive()) {
+			return super.selectRange(start, end)
+		}
+
 		this.focus()
 		this.$input.textSelection('setSelection', { start, end })
 
@@ -48,6 +52,10 @@ class MultilineTextInputWidget extends mixIntoClass(
 	 * @override
 	 */
 	getRange() {
+		if (!this.isCodeMirrorActive()) {
+			return super.getRange()
+		}
+
 		const caretPosition = this.$input.textSelection('getCaretPosition', { startAndEnd: true })
 		const start = caretPosition[0]
 		const end = caretPosition[1]

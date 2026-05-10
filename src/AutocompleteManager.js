@@ -1,10 +1,8 @@
 import AutocompleteFactory from './AutocompleteFactory'
 import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor'
 import cd from './loader/cd'
-import CdError from './shared/CdError'
 import { typedEntries } from './shared/utils-general'
 import Tribute from './tribute/Tribute'
-import { handleApiReject } from './utils-api'
 
 /**
  * @import {AutocompleteType} from './AutocompleteFactory';
@@ -315,69 +313,6 @@ class AutocompleteManager {
 		}
 
 		return insertion
-	}
-
-	/**
-	 * Get autocomplete data for a template.
-	 *
-	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<string>>} option
-	 * @param {import('./TextInputWidget').default} input
-	 * @returns {Promise<void>}
-	 */
-	async insertTemplateData(option, input) {
-		input.setDisabled(true).pushPending()
-
-		/** @type {APIResponseTemplateData} */
-		let response
-		/** @type {TemplateData | undefined} */
-		let template
-		try {
-			response = await cd
-				.getApi(AutocompleteManager.apiConfig)
-				.get({
-					action: 'templatedata',
-					titles: `Template:${option.original.label}`,
-					redirects: true,
-				})
-				.catch(handleApiReject)
-			template = Object.values(response.pages).at(0)
-			if (!template) {
-				throw new CdError('Template missing.')
-			}
-		} catch {
-			input.setDisabled(false).focus().popPending()
-
-			return
-		}
-
-		const params = template.params || {}
-
-		// Parameter names
-		const result = (template.paramOrder || Object.keys(params))
-			.filter((param) => params[param].required || params[param].suggested)
-			.reduce((paramAcc, param) => {
-				const addition =
-					template.format === 'block'
-						? `\n| ${param} = `
-						: Number.isNaN(Number(param))
-							? `|${param}=`
-							: `|`
-				firstValueIndex ||= paramAcc.length + addition.length
-
-				return paramAcc + addition
-			}, '')
-
-		let firstValueIndex = 0
-		input
-			.setDisabled(false)
-
-			// Remove leading `|` with `slice(1)`
-			.insertContent((result + (template.format === 'block' && result ? '\n' : '')).slice(1))
-
-			// `input.getRange().to` is the current caret index
-			.selectRange(/** @type {number} */ (input.getRange().to || 0) + firstValueIndex - 1)
-
-			.popPending()
 	}
 
 	// Static properties and methods for backward compatibility

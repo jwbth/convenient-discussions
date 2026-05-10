@@ -505,6 +505,35 @@ class TextInputWidgetMixin {
 	}
 
 	/**
+	 * Get the selected text from the input for a specific range.
+	 *
+	 * @param {SelectionRange} [range]
+	 * @param {string} [value] Input value.
+	 * @returns {string}
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	getSelection(range, value) {
+		range ??= this.getRange()
+		value ??= this.getValue()
+
+		return value.substring(Math.min(range.from, range.to), Math.max(range.from, range.to))
+	}
+
+	/**
+	 * Get the selected text from the input for all selection ranges, joined with a newline.
+	 *
+	 * @returns {string}
+	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
+	 */
+	getSelections() {
+		const value = this.getValue()
+
+		return this.getSelectionRanges()
+			.map((range) => this.getSelection(range, value))
+			.join('\n')
+	}
+
+	/**
 	 * Handle keydown event for selection wrapping in backticks.
 	 *
 	 * @param {JQuery.TriggeredEvent} event Keydown event
