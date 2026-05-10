@@ -795,7 +795,8 @@ class Controller extends EventEmitter {
 	 * @private
 	 */
 	handleGlobalKeyDown = (event) => {
-		if (cd.loader.isPageOverlayOn()) return
+		// CodeMirror events duplicate textarea events, so ignore them
+		if (cd.loader.isPageOverlayOn() || event.target.classList?.contains('cm-content')) return
 
 		if (event.key === 'Shift') {
 			this.isShiftPressed = true
