@@ -3589,11 +3589,17 @@ class CommentForm extends EventEmitter {
 			selections.length &&
 			selections.every(({ selection }) => this.isValidMentionSelection(selection))
 		) {
+			// TODO: wouldn't it be better to reuse this.encapsulateSelection() here? It has "native"
+			// support of handling spaces at the ends, and the task seems similar.
 			this.commentInput.replaceSelections(
 				selections.map(({ range, selection }) => ({
 					from: Math.min(range.from, range.to),
 					to: Math.max(range.from, range.to),
-					insert: this.getMentionText(selection),
+					insert: selection.replace(
+						/^(\s*)(.*?)(\s*)$/s,
+						/** @type {ReplaceCallback} */ (_s, leading, core, trailing) =>
+							leading + this.getMentionText(core) + trailing,
+					),
 				})),
 			)
 
@@ -3618,12 +3624,14 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	isValidMentionSelection(selection) {
+		const trimmed = selection.trim()
+
 		return Boolean(
-			selection &&
+			trimmed &&
 			// Valid username
-			mw.Title.newFromText(selection) &&
-			!selection.includes('/') &&
-			selection.length <= 85,
+			mw.Title.newFromText(trimmed) &&
+			!trimmed.includes('/') &&
+			trimmed.length <= 85,
 		)
 	}
 
@@ -3763,7 +3771,6 @@ class CommentForm extends EventEmitter {
 
 		this.insertContentAfter('[[#')
 	}
-
 
 	/**
 	 * Insert some content after the caret, making sure it's separated with a space and the selected
