@@ -301,7 +301,8 @@ class CommentLayers {
 		const generateProperties = (/** @type {string} */ color) => {
 			const properties = /** @type {CSSStyleDeclaration} */ ({ backgroundColor: color })
 
-			// jquery.color module can't animate to the transparent color.
+			// jquery.color module can't animate to the transparent color. TODO: jquery.color is gone, can
+			// jquery.ui, or whatever handles the animation now, do it?
 			if (properties.backgroundColor === 'rgba(0, 0, 0, 0)') {
 				properties.opacity = '0'
 			}
