@@ -574,7 +574,7 @@ class TextInputWidgetMixin {
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	getSelection(range, value) {
-		range ??= this.getRange()
+		range ??= /** @type {SelectionRange} */ (this.getRange())
 		value ??= this.getValue()
 
 		return value.substring(Math.min(range.from, range.to), Math.max(range.from, range.to))

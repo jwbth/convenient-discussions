@@ -25,6 +25,7 @@ import { wrapHtml } from './utils-window'
  * @property {boolean} autopreview
  * @property {boolean} collapseThreads
  * @property {boolean} collapseThreadsByMutees
+ * @property {boolean} collapseThreadsByMutees-onboarded
  * @property {number} collapseThreadsLevel
  * @property {boolean} countEditsAsNewComments
  * @property {'all'|'toMe'|'none'|'unknown'} desktopNotifications
@@ -183,6 +184,7 @@ class Settings extends EventEmitter {
 			'authorsSort',
 			'insertButtons-altered',
 			'improvePerformance-lastSuggested',
+			'collapseThreadsByMutees-onboarded',
 			'manyForms-onboarded',
 			'toggleChildThreads-onboarded',
 			'upload-onboarded',
@@ -279,6 +281,7 @@ class Settings extends EventEmitter {
 			'collapseThreads': true,
 			'collapseThreadsLevel': 5,
 			'collapseThreadsByMutees': true,
+			'collapseThreadsByMutees-onboarded': false,
 			'commentDisplay': cd.user.isRegistered() ? null : 'spacious',
 			'countEditsAsNewComments': false,
 			'desktopNotifications': 'unknown',
@@ -415,7 +418,7 @@ class Settings extends EventEmitter {
 							),
 							{ targetBlank: true },
 						),
-						classes: ['cd-setting--indented'],
+						classes: ['cd-setting--indented', 'cd-setting-collapseThreadsByMutees'],
 						requiresReboot: true,
 					},
 					{

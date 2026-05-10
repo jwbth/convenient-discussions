@@ -31,6 +31,8 @@
 	"thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|{{gender:$4|$3}}}})",
 	"thread-expand-tooltip": "• Alt+click: Collapse/expand all sibling threads as well\n• Alt+Shift+click: Collapse/expand all threads of this level on the page",
 	"thread-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this thread from {{plural:$2|{{gender:$4|$3}}}}. Click to refresh the page.",
+	"popup-mutees-title": "New feature",
+	"popup-mutees-text": "Threads started by users you muted are now collapsed by default. You can disable this in the <span class=\"cd-notification-settings-collapseThreadsByMutees\">[[$1|settings]]</span>.",
 
 	"sm-editopeningcomment": "Edit subject",
 	"sm-editopeningcomment-tooltip": "Edit the subject of the section",

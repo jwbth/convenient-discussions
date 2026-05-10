@@ -22,6 +22,8 @@ import {
 	getRangeContents,
 	getVisibilityByRects,
 	isVisible,
+	mergeJquery,
+	wrapHtml,
 } from './utils-window'
 
 /**
@@ -136,6 +138,22 @@ class Thread extends mixIntoObject(
 	 * @private
 	 */
 	autocollapseTarget = false
+
+	/**
+	 * Is the thread an autocollapse target because it was started by a muted user.
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	autocollapseTargetByMutee = false
+
+	/**
+	 * Popup onboarding to the "Collapse threads by mutees" feature.
+	 *
+	 * @type {OO.ui.PopupWidget | undefined}
+	 * @private
+	 */
+	collapseThreadsByMuteesPopup
 
 	/**
 	 * Create a comment thread object.
@@ -673,6 +691,16 @@ class Thread extends mixIntoObject(
 	}
 
 	/**
+	 * Set whether the thread is an autocollapse target because it was started by a muted user.
+	 *
+	 * @param {boolean} value
+	 * @private
+	 */
+	setAutocollapseTargetByMutee(value) {
+		this.autocollapseTargetByMutee = value
+	}
+
+	/**
 	 * Quit navigation mode and remove its traces.
 	 *
 	 * @private
@@ -1020,6 +1048,7 @@ class Thread extends mixIntoObject(
 		}
 
 		this.addExpandNote(loadUserGendersPromise)
+		this.maybeOnboardToCollapseThreadsByMutees()
 
 		if (!isBatchOperation) {
 			const expandNoteTyped = /** @type {JQuery} */ (this.$expandNote)
@@ -1078,6 +1107,7 @@ class Thread extends mixIntoObject(
 		this.$expandNote = undefined
 		this.expandNoteContainer?.remove()
 		this.expandNoteContainer = undefined
+		this.teardownOnboardToCollapseThreadsByMuteesPopup()
 
 		if (this.rootComment.isOpeningSection()) {
 			const editOpeningCommentItem = /** @type {OO.ui.MenuOptionWidget | undefined} */ (
@@ -1120,6 +1150,84 @@ class Thread extends mixIntoObject(
 		}
 		if (!isBatchOperation) {
 			Thread.emit('toggle')
+		}
+	}
+
+	/**
+	 * Show a popup onboarding to the "Collapse threads by mutees" feature.
+	 *
+	 * @private
+	 */
+	maybeOnboardToCollapseThreadsByMutees() {
+		if (
+			!this.autocollapseTargetByMutee ||
+			!this.expandNote ||
+			cd.settings.get('collapseThreadsByMutees-onboarded') ||
+			Thread.collapseThreadsByMuteesPopupThread
+		) {
+			return
+		}
+
+		const button = new OO.ui.ButtonWidget({
+			label: cd.s('educationpopup-dismiss'),
+			flags: ['progressive', 'primary'],
+		})
+		button.on('click', () => {
+			this.collapseThreadsByMuteesPopup?.toggle(false)
+		})
+		this.collapseThreadsByMuteesPopup = new OO.ui.PopupWidget({
+			icon: 'newspaper',
+			label: cd.s('popup-mutees-title'),
+			$content: mergeJquery(
+				wrapHtml(cd.sParse('popup-mutees-text'), {
+					callbacks: {
+						'cd-notification-settings-collapseThreadsByMutees': (_event, btn) => {
+							cd.settings.showDialogOnButtonClick(
+								btn,
+								'talkPage',
+								'.cd-setting-collapseThreadsByMutees input',
+							)
+						},
+					},
+				}),
+				$('<p>').append(button.$element),
+			),
+			head: true,
+			$floatableContainer: this.$expandNote?.find('a'),
+			$container: $(document.body),
+			position: 'below',
+			padded: true,
+			classes: ['cd-popup-onboarding'],
+		})
+		Thread.collapseThreadsByMuteesPopupThread = this
+		$(document.body).append(this.collapseThreadsByMuteesPopup.$element)
+		this.collapseThreadsByMuteesPopup.toggle(true)
+		controller.on('mutate', this.handleCollapseThreadsByMuteesPopupMutate)
+		this.collapseThreadsByMuteesPopup.on('closing', () => {
+			cd.settings.saveSettingOnTheFly('collapseThreadsByMutees-onboarded', true)
+			this.teardownOnboardToCollapseThreadsByMuteesPopup()
+		})
+		controller.once('startReboot', this.teardownOnboardToCollapseThreadsByMuteesPopup)
+	}
+
+	handleCollapseThreadsByMuteesPopupMutate = () => {
+		if (!this.collapseThreadsByMuteesPopup) return
+
+		if (isVisible(this.collapseThreadsByMuteesPopup.$floatableContainer[0])) {
+			this.collapseThreadsByMuteesPopup.position()
+		} else {
+			this.teardownOnboardToCollapseThreadsByMuteesPopup()
+		}
+	}
+
+	teardownOnboardToCollapseThreadsByMuteesPopup = () => {
+		if (!this.collapseThreadsByMuteesPopup) return
+
+		controller.off('mutate', this.handleCollapseThreadsByMuteesPopupMutate)
+		this.collapseThreadsByMuteesPopup.$element.remove()
+		this.collapseThreadsByMuteesPopup = undefined
+		if (Thread.collapseThreadsByMuteesPopupThread === this) {
+			Thread.collapseThreadsByMuteesPopupThread = undefined
 		}
 	}
 
@@ -1434,6 +1542,14 @@ class Thread extends mixIntoObject(
 	static prototypesInitted = false
 
 	/**
+	 * Thread showing a popup onboarding to the "Collapse threads by mutees" feature.
+	 *
+	 * @type {Thread | undefined}
+	 * @private
+	 */
+	static collapseThreadsByMuteesPopupThread
+
+	/**
 	 * _For internal use._ Create element prototypes to reuse them instead of creating new elements
 	 * from scratch (which is more expensive).
 	 */
@@ -1635,6 +1751,7 @@ class Thread extends mixIntoObject(
 
 			if (thread.rootComment.author.isMuted() && !thread.comments.some((c) => c.hasFlag('own'))) {
 				thread.setAutocollapseTarget(true)
+				thread.setAutocollapseTargetByMutee(true)
 
 				if (!thread.wasManuallyExpanded && !thread.isCollapsed() && !threads.includes(thread)) {
 					threads.push(thread)

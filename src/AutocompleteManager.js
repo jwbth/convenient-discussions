@@ -272,7 +272,7 @@ class AutocompleteManager {
 			savedSelections.every(
 				(selection) =>
 					!selection.selectedText.includes(autocomplete.getTrigger()) ||
-					autocomplete.manager.tribute.current.collection?.allowNesting,
+					autocomplete.manager?.tribute.current.collection?.allowNesting,
 			) &&
 			// Self-closing tags like `<references />` don't have `end`
 			insertion.end
