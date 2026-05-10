@@ -3589,7 +3589,7 @@ class CommentForm extends EventEmitter {
 			return
 		}
 
-		const selection = this.commentInput.getValue().substring(range.from, range.to)
+		const selection = this.getCommentInputSelection(range)
 		if (
 			selection &&
 			// Valid username
@@ -3683,11 +3683,7 @@ class CommentForm extends EventEmitter {
 		const isCommentInputSelection = this.commentInput.isFocused()
 
 		if (isCommentInputSelection) {
-			const value = this.commentInput.getValue()
-			selection = this.commentInput
-				.getSelectionRanges()
-				.map(({ from, to }) => value.substring(Math.min(from, to), Math.max(from, to)))
-				.join('\n')
+			selection = this.getCommentInputSelections()
 		} else if (isInputFocused()) {
 			const activeElement = /** @type {HTMLElement} */ (document.activeElement)
 			if (
@@ -3723,7 +3719,7 @@ class CommentForm extends EventEmitter {
 	 */
 	insertCommentLink() {
 		const range = this.commentInput.getRange()
-		const selection = this.commentInput.getValue().substring(range.from, range.to)
+		const selection = this.getCommentInputSelection(range)
 		if (selection && (commentManager.getByAnyId(selection) || isExistentAnchor(selection, true))) {
 			// Valid ID
 
@@ -3733,6 +3729,33 @@ class CommentForm extends EventEmitter {
 		}
 
 		this.insertContentAfter('[[#')
+	}
+
+	/**
+	 * Get the selected text from the comment input for a specific range.
+	 *
+	 * @param {import('./TextInputWidgetMixin').SelectionRange} range
+	 * @param {string} [value] Input value.
+	 * @returns {string}
+	 * @private
+	 */
+	getCommentInputSelection(range, value = this.commentInput.getValue()) {
+		return value.substring(Math.min(range.from, range.to), Math.max(range.from, range.to))
+	}
+
+	/**
+	 * Get the selected text from the comment input for all selection ranges, joined with a newline.
+	 *
+	 * @returns {string}
+	 * @private
+	 */
+	getCommentInputSelections() {
+		const value = this.commentInput.getValue()
+
+		return this.commentInput
+			.getSelectionRanges()
+			.map((range) => this.getCommentInputSelection(range, value))
+			.join('\n')
 	}
 
 	/**
@@ -3776,75 +3799,101 @@ class CommentForm extends EventEmitter {
 	 * @param {string} [options.peri] Fallback value used instead of a selection and selected
 	 *   afterwards.
 	 * @param {string} [options.post] Text to insert after the caret/selection.
-	 * @param {boolean} [options.replace] If there is a selection, replace it with `pre`,
-	 *   `peri`, `post` instead of leaving it alone.
+	 * @param {boolean} [options.replace] If there is a selection, replace it with `pre`, `peri`,
+	 *   `post` instead of leaving it alone.
 	 * @param {string} [options.selection] Selected text. Use if the selection is outside of the
 	 *   input.
 	 * @param {(selection: string) => string} [options.selectionTransform] Function to modify each
 	 *   selection before wrapping.
 	 * @param {boolean} [options.ownline] Put the inserted text on a line of its own.
 	 */
-	encapsulateSelection({
-		pre = '',
-		peri = '',
-		post = '',
-		selection: selectionParam,
-		selectionTransform,
-		replace = false,
-		ownline = false,
-	}) {
+	encapsulateSelection(options) {
 		const value = this.commentInput.getValue()
 		this.commentInput.replaceSelections(
-			(selectionParam === undefined
+			(options.selection === undefined
 				? this.commentInput.getSelectionRanges()
 				: [this.commentInput.getRange()]
-			).map(({ from, to }) => {
-				const selectionStartIndex = Math.min(from, to)
-				const selectionEndIndex = Math.max(from, to)
-
-				let selection = selectionParam
-				if (selection === undefined && !replace) {
-					selection = value.substring(selectionStartIndex, selectionEndIndex)
-				}
-				selection ??= ''
-				selection = selectionTransform?.(selection) ?? selection
-
-				const middleText = selection || peri
-				const leadingNewline =
-					ownline &&
-					!/(^|\n)$/.test(value.slice(0, selectionStartIndex)) &&
-					!middleText.startsWith('\n')
-						? '\n'
-						: ''
-				const trailingNewline =
-					ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n')
-						? '\n'
-						: ''
-
-				// Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
-				const [leadingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/^ */))
-				const [trailingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/ *$/))
-
-				return {
-					from: selectionStartIndex,
-					to: selectionEndIndex,
-					insert:
-						leadingNewline +
-						leadingSpace +
-						pre +
-						middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
-						post +
-						trailingSpace +
-						trailingNewline,
-					selection: selection
-						? undefined
-						: {
-								from: leadingNewline.length + leadingSpace.length + pre.length,
-								to: leadingNewline.length + leadingSpace.length + pre.length + middleText.length,
-							},
-				}
-			}),
+			).map((range) => this.prepareEncapsulationReplacement(range, value, options)),
 		)
+	}
+
+	/**
+	 * Prepare a replacement object for a selection range when encapsulating it.
+	 *
+	 * @param {import('./TextInputWidgetMixin').SelectionRange} range Selection range.
+	 * @param {string} value Current input value.
+	 * @param {object} options Options.
+	 * @param {string} [options.pre] Text to insert before the caret/selection.
+	 * @param {string} [options.peri] Fallback value used instead of a selection and selected
+	 *   afterwards.
+	 * @param {string} [options.post] Text to insert after the caret/selection.
+	 * @param {boolean} [options.replace] If there is a selection, replace it with `pre`, `peri`,
+	 *   `post` instead of leaving it alone.
+	 * @param {string} [options.selection] Selected text. Use if the selection is outside of the
+	 *   input.
+	 * @param {(selection: string) => string} [options.selectionTransform] Function to modify each
+	 *   selection before wrapping.
+	 * @param {boolean} [options.ownline] Put the inserted text on a line of its own.
+	 * @returns {import('./TextInputWidgetMixin').TextReplacement}
+	 * @private
+	 */
+	prepareEncapsulationReplacement(
+		range,
+		value,
+		{
+			pre = '',
+			peri = '',
+			post = '',
+			selection: selectionParam,
+			selectionTransform,
+			replace = false,
+			ownline = false,
+		},
+	) {
+		const selectionStartIndex = Math.min(range.from, range.to)
+		const selectionEndIndex = Math.max(range.from, range.to)
+
+		let selection = selectionParam
+		if (selection === undefined && !replace) {
+			selection = value.substring(selectionStartIndex, selectionEndIndex)
+		}
+		selection ??= ''
+		selection = selectionTransform?.(selection) ?? selection
+
+		const middleText = selection || peri
+		const leadingNewline =
+			ownline &&
+			!/(^|\n)$/.test(value.slice(0, selectionStartIndex)) &&
+			!middleText.startsWith('\n')
+				? '\n'
+				: ''
+		const trailingNewline =
+			ownline && !value.slice(selectionEndIndex).startsWith('\n') && !post.endsWith('\n')
+				? '\n'
+				: ''
+
+		// Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
+		const [leadingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/^ */))
+		const [trailingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/ *$/))
+
+		return {
+			from: selectionStartIndex,
+			to: selectionEndIndex,
+			insert:
+				leadingNewline +
+				leadingSpace +
+				pre +
+				middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
+				post +
+				trailingSpace +
+				trailingNewline,
+			selection: selection
+				? undefined
+				: {
+						from: leadingNewline.length + leadingSpace.length + pre.length,
+						to: leadingNewline.length + leadingSpace.length + pre.length + middleText.length,
+					},
+		}
 	}
 
 	/**
