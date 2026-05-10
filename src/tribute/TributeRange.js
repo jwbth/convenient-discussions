@@ -143,6 +143,7 @@ class TributeRange {
 				isTab,
 				myField.value,
 				textSuffix,
+				data.autocompleteSelections?.[0],
 			)
 			if (!replacement) return
 

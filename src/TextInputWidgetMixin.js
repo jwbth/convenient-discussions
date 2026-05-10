@@ -62,7 +62,7 @@ class TextInputWidgetMixin {
 	/**
 	 * Text that was selected before typing an autocomplete trigger.
 	 *
-	 * @type {{ selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string, length?: number } | { selections: AutocompleteSavedSelection[] } | undefined}
+	 * @type {AutocompleteSavedSelection[] | undefined}
 	 * @private
 	 */
 	autocompleteSavedSelection
@@ -317,7 +317,7 @@ class TextInputWidgetMixin {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (start === undefined) return
 
-		const savedSelection = this.autocompleteSavedSelection
+		const previousSavedSelections = this.autocompleteSavedSelection
 		const ranges = [...this.getSelectionRanges()].sort((a, b) => a.from - b.from)
 		const savedSelections = ranges
 			.map((range) => this.prepareAutocompleteSavedSelection(range, element.value))
@@ -325,17 +325,13 @@ class TextInputWidgetMixin {
 
 		if (
 			!savedSelections.length &&
-			savedSelection &&
-			this.shouldKeepAutocompleteSavedSelection(ranges, savedSelection, element.value)
+			previousSavedSelections &&
+			this.shouldKeepAutocompleteSavedSelection(ranges, previousSavedSelections, element.value)
 		) {
 			return
 		}
 
-		this.autocompleteSavedSelection = savedSelections.length
-			? savedSelections.length === 1
-				? savedSelections[0]
-				: { selections: savedSelections }
-			: undefined
+		this.autocompleteSavedSelection = savedSelections.length ? savedSelections : undefined
 	}
 
 	/**
@@ -396,15 +392,14 @@ class TextInputWidgetMixin {
 	 * autocomplete trigger.
 	 *
 	 * @param {SelectionRange[]} ranges Current selection ranges.
-	 * @param {NonNullable<TextInputWidgetMixin['autocompleteSavedSelection']>} savedSelection Saved
-	 *   selected text.
+	 * @param {NonNullable<TextInputWidgetMixin['autocompleteSavedSelection']>} savedSelections Saved
+	 *   selections.
 	 * @param {string} value Current input value.
 	 * @returns {boolean}
 	 * @private
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	shouldKeepAutocompleteSavedSelection(ranges, savedSelection, value) {
-		const savedSelections = this.getAutocompleteSavedSelections(savedSelection)
+	shouldKeepAutocompleteSavedSelection(ranges, savedSelections, value) {
 		if (
 			ranges.length !== savedSelections.length ||
 			ranges.some((range) => range.from !== range.to)
@@ -431,27 +426,6 @@ class TextInputWidgetMixin {
 	}
 
 	/**
-	 * Get saved selections as an array.
-	 *
-	 * @param {NonNullable<TextInputWidgetMixin['autocompleteSavedSelection']>} savedSelection Saved
-	 *   selected text.
-	 * @returns {AutocompleteSavedSelection[]}
-	 * @private
-	 */
-	getAutocompleteSavedSelections(savedSelection) {
-		return 'selections' in savedSelection
-			? savedSelection.selections
-			: [
-					{
-						...savedSelection,
-						length:
-							savedSelection.length ??
-							savedSelection.selectedText.length + savedSelection.trailingSpaces.length,
-					},
-				]
-	}
-
-	/**
 	 * Set the autocomplete menu active state. When active, the selected text becomes immutable.
 	 *
 	 * @param {boolean} active Whether the autocomplete menu is active
@@ -474,8 +448,8 @@ class TextInputWidgetMixin {
 	/**
 	 * Get the text that was selected before typing an autocomplete trigger.
 	 *
-	 * @returns {TextInputWidgetMixin['autocompleteSavedSelection']} The selected text and its start
-	 *   position, or undefined if none.
+	 * @returns {TextInputWidgetMixin['autocompleteSavedSelection']} The selections, or undefined if
+	 *   none.
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
 	getAutocompleteSavedSelection() {

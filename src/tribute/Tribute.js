@@ -145,7 +145,7 @@ import tributeCss from './tribute.less?inline'
  * @property {() => void} [altModify] Function that modifies this data if the Alt key is held
  * @property {() => void} [shiftModify] Function that modifies this data if the Shift key is held
  * @property {() => void} [cmdModify] Function that modifies this data if the Command key is held
- * @property {Array<{selectedText: string, leadingSpaces: string, trailingSpaces: string}>}
+ * @property {Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>}
  *   [autocompleteSelections] Text selections replaced by autocomplete triggers.
  */
 

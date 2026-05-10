@@ -254,18 +254,15 @@ class AutocompleteManager {
 	 * Get the selected text from the input widget if it should be used for autocomplete insertion.
 	 *
 	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>>} option
-	 * @returns {{selectedText: string, leadingSpaces: string, trailingSpaces: string, selections?: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined}
+	 * @returns {{selectedText: string, selections: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined}
 	 */
 	getSelectedTextForInsertion(option) {
 		const autocomplete = option.original.autocomplete
 		const element = autocomplete.manager?.tribute.current.element
-		const savedSelection =
+		const savedSelections =
 			element?.cdInput && typeof element.cdInput.getAutocompleteSavedSelection === 'function'
 				? element.cdInput.getAutocompleteSavedSelection()
 				: undefined
-		const savedSelections = savedSelection
-			? this.getAutocompleteSavedSelections(savedSelection)
-			: undefined
 		const insertion = autocomplete.getInsertionFromEntry(option.original.entry)
 
 		if (
@@ -284,22 +281,9 @@ class AutocompleteManager {
 
 			return {
 				selectedText: firstSelection.selectedText,
-				leadingSpaces: firstSelection.leadingSpaces,
-				trailingSpaces: firstSelection.trailingSpaces,
-				selections: savedSelections.length > 1 ? savedSelections : undefined,
+				selections: savedSelections,
 			}
 		}
-	}
-
-	/**
-	 * Get saved selections as an array.
-	 *
-	 * @param {{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string} | {selections: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>}} savedSelection Saved selection data.
-	 * @returns {Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>}
-	 * @private
-	 */
-	getAutocompleteSavedSelections(savedSelection) {
-		return 'selections' in savedSelection ? savedSelection.selections : [savedSelection]
 	}
 
 	/**
@@ -333,25 +317,12 @@ class AutocompleteManager {
 	 * Apply saved selection data to insertion data.
 	 *
 	 * @param {import('./tribute/Tribute').Insertion} insertion Insertion data.
-	 * @param {{leadingSpaces: string, trailingSpaces: string, selections?: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined} selectionData Selection data.
+	 * @param {{selections: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined} selectionData Selection data.
 	 */
 	applySelectionDataToInsertion(insertion, selectionData) {
 		if (!selectionData) return
 
-		if (selectionData.selections) {
-			insertion.autocompleteSelections = selectionData.selections
-
-			return
-		}
-
-		if (selectionData.leadingSpaces || selectionData.trailingSpaces) {
-			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-			insertion.start = selectionData.leadingSpaces + insertion.start
-			if (insertion.end) {
-				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-				insertion.end = insertion.end + selectionData.trailingSpaces
-			}
-		}
+		insertion.autocompleteSelections = selectionData.selections
 	}
 
 	// Static properties and methods for backward compatibility
