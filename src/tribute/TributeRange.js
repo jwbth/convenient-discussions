@@ -101,19 +101,17 @@ class TributeRange {
 			// jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
 			// than 1.
 			let endPos = info.mentionPosition + info.mentionText.length + info.mentionTriggerChar.length
-			let ending = myField.value.substring(endPos, myField.value.length)
 
 			if (!isTab && (originalEvent.shiftKey || data.content) && data.shiftModify) {
 				data.shiftModify()
 			}
 
-			let startPos = info.mentionPosition
 			let textSuffix =
 				typeof this.tribute.replaceTextSuffix == 'string' ? this.tribute.replaceTextSuffix : ' '
 			const selectionRanges = myField.cdSelectionRanges
 			if (selectionRanges?.length > 1 && myField.cdInput) {
 				const replacements = selectionRanges.map((range) =>
-					this.getTriggerTextReplacement(
+					this.prepareTriggerTextReplacement(
 						range,
 						info,
 						data,
@@ -127,40 +125,26 @@ class TributeRange {
 
 				if (replacements.every((replacement) => replacement !== undefined)) {
 					myField.cdInput.replaceSelections(replacements)
-
-					let replaceEvent = new CustomEvent('tribute-replaced', {
-						detail: {
-							item: item,
-							instance: context,
-							context: info,
-							event: originalEvent,
-						},
-					})
-
-					context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
-					context.element.dispatchEvent(replaceEvent)
+					this.dispatchReplaceEvent(context, info, originalEvent, item)
 
 					return
 				}
 			}
 
-			myField.selectionStart = startPos
-			myField.selectionEnd = endPos
+			const replacement = this.prepareTriggerTextReplacement(
+				{ from: endPos, to: endPos },
+				info,
+				data,
+				context,
+				originalEvent,
+				isTab,
+				myField.value,
+				textSuffix,
+			)
+			if (!replacement) return
 
-			// jwbth: Made alterations to make the keepAsEnd config value work.
-			if (context.collection.keepAsEnd && !isTab) {
-				const [end] = ending.match(context.collection.keepAsEnd) || []
-				if (end) {
-					ending = ending.slice(end.length)
-					myField.selectionEnd += end.length
-					if (context.collection.replaceEnd) {
-						data.end = end
-					}
-				}
-			}
-
-			let text = data.start + data.content + data.end
-			text += textSuffix
+			myField.selectionStart = replacement.from
+			myField.selectionEnd = replacement.to
 
 			// jwbth: Preserve the undo/redo functionality in browsers that support it.
 			const $myField = $(
@@ -172,36 +156,30 @@ class TributeRange {
 				.focus()
 				.textSelection(
 					'setContents',
-					$myField.textSelection('getContents').substring(0, startPos) + text + ending,
+					$myField.textSelection('getContents').substring(0, replacement.from) +
+						replacement.insert +
+						myField.value.substring(replacement.to),
 				)
 
 			// jwbth: Start offset is calculated from the start position of the inserted text.
 			// Absent value means the selection start position should match with the end position
 			// (i.e., no text should be selected).
-			if (!isTab && (originalEvent.shiftKey || (data.selectContent && !data.content))) {
+			if (replacement.selection) {
 				$myField.textSelection('setSelection', {
-					start: startPos + data.start.length,
-					end: startPos + text.length - data.end.length,
+					start: replacement.from + replacement.selection.from,
+					end: replacement.from + replacement.selection.to,
 				})
 			} else {
-				$myField.textSelection('setSelection', { start: startPos + text.length })
+				$myField.textSelection('setSelection', {
+					start: replacement.from + replacement.insert.length,
+				})
 			}
 
-			let replaceEvent = new CustomEvent('tribute-replaced', {
-				detail: {
-					item: item,
-					instance: context,
-					context: info,
-					event: originalEvent,
-				},
-			})
-
-			context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
-			context.element.dispatchEvent(replaceEvent)
+			this.dispatchReplaceEvent(context, info, originalEvent, item)
 		}
 	}
 
-	getTriggerTextReplacement(range, info, data, context, originalEvent, isTab, value, textSuffix) {
+	prepareTriggerTextReplacement(range, info, data, context, originalEvent, isTab, value, textSuffix) {
 		const triggerText = info.mentionTriggerChar + info.mentionText
 		const endPos = range.to
 		const startPos = endPos - triggerText.length
@@ -242,6 +220,20 @@ class TributeRange {
 			insert,
 			selection,
 		}
+	}
+
+	dispatchReplaceEvent(context, info, originalEvent, item) {
+		const replaceEvent = new CustomEvent('tribute-replaced', {
+			detail: {
+				item,
+				instance: context,
+				context: info,
+				event: originalEvent,
+			},
+		})
+
+		context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
+		context.element.dispatchEvent(replaceEvent)
 	}
 
 	getTextPrecedingCurrentSelection() {
