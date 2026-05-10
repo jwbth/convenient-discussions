@@ -860,8 +860,8 @@ class CommentForm extends EventEmitter {
 			})
 		}
 
-		this.onboardOntoMultipleForms()
-		this.onboardOntoUpload()
+		this.onboardToMultipleForms()
+		this.onboardToUpload()
 	}
 
 	/**
@@ -4144,7 +4144,7 @@ class CommentForm extends EventEmitter {
 	 *
 	 * @private
 	 */
-	onboardOntoMultipleForms() {
+	onboardToMultipleForms() {
 		if (
 			cd.settings.get('manyForms-onboarded') ||
 			!cd.user.isRegistered() ||
@@ -4197,7 +4197,7 @@ class CommentForm extends EventEmitter {
 	 *
 	 * @private
 	 */
-	onboardOntoUpload() {
+	onboardToUpload() {
 		if (
 			!this.uploadToCommons ||
 			cd.settings.get('upload-onboarded') ||

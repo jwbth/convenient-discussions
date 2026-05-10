@@ -258,7 +258,7 @@ class CompactComment extends Comment {
 
 		this.layers?.dontHideMenu()
 		this.removeFlag('hovered')
-		this.teardownOnboardOntoToggleChildThreadsPopup()
+		this.teardownOnboardToToggleChildThreadsPopup()
 	}
 
 	/**

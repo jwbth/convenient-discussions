@@ -230,7 +230,8 @@ class CommentActions {
 	 * This method should be overridden by subclasses for specific styling.
 	 */
 	addDeleteButton() {
-		if (!this.comment.isEditable() || !this.comment.isDeletable() || !this.comment.hasFlag('own')) return
+		if (!this.comment.isEditable() || !this.comment.isDeletable() || !this.comment.hasFlag('own'))
+			return
 
 		this.deleteButton = this.createDeleteButton(this.onDeleteAction)
 		this.insertDeleteButton()
@@ -327,7 +328,7 @@ class CommentActions {
 			this.onToggleChildThreadsAction,
 		)
 		this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
-			this.comment.maybeOnboardOntoToggleChildThreads()
+			this.comment.maybeOnboardToToggleChildThreads()
 		})
 
 		this.insertToggleChildThreadsButton()

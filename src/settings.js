@@ -1028,7 +1028,7 @@ class Settings extends EventEmitter {
 	/**
 	 * Show a popup informing the user about the structured comment design in CD.
 	 */
-	async maybeOnboardOntoSpaciousComments() {
+	async maybeOnboardToSpaciousComments() {
 		if (this.get('commentDisplay') !== null) return
 
 		const { commentDisplay } = await this.load({ reuse: true })

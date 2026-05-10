@@ -858,13 +858,13 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Show a popup onboarding onto the "Toggle child threads" feature.
+	 * Show a popup onboarding to the "Toggle child threads" feature.
 	 */
-	async maybeOnboardOntoToggleChildThreads() {
-		if (!this.shouldOnboardOntoToggleChildThreads()) return
+	async maybeOnboardToToggleChildThreads() {
+		if (!this.shouldOnboardToToggleChildThreads()) return
 
 		await sleep(100)
-		if (!this.shouldOnboardOntoToggleChildThreads()) return
+		if (!this.shouldOnboardToToggleChildThreads()) return
 
 		// When comments are spacious, wait for jumpy stuff on the page to jump to prevent
 		// repositioning (e.g. the subscribe button). This is only to mitigate; too tricky to track all
@@ -911,17 +911,17 @@ class Comment extends mixIntoClass(
 		this.toggleChildThreadsPopup.toggle(true)
 		this.toggleChildThreadsPopup.on('closing', () => {
 			cd.settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true)
-			this.teardownOnboardOntoToggleChildThreadsPopup()
+			this.teardownOnboardToToggleChildThreadsPopup()
 		})
-		controller.once('startReboot', this.teardownOnboardOntoToggleChildThreadsPopup)
+		controller.once('startReboot', this.teardownOnboardToToggleChildThreadsPopup)
 	}
 
 	/**
-	 * Check if a popup onboarding onto the "Toggle child threads" feature should be shown.
+	 * Check if a popup onboarding to the "Toggle child threads" feature should be shown.
 	 *
 	 * @returns {this is { actions: { toggleChildThreadsButton: import('./CommentButton').default } }}
 	 */
-	shouldOnboardOntoToggleChildThreads() {
+	shouldOnboardToToggleChildThreads() {
 		const element = this.actions?.toggleChildThreadsButton?.element
 
 		return Boolean(
@@ -936,7 +936,7 @@ class Comment extends mixIntoClass(
 		)
 	}
 
-	teardownOnboardOntoToggleChildThreadsPopup = () => {
+	teardownOnboardToToggleChildThreadsPopup = () => {
 		if (!this.toggleChildThreadsPopup) return
 
 		this.toggleChildThreadsPopup.$element.remove()
@@ -2222,7 +2222,7 @@ class Comment extends mixIntoClass(
 			})
 			this.$elements.attr('data-cd-comment-index', this.index)
 
-			this.teardownOnboardOntoToggleChildThreadsPopup()
+			this.teardownOnboardToToggleChildThreadsPopup()
 			this.initializeCommentStructure()
 
 			mw.hook('wikipage.content').fire(this.$elements)

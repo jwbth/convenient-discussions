@@ -951,7 +951,7 @@ class BootProcess {
 	async showPopups() {
 		this.maybeSuggestDisableDt()
 
-		await cd.settings.maybeOnboardOntoSpaciousComments()
+		await cd.settings.maybeOnboardToSpaciousComments()
 		await cd.settings.maybeConfirmDesktopNotifications()
 	}
 
