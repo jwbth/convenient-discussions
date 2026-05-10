@@ -247,4 +247,80 @@ describe('encapsulateSelection logic', () => {
 			},
 		])
 	})
+
+	it('Scenario 8: Multiple selections -> each selection is wrapped separately', () => {
+		mockCommentInput.getRange.mockReturnValue({ from: 0, to: 5 })
+		mockCommentInput.getSelectionRanges.mockReturnValue([
+			{ from: 0, to: 5 },
+			{ from: 10, to: 14 },
+		])
+		mockCommentInput.getValue.mockReturnValue('alpha and beta.')
+
+		encapsulateSelection({ pre: "'''", post: "'''" }, mockCommentInput)
+
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 0,
+				to: 5,
+				insert: "'''alpha'''",
+				selection: undefined,
+			},
+			{
+				from: 10,
+				to: 14,
+				insert: "'''beta'''",
+				selection: undefined,
+			},
+		])
+	})
+
+	it('Scenario 9: Multiple empty selections -> peri is inserted and selected in each range', () => {
+		mockCommentInput.getRange.mockReturnValue({ from: 0, to: 0 })
+		mockCommentInput.getSelectionRanges.mockReturnValue([
+			{ from: 0, to: 0 },
+			{ from: 5, to: 5 },
+		])
+		mockCommentInput.getValue.mockReturnValue('alpha beta')
+
+		encapsulateSelection({ pre: '<code>', post: '</code>', peri: 'example' }, mockCommentInput)
+
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 0,
+				to: 0,
+				insert: '<code>example</code>',
+				selection: { from: 6, to: 13 },
+			},
+			{
+				from: 5,
+				to: 5,
+				insert: '<code>example</code>',
+				selection: { from: 6, to: 13 },
+			},
+		])
+	})
+
+	it('Scenario 10: Provided selection param -> only current range is replaced', () => {
+		mockCommentInput.getRange.mockReturnValue({ from: 5, to: 5 })
+		mockCommentInput.getSelectionRanges.mockReturnValue([
+			{ from: 0, to: 5 },
+			{ from: 10, to: 14 },
+		])
+		mockCommentInput.getValue.mockReturnValue('alpha and beta.')
+
+		encapsulateSelection(
+			{ pre: '<blockquote>', post: '</blockquote>', selection: 'provided' },
+			mockCommentInput,
+		)
+
+		expect(mockCommentInput.replaceSelections).toHaveBeenCalledWith([
+			{
+				from: 5,
+				to: 5,
+				insert: '<blockquote>provided</blockquote>',
+				selection: undefined,
+			},
+		])
+		expect(mockCommentInput.getSelectionRanges).not.toHaveBeenCalled()
+	})
 })
