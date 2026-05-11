@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Ahmetlii",
+			"Anthelior",
 			"BaRaN6161 TURK",
 			"Can",
 			"DDPAT",
@@ -117,7 +118,7 @@
 	"cf-advanced": "Gelişmiş",
 	"cf-settings-tooltip": "Kullanışlı Tartışmalar ayarları",
 	"cf-help-autocomplete-mention": "<code>$1</code> yazın ve [[$2|bahsetme]] için bir kullanıcı seçin.",
-	"cf-help-autocomplete-commentlink": "Yorum menüsü arkasındaki bir bağlantıyı engellerse, üzerine uzun bir tıklama/dokunma yapın, kaybolacaktır.",
+	"cf-help-autocomplete-commentlink": "Şu anki bölüme bir yorum eklemek için <code>$1</code> yazın.",
 	"cf-help-footer-documentation": "[[$1|Betik belgelemesi]]",
 	"cf-help-footer-feedback": "[[$1|Geri bildirim]]",
 	"cf-strikethrough-tooltip": "Üstü çizili",
@@ -291,9 +292,9 @@
 	"msd-moved": "Konu başarıyla taşındı. Sayfayı [[$1|konunun taşındığı sayfaya]] gidebilirsiniz.",
 	"move-sourcepagecode": "''[[$1]] ile taşı. $2''",
 	"move-targetpagecode": "''[[$1]] üzerinden taşı. $2''",
-	"error-loaddata": "Betiğin gerektirdiği veriler yüklenemedi.",
+	"error-loaddata": "Betik için gereken veriler yüklenemedi.",
 	"error-processpage": "Sayfa işlenemedi. JavaScript konsolundaki ayrıntılara bakın (F12 → Console).",
-	"error-settings-load": "Ayarlar sunucudan yüklenemedi.",
+	"error-settings-load": "Sunucudan ayarlar yüklenemedi.",
 	"error-settings-save": "Ayarlar sunucuya kaydedilemedi.",
 	"error-reloadpage": "Sayfa yeniden yüklenemedi.",
 	"error-reloadpage-saved": "Sayfa kaydedildi, ancak yeniden yüklenemedi.",
