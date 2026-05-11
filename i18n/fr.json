@@ -165,7 +165,7 @@
 	"cf-help-autocomplete-mention": "Saisissez <code>$1</code> et choisissez un utilisateur ou une utilisatrice à [[$2|mentionner]].",
 	"cf-help-autocomplete-commentlink": "Si le menu de commentaire fait obstruction à un lien placé derrière, faites un clic ou un appui prolongé dessus — il disparaîtra.",
 	"cf-help-footer-documentation": "[[$1|Documentation du script]]",
-	"cf-help-footer-feedback": "[[$2|Remarques]]",
+	"cf-help-footer-feedback": "[[$1|Remarques]]",
 	"cf-strikethrough-tooltip": "Barrer",
 	"cf-strikethrough-placeholder": "Text barré",
 	"cf-code-tooltip": "Code",

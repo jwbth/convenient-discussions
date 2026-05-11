@@ -129,7 +129,7 @@
 	"cf-help-autocomplete-wraptext": "<b>Q</b> (<b>Ctrl+Alt+Q</b>) — 선택한 텍스트 인용",
 	"cf-help-heading-problems": "문제점",
 	"cf-help-footer-documentation": "[[$1| 스크립트 문서]]",
-	"cf-help-footer-feedback": "[[$2|피드백]]",
+	"cf-help-footer-feedback": "[[$1|피드백]]",
 	"cf-strikethrough-tooltip": "취소선",
 	"cf-strikethrough-placeholder": "취소선이 그어진 텍스트",
 	"cf-code-tooltip": "코드",

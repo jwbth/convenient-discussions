@@ -173,7 +173,7 @@
 	"cf-help-heading-problems": "Problemlər",
 	"cf-help-problems-menu": "Əgər şərh menyusu arxasındakı linki bloklayırsa, üzərinə uzun bir klik/vuruş edin - o yox olacaq.",
 	"cf-help-footer-documentation": "[[$1|Skriptin sənədləşdirməsi]]",
-	"cf-help-footer-feedback": "[[$2|Rəy bildir]]",
+	"cf-help-footer-feedback": "[[$1|Rəy bildir]]",
 	"cf-strikethrough-tooltip": "Üstündən xətt çək",
 	"cf-strikethrough-placeholder": "Üstündən xətt çəkilmiş mətn",
 	"cf-code-tooltip": "Kod",

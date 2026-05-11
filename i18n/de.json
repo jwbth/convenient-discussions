@@ -163,7 +163,7 @@
 	"cf-help-autocomplete-punctuation": "Halte $2 gedrückt, während du einen Benutzer auswählst, um eine Interpunktion nach dem Namen hinzuzufügen.",
 	"cf-help-autocomplete-commentlink": "Wenn das Kommentarmenü einen dahinter liegenden Link verdeckt, klicke oder tippe lange darauf, damit es verschwindet.",
 	"cf-help-footer-documentation": "[[$1|Skript-Dokumentation]]",
-	"cf-help-footer-feedback": "[[$2|Feedback]]",
+	"cf-help-footer-feedback": "[[$1|Feedback]]",
 	"cf-strikethrough-tooltip": "Durchstreichen",
 	"cf-strikethrough-placeholder": "Durchgestrichener Text",
 	"cf-code-tooltip": "Code",

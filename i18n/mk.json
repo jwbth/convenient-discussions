@@ -142,7 +142,7 @@
 	"cf-help-autocomplete-mention": "Внесете <code>$1</code> и изберете корисник за да го [[$2|спомнете]].",
 	"cf-help-autocomplete-commentlink": "Ако менито за коментари попречува друга врска зад неа, подржете малку подолго со допир или стрелката на неа, и ќе ја снема.",
 	"cf-help-footer-documentation": "[[$1|Документација за скриптата]]",
-	"cf-help-footer-feedback": "[[$2|Мислења]]",
+	"cf-help-footer-feedback": "[[$1|Мислења]]",
 	"cf-strikethrough-tooltip": "Прецртано",
 	"cf-strikethrough-placeholder": "Прецртан текст",
 	"cf-code-tooltip": "Код",

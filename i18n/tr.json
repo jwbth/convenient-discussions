@@ -119,7 +119,7 @@
 	"cf-help-autocomplete-mention": "<code>$1</code> yazın ve [[$2|bahsetme]] için bir kullanıcı seçin.",
 	"cf-help-autocomplete-commentlink": "Yorum menüsü arkasındaki bir bağlantıyı engellerse, üzerine uzun bir tıklama/dokunma yapın, kaybolacaktır.",
 	"cf-help-footer-documentation": "[[$1|Betik belgelemesi]]",
-	"cf-help-footer-feedback": "[[$2|Geri bildirim]]",
+	"cf-help-footer-feedback": "[[$1|Geri bildirim]]",
 	"cf-strikethrough-tooltip": "Üstü çizili",
 	"cf-strikethrough-placeholder": "Metnin üstünü çiz",
 	"cf-code-tooltip": "Kod",

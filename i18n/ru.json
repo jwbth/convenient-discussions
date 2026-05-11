@@ -181,7 +181,7 @@
 	"cf-help-autocomplete-wraptext": "Чтобы обернуть выделенный текст в тег, выделите текст, затем начните вводить тег (например, <code>$1</code>), затем выберите его из меню автодополнения.",
 	"cf-help-problems-menu": "Если меню сообщения загораживает ссылку за ним, выполните по нему долгий клик/тап — оно исчезнет.",
 	"cf-help-footer-documentation": "[[$1|Документация к скрипту]]",
-	"cf-help-footer-feedback": "[[$2|Обратная связь]]",
+	"cf-help-footer-feedback": "[[$1|Обратная связь]]",
 	"cf-strikethrough-tooltip": "Зачеркнуть",
 	"cf-strikethrough-placeholder": "Зачёркнутый текст",
 	"cf-code-tooltip": "Код",

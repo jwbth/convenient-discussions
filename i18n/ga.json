@@ -162,7 +162,7 @@
 	"cf-help-heading-problems": "Fadhbanna",
 	"cf-help-problems-menu": "Má chuireann an roghchlár tráchta bac ar nasc taobh thiar de, cliceáil/tapáil fada air—imeoidh sé as radharc.",
 	"cf-help-footer-documentation": "[[$1|Doiciméadú Scripte]]",
-	"cf-help-footer-feedback": "[[$2|Aiseolas]]",
+	"cf-help-footer-feedback": "[[$1|Aiseolas]]",
 	"cf-strikethrough-tooltip": "Stríoc tríd",
 	"cf-strikethrough-placeholder": "Téacs trína chéile",
 	"cf-code-tooltip": "Cód",

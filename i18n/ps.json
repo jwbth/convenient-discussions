@@ -165,7 +165,7 @@
 	"cf-help-heading-problems": "ستونزې",
 	"cf-help-problems-menu": "که چېرې د څرگندونې غوره‌نۍ تر خپل شا يو تړونی پټ کړي؛ نو په هغې باندې اوږد کليک/گوت‌زور وکړئ—دابه پټ شي.",
 	"cf-help-footer-documentation": "[[$1|لاسليکي لاسوند]]",
-	"cf-help-footer-feedback": "[[$2|غبرگون]]",
+	"cf-help-footer-feedback": "[[$1|غبرگون]]",
 	"cf-strikethrough-tooltip": "کرښ‌باندې",
 	"cf-strikethrough-placeholder": "کرښ‌باندې ليک",
 	"cf-code-tooltip": "کوډ",

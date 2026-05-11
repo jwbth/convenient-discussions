@@ -147,7 +147,7 @@
 	"cf-help-autocomplete-commentlink": "Om kommentarsmenyn skymmer en länk bakom den, klicka/tryck länge på den – den kommer att försvinna.",
 	"cf-help-autocomplete-wraptext": "Håll ner <b>Alt</b> medan du väljer ett auto-kompletterat objekt för att använda texten efter cirkumflektionstecknet som visad text.",
 	"cf-help-footer-documentation": "[[$1|Feedback]]",
-	"cf-help-footer-feedback": "[[$2|Feedback]]",
+	"cf-help-footer-feedback": "[[$1|Feedback]]",
 	"cf-strikethrough-tooltip": "Överstruken",
 	"cf-strikethrough-placeholder": "Överstruken text",
 	"cf-code-tooltip": "Kod",

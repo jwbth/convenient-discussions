@@ -158,7 +158,7 @@
 	"cf-help-autocomplete-commentlink": "Nếu menu bình luận cản trở một liên kết đằng sau nó, hãy nhấn/giữ vào nó — nó sẽ biến mất.",
 	"cf-help-autocomplete-wraptext": "Để bọc nhanh một đoạn văn bản trong thẻ, chọn văn bản, sau đó bắt đầu nhập một thẻ (v.d. <code><nowiki><code></nowiki></code>), cuối cùng chọn nó từ menu tự động điền.",
 	"cf-help-footer-documentation": "[[$1|Tài liệu công cụ]]",
-	"cf-help-footer-feedback": "[[$2|Phản hồi]]",
+	"cf-help-footer-feedback": "[[$1|Phản hồi]]",
 	"cf-strikethrough-tooltip": "Gạch ngang lên chữ",
 	"cf-strikethrough-placeholder": "Văn bản cần gạch",
 	"cf-code-tooltip": "Mã nguồn",

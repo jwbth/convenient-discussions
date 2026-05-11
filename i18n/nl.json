@@ -172,7 +172,7 @@
 	"cf-help-heading-problems": "Problemen",
 	"cf-help-problems-menu": "Als het reactiemenu een koppeling erachter blokkeert, houd deze dan ingedrukt of tik er lang op; het reactiemenu verdwijnt dan.",
 	"cf-help-footer-documentation": "[[$1|Scriptdocumentatie]]",
-	"cf-help-footer-feedback": "[[$2|Terugkoppeling]]",
+	"cf-help-footer-feedback": "[[$1|Terugkoppeling]]",
 	"cf-strikethrough-tooltip": "Doorhalen",
 	"cf-strikethrough-placeholder": "Doorgehaalde tekst",
 	"cf-code-tooltip": "Code",

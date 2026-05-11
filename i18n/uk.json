@@ -148,7 +148,7 @@
 	"cf-help-autocomplete-commentlink": "Введіть <code>$1</code>, щоб додати посилання на коментар у поточному розділі.",
 	"cf-help-autocomplete-wraptext": "Щоб швидко перенести текст у тег, виділіть його, а потім почніть вводити тег (наприклад <code>$1</code>), потім виберіть його з меню автозаповнення.",
 	"cf-help-footer-documentation": "[[$1|Документація скрипту]]",
-	"cf-help-footer-feedback": "[[$2|Надіслати відгук]]",
+	"cf-help-footer-feedback": "[[$1|Надіслати відгук]]",
 	"cf-strikethrough-tooltip": "Закреслення",
 	"cf-strikethrough-placeholder": "Проривний текст",
 	"cf-code-tooltip": "Код",

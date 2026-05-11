@@ -104,7 +104,7 @@
 	"cf-advanced": "Erweidert",
 	"cf-help-heading-problems": "Problemer",
 	"cf-help-footer-documentation": "[[$1|Skriptdokumentatioun]]",
-	"cf-help-footer-feedback": "[[$2|Feedback]]",
+	"cf-help-footer-feedback": "[[$1|Feedback]]",
 	"cf-strikethrough-tooltip": "Duerchsträichen",
 	"cf-strikethrough-placeholder": "Duerchgestrachenen Text",
 	"cf-code-tooltip": "Code",

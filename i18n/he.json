@@ -177,7 +177,7 @@
 	"cf-help-heading-problems": "בעיות",
 	"cf-help-problems-menu": "אם תפריט התגובה מסתיר את הקישור מאחוריו, ניתן לעשות לחיצה ארוכה עליו והוא ייעלם.",
 	"cf-help-footer-documentation": "[[$1|תיעוד הסקריפט]]",
-	"cf-help-footer-feedback": "[[$2|משוב]]",
+	"cf-help-footer-feedback": "[[$1|משוב]]",
 	"cf-strikethrough-tooltip": "קו חוצה",
 	"cf-strikethrough-placeholder": "טקסט עם קו חוצה",
 	"cf-code-tooltip": "קוד",

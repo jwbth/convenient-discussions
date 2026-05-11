@@ -1,10 +1,6 @@
 {
 	"@metadata": {
-		"authors": [
-			"Borichèt",
-			"Jack who built the house",
-			"SaldırganSincap"
-		]
+		"authors": ["Borichèt", "Jack who built the house", "SaldırganSincap"]
 	},
 	"script-name": "Discussion Pràtiche",
 	"script-name-short": "CD",
@@ -166,7 +162,7 @@
 	"cf-help-heading-problems": "Problema",
 	"cf-help-problems-menu": "Si lë mnu dël coment a ostàcola na liura darera a chiel, sgnaché për un bon moment/bate su 'd chiel - a sparirà.",
 	"cf-help-footer-documentation": "[[$1|Documentassion dël copion]]",
-	"cf-help-footer-feedback": "[[$2|Coment]]",
+	"cf-help-footer-feedback": "[[$1|Coment]]",
 	"cf-strikethrough-tooltip": "Sganfé",
 	"cf-strikethrough-placeholder": "Test ësganfà",
 	"cf-code-tooltip": "Còdes",

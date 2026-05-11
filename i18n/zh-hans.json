@@ -193,7 +193,7 @@
 	"cf-help-heading-problems": "问题",
 	"cf-help-problems-menu": "如果留言菜单挡住了后面的链接，请长按或轻触以将其清除。",
 	"cf-help-footer-documentation": "[[$1|脚本文档]]",
-	"cf-help-footer-feedback": "[[$2|反馈]]",
+	"cf-help-footer-feedback": "[[$1|反馈]]",
 	"cf-strikethrough-tooltip": "删除线",
 	"cf-strikethrough-placeholder": "删除线文字",
 	"cf-code-tooltip": "代码",

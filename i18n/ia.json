@@ -159,7 +159,7 @@
 	"cf-help-heading-problems": "Problemas",
 	"cf-help-problems-menu": "Si le menu de commentos obstrue un ligamine detra illo, face un clic/tocco longe sur le menu e illo disparera.",
 	"cf-help-footer-documentation": "[[$1|Documentation del script]]",
-	"cf-help-footer-feedback": "[[$2|Opiniones]]",
+	"cf-help-footer-feedback": "[[$1|Opiniones]]",
 	"cf-strikethrough-tooltip": "Barrate",
 	"cf-strikethrough-placeholder": "Texto barrate",
 	"cf-code-tooltip": "Codice",
