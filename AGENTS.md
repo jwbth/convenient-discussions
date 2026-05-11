@@ -5,7 +5,7 @@
 ## Instructions
 
 - Don't run tests unless asked.
-- There is _no_ CSS class `cd-comment` because a comment often consists of multiple elements distributed across DOM. Instead, there are classes:
+- There is no CSS class `cd-comment` because a comment often consists of multiple elements at different nesting levels in the DOM. Instead, there are classes:
   - `cd-comment-part-first` for the first comment part;
   - `cd-comment-part` for any comment part.
 
@@ -33,7 +33,7 @@
 
 ### Subdirectories
 
-- **loader/**: Modules that create a scaffolding for the script to run (the object structure, some utilities) and load the main app with a specialized caching strategy
+- **loader/**: Modules that create a scaffolding for the script to run (the object structure, some utilities) and load the main app with a custom caching strategy
 - **worker/**: Page parsing module that runs in a web worker and is accessed from updateChecker.js
 - **shared/**: Classes and modules shared between the window context and web worker context
 
