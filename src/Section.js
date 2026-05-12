@@ -1922,7 +1922,7 @@ class Section extends SectionSkeleton {
 
 		if (!revision || content === undefined) {
 			throw new CdError({
-				type: 'api',
+				type: 'response',
 				code: 'noData',
 			})
 		}

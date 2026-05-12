@@ -532,7 +532,7 @@ export default class Page {
 
 		if (response.edit.result !== 'Success') {
 			throw new CdError({
-				type: 'response',
+				type: response.edit.captcha ? 'api' : 'response',
 				code: response.edit.captcha ? 'captcha' : 'fail',
 				apiResponse: response,
 			})

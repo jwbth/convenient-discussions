@@ -2306,11 +2306,10 @@ class CommentForm extends EventEmitter {
 			}
 		}
 
-		let framed
+		let framed = !$message
 		if (message) {
 			// If the message in the jQuery format was pre-provided, then by convention it's one that is not
 			// supposed to be framed.
-			framed = !$message
 			$message ??=
 				typeof message === 'string'
 					? wrapHtml(message, {
