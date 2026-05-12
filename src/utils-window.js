@@ -976,19 +976,26 @@ export function cleanUpPasteDom(element, containerElement) {
 		el.remove()
 	})
 
-	// This will turn links to unexistent pages to actual red links. Should be above the removal of
-	// classes.
-	;[...element.querySelectorAll('a')]
-		.filter((el) => el.classList.contains('new'))
-		.forEach((el) => {
-			const href = el.getAttribute('href')
-			if (!href) return
+	// Normalize protocol-relative links to https:// and turn links to unexistent pages to actual red
+	// links. Should be above the removal of classes.
+	;[...element.querySelectorAll('a')].forEach((el) => {
+		let href = el.getAttribute('href')
+		if (!href) {
+			return
+		}
 
+		if (href.startsWith('//')) {
+			href = 'https:' + href
+			el.setAttribute('href', href)
+		}
+
+		if (el.classList.contains('new')) {
 			const urlData = parseWikiUrl(href)
 			if (urlData?.hostname === location.hostname) {
 				el.setAttribute('href', mw.util.getUrl(urlData.pageName))
 			}
-		})
+		}
+	})
 
 	const allowedTagsSet = new Set(allowedTags.concat('a', 'center', 'big', 'strike', 'tt'))
 	;[...element.querySelectorAll('*')].forEach((el) => {
