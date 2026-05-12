@@ -2917,30 +2917,42 @@ class CommentForm extends EventEmitter {
 			const targetTyped = /** @type {Comment} */ (this.target)
 			// Currently (April 2026) it's always false at this point
 
-			const response = /** @type {{ discussiontoolsedit: { result: string } }} */ (
-				await cd
-					.getApi()
-					.postWithEditToken(
-						cd.getApi().assertCurrentUser({
-							action: 'discussiontoolsedit',
-							paction: 'addcomment',
-							page: targetTyped.getSourcePage().name,
-							wikitext: this.commentInput.getValue(),
-							commentid: targetTyped.dtId,
-							autosubscribe: this.subscribeCheckbox?.isSelected() ? 'yes' : 'no',
-							summary: buildEditSummary({ text: this.summaryInput.getValue() }),
-							captchaid: this.captchaInput?.getCaptchaId(),
-							captchaword: this.captchaInput?.getCaptchaWord(),
-							useskin: cd.g.skin,
-							tags: (cd.user.isRegistered() && cd.config.tagName) || undefined,
-							dttags: ['discussiontools-reply'],
-							...cd.g.apiErrorFormatHtml,
-						}),
-					)
-					.catch(handleApiReject)
-			)
+			const response =
+				/** @type {{ discussiontoolsedit: { result: string, edit: { captcha?: any } } }} */ (
+					await cd
+						.getApi()
+						.postWithEditToken(
+							cd.getApi().assertCurrentUser({
+								action: 'discussiontoolsedit',
+								paction: 'addcomment',
+								page: targetTyped.getSourcePage().name,
+								wikitext: this.commentInput.getValue(),
+								commentid: targetTyped.dtId,
+								autosubscribe: this.subscribeCheckbox?.isSelected() ? 'yes' : 'no',
+								summary: buildEditSummary({ text: this.summaryInput.getValue() }),
+								captchaid: this.captchaInput?.getCaptchaId(),
+								captchaword: this.captchaInput?.getCaptchaWord(),
+								...(this.captchaWidget
+									? await this.captchaWidget.getCaptchaDataForSubmission().catch(handleApiReject)
+									: {}),
+								useskin: cd.g.skin,
+								tags: (cd.user.isRegistered() && cd.config.tagName) || undefined,
+								dttags: ['discussiontools-reply'],
+								...cd.g.apiErrorFormatHtml,
+							}),
+						)
+						.catch(handleApiReject)
+				)
 
 			if (response.discussiontoolsedit.result !== 'success') {
+				if (response.discussiontoolsedit.edit.captcha) {
+					throw new CdError({
+						type: 'api',
+						code: 'captcha',
+						apiResponse: response,
+					})
+				}
+
 				this.handleError({
 					error: new CdError({
 						type: 'response',
@@ -2955,13 +2967,28 @@ class CommentForm extends EventEmitter {
 
 			return true
 		} catch (error) {
+			delete this.captchaWidget
 			delete this.captchaInput
 
 			if (error instanceof CdError) {
+				/** @type {JQuery | undefined} */
+				let $message
+
 				if (error.isServerDefinedApiError()) {
 					switch (error.getCode()) {
 						case 'missingtitle': {
 							error.setMessage(cd.sParse('error-pagedeleted'))
+							break
+						}
+
+						case 'captcha': {
+							if ('confirmEdit' in mw.libs) {
+								$message = this.setupCaptcha(
+									/** @type {{ discussiontoolsedit: { edit: { captcha: mw.libs.confirmEdit.CaptchaData } } }} */ (
+										error.getApiResponse()
+									).discussiontoolsedit.edit.captcha,
+								)
+							}
 							break
 						}
 
@@ -2978,19 +3005,8 @@ class CommentForm extends EventEmitter {
 
 				/** @type {'notice' | undefined} */
 				let messageType
-				const errorCode = error.getCode()
 				/** @type {string | undefined} */
 				const message = error.getMessage()
-				/** @type {JQuery | undefined} */
-				let $message
-
-				if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
-					$message = this.setupCaptcha(
-						/** @type {{ discussiontoolsedit: mw.libs.confirmEdit.CaptchaData }} */ (
-							error.getApiResponse()
-						).discussiontoolsedit.captcha,
-					)
-				}
 
 				this.handleError({
 					error,
@@ -3067,7 +3083,9 @@ class CommentForm extends EventEmitter {
 				watchlist: this.watchCheckbox?.isSelected() ? 'watch' : 'unwatch',
 				captchaid: this.captchaInput?.getCaptchaId(),
 				captchaword: this.captchaInput?.getCaptchaWord(),
-				...(this.captchaWidget ? await this.captchaWidget.getCaptchaDataForSubmission() : {}),
+				...(this.captchaWidget
+					? await this.captchaWidget.getCaptchaDataForSubmission().catch(handleApiReject)
+					: {}),
 			})
 			let sectionOrPage
 			if (this.isNewSectionApi()) {
