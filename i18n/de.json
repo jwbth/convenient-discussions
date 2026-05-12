@@ -3,6 +3,7 @@
 		"authors": [
 			"1233qwer1234qwer4",
 			"Abcdefg",
+			"AnupamM",
 			"Brettchenweber",
 			"DraconicDark",
 			"Elliot",
@@ -42,6 +43,7 @@
 	"cm-thanked": "Gedankt",
 	"cm-thanked-tooltip": "Du hast dem Benutzer bereits für diesen Kommentar gedankt",
 	"cm-edit": "Bearbeiten",
+	"cm-delete": "Löschen",
 	"cm-reply": "Antwort",
 	"cm-reply-outdented-tooltip": "Das Antworten funktioniert nicht bei Kommentaren, die ausgerückte Antworten haben",
 	"cm-quote": "Zitieren",

@@ -28,6 +28,8 @@
 	"cm-thanked": "Agradecido",
 	"cm-thanked-tooltip": "Você já agradeceu ao usuário por este comentário",
 	"cm-edit": "Editar",
+	"cm-delete": "Excluir",
+	"cm-fix": "Corrigir",
 	"cm-reply": "Responder",
 	"cm-reply-outdented-tooltip": "Não se pode responder a um comentário que possua respostas anuladas",
 	"cm-quote": "Citar",

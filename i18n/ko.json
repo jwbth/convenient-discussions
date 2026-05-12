@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Bisang",
 			"Codenstory",
 			"Ellif",
 			"Jack who built the house",
@@ -29,9 +30,12 @@
 	"cm-thanked": "감사를 표했습니다",
 	"cm-thanked-tooltip": "이미 이 의견에 대해 사용자에게 감사를 표했습니다",
 	"cm-edit": "편집",
+	"cm-delete": "삭제",
+	"cm-delete-tooltip": "댓글 삭제",
 	"cm-fix": "수정",
 	"cm-reply": "답변",
 	"cm-quote": "인용",
+	"popup-mutees-title": "새 기능",
 	"sm-editopeningcomment": "제목 편집",
 	"sm-editopeningcomment-tooltip": "섹션의 제목 편집",
 	"sm-addsubsection": "부문 추가",
@@ -48,6 +52,7 @@
 	"comment-timestamp-lessthanminute": "1분 전",
 	"comment-author-talk": "토론",
 	"comment-author-contribs": "기여",
+	"comment-author-tooltip-signature-prefix": "서명",
 	"comment-changed": "의견이 편집되었습니다.",
 	"comment-changed-short": "편집됨",
 	"comment-changed-refresh": "변경 내용을 보기 위해 새로 고침",
