@@ -367,6 +367,52 @@ declare global {
 					getCaptchaId(): string
 					getCaptchaWord(): string
 				}
+
+				interface CaptchaWidgetConfig {
+					container: Element | string
+					type?: string
+					interfaceName?: string
+				}
+
+				interface CaptchaSubmissionData {
+					captchaid: string
+					captchaword: string
+					wgConfirmEditForceShowCaptcha?: boolean
+				}
+
+				class CaptchaWidget {
+					static static: {
+						captchaNeededForEdit(): false | string
+					}
+
+					config: CaptchaWidgetConfig
+					captchaWord: string
+					captchaId: string
+					captchaRendered: boolean
+					hCaptchaSiteKey: string
+					hCaptchaWidgetId: string
+					hCaptchaForceShowCaptcha: boolean
+					captchaQuestion: string
+					captchaQuestionMime: string
+					captchaImageUrl: string
+					captchaInputField: Element | null
+
+					constructor(config: CaptchaWidgetConfig)
+					renderCaptcha(): Promise<void>
+					/** @internal */
+					renderHCaptcha($captchaContainer: JQuery): Promise<void>
+					getInputField(): HTMLElement | null
+					/** @internal */
+					renderQuestionCaptcha($captchaContainer: JQuery): Promise<void>
+					/** @internal */
+					createInputField(placeholder?: string): JQuery
+					/** @internal */
+					renderFancyCaptcha($captchaContainer: JQuery): Promise<void>
+					getCaptchaDataForSubmission(): Promise<CaptchaSubmissionData>
+					/** @internal */
+					executeHCaptcha(): Promise<void>
+					updateForCaptchaFailure(captchaData: Record<string, any>): Promise<void>
+				}
 			}
 		}
 

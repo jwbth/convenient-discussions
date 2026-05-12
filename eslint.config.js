@@ -418,20 +418,7 @@ const config = defineConfig(
 					allowTemplateLiterals: 'always',
 				},
 			],
-			'@stylistic/lines-between-class-members': [
-				'error',
-				{
-					enforce: [
-						{ blankLine: 'always', prev: 'method', next: 'method' },
-
-						// Arrow functions
-						{ blankLine: 'always', prev: 'method', next: 'field' },
-
-						// Arrow functions
-						{ blankLine: 'always', prev: 'field', next: 'field' },
-					],
-				},
-			],
+			'@stylistic/lines-between-class-members': ['warn', 'always'],
 
 			'no-one-time-vars/no-one-time-vars': 'off',
 			// No one-time vars plugin rules
@@ -609,6 +596,8 @@ const config = defineConfig(
 
 			// Prettier handles this
 			'@stylistic/member-delimiter-style': 'off',
+
+			'@stylistic/lines-between-class-members': 'off',
 
 			'@typescript-eslint/adjacent-overload-signatures': 'error',
 			'@typescript-eslint/consistent-type-imports': 'error',

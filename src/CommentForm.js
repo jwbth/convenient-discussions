@@ -522,6 +522,21 @@ class CommentForm extends EventEmitter {
 	apiName = 'edit'
 
 	/**
+	 * Captcha input widget, if the server requires solving a captcha for the edit.
+	 *
+	 * @type {mw.libs.confirmEdit.CaptchaInputWidget | undefined}
+	 */
+	captchaInput
+
+	/**
+	/**
+	 * New captcha widget, if the server requires solving a captcha for the edit.
+	 *
+	 * @type {mw.libs.confirmEdit.CaptchaWidget | undefined}
+	 */
+	captchaWidget
+
+	/**
 	 * @typedef {Mode extends 'addSection' ? undefined : import('./Section').default | undefined} CommentFormTargetSection
 	 */
 
@@ -2191,6 +2206,20 @@ class CommentForm extends EventEmitter {
 				})
 			}
 			this.$messageArea.cdScrollIntoView('top')
+			this.captchaWidget?.renderCaptcha().then(() => {
+				const captchaInputField = this.captchaWidget?.getInputField()
+				if (captchaInputField) {
+					// Save when pressing 'Enter' in captcha field as it is single line.
+					const $captchaInputElement = $(captchaInputField).find('input')
+					$captchaInputElement.on('keydown', (e) => {
+						if (e.which === OO.ui.Keys.ENTER) {
+							this.submit()
+						}
+					})
+
+					$captchaInputElement.trigger('focus')
+				}
+			})
 			this.captchaInput?.focus()
 		}
 	}
@@ -2306,7 +2335,7 @@ class CommentForm extends EventEmitter {
 			}
 		}
 
-		let framed = !$message
+		const framed = !$message
 		if (message) {
 			// If the message in the jQuery format was pre-provided, then by convention it's one that is not
 			// supposed to be framed.
@@ -2956,7 +2985,7 @@ class CommentForm extends EventEmitter {
 				let $message
 
 				if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
-					$message = this.setupCaptchaInput(
+					$message = this.setupCaptcha(
 						/** @type {{ discussiontoolsedit: mw.libs.confirmEdit.CaptchaData }} */ (
 							error.getApiResponse()
 						).discussiontoolsedit.captcha,
@@ -2984,13 +3013,30 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Set up captcha input widget and return a message widget.
+	 * Set up captcha widget and return a message widget.
 	 *
 	 * @param {mw.libs.confirmEdit.CaptchaData} captchaData Captcha data from the API response.
 	 * @returns {JQuery} Message widget element.
 	 * @private
 	 */
-	setupCaptchaInput(captchaData) {
+	setupCaptcha(captchaData) {
+		if ('CaptchaWidget' in mw.libs.confirmEdit) {
+			const $captchaContainer = $('<div>')
+
+			this.captchaWidget = new mw.libs.confirmEdit.CaptchaWidget({
+				container: $captchaContainer[0],
+				interfaceName: 'convenientDiscussions',
+			})
+			this.captchaWidget.updateForCaptchaFailure(captchaData)
+
+			const captchaMessage = new OO.ui.MessageWidget({
+				type: 'notice',
+				label: $captchaContainer,
+			})
+
+			return captchaMessage.$element
+		}
+
 		this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(captchaData)
 		this.captchaInput.on('enter', () => {
 			this.submit()
@@ -3021,6 +3067,7 @@ class CommentForm extends EventEmitter {
 				watchlist: this.watchCheckbox?.isSelected() ? 'watch' : 'unwatch',
 				captchaid: this.captchaInput?.getCaptchaId(),
 				captchaword: this.captchaInput?.getCaptchaWord(),
+				...(this.captchaWidget ? await this.captchaWidget.getCaptchaDataForSubmission() : {}),
 			})
 			let sectionOrPage
 			if (this.isNewSectionApi()) {
@@ -3042,6 +3089,7 @@ class CommentForm extends EventEmitter {
 			}
 			result = await this.getTargetPage().edit(options)
 		} catch (error) {
+			delete this.captchaWidget
 			delete this.captchaInput
 
 			if (error instanceof CdError) {
@@ -3061,7 +3109,7 @@ class CommentForm extends EventEmitter {
 					)
 					messageType = 'notice'
 				} else if (errorCode === 'captcha' && 'confirmEdit' in mw.libs) {
-					$message = this.setupCaptchaInput(
+					$message = this.setupCaptcha(
 						/** @type {{ edit: mw.libs.confirmEdit.CaptchaData }} */ (error.getApiResponse()).edit
 							.captcha,
 					)
