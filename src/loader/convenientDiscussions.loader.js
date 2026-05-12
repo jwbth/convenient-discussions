@@ -204,11 +204,17 @@ class Loader {
 			mw.loader.using(
 				[
 					'mediawiki.widgets.visibleLengthLimit',
+					// The following two both end up in mw.libs.confirmEdit (CaptchaWidget is a new one
+					// replacing CaptchaInputWidget; see https://phabricator.wikimedia.org/T424598), but we
+					// specify them separately in case any of them is absent.
+					mw.loader.getState('ext.confirmEdit.CaptchaWidget')
+						? 'ext.confirmEdit.CaptchaWidget'
+						: undefined,
 					mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
 						? 'ext.confirmEdit.CaptchaInputWidget'
 						: undefined,
-					// We need to instantiate our class based on the CodeMirror class, so we load it now,
-					// not on comment form creation.
+					// We need to define our class based on the CodeMirror class, so we load it now, not on
+					// comment form creation.
 					...(cd.g.isCodeMirror6Installed
 						? ['ext.CodeMirror.WikiEditor', 'ext.CodeMirror.mode.mediawiki']
 						: []),
