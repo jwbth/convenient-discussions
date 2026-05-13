@@ -247,8 +247,9 @@ class CommentSkeleton {
 		// Remove parts contained by other parts.
 		this.removeNestedParts()
 
-		// <td> content instead of <tbody>, <tr>, <td> where appropriate.
-		this.replaceTablesWithContent()
+		// <td> content instead of <thead>, <tbody>, <th>, <tr>, <td> where appropriate. This should be
+		// above wrapInlineParts() because this step may produce text nodes that need to be wrapped.
+		this.replaceTableInternalsWithContent()
 
 		// We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
 		// can't get a bounding client rectangle for text nodes, can't specify margins for them etc.).
@@ -1070,14 +1071,14 @@ class CommentSkeleton {
 	 *
 	 * @private
 	 */
-	replaceTablesWithContent() {
+	replaceTableInternalsWithContent() {
 		for (let i = this.parts.length - 1; i >= 0; i--) {
 			const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
 			const { tagName } = part.node
-			if (!['TBODY', 'TR', 'TD'].includes(tagName)) continue
+			if (!['THEAD', 'TBODY', 'TR', 'TH', 'TD'].includes(tagName)) continue
 
 			let cells
-			if (tagName === 'TD') {
+			if (tagName === 'TD' || tagName === 'TH') {
 				cells = [part.node]
 			} else if (tagName === 'TR') {
 				cells = this.parser.getChildElements(part.node).filter((el) => el.tagName === 'TD')
