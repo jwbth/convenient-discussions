@@ -542,11 +542,12 @@ class CommentSkeleton {
 			((step !== 'up' ||
 				CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses)) &&
 				((CommentSkeleton.elementHasAnyClass(element, this.parser.rejectClasses) &&
-					// Special case with an element that presents itself as a collapsed thread doesn't contain signatures, e.g.
+					// Special case with an element that presents itself as a collapsed thread but the
+					// comment's signature is not inside that element, e.g.
 					// https://en.wikipedia.org/wiki/Special:GoToComment/c-Oklopfer-20260504060500-Test
 					!(
 						CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses) &&
-						!element.getElementsByClassName('cd-signature', 1).length
+						!this.parser.constructor.contains(element, this.signatureElement)
 					)) ||
 					// Talk page message box
 					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox')))) ||
@@ -1093,24 +1094,23 @@ class CommentSkeleton {
 			this.parts.splice(
 				i,
 				1,
-				...childNodes
-					.map(
-						(node) =>
-							/** @type {CommentPart} */ ({
-								node,
-								isTextNode: isText(node),
-								isHeading: false,
-								hasCurrentSignature:
-									isElement(node) &&
-									this.parser.constructor.contains(
-										/** @type {ElementLike} */ (node),
-										this.signatureElement,
-									),
-								hasForeignComponents: false,
-								step: 'replaced',
-							}),
-					)
-					.reverse(),
+				...childNodes.map(
+					(node) =>
+						/** @type {CommentPart} */ ({
+							node,
+							isTextNode: isText(node),
+							isHeading: false,
+							hasCurrentSignature:
+								isElement(node) &&
+								this.parser.constructor.contains(
+									/** @type {ElementLike} */ (node),
+									this.signatureElement,
+								),
+							// Using the part's original value is a shortcut. Do we need to do better?
+							hasForeignComponents: part.hasForeignComponents,
+							step: 'replaced',
+						}),
+				),
 			)
 		}
 	}
