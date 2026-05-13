@@ -164,9 +164,10 @@ export default {
 		}
 
 		const scrollTop = /** @type {number} */ ($(window).scrollTop())
-		const viewportTop = scrollTop + controller.getBodyScrollPaddingTop()
+		// Round to fight subpixel differences, as in Comment#isInViewport()
+		const viewportTop = Math.floor(scrollTop + controller.getBodyScrollPaddingTop())
 		// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-		const viewportBottom = scrollTop + /** @type {number} */ ($(window).height())
+		const viewportBottom = Math.ceil(scrollTop + /** @type {number} */ ($(window).height()))
 
 		return partially
 			? elementBottom > viewportTop && elementTop < viewportBottom

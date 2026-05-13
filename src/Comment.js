@@ -1637,8 +1637,8 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Create the comment's underlay and overlay with contents.
-	 * This method should be implemented by subclasses to create their specific layers and actions.
+	 * Create the comment's underlay and overlay with contents. This method should be implemented by
+	 * subclasses to create their specific layers and actions.
 	 *
 	 * @fires commentLayersCreated
 	 * @abstract
@@ -2271,8 +2271,6 @@ class Comment extends mixIntoClass(
 
 		if (this.isCollapsed()) {
 			if (this.isScrolledToWhileCollapsed) {
-				// Second attempt to scroll to the comment - expand the thread without asking
-				this.collapsedNotification?.close()
 				this.scrollTo({
 					smooth,
 					expandThreads: true,
@@ -3160,8 +3158,10 @@ class Comment extends mixIntoClass(
 		}
 
 		const scrollY = window.scrollY
-		const viewportTop = scrollY + controller.getBodyScrollPaddingTop()
-		const viewportBottom = scrollY + window.innerHeight
+
+		// Round to fight subpixel differences, as in jqueryExtensions#cdIsInViewport()
+		const viewportTop = Math.floor(scrollY + controller.getBodyScrollPaddingTop())
+		const viewportBottom = Math.ceil(scrollY + window.innerHeight)
 
 		return partially
 			? offset.bottomForVisibility > viewportTop && offset.top < viewportBottom
