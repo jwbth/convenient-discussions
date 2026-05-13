@@ -247,6 +247,9 @@ class CommentSkeleton {
 		// Remove parts contained by other parts.
 		this.removeNestedParts()
 
+		// <td> content instead of <tbody>, <tr>, <td> where appropriate.
+		this.replaceTablesWithContent()
+
 		// We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
 		// can't get a bounding client rectangle for text nodes, can't specify margins for them etc.).
 		this.wrapInlineParts()
@@ -539,12 +542,11 @@ class CommentSkeleton {
 			((step !== 'up' ||
 				CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses)) &&
 				((CommentSkeleton.elementHasAnyClass(element, this.parser.rejectClasses) &&
-					// Special case with an element that presents itself as a collapsed thread but the
-					// comment's signature is not inside that element, e.g.
+					// Special case with an element that presents itself as a collapsed thread doesn't contain signatures, e.g.
 					// https://en.wikipedia.org/wiki/Special:GoToComment/c-Oklopfer-20260504060500-Test
 					!(
 						CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses) &&
-						!this.parser.constructor.contains(element, this.signatureElement)
+						!element.getElementsByClassName('cd-signature', 1).length
 					)) ||
 					// Talk page message box
 					(cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox')))) ||
@@ -1059,6 +1061,57 @@ class CommentSkeleton {
 				this.parts.splice(nextDiveElementIndex, i - nextDiveElementIndex)
 				i = nextDiveElementIndex
 			}
+		}
+	}
+
+	/**
+	 * Replace table elements with the child nodes of their `<td>` cells where appropriate.
+	 *
+	 * @private
+	 */
+	replaceTablesWithContent() {
+		for (let i = this.parts.length - 1; i >= 0; i--) {
+			const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
+			const { tagName } = part.node
+			if (!['TBODY', 'TR', 'TD'].includes(tagName)) continue
+
+			let cells
+			if (tagName === 'TD') {
+				cells = [part.node]
+			} else if (tagName === 'TR') {
+				cells = this.parser.getChildElements(part.node).filter((el) => el.tagName === 'TD')
+			} else {
+				cells = this.parser
+					.getChildElements(part.node)
+					.flatMap((tr) => this.parser.getChildElements(tr))
+					.filter((el) => el.tagName === 'TD')
+			}
+
+			const childNodes = cells.flatMap((cell) => [...cell.childNodes])
+			if (!childNodes.length) continue
+
+			this.parts.splice(
+				i,
+				1,
+				...childNodes
+					.map(
+						(node) =>
+							/** @type {CommentPart} */ ({
+								node,
+								isTextNode: isText(node),
+								isHeading: false,
+								hasCurrentSignature:
+									isElement(node) &&
+									this.parser.constructor.contains(
+										/** @type {ElementLike} */ (node),
+										this.signatureElement,
+									),
+								hasForeignComponents: false,
+								step: 'replaced',
+							}),
+					)
+					.reverse(),
+			)
 		}
 	}
 

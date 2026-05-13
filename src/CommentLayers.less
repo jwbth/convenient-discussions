@@ -309,7 +309,8 @@ body:not(.skin-monobook)
 		position: relative;
 		z-index: 0;
 
-		.mw-parser-output & {
+		// https://en.wikipedia.org/wiki/Wikipedia:Administrators'_noticeboard/Incidents#c-JoyBrag-20260505150400-JoyBrag,_possible_unpaid_editing/conflict_of_interest,_clear_SPA
+		.mw-parser-output &:not(tr):not(td):not(tbody):not(table) {
 			display: flow-root;
 
 			// `display: flow-root` should do the job of `overflow: hidden` or `overflow: auto` if it's
