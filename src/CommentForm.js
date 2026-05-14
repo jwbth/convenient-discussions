@@ -522,13 +522,13 @@ class CommentForm extends EventEmitter {
 	apiName = 'edit'
 
 	/**
-	 * Captcha input widget, if the server requires solving a captcha for the edit.
+	 * Old captcha input widget, if the server requires solving a captcha for the edit. We keep it for
+	 * compatibility with old MediaWiki versions.
 	 *
 	 * @type {mw.libs.confirmEdit.CaptchaInputWidget | undefined}
 	 */
 	captchaInput
 
-	/**
 	/**
 	 * New captcha widget, if the server requires solving a captcha for the edit.
 	 *

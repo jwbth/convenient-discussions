@@ -2271,6 +2271,7 @@ class Comment extends mixIntoClass(
 
 		if (this.isCollapsed()) {
 			if (this.isScrolledToWhileCollapsed) {
+				// Second attempt to scroll to the comment - expand the thread without asking
 				this.scrollTo({
 					smooth,
 					expandThreads: true,
