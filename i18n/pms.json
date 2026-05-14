@@ -1,6 +1,10 @@
 {
 	"@metadata": {
-		"authors": ["Borichèt", "Jack who built the house", "SaldırganSincap"]
+		"authors": [
+			"Borichèt",
+			"Jack who built the house",
+			"SaldırganSincap"
+		]
 	},
 	"script-name": "Discussion Pràtiche",
 	"script-name-short": "CD",
@@ -274,6 +278,7 @@
 	"popup-manyForms-text": "An Discussion pràtiche a peul ëscrive vàire coment ansem an dij formolari separà, peui mandeje un a la vira. Ël test ëd j'àutri formolari a sarà nen përdù cand chiel a manda un ëd si formolari. Ch'a preuva!",
 	"popup-upload-title": "Neuva fonsionalità",
 	"popup-upload-text": "Adess a peul carié dle fòto dlë scren su Comun an ësgnacand tre vire! Ch'a còpia mach o c'ha tira la plancia ant la zòna d'imission, ch'a serna ël presselessionà e ch'a sgnaca su «{{int:convenient-discussions-ud-uploadandsave}}».",
+	"popup-commentDisplay-text": "<p>An Convenient Discussion, dë stàndard, <strong>ij coment a l'han na visualisassion rinfrëscà e struturà</strong>: l'autor e lë stamp temporal a son ësmonù an cò e ij boton d'assion al fond. Sòn a ameliora la lesibilità dle pàgine ëd ciaciarade e a-j përmet ëd capì lòn ch'a-i suced con n'ociada.</p>\n\n<p><strong>A peul torné andré</strong> a la forma clàssica selessionand «Compat» sota «<span class=\"cd-notification-settings-compactComments\">[[$1|Visualisassion dij coment]]</span>» ant ij paràmeter. Ant ës cas-sì, ij boton d'assion a sautëran fòra an në mnu dzorponù.</p>\n\n<p class=\"cd-small\">Ch'a contròla ëdcò ij <span class=\"cd-notification-settings\">[[$2|paràmeter]]</span> ëd vàire fonsionalità, tanme ij fij ch'a së s-ciasso da soj, ij boton d'anseriment ëd test e la formatassion përsonalisàbil ëd jë stamp temporaj (che, tra l'àutr, a son ësmonù ant ël fus orari stabilì ant ij sò gust ëd la wiki).</p>",
 	"navpanel-refresh": "Rinfrësché la pàgina",
 	"navpanel-previous": "Andé al neuv coment precedent",
 	"navpanel-next": "Andé al coment neuv sucessiv",
@@ -323,7 +328,7 @@
 	"sd-reset-confirm": "É-lo sigur ëd vorèj torna inissialisé ij paràmeter? (Sgnaché su «{{int:convenient-discussions-sd-save}}» apress la riinissialisassion.)",
 	"sd-removedata": "Dëscancelé tuti ij dàit dël copion",
 	"sd-removedata-description": "Eliminé ij dàit che Discussion Pràtiche a l'ha cujì: sò paràmeter, le pàgine ëd discussion visità ëd recent, j'abonament a le contribussion e jë sbòss ëd coment nen mandà",
-	"sd-removedata-help": "Noté che tut gavà ij paràmeter globaj a l'é dëscancelà mach da la wiki corenta. Si chiel a l'ha dovrà Discussion pràtiche su d'àutre wiki e a veul dëscanceleje ij dàit, a dovrà gaveje ëdcò da cole wiki-là. Vëdde [[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|la pàgina d'intrada dël copion]] për dij detaj su còsa, përchè e coma ël copion a cheuj e dj'anstrussion su coma dëscancelé minca n'element d'anformassion an manera andividual. <strong>Nòta:</strong> Si chiel a deuvra l'antërfassa ëd notìfica stàndard për j'abonament a j'argoment, ij sò abonament a son nen gavà via dagià che a fan part ëd sò cont wiki.",
+	"sd-removedata-help": "Noté che tut gavà ij paràmeter globaj a l'é dëscancelà mach da la wiki corenta. Si chiel a l'ha dovrà Discussion pràtiche su d'àutre wiki e a veul dëscanceleje ij dàit, a dovrà gaveje ëdcò da cole wiki-là. Vëdde [[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|la pàgina d'intrada dël copion]] për dij detaj su còsa, përchè e coma ël copion a cheuj e dj'anstrussion su coma dëscancelé minca n'element d'anformassion an manera andividual. Ij sò abonament a son nen gavà via dagià che a fan part ëd sò cont wiki.",
 	"sd-removedata-confirm": "Sòn a dëscancelërà ëd fasson përmanenta ij sò paràmeter, le pàgine ëd discussion visità ëd recent, j'abonament e jë sbòss ëd coment nen mandà. Veul-lo andé anans?",
 	"sd-dataremoved": "Ij sò dàit a son ëstàit dëscancelà për da bin. Për ampedì la creassion ëd neuv dàit, ch'a fasa atension a visité gnun-e pàgine ëd discussion prima ëd disativé le Discussion pràtiche.",
 	"sd-error-removedata": "Impossìbil dëscancelé ij dàit dal servent.",

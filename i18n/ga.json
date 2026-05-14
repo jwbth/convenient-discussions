@@ -32,6 +32,8 @@
 	"thread-expand-label": "Leathnaigh an snáithe ($1 {{plural:$1|trácht|tráchtanna}} faoi {{plural:$2|{{gender:$4|$3}}}})",
 	"thread-expand-tooltip": "• Alt+cliceáil: Fillte/leathnú gach snáithe deartháireacha chomh maith\n• Alt+Shift+cliceáil: Fillte/leathnú gach snáithe den leibhéal seo ar an leathanach",
 	"thread-newcomments": "{{plural:$1|Tá trácht nua ann|Tá $1 tráchtanna nua}} sa snáithe seo ó {{plural:$2|{{gender:$4|$3}}}}. Cliceáil chun an leathanach a athnuachan.",
+	"popup-mutees-title": "Gné nua",
+	"popup-mutees-text": "De réir réamhshocraithe, déantar snáitheanna a thosaigh úsáideoirí a chuir tú ar an méar fhada a dhúnadh. Is féidir leat é seo a dhíchumasú sna <span class=\"cd-notification-settings-collapseThreadsByMutees\">[[$1|socruithe]]</span>.",
 	"sm-editopeningcomment": "Cuir ábhar in eagar",
 	"sm-editopeningcomment-tooltip": "Cuir ábhar na rannóige in eagar",
 	"sm-addsubsection": "Cuir fo-alt leis",
