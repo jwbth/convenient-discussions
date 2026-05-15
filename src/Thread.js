@@ -1643,7 +1643,7 @@ class Thread extends mixIntoObject(
 		// for interactions.
 		this.updateLines()
 
-		if (autocollapse) {
+		if (autocollapse && cd.settings.get('collapseThreads')) {
 			this.autocollapseThreads()
 			mw.hook('convenientDiscussions.mutedUsers').add(() => {
 				if (cd.settings.get('collapseThreadsByMutees')) {
