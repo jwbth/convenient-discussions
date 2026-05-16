@@ -154,8 +154,17 @@ declare module 'domhandler' {
 
 		classList: TokenList
 		className: string
-
 		_classList: TokenList | undefined
+
+		/**
+		 * Alias for {@link Element.textContent}.
+		 */
+		innerText: string
+
+		/**
+		 * Alias for {@link Element.tagName}.
+		 */
+		nodeName: string
 
 		cdIsInline?: boolean
 	}

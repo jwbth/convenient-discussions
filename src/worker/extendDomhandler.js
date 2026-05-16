@@ -412,6 +412,21 @@ Object.defineProperty(Element.prototype, 'tagName', {
 	},
 })
 
+Object.defineProperty(Element.prototype, 'nodeName', {
+	get() {
+		return this.tagName
+	},
+})
+
+Object.defineProperty(Element.prototype, 'innerText', {
+	/**
+	 * @returns {string}
+	 */
+	get() {
+		return this.textContent
+	},
+})
+
 // We have to create a getter as there is no way to access an object from a method of that object's
 // property (Element#classList.add() and such in this case).
 Object.defineProperty(Element.prototype, 'classList', {
