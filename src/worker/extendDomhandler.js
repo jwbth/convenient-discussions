@@ -213,6 +213,16 @@ Element.prototype.querySelectorAll = function querySelectorAll(selector) {
 }
 
 /**
+ * @param {string} selector
+ * @returns {?Element}
+ */
+Element.prototype.querySelector = function querySelector(selector) {
+	const nodes = this.querySelectorAll(selector)
+
+	return nodes.length ? nodes[0] : null
+}
+
+/**
  * @param {string} name
  * @returns {Element[]}
  */
@@ -541,3 +551,4 @@ Document.prototype.createTextNode = function createTextNode(content = '') {
 
 Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName.bind(Element)
 Document.prototype.querySelectorAll = Element.prototype.querySelectorAll.bind(Element)
+Document.prototype.querySelector = Element.prototype.querySelector.bind(Element)

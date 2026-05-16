@@ -78,6 +78,7 @@ declare module 'domhandler' {
 
 		getElementsByClassName(name: string, limit?: number): Element[]
 		querySelectorAll(selector: string): Element[]
+		querySelector(selector: string): Element | null
 	}
 
 	interface Element {
@@ -135,6 +136,13 @@ declare module 'domhandler' {
 		 * Supports only classes and tags as selectors.
 		 */
 		querySelectorAll(selector: string): Element[]
+
+		/**
+		 * Return the first descendant that matches the given CSS selector.
+		 *
+		 * Supports only classes and tags as selectors.
+		 */
+		querySelector(selector: string): Element | null
 
 		getElementsByTagName(name: string): Element[]
 
