@@ -76,8 +76,24 @@ declare module 'domhandler' {
 		 */
 		createTextNode(content: string): Text
 
+		/**
+		 * Return all elements that have a class name matching the given name. If `limit` is provided,
+		 * return at most `limit` elements. If `limit` is not provided, return all matching elements.
+		 */
 		getElementsByClassName(name: string, limit?: number): Element[]
+
+		/**
+		 * Return all elements that match the given CSS selector.
+		 *
+		 * Supports only classes and tags as selectors.
+		 */
 		querySelectorAll(selector: string): Element[]
+
+		/**
+		 * Return the first element that matches the given CSS selector.
+		 *
+		 * Supports only classes and tags as selectors.
+		 */
 		querySelector(selector: string): Element | null
 	}
 
@@ -123,6 +139,10 @@ declare module 'domhandler' {
 		 */
 		removeAttribute(name: string): void
 
+		/**
+		 * Return all elements that have a class name matching the given name. If `limit` is provided,
+		 * return at most `limit` elements. If `limit` is not provided, return all matching elements.
+		 */
 		getElementsByClassName(name: string, limit?: number): Element[]
 
 		/**
@@ -144,6 +164,11 @@ declare module 'domhandler' {
 		 */
 		querySelector(selector: string): Element | null
 
+		/**
+		 * Return all elements that have the given tag name.
+		 *
+		 * @param name
+		 */
 		getElementsByTagName(name: string): Element[]
 
 		childElements: Element[]
