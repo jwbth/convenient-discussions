@@ -3278,11 +3278,15 @@ class CommentForm extends EventEmitter {
 		const { contextCode, commentCode } = (await this.buildSource('submit', operation)) || {}
 		let editDate
 		if (contextCode === undefined) {
-			if (this.apiName === 'discussiontoolsedit' && !(await this.submitViaDt(operation))) return
+			if (this.apiName === 'discussiontoolsedit') {
+				if (!(await this.submitViaDt(operation))) return
 
-			// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
-			// just look at the newest own comment after the reload?
-			editDate = new Date()
+				// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
+				// just look at the newest own comment after the reload?
+				editDate = new Date()
+			} else {
+				return
+			}
 		} else {
 			const editTimestamp = await this.editPage(contextCode, operation, suppressTag)
 
