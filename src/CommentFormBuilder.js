@@ -882,7 +882,9 @@ class CommentFormBuilder {
 			/** @type {string} */ (this.form.commentInput.$input.attr('placeholder')),
 		)
 
-		// Hide the label
+		this.form.commentInput.getEditableElement().attr('tabIndex', this.form.getTabIndex(12))
+
+		// Hide the icon label to harmonize with other buttons and save space
 		this.form.commentInput.$element
 			.find('.cm-mw-toggle-wikieditor')
 			.removeClass('oo-ui-labelElement')
