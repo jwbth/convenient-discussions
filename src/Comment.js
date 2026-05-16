@@ -1934,6 +1934,7 @@ class Comment extends mixIntoClass(
 
 							// Make it work in https://www.mediawiki.org/wiki/Instant_Diffs
 							.attr('data-instantdiffs-link', 'event')
+							.attr('data-instantdiffs-options', JSON.stringify({ setClasses: 'clear' }))
 
 							.text(cd.s('comment-diff-full')),
 						cd.sParse('dot-separator'),
@@ -2385,6 +2386,7 @@ class Comment extends mixIntoClass(
 
 							// Make it work in https://www.mediawiki.org/wiki/Instant_Diffs
 							.attr('data-instantdiffs-link', 'event')
+							.attr('data-instantdiffs-options', JSON.stringify({ setClasses: 'clear', insertMethod: 'insertBefore' }))
 
 							.text(cd.mws('nextdiff')),
 					)
@@ -2714,7 +2716,11 @@ class Comment extends mixIntoClass(
 				targetBlank: true,
 			},
 		)
-		$question.find('a').attr('data-instantdiffs-link', 'event')
+
+		// Make it work in https://www.mediawiki.org/wiki/Instant_Diffs
+		$question.find('a')
+			.attr('data-instantdiffs-link', 'event')
+			.attr('data-instantdiffs-options', JSON.stringify({ setClasses: 'clear' }));
 		const $diffView = await this.generateDiffView()
 
 		const accepted =
