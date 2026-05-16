@@ -399,7 +399,11 @@ class Controller extends EventEmitter {
 				const treeWalker = new TreeWalker(
 					this.rootElement,
 					/** @type {(node: NodeLike) => node is Element} */ (
-						(node) => isElement(node) && !node.className.startsWith('ext-discussiontools')
+						// className may be SVGAnimatedString for SVG elements, e.g. https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_page#c-JWBTH-20241208085100-Test_charts
+						(node) =>
+							isElement(node) &&
+							typeof node.className === 'string' &&
+							!node.className.startsWith('ext-discussiontools')
 					),
 					true,
 					this.rootElement.firstElementChild || undefined,
