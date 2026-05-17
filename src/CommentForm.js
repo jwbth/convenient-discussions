@@ -767,7 +767,10 @@ class CommentForm extends EventEmitter {
 	async loadCustomModules() {
 		await mw.loader.using(
 			cd.config.customCommentFormModules
-				.filter((module) => !module.checkFunc || module.checkFunc())
+				.filter(
+					// .getState() to check the gadget exists
+					(module) => (!module.checkFunc || module.checkFunc()) && mw.loader.getState(module.name),
+				)
 				.map((module) => module.name),
 		)
 
