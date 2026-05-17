@@ -1343,7 +1343,7 @@ export class CommentManager extends EventEmitter {
 			comment.scrollTo({
 				flash: false,
 				callback: () => {
-					// The default controller.handleScroll() callback is executed in $#cdScrollTo, but
+					// The default controller.handleViewportMove() callback is executed in $#cdScrollTo, but
 					// that happens after a 300ms timeout, so we have a chance to have our callback executed
 					// first.
 					comment.registerSeen(direction, true)
@@ -1378,7 +1378,7 @@ export class CommentManager extends EventEmitter {
 		comment?.scrollTo({
 			flash: false,
 			callback: () => {
-				// The default controller.handleScroll() callback is executed in $#cdScrollTo, but
+				// The default controller.handleViewportMove() callback is executed in $#cdScrollTo, but
 				// that happens after a 300ms timeout, so we have a chance to have our callback executed
 				// first.
 				comment.registerSeen('forward', true)

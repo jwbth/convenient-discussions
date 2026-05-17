@@ -189,7 +189,12 @@ function getConfig() {
 			}
 
 			const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || []
-			if (gadgetName && mw.user.options.get(`gadget-${gadgetName}`)) {
+			// getState for ?safemode=1
+			if (
+				gadgetName &&
+				mw.user.options.get(`gadget-${gadgetName}`) &&
+				mw.loader.getState(`ext.gadget.${gadgetName}`)
+			) {
 				// A gadget is enabled on the wiki, and it should be loaded and executed without any
 				// additional requests; we just wait until it happens.
 				mw.loader.using(`ext.gadget.${gadgetName}`).then(() => {
