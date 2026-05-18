@@ -766,6 +766,7 @@ class Section extends SectionSkeleton {
 					url.searchParams.set('cdauthor', author.getName())
 					url.searchParams.set('dtnewcommentssince', this.oldestComment.dtId)
 					url.searchParams.set('dtinthread', '1')
+					url.hash = ''
 					href = url.toString()
 				} else {
 					href = `#${this.oldestComment?.getUrlFragment() || ''}`
@@ -785,7 +786,7 @@ class Section extends SectionSkeleton {
 							if (event.altKey) return
 
 							if (this.oldestComment?.dtId) {
-								history.pushState(history.state, '', href)
+								history.pushState(null, '', href)
 								highlightLinkedComments()
 							} else {
 								Comment.markAsLinked(comments, true, false)
