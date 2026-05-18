@@ -10,7 +10,7 @@ import Comment from './Comment'
 import commentManager from './commentManager'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import { defined, underlinesToSpaces } from './shared/utils-general'
+import { defined, sleep, underlinesToSpaces } from './shared/utils-general'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import { formatDateNative } from './utils-date'
 import { isExistentAnchor, wrapHtml } from './utils-window'
@@ -28,10 +28,10 @@ let searchResults
 /**
  * Highlight linked comments based on URL parameters.
  *
- * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
+ * @param {boolean} [scroll] Scroll to the topmost highlighted comment.
  * @private
  */
-export function highlightLinkedComments(noScroll = false) {
+export function highlightLinkedComments(scroll = true) {
 	const url = new URL(location.href)
 	const newCommentIds = url.searchParams.get('dtnewcomments')?.split('|') || []
 	const newCommentsSinceId = url.searchParams.get('dtnewcommentssince')
@@ -93,7 +93,7 @@ export function highlightLinkedComments(noScroll = false) {
 
 	// Highlight and scroll to the first comment
 	if (commentsToHighlight.length) {
-		Comment.markAsLinked(commentsToHighlight, !noScroll, false)
+		Comment.markAsLinked(commentsToHighlight, scroll, false)
 	}
 }
 
@@ -158,8 +158,8 @@ function parseFragment() {
 /**
  * _For internal use._ Perform URL fragment-related tasks.
  */
-export default function processUrlOnLoad() {
-	const { fragment, comment, date, author } = processCommentReferencesInUrl()
+export default async function processUrlOnLoad() {
+	const { fragment, comment, date, author } = await processCommentReferencesInUrl()
 
 	if (
 		fragment &&
@@ -182,17 +182,36 @@ export default function processUrlOnLoad() {
 /**
  * Handle URL parts related to comments.
  *
- * @param {boolean} [noScroll] Don't scroll to the topmost highlighted comment.
- * @returns {ParsedFragment}
+ * @param {boolean} [scrollToLinkedComment] Scroll to the topmost linked comment (if highlighting as
+ *   linked).
+ * @returns {Promise<ParsedFragment>}
  */
-export function processCommentReferencesInUrl(noScroll = false) {
+export async function processCommentReferencesInUrl(scrollToLinkedComment = true) {
 	const { fragment, comment, date, author } = parseFragment()
 
 	if (comment) {
-		Comment.markAsLinked([comment])
+		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
+		// incorrectly. (TODO: does it still? Need to check.)
+		await sleep()
+
+		// TODO: The following blocks reproduce the blocks in Comment#markAsLinked(). Deduplicate?
+
+		comment.scrollTo({
+			smooth: false,
+			expandThreads: true,
+		})
+
+		// Replace CD's comment ID in the fragment with DiscussionTools' if available and add the
+		// cdTargetComment state to history to avoid targeting the same comment again if "Back" is
+		// pressed in the browser.
+		history.replaceState(
+			{ ...history.state, cdTargetComment: true, cdLinkedComment: false },
+			'',
+			comment.dtId ? `#${comment.dtId}` : undefined,
+		)
 	} else {
 		// Handle URL parameters for highlighting multiple comments
-		highlightLinkedComments(noScroll)
+		highlightLinkedComments(scrollToLinkedComment)
 	}
 
 	return { fragment, comment, date, author }

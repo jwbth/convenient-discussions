@@ -302,6 +302,9 @@ class BootProcess {
 		}
 
 		if (cd.page.exists()) {
+			// Link in the subtitle works anyway. We need this to make it work even when it's clicked
+			// twice in a row, or when a page is loaded with some comment ID in the fragment, and then the
+			// subtitle link with the same fragment is clicked.
 			controller.connectToCommentLinks($('#mw-content-subtitle'))
 
 			// Should be below the comment form restoration for threads to be expanded correctly and also

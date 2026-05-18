@@ -2386,7 +2386,10 @@ class Comment extends mixIntoClass(
 
 							// Make it work in https://www.mediawiki.org/wiki/Instant_Diffs
 							.attr('data-instantdiffs-link', 'event')
-							.attr('data-instantdiffs-options', JSON.stringify({ setClasses: 'clear', insertMethod: 'insertBefore' }))
+							.attr(
+								'data-instantdiffs-options',
+								JSON.stringify({ setClasses: 'clear', insertMethod: 'insertBefore' }),
+							)
 
 							.text(cd.mws('nextdiff')),
 					)
@@ -2718,9 +2721,10 @@ class Comment extends mixIntoClass(
 		)
 
 		// Make it work in https://www.mediawiki.org/wiki/Instant_Diffs
-		$question.find('a')
+		$question
+			.find('a')
 			.attr('data-instantdiffs-link', 'event')
-			.attr('data-instantdiffs-options', JSON.stringify({ setClasses: 'clear' }));
+			.attr('data-instantdiffs-options', JSON.stringify({ setClasses: 'clear' }))
 		const $diffView = await this.generateDiffView()
 
 		const accepted =
@@ -4238,10 +4242,6 @@ class Comment extends mixIntoClass(
 	static async markAsLinked(comments, scroll = true, replaceState = true) {
 		if (!comments.length) return
 
-		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
-		// incorrectly. (TODO: does it still? Need to check.)
-		await sleep()
-
 		this.clearLinkedStateOnBodyClick()
 
 		// TODO: Add flags and update layers separately to minimize reflow? (Pass `false` as a third
@@ -4249,6 +4249,13 @@ class Comment extends mixIntoClass(
 		comments.forEach((comment) => {
 			comment.addFlag('linked')
 		})
+
+		// TODO: The following blocks reproduce the blocks in processCommentReferencesInUrl().
+		// Deduplicate?
+
+		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
+		// incorrectly. (TODO: does it still? Need to check.)
+		await sleep()
 
 		if (scroll) {
 			comments[0].scrollTo({

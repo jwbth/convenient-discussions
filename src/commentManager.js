@@ -1430,25 +1430,25 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Handle the popstate event - manage linked comment highlighting and navigation.
+	 * Handle the `popstate` event - manage linked comment highlighting and navigation.
 	 *
 	 * @param {string} fragment Current URL fragment
 	 * @private
 	 */
 	handlePopState = (fragment) => {
-		// Don't jump to the comment if the user pressed "Back"/"Forward" in the browser - in that
-		// case they are unlikely to want the comment to be highlighted and may want to get back to
-		// their previous viewport position after clicking some anchor link. This also applied to
-		// cases when history.pushState() is called from Comment#scrollTo() (after clicks on added
-		// (gray) items in the TOC). A marginal state of this happening is when a page with a
-		// comment ID in the fragment is opened and then a link with the same fragment is clicked.
-
 		// Clear linked state from comments that don't match the current fragment
 		this.clearLinkedComments(fragment)
 
-		if (history.state?.cdTargetComment) return
+		// Don't jump to the comment if the user pressed "Back"/"Forward" in the browser - in that case
+		// they are unlikely to want the comment to be highlighted and may want to get back to their
+		// previous viewport position after clicking some anchor link. This also applies to cases when
+		// history.pushState() is called from Comment#scrollTo() (after clicks on added (gray) items in
+		// the TOC). A marginal state of this happening is when a page with a comment ID in the fragment
+		// is opened and then a link with the same fragment is clicked.
+		if (history.state?.cdTargetComment || history.state?.cdTargetComment) return
 
-		processCommentReferencesInUrl(true)
+		// I forgot; why exactly we need `false` here?..
+		processCommentReferencesInUrl(false)
 	}
 
 	/**
@@ -1480,7 +1480,7 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Handle the beforeReboot event - stop animations and clean up layers.
+	 * Handle the `beforeReboot` event - stop animations and clean up layers.
 	 *
 	 * @param {import('./BootProcess').PassedData} passedData
 	 * @private
