@@ -256,6 +256,8 @@ class NavPanel {
 	 * @private
 	 */
 	refreshClick(markAsRead = false) {
+		if (commentFormManager.getAll().some((commentForm) => commentForm.isBeingSubmitted())) return
+
 		controller.rebootPage({
 			commentIds: controller.getRelevantAddedCommentIds(),
 			markAsRead,

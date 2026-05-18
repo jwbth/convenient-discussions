@@ -3265,6 +3265,7 @@ class CommentForm extends EventEmitter {
 		}
 
 		if (this.commentFormManager.getAll().some((commentForm) => commentForm.isBeingSubmitted())) {
+			this.$messageArea.empty()
 			this.handleError({
 				error: new CdError({
 					type: 'ui',
