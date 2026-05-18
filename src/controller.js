@@ -990,20 +990,20 @@ class Controller extends EventEmitter {
 		// The benefit may be low compared to the performance cost, but it's unexpected when the user
 		// scrolls a comment and it suddenly stops being highlighted because the cursor is between
 		// neighboring <p>s.
-		$(document).on('mousemove mouseover', (event) => {
+		$(document).on('mousemove.cd mouseover.cd', (event) => {
 			this.handleMouseMove(/** @type {JQuery.MouseMoveEvent | JQuery.MouseOverEvent} */ (event))
 		})
 
 		// We need the `visibilitychange` event because many things may move while the document is
 		// hidden, and movements are not processed when the document is hidden.
 		$(document)
-			.on('scroll visibilitychange', this.handleViewportMove)
-			.on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll)
-			.on('selectionchange', this.throttledHandleSelectionChange)
+			.on('scroll.cd visibilitychange.cd', this.handleViewportMove)
+			.on('horizontalscroll.cd visibilitychange.cd', this.handleHorizontalScroll)
+			.on('selectionchange.cd', this.throttledHandleSelectionChange)
 
 		$(window)
-			.on('resize orientationchange', this.handleWindowResize)
-			.on('popstate', this.handlePopState)
+			.on('resize.cd orientationchange.cd', this.handleWindowResize)
+			.on('popstate.cd', this.handlePopState)
 
 		// Should be above mw.hook('wikipage.content').fire so that it runs for the whole page content
 		// as opposed to $('.cd-comment-author-wrapper').
@@ -1015,8 +1015,8 @@ class Controller extends EventEmitter {
 		setInterval(this.handlePageMutate, 1500)
 
 		if (cd.page.isCommentable()) {
-			$(document).on('keydown', this.handleGlobalKeyDown).on('keyup', this.handleGlobalKeyUp)
-			$(window).on('blur', this.handleWindowBlur)
+			$(document).on('keydown.cd', this.handleGlobalKeyDown).on('keyup', this.handleGlobalKeyUp)
+			$(window).on('blur.cd', this.handleWindowBlur)
 		}
 
 		mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this))
