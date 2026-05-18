@@ -1654,22 +1654,6 @@ class CommentForm extends EventEmitter {
 
 		this.addEventListenersToCommentInput()
 
-		// "Performance issues?" hint
-		if (
-			controller.isLongPage() &&
-			$.client.profile().layout === 'webkit' &&
-			!cd.settings.get('improvePerformance') &&
-			!this.haveSuggestedToImprovePerformanceRecently()
-		) {
-			const keypressCount = 10
-			const rateLimit = 50
-			const checkForPerformanceIssues = (/** @type {JQuery.Event} */ e) => {
-				this.checkForPerformanceIssues(e, keypressCount, rateLimit)
-			}
-			this.commentInput.$input.on('input', checkForPerformanceIssues)
-			this.headlineInput?.$input.on('input', checkForPerformanceIssues)
-		}
-
 		this.summaryInput
 			.on('manualChange', () => {
 				this.summaryAltered = true
@@ -1772,54 +1756,6 @@ class CommentForm extends EventEmitter {
 			editableElement.removeEventListener('drop', this.handlePasteDrop, true)
 			$(editableElement).off('.cd')
 		})
-	}
-
-	/**
-	 * Check whether we recently suggested the user to enable the "Improve performance" setting via a
-	 * warn notification.
-	 *
-	 * @returns {boolean}
-	 */
-	haveSuggestedToImprovePerformanceRecently() {
-		const lastSuggested = cd.settings.get('improvePerformance-lastSuggested')
-
-		return Boolean(lastSuggested && getDayTimestamp() - lastSuggested < 14)
-	}
-
-	/**
-	 * Used as a callback for `keydown` events - check whether there are performance issues based on
-	 * the rate of the last `keypressCount` keypresses. If there are such, show a notification.
-	 *
-	 * @param {JQuery.Event} event
-	 * @param {number} keypressCount
-	 * @param {number} rateLimit
-	 * @private
-	 */
-	checkForPerformanceIssues(event, keypressCount, rateLimit) {
-		if (this.haveSuggestedToImprovePerformanceRecently()) return
-
-		this.lastKeyPresses.push(event.timeStamp)
-		this.lastKeyPresses.splice(0, this.lastKeyPresses.length - keypressCount)
-		if (
-			this.lastKeyPresses[keypressCount - 1] - this.lastKeyPresses[0] <
-			keypressCount * rateLimit
-		) {
-			mw.notify(
-				wrapHtml(cd.sParse('warning-performance'), {
-					callbacks: {
-						'cd-notification-talkPageSettings': (_event, button) => {
-							cd.settings.showDialogOnButtonClick(button, 'talkPage')
-						},
-					},
-				}),
-				{
-					title: cd.s('warning-performance-title'),
-					type: 'warn',
-					autoHideSeconds: 'long',
-				},
-			)
-			cd.settings.saveSettingOnTheFly('improvePerformance-lastSuggested', getDayTimestamp())
-		}
 	}
 
 	/**

@@ -33,7 +33,6 @@ import { wrapHtml } from './utils-window'
  * @property {boolean} hideTimezone
  * @property {number} highlightNewInterval
  * @property {boolean} improvePerformance
- * @property {number|null} improvePerformance-lastSuggested
  * @property {Array.<string|[string, string]>} insertButtons
  * @property {boolean} insertButtons-altered
  * @property {boolean} manyForms-onboarded
@@ -169,7 +168,6 @@ class Settings extends EventEmitter {
 		 */
 		aliases: {
 			'insertButtons-altered': ['haveInsertButtonsBeenAltered'],
-			'improvePerformance-lastSuggested': ['improvePerformanceLastSuggested'],
 			'commentDisplay': ['reformatComments'],
 			'subscribeOnReply': ['watchSectionOnReply'],
 		},
@@ -183,7 +181,6 @@ class Settings extends EventEmitter {
 		states: [
 			'authorsSort',
 			'insertButtons-altered',
-			'improvePerformance-lastSuggested',
 			'collapseThreadsByMutees-onboarded',
 			'manyForms-onboarded',
 			'toggleChildThreads-onboarded',
@@ -289,7 +286,6 @@ class Settings extends EventEmitter {
 			'hideTimezone': false,
 			'highlightNewInterval': 15,
 			'improvePerformance': false,
-			'improvePerformance-lastSuggested': null,
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			'insertButtons': cd.config.defaultInsertButtons || [],
 			'insertButtons-altered': false,
