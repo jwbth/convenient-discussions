@@ -420,11 +420,11 @@ class Loader {
 		cd.debug.stopTimer('start')
 		cd.debug.startTimer('load data')
 
-		this.showBootingOverlay()
+		this.setBooting(true)
 
 		sleep(15_000).then(() => {
 			if (this.booting) {
-				this.hideBootingOverlay()
+				this.setBooting(false)
 				console.warn('The booting overlay stays for more than 15 seconds; removing it.')
 			}
 		})
@@ -1073,6 +1073,12 @@ class Loader {
 	 */
 	setBooting(value) {
 		this.booting = value
+
+		if (value) {
+			this.showBootingOverlay()
+		} else {
+			this.hideBootingOverlay()
+		}
 	}
 
 	/**

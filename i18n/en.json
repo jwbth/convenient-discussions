@@ -231,6 +231,7 @@
 	"cf-error-pagedoesntexist": "The page doesn't exist.",
 	"cf-error-formconflict": "There already is an \"Add topic\" form of a different type open on the page. Close that form to open this one.",
 	"cf-error-othersubmitted": "Can't submit the form because another form is being submitted right now.",
+	"cf-error-pagereloaded": "Can't submit the form because the page is being reloaded right now.",
 	"cf-error-uploadimage": "Couldn't upload the image.",
 
 	"cf-confirm-fixindentation": "It looks like this comment has incorrect indentation. Try to fix it?",

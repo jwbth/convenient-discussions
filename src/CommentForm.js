@@ -16,7 +16,6 @@ import CdError from './shared/CdError'
 import Parser from './shared/Parser'
 import {
 	defined,
-	getDayTimestamp,
 	getNativePromiseState,
 	removeDoubleSpaces,
 	sleep,
@@ -2744,6 +2743,11 @@ class CommentForm extends EventEmitter {
 	 * @param {import('./CommentFormOperation').default} [operation] Submit operation.
 	 */
 	async reloadPage(bootData, operation) {
+		// Careful with this: there should be no `await`s between this place and
+		// controller.rebootPage(). Otherwise, there will be a time gap where the form is unregistered
+		// but the page is still not considered booting. This e.g. may confuse another form if it's
+		// submitted in that time gap - it won't understand another form is being submitted right now,
+		// and no error will be shown.
 		this.unregister()
 
 		if (!cd.page.exists()) {
@@ -2771,8 +2775,6 @@ class CommentForm extends EventEmitter {
 				cancel: true,
 				operation,
 			})
-
-			cd.loader.hideBootingOverlay()
 
 			return
 		}
@@ -3189,6 +3191,17 @@ class CommentForm extends EventEmitter {
 	submit = async (clearMessages = true, suppressTag = false, isAutoSubmit = false) => {
 		const doDelete = Boolean(this.deleteCheckbox?.isSelected())
 		if (this.isBeingSubmitted() || this.isContentBeingLoaded()) {
+			return
+		}
+		if (cd.loader.isPageOverlayOn()) {
+			this.$messageArea.empty()
+			this.handleError({
+				error: new CdError({
+					type: 'ui',
+					message: cd.sParse('cf-error-pagereloaded'),
+				}),
+			})
+
 			return
 		}
 

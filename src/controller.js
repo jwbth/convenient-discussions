@@ -1893,7 +1893,6 @@ class Controller extends EventEmitter {
 			mw.notify(cd.prependScriptName(cd.s('error-processpage')), { type: 'error' })
 			cd.debug.logError(error)
 		}
-		cd.loader.hideBootingOverlay()
 		this.debugLog()
 		cd.loader.setBooting(false)
 	}
@@ -1937,6 +1936,8 @@ class Controller extends EventEmitter {
 
 		this.emit('beforeReboot', passedData)
 
+		cd.loader.setBooting(true)
+
 		if (!passedData.commentIds && !passedData.sectionId) {
 			this.saveScrollPosition()
 		}
@@ -1949,14 +1950,14 @@ class Controller extends EventEmitter {
 			cd.debug.logWarn(error)
 		})
 
-		cd.loader.showBootingOverlay()
 		const bootProcess = new BootProcess(passedData)
 
 		try {
 			bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true)
 		} catch (error) {
-			cd.loader.hideBootingOverlay()
+			cd.loader.setBooting(false)
 			if (bootProcess.passedData.submittedCommentForm) {
+				cd.loader.setBooting(false)
 				throw error
 			} else {
 				mw.notify(cd.s('error-reloadpage'), { type: 'error' })
