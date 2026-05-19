@@ -580,6 +580,15 @@ export default defineConfig(({ mode, command }) => {
 					// Preserve class names for better debugging. We also use it in
 					// getMixinBaseClassPrototype()
 					keepNames: true,
+
+					// Reduce the eagerness of the minifier to preserve assignments as separate statements
+					minify: {
+						compress: {
+							sequences: false,
+						},
+						mangle: true,
+						codegen: true,
+					},
 				},
 			},
 
@@ -652,6 +661,15 @@ export default defineConfig(({ mode, command }) => {
 
 					// Source maps for workers (when not inlined)
 					sourcemap: buildMode.isSingle ? 'inline' : true,
+
+					// Reduce the eagerness of the minifier to preserve assignments as separate statements
+					minify: {
+						compress: {
+							sequences: false,
+						},
+						mangle: true,
+						codegen: true,
+					},
 				},
 			},
 		},

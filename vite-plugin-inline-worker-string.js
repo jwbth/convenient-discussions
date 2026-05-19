@@ -70,7 +70,10 @@ export function inlineWorkerStringPlugin({
 						sourcemap: sourceMapsBaseUrl ? true : 'inline',
 						minify: 'terser',
 						terserOptions: {
-							compress: { passes: 2 },
+							compress: {
+								passes: 2,
+								sequences: false,
+							},
 							format: { ascii_only: true },
 						},
 						lib: {
