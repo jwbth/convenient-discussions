@@ -584,18 +584,12 @@ export default class Page {
 	 *
 	 * @param {import('types-mediawiki/mw/Uri').QueryParams} [parameters]
 	 * @param {string | undefined} [fragment]
-	 * @param {boolean} [permanent] Get a permanent URL.
 	 * @returns {string}
 	 */
-	getDecodedUrl(parameters = {}, fragment, permanent = false) {
+	getDecodedUrl(parameters = {}, fragment) {
 		return (
 			cd.g.server +
-			decodeURI(
-				this.getUrl({
-					...parameters,
-					...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {}),
-				}),
-			) +
+			decodeURI(this.getUrl(parameters)) +
 			(fragment ? `#${fragment}` : '')
 		)
 	}
