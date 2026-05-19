@@ -3688,6 +3688,8 @@ class CommentForm extends EventEmitter {
 	 *   link), if available. This makes sense when quoting a comment other than the one you reply to.
 	 */
 	async quote(allowEmptySelection, comment, mentionSource) {
+		if (this.commentInput.isPending()) return
+
 		const { selection, isCommentInputSelection } = await this.getQuoteSelection(comment)
 
 		// With just "Q" pressed, empty selection doesn't count.
