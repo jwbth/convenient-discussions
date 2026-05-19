@@ -2186,7 +2186,7 @@ class Section extends SectionSkeleton {
 	 * @returns {string}
 	 */
 	getUrl(permanent = false) {
-		return cd.page.getDecodedUrlWithFragment(this.id, permanent)
+		return cd.page.getDecodedUrl(undefined, this.id, permanent)
 	}
 
 	/**

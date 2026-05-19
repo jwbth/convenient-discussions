@@ -3598,7 +3598,7 @@ class Comment extends mixIntoClass(
 	getUrl(permanent = false) {
 		const id = this.getUrlFragment()
 
-		return id ? cd.page.getDecodedUrlWithFragment(id, permanent) : undefined
+		return id ? cd.page.getDecodedUrl(undefined, id, permanent) : undefined
 	}
 
 	/**

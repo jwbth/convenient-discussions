@@ -580,16 +580,22 @@ export default class Page {
 	}
 
 	/**
-	 * Get a decoded URL with a fragment identifier.
+	 * Get a decoded URL.
 	 *
+	 * @param {import('types-mediawiki/mw/Uri').QueryParams} [parameters]
 	 * @param {string | undefined} [fragment]
 	 * @param {boolean} [permanent] Get a permanent URL.
 	 * @returns {string}
 	 */
-	getDecodedUrlWithFragment(fragment, permanent = false) {
+	getDecodedUrl(parameters = {}, fragment, permanent = false) {
 		return (
 			cd.g.server +
-			decodeURI(this.getUrl(permanent ? { oldid: mw.config.get('wgRevisionId') } : {})) +
+			decodeURI(
+				this.getUrl({
+					...parameters,
+					...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {}),
+				}),
+			) +
 			(fragment ? `#${fragment}` : '')
 		)
 	}

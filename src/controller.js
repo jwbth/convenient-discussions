@@ -1238,11 +1238,14 @@ class Controller extends EventEmitter {
 			link: /** @type {string} */ (object.getUrl()),
 
 			permanentLink: relevantComment
-				? /** @type {import('./Page').default} */ (
-						pageRegistry.get(
-							mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + permanentFragment,
-						)
-					).getDecodedUrlWithFragment()
+				? pageRegistry
+						.get(permalinkSpecialPagePrefix + permanentFragment)
+						?.getDecodedUrl() ||
+					/** @type {import('./Page').default} */ (
+						pageRegistry.get('Special:FindComment')
+					).getDecodedUrl({
+						idorname: permanentFragment,
+					})
 				: /** @type {string} */ (object.getUrl(true)),
 			jsCall:
 				object instanceof Comment
