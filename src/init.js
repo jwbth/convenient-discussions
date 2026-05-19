@@ -46,7 +46,6 @@ export function initGlobals() {
 		cd.g.summaryLengthLimit = mw.config.get('wgCommentCodePointLimit') - cd.g.summaryPostfix.length
 	}
 
-	// We don't need it in the script - keep it for now for compatibility with `s-ru` config
 	cd.g.clientProfile = $.client.profile()
 
 	cd.g.cmdModifier = $.client.profile().platform === 'mac' ? '⌘' : cd.s('key-ctrl')

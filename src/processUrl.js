@@ -190,9 +190,18 @@ export async function processCommentReferencesInUrl(scrollToLinkedComment = true
 	const { fragment, comment, date, author } = parseFragment()
 
 	if (comment) {
-		// sleep() is for Firefox - for some reason, without it Firefox positions the underlay
-		// incorrectly. (TODO: does it still? Need to check.)
-		await sleep()
+		// For some reason, without sleep() Firefox positions the underlay incorrectly. (TODO: does it
+		// still? Need to check.)
+		if (cd.g.clientProfile.name === 'firefox') {
+			await sleep()
+
+			// Run a condition to protect from cases when we couldn't deactivate DT's highlighting
+			// apparatus and its clearHighlightTargetComment() ended up triggering the `popstate` event
+			// and eventually reaching this code.
+			if (!getFragment()) {
+				return { fragment, comment, date, author }
+			}
+		}
 
 		// TODO: The following blocks reproduce the blocks in Comment#markAsLinked(). Deduplicate?
 
