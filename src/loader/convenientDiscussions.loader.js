@@ -480,7 +480,6 @@ class Loader {
 
 			this.app()
 		} catch (error) {
-			mw.notify(cd.prependScriptName(cd.s('error-loaddata')), { type: 'error' })
 			console.error(error)
 			this.hideBootingOverlay()
 		}
@@ -982,7 +981,6 @@ class Loader {
 			await this.importApp()
 			this.addCommentLinks()
 		} catch (error) {
-			mw.notify(cd.prependScriptName(cd.s('error-loaddata')), { type: 'error' })
 			console.error(error)
 		}
 	}
