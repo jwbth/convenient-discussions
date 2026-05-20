@@ -470,8 +470,11 @@ export function addToArrayIfAbsent(arr, el) {
  * @param {*} el
  */
 export function removeFromArrayIfPresent(arr, el) {
-	if (el !== undefined && arr.includes(el)) {
-		arr.splice(arr.indexOf(el), 1)
+	if (el !== undefined) {
+		const index = arr.indexOf(el)
+		if (index !== -1) {
+			arr.splice(index, 1)
+		}
 	}
 }
 

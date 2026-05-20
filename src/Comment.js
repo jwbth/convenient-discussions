@@ -5,6 +5,7 @@ import CommentSubitemList from './CommentSubitemList'
 import EventEmitter from './EventEmitter'
 import LiveTimestamp from './LiveTimestamp'
 import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
+import SessionStorageItemWithKeys from './SessionStorageItemWithKeys'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -553,7 +554,31 @@ class Comment extends mixIntoClass(
 	 * @param {boolean | undefined} value
 	 */
 	setSeen(value) {
+		if (this.seen === value) return
+
 		this.seen = value
+
+		if (!cd.loader.isBooting() && this.id) {
+			const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
+			const articleId = mw.config.get('wgArticleId')
+			if (articleId) {
+				const unseen = unseenStorageItem.get(articleId) || []
+				if (value === false) {
+					if (!unseen.includes(this.id)) {
+						unseen.push(this.id)
+						unseenStorageItem.set(articleId, unseen).save()
+					}
+				} else if (unseen.includes(this.id)) {
+					removeFromArrayIfPresent(unseen, this.id)
+					if (unseen.length === 0) {
+						unseenStorageItem.remove(articleId)
+					} else {
+						unseenStorageItem.set(articleId, unseen)
+					}
+					unseenStorageItem.save()
+				}
+			}
+		}
 	}
 
 	/**
@@ -3845,8 +3870,10 @@ class Comment extends mixIntoClass(
 	 *
 	 * @param {string[]} currentPageVisits
 	 * @param {number} currentTime
-	 * @param {Comment} [unseenComment] Unseen comment with the same ID as this one passed from the
-	 *   previous session.
+	 * @param {Comment | boolean} [unseenComment] The corresponding comment from the previous
+	 *   in-memory session (which may carry additional info such as change notes), or simply `true`
+	 *   to mark this comment as unseen without extra metadata (e.g. when restored from session
+	 *   storage).
 	 * @returns {boolean} Whether there is a time conflict.
 	 */
 	initNewAndSeen(currentPageVisits, currentTime, unseenComment) {
@@ -3857,7 +3884,7 @@ class Comment extends mixIntoClass(
 			this.date.getTime() > Date.now() + cd.g.msInMin * 3
 		) {
 			this.removeFlag('new')
-			this.seen = true
+			this.setSeen(true)
 
 			return false
 		}
@@ -3867,17 +3894,25 @@ class Comment extends mixIntoClass(
 		// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
 		// has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
 		// it's a *changed* old comment.
-		if (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment?.hasFlag('new')) {
+		if (
+			commentTime + 60 > Number(currentPageVisits[0]) ||
+			(typeof unseenComment !== 'boolean' && unseenComment?.hasFlag('new'))
+		) {
 			this.addFlag('new', false)
 		} else {
 			this.removeFlag('new', false)
 		}
-		this.seen =
+		this.setSeen(
 			(commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) ||
 				this.hasFlag('own')) &&
-			!unseenComment
+				!unseenComment,
+		)
 
-		if (unseenComment?.isChangedSincePreviousVisit() && unseenComment.$changeNote) {
+		if (
+			typeof unseenComment !== 'boolean' &&
+			unseenComment?.isChangedSincePreviousVisit() &&
+			unseenComment.$changeNote
+		) {
 			this.addChangeNote(unseenComment.$changeNote)
 			if (unseenComment.willFlashChangedOnSight) {
 				this.flashChangedOnSight()

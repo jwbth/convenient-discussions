@@ -1,5 +1,6 @@
 import EventEmitter from './EventEmitter'
 import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
+import SessionStorageItemWithKeys from './SessionStorageItemWithKeys'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
@@ -289,17 +290,53 @@ export class CommentManager extends EventEmitter {
 	 */
 	initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
 		let timeConflict = false
+		const isFirstBoot = controller.getBootProcess().isFirstBoot()
 		const unseenComments = controller.getBootProcess().passedData.unseenComments
+
+		/** @type {string[] | undefined} */
+		let unseenCommentIds
+		if (isFirstBoot) {
+			const articleId = mw.config.get('wgArticleId')
+			if (articleId) {
+				const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
+				unseenCommentIds = unseenStorageItem.get(articleId) || []
+			}
+		}
+
 		this.items.forEach((comment) => {
+			/** @type {import('./Comment').default | true | undefined} */
+			let passedUnseenComment
+			if (isFirstBoot) {
+				if (comment.id && unseenCommentIds?.includes(comment.id)) {
+					passedUnseenComment = true
+				}
+			} else {
+				passedUnseenComment = unseenComments?.find((c) => c.id === comment.id)
+			}
+
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const commentTimeConflict = comment.initNewAndSeen(
 				currentPageData,
 				currentTime,
-				markAsReadRequested ? undefined : unseenComments?.find((c) => c.id === comment.id),
+				markAsReadRequested ? undefined : passedUnseenComment,
 			)
 
 			timeConflict ||= commentTimeConflict
 		})
+
+		const articleId = mw.config.get('wgArticleId')
+		if (articleId) {
+			const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
+			const unseenIds = this.items
+				.filter((comment) => comment.isSeen() === false && comment.id)
+				.map((comment) => comment.id)
+
+			if (unseenIds.length) {
+				unseenStorageItem.set(articleId, unseenIds).save()
+			} else {
+				unseenStorageItem.remove(articleId).save()
+			}
+		}
 
 		this.configureAndAddLayers((comment) => comment.hasFlag('new'))
 
