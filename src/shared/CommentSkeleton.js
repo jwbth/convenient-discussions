@@ -1290,8 +1290,7 @@ class CommentSkeleton {
 	 */
 	isCommentLevel(i, lastPartNode) {
 		const part = /** @type {CommentPart<ElementLike>} */ (this.parts[i])
-
-		return (
+		const ret =
 			// 'DD', 'LI' are in this list too for this kind of structures:
 			// https://ru.wikipedia.org/w/index.php?diff=103584477.
 			['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
@@ -1344,7 +1343,13 @@ class CommentSkeleton {
 				((part.node.tagName !== 'UL' &&
 					this.isPartOfList(this.parts[i + 1].node, false) &&
 					this.parts[i + 1].step !== 'replaced') ||
-					this.parser.getChildElements(part.node).length > 1) &&
+					(this.parser.getChildElements(part.node).length > 1 &&
+						!(
+							part.node.tagName === 'DL' &&
+							this.parser.getChildElements(part.node).every((child) => child.tagName === 'DD') &&
+							this.parser.getNestingLevel(part.node) <
+								this.parser.getNestingLevel(/** @type {AnyElement} */ (this.parts[i + 1].node))
+						))) &&
 				this.isPartOfList(lastPartNode, true) &&
 				// For https://en.wikipedia.org/wiki/Special:GoToComment/c-Andrei_MYCRANE-20260504182400-Mathglot-20260504180800
 				this.parser.getNestingLevel(/** @type {ElementLike} */ (this.parts[i].node)) >=
@@ -1371,7 +1376,8 @@ class CommentSkeleton {
 				(part.node.tagName === 'UL' &&
 					this.parser.getChildElements(part.node).length === 1 &&
 					this.isPartOfList(lastPartNode, false)))
-		)
+
+		return ret
 	}
 
 	/**
