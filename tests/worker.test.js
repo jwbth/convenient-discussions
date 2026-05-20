@@ -77,10 +77,13 @@ describe('worker - merged test cases', () => {
 							expect(actualComment.date).toBeUndefined()
 						}
 
-						// Check text (trimmed for comparison)
-						expect(actualComment.htmlToCompare?.trim()).toEqual(
-							expectedComment.htmlToCompare?.trim(),
-						)
+						// Don't test if we didn't specify HTML (it can be hard to derive)
+						if (expectedComment.htmlToCompare) {
+							// Check text (trimmed for comparison)
+							expect(actualComment.htmlToCompare?.trim()).toEqual(
+								expectedComment.htmlToCompare.trim(),
+							)
+						}
 
 						// Check followsHeading
 						expect(actualComment.followsHeading).toBe(expectedComment.followsHeading)

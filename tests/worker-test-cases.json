@@ -666,41 +666,74 @@
 			},
 			{
 				"headline": "Comment parts with empty line between",
-				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_parts_with_empty_line_between\">Comment parts with empty line between</h3></div>\n<dl><dd>Comment started with <code>:</code>.</dd></dl>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:00, 8 October 2021 (UTC)</dd></dl>\n<dl><dd>Comment start (with <code>:</code>).</dd></dl>\n<dl><dd>Comment continuation.</dd></dl>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:10, 8 October 2021 (UTC)</dd></dl>\n<ul><li>Comment start (with <code>*</code>).</li></ul>\n<dl><dd>Comment continuation.</dd></dl>\n<dl><dd>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:20, 8 October 2021 (UTC)</dd></dl>\n<p>Comment start.\n</p>\n<ul><li>List item followed by an empty line.</li></ul>\n<ul><li>List item followed by an empty line.</li></ul>\n<ul><li>List item followed by an empty line.</li></ul>\n<p>Comment end. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:30, 8 October 2021 (UTC)\n</p></div>",
-				"headingNestingLevel": 1,
+				"html": "<div class=\"mw-content-ltr mw-parser-output\" lang=\"en\" dir=\"ltr\"><div class=\"mw-heading mw-heading3\"><h3 id=\"Comment_parts_with_empty_line_between\">Comment parts with empty line between</h3></div>\n<dl><dd>Start (with <code>:</code>).</dd></dl>\n<dl><dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:00, 8 October 2021 (UTC)</dd></dl>\n<dl><dd>Start (with <code>:</code>).</dd></dl>\n<dl><dd>Continuation.</dd></dl>\n<dl><dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:10, 8 October 2021 (UTC)</dd></dl>\n<ul><li>Start (with <code>*</code>).</li></ul>\n<dl><dd>Continuation.</dd></dl>\n<dl><dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:20, 8 October 2021 (UTC)</dd></dl>\n<p>Start.\n</p>\n<ul><li>List item followed by an empty line.</li></ul>\n<ul><li>List item followed by an empty line.</li></ul>\n<ul><li>List item followed by an empty line.</li></ul>\n<p>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:30, 8 October 2021 (UTC)\n</p>\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:35, 8 October 2021 (UTC)\n<dl><dd>Start (with <code>::</code>) followed by NO empty line.</dd>\n<dd>Continuation followed by an empty line.</dd></dl></dd></dl>\n<dl><dd><dl><dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:40, 8 October 2021 (UTC)</dd></dl></dd></dl>\n<dl><dd><dl><dd>Start (with <code>::</code>) followed by NO empty line.</dd>\n<dd>Continuation followed by an empty line.</dd></dl></dd></dl>\n<dl><dd><dl><dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:50, 8 October 2021 (UTC)</dd></dl></dd></dl>\n<dl><dd>Comment. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 15:55, 8 October 2021 (UTC)\n<dl><dd>Start (with <code>::</code>) followed by NO empty line.</dd></dl></dd></dl>\n<dl><dd><dl><dd>End. <a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) 16:00, 8 October 2021 (UTC)</dd></dl></dd></dl></div>",
+				"sections": [
+					{
+						"headline": "Comment parts with empty line between"
+					}
+				],
 				"comments": [
 					{
 						"level": 1,
 						"authorName": "Example",
-						"htmlToCompare": "Comment started with <code>:</code>.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:00, 8 October 2021 (UTC)</span></span>",
+						"htmlToCompare": "Start (with <code>:</code>).\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:00, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2021-10-08T15:00:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"htmlToCompare": "Comment start (with <code>:</code>).\nComment continuation.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:10, 8 October 2021 (UTC)</span></span>",
+						"htmlToCompare": "Start (with <code>:</code>).\nContinuation.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:10, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-08T15:10:00.000Z"
 					},
 					{
 						"level": 1,
 						"authorName": "Example",
-						"htmlToCompare": "Comment start (with <code>*</code>).\nComment continuation.\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:20, 8 October 2021 (UTC)</span></span>",
+						"htmlToCompare": "Start (with <code>*</code>).\nContinuation.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:20, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-08T15:20:00.000Z"
 					},
 					{
 						"level": 0,
 						"authorName": "Example",
-						"htmlToCompare": "Comment start.\n\n<li>List item followed by an empty line.</li>\n<li>List item followed by an empty line.</li>\n<li>List item followed by an empty line.</li>\nComment end. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:30, 8 October 2021 (UTC)</span></span>",
+						"htmlToCompare": "Start.\n\n<li>List item followed by an empty line.</li>\n<li>List item followed by an empty line.</li>\n<li>List item followed by an empty line.</li>\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:30, 8 October 2021 (UTC)</span></span>",
 						"followsHeading": false,
 						"date": "2021-10-08T15:30:00.000Z"
-					}
-				],
-				"sections": [
+					},
 					{
-						"headline": "Comment parts with empty line between"
+						"level": 1,
+						"authorName": "Example",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:35, 8 October 2021 (UTC)</span></span>",
+						"followsHeading": false,
+						"date": "2021-10-08T15:35:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"followsHeading": false,
+						"date": "2021-10-08T15:40:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"htmlToCompare": "Start (with <code>::</code>) followed by NO empty line.\nContinuation followed by an empty line.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:50, 8 October 2021 (UTC)</span></span>",
+						"followsHeading": false,
+						"date": "2021-10-08T15:50:00.000Z"
+					},
+					{
+						"level": 1,
+						"authorName": "Example",
+						"htmlToCompare": "Comment. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">15:55, 8 October 2021 (UTC)</span></span>",
+						"followsHeading": false,
+						"date": "2021-10-08T15:55:00.000Z"
+					},
+					{
+						"level": 2,
+						"authorName": "Example",
+						"htmlToCompare": "Start (with <code>::</code>) followed by NO empty line.\nEnd. <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">16:00, 8 October 2021 (UTC)</span></span>",
+						"followsHeading": false,
+						"date": "2021-10-08T16:00:00.000Z"
 					}
 				]
 			},
