@@ -5,7 +5,7 @@ backup/
 credentials.*
 dist/
 docs/
-i18nList.json
+i18n-list.json
 node_modules/
 playwright-report/
 sandbox/

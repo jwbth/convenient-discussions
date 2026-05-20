@@ -12,8 +12,8 @@ import '../../dist/convenientDiscussions-i18n/en'
 
 import defaultConfig from '../../config/default'
 import configUrls from '../../config/urls.json'
-import i18nList from '../../data/i18nList.json'
-import languageFallbacks from '../../data/languageFallbacks.json'
+import i18nList from '../../data/i18n-list.json'
+import languageFallbacks from '../../data/language-fallbacks.json'
 import { unique } from '../shared/utils-general'
 
 import cd from './cd'

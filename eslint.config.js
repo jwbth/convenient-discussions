@@ -12,7 +12,15 @@ import tseslint from 'typescript-eslint'
 
 const config = defineConfig(
 	{
-		ignores: ['dist/**', 'src/tribute/**', 'sandbox/**', 'backup/**'],
+		ignores: [
+			'dist/**',
+			'src/tribute/**',
+			'sandbox/**',
+			'backup/**',
+			'i18n/**',
+			'e2e/**',
+			'tests/**',
+		],
 	},
 	{
 		settings: {

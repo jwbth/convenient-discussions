@@ -356,7 +356,7 @@ if (Object.keys(i18n).length) {
 	// they can be collected using
 	// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
 	/** @type {Record<string, string[]>} */
-	const fallbackData = JSON.parse(fs.readFileSync('./data/languageFallbacks.json', 'utf8'))
+	const fallbackData = JSON.parse(fs.readFileSync('./data/language-fallbacks.json', 'utf8'))
 	Object.keys(i18n).forEach((lang) => {
 		const fallbacks = fallbackData[lang]
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -415,6 +415,6 @@ ${dateFnsLocaleText}
 }
 
 fs.mkdirSync('data', { recursive: true })
-fs.writeFileSync('data/i18nList.json', JSON.stringify(Object.keys(i18n), null, '\t') + '\n')
+fs.writeFileSync('data/i18n-list.json', JSON.stringify(Object.keys(i18n), null, '\t') + '\n')
 
 console.log('Internationalization files have been built successfully.')

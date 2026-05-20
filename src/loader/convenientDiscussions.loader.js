@@ -1,6 +1,6 @@
-import dateFormats from '../../data/dateFormats.json'
+import dateFormats from '../../data/date-formats.json'
 import digitsData from '../../data/digits.json'
-import languageFallbacks from '../../data/languageFallbacks.json'
+import languageFallbacks from '../../data/language-fallbacks.json'
 import addCommentLinksCss from '../addCommentLinks.less?inline'
 import globalCss from '../global.less?inline'
 import {

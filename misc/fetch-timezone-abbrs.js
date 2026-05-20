@@ -26,9 +26,7 @@ async function getZoneToAbbr() {
 }
 
 async function getUsedZones() {
-	const res = await fetch(
-		'https://noc.wikimedia.org/conf/InitialiseSettings.php.txt',
-	)
+	const res = await fetch('https://noc.wikimedia.org/conf/InitialiseSettings.php.txt')
 	const body = await res.text()
 	const startNeedle = "'wgLocaltimezone' => "
 	const startIndex = body.indexOf(startNeedle) + startNeedle.length
@@ -49,12 +47,11 @@ async function go() {
 		.forEach((key) => {
 			filteredZoneToAbbr[key] = zoneToAbbr[key]
 		})
-	const timezoneAbbrsText =
-		JSON.stringify(filteredZoneToAbbr, null, '\t') + '\n'
+	const timezoneAbbrsText = JSON.stringify(filteredZoneToAbbr, null, '\t') + '\n'
 	fs.mkdirSync('../data', { recursive: true })
-	fs.writeFileSync('../data/timezoneAbbrs.json', timezoneAbbrsText)
+	fs.writeFileSync('../data/timezone-abbrs.json', timezoneAbbrsText)
 	console.log(
-		`Created data/timezoneAbbrs.json with content:\n\n${timezoneAbbrsText}\nLength: ${timezoneAbbrsText.length}`,
+		`Created data/timezone-abbrs.json with content:\n\n${timezoneAbbrsText}\nLength: ${timezoneAbbrsText.length}`,
 	)
 }
 

@@ -82,7 +82,7 @@ await downloadAndExtractMessages()
 
 // https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+/HEAD/languages/messages → tgz
 const messagesDir = path.join(__dirname, 'messages')
-const outputFile = path.join(__dirname, '../data/languageFallbacks.json')
+const outputFile = path.join(__dirname, '../data/language-fallbacks.json')
 /** @type {Record<string, string[]>} */
 const output = {}
 
@@ -135,7 +135,7 @@ readdirSync(messagesDir).forEach((file) => {
 })
 
 writeFileSync(outputFile, JSON.stringify(output, null, '\t') + '\n', 'utf8')
-console.log('languageFallbacks.json generated in data directory!')
+console.log('language-fallbacks.json generated in data directory!')
 
 await rm(messagesDir, { recursive: true, force: true })
 console.log('Messages directory removed. You may delete messages.tar.gz.')
