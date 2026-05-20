@@ -1,5 +1,5 @@
 import ProcessDialog from './ProcessDialog'
-import StorageItem from './StorageItem'
+import LocalStorageItem from './LocalStorageItem'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
@@ -640,11 +640,11 @@ export default function getSettingsDialogClass() {
 					return
 				}
 
-				new StorageItem('commentForms').removeItem()
-				new StorageItem('thanks').removeItem()
-				new StorageItem('seenRenderedChanges').removeItem()
-				new StorageItem('collapsedThreads').removeItem()
-				new StorageItem('mutedUsers').removeItem()
+				new LocalStorageItem('commentForms').removeItem()
+				new LocalStorageItem('thanks').removeItem()
+				new LocalStorageItem('seenRenderedChanges').removeItem()
+				new LocalStorageItem('collapsedThreads').removeItem()
+				new LocalStorageItem('mutedUsers').removeItem()
 
 				this.stack.setItem(this.dataDeletedPanel)
 				this.actions.setMode('dataRemoved')

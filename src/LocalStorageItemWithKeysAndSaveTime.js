@@ -1,9 +1,9 @@
-import StorageItemWithKeys from './StorageItemWithKeys'
+import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
 
 /*
-	Structure of storage items:
+	Structure of local storage items:
 
-	* StorageItemWithKeysAndSaveTime
+	* LocalStorageItemWithKeysAndSaveTime
 			{
 				[arbitrary key 1]: {
 					[key named as the storage key]: [entry 2],
@@ -15,13 +15,13 @@ import StorageItemWithKeys from './StorageItemWithKeys'
 				},
 				// ...
 			}
-	* StorageItemWithKeys
+	* LocalStorageItemWithKeys
 			{
 				[arbitrary key 1]: [entry 1],
 				[arbitrary key 2]: [entry 2],
 				// ...
 			}
-	* StorageItem
+	* LocalStorageItem
 			[entry]
 		(i.e. it's just an arbitrary value).
  */
@@ -33,15 +33,15 @@ import StorageItemWithKeys from './StorageItemWithKeys'
  */
 
 /**
- * {@link StorageItem} with entries stored in keys and save time set for each entry.
+ * {@link LocalStorageItem} with entries stored in keys and save time set for each entry.
  *
  * @template {any} [EntryType = any]
  * @template {string} [Key = string]
- * @augments {StorageItemWithKeys<EntryTypeWithSaveTime<EntryType, Key>>}
+ * @augments {LocalStorageItemWithKeys<EntryTypeWithSaveTime<EntryType, Key>>}
  */
-class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
+class LocalStorageItemWithKeysAndSaveTime extends LocalStorageItemWithKeys {
 	/**
-	 * @param {Key} key Local storage item key (will be prepended by {@link StorageItem.prefix}).
+	 * @param {Key} key Local storage item key (will be prepended by {@link LocalStorageItem.prefix}).
 	 * @abstract
 	 */
 
@@ -89,4 +89,4 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
 	}
 }
 
-export default StorageItemWithKeysAndSaveTime
+export default LocalStorageItemWithKeysAndSaveTime

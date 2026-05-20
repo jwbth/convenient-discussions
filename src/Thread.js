@@ -1,7 +1,7 @@
 import Button from './Button'
 import EventEmitter from './EventEmitter'
 import PrototypeRegistry from './PrototypeRegistry'
-import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime'
+import LocalStorageItemWithKeysAndSaveTime from './LocalStorageItemWithKeysAndSaveTime'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
@@ -1593,7 +1593,7 @@ class Thread extends mixIntoObject(
 	static reset(autocollapse = true) {
 		this.enabled = cd.settings.get('enableThreads')
 		if (!this.enabled) {
-			new StorageItemWithKeysAndSaveTime('collapsedThreads').removeItem()
+			new LocalStorageItemWithKeysAndSaveTime('collapsedThreads').removeItem()
 
 			return
 		}
@@ -1670,8 +1670,8 @@ class Thread extends mixIntoObject(
 		 */
 
 		const collapsedThreadsStorageItem =
-			/** @type {StorageItemWithKeysAndSaveTime<CollapsedThreadsStorageItem[], 'collapsedThreads'>} */ (
-				new StorageItemWithKeysAndSaveTime('collapsedThreads').cleanUp(
+			/** @type {LocalStorageItemWithKeysAndSaveTime<CollapsedThreadsStorageItem[], 'collapsedThreads'>} */ (
+				new LocalStorageItemWithKeysAndSaveTime('collapsedThreads').cleanUp(
 					(entry) => !entry.collapsedThreads.length || entry.saveTime < subtractDaysFromNow(60),
 				)
 			)
@@ -1924,7 +1924,7 @@ class Thread extends mixIntoObject(
 	static saveCollapsedThreads() {
 		if (!cd.utils.isCurrentRevision()) return
 
-		new StorageItemWithKeysAndSaveTime('collapsedThreads')
+		new LocalStorageItemWithKeysAndSaveTime('collapsedThreads')
 			.setWithTime(
 				mw.config.get('wgArticleId'),
 				commentManager

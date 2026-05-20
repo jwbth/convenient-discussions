@@ -1,5 +1,5 @@
 import EventEmitter from './EventEmitter'
-import StorageItemWithKeys from './StorageItemWithKeys'
+import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
@@ -63,7 +63,7 @@ export class CommentManager extends EventEmitter {
 	 */
 
 	/**
-	 * @type {StorageItemWithKeys<ThanksData>}
+	 * @type {LocalStorageItemWithKeys<ThanksData>}
 	 * @private
 	 */
 	thanksStorage
@@ -149,7 +149,7 @@ export class CommentManager extends EventEmitter {
 	 * _For internal use._ Initialize the registry.
 	 */
 	init() {
-		this.thanksStorage = new StorageItemWithKeys('thanks')
+		this.thanksStorage = new LocalStorageItemWithKeys('thanks')
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
 
@@ -1389,7 +1389,7 @@ export class CommentManager extends EventEmitter {
 	/**
 	 * Get the storage for the "Thanks" feature.
 	 *
-	 * @returns {StorageItemWithKeys<ThanksData>}
+	 * @returns {LocalStorageItemWithKeys<ThanksData>}
 	 */
 	getThanksStorage() {
 		return this.thanksStorage

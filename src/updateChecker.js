@@ -1,6 +1,6 @@
 import Comment from './Comment'
 import EventEmitter from './EventEmitter'
-import StorageItemWithKeys from './StorageItemWithKeys'
+import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -631,8 +631,8 @@ class UpdateChecker extends EventEmitter {
 	 * @private
 	 */
 	checkForChangesSincePreviousVisit(currentComments, previousVisitRevisionId, submittedCommentId) {
-		const seenStorageItem = /** @type {import('./StorageItemWithKeys').default} */ (
-			new StorageItemWithKeys('seenRenderedChanges')
+		const seenStorageItem = /** @type {import('./LocalStorageItemWithKeys').default} */ (
+			new LocalStorageItemWithKeys('seenRenderedChanges')
 		).cleanUp(
 			(entry) =>
 				(Math.min(...Object.values(entry).map((data) => data.seenTime)) || 0) <

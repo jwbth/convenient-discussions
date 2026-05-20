@@ -4,7 +4,7 @@ import CommentSource from './CommentSource'
 import CommentSubitemList from './CommentSubitemList'
 import EventEmitter from './EventEmitter'
 import LiveTimestamp from './LiveTimestamp'
-import StorageItemWithKeys from './StorageItemWithKeys'
+import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -1763,8 +1763,8 @@ class Comment extends mixIntoClass(
 		 */
 
 		if (this.hasFlag('changed') && this.id) {
-			const seenStorageItem = /** @type {StorageItemWithKeys<SeenRenderedChanges>} */ (
-				new StorageItemWithKeys('seenRenderedChanges')
+			const seenStorageItem = /** @type {LocalStorageItemWithKeys<SeenRenderedChanges>} */ (
+				new LocalStorageItemWithKeys('seenRenderedChanges')
 			)
 			const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {}
 			seen[this.id] = {
@@ -2163,7 +2163,7 @@ class Comment extends mixIntoClass(
 				this.willFlashChangedOnSight = false
 				controller.maybeMarkPageAsRead()
 			} else if (this.id) {
-				const seenStorageItem = new StorageItemWithKeys('seenRenderedChanges')
+				const seenStorageItem = new LocalStorageItemWithKeys('seenRenderedChanges')
 				const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {}
 				delete seen[this.id]
 				seenStorageItem.set(mw.config.get('wgArticleId'), seen).save()

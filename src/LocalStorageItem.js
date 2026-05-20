@@ -1,6 +1,6 @@
 import cd from './loader/cd'
 
-// See StorageItemWithKeysAndSaveTime.js for the structure of storage items.
+// See LocalStorageItemWithKeysAndSaveTime.js for the structure of storage items.
 
 /**
  * Class meant to facilitate communication with the
@@ -10,7 +10,7 @@ import cd from './loader/cd'
  *
  * @template {{ [key: ValidKey]: any }} [EntryType = { [key: ValidKey]: any }]
  */
-class StorageItem {
+class LocalStorageItem {
 	/**
 	 * Prefix added to the name of the storage item.
 	 *
@@ -26,13 +26,15 @@ class StorageItem {
 	 * an unexistent/falsy/corrupt value or the storage inaccessible, set an empty object.
 	 *
 	 * To reload the contents of the storage item after an idle period, run
-	 * {@link StorageItem#reload}. Note that the user may interact with the storage in other tabs.
+	 * {@link LocalStorageItem#reload}. Note that the user may interact with the storage in other
+	 * tabs.
 	 *
-	 * @param {string} key Local storage item key (will be prepended by {@link StorageItem.prefix}).
+	 * @param {string} key Local storage item key (will be prepended by
+	 *   {@link LocalStorageItem.prefix}).
 	 */
 	constructor(key) {
 		// Workaround to make this.constructor in methods to be type-checked correctly
-		/** @type {typeof StorageItem} */
+		/** @type {typeof LocalStorageItem} */
 		// eslint-disable-next-line no-self-assign
 		this.constructor = this.constructor
 
@@ -104,4 +106,4 @@ class StorageItem {
 	}
 }
 
-export default StorageItem
+export default LocalStorageItem

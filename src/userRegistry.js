@@ -4,7 +4,7 @@
  * @module userRegistry
  */
 
-import StorageItem from './StorageItem'
+import LocalStorageItem from './LocalStorageItem'
 import User from './User'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
@@ -68,7 +68,9 @@ export default {
 		 */
 
 		const userIds = userIdList.split('\n')
-		const mutedUsersStorage = /** @type {StorageItem<MutedUsers>} */ (new StorageItem('mutedUsers'))
+		const mutedUsersStorage = /** @type {LocalStorageItem<MutedUsers>} */ (
+			new LocalStorageItem('mutedUsers')
+		)
 		const mutedUsers = mutedUsersStorage.getData()
 		if (
 			// This comes from the local storage, the value may be corrupt

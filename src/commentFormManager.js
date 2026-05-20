@@ -1,6 +1,6 @@
 import CommentForm from './CommentForm'
 import EventEmitter from './EventEmitter'
-import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime'
+import LocalStorageItemWithKeysAndSaveTime from './LocalStorageItemWithKeysAndSaveTime'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
@@ -290,7 +290,7 @@ class CommentFormManager extends EventEmitter {
 	 * @private
 	 */
 	actuallySaveSession = () => {
-		new StorageItemWithKeysAndSaveTime('commentForms')
+		new LocalStorageItemWithKeysAndSaveTime('commentForms')
 			.setWithTime(
 				mw.config.get('wgPageName'),
 				this.items
@@ -331,13 +331,15 @@ class CommentFormManager extends EventEmitter {
 	restoreSessionFromStorage() {
 		let haveRestored = /** @type {boolean} */ (false)
 
+		/**
+		 * @type {LocalStorageItemWithKeysAndSaveTime<
+		 *   import('./CommentForm').CommentFormData[],
+		 *   'commentForms'
+		 * >}
+		 */
+		const commentFormsStorageItem = new LocalStorageItemWithKeysAndSaveTime('commentForms')
 		this.maybeShowRescueDialog(
-			/**
-			 * @type {StorageItemWithKeysAndSaveTime<
-			 *   import('./CommentForm').CommentFormData[],
-			 *   'commentForms'
-			 * >}
-			 */ (new StorageItemWithKeysAndSaveTime('commentForms'))
+			commentFormsStorageItem
 				// This comes from the local storage, the value may be corrupt
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 				.cleanUp((entry) => !entry.commentForms?.length || entry.saveTime < subtractDaysFromNow(60))
