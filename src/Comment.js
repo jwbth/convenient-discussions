@@ -4306,11 +4306,9 @@ class Comment extends mixIntoClass(
 		// TODO: The following blocks reproduce the blocks in processCommentReferencesInUrl().
 		// Deduplicate?
 
-		// For some reason, without sleep() Firefox positions the underlay incorrectly. (TODO: does it
-		// still? Need to check.)
-		if (cd.g.clientProfile.name === 'firefox') {
-			await sleep()
-		}
+		// Without sleep(), the scrolling might not happen even though it's required because the comment
+		// *was* inside the viewport but went out of it later.
+		await sleep()
 
 		if (scroll) {
 			comments[0].scrollTo({
