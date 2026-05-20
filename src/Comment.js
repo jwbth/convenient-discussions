@@ -622,6 +622,22 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
+	 * Set whether the comment was seen before it was changed. Only sets the value if it is currently
+	 * undefined. Resets the value when undefined is passed. This is used to remember whether the
+	 * comment has been seen when it is marked as changed, and forget it when it is unmarked.
+	 *
+	 * This all is only relevant when the user has `countEditsAsNewComments` enabled (disabled by
+	 * default).
+	 *
+	 * @param {boolean | undefined} value
+	 */
+	initiallySetOrResetSeenBeforeChanged(value) {
+		if (this.seenBeforeChanged === undefined || value === undefined) {
+			this.seenBeforeChanged = value
+		}
+	}
+
+	/**
 	 * Is the comment's start stretched.
 	 *
 	 * @returns {boolean | undefined}
@@ -2072,7 +2088,7 @@ class Comment extends mixIntoClass(
 			cd.settings.get('countEditsAsNewComments') &&
 			(type === 'changed' || type === 'changedSince')
 		) {
-			this.seenBeforeChanged ??= this.isSeen()
+			this.initiallySetOrResetSeenBeforeChanged(this.isSeen())
 			this.setSeen(false)
 			this.manager.registerSeen()
 		}
@@ -2133,11 +2149,11 @@ class Comment extends mixIntoClass(
 
 		if (
 			cd.settings.get('countEditsAsNewComments') &&
-			this.seen === false &&
+			this.isSeen() === false &&
 			this.isSeenBeforeChanged() === true
 		) {
-			this.seen = true
-			this.seenBeforeChanged = undefined
+			this.setSeen(true)
+			this.initiallySetOrResetSeenBeforeChanged(undefined)
 			this.manager.emit('registerSeen')
 		}
 
@@ -3216,8 +3232,8 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} flash Whether to flash the comment as a target.
 	 */
 	async handleInViewport(flash) {
-		if (this.seen === false) {
-			this.seen = true
+		if (this.isSeen() === false) {
+			this.setSeen(true)
 			if (flash) {
 				this.flashTarget()
 			}
