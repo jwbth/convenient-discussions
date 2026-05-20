@@ -198,9 +198,10 @@ function buildSectionUrl(sectionIndex) {
  *
  * @param {number} [limit] Limit number of test groups to process (for testing)
  * @param {string} [outputFile] Optional output file path
+ * @param {string} [groupName] Optional test group name to filter by
  * @returns {Promise<Array>}
  */
-async function generateTestCases(limit, outputFile) {
+async function generateTestCases(limit, outputFile, groupName) {
 	console.log(`Fetching sections from ${TEST_PAGE}...`)
 
 	const sections = await getSections(TEST_PAGE)
@@ -248,6 +249,11 @@ async function generateTestCases(limit, outputFile) {
 				console.log(
 					`\nSkipping test group: ${section.line} (has "Don't convert to a test group" comment)`,
 				)
+				skipUntilLevel = level
+				continue
+			}
+
+			if (groupName && section.line !== groupName) {
 				skipUntilLevel = level
 				continue
 			}
@@ -365,7 +371,7 @@ async function generateTestCases(limit, outputFile) {
  * Parse command-line arguments.
  *
  * @param {string[]} args Command-line arguments
- * @returns {{ limit?: number, outputFile?: string, testPage?: string, domain?: string }}
+ * @returns {{ limit?: number, outputFile?: string, testPage?: string, domain?: string, groupName?: string }}
  */
 function parseArgs(args) {
 	const result = {}
@@ -377,6 +383,8 @@ function parseArgs(args) {
 			result.testPage = args[++i]
 		} else if (arg === '--domain' && i + 1 < args.length) {
 			result.domain = args[++i]
+		} else if ((arg === '--group' || arg === '--section') && i + 1 < args.length) {
+			result.groupName = args[++i]
 		} else if (arg.endsWith('.json')) {
 			result.outputFile = arg
 		} else if (!Number.isNaN(Number.parseInt(arg))) {
@@ -391,7 +399,7 @@ function parseArgs(args) {
 ;(async () => {
 	try {
 		const args = process.argv.slice(2)
-		const { limit, outputFile, testPage, domain } = parseArgs(args)
+		const { limit, outputFile, testPage, domain, groupName } = parseArgs(args)
 
 		// Override defaults with command-line arguments
 		if (testPage) {
@@ -406,8 +414,11 @@ function parseArgs(args) {
 		console.log(`Using TEST_PAGE: ${TEST_PAGE}`)
 		console.log(`Using DOMAIN: ${DOMAIN}`)
 		console.log(`Using API_URL: ${API_URL}`)
+		if (groupName) {
+			console.log(`Filtering for group: ${groupName}`)
+		}
 
-		const testGroups = await generateTestCases(limit, outputFile)
+		const testGroups = await generateTestCases(limit, outputFile, groupName)
 
 		if (!outputFile) {
 			console.log('\n--- Test Groups JSON ---')

@@ -36,14 +36,18 @@ node tests/worker-convert-test-cases.js output.json
 # Limit to first N test groups (for testing)
 node tests/worker-convert-test-cases.js 3
 
+# Filter to only convert a specific test group/section
+node tests/worker-convert-test-cases.js --group "Signature problems"
+
 # Combine options
-node tests/worker-convert-test-cases.js --page "User:Example/Test_cases" --domain "en.wikipedia.org" 5 output.json
+node tests/worker-convert-test-cases.js --page "User:Example/Test_cases" --domain "en.wikipedia.org" --group "Signature problems" output.json
 ```
 
 **Command-Line Options:**
 
 - `--page <page_title>`: Wiki page to fetch test cases from (default: `User_talk:JWBTH/CD_test_cases`)
 - `--domain <domain>`: MediaWiki domain (default: `test.wikipedia.org`)
+- `--group <group_name>` (or `--section <group_name>`): Only fetch/convert test cases from this group/section
 - `<number>`: Limit number of test groups to process
 - `<filename.json>`: Output file path
 
