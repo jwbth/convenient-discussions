@@ -19,6 +19,7 @@
 	"cm-thank": "Ringrazia",
 	"cm-thanked": "Ringraziato",
 	"cm-edit": "Modifica",
+	"cm-edit-tooltip": "Modifica il commento",
 	"cm-delete": "Cancella",
 	"cm-delete-tooltip": "Cancella il commento",
 	"cm-reply": "Rispondi",

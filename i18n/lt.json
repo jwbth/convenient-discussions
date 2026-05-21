@@ -394,8 +394,6 @@
 	"error-elementhidden": "Elementas yra paslėptas. Negalima slinkti iki jo.",
 	"error-purgecache": "Nepavyko išvalyti šio puslapio talpyklos.",
 	"error-anoneditwatning": "<strong>Jūs nesate prisijungęs.</strong> Jūsų IP adresas bus viešai matomas, jei atliksite pakeitimus.",
-	"warning-performance-title": "Našumo problemos?",
-	"warning-performance": "Patogios diskusijos gali bandyti tai išspręsti naudodamos nustatymą „{{int:convenient-discussions-sd-improveperformance}}“. <span class=\"cd-notification-talkPageSettings\">[[$1|Atidaryti nustatymų dialogo langą]]</span>.",
 	"discussiontools-incompatible": "Patogios diskusijos nesuderinamos su DiscussionTools. Prašome <b><span class=\"cd-notification-disabledt\">[[$1|išjungti]]</span></b> (arba <b><span class=\"cd-notification-disableDtGlobally\">[[$2|visuotinai išjungti]]</span></b>) DiscussionTools, kad Patogios diskusijos veiktų tinkamai.",
 	"discussiontools-disabled": "DiscussionTools sėkmingai išjungtas. <span class=\"cd-notification-refresh\">[[$1|Atnaujinti puslapį]]</span>.",
 	"lp-comment": "komentaras",
