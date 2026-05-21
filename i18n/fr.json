@@ -432,8 +432,6 @@
 	"error-elementhidden-container": "L'élément est masqué. Défilez jusqu'à son conteneur visible.",
 	"error-purgecache": "Impossible de purger le cache de cette page.",
 	"error-anoneditwatning": "<strong>Vous n’êtes pas connecté.</strong> Votre adresse IP sera visible publiquement si vous effectuez des modifications.",
-	"warning-performance-title": "Des problèmes de performance ?",
-	"warning-performance": "Les Discussions pratiques peuvent essayer de les résoudre avec le paramètre « {{int:convenient-discussions-sd-improveperformance}} ». <span class=\"cd-notification-talkPageSettings\">[[$1|Ouvrez la boîte de dialogue des paramètres]]</span>.",
 	"discussiontools-incompatible": "Les ''Discussions pratiques'' sont pour la plupart incompatibles avec les ''DiscussionTools''. Veuillez désactiver <b><span class=\"cd-notification-disabledt\">[[$1|désactiver]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(ou <b><span class=\"cd-notification-disableDtGlobally\">[[$2|désactiver globalement]]</span></b>) ''DiscussionTools'' pour faire fonctionner correctement les ''Discussions pratiques''.",
 	"discussiontools-disabled": "Les Discussions pratiques ont bien été désactivées. <span class=\"cd-notification-refresh\">[[$1|Rafraîchir la page]]</span>.",
 	"lp-comment": "commentaire",

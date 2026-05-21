@@ -366,8 +366,6 @@
 	"error-elementhidden": "Element je skrit. Ni se mogoče pomakniti do njega.",
 	"error-purgecache": "Predpomnilnika te strani ni bilo mogoče počistiti.",
 	"error-anoneditwatning": "<strong>Niste prijavljeni.</strong> Če boste kar koli urejali, bo vaš IP-naslov javno viden.",
-	"warning-performance-title": "Težave z zmogljivostjo?",
-	"warning-performance": "Priročne razprave jih lahko poskušajo razrešiti z nastavitvijo »{{int:convenient-discussions-sd-improveperformance}}«. <span class=\"cd-notification-talkPageSettings\">[[$1|Odprite pogovorno okno z nastavitvami]]</span>.",
 	"discussiontools-incompatible": "Priročne razprave niso združljive z orodjem DiscussionTools. <b><span class=\"cd-notification-disabledt\">[[$1|Onemogočite]]</span></b> (ali <b><span class=\"cd-notification-disableDtGlobally\">[[$2|globalno onemogočite]]</span></b>) ga, da bodo priročne razprave delovale pravilno.",
 	"discussiontools-disabled": "Orodje DiscussionTools je bilo uspešno onemogočeno. <span class=\"cd-notification-refresh\">[[$1|Osvežite stran]]</span>.",
 	"lp-comment": "komentar",

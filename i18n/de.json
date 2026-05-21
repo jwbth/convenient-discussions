@@ -428,8 +428,6 @@
 	"error-elementhidden-container": "Das Element ist ausgeblendet. Zu seinem sichtbaren Container gescrollt.",
 	"error-purgecache": "Der Cache dieser Seite konnte nicht geleert werden.",
 	"error-anoneditwatning": "<strong>Du bist nicht angemeldet.</strong> Deine IP-Adresse wird öffentlich sichtbar sein, wenn du Änderungen vornimmst.",
-	"warning-performance-title": "Leistungsprobleme?",
-	"warning-performance": "Convenient Discussions kann versuchen, diese mit der Einstellung „{{int:convenient-discussions-sd-improveperformance}}“ zu beheben. <span class=\"cd-notification-talkPageSettings\">[[$1|Öffne das Einstellungsdialogfeld]]</span>.",
 	"discussiontools-incompatible": "Convenient Discussions ist größtenteils nicht mit DiscussionTools kompatibel. Bitte <b><span class=\"cd-notification-disabledt\">[[$1|deaktiviere]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(oder <b><span class=\"cd-notification-disableDtGlobally\">[[$2|deaktiviere global]]</span></b>)</span> DiscussionTools, damit Convenient Discussions korrekt funktioniert.",
 	"discussiontools-disabled": "DiscussionTools wurde deaktiviert. <span class=\"cd-notification-refresh\">[[$1|Seite aktualisieren]]</span>.",
 	"lp-comment": "Kommentar",
