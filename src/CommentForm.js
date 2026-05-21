@@ -740,6 +740,15 @@ class CommentForm extends EventEmitter {
 			// fired after all listeners are added and the autocomplete manager is set up. This allows
 			// the listeners to react to the autocomplete being attached before it is initialized.
 			this.initAutocomplete()
+
+			/**
+			 * The form has been built together with custom modules, event listeners, and autocomplete.
+			 *
+			 * @event commentFormBuilt
+			 * @param {CommentForm} commentForm
+			 * @param {object} cd {@link convenientDiscussions} object.
+			 */
+			mw.hook('convenientDiscussions.commentFormBuilt').fire(this, cd)
 		})
 
 		cd.settings.on('set', this.onSettingsUpdate)
