@@ -876,12 +876,11 @@ class CommentFormBuilder {
 		const codeMirror = new (getOoUiInputCodeMirrorClass(cd.settings.get('showToolbar')))(
 			this.form.commentInput,
 		)
-		this.form.commentInput.setCodeMirror(codeMirror)
 		codeMirror.initialize(
 			undefined,
 			/** @type {string} */ (this.form.commentInput.$input.attr('placeholder')),
 		)
-
+		this.form.commentInput.setCodeMirror(codeMirror)
 		this.form.commentInput.getEditableElement().attr('tabIndex', this.form.getTabIndex(12))
 
 		// Hide the icon label to harmonize with other buttons and save space
