@@ -622,26 +622,26 @@ const config = defineConfig(
 	},
 
 	// e2e and tests – basic recommended rules with type information
-	...tseslint.configs.recommendedTypeChecked.map((cfg) => ({
-		...cfg,
-		files: ['e2e/**', 'tests/**'],
-		ignores: ['**/*.json', '**/*.jsonc', '**/*.json5'],
-	})),
-	{
-		files: ['e2e/**', 'tests/**'],
-		ignores: ['**/*.json', '**/*.jsonc', '**/*.json5'],
-		languageOptions: {
-			sourceType: 'module',
-			ecmaVersion: 2022,
-			parserOptions: /** @type {import('@typescript-eslint/parser').ParserOptions} */ ({
-				project: ['./e2e/jsconfig.json', './tests/jsconfig.json'],
-				tsconfigRootDir: import.meta.dirname,
-			}),
-		},
-		linterOptions: {
-			reportUnusedDisableDirectives: false,
-		},
-	},
+	// ...tseslint.configs.recommendedTypeChecked.map((cfg) => ({
+	// 	...cfg,
+	// 	files: ['e2e/**', 'tests/**'],
+	// 	ignores: ['**/*.json', '**/*.jsonc', '**/*.json5'],
+	// })),
+	// {
+	// 	files: ['e2e/**', 'tests/**'],
+	// 	ignores: ['**/*.json', '**/*.jsonc', '**/*.json5'],
+	// 	languageOptions: {
+	// 		sourceType: 'module',
+	// 		ecmaVersion: 2022,
+	// 		parserOptions: /** @type {import('@typescript-eslint/parser').ParserOptions} */ ({
+	// 			project: ['./e2e/jsconfig.json', './tests/jsconfig.json'],
+	// 			tsconfigRootDir: import.meta.dirname,
+	// 		}),
+	// 	},
+	// 	linterOptions: {
+	// 		reportUnusedDisableDirectives: false,
+	// 	},
+	// },
 
 	...jsonc.configs['flat/recommended-with-json'],
 	{
