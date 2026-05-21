@@ -12,15 +12,7 @@ import tseslint from 'typescript-eslint'
 
 const config = defineConfig(
 	{
-		ignores: [
-			'dist/**',
-			'src/tribute/**',
-			'sandbox/**',
-			'backup/**',
-			'i18n/**',
-			'e2e/**',
-			'tests/**',
-		],
+		ignores: ['dist/**', 'src/tribute/**', 'sandbox/**', 'backup/**', 'i18n/**'],
 	},
 	{
 		settings: {
@@ -36,78 +28,96 @@ const config = defineConfig(
 	...tseslint.configs.strictTypeChecked.map((cfg) => ({
 		...cfg,
 		files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.ts', '**/*.mts', '**/*.cts'],
+		ignores: ['e2e/**', 'tests/**'],
 	})),
 	...tseslint.configs.stylisticTypeChecked.map((cfg) => ({
 		...cfg,
 		files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.ts', '**/*.mts', '**/*.cts'],
+		ignores: ['e2e/**', 'tests/**'],
 	})),
-	unicorn.configs.recommended,
-	jsdoc({
-		config: 'flat/recommended-typescript-flavor',
-		rules: {
-			'jsdoc/check-alignment': 'off',
-			'jsdoc/check-line-alignment': [
-				'warn',
-				'never',
-				{
-					wrapIndent: '  ',
-				},
-			],
-			'jsdoc/check-tag-names': [
-				'warn',
-				{
-					definedTags: ['property'],
-				},
-			],
-			'jsdoc/check-types': 'off',
-			'jsdoc/reject-any-type': 'off',
-			'jsdoc/require-jsdoc': [
-				'warn',
-				{
-					enableFixer: false,
-					exemptEmptyConstructors: true,
-					require: {
-						ClassDeclaration: true,
-						ClassExpression: true,
-						FunctionDeclaration: true,
-						MethodDefinition: true,
+	{
+		...unicorn.configs.recommended,
+		ignores: ['e2e/**', 'tests/**'],
+	},
+	{
+		...jsdoc({
+			config: 'flat/recommended-typescript-flavor',
+			rules: {
+				'jsdoc/check-alignment': 'off',
+				'jsdoc/check-line-alignment': [
+					'warn',
+					'never',
+					{
+						wrapIndent: '  ',
 					},
-				},
-			],
-			'jsdoc/require-param-description': 'off',
-			'jsdoc/require-property': 'off',
-			'jsdoc/require-property-description': 'off',
-			'jsdoc/require-returns-description': 'off',
-			'jsdoc/tag-lines': [
-				'warn',
-				'any',
-				{
-					startLines: 1,
-				},
-			],
+				],
+				'jsdoc/check-tag-names': [
+					'warn',
+					{
+						definedTags: ['property'],
+					},
+				],
+				'jsdoc/check-types': 'off',
+				'jsdoc/reject-any-type': 'off',
+				'jsdoc/require-jsdoc': [
+					'warn',
+					{
+						enableFixer: false,
+						exemptEmptyConstructors: true,
+						require: {
+							ClassDeclaration: true,
+							ClassExpression: true,
+							FunctionDeclaration: true,
+							MethodDefinition: true,
+						},
+					},
+				],
+				'jsdoc/require-param-description': 'off',
+				'jsdoc/require-property': 'off',
+				'jsdoc/require-property-description': 'off',
+				'jsdoc/require-returns-description': 'off',
+				'jsdoc/tag-lines': [
+					'warn',
+					'any',
+					{
+						startLines: 1,
+					},
+				],
 
-			// VS Code allows Typescript types in JSDoc (e.g.
-			// `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`), so we don't need
-			// to enforce traditional JSDoc types. But need to be careful with this, since this disables
-			// us to catch invalid types.
-			'jsdoc/valid-types': 'off',
+				// VS Code allows Typescript types in JSDoc (e.g.
+				// `${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`), so we don't need
+				// to enforce traditional JSDoc types. But need to be careful with this, since this disables
+				// us to catch invalid types.
+				'jsdoc/valid-types': 'off',
 
-			'jsdoc/require-hyphen-before-param-description': ['warn', 'never'],
-		},
-	}),
-	importPlugin.flatConfigs.recommended,
-	importPlugin.flatConfigs.typescript,
-	stylistic.configs.customize({
-		severity: 'warn',
-		arrowParens: true,
-		semi: false,
-		indent: 'tab',
-		quotes: 'single',
-	}),
+				'jsdoc/require-hyphen-before-param-description': ['warn', 'never'],
+			},
+		}),
+		ignores: ['e2e/**', 'tests/**'],
+	},
+	{
+		...importPlugin.flatConfigs.recommended,
+		ignores: ['e2e/**', 'tests/**'],
+	},
+	{
+		...importPlugin.flatConfigs.typescript,
+		ignores: ['e2e/**', 'tests/**'],
+	},
+	{
+		...stylistic.configs.customize({
+			severity: 'warn',
+			arrowParens: true,
+			semi: false,
+			indent: 'tab',
+			quotes: 'single',
+		}),
+		ignores: ['e2e/**', 'tests/**'],
+	},
 
 	// Main configuration
 	{
 		files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.ts', '**/*.mts', '**/*.cts'],
+		ignores: ['e2e/**', 'tests/**'],
 		languageOptions: {
 			sourceType: 'module',
 			ecmaVersion: 2022,
@@ -117,8 +127,6 @@ const config = defineConfig(
 					'./src/jsconfig.json',
 					'./src/worker/jsconfig.json',
 					'./src/shared/jsconfig.json',
-					'./tests/jsconfig.json',
-					'./e2e/jsconfig.json',
 					'./config/jsconfig.json',
 					// './sandbox/jsconfig.json',
 				],
@@ -610,6 +618,28 @@ const config = defineConfig(
 			'@typescript-eslint/adjacent-overload-signatures': 'error',
 			'@typescript-eslint/consistent-type-imports': 'error',
 			'@typescript-eslint/no-empty-interface': 'error',
+		},
+	},
+
+	// e2e and tests – basic recommended rules with type information
+	...tseslint.configs.recommendedTypeChecked.map((cfg) => ({
+		...cfg,
+		files: ['e2e/**', 'tests/**'],
+		ignores: ['**/*.json', '**/*.jsonc', '**/*.json5'],
+	})),
+	{
+		files: ['e2e/**', 'tests/**'],
+		ignores: ['**/*.json', '**/*.jsonc', '**/*.json5'],
+		languageOptions: {
+			sourceType: 'module',
+			ecmaVersion: 2022,
+			parserOptions: /** @type {import('@typescript-eslint/parser').ParserOptions} */ ({
+				project: ['./e2e/jsconfig.json', './tests/jsconfig.json'],
+				tsconfigRootDir: import.meta.dirname,
+			}),
+		},
+		linterOptions: {
+			reportUnusedDisableDirectives: false,
 		},
 	},
 
