@@ -1,23 +1,49 @@
 import { spawn } from 'node:child_process'
 
+/**
+ * @typedef {Object} Project
+ * @property {string} config Path to jsconfig.json relative to cwd.
+ * @property {(filePath: string) => boolean} [shouldKeep] Returns true if an error from this path
+ *   should be reported.
+ */
+
+/** @type {Project[]} */
 const projects = [
 	{
+		config: 'jsconfig.json',
+
+		// include: ["*", "misc/**/*"], exclude: ["misc/convenientDiscussions-generateBasicConfig.js"]
+		shouldKeep: (filePath) =>
+			!filePath.includes('/') ||
+			(filePath.startsWith('misc/') &&
+				filePath !== 'misc/convenientDiscussions-generateBasicConfig.js'),
+	},
+	{
 		config: 'src/jsconfig.json',
-		keepOnly: null,
-		ignore: ['src/worker/', 'node_modules/'],
+		shouldKeep: (filePath) => !filePath.startsWith('src/worker/'),
 	},
 	{
 		config: 'src/worker/jsconfig.json',
-		keepOnly: ['src/worker/'],
-		ignore: ['node_modules/'],
+		shouldKeep: (filePath) => filePath.startsWith('src/worker/'),
 	},
 	{
 		config: 'src/shared/jsconfig.json',
-		keepOnly: ['src/shared/'],
-		ignore: ['node_modules/'],
+		shouldKeep: (filePath) => filePath.startsWith('src/shared/'),
+	},
+	{
+		config: 'tests/jsconfig.json',
+		shouldKeep: (filePath) => filePath.startsWith('tests/'),
+	},
+	{
+		config: 'e2e/jsconfig.json',
+		shouldKeep: (filePath) => filePath.startsWith('e2e/'),
 	},
 ]
 
+/**
+ * @param {Project} project
+ * @returns {Promise<string[]>}
+ */
 function checkProject(project) {
 	return new Promise((resolve, reject) => {
 		const tscProcess = spawn('node', [
@@ -60,14 +86,8 @@ function checkProject(project) {
 
 				if (fileErrorMatch) {
 					const filePath = fileErrorMatch[1].replace(/\\/g, '/')
-					let keep = true
-					if (project.keepOnly) {
-						keep = project.keepOnly.some((pattern) => filePath.includes(pattern))
-					}
-					if (keep && project.ignore?.some((pattern) => filePath.includes(pattern))) {
-						keep = false
-					}
-
+					const keep =
+						!filePath.includes('node_modules/') && (project.shouldKeep?.(filePath) ?? true)
 					isFiltering = !keep
 					if (keep) {
 						filteredLines.push(line)
@@ -93,9 +113,7 @@ if (args.length > 0) {
 	const arg = args[0].toLowerCase()
 	projectsToRun = projects.filter((p) => p.config.toLowerCase().includes(arg))
 	if (projectsToRun.length === 0) {
-		console.error(
-			`Unknown project: ${args[0]}. Valid options are 'worker', 'shared', or 'jsconfig'.`,
-		)
+		console.error(`Unknown project: ${args[0]}`)
 		process.exit(1)
 	}
 }
@@ -106,15 +124,19 @@ for (const project of projectsToRun) {
 	try {
 		const errors = await checkProject(project)
 		if (errors.length > 0) {
-			console.error(`\nErrors found in ${project.config}:`)
+			console.error(`\n❌ Errors found in ${project.config}:`)
 			console.error(errors.join('\n'))
 			hasErrors = true
 		} else {
-			console.log(`Passed successfully for ${project.config}.`)
+			console.log(`✅ Passed successfully for ${project.config}.`)
 		}
 	} catch (error) {
-		console.error(`\nFailed running type check for ${project.config}:`, error.message)
+		console.error(`\n❌ Failed running type check for ${project.config}:`, error.message)
 		hasErrors = true
+	}
+
+	if (projectsToRun.indexOf(project) < projectsToRun.length - 1) {
+		console.log('\n----')
 	}
 }
 
