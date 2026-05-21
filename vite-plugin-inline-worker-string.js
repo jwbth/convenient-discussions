@@ -66,7 +66,7 @@ export function inlineWorkerStringPlugin({
 					build: {
 						write: false,
 						// When a base URL is provided, emit a separate .map file (true).
-						// Otherwise (dev/single builds), embed the map as a data URI (inline).
+						// Otherwise (single builds), embed the map as a data URI (inline).
 						sourcemap: sourceMapsBaseUrl ? true : 'inline',
 						minify: 'terser',
 						terserOptions: {
@@ -101,9 +101,7 @@ export function inlineWorkerStringPlugin({
 									(c) => c.type === 'asset' && c.fileName.endsWith('.map'),
 								)
 								if (mapAsset?.type === 'asset') {
-									const map = JSON.parse(
-										/** @type {string} */ (mapAsset.source),
-									)
+									const map = JSON.parse(/** @type {string} */ (mapAsset.source))
 									map.file = 'convenientDiscussions.worker.js'
 									this.emitFile({
 										type: 'asset',
@@ -112,7 +110,7 @@ export function inlineWorkerStringPlugin({
 									})
 									workerCode = workerCode.replace(
 										/\/\/#\s*sourceMappingURL=.*$/m,
-										`//# sourceMappingURL=${sourceMapsBaseUrl + workerMapFileName}`,
+										`//# sourceMappingURL=${sourceMapsBaseUrl}${workerMapFileName}`,
 									)
 								}
 							}

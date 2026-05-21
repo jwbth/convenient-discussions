@@ -434,10 +434,17 @@ export default defineConfig(({ mode, command }) => {
 		)
 	}
 
+	const host = 'localhost'
+	const port = 9000
+
 	// Add inline worker string plugin (must be early in pipeline)
 	plugins.push(
 		inlineWorkerStringPlugin({
-			sourceMapsBaseUrl: buildMode.isSingle ? undefined : cdConfig.sourceMapsBaseUrl,
+			sourceMapsBaseUrl: buildMode.isSingle
+				? undefined
+				: isDevServer
+					? `http://${host}:${port}/dist/`
+					: cdConfig.sourceMapsBaseUrl,
 			workerMapFileName: `convenientDiscussions.worker${buildMode.filenamePostfix}.js.map`,
 		}),
 	)
@@ -677,7 +684,7 @@ export default defineConfig(({ mode, command }) => {
 		// Development server configuration (for HMR with npm run start)
 		server: {
 			// Port configuration
-			port: 9000,
+			port,
 
 			// CORS headers for cross-origin development access
 			cors: {
@@ -690,8 +697,8 @@ export default defineConfig(({ mode, command }) => {
 			hmr: {
 				// WebSocket configuration for hot module replacement
 				protocol: 'ws',
-				host: 'localhost',
-				port: 9000,
+				host,
+				port,
 				overlay: false,
 			},
 
@@ -713,7 +720,7 @@ export default defineConfig(({ mode, command }) => {
 
 		// Preview server configuration (for production builds)
 		preview: {
-			port: 9000,
+			port,
 			cors: {
 				origin: '*',
 			},
