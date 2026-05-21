@@ -1,4 +1,4 @@
-@line-height: 1.4285714em;
+@line-height: 1.428571em;
 @codemirror-editor-additional-padding: 5px;
 
 // This is in line with thread line color and native color of WikiEditor borders on edit pages, but
@@ -63,15 +63,15 @@
 
 	.tool-button {
 		// Until T312933 is fixed
-		width: 2.14285714em;
-		height: 2.14285714em;
+		width: 2.142857em;
+		height: 2.142857em;
 		border: 1px solid transparent;
 
 		// Otherwise, text may be visible in some combinations of content and user language (for
 		// example, Russian Wikipedia and uselang=he).
 		direction: var(--cd-direction-content);
 
-		background-size: 1.4285714em;
+		background-size: 1.428571em;
 	}
 
 	.tool-button[rel='quote'] {
@@ -80,8 +80,8 @@
 		// `mask-image` was added to Chrome only in 2023-12-05
 		-webkit-mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
 		mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
-		-webkit-mask-size: 1.4285714em;
-		mask-size: 1.4285714em;
+		-webkit-mask-size: 1.428571em;
+		mask-size: 1.428571em;
 		-webkit-mask-repeat: no-repeat;
 		mask-repeat: no-repeat;
 		-webkit-mask-position: center;
@@ -105,12 +105,12 @@
 
 	// Until T312970 is fixed
 	.wikiEditor-ui-toolbar .tabs span.tab a {
-		height: 2.14285714em;
-		line-height: 2.14285714em;
+		height: 2.142857em;
+		line-height: 2.142857em;
 		border: 1px solid transparent;
 
 		&::before {
-			height: 2.14285714em;
+			height: 2.142857em;
 		}
 	}
 
@@ -569,7 +569,7 @@ empty space can be visible because of `display: inline-flex;`.*/
 	background-color: var(--background-color-base, #fff);
 	border: 1px solid @border-color-var;
 	border-bottom: 0;
-	height: 2.2857143em;
+	height: 2.285714em;
 
 	.cd-commentForm-pending & {
 		// To match the color of the rest of the borders while the form is the pending state.

@@ -189,7 +189,7 @@ mw.hook('convenientDiscussions.beforeParse').add(() => {
 .skin-vector #mw-content-text .cd-parsed dd,\
 .skin-vector #mw-content-text .cd-parsed li,\
 .skin-vector #mw-content-text .cd-parsed ol > li.cd-comment-part-last.cd-comment-part-last {\
-	margin-bottom: 0.14285714em;\
+	margin-bottom: 0.142857em;\
 }\
 \
 .cd-reformattedComments #mw-content-text .cd-comment-part-first {\
