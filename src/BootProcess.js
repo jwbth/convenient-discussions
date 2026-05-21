@@ -23,7 +23,6 @@ import {
 	generatePageNamePattern,
 	getQueryParamBooleanValue,
 	isElement,
-	sleep,
 	unique,
 } from './shared/utils-general'
 import toc from './toc'
@@ -327,14 +326,6 @@ class BootProcess {
 					c.isLineGapped(),
 			)
 
-			// Should be below Thread.init() as these functions may want to scroll to a comment in a
-			// collapsed thread.
-			if (this.firstBoot) {
-				this.deactivateDtHighlight()
-				processUrlOnLoad()
-			}
-			this.processPassedTargets()
-
 			if (!cd.page.isActive()) {
 				toc.addCommentCount()
 			}
@@ -367,7 +358,15 @@ class BootProcess {
 			controller.restoreRelativeScrollPosition()
 
 			cd.settings.addLinkToFooter()
+
+			// Should be below Thread.init() as these functions may want to scroll to a comment in a
+			// collapsed thread. Should be below controller.restoreRelativeScrollPosition() as it may want
+			// to scroll as well.
+			this.deactivateDtHighlight()
+			processUrlOnLoad()
 		}
+
+		this.processPassedTargets()
 
 		/**
 		 * The script has processed the page.
@@ -915,7 +914,7 @@ class BootProcess {
 	 *
 	 * @private
 	 */
-	async processPassedTargets() {
+	processPassedTargets() {
 		const commentIds = this.passedData.commentIds
 		if (commentIds) {
 			const comments = commentIds
@@ -924,8 +923,6 @@ class BootProcess {
 				.map((id) => commentManager.getById(id, true))
 				.filter(definedAndNotNull)
 			if (comments.length) {
-				// sleep() for Firefox, as in Comment.markAsLinkedOnLoad()
-				await sleep()
 				Comment.scrollToFirstFlashAll(comments, {
 					smooth: false,
 					pushState: this.passedData.pushState,
@@ -939,8 +936,6 @@ class BootProcess {
 					history.pushState(history.state, '', `#${section.id}`)
 				}
 
-				// sleep() for Firefox, as in Comment.markAsLinkedOnLoad()
-				await sleep()
 				section.$heading.cdScrollTo('top', false)
 			}
 		}

@@ -4292,7 +4292,7 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} [replaceState] Whether to replace the URL fragment with the first comment's
 	 *   dtId.
 	 */
-	static async markAsLinked(comments, scroll = true, replaceState = true) {
+	static markAsLinked(comments, scroll = true, replaceState = true) {
 		if (!comments.length) return
 
 		this.clearLinkedStateOnBodyClick()
@@ -4305,10 +4305,6 @@ class Comment extends mixIntoClass(
 
 		// TODO: The following blocks reproduce the blocks in processCommentReferencesInUrl().
 		// Deduplicate?
-
-		// Without sleep(), the scrolling might not happen even though it's required because the comment
-		// *was* inside the viewport but went out of it later.
-		await sleep()
 
 		if (scroll) {
 			comments[0].scrollTo({

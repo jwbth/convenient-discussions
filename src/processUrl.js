@@ -10,7 +10,7 @@ import Comment from './Comment'
 import commentManager from './commentManager'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import { defined, sleep, underlinesToSpaces } from './shared/utils-general'
+import { defined, underlinesToSpaces } from './shared/utils-general'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import { formatDateNative } from './utils-date'
 import { isExistentAnchor, wrapHtml } from './utils-window'
@@ -158,8 +158,8 @@ function parseFragment() {
 /**
  * _For internal use._ Perform URL fragment-related tasks.
  */
-export default async function processUrlOnLoad() {
-	const { fragment, comment, date, author } = await processCommentReferencesInUrl()
+export default function processUrlOnLoad() {
+	const { fragment, comment, date, author } = processCommentReferencesInUrl()
 
 	if (
 		fragment &&
@@ -184,23 +184,12 @@ export default async function processUrlOnLoad() {
  *
  * @param {boolean} [scrollToLinkedComment] Scroll to the topmost linked comment (if highlighting as
  *   linked).
- * @returns {Promise<ParsedFragment>}
+ * @returns {ParsedFragment}
  */
-export async function processCommentReferencesInUrl(scrollToLinkedComment = true) {
+export function processCommentReferencesInUrl(scrollToLinkedComment = true) {
 	const { fragment, comment, date, author } = parseFragment()
 
 	if (comment) {
-		// Without sleep(), the scrolling might not happen even though it's required because the comment
-		// *was* inside the viewport but went out of it later.
-		await sleep()
-
-		// Run a condition to protect from cases when we couldn't deactivate DT's highlighting
-		// apparatus and its clearHighlightTargetComment() ended up triggering the `popstate` event
-		// and eventually reaching this code.
-		if (!getFragment()) {
-			return { fragment, comment, date, author }
-		}
-
 		// TODO: The following blocks reproduce the blocks in Comment#markAsLinked(). Deduplicate?
 
 		comment.scrollTo({
