@@ -70,7 +70,7 @@ export default {
 					// 'ext.CodeMirror.WikiEditor',
 					'ext.checkUser.styles',
 					'ext.checkUser.userInfoCard',
-					'ext.confirmEdit.CaptchaInputWidget',
+					'ext.confirmEdit.CaptchaWidget',
 					'jquery.client',
 					'jquery.ui',
 					'mediawiki.Title',
