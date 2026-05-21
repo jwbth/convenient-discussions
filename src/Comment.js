@@ -3894,10 +3894,7 @@ class Comment extends mixIntoClass(
 		// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
 		// has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
 		// it's a *changed* old comment.
-		if (
-			commentTime + 60 > Number(currentPageVisits[0]) ||
-			(typeof unseenComment !== 'boolean' && unseenComment?.hasFlag('new'))
-		) {
+		if (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment) {
 			this.addFlag('new', false)
 		} else {
 			this.removeFlag('new', false)
