@@ -1238,9 +1238,7 @@ class Controller extends EventEmitter {
 			link: /** @type {string} */ (object.getUrl()),
 
 			permanentLink: relevantComment
-				? pageRegistry
-						.get(permalinkSpecialPagePrefix + permanentFragment)
-						?.getDecodedUrl() ||
+				? pageRegistry.get(permalinkSpecialPagePrefix + permanentFragment)?.getDecodedUrl() ||
 					/** @type {import('./Page').default} */ (
 						pageRegistry.get('Special:FindComment')
 					).getDecodedUrl({
@@ -1634,7 +1632,8 @@ class Controller extends EventEmitter {
 	}
 
 	/**
-	 * Create an appropriate {@link Subscriptions} singleton based on the user cd.settings.
+	 * Create an appropriate {@link Subscriptions} singleton based on the user settings. (There was
+	 * formerly LegacySubscriptions; we ditched them.)
 	 *
 	 * @returns {import('./Subscriptions').default}
 	 */

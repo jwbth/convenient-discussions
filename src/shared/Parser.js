@@ -21,6 +21,7 @@ import {
 	isHeadingNode,
 	isInline,
 	isMetadataNode,
+	isText,
 	parseWikiUrl,
 	ucFirst,
 	underlinesToSpaces,
@@ -148,15 +149,16 @@ class Parser {
 	}
 
 	/**
-	 * _For internal use._ Remove some of the elements added by the DiscussionTools extension (even if
-	 * it is disabled in user preferences) or move them away if the topic subscriptions feature of DT
-	 * is enabled (to avoid errors being thrown in DT). Prior to that, extract data from them.
+	 * _For internal use._ Remove some of the elements added by Parsoid and the DiscussionTools
+	 * extension (even if it is disabled in user preferences) or move them away if the topic
+	 * subscriptions feature of DT is enabled (to avoid errors being thrown in DT). Prior to that,
+	 * extract data from them.
 	 *
 	 * CD already parses comment links from notifications (which seems to be this markup's purpose for
 	 * disabled DT) in `BootProcess#processTargets()`. Unless the elements prove useful to CD or other
 	 * scripts, it's better to get rid of them rather than deal with them one by one while parsing.
 	 */
-	processAndRemoveDtMarkup() {
+	processAndRemoveAnnoyingMarkup() {
 		this.context.processAndRemoveDtElements(
 			/** @type {HTMLElementFor<N>[]} */ (
 				[...this.context.rootElement.getElementsByTagName('span')]
@@ -181,6 +183,20 @@ class Parser {
 			),
 		)
 		this.context.removeDtButtonHtmlComments()
+
+		// Stray `<span typeof="mw:Entity"> </span>` elements created by templates, e.g.
+		// https://ru.wikipedia.org/wiki/Project:Форум/Технический#c-Average_Encyclopedia_Fan-20260520214600-Кириллические_URL.
+		// We need to collapse them because they may delimit the timestamp from the timezone, e.g.
+		// `21:46, 20 мая 2026<span typeof="mw:Entity"> </span>(UTC)`
+		;[...this.context.rootElement.querySelectorAll('span[typeof="mw:Entity"]')]
+			.filter((el) => el.textContent === ' ')
+			.forEach((el) => {
+				if (isText(el.previousSibling) && isText(el.nextSibling)) {
+					el.previousSibling.textContent += ' ' + el.nextSibling.textContent
+					el.nextSibling.remove()
+					el.remove()
+				}
+			})
 	}
 
 	/**

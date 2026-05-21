@@ -198,17 +198,49 @@ Element.prototype.getElementsByAttribute = function getElementsByAttribute(regex
  */
 Element.prototype.querySelectorAll = function querySelectorAll(selector) {
 	const tokens = selector.split(/ *, */)
-	const tagNames = new Set(
-		tokens.filter((token) => !token.startsWith('.')).map((name) => name.toUpperCase()),
-	)
-	const classNames = tokens.filter((token) => token.startsWith('.')).map((name) => name.slice(1))
+	const parsedSelectors = tokens.map((token) => {
+		const attrMatch = token.match(/^([a-z0-9-]*)\[([a-z0-9-]+)(?:="([^"]*)")?\]/i)
+		if (attrMatch) {
+			return {
+				tagName: attrMatch[1] ? attrMatch[1].toUpperCase() : null,
+				attrName: attrMatch[2],
+				attrValue: attrMatch[3],
+			}
+		}
+		if (token.startsWith('.')) {
+			return { className: token.slice(1) }
+		}
+
+		return { tagName: token.toUpperCase() }
+	})
 
 	return /** @type {Element[]} */ (
-		this.filterRecursively(
-			(node) =>
-				node instanceof Element &&
-				(tagNames.has(node.tagName) || classNames.some((name) => node.classList.contains(name))),
-		)
+		this.filterRecursively((node) => {
+			if (!(node instanceof Element)) {
+				return false
+			}
+
+			return parsedSelectors.some((sel) => {
+				if (sel.attrName !== undefined) {
+					if (sel.tagName && node.tagName !== sel.tagName) {
+						return false
+					}
+					if (!node.hasAttribute(sel.attrName)) {
+						return false
+					}
+					if (sel.attrValue !== undefined) {
+						return node.getAttribute(sel.attrName) === sel.attrValue
+					}
+
+					return true
+				}
+				if (sel.className !== undefined) {
+					return node.classList.contains(sel.className)
+				}
+
+				return node.tagName === sel.tagName
+			})
+		})
 	)
 }
 

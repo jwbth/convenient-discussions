@@ -707,7 +707,7 @@ class BootProcess {
 			removeDtButtonHtmlComments,
 		})
 		this.parser.init()
-		this.parser.processAndRemoveDtMarkup()
+		this.parser.processAndRemoveAnnoyingMarkup()
 		this.targets = /** @type {import('./shared/Parser').Target<Node>[]} */ (
 			this.parser.findHeadings()
 		)
