@@ -117,13 +117,14 @@ dd.cd-comment-part:not(.cd-comment-part-last)
 	}
 }
 
-ol > li.cd-comment-part-first.cd-comment-part-first,
+// Override .cd-comment-part-first.cd-comment-part-first.cd-comment-part-first
+ol > li.cd-comment-part-first.cd-comment-part-first.cd-comment-part-first,
 ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 	margin-top: 0;
 }
 
-// Because irregular gaps between list items are annoying, especially between numbered list items
-// that contain comments. But don't add the style while CD hasn't loaded to avoid jumps.
+// Added this because irregular gaps between list items are annoying, especially between numbered
+// list items that contain comments. But don't add the style while CD hasn't loaded to avoid jumps.
 .skin-vector .cd-parsed li,
 .skin-vector .cd-parsed dd,
 .skin-vector .cd-parsed ol > li.cd-comment-part-last.cd-comment-part-last {
