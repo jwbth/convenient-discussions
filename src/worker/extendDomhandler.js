@@ -197,49 +197,35 @@ Element.prototype.getElementsByAttribute = function getElementsByAttribute(regex
  * @returns {Element[]}
  */
 Element.prototype.querySelectorAll = function querySelectorAll(selector) {
-	const tokens = selector.split(/ *, */)
-	const parsedSelectors = tokens.map((token) => {
+	const matchers = selector.split(/ *, */).map((token) => {
 		const attrMatch = token.match(/^([a-z0-9-]*)\[([a-z0-9-]+)(?:="([^"]*)")?\]/i)
 		if (attrMatch) {
-			return {
-				tagName: attrMatch[1] ? attrMatch[1].toUpperCase() : null,
-				attrName: attrMatch[2],
-				attrValue: attrMatch[3],
+			const tagName = attrMatch[1] ? attrMatch[1].toUpperCase() : null
+			const attrName = attrMatch[2]
+			const attrValue = /** @type {string | undefined} */ (attrMatch[3])
+
+			return (/** @type {Element} */ node) => {
+				if (tagName && node.tagName !== tagName) return false
+				if (!node.hasAttribute(attrName)) return false
+
+				return attrValue === undefined || node.getAttribute(attrName) === attrValue
 			}
 		}
 		if (token.startsWith('.')) {
-			return { className: token.slice(1) }
-		}
+			const className = token.slice(1)
 
-		return { tagName: token.toUpperCase() }
+			return (/** @type {Element} */ node) => node.classList.contains(className)
+		}
+		const tagName = token.toUpperCase()
+
+		return (/** @type {Element} */ node) => node.tagName === tagName
 	})
 
 	return /** @type {Element[]} */ (
 		this.filterRecursively((node) => {
-			if (!(node instanceof Element)) {
-				return false
-			}
+			if (!(node instanceof Element)) return false
 
-			return parsedSelectors.some((sel) => {
-				if (sel.attrName !== undefined) {
-					if (sel.tagName && node.tagName !== sel.tagName) {
-						return false
-					}
-					if (!node.hasAttribute(sel.attrName)) {
-						return false
-					}
-					if (sel.attrValue !== undefined) {
-						return node.getAttribute(sel.attrName) === sel.attrValue
-					}
-
-					return true
-				}
-				if (sel.className !== undefined) {
-					return node.classList.contains(sel.className)
-				}
-
-				return node.tagName === sel.tagName
-			})
+			return matchers.some((match) => match(node))
 		})
 	)
 }
