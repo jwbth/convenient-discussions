@@ -10,13 +10,16 @@ import fetch from 'node-fetch'
 
 import { unique } from './utils.js'
 
+/**
+ * @returns {Promise<Record<string, string[]>>}
+ */
 async function getZoneToAbbr() {
 	const res = await fetch(
 		'https://raw.githubusercontent.com/moment/moment-timezone/develop/data/packed/latest.json',
 	)
 	const body = await res.text()
-	const momentTimezoneLatest = JSON.parse(body)
-	const zoneToAbbr = {}
+	const momentTimezoneLatest = /** @type {{ zones: string[] }} */ (JSON.parse(body))
+	const zoneToAbbr = /** @type {Record<string, string[]>} */ ({})
 	momentTimezoneLatest.zones.forEach((zone) => {
 		const tokens = zone.split('|')
 		zoneToAbbr[tokens[0]] = tokens[1].split(' ')
@@ -25,6 +28,9 @@ async function getZoneToAbbr() {
 	return zoneToAbbr
 }
 
+/**
+ * @returns {Promise<string[]>}
+ */
 async function getUsedZones() {
 	const res = await fetch('https://noc.wikimedia.org/conf/InitialiseSettings.php.txt')
 	const body = await res.text()
@@ -38,21 +44,17 @@ async function getUsedZones() {
 	return timezones
 }
 
-async function go() {
-	const zoneToAbbr = await getZoneToAbbr()
-	const timezones = await getUsedZones()
-	const filteredZoneToAbbr = {}
-	Object.keys(zoneToAbbr)
-		.filter((key) => timezones.includes(key))
-		.forEach((key) => {
-			filteredZoneToAbbr[key] = zoneToAbbr[key]
-		})
-	const timezoneAbbrsText = JSON.stringify(filteredZoneToAbbr, null, '\t') + '\n'
-	fs.mkdirSync('../data', { recursive: true })
-	fs.writeFileSync('../data/timezone-abbrs.json', timezoneAbbrsText)
-	console.log(
-		`Created data/timezone-abbrs.json with content:\n\n${timezoneAbbrsText}\nLength: ${timezoneAbbrsText.length}`,
-	)
-}
-
-go()
+const zoneToAbbr = await getZoneToAbbr()
+const timezones = await getUsedZones()
+const filteredZoneToAbbr = /** @type {Record<string, string[]>} */ ({})
+Object.keys(zoneToAbbr)
+	.filter((key) => timezones.includes(key))
+	.forEach((key) => {
+		filteredZoneToAbbr[key] = zoneToAbbr[key]
+	})
+const timezoneAbbrsText = JSON.stringify(filteredZoneToAbbr, null, '\t') + '\n'
+fs.mkdirSync('../data', { recursive: true })
+fs.writeFileSync('../data/timezone-abbrs.json', timezoneAbbrsText)
+console.log(
+	`Created data/timezone-abbrs.json with content:\n\n${timezoneAbbrsText}\nLength: ${timezoneAbbrsText.length}`,
+)

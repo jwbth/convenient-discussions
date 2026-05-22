@@ -14,8 +14,9 @@
  */
 
 ;(function loadConvenientDiscussionsDev() {
-	// Check if already loaded
-	if (window.convenientDiscussions) {
+	// Check if already loaded. Can't load the type from src/global.d.ts, because that would cause
+	// ESLint to spew errors in that file because it doesn't see ambient types.
+	if (/** @type {Window & { convenientDiscussions?: unknown }} */ (window).convenientDiscussions) {
 		console.log('[CD Dev] Already loaded. Reload the page to load a fresh version.')
 
 		return
@@ -25,14 +26,14 @@
 
 	// Fetch the module script and create a blob URL to bypass CSP
 	fetch('http://localhost:9000/src/loader/startup.js')
-		.then(response => {
+		.then((response) => {
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 			}
 
 			return response.text()
 		})
-		.then(code => {
+		.then((code) => {
 			const blob = new Blob([code], { type: 'application/javascript' })
 			const blobUrl = URL.createObjectURL(blob)
 
@@ -45,13 +46,13 @@
 				console.log('[CD Dev] Edit source files to see changes instantly')
 			})
 
-			script.onerror = () => {
+			script.addEventListener('error', () => {
 				console.error('[CD Dev] Failed to load script')
-			}
+			})
 
 			document.head.append(script)
 		})
-		.catch(error => {
+		.catch((/** @type {unknown} */ error) => {
 			console.error('[CD Dev] Failed to fetch script:', error)
 			console.error('[CD Dev] Make sure dev server is running (npm start)')
 		})

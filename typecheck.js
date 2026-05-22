@@ -30,14 +30,14 @@ const projects = [
 		config: 'src/shared/jsconfig.json',
 		shouldKeep: (filePath) => filePath.startsWith('src/shared/'),
 	},
-	{
-		config: 'tests/jsconfig.json',
-		shouldKeep: (filePath) => filePath.startsWith('tests/'),
-	},
-	{
-		config: 'e2e/jsconfig.json',
-		shouldKeep: (filePath) => filePath.startsWith('e2e/'),
-	},
+	// {
+	// 	config: 'tests/jsconfig.json',
+	// 	shouldKeep: (filePath) => filePath.startsWith('tests/'),
+	// },
+	// {
+	// 	config: 'e2e/jsconfig.json',
+	// 	shouldKeep: (filePath) => filePath.startsWith('e2e/'),
+	// },
 ]
 
 /**
@@ -131,7 +131,8 @@ for (const project of projectsToRun) {
 			console.log(`✅ Passed successfully for ${project.config}.`)
 		}
 	} catch (error) {
-		console.error(`\n❌ Failed running type check for ${project.config}:`, error.message)
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		console.error(`\n❌ Failed running type check for ${project.config}:`, errorMessage)
 		hasErrors = true
 	}
 

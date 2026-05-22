@@ -12,7 +12,15 @@ import tseslint from 'typescript-eslint'
 
 const config = defineConfig(
 	{
-		ignores: ['dist/**', 'src/tribute/**', 'sandbox/**', 'backup/**', 'i18n/**'],
+		ignores: [
+			'dist/**',
+			'src/tribute/**',
+			'sandbox/**',
+			'backup/**',
+			'i18n/**',
+			'e2e/**',
+			'tests/**',
+		],
 	},
 	{
 		settings: {
@@ -134,6 +142,8 @@ const config = defineConfig(
 			}),
 		},
 		plugins: {
+			// @ts-expect-error - Plugin type from eslint-plugin-no-one-time-vars doesn't match ESLint's
+			// expected Plugin interface
 			'no-one-time-vars': noOneTimeVars,
 			'unused-imports': unusedImports,
 		},

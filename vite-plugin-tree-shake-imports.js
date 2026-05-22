@@ -56,8 +56,8 @@ function configToVarName(config) {
 /**
  * @param {object} options
  * @param {boolean} options.isSingle
- * @param {string} [options.wiki]
- * @param {string} [options.lang]
+ * @param {string} options.wiki
+ * @param {string} options.lang
  * @returns {import('vite').Plugin}
  */
 export function treeShakeImportsPlugin({ isSingle, wiki, lang }) {

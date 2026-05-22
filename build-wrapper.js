@@ -15,15 +15,11 @@ const argv = yargs(hideBin(process.argv))
 	.parseSync()
 
 const isStaging =
-	argv.mode === 'staging' || argv.staging || process.env.VITE_STAGING === '1'
-const isSingle =
-	argv.mode === 'single' || argv.single || process.env.VITE_SINGLE === '1'
+	argv.mode === 'staging' || Boolean(argv.staging) || process.env.VITE_STAGING === '1'
+const isSingle = argv.mode === 'single' || Boolean(argv.single) || process.env.VITE_SINGLE === '1'
 
-const mode = isSingle
-	? 'single'
-	: isStaging
-		? 'staging'
-		: String(argv.mode || '')
+const modeValue = typeof argv.mode === 'string' ? argv.mode : ''
+const mode = isSingle ? 'single' : isStaging ? 'staging' : modeValue
 const commandParts = ['vite build']
 
 if (mode) {
@@ -65,35 +61,14 @@ if (isSingle) {
 		process.exitCode = error.status ?? 1
 	}
 } else {
-	const loaderCommandParts = [
-		'cross-env',
-		'VITE_BUILD_PART="loader"',
-		...envVars,
-		...commandParts,
-	]
-	const loaderCommand = [...loaderCommandParts, ...extraArgs]
-		.filter(Boolean)
-		.join(' ')
+	const loaderCommandParts = ['cross-env', 'VITE_BUILD_PART="loader"', ...envVars, ...commandParts]
+	const loaderCommand = [...loaderCommandParts, ...extraArgs].filter(Boolean).join(' ')
 
-	const stylesCommandParts = [
-		'cross-env',
-		'VITE_BUILD_PART="styles"',
-		...envVars,
-		...commandParts,
-	]
-	const stylesCommand = [...stylesCommandParts, ...extraArgs]
-		.filter(Boolean)
-		.join(' ')
+	const stylesCommandParts = ['cross-env', 'VITE_BUILD_PART="styles"', ...envVars, ...commandParts]
+	const stylesCommand = [...stylesCommandParts, ...extraArgs].filter(Boolean).join(' ')
 
-	const mainCommandParts = [
-		'cross-env',
-		'VITE_BUILD_PART="main"',
-		...envVars,
-		...commandParts,
-	]
-	const mainCommand = [...mainCommandParts, ...extraArgs]
-		.filter(Boolean)
-		.join(' ')
+	const mainCommandParts = ['cross-env', 'VITE_BUILD_PART="main"', ...envVars, ...commandParts]
+	const mainCommand = [...mainCommandParts, ...extraArgs].filter(Boolean).join(' ')
 
 	try {
 		execSync(loaderCommand, { stdio: 'inherit' })
