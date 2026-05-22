@@ -155,7 +155,7 @@ declare global {
 
 		// Non-DOM methods
 		areThereOutdents: () => boolean
-		processAndRemoveDtElements: (elements: ElementFor<N>[]) => void
+		processDtElements: (elements: ElementFor<N>[]) => void
 		removeDtButtonHtmlComments: () => void
 
 		// DOM methods

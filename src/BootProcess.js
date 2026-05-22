@@ -50,12 +50,13 @@ function removeDtButtonHtmlComments() {
 }
 
 /**
- * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools.
+ * Deal with (extract data and move) the markup added to the page by DiscussionTools in the DOM.
+ * Can't outright remove it due to https://phabricator.wikimedia.org/T427093.
  *
  * @param {Element[]} elements
  * @private
  */
-function processAndRemoveDtElements(elements) {
+function processDtElements(elements) {
 	/** @type {HTMLSpanElement | undefined} */
 	let dtMarkupHavenElement
 	if (!controller.getBootProcess().isFirstBoot()) {
@@ -681,11 +682,11 @@ class BootProcess {
 			rootElement: controller.rootElement,
 			document,
 			areThereOutdents: controller.areThereOutdents,
-			processAndRemoveDtElements,
+			processDtElements,
 			removeDtButtonHtmlComments,
 		})
 		this.parser.init()
-		this.parser.processAndRemoveAnnoyingMarkup()
+		this.parser.processAnnoyingMarkup()
 		this.targets = /** @type {import('./shared/Parser').Target<Node>[]} */ (
 			this.parser.findHeadings()
 		)

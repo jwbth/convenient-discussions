@@ -166,8 +166,8 @@ class Parser {
 	 * disabled DT) in `BootProcess#processTargets()`. Unless the elements prove useful to CD or other
 	 * scripts, it's better to get rid of them rather than deal with them one by one while parsing.
 	 */
-	processAndRemoveAnnoyingMarkup() {
-		this.context.processAndRemoveDtElements(
+	processAnnoyingMarkup() {
+		this.context.processDtElements(
 			/** @type {HTMLElementFor<N>[]} */ (
 				[...this.context.rootElement.getElementsByTagName('span')]
 					.filter(

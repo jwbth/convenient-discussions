@@ -1250,7 +1250,7 @@ class Controller extends EventEmitter {
 			jsCall:
 				object instanceof Comment
 					? `let c = convenientDiscussions.api.getCommentById('${object.id?.replace(/'/g, String.raw`\'`) || ''}');`
-					: `let s = convenientDiscussions.api.getSectionById('${object.id?.replace(/'/g, String.raw`\'`) || ''}');`,
+					: `let s = convenientDiscussions.api.getSectionById('${object.id.replace(/'/g, String.raw`\'`) || ''}');`,
 			jsBreakpoint: `this.id === '${object.id || ''}'`,
 			jsBreakpointTimestamp:
 				object instanceof Comment

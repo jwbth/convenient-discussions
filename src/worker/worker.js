@@ -90,7 +90,7 @@ function removeDtButtonHtmlComments() {
  */
 function findTargets(parser) {
 	parser.init()
-	parser.processAndRemoveAnnoyingMarkup()
+	parser.processAnnoyingMarkup()
 
 	return /** @type {import('../shared/Parser').Target<import('domhandler').Node>[]} */ (
 		parser.findHeadings()
@@ -208,7 +208,7 @@ function parse() {
 			return areThereOutdents
 		},
 		/** @type {(elements: import('domhandler').Element[]) => void} */
-		processAndRemoveDtElements: (elements) => {
+		processDtElements: (elements) => {
 			elements.forEach((el) => {
 				el.remove()
 			})
