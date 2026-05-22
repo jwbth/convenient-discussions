@@ -18,24 +18,25 @@
 
 ### Core Application Files
 
-- **app.js**: Main application entry point
-- **loader/loader.js**: Entry point for the build loading the main app
-- **loader/cd.js**: `cd`, core Convenient Discussions object
-- **loader/convenientDiscussions.js**: Main initialization script, populating `cd`
-- **BootProcess.js**: Application bootstrap logic for talk pages
-- **controller.js**: Main controller
+- **src/app.js**: Main application entry point
+- **src/loader/loader.js**: Entry point for the build loading the main app
+- **src/loader/cd.js**: `cd`, core Convenient Discussions object
+- **src/loader/convenientDiscussions.js**: Main initialization script, populating `cd`
+- **src/BootProcess.js**: Application bootstrap logic for talk pages
+- **src/controller.js**: Main controller
 
 ### Types
 
-- **global.d.ts** (at most one per directory): Global type definitions
+- **src/global.d.ts** (at most one per directory): Global type definitions
 - **Per-module .d.ts files**: Type definitions for some external modules
 - JSDoc type definitions inside individual module files
 
 ### Subdirectories
 
-- **loader/**: Modules that create a scaffolding for the script to run (the object structure, some utilities) and load the main app with a custom caching strategy
-- **worker/**: Page parsing module that runs in a web worker and is accessed from updateChecker.js
-- **shared/**: Classes and modules shared between the window context and web worker context
+- **i18n/**: Internationalization files (English is the source language in en.json; documentation for each string is in qqq.json)
+- **src/loader/**: Modules that create a scaffolding for the script to run (the object structure, some utilities) and load the main app with a custom caching strategy
+- **src/worker/**: Page parsing module that runs in a web worker and is accessed from updateChecker.js
+- **src/shared/**: Classes and modules shared between the window context and web worker context
 
 ## Coding Conventions
 
