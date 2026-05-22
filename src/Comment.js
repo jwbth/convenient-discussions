@@ -560,6 +560,15 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
+	 * Mark the comment as read (seen and not new).
+	 */
+	markAsRead() {
+		this.setSeen(true)
+		this.removeFlag('new')
+		this.manager.markReadStorageDirty()
+	}
+
+	/**
 	 * Has the comment changed since the previous visit.
 	 *
 	 * @returns {boolean | undefined}
@@ -3852,9 +3861,10 @@ class Comment extends mixIntoClass(
 	 *   in-memory session (which may carry additional info such as change notes), or simply `true`
 	 *   to mark this comment as unseen without extra metadata (e.g. when restored from session
 	 *   storage).
+	 * @param {boolean} [wasRead] Whether the comment was read in the previous session.
 	 * @returns {boolean} Whether there is a time conflict.
 	 */
-	initNewAndSeen(currentPageVisits, currentTime, unseenComment) {
+	initNewAndSeen(currentPageVisits, currentTime, unseenComment, wasRead) {
 		// Let's take 3 minutes as a tolerable time discrepancy.
 		if (
 			!this.date ||
@@ -3872,7 +3882,7 @@ class Comment extends mixIntoClass(
 		// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
 		// has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
 		// it's a *changed* old comment.
-		if (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment) {
+		if (!wasRead && (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment)) {
 			this.addFlag('new', false)
 		} else {
 			this.removeFlag('new', false)

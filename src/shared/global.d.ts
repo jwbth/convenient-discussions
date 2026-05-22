@@ -144,6 +144,7 @@ declare global {
 			heading: HeadingTarget<N>,
 			targets: Target<N>[],
 			sectionManager: N extends DomHandlerNode ? undefined : SectionManager,
+			commentManager: N extends DomHandlerNode ? undefined : CommentManager,
 			subscriptions: Subscriptions,
 		) => N extends DomHandlerNode ? SectionWorker : Section
 

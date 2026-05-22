@@ -777,7 +777,13 @@ class BootProcess {
 			.forEach((heading) => {
 				try {
 					sectionManager.add(
-						this.parser.createSection(heading, this.targets, sectionManager, this.subscriptions),
+						this.parser.createSection(
+							heading,
+							this.targets,
+							sectionManager,
+							commentManager,
+							this.subscriptions,
+						),
 					)
 				} catch (error) {
 					cd.debug.logError(error)

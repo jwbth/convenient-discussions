@@ -5,7 +5,6 @@ import getMoveSectionDialogClass from './MoveSectionDialog'
 import PrototypeRegistry from './PrototypeRegistry'
 import SectionSource from './SectionSource'
 import commentFormManager from './commentFormManager'
-import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
@@ -195,13 +194,15 @@ class Section extends SectionSkeleton {
 	 * @param {import('./shared/Parser').Target<Node>[]} targets Sorted target objects returned by
 	 *   returned by {@link Parser#findSignatures} + {@link Parser#findHeadings}.
 	 * @param {import('./sectionManager').SectionManager} sectionManager
+	 * @param {import('./commentManager').CommentManager} commentManager
 	 * @param {import('./Subscriptions').default} subscriptions
 	 * @throws {CdError}
 	 */
-	constructor(parser, heading, targets, sectionManager, subscriptions) {
+	constructor(parser, heading, targets, sectionManager, commentManager, subscriptions) {
 		super(parser, heading, targets)
 
 		this.manager = sectionManager
+		this.commentManager = commentManager
 		this.subscriptions = subscriptions
 
 		/**
@@ -1516,11 +1517,10 @@ class Section extends SectionSkeleton {
 	 */
 	markAsRead() {
 		this.newComments?.forEach((comment) => {
-			comment.setSeen(true)
-			comment.removeFlag('new')
+			comment.markAsRead()
 		})
-		commentManager.emit('updateSeen')
-		commentManager.emit('updateNew')
+		this.commentManager.emit('updateSeen')
+		this.commentManager.emit('updateNew')
 
 		const sections = [this, ...this.getChildren(true)]
 		sections.forEach((section) => {

@@ -141,11 +141,19 @@ class Parser {
 	 * @param {HeadingTarget<N>} heading
 	 * @param {Target<N>[]} targets
 	 * @param {N extends import('domhandler').Node ? undefined : import('../sectionManager').SectionManager} sectionManager
+	 * @param {N extends import('domhandler').Node ? undefined : import('../commentManager').CommentManager} commentManager
 	 * @param {import('../Subscriptions').default} [subscriptions]
 	 * @returns {InstanceType<typeof this.context.SectionClass>}
 	 */
-	createSection(heading, targets, sectionManager, subscriptions) {
-		return new this.context.SectionClass(this, heading, targets, sectionManager, subscriptions)
+	createSection(heading, targets, sectionManager, commentManager, subscriptions) {
+		return new this.context.SectionClass(
+			this,
+			heading,
+			targets,
+			sectionManager,
+			commentManager,
+			subscriptions,
+		)
 	}
 
 	/**

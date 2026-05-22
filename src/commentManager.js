@@ -117,6 +117,14 @@ export class CommentManager extends EventEmitter {
 	seenStorageDirty = false
 
 	/**
+	 * Whether the read storage needs to be updated.
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	readStorageDirty = false
+
+	/**
 	 * Set the comment classes.
 	 *
 	 * @param {object} classes
@@ -164,6 +172,7 @@ export class CommentManager extends EventEmitter {
 			.save()
 
 		this.on('updateSeen', this.saveSeenStorage)
+		this.on('updateNew', this.saveReadStorage)
 
 		controller
 			.on('viewportMove', this.registerSeen)
@@ -306,11 +315,16 @@ export class CommentManager extends EventEmitter {
 
 		/** @type {string[] | undefined} */
 		let unseenCommentIds
+		/** @type {string[] | undefined} */
+		let readCommentIds
 		if (isFirstBoot) {
 			const articleId = mw.config.get('wgArticleId')
 			if (articleId) {
 				const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
 				unseenCommentIds = unseenStorageItem.get(articleId) || []
+
+				const readStorageItem = new SessionStorageItemWithKeys('readComments')
+				readCommentIds = readStorageItem.get(articleId) || []
 			}
 		}
 
@@ -330,6 +344,8 @@ export class CommentManager extends EventEmitter {
 				currentPageData,
 				currentTime,
 				markAsReadRequested ? undefined : passedUnseenComment,
+				// Check if comment was marked as read - if so, don't flag it as new
+				Boolean(comment.id && readCommentIds?.includes(comment.id)),
 			)
 
 			timeConflict ||= commentTimeConflict
@@ -978,6 +994,13 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
+	 * Mark the read storage as needing an update.
+	 */
+	markReadStorageDirty() {
+		this.readStorageDirty = true
+	}
+
+	/**
 	 * Save the seen storage if it has been marked as dirty.
 	 */
 	saveSeenStorage = () => {
@@ -997,6 +1020,29 @@ export class CommentManager extends EventEmitter {
 			unseenStorageItem.set(articleId, unseenIds).save()
 		} else {
 			unseenStorageItem.remove(articleId).save()
+		}
+	}
+
+	/**
+	 * Save the read storage if it has been marked as dirty.
+	 */
+	saveReadStorage = () => {
+		if (!this.readStorageDirty && !cd.loader.isBooting()) return
+
+		this.readStorageDirty = false
+
+		const articleId = mw.config.get('wgArticleId')
+		if (!articleId) return
+
+		const readStorageItem = new SessionStorageItemWithKeys('readComments')
+		const readIds = this.items
+			.filter((comment) => !comment.hasFlag('new') && comment.id)
+			.map((comment) => comment.id)
+
+		if (readIds.length) {
+			readStorageItem.set(articleId, readIds).save()
+		} else {
+			readStorageItem.remove(articleId).save()
 		}
 	}
 

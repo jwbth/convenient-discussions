@@ -132,7 +132,7 @@ function processSections(parser, targets) {
 		.filter((target) => target.type === 'heading')
 		.forEach((heading) => {
 			try {
-				cd.sections.push(parser.createSection(heading, targets, undefined))
+				cd.sections.push(parser.createSection(heading, targets, undefined, undefined))
 			} catch (error) {
 				if (!(error instanceof CdError)) {
 					console.error(error)
