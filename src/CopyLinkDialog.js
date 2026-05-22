@@ -14,7 +14,7 @@ import { mergeJquery, wrapHtml } from './utils-window'
  * @property {string | undefined} fragment
  * @property {string} wikilink
  * @property {string} currentPageWikilink
- * @property {string} permanentWikilink
+ * @property {string | undefined} permanentWikilink
  * @property {string} link
  * @property {string} permanentLink
  * @property {string} jsCall
@@ -63,7 +63,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 	 *   short: 'copyText';
 	 *   wikilink: 'copyText';
 	 *   currentPageWikilink: 'copyText';
-	 *   permanentWikilink: 'copyText';
+	 *   permanentWikilink: 'copyText'  | undefined;
 	 *   link: 'copyText';
 	 *   permanentLink: 'copyText';
 	 *   jsCall: 'copyText' | undefined;
@@ -307,12 +307,14 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			help: helpNotOnlyCd,
 		})
 
-		this.controls.permanentWikilink = createCopyTextControl({
-			value: this.content.permanentWikilink,
-			label: cd.s('cld-permanentwikilink'),
-			copyCallback,
-			help: helpOnlyCd,
-		})
+		if (this.content.permanentWikilink) {
+			this.controls.permanentWikilink = createCopyTextControl({
+				value: this.content.permanentWikilink,
+				label: cd.s('cld-permanentwikilink'),
+				copyCallback,
+				help: helpOnlyCd,
+			})
+		}
 
 		this.controls.link = createCopyTextControl({
 			value: this.content.link,
@@ -355,7 +357,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 		return mergeJquery(
 			this.controls.wikilink.field.$element,
 			this.controls.currentPageWikilink.field.$element,
-			this.controls.permanentWikilink.field.$element,
+			this.controls.permanentWikilink?.field.$element,
 			this.controls.link.field.$element,
 			this.controls.permanentLink.field.$element,
 			this.controls.jsCall?.field.$element,

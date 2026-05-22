@@ -1221,6 +1221,7 @@ class Controller extends EventEmitter {
 					'/' +
 					String(mw.config.get('wgRevisionId')) +
 					'#')
+		const permalinkPage = pageRegistry.get(permalinkSpecialPagePrefix + permanentFragment)
 
 		/** @type {import('./CopyLinkDialog').CopyLinkDialogContent} */
 		const content = {
@@ -1231,14 +1232,15 @@ class Controller extends EventEmitter {
 			fragment,
 			wikilink: `[[${cd.page.name}#${fragment}]]`,
 			currentPageWikilink: `[[#${fragment}]]`,
-			permanentWikilink: `[[${permalinkSpecialPagePrefix}${permanentFragment}]]`,
+			// See https://phabricator.wikimedia.org/T426732#11947138 for why it can be undefined
+			permanentWikilink: permalinkPage ? `[[${permalinkPage.name}]]` : undefined,
 
 			// This dialog should be shown only for comments that have a timestamp; therefore a date;
 			// therefore an ID. In that case Comment#getUrl() returns a string.
 			link: /** @type {string} */ (object.getUrl()),
 
 			permanentLink: relevantComment
-				? pageRegistry.get(permalinkSpecialPagePrefix + permanentFragment)?.getDecodedUrl() ||
+				? permalinkPage?.getDecodedUrl() ||
 					/** @type {import('./Page').default} */ (
 						pageRegistry.get('Special:FindComment')
 					).getDecodedUrl({
