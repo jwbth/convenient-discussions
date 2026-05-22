@@ -56,7 +56,7 @@ export class SectionManager {
 	init(subscriptions) {
 		controller.on('viewportMove', this.maybeUpdateVisibility)
 		subscriptions.on('process', this.addSubscribeButtons)
-		visits.on('process', this.updateNewCommentsData)
+		visits.on('process', this.updateUnseenCommentsData)
 	}
 
 	/**
@@ -298,9 +298,9 @@ export class SectionManager {
 	}
 
 	/**
-	 * _For internal use._ Update the new comments data for sections and render the updates.
+	 * _For internal use._ Update the unseen comments data for sections and render the updates.
 	 */
-	updateNewCommentsData = () => {
+	updateUnseenCommentsData = () => {
 		this.items.forEach((section) => {
 			section.updateUnseenCommentsData()
 		})

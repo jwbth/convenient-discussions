@@ -171,7 +171,7 @@ export class CommentManager extends EventEmitter {
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
 
-		this.on('updateSeen', this.saveSeenStorage)
+		this.on('updateSeen', this.saveUnseenStorage)
 		this.on('updateNew', this.saveReadStorage)
 
 		controller
@@ -1001,9 +1001,9 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Save the seen storage if it has been marked as dirty.
+	 * Save the storage item for unseen comments if it has been marked as dirty.
 	 */
-	saveSeenStorage = () => {
+	saveUnseenStorage = () => {
 		if (!this.seenStorageDirty && !cd.loader.isBooting()) return
 
 		this.seenStorageDirty = false
