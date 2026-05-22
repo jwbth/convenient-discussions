@@ -180,7 +180,7 @@ function buildDateFnsLocales(i18nWithFallbacks) {
 		const dirName = lang
 			.replace(/^zh-hans$/, 'zh-cn')
 			.replace(/^zh-hant$/, 'zh-tw')
-			.replace(/-.+$/, (s) => s.toUpperCase())
+			.replace(/-(.+)$/, (s, subtag) => (subtag.length === 2 ? s.toUpperCase() : s))
 
 		// We have to rewrite the original name to build easily
 		langData.path = `date-fns/locale/${dirName}`
