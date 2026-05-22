@@ -56,26 +56,17 @@ function removeDtButtonHtmlComments() {
  * @private
  */
 function processAndRemoveDtElements(elements) {
-	// Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
-	// Tool doesn't seem to make difference for our purposes here.
-	const moveNotRemove =
-		cd.g.isDtTopicSubscriptionEnabled ||
-		// DT enabled by default. Don't know how to capture that another way.
-		!['registered', null].includes(mw.loader.getState('ext.discussionTools.init'))
-
 	/** @type {HTMLSpanElement | undefined} */
 	let dtMarkupHavenElement
-	if (moveNotRemove) {
-		if (!controller.getBootProcess().isFirstBoot()) {
-			dtMarkupHavenElement = cd.loader.$content.children('.cd-dtMarkupHaven')[0]
-		}
-		if (dtMarkupHavenElement) {
-			dtMarkupHavenElement.innerHTML = ''
-		} else {
-			dtMarkupHavenElement = document.createElement('span')
-			dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden'
-			cd.loader.$content.append(dtMarkupHavenElement)
-		}
+	if (!controller.getBootProcess().isFirstBoot()) {
+		dtMarkupHavenElement = cd.loader.$content.children('.cd-dtMarkupHaven')[0]
+	}
+	if (dtMarkupHavenElement) {
+		dtMarkupHavenElement.innerHTML = ''
+	} else {
+		dtMarkupHavenElement = document.createElement('span')
+		dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden'
+		cd.loader.$content.append(dtMarkupHavenElement)
 	}
 
 	const elementsToProcess = /** @type {HTMLElement[]} */ (
@@ -87,30 +78,17 @@ function processAndRemoveDtElements(elements) {
 		if (Object.hasOwn(el.dataset, 'mwCommentStart') && Comment.isDtId(el.id)) {
 			controller.getBootProcess().addDtCommentId(el.id)
 		}
-		if (moveNotRemove) {
-			// DT gets the DOM offset of each of these elements upon initialization which can take a lot
-			// of time if the elements aren't put into containers with less children.
-			if (i % 10 === 0) {
-				const dtMarkupHavenElementTyped = /** @type {HTMLSpanElement} */ (dtMarkupHavenElement)
-				dtMarkupHavenElementTyped.append(document.createElement('span'))
-			}
-			const dtMarkupHavenElementLastChild = /** @type {HTMLSpanElement} */ (
-				/** @type {HTMLSpanElement} */ (dtMarkupHavenElement).lastChild
-			)
-			dtMarkupHavenElementLastChild.append(el)
-		} else {
-			el.remove()
+		// DT gets the DOM offset of each of these elements upon initialization which can take a lot
+		// of time if the elements aren't put into containers with less children.
+		if (i % 10 === 0) {
+			const dtMarkupHavenElementTyped = /** @type {HTMLSpanElement} */ (dtMarkupHavenElement)
+			dtMarkupHavenElementTyped.append(document.createElement('span'))
 		}
+		const dtMarkupHavenElementLastChild = /** @type {HTMLSpanElement} */ (
+			/** @type {HTMLSpanElement} */ (dtMarkupHavenElement).lastChild
+		)
+		dtMarkupHavenElementLastChild.append(el)
 	})
-	if (!moveNotRemove) {
-		;[
-			.../** @type {NodeListOf<HTMLSpanElement>} */ (
-				controller.rootElement.querySelectorAll('span[data-mw-comment]')
-			),
-		].forEach((el) => {
-			delete el.dataset.mwComment
-		})
-	}
 }
 
 /**
