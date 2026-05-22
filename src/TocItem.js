@@ -142,4 +142,26 @@ export default class TocItem {
 				.remove()
 		}
 	}
+
+	/**
+	 * Remove the new comment list from the TOC item.
+	 */
+	removeNewCommentList() {
+		this.$link.next('.cd-toc-newCommentList').remove()
+	}
+
+	/**
+	 * Update the comment count text in the TOC item, removing the "new" indicator.
+	 *
+	 * @param {import('./Section').default} section
+	 * @param {import('./sectionManager').default} sectionManager
+	 */
+	updateCommentCount(section, sectionManager) {
+		const $bdi = this.$text.find('.cd-toc-commentCount bdi')
+		if (!$bdi.length) return
+
+		const count = String(section.comments.length)
+		const isFirstWithComments = sectionManager.getAll().find((s) => s.comments.length) === section
+		$bdi.text(isFirstWithComments ? cd.s('toc-commentcount-full', count) : count)
+	}
 }

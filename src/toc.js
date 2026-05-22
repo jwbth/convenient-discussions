@@ -220,28 +220,6 @@ class Toc {
 	}
 
 	/**
-	 * Remove new comments for a section from the TOC.
-	 *
-	 * @param {import('./Section').default} section
-	 */
-	removeNewComments(section) {
-		if (!this.isPresent()) return
-
-		const item = section.getTocItem()
-		if (!item) return
-
-		item.$link.next('.cd-toc-newCommentList').remove()
-
-		const $bdi = item.$text.find('.cd-toc-commentCount bdi')
-		if ($bdi.length) {
-			const count = String(section.comments.length)
-			const isFirstWithComments = sectionManager.getAll().find((s) => s.comments.length) === section
-
-			$bdi.text(isFirstWithComments ? cd.s('toc-commentcount-full', count) : count)
-		}
-	}
-
-	/**
 	 * Handle a click on an added section link.
 	 *
 	 * @param {MouseEvent | KeyboardEvent} event

@@ -1538,8 +1538,21 @@ class Section extends SectionSkeleton {
 				}
 			}
 
-			toc.removeNewComments(section)
+			const tocItem = section.getTocItem()
+			if (tocItem) {
+				tocItem.removeNewCommentList()
+				tocItem.updateCommentCount(section, this.manager)
+			}
 		})
+
+		for (let parent = this.getParent(); parent; parent = parent.getParent()) {
+			parent.$newCommentCountWrapper?.remove()
+			parent.updateNewCommentsData()
+			const tocItem = parent.getTocItem()
+			if (tocItem) {
+				tocItem.updateCommentCount(parent, this.manager)
+			}
+		}
 	}
 
 	/**
