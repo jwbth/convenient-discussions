@@ -24,6 +24,7 @@ import visits from './visits'
 /**
  * @typedef {object} EventMap
  * @property {[]} updateSeen
+ * @property {[]} updateNew
  * @property {[import('./Comment').default]} unselect
  * @property {[import('./Comment').default]} select
  */

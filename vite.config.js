@@ -428,8 +428,8 @@ export default defineConfig(({ mode, command }) => {
 		plugins.push(
 			treeShakeImportsPlugin({
 				isSingle: true,
-				wiki: buildMode.wiki,
-				lang: buildMode.lang,
+				wiki: /** @type {string} */ (buildMode.wiki),
+				lang: /** @type {string} */ (buildMode.lang),
 			}),
 		)
 	}

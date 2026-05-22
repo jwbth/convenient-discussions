@@ -97,6 +97,7 @@ class NavPanel {
 				LiveTimestamp.on('updateImproved', this.updateTimestampsInRefreshButtonTooltip)
 				visits.on('process', this.fill)
 				commentManager.on('updateSeen', this.updateFirstUnseenButton)
+				commentManager.on('updateNew', this.updateNew)
 			}
 		} else if (this.isMounted()) {
 			this.unmount()
@@ -246,6 +247,20 @@ class NavPanel {
 			this.state.previousButton.show()
 			this.state.nextButton.show()
 			this.updateFirstUnseenButton()
+		}
+	}
+
+	/**
+	 * Update the navigation panel when the new flag is removed from comments.
+	 *
+	 * @private
+	 */
+	updateNew = () => {
+		if (!this.state) return
+
+		if (!commentManager.getAll().some((comment) => comment.hasFlag('new'))) {
+			this.state.previousButton.hide()
+			this.state.nextButton.hide()
 		}
 	}
 

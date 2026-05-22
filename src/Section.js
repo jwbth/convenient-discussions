@@ -5,6 +5,7 @@ import getMoveSectionDialogClass from './MoveSectionDialog'
 import PrototypeRegistry from './PrototypeRegistry'
 import SectionSource from './SectionSource'
 import commentFormManager from './commentFormManager'
+import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
@@ -1151,6 +1152,14 @@ class Section extends SectionSkeleton {
 								icon: 'unarchive',
 							})
 						: undefined,
+					this.newComments?.length
+						? new OO.ui.MenuOptionWidget({
+								data: 'markAsRead',
+								label: cd.s('sm-markasread'),
+								title: cd.s('sm-markasread-tooltip'),
+								icon: 'checkAll',
+							})
+						: undefined,
 					this.canBeSubsectioned()
 						? new OO.ui.MenuOptionWidget({
 								data: 'addSubsection',
@@ -1182,6 +1191,9 @@ class Section extends SectionSkeleton {
 						break
 					case 'archive':
 						this.archive()
+						break
+					case 'markAsRead':
+						this.markAsRead()
 						break
 					case 'addSubsection':
 						this.addSubsection()
@@ -1497,6 +1509,37 @@ class Section extends SectionSkeleton {
 
 		// Filter out sections with no comments, therefore no meaningful ID
 		this.subscribeId = subscribeId === 'h-' ? undefined : subscribeId
+	}
+
+	/**
+	 * Mark all new comments in the section as read.
+	 */
+	markAsRead() {
+		this.newComments?.forEach((comment) => {
+			comment.setSeen(true)
+			comment.removeFlag('new')
+		})
+		commentManager.emit('updateSeen')
+		commentManager.emit('updateNew')
+
+		const sections = [this, ...this.getChildren(true)]
+		sections.forEach((section) => {
+			section.$newCommentCountWrapper?.remove()
+			section.newComments = []
+
+			const moreMenuSelect = section.actions.moreMenuSelect
+			if (moreMenuSelect) {
+				const menu = moreMenuSelect.getMenu()
+				const item = /** @type {OO.ui.MenuOptionWidget[]} */ (menu.getItems()).find(
+					(itm) => itm.getData() === 'markAsRead',
+				)
+				if (item) {
+					menu.removeItems([/** @type {OO.ui.OptionWidget} */ (item)])
+				}
+			}
+
+			toc.removeNewComments(section)
+		})
 	}
 
 	/**
@@ -2186,7 +2229,10 @@ class Section extends SectionSkeleton {
 	 * @returns {string}
 	 */
 	getUrl(permanent = false) {
-		return cd.page.getDecodedUrl(permanent ? { oldid: mw.config.get('wgRevisionId') } : undefined, this.id)
+		return cd.page.getDecodedUrl(
+			permanent ? { oldid: mw.config.get('wgRevisionId') } : undefined,
+			this.id,
+		)
 	}
 
 	/**

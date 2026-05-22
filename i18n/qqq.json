@@ -50,6 +50,8 @@
 	"popup-mutees-text": "Text of the onboarding popup that introduces the feature of collapsing threads by muted users.\n\nMentions {{msg-wm|convenient-discussions-sd-collapsethreadsbymutees}}.",
 	"sm-editopeningcomment": "Label of the section menu item that opens the headline of the section for editing.",
 	"sm-editopeningcomment-tooltip": "Text of the tooltip for the section menu item labeled with the {{msg-wm|Convenient-discussions-sm-editopeningcomment}} message.",
+	"sm-markasread": "Label of the section menu item that marks all new comments in the section as read and removes the \"new\" flag.",
+	"sm-markasread-tooltip": "Text of the tooltip for the section menu item labeled with the {{msg-wm|Convenient-discussions-sm-markasread}} message.\n\n\"Mark as old\" means \"To remove the 'new' flag\".",
 	"sm-addsubsection": "Label of the section menu item that opens an \"Add subsection\" form.",
 	"sm-addsubsection-tooltip": "Text of the tooltip for the section menu item labeled with the {{msg-wm|Convenient-discussions-sm-addsubsection}} message.",
 	"sm-move": "Label of the section menu item that opens a move section dialog.\n\n{{identical|Move}}",

@@ -37,6 +37,8 @@
 
 	"sm-editopeningcomment": "Edit subject",
 	"sm-editopeningcomment-tooltip": "Edit the subject of the section",
+	"sm-markasread": "Mark as read",
+	"sm-markasread-tooltip": "Mark all comments in the section as read and old",
 	"sm-addsubsection": "Add subsection",
 	"sm-addsubsection-tooltip": "Add a subsection to this section",
 	"sm-move": "Move",
