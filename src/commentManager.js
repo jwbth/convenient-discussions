@@ -23,7 +23,7 @@ import visits from './visits'
 
 /**
  * @typedef {object} EventMap
- * @property {[]} registerSeen
+ * @property {[]} updateSeen
  * @property {[import('./Comment').default]} unselect
  * @property {[import('./Comment').default]} select
  */
@@ -161,6 +161,8 @@ export class CommentManager extends EventEmitter {
 		this.thanksStorage = new LocalStorageItemWithKeys('thanks')
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
+
+		this.on('updateSeen', this.saveSeenStorage)
 
 		controller
 			.on('viewportMove', this.registerSeen)
@@ -332,7 +334,7 @@ export class CommentManager extends EventEmitter {
 			timeConflict ||= commentTimeConflict
 		})
 
-		this.saveSeenStorage()
+		this.emit('updateSeen')
 
 		this.configureAndAddLayers((comment) => comment.hasFlag('new'))
 
@@ -477,8 +479,7 @@ export class CommentManager extends EventEmitter {
 		// Forward
 		this.items.slice(commentInViewport.index).some(registerIfInViewport)
 
-		this.saveSeenStorage()
-		this.emit('registerSeen')
+		this.emit('updateSeen')
 	}
 
 	/**
@@ -978,7 +979,7 @@ export class CommentManager extends EventEmitter {
 	/**
 	 * Save the seen storage if it has been marked as dirty.
 	 */
-	saveSeenStorage() {
+	saveSeenStorage = () => {
 		if (!this.seenStorageDirty && !cd.loader.isBooting()) return
 
 		this.seenStorageDirty = false

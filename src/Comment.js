@@ -2093,7 +2093,7 @@ class Comment extends mixIntoClass(
 		) {
 			this.initiallySetOrResetSeenBeforeChanged(this.isSeen())
 			this.setSeen(false)
-			this.manager.saveSeenStorage()
+			this.manager.emit('updateSeen')
 		}
 
 		// Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -2157,8 +2157,7 @@ class Comment extends mixIntoClass(
 		) {
 			this.setSeen(true)
 			this.initiallySetOrResetSeenBeforeChanged(undefined)
-			this.manager.saveSeenStorage()
-			this.manager.emit('registerSeen')
+			this.manager.emit('updateSeen')
 		}
 
 		if (type === 'changed') {
@@ -2326,8 +2325,7 @@ class Comment extends mixIntoClass(
 						threadTyped.getComments().forEach((comment) => {
 							comment.setSeen(true)
 						})
-						this.manager.saveSeenStorage()
-						this.manager.emit('registerSeen')
+						this.manager.emit('updateSeen')
 						this.manager.goToFirstUnseenComment()
 						this.collapsedNotification?.close()
 					},

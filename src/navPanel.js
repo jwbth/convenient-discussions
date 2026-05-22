@@ -96,7 +96,7 @@ class NavPanel {
 					.on('remove', this.updateCommentFormButton)
 				LiveTimestamp.on('updateImproved', this.updateTimestampsInRefreshButtonTooltip)
 				visits.on('process', this.fill)
-				commentManager.on('registerSeen', this.updateFirstUnseenButton)
+				commentManager.on('updateSeen', this.updateFirstUnseenButton)
 			}
 		} else if (this.isMounted()) {
 			this.unmount()
