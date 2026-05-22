@@ -94,6 +94,14 @@ ol > .cd-thread-button-container > .cd-thread-button {
 	margin-block: 0;
 
 	padding: 0;
+
+	// // Fixes thread notes in numbered lists, like
+	// https://en.wikipedia.org/wiki/Special:GoToComment/c-LEvalyn-20260521222300-Vacant0-20260521222100.
+	// But honestly, this is breaking a butterfly on the wheel, probably harming performance more than
+	// solving anything.
+	// &:last-child {
+	// 	margin-block-end: 0.5em;
+	// }
 }
 
 // Hotfix Vector's `margin-top: -0.5em;` for `p + ul` etc.
