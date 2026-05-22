@@ -302,7 +302,7 @@ export class SectionManager {
 	 */
 	updateNewCommentsData = () => {
 		this.items.forEach((section) => {
-			section.updateNewCommentsData()
+			section.updateUnseenCommentsData()
 		})
 	}
 

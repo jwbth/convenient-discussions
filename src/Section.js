@@ -1153,7 +1153,7 @@ class Section extends SectionSkeleton {
 								icon: 'unarchive',
 							})
 						: undefined,
-					this.newComments?.length
+					this.comments.filter((comment) => comment.hasFlag('new')).length
 						? new OO.ui.MenuOptionWidget({
 								data: 'markAsRead',
 								label: cd.s('sm-markasread'),
@@ -1428,47 +1428,51 @@ class Section extends SectionSkeleton {
 		if (event.altKey) return
 
 		event.preventDefault()
-		Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.newComments))
+		Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.unseenComments))
 	}
 
 	/**
-	 * _For internal use._ Update the new comments data for the section and add the new comment count
-	 * to the metadata element. ("New" actually means "unseen at the moment of load".).
+	 * _For internal use._ Update the unseen (worded as "new" in the UI) comments data for the section
+	 * and add the unseen comment count to the metadata element. ("Unseen" actually means "not seen at
+	 * the moment of load".).
 	 */
-	updateNewCommentsData() {
+	updateUnseenCommentsData() {
 		/**
-		 * List of new comments in the section. ("New" actually means "unseen at the moment of load".)
+		 * List of comments in the section that were unseen at the moment of load.
 		 *
 		 * @type {import('./Comment').default[] | undefined}
 		 */
-		this.newComments = this.comments.filter((comment) => comment.isSeen() === false)
+		this.unseenComments = this.comments.filter((comment) => comment.isSeen() === false)
 
 		if (
 			!this.isTopic() ||
-			!this.newComments.length ||
-			this.newComments.length === this.comments.length
+			!this.unseenComments.length ||
+			this.unseenComments.length === this.comments.length
 		) {
 			return
 		}
 
-		const newLink = document.createElement('a')
-		newLink.textContent = cd.s('section-metadata-newcommentcount', String(this.newComments.length))
-		newLink.href = `#${this.newComments[0].dtId || ''}`
-		newLink.className = 'cd-clickHandled'
-		newLink.addEventListener('click', this.scrollToNewComments)
+		const unseenLink = document.createElement('a')
+		unseenLink.textContent = cd.s(
+			'section-metadata-newcommentcount',
+			String(this.unseenComments.length),
+		)
+		unseenLink.href = `#${this.unseenComments[0].dtId || ''}`
+		unseenLink.className = 'cd-clickHandled'
+		unseenLink.addEventListener('click', this.scrollToNewComments)
 
-		const newCommentCountWrapper = document.createElement('span')
-		newCommentCountWrapper.className = 'cd-section-bar-item'
-		newCommentCountWrapper.append(newLink)
+		const unseenCommentCountWrapper = document.createElement('span')
+		unseenCommentCountWrapper.className = 'cd-section-bar-item'
+		unseenCommentCountWrapper.append(unseenLink)
 
 		const metadataElementTyped = /** @type {HTMLElement} */ (this.metadataElement)
 		metadataElementTyped.insertBefore(
-			newCommentCountWrapper,
+			unseenCommentCountWrapper,
 			/** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null,
 		)
 
-		this.newCommentCountWrapper = newCommentCountWrapper
-		this.$newCommentCountWrapper = $(newCommentCountWrapper)
+		this.unseenCommentCountWrapper = unseenCommentCountWrapper
+		this.$unseenCommentCountWrapper = $(unseenCommentCountWrapper)
 	}
 
 	/**
@@ -1516,16 +1520,18 @@ class Section extends SectionSkeleton {
 	 * Mark all new comments in the section as read.
 	 */
 	markAsRead() {
-		this.newComments?.forEach((comment) => {
-			comment.markAsRead()
-		})
+		this.comments
+			.filter((comment) => comment.hasFlag('new'))
+			.forEach((comment) => {
+				comment.markAsRead()
+			})
 		this.commentManager.emit('updateSeen')
 		this.commentManager.emit('updateNew')
 
 		const sections = [this, ...this.getChildren(true)]
 		sections.forEach((section) => {
-			section.$newCommentCountWrapper?.remove()
-			section.newComments = []
+			section.$unseenCommentCountWrapper?.remove()
+			section.unseenComments = []
 
 			const moreMenuSelect = section.actions.moreMenuSelect
 			if (moreMenuSelect) {
@@ -1546,8 +1552,8 @@ class Section extends SectionSkeleton {
 		})
 
 		for (let parent = this.getParent(); parent; parent = parent.getParent()) {
-			parent.$newCommentCountWrapper?.remove()
-			parent.updateNewCommentsData()
+			parent.$unseenCommentCountWrapper?.remove()
+			parent.updateUnseenCommentsData()
 			const tocItem = parent.getTocItem()
 			if (tocItem) {
 				tocItem.updateCommentCount(parent, this.manager)

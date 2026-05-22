@@ -195,7 +195,7 @@ class Toc {
 			span.className = 'cd-toc-commentCount'
 
 			const bdi = document.createElement('bdi')
-			const unseenCount = section.newComments?.length
+			const unseenCount = section.unseenComments?.length
 			if (unseenCount) {
 				bdi.textContent = cd.s(
 					usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
