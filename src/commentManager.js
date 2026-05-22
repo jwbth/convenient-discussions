@@ -108,6 +108,14 @@ export class CommentManager extends EventEmitter {
 	brokenLayoutCheckCount = 0
 
 	/**
+	 * Whether the seen storage needs to be updated.
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	seenStorageDirty = false
+
+	/**
 	 * Set the comment classes.
 	 *
 	 * @param {object} classes
@@ -324,19 +332,7 @@ export class CommentManager extends EventEmitter {
 			timeConflict ||= commentTimeConflict
 		})
 
-		const articleId = mw.config.get('wgArticleId')
-		if (articleId) {
-			const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
-			const unseenIds = this.items
-				.filter((comment) => comment.isSeen() === false && comment.id)
-				.map((comment) => comment.id)
-
-			if (unseenIds.length) {
-				unseenStorageItem.set(articleId, unseenIds).save()
-			} else {
-				unseenStorageItem.remove(articleId).save()
-			}
-		}
+		this.saveSeenStorage()
 
 		this.configureAndAddLayers((comment) => comment.hasFlag('new'))
 
@@ -481,6 +477,7 @@ export class CommentManager extends EventEmitter {
 		// Forward
 		this.items.slice(commentInViewport.index).some(registerIfInViewport)
 
+		this.saveSeenStorage()
 		this.emit('registerSeen')
 	}
 
@@ -972,6 +969,36 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
+	 * Mark the seen storage as needing an update.
+	 */
+	markSeenStorageDirty() {
+		this.seenStorageDirty = true
+	}
+
+	/**
+	 * Save the seen storage if it has been marked as dirty.
+	 */
+	saveSeenStorage() {
+		if (!this.seenStorageDirty && !cd.loader.isBooting()) return
+
+		this.seenStorageDirty = false
+
+		const articleId = mw.config.get('wgArticleId')
+		if (!articleId) return
+
+		const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
+		const unseenIds = this.items
+			.filter((comment) => comment.isSeen() === false && comment.id)
+			.map((comment) => comment.id)
+
+		if (unseenIds.length) {
+			unseenStorageItem.set(articleId, unseenIds).save()
+		} else {
+			unseenStorageItem.remove(articleId).save()
+		}
+	}
+
+	/**
 	 * Determine which comment on the page is selected.
 	 *
 	 * @returns {import('./Comment').default | undefined}
@@ -1376,17 +1403,15 @@ export class CommentManager extends EventEmitter {
 			direction === 'backward',
 		).filter((comment) => comment.hasFlag('new') && !comment.isInViewport())
 		const comment = candidates.find((c) => c.isInViewport() === false) || candidates.at(0)
-		if (comment) {
-			comment.scrollTo({
-				flash: false,
-				callback: () => {
-					// The default controller.handleViewportMove() callback is executed in $#cdScrollTo, but
-					// that happens after a 300ms timeout, so we have a chance to have our callback executed
-					// first.
-					comment.registerSeen(direction, true)
-				},
-			})
-		}
+		comment?.scrollTo({
+			flash: false,
+			callback: () => {
+				// The default controller.handleViewportMove() callback is executed in $#cdScrollTo, but
+				// that happens after a 300ms timeout, so we have a chance to have our callback executed
+				// first.
+				comment.registerSeen(direction, true)
+			},
+		})
 	}
 
 	/**

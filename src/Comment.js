@@ -5,7 +5,6 @@ import CommentSubitemList from './CommentSubitemList'
 import EventEmitter from './EventEmitter'
 import LiveTimestamp from './LiveTimestamp'
 import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
-import SessionStorageItemWithKeys from './SessionStorageItemWithKeys'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
@@ -557,28 +556,7 @@ class Comment extends mixIntoClass(
 		if (this.seen === value) return
 
 		this.seen = value
-
-		if (!cd.loader.isBooting() && this.id) {
-			const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
-			const articleId = mw.config.get('wgArticleId')
-			if (articleId) {
-				const unseen = unseenStorageItem.get(articleId) || []
-				if (value === false) {
-					if (!unseen.includes(this.id)) {
-						unseen.push(this.id)
-						unseenStorageItem.set(articleId, unseen).save()
-					}
-				} else if (unseen.includes(this.id)) {
-					removeFromArrayIfPresent(unseen, this.id)
-					if (unseen.length === 0) {
-						unseenStorageItem.remove(articleId)
-					} else {
-						unseenStorageItem.set(articleId, unseen)
-					}
-					unseenStorageItem.save()
-				}
-			}
-		}
+		this.manager.markSeenStorageDirty()
 	}
 
 	/**
@@ -2115,7 +2093,7 @@ class Comment extends mixIntoClass(
 		) {
 			this.initiallySetOrResetSeenBeforeChanged(this.isSeen())
 			this.setSeen(false)
-			this.manager.registerSeen()
+			this.manager.saveSeenStorage()
 		}
 
 		// Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -2179,6 +2157,7 @@ class Comment extends mixIntoClass(
 		) {
 			this.setSeen(true)
 			this.initiallySetOrResetSeenBeforeChanged(undefined)
+			this.manager.saveSeenStorage()
 			this.manager.emit('registerSeen')
 		}
 
@@ -2347,6 +2326,7 @@ class Comment extends mixIntoClass(
 						threadTyped.getComments().forEach((comment) => {
 							comment.setSeen(true)
 						})
+						this.manager.saveSeenStorage()
 						this.manager.emit('registerSeen')
 						this.manager.goToFirstUnseenComment()
 						this.collapsedNotification?.close()
