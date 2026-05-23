@@ -1044,18 +1044,38 @@ class Controller extends EventEmitter {
 		if (!$content.is('#mw-content-text, #mw-content-subtitle, .cd-commentForm-previewArea')) return
 
 		const goToCommentUrl = mw.util.getUrl('Special:GoToComment/')
-		const extractCommentId = (/** @type {HTMLElement} */ el) =>
-			/** @type {string} */ ($(el).attr('href'))
-				.replace(mw.util.escapeRegExp(goToCommentUrl), '#')
-				.slice(1)
+		const extractCommentId = (/** @type {HTMLElement} */ el) => {
+			const href = /** @type {string} */ ($(el).attr('href'))
+			if (href.startsWith('#')) {
+				return href.slice(1)
+			}
+			if (href.startsWith(goToCommentUrl)) {
+				return href.replace(mw.util.escapeRegExp(goToCommentUrl), '#').slice(1)
+			}
+
+			// Absolute URL (external link to this page): return just the fragment
+			return href.slice(href.indexOf('#') + 1)
+		}
 		$content
-			.find(`a[href^="#"], a[href^="${goToCommentUrl}"]`)
-			.filter((_, el) =>
-				Boolean(
-					!el.classList.contains('cd-clickHandled') &&
-					commentManager.getByAnyId(extractCommentId(el), true),
-				),
-			)
+			.find(`a[href^="#"], a[href^="${goToCommentUrl}"], a.external[href*="#"]`)
+			.filter((_, el) => {
+				if (el.classList.contains('cd-clickHandled')) return false
+				const href = /** @type {string} */ ($(el).attr('href'))
+				if (!href.startsWith('#') && !href.startsWith(goToCommentUrl)) {
+					// External link: only handle if it points to the current page
+					try {
+						const url = new URL(href)
+						const pageName = parseWikiUrl(url.pathname)?.pageName ?? url.searchParams.get('title')
+						if (!pageName || pageRegistry.get(pageName) !== cd.page) {
+							return false
+						}
+					} catch {
+						return false
+					}
+				}
+
+				return Boolean(commentManager.getByAnyId(extractCommentId(el), true))
+			})
 			.on('click', function onCommentLinkClick(event) {
 				event.preventDefault()
 				commentManager.getByAnyId(extractCommentId(this), true)?.scrollTo({
