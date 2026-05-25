@@ -42,7 +42,7 @@ export function highlightLinkedComments(scroll = true) {
 	let commentsToHighlight = []
 
 	if (newCommentsSinceId) {
-		const newCommentsSince = commentManager.getByDtId(newCommentsSinceId)
+		const newCommentsSince = commentManager.getByAnyId(newCommentsSinceId)
 		if (newCommentsSince?.date) {
 			const sinceTimestamp = newCommentsSince.date.getTime()
 			const commentsToCheck = inThread
@@ -73,7 +73,7 @@ export function highlightLinkedComments(scroll = true) {
 	// Add explicitly specified comment IDs
 	if (newCommentIds.length) {
 		newCommentIds.forEach((id) => {
-			const comment = commentManager.getByDtId(id)
+			const comment = commentManager.getByAnyId(id)
 			if (comment && !commentsToHighlight.includes(comment)) {
 				commentsToHighlight.push(comment)
 			}

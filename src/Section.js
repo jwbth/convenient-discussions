@@ -763,6 +763,10 @@ class Section extends SectionSkeleton {
 				const newestComment = /** @type {Comment} */ (Comment.getNewest(comments, true))
 
 				let href
+				// TODO: Change that to the format that doesn't require comment dates (thus oldestComment).
+				// We may use CD's IDs in parameters as well. Our dtnewcommentssince handler understands
+				// them; unlikely that they will be used outside of CD. Or we might even use our versions of
+				// parameters, e.g. cdnewcommentssince.
 				if (this.oldestComment?.dtId) {
 					const url = new URL(location.href)
 					url.searchParams.set('cdauthor', author.getName())
@@ -1424,11 +1428,22 @@ class Section extends SectionSkeleton {
 	 * @param {MouseEvent} event
 	 * @private
 	 */
-	scrollToNewComments = (event) => {
+	scrollToUnseenComments = (event) => {
 		if (event.altKey) return
 
 		event.preventDefault()
-		Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.unseenComments))
+
+		const oldestUnseenComment = Comment.getOldest(
+			/** @type {Comment[]} */ (this.unseenComments),
+			true,
+		)
+		if (oldestUnseenComment?.dtId) {
+			const href = /** @type {HTMLAnchorElement} */ (event.currentTarget).href
+			history.pushState(null, '', href)
+			highlightLinkedComments()
+		} else {
+			Comment.markAsLinked(/** @type {Comment[]} */ (this.unseenComments), true, false)
+		}
 	}
 
 	/**
@@ -1452,14 +1467,27 @@ class Section extends SectionSkeleton {
 			return
 		}
 
+		const oldestUnseenComment = Comment.getOldest(this.unseenComments, true)
+
+		let href
+		if (oldestUnseenComment?.dtId) {
+			const url = new URL(location.href)
+			url.searchParams.set('dtnewcommentssince', oldestUnseenComment.dtId)
+			url.searchParams.set('dtinthread', '1')
+			url.hash = ''
+			href = url.toString()
+		} else {
+			href = `#${oldestUnseenComment?.getUrlFragment() || ''}`
+		}
+
 		const unseenLink = document.createElement('a')
 		unseenLink.textContent = cd.s(
 			'section-metadata-newcommentcount',
 			String(this.unseenComments.length),
 		)
-		unseenLink.href = `#${this.unseenComments[0].dtId || ''}`
+		unseenLink.href = href
 		unseenLink.className = 'cd-clickHandled'
-		unseenLink.addEventListener('click', this.scrollToNewComments)
+		unseenLink.addEventListener('click', this.scrollToUnseenComments)
 
 		const unseenCommentCountWrapper = document.createElement('span')
 		unseenCommentCountWrapper.className = 'cd-section-bar-item'
