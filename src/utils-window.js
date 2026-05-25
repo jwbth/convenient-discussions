@@ -16,6 +16,8 @@ import {
 	parseWikiUrl,
 	removeDirMarks,
 	spacesToUnderlines,
+	ucFirst,
+	underlinesToSpaces,
 } from './shared/utils-general'
 import { parseTimestamp } from './shared/utils-timestamp'
 import { maskDistractingCode } from './shared/utils-wikitext'
@@ -932,9 +934,41 @@ export function cleanUpPasteDom(element, containerElement) {
 		.filter((el) => window.getComputedStyle(el).userSelect === 'none')
 		.forEach(removeElement)
 
+	// Replace paragraph break divs with <p> elements
+	;[...element.querySelectorAll('div')]
+		.filter((el) => {
+			// Check if it has the paragraphbreak class
+			if (el.classList.contains('paragraphbreak')) {
+				return true
+			}
+
+			// Check if it matches paragraph templates via data-mw attribute
+			const dataMw = el.dataset.mw
+			if (dataMw) {
+				try {
+					const mwData = JSON.parse(dataMw)
+					const templateName = mwData?.parts?.[0]?.template?.target?.wt
+					if (templateName) {
+						const normalizedTemplateName = ucFirst(underlinesToSpaces(templateName))
+
+						return cd.config.paragraphTemplates.some(
+							(template) => ucFirst(underlinesToSpaces(template)) === normalizedTemplateName,
+						)
+					}
+				} catch {
+					// Invalid JSON, skip this element
+				}
+			}
+
+			return false
+		})
+		.forEach((el) => {
+			el.replaceWith(document.createElement('p'))
+		})
+
 	// Should run after removing elements with `user-select: none`, to remove their wrappers that
 	// now have no content.
-	;[...element.querySelectorAll('*')]
+	;[...element.querySelectorAll('*:not(p)')]
 		.filter(
 			(el) =>
 				(!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
@@ -960,6 +994,10 @@ export function cleanUpPasteDom(element, containerElement) {
 	;[...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
 		// eslint-disable-next-line no-self-assign
 		el.textContent = el.textContent
+
+		// Parsoid generates this, but itself can't handle this at endpoint
+		// /api/rest_v1/transform/html/to/wikitext, returning an empty syntaxhighlight tag
+		el.removeAttribute('typeof')
 	})
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -1032,6 +1070,17 @@ export function cleanUpPasteDom(element, containerElement) {
 	const text = element.innerText
 
 	element.remove()
+
+	// Parser converts `<p></p>` inside li items into spaces, even if they end up starting a line
+	// (which is easily confused with code markup) which completely throws us off. So, *after* we
+	// extracted innerText, we replace <p>s with empty <ul>s which produce newlines. Example:
+	// https://ru.wikipedia.org/wiki/Служебная:GoToComment/c-Shabe-20260524164300-Mikhail_Ryazanov-20260524050300
+	;[...element.querySelectorAll('li p, dd p')]
+		.filter((el) => el.textContent === '')
+		.forEach((el) => {
+			el.after(document.createElement('ul'), document.createElement('ul'))
+			el.remove()
+		})
 
 	return { element, text, syntaxHighlightLanguages }
 }

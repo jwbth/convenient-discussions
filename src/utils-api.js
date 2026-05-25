@@ -603,6 +603,12 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
 		}
 		wikitext = wikitext
 			.replace(/(?:^ .*(?:\n|$))+|<code dir="(?:ltr|rtl)">([^]*?)<\/code>/gm, (s, inlineCode) => {
+				// This shouldn't happen but may (e.g. when <p></p> inside <li> is transformed into a space
+				// at the start of a line)
+				if (!syntaxHighlightLanguages.length) {
+					return s
+				}
+
 				const lang = syntaxHighlightLanguages.shift() || 'wikitext'
 				const code = (
 					typeof inlineCode === 'string'
