@@ -295,6 +295,7 @@ export function formatDateRelative(date) {
 	return formatDistanceToNowStrict(date, {
 		addSuffix: true,
 		roundingMethod: 'floor',
-		locale: cd.i18n[cd.g.userLanguage].dateFnsLocale,
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		locale: cd.i18n[cd.g.userLanguage]?.dateFnsLocale,
 	})
 }
