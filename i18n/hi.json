@@ -28,6 +28,7 @@
 	"thread-newcomments": "इस पृष्ठ पर {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3 द्वारा {{plural:$1|नया संदेश है|नए संदेश हैं}}। पृष्ठ को ताज़ा करने के लिए क्लिक करें।",
 	"sm-editopeningcomment": "प्रारंभिक टिप्पणी संपादित करें",
 	"sm-editopeningcomment-tooltip": "अनुभाग की प्रारंभिक टिप्पणी संपादित करें",
+	"sm-markasread": "पठित चिह्नित करें",
 	"sm-addsubsection": "उप-अनुभाग जोड़ें",
 	"sm-addsubsection-tooltip": "इस अनुभाग पर एक उप-अनुभाग जोड़ें",
 	"sm-move": "स्थानांतरित करें",

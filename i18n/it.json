@@ -142,7 +142,7 @@
 	"rd-close": "Chiudi",
 	"popup-manyForms-title": "Lo sapevi?",
 	"navpanel-refresh": "Ricarica la pagina",
-	"navpanel-firstunseen": "Vai al primo commento inedito.",
+	"navpanel-firstunseen": "Vai al primo commento non letto",
 	"navpanel-newcomments-count": "$1 {{plural:$1|nuovo commento|nuovi commenti}}.",
 	"navpanel-newcomments-unknowndate": "data sconosciuta",
 	"pagenav-toc": "Indice",

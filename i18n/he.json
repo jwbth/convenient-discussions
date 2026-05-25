@@ -50,6 +50,8 @@
 	"popup-mutees-text": "שרשורים שנפתחו בידי משתמשים שהשתקת מכווצים עכשיו כברירת מחדל. ניתן לבטל את התנהגות הזאת ב<span class=\"cd-notification-settings-collapseThreadsByMutees\">[[$1|הגדרות]]</span>.",
 	"sm-editopeningcomment": "עריכת הנושא",
 	"sm-editopeningcomment-tooltip": "עריכת התגובה הפותחת את הנושא",
+	"sm-markasread": "סימון כהודעה שנקראה",
+	"sm-markasread-tooltip": "סימון את כל התגובות במקטע כנקראו וישנות",
 	"sm-addsubsection": "הוספת פרק־משנה",
 	"sm-addsubsection-tooltip": "הוספת פרק־משנה לפרק הזה",
 	"sm-move": "העברה",

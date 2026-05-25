@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"G3raltJJ",
 			"Jack who built the house",
 			"Kareyac",
 			"Luku123",
@@ -177,7 +178,7 @@
 	"navpanel-refresh": "Odśwież stronę",
 	"navpanel-previous": "Przejdź do poprzedniego nowego komentarza",
 	"navpanel-next": "Przejdź do następnego nowego komentarza",
-	"navpanel-firstunseen": "Przejdź do pierwszego niewidzianego komentarza",
+	"navpanel-firstunseen": "Przejdź do pierwszego nieprzeczytanego komentarza",
 	"navpanel-firstunseen-hidden-title": "Komentarz jest w zwiniętym wątku",
 	"navpanel-firstunseen-hidden": "Przewinąłem do wątku.\n<ul> \n<li class=\"cd-notification-expandThread\"> [[$1|Rozwiń wątek i przewiń do komentarza]]</li> \n<li class=\"cd-notification-markThreadAsRead\"> [[$2|Oznacz wątek jako przeczytany i przewiń do następnego nieprzeczytanego komentarza]]</li> \n</ul>",
 	"navpanel-commentform": "Przejdź do edytora komentarza (poza widokiem)",
@@ -212,7 +213,7 @@
 	"sd-alloweditotherscomments": "Pokaż przycisk umożliwiający edycję komentarzy innych użytkowników",
 	"sd-autopreview": "Podgląd komentarza w trakcie wpisywania",
 	"sd-collapsethreadslevel": "Automatyczne zwijanie wątków na poziomie",
-	"sd-counteditsasnewcomments": "Uwzględnij edycje istniejących komentarzy przy liczbie niewidzianych komentarzy w panelu nawigacyjnym",
+	"sd-counteditsasnewcomments": "Uwzględnij edycje istniejących komentarzy przy liczbie nieprzeczytanych komentarzy w panelu nawigacyjnym",
 	"sd-enablethreads": "Pozwól na zwijanie wątków",
 	"sd-highlightnewinterval": "Minuty, które muszą upłynąć pomiędzy przeładowaniem strony, aby komentarze przestały być wyróżniane jako nowe",
 	"sd-highlightnewinterval-help": "Ustaw na 0, aby wyróżniać jako nowe tylko te komentarze, które zostały załadowane po raz pierwszy.",
