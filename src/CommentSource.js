@@ -796,7 +796,7 @@ class CommentSource {
 				.join('|')
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const outdentTemplatesRegexp = new RegExp(
-				`^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`,
+				`^(?:[ \\t]*\\n)*([:*#]*)[ \\t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`,
 			)
 
 			/*
