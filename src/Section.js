@@ -1433,6 +1433,15 @@ class Section extends SectionSkeleton {
 
 		event.preventDefault()
 
+		// If all new comments are also unseen, flash them as before rather than highlighting as linked
+		// comments, since they are the same set.
+		const newComments = this.comments.filter((comment) => comment.hasFlag('new'))
+		if (newComments.length === this.unseenComments?.length) {
+			Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.unseenComments))
+
+			return
+		}
+
 		const oldestUnseenComment = Comment.getOldest(
 			/** @type {Comment[]} */ (this.unseenComments),
 			true,
