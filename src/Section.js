@@ -916,7 +916,7 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	isActionable() {
-		return this.actionable
+		return cd.g.debug ? true : this.actionable
 	}
 
 	/**

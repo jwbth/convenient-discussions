@@ -526,7 +526,7 @@ class Comment extends mixIntoClass(
 	 * @returns {boolean}
 	 */
 	isActionable() {
-		return this.actionable
+		return cd.g.debug ? true : this.actionable
 	}
 
 	/**
