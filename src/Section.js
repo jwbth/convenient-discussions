@@ -1442,17 +1442,7 @@ class Section extends SectionSkeleton {
 			return
 		}
 
-		const oldestUnseenComment = Comment.getOldest(
-			/** @type {Comment[]} */ (this.unseenComments),
-			true,
-		)
-		if (oldestUnseenComment?.dtId) {
-			const href = /** @type {HTMLAnchorElement} */ (event.currentTarget).href
-			history.pushState(null, '', href)
-			highlightLinkedComments()
-		} else {
-			Comment.markAsLinked(/** @type {Comment[]} */ (this.unseenComments), true, false)
-		}
+		Comment.markAsLinked(/** @type {Comment[]} */ (this.unseenComments), true, false)
 	}
 
 	/**

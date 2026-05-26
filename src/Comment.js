@@ -4286,15 +4286,15 @@ class Comment extends mixIntoClass(
 		// parameter to addFlag())
 		comments.forEach((comment) => {
 			comment.addFlag('linked')
+			comment.expandAllThreadsDownTo()
 		})
 
-		// TODO: The following blocks reproduce the blocks in processCommentReferencesInUrl().
-		// Deduplicate?
+		// TODO: The following blocks reproduce the blocks in processCommentReferencesInUrl() except for
+		// `expandThreads: true` (they are expanded above). Deduplicate?
 
 		if (scroll) {
 			comments[0].scrollTo({
 				smooth: false,
-				expandThreads: true,
 				flash: false,
 			})
 		}
