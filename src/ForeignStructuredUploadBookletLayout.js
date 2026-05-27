@@ -16,8 +16,6 @@ import {
 import { es6ClassToOoJsClass } from './utils-oojs-class'
 import { mergeJquery, wrapHtml } from './utils-window'
 
-// TODO: Make it work on third-party wikis (where the target host is not Wikimedia Commons)
-
 /**
  * @typedef {ReturnType<getForeignStructuredUploadClass>} ForeignStructuredUploadClass
  */
@@ -727,6 +725,10 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 		 * @returns {string}
 		 */
 		static getTemplateForHostname(hostname) {
+			if (hostname === cd.g.serverName && cd.config.uploadScreenshotLicenseTemplate) {
+				return `{{${cd.config.uploadScreenshotLicenseTemplate}}}`
+			}
+
 			return (
 				/** @type {[RegExp, string][]} */ ([
 					[/^(.+)\.wikipedia.org$/, `{{Wikipedia-screenshot%s}}`],

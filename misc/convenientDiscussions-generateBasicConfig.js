@@ -190,6 +190,8 @@ mw.loader.using(['mediawiki.util', 'mediawiki.ForeignApi', 'mediawiki.Title']).t
 	config.defaultIndentationChar = ':'
 	config.spaceAfterIndentationChars = true
 	config.indentationCharMode = 'mimic'
+	config.uploadTarget = null
+	config.uploadScreenshotLicenseTemplate = null
 
 	const signatureMessage = (
 		await api.getMessages('Signature', {

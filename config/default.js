@@ -110,6 +110,23 @@ const defaultConfig = {
 	useGlobalPreferences: Boolean(mw.loader.getState('ext.globalCssJs.user')),
 
 	/**
+	 * Target for file uploads in the upload dialog. If `null`, the default behavior is used:
+	 * local uploads on Commons, shared uploads elsewhere. Set to `'local'` on third-party wikis
+	 * that upload files locally.
+	 *
+	 * @type {?string}
+	 */
+	uploadTarget: null,
+
+	/**
+	 * Name of the license template to use for screenshots of the local wiki, without curly braces.
+	 * If `null`, the default screenshot template matching the hostname is used.
+	 *
+	 * @type {?string}
+	 */
+	uploadScreenshotLicenseTemplate: null,
+
+	/**
 	 * Numbers of talk namespaces other than odd namespaces. If not set, the value of
 	 * `mw.config.get('wgExtraSignatureNamespaces')` will be used. For example: `[4]` for Project.
 	 *
