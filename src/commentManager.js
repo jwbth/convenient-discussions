@@ -1557,7 +1557,7 @@ export class CommentManager extends EventEmitter {
 		// is opened and then a link with the same fragment is clicked.
 		if (history.state?.cdTargetComment || history.state?.cdTargetComment) return
 
-		// I forgot; why exactly we need `false` here?..
+		// I forgot: why exactly do we need `false` here?..
 		processCommentReferencesInUrl(false)
 	}
 

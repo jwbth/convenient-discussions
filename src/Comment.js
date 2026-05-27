@@ -4277,7 +4277,7 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} [replaceState] Whether to replace the URL fragment with the first comment's
 	 *   dtId.
 	 */
-	static markAsLinked(comments, scroll = true, replaceState = true) {
+	static async markAsLinked(comments, scroll = true, replaceState = true) {
 		if (!comments.length) return
 
 		this.clearLinkedStateOnBodyClick()
@@ -4291,6 +4291,11 @@ class Comment extends mixIntoClass(
 
 		// TODO: The following blocks reproduce the blocks in processCommentReferencesInUrl() except for
 		// `expandThreads: true` (they are expanded above). Deduplicate?
+
+		// For some reason, without sleep() Firefox positions the underlay incorrectly.
+		if (cd.g.clientProfile.name === 'firefox') {
+			await sleep()
+		}
 
 		if (scroll) {
 			comments[0].scrollTo({

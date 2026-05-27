@@ -23,6 +23,7 @@ import {
 	generatePageNamePattern,
 	getQueryParamBooleanValue,
 	isElement,
+	sleep,
 	unique,
 } from './shared/utils-general'
 import toc from './toc'
@@ -899,7 +900,7 @@ class BootProcess {
 	 *
 	 * @private
 	 */
-	processPassedTargets() {
+	async processPassedTargets() {
 		const commentIds = this.passedData.commentIds
 		if (commentIds) {
 			const comments = commentIds
@@ -908,6 +909,10 @@ class BootProcess {
 				.map((id) => commentManager.getById(id, true))
 				.filter(definedAndNotNull)
 			if (comments.length) {
+				// See the comment in processUrl#processCommentReferencesInUrl()
+				if (cd.g.clientProfile.name === 'firefox') {
+					await sleep()
+				}
 				Comment.scrollToFirstFlashAll(comments, {
 					smooth: false,
 					pushState: this.passedData.pushState,
@@ -921,6 +926,10 @@ class BootProcess {
 					history.pushState(history.state, '', `#${section.id}`)
 				}
 
+				// See the comment in processUrl#processCommentReferencesInUrl()
+				if (cd.g.clientProfile.name === 'firefox') {
+					await sleep()
+				}
 				section.$heading.cdScrollTo('top', false)
 			}
 		}

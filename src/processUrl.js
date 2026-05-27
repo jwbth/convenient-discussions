@@ -10,7 +10,7 @@ import Comment from './Comment'
 import commentManager from './commentManager'
 import cd from './loader/cd'
 import sectionManager from './sectionManager'
-import { defined, underlinesToSpaces } from './shared/utils-general'
+import { defined, sleep, underlinesToSpaces } from './shared/utils-general'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import { formatDateNative } from './utils-date'
 import { isExistentAnchor, wrapHtml } from './utils-window'
@@ -158,8 +158,8 @@ function parseFragment() {
 /**
  * _For internal use._ Perform URL fragment-related tasks.
  */
-export default function processUrlOnLoad() {
-	const { fragment, comment, date, author } = processCommentReferencesInUrl()
+export default async function processUrlOnLoad() {
+	const { fragment, comment, date, author } = await processCommentReferencesInUrl()
 
 	if (
 		fragment &&
@@ -184,13 +184,25 @@ export default function processUrlOnLoad() {
  *
  * @param {boolean} [scrollToLinkedComment] Scroll to the topmost linked comment (if highlighting as
  *   linked).
- * @returns {ParsedFragment}
+ * @returns {Promise<ParsedFragment>}
  */
-export function processCommentReferencesInUrl(scrollToLinkedComment = true) {
+export async function processCommentReferencesInUrl(scrollToLinkedComment = true) {
 	const { fragment, comment, date, author } = parseFragment()
 
 	if (comment) {
 		// TODO: The following blocks reproduce the blocks in Comment#markAsLinked(). Deduplicate?
+
+		// For some reason, without sleep() Firefox positions the underlay incorrectly.
+		if (cd.g.clientProfile.name === 'firefox') {
+			await sleep()
+
+			// Run a condition to protect from cases when we couldn't deactivate DT's highlighting
+			// apparatus and its clearHighlightTargetComment() ended up triggering the `popstate` event
+			// and eventually reaching this code.
+			if (!getFragment()) {
+				return { fragment, comment, date, author }
+			}
+		}
 
 		comment.scrollTo({
 			smooth: false,
