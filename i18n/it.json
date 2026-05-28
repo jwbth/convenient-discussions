@@ -27,6 +27,7 @@
 	"cm-togglechildthreads": "Comprimi/espandi risposte",
 	"thread-expand-tooltip": "• Alt+click: comprimi/espandi tutte le discussioni collegate\n• Alt+Shift+click: comprimi/espandi tutte le discussioni di questo livello nella pagina",
 	"sm-editopeningcomment-tooltip": "Modifica l'oggetto della sezione",
+	"sm-markasread": "Segna come già letto",
 	"sm-addsubsection": "Aggiungi sottosezione",
 	"sm-move": "Sposta",
 	"sm-archive": "Archivia",
