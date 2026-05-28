@@ -110,11 +110,12 @@ const defaultConfig = {
 	useGlobalPreferences: Boolean(mw.loader.getState('ext.globalCssJs.user')),
 
 	/**
-	 * Target for file uploads in the upload dialog. If `null`, the default behavior is used:
-	 * local uploads on Commons, shared uploads elsewhere. Set to `'local'` on third-party wikis
-	 * that upload files locally.
+	 * Target for file uploads in the upload dialog. If `null`, the default behavior is used: local
+	 * uploads on Commons and on third-party wikis, shared uploads on other WMF wikis with single user
+	 * login. Set to `'local'` or `'shared'` manually if the automatic detection malfunctions on your
+	 * wiki.
 	 *
-	 * @type {?string}
+	 * @type {?('local' | 'shared')}
 	 */
 	uploadTarget: null,
 
