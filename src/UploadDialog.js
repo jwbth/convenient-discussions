@@ -28,8 +28,12 @@ export default function getUploadDialogClass() {
 				/** @type {mw.Upload.Dialog.Config<ForeignStructuredUploadBookletLayout>} */ ({
 					bookletClass: getForeignStructuredUploadBookletLayoutClass(),
 					booklet: {
-						target: cd.config.uploadTarget ||
-							(cd.g.isProbablyWmfSulWiki ? 'shared' : 'local')
+						target:
+							cd.config.uploadTarget ||
+							(cd.g.isProbablyWmfSulWiki &&
+							mw.config.get('wgServerName') !== 'commons.wikimedia.org'
+								? 'shared'
+								: 'local'),
 					},
 					classes: ['cd-uploadDialog'],
 					...config,
