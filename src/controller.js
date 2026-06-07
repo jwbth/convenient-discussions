@@ -29,7 +29,7 @@ import {
 import toc from './toc'
 import updateChecker from './updateChecker'
 import { getUserInfo } from './utils-api'
-import { copyText, getVisibilityByRects, wrapHtml } from './utils-window'
+import { copyText, isVisible, wrapHtml } from './utils-window'
 import workerCode from './worker/worker?worker&inline-string'
 
 /**
@@ -466,8 +466,8 @@ class Controller extends EventEmitter {
 					/** @type {number} */ (this.scrollData.offsetBottom),
 			)
 		} else if (this.scrollData.element) {
-			const rect = this.scrollData.element.getBoundingClientRect()
-			if (getVisibilityByRects(rect)) {
+			if (isVisible(this.scrollData.element, this.rootElement)) {
+				const rect = this.scrollData.element.getBoundingClientRect()
 				window.scrollTo(
 					0,
 					window.scrollY + rect.top - /** @type {number} */ (this.scrollData.elementTop),
