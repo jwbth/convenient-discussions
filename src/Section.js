@@ -2380,7 +2380,7 @@ class Section extends SectionSkeleton {
 	 * @param {boolean} show Show or hide.
 	 */
 	updateVisibility(show) {
-		if (show !== !this.hidden) return
+		if (show !== this.hidden) return
 
 		this.elements ??= getRangeContents(
 			this.headingElement,
