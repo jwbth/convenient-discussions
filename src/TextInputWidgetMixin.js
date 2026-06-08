@@ -1035,13 +1035,16 @@ class TextInputWidgetMixin {
 			const tempDiv = document.createElement('div')
 			tempDiv.innerHTML = html
 
-			// Check if it's a single link
-			const links = tempDiv.querySelectorAll('a')
-			const textContent = (tempDiv.textContent || '').trim()
-
-			if (links.length === 1 && textContent === (links[0].textContent || '').trim()) {
-				url = links[0].href
-				label = cleanUpPasteDom(links[0], this.$element[0]).text.trim() || selectedText
+			// Check if it's a single link (e.g. dragging and dropping a link passes; copying anything
+			// containing a link or copying text from a link fails).
+			const linkCandidate = tempDiv.children[0]
+			if (linkCandidate.tagName === 'A' && tempDiv.childNodes.length === 1) {
+				url = /** @type {HTMLAnchorElement} */ (linkCandidate).href
+				label =
+					cleanUpPasteDom(
+						/** @type {HTMLAnchorElement} */ (linkCandidate),
+						this.$element[0],
+					).text.trim() || selectedText
 			}
 		}
 
