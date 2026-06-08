@@ -17,7 +17,7 @@
 			"魔琴"
 		]
 	},
-	"script-name": "快速討論",
+	"script-name": "便捷討論",
 	"script-name-short": "CD",
 	"page-title-reply": "正在回覆「$1」",
 	"page-title-edit": "正在編輯「$1」",
@@ -110,8 +110,8 @@
 	"cld-shortdiff": "短差異連結",
 	"cld-diffwikilink": "差異 wiki 連結",
 	"cld-wikilink": "wiki 連結",
-	"cld-help-onlycd": "此連結僅會對有安裝 Convenient Discussions 的使用者有效。",
-	"cld-help-notonlycd": "錨點將自動添加到連結的評論中，因此該連結<em>適用</em>於所有人。",
+	"cld-help-onlycd": "此連結僅會對有安裝\"便捷討論\"的使用者有效。",
+	"cld-help-notonlycd": "錨點將自動加入到連結的評論中，因此該連結<em>適用</em>於所有人。",
 	"cld-currentpagewikilink": "來自同頁面的 Wiki 連結",
 	"cld-link": "一般連結",
 	"cld-permanentlink": "永久連結",
@@ -172,7 +172,7 @@
 	"cf-cancel": "取消",
 	"cf-cancel-short": "取消",
 	"cf-advanced": "高級",
-	"cf-settings-tooltip": "快速討論設定",
+	"cf-settings-tooltip": "便速討論的設定",
 	"cf-help-heading-autocomplete": "自動完成",
 	"cf-help-autocomplete-mention": "輸入 <code>$1</code> 並挑選使用者來[[$2|提到]]他們。",
 	"cf-help-autocomplete-punctuation": "按住<b>Alt鍵</b>並選擇某個使用者，即可在名稱後面加上標點符號。",
