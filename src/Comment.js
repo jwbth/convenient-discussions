@@ -1340,8 +1340,8 @@ class Comment extends mixIntoClass(
 		// then would we need altering comment styles to get the correct offset which is an expensive
 		// operation.)
 		let intersectsFloatingCount = 0
-		// We calculate the left and right borders separately - in its case, we need to change the
-		// `overflow` property to get the desired value, otherwise floating elements are not taken
+		// We calculate the left and right boundaries separately - to calculate it, we need to change
+		// the `overflow` property to get the desired value; otherwise floating elements are not taken
 		// into account.
 		if (
 			// Does the comment's bottom intersect the vertical space of any floating element?
@@ -1371,9 +1371,12 @@ class Comment extends mixIntoClass(
 					: Comment.getCommentPartRect(this.highlightables[this.highlightables.length - 1])
 
 			// If the comment intersects more than one floating block, we better keep `overflow: hidden`
-			// to avoid bugs like where there are two floating blocks to the right with different
-			// leftmost offsets and the layer is more narrow than the comment.
-			if (intersectsFloatingCount <= 1) {
+			// (unless some element is an OL where it kills the numbering) to avoid bugs like where there
+			// are two floating blocks to the right with different leftmost offsets and the layer is more
+			// narrow than the comment. TODO: we can probably remove `overflow: hidden` if we have `float:
+			// left` and `float: right` in two elements (intersectsFloatingCount = 2); otherwise we get
+			// this: https://ru.wikipedia.org/w/index.php?title=Project:Форум/Новости&oldid=153443327
+			if (intersectsFloatingCount <= 1 || this.highlightables.some((el) => el.tagName === 'OL')) {
 				this.highlightables.forEach((el, i) => {
 					el.style.overflow = initialOverflows[i]
 				})
