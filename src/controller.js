@@ -1241,7 +1241,9 @@ class Controller extends EventEmitter {
 					'/' +
 					String(mw.config.get('wgRevisionId')) +
 					'#')
-		const permalinkPage = pageRegistry.get(permalinkSpecialPagePrefix + permanentFragment)
+		const permalinkPage = permanentFragment.includes('#')
+			? undefined
+			: pageRegistry.get(permalinkSpecialPagePrefix + permanentFragment)
 
 		/** @type {import('./CopyLinkDialog').CopyLinkDialogContent} */
 		const content = {
