@@ -561,7 +561,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 		],
 	],
 
-	closedDiscussionClasses: ['archived', 'boilerplate', 'hat-ai-content'],
+	closedDiscussionClasses: ['archived', 'hat-ai-content'],
 
 	noHighlightClasses: ['infobox', 'unresolved', 'resolved', 'hmbox-outer'],
 
