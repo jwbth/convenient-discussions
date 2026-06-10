@@ -452,17 +452,20 @@ class SpaciousComment extends Comment {
 
 		// Remove the entire element.
 		if (
-			node instanceof Element &&
-			node.textContent.length < 30 &&
-			((!isSpaced &&
-				(node.getAttribute('style') || ['SUP', 'SUB'].includes(node.tagName)) &&
-				// Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
-				!node.classList.length) || // https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
-				// Cases like https://ru.wikipedia.org/?diff=119667594
-				((node.getAttribute('style') ||
-					// https://en.wikipedia.org/?oldid=1220458782#c-Dxneo-20240423211700-Dilettante-20240423210300
-					['B', 'STRONG'].includes(node.tagName)) &&
-					node.textContent.toLowerCase() === this.author.getName().toLowerCase()))
+			(node instanceof Element &&
+				node.textContent.length < 30 &&
+				((!isSpaced &&
+					(node.getAttribute('style') || ['SUP', 'SUB'].includes(node.tagName)) &&
+					// Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
+					!node.classList.length) ||
+					// Cases like https://ru.wikipedia.org/?diff=119667594. `style`:
+					// https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
+					((node.getAttribute('style') ||
+						// https://en.wikipedia.org/?oldid=1220458782#c-Dxneo-20240423211700-Dilettante-20240423210300
+						['B', 'STRONG'].includes(node.tagName)) &&
+						node.textContent.toLowerCase() === this.author.getName().toLowerCase()))) ||
+			// https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
+			(node instanceof Text && node.textContent === '')
 		) {
 			node.remove()
 		}
