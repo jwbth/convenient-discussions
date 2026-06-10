@@ -432,8 +432,6 @@ export class SectionManager {
 	 * blurred.
 	 */
 	maybeUnhideAll = () => {
-		if (!controller.isLongPage()) return
-
 		this.items.forEach((section) => {
 			section.updateVisibility(true)
 		})
