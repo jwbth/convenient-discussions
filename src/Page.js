@@ -587,11 +587,7 @@ export default class Page {
 	 * @returns {string}
 	 */
 	getDecodedUrl(parameters = {}, fragment) {
-		return (
-			cd.g.server +
-			decodeURI(this.getUrl(parameters)) +
-			(fragment ? `#${fragment}` : '')
-		)
+		return cd.g.server + decodeURI(this.getUrl(parameters)) + (fragment ? `#${fragment}` : '')
 	}
 
 	/**

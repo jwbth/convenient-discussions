@@ -16,7 +16,7 @@ import { encodeWikilink, maskDistractingCode, normalizeCode } from './shared/uti
 import toc from './toc'
 import { handleApiReject } from './utils-api'
 import { formatDate } from './utils-date'
-import { getRangeContents } from './utils-window'
+import { getRangeContents, isItemProbablyEditableAtAll } from './utils-window'
 
 /**
  * A section in the browser context (as opposed to the worker context, see {@link SectionWorker}).
@@ -251,7 +251,7 @@ class Section extends SectionSkeleton {
 
 		this.setActionable(
 			cd.page.isActive() &&
-				mw.config.get('wgIsProbablyEditable') &&
+				isItemProbablyEditableAtAll(this.sourcePage) &&
 				!controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
 				!this.isTranscludedFromTemplate(),
 		)
@@ -631,7 +631,7 @@ class Section extends SectionSkeleton {
 	 */
 	canBeMoved() {
 		return (
-			mw.config.get('wgIsProbablyEditable') &&
+			isItemProbablyEditableAtAll(this.getSourcePage()) &&
 			this.isTopic() &&
 			!this.isTranscludedFromTemplate() &&
 			cd.page.isActive()

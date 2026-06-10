@@ -1657,3 +1657,15 @@ export function buildEditSummary({ text, optionalText, section, addPostfix = tru
 
 	return fullText
 }
+
+/**
+ * Check if a comment or section is probably editable at all, which means that either the user is
+ * probably permitted to edit the page or the item is transcluded (therefore, it may be editable on
+ * the source page, even if the user is not permitted to edit the current page).
+ *
+ * @param {import('./Page').default} sourcePage
+ * @returns {boolean}
+ */
+export function isItemProbablyEditableAtAll(sourcePage) {
+	return mw.config.get('wgIsProbablyEditable') || sourcePage !== cd.page
+}

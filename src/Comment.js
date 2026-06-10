@@ -36,6 +36,7 @@ import { mixIntoClass } from './utils-oojs-class'
 import {
 	extractSignatures,
 	getExtendedRect,
+	isItemProbablyEditableAtAll,
 	isVisible,
 	limitSelectionAtEndBoundary,
 	mergeJquery,
@@ -465,7 +466,7 @@ class Comment extends mixIntoClass(
 
 		this.setActionable(
 			cd.page.isActive() &&
-				mw.config.get('wgIsProbablyEditable') &&
+				isItemProbablyEditableAtAll(this.getSourcePage()) &&
 				!controller.getClosedDiscussions().some((el) => el.contains(this.elements[0])),
 		)
 
