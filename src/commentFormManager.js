@@ -14,7 +14,7 @@ import {
 import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
 import { isInputFocused } from './utils-window'
 
-// TODO: make into a class extending a generic registry.
+// TODO: make into a class extending a generic registry (with `items` etc.).
 
 /**
  * @typedef {object} EventMap
@@ -28,7 +28,7 @@ import { isInputFocused } from './utils-window'
  */
 
 /**
- * Singleton storing data about comment forms on the page and managing them.
+ * Singleton that stores about comment forms on the page and managing them.
  *
  * @augments EventEmitter<EventMap>
  */

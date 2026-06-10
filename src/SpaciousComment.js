@@ -107,8 +107,8 @@ class SpaciousComment extends Comment {
 	}
 
 	/**
-	 * Update the toggle child threads button implementation for compact comments. Uses SVG icons from
-	 * prototypes.
+	 * Update the toggle child threads button implementation for spacious comments. Uses SVG icons
+	 * from prototypes.
 	 *
 	 * @this {this & { actions: { toggleChildThreadsButton: { element: HTMLElement } } }}
 	 * @override
@@ -421,7 +421,9 @@ class SpaciousComment extends Comment {
 			const isPppnSpaced = previousPreviousNode.textContent.startsWith(' ')
 			this.processPossibleSignatureNode(previousPreviousNode, isPpnSpaced)
 
-			// Rare cases like https://en.wikipedia.org/?diff=1022471527
+			// Rare cases like https://en.wikipedia.org/?diff=1022471527 (upd: this case is now handled on
+			// signature identification stage),
+			// https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
 			if (!previousPreviousNode.parentNode) {
 				this.processPossibleSignatureNode(previousPreviousPreviousNode, isPppnSpaced)
 			}

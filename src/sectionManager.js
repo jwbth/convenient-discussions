@@ -26,10 +26,10 @@ import visits from './visits'
  * @property {boolean} isSorted
  */
 
-// TODO: Make it extend a generic registry.
+// TODO: Make it extend a generic registry (with `items` etc.).
 
 /**
- * Singleton storing data about sections on the page and managing them.
+ * Singleton that stores data about sections on the page and managing them.
  */
 export class SectionManager {
 	/**
@@ -74,16 +74,16 @@ export class SectionManager {
 			section.maybeAddReplyButton()
 		})
 
-		// Run this after running section.addReplyButton() for each section because reply buttons must
-		// be in place for this.
+		// Run this after running section.maybeAddReplyButton() for each section because reply buttons
+		// must be in place for this.
 		this.items.forEach((section) => {
 			section.showAddSubsectionButtonsOnReplyButtonHover()
 		})
 
 		if (cd.settings.get('improvePerformance')) {
-			// Unhide when the user opens a search box to allow searching the full page.
-			// CAUTION! You may run into these events never triggered if debugging in Chrome with
-			// Rendering (or Elements > Styles → :hov) → Emulate a focused page enabled.
+			// Unhide when the user opens a search box to allow searching the full page. CAUTION: You may
+			// run into these events never triggered if debugging in Chrome with "Rendering (or Elements >
+			// Styles → :hov) → Emulate a focused page" enabled.
 			$(window)
 				.off('focus.cd', this.maybeUpdateVisibility)
 				.off('blur.cd', this.maybeUnhideAll)

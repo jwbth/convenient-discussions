@@ -19,7 +19,7 @@ import { getPagesExistence } from './utils-api'
 import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window'
 import visits from './visits'
 
-// TODO: Make it extend a generic registry.
+// TODO: Make it extend a generic registry (with `items` etc.).
 
 /**
  * @typedef {object} EventMap
@@ -30,7 +30,7 @@ import visits from './visits'
  */
 
 /**
- * Singleton storing data about comments on the page and managing them.
+ * Singleton that stores data about comments on the page and managing them.
  *
  * @augments EventEmitter<EventMap>
  * @template {import('./Comment').default} [C=import('./Comment').default]
