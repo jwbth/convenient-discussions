@@ -186,6 +186,15 @@ class Section extends SectionSkeleton {
 	actionsElement
 
 	/**
+	 * Is the section actionable. (If it is in a closed discussion or on an old version page, then
+	 * no).
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	actionable
+
+	/**
 	 * Create a section object.
 	 *
 	 * @param {import('./shared/Parser').default<Node>} parser
@@ -240,17 +249,12 @@ class Section extends SectionSkeleton {
 		 */
 		this.transcludedFromTemplate = this.sourcePage.namespaceId === 10
 
-		/**
-		 * Is the section actionable. (If it is in a closed discussion or on an old version page, then
-		 * no).
-		 *
-		 * @type {boolean}
-		 * @private
-		 */
-		this.actionable =
+		this.setActionable(
 			cd.page.isActive() &&
-			!controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
-			!this.isTranscludedFromTemplate()
+				mw.config.get('wgIsProbablyEditable') &&
+				!controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
+				!this.isTranscludedFromTemplate(),
+		)
 
 		if (this.isTranscludedFromTemplate()) {
 			this.comments.forEach((comment) => {

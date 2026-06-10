@@ -415,6 +415,16 @@ class Comment extends mixIntoClass(
 	manager
 
 	/**
+	 * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
+	 * not in a closed discussion or an old diff page. (Previously the presence of an author was
+	 * also checked, but currently all comments should have an author.)
+	 *
+	 * @type {boolean}
+	 * @private
+	 */
+	actionable
+
+	/**
 	 * Create a comment object.
 	 *
 	 * @param {import('./shared/Parser').default<Node>} parser
@@ -453,17 +463,11 @@ class Comment extends mixIntoClass(
 		 */
 		this.$signature = $(this.signatureElement)
 
-		/**
-		 * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
-		 * not in a closed discussion or an old diff page. (Previously the presence of an author was
-		 * also checked, but currently all comments should have an author.)
-		 *
-		 * @type {boolean}
-		 * @private
-		 */
-		this.actionable =
+		this.setActionable(
 			cd.page.isActive() &&
-			!controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
+				mw.config.get('wgIsProbablyEditable') &&
+				!controller.getClosedDiscussions().some((el) => el.contains(this.elements[0])),
+		)
 
 		// Delay bindEvents call until after construction is complete
 		setTimeout(() => {
