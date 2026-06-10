@@ -630,7 +630,12 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeMoved() {
-		return this.isTopic() && !this.isTranscludedFromTemplate() && cd.page.isActive()
+		return (
+			mw.config.get('wgIsProbablyEditable') &&
+			this.isTopic() &&
+			!this.isTranscludedFromTemplate() &&
+			cd.page.isActive()
+		)
 	}
 
 	/**
@@ -639,12 +644,7 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeUnarchived() {
-		return (
-			this.isTopic() &&
-			!this.isTranscludedFromTemplate() &&
-			cd.page.isArchive() &&
-			cd.page.getArchivedPage() !== cd.page
-		)
+		return this.canBeMoved() && cd.page.getArchivedPage() !== cd.page
 	}
 
 	/**
@@ -915,7 +915,7 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
-	 * Is the section actionable.
+	 * Is the section actionable. The section can still be moved if it's not actionable.
 	 *
 	 * @returns {boolean}
 	 */
