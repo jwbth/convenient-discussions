@@ -38,8 +38,8 @@ export default {
 		// summary only for this file.
 		assets: {
 			default: [
-				'convenientDiscussions.js',
 				'convenientDiscussions-main.js',
+				'convenientDiscussions.js',
 				'convenientDiscussions-main.js.LICENSE.js',
 				'convenientDiscussions.css',
 				'convenientDiscussions-generateBasicConfig.js',
