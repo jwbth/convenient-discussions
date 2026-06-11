@@ -587,8 +587,6 @@ class CommentForm extends EventEmitter {
 		 */
 		this.toolbarLoaded = cd.settings.get('showToolbar')
 
-		this.uploadToCommons = cd.g.isProbablyWmfSulWiki
-
 		/**
 		 * Form mode.
 		 *
@@ -1311,7 +1309,7 @@ class CommentForm extends EventEmitter {
 	 *   "Insert file" dialog after the "Upload file" dialog is closed with success.
 	 */
 	async uploadImage(file, openInsertFileDialogAfterwards = false) {
-		if (this.uploadDialog || this.commentInput.isPending() || !this.uploadToCommons) return
+		if (this.uploadDialog || this.commentInput.isPending()) return
 
 		this.pushPending()
 
@@ -4232,7 +4230,6 @@ class CommentForm extends EventEmitter {
 	 */
 	onboardToUpload() {
 		if (
-			!this.uploadToCommons ||
 			cd.settings.get('upload-onboarded') ||
 			!cd.user.isRegistered() ||
 			// Left column hidden in Timeless
