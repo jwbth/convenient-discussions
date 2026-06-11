@@ -48,7 +48,9 @@ test.describe('Copy link', () => {
 		const permanentWikilinkInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Permanent wikilink") input')
 			.first()
-		await expect(permanentWikilinkInput).toHaveValue(/\[\[Special:PermanentLink\/\d+#Section 1\]\]/)
+		await expect(permanentWikilinkInput).toHaveValue(
+			/\[\[Special:GoToComment\/c-[^-]+-\d+-Section 1\]\]/,
+		)
 
 		const regularLinkInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Regular link") input')
@@ -61,7 +63,7 @@ test.describe('Copy link', () => {
 			.locator('.oo-ui-fieldLayout:has-text("Permanent link") input')
 			.first()
 		await expect(permanentLinkInput).toHaveValue(
-			/https:\/\/test\.wikipedia\.org\/w\/index\.php\?title=User_talk:JWBTH\/CD_test_page&oldid=\d+#Section_1/,
+			/https:\/\/test\.wikipedia\.org\/wiki\/Special:GoToComment\/c-[^-]+-\d+-Section_1/,
 		)
 
 		// Click the first "Copy" button (for Wikilink)
@@ -138,7 +140,7 @@ test.describe('Copy link', () => {
 			.locator('.oo-ui-fieldLayout:has-text("Permanent wikilink") input')
 			.first()
 		await expect(permanentWikilinkInput).toHaveValue(
-			'[[Special:GoToComment/c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100]]',
+			'[[Special:GoToComment/c-Jack who built the house-20250827060900-Jack who built the house-20241120024100]]',
 		)
 
 		const regularLinkInput = dialog
