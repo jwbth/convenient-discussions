@@ -581,6 +581,20 @@ function callTransformApi(url, html) {
 }
 
 /**
+ * Replace non-breaking spaces next to wikilinks with regular spaces. It's added by the `transform`
+ * API endpoint for unknown reasons.
+ *
+ * @param {string} wikitext
+ * @returns {string}
+ * @private
+ */
+function normalizeSpacesAroundWikilinks(wikitext) {
+	return wikitext
+		.replace(/\u00A0(\[\[[^\n]*?\]\])/g, ' $1')
+		.replace(/(\[\[[^\n]*?\]\])\u00A0/g, '$1 ')
+}
+
+/**
  * Convert HTML into wikitext.
  *
  * @param {string} html
@@ -620,7 +634,7 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
 				return `<syntaxhighlight lang="${lang}"${inlineOrNot}>${code}</syntaxhighlight>`
 			})
 			.replace(/<br \/>/g, '<br>')
-			.trim()
+		wikitext = normalizeSpacesAroundWikilinks(wikitext).trim()
 		wikitext = new TextMasker(wikitext)
 			.maskSensitiveCode()
 			.withText((text) => brsToNewlines(text))
