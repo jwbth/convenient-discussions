@@ -4202,7 +4202,8 @@ class Comment extends mixIntoClass(
 	 * @returns {this is Comment<true>}
 	 */
 	isOpeningSection() {
-		return this.openingSection
+		// this.section check for cases when a comment is rescued (see CommentForm#rescue())
+		return Boolean(this.openingSection && this.section)
 	}
 
 	/**
