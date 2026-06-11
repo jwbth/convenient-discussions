@@ -2119,7 +2119,7 @@ class Section extends SectionSkeleton {
 	searchInCode(contextCode, isInSectionContext) {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const thisHeadline = normalizeCode(this.headline)
-		const adjustedContextCode = maskDistractingCode(contextCode)
+		const adjustedContextCode = maskDistractingCode(contextCode, true)
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\u0001\u0002]*)\n/gm
 
