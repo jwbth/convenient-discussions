@@ -243,7 +243,7 @@ function restoreFunc(code) {
 		return
 	}
 
-	if (!/^ *function\b/.test(code) && !/^.+=>/.test(code)) {
+	if (!/^ *function\b/.test(code) && !/^[^{]+=>/.test(code)) {
 		code = `function ${code}`
 	}
 	if (/^ *function\b/.test(code)) {
