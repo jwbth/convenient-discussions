@@ -581,17 +581,23 @@ function callTransformApi(url, html) {
 }
 
 /**
- * Replace non-breaking spaces next to wikilinks with regular spaces. It's added by the `transform`
+ * Replace non-breaking spaces next to links with regular spaces. It's added by the `transform`
  * API endpoint for unknown reasons.
  *
  * @param {string} wikitext
  * @returns {string}
  * @private
  */
-function normalizeSpacesAroundWikilinks(wikitext) {
+function normalizeSpacesAroundLinks(wikitext) {
+	const linkPattern = [
+		String.raw`\[\[[^\n]*?\]\]`,
+		String.raw`\[[a-z][a-z\d+.-]*://[^\s\]]+(?: [^\]\n]*)?\]`,
+		String.raw`[a-z][a-z\d+.-]*://[^\s\]]+`,
+	].join('|')
+
 	return wikitext
-		.replace(/\u00A0(\[\[[^\n]*?\]\])/g, ' $1')
-		.replace(/(\[\[[^\n]*?\]\])\u00A0/g, '$1 ')
+		.replace(new RegExp(`\\u00A0(${linkPattern})`, 'g'), ' $1')
+		.replace(new RegExp(`(${linkPattern})\\u00A0`, 'g'), '$1 ')
 }
 
 /**
@@ -634,7 +640,7 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
 				return `<syntaxhighlight lang="${lang}"${inlineOrNot}>${code}</syntaxhighlight>`
 			})
 			.replace(/<br \/>/g, '<br>')
-		wikitext = normalizeSpacesAroundWikilinks(wikitext).trim()
+		wikitext = normalizeSpacesAroundLinks(wikitext).trim()
 		wikitext = new TextMasker(wikitext)
 			.maskSensitiveCode()
 			.withText((text) => brsToNewlines(text))
