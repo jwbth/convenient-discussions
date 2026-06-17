@@ -173,7 +173,8 @@ class Parser {
 					.filter(
 						(el) =>
 							((el.hasAttribute('data-mw-comment-start') ||
-								el.hasAttribute('data-mw-comment-end')) &&
+								el.hasAttribute('data-mw-comment-end') ||
+								el.hasAttribute('data-mw-comment-sig')) &&
 								// DT will throw an error if we remove markup from headings (see line `pageThreads.findCommentById($threadMarker.data('mw-thread-id'))`)
 								!isHeadingNode(/** @type {Element} */ (el.parentElement))) ||
 							// This, in fact, targets the one span at the top of the page, out of sections which makes
