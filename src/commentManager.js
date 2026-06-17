@@ -925,12 +925,10 @@ export class CommentManager extends EventEmitter {
 		$(document.body).addClass('cd-reformattedComments')
 		if (!cd.page.exists()) return
 
-		const pagesToCheckExistence = this.items.reduce((acc, comment) => {
-			// Only call reformatting methods on SpaciousComment instances
-			const spaciousComment = /** @type {import('./SpaciousComment').default} */ (
-				/** @type {unknown} */ (comment)
-			)
-			acc.push(...spaciousComment.initializeCommentStructureImpl())
+		const pagesToCheckExistence = /** @type {import('./SpaciousComment').default[]} */ (
+			this.items
+		).reduce((acc, comment) => {
+			acc.push(...comment.initializeCommentStructureImpl())
 
 			return acc
 		}, /** @type {import('./SpaciousComment').ReplaceSignatureWithHeaderReturn} */ ([]))
@@ -948,7 +946,6 @@ export class CommentManager extends EventEmitter {
 		const pagesExistence = await getPagesExistence(Object.keys(pageNamesToLinks))
 		Object.keys(pagesExistence).forEach((name) => {
 			pageNamesToLinks[name].forEach((link) => {
-				link.title = pagesExistence[name].normalized
 				if (pagesExistence[name].exists) {
 					link.href = mw.util.getUrl(pagesExistence[name].normalized)
 				} else {
