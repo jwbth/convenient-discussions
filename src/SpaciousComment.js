@@ -369,9 +369,9 @@ class SpaciousComment extends Comment {
 		if (cd.g.signatureEndingRegexp) {
 			cleanedSignatureText = cleanedSignatureText.replace(cd.g.signatureEndingRegexp, '')
 		}
-		if (cd.config.signaturePrefixRegexp) {
+		if (cd.g.wholeStringSignaturePrefixRegexp) {
 			cleanedSignatureText = cleanedSignatureText.replace(
-				new RegExp('^' + cd.config.signaturePrefixRegexp.source.replace(/\$$/, '')),
+				new RegExp(cd.g.wholeStringSignaturePrefixRegexp.source.replace(/\$$/, '')),
 				'',
 			)
 		}
@@ -421,7 +421,7 @@ class SpaciousComment extends Comment {
 			const isPppnSpaced = previousPreviousNode.textContent.startsWith(' ')
 			this.processPossibleSignatureNode(previousPreviousNode, isPpnSpaced)
 
-			// Rare cases like https://en.wikipedia.org/?diff=1022471527 (upd: this case is now handled on
+			// Rare cases like https://en.wikipedia.org/?diff=1022471527 (upd: this case is now handled at
 			// signature identification stage),
 			// https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
 			if (!previousPreviousNode.parentNode) {

@@ -88,6 +88,7 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  * @property {RegExp[]} keepInSectionEnding
  * @property {string} userSignature
  * @property {RegExp | undefined} userSignaturePrefixRegexp
+ * @property {RegExp | undefined} wholeStringSignaturePrefixRegexp
  * @property {string} piePattern
  * @property {string} pniePattern
  * @property {RegExp} articlePathRegexp

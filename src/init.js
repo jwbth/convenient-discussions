@@ -57,6 +57,10 @@ export function initGlobals() {
 		errorlang: cd.g.userLanguage,
 		errorsuselocal: true,
 	}
+
+	if (cd.config.signaturePrefixRegexp) {
+		cd.g.wholeStringSignaturePrefixRegexp = new RegExp('^' + cd.config.signaturePrefixRegexp.source)
+	}
 }
 
 /**

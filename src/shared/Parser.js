@@ -293,7 +293,7 @@ class Parser {
 	/**
 	 * @typedef {object} AuthorData
 	 * @property {string | undefined} name
-	 * @property {boolean} isLastLinkAuthorLink
+	 * @property {boolean} isLastElementAuthorLink
 	 * @property {ElementLike} [notForeignLink]
 	 * @property {ElementLike} [talkNotForeignLink]
 	 * @property {ElementLike} [contribsNotForeignLink]
@@ -378,7 +378,7 @@ class Parser {
 					}
 				}
 
-				authorData.isLastLinkAuthorLink = /** @type {boolean} */ (false)
+				authorData.isLastElementAuthorLink = /** @type {boolean} */ (false)
 
 				if (node.tagName === 'A') {
 					if (!this.processLinkData(node, authorData)) break
@@ -393,8 +393,9 @@ class Parser {
 				}
 
 				if (
-					authorData.isLastLinkAuthorLink ||
-					// Some users put their username into a bold node which they follow with links, e.g. https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Jay8g-20260430034500-Robert_McClenon-20260429055600
+					authorData.isLastElementAuthorLink ||
+					// Some users put their username into a bold node which they follow with links, e.g.
+					// https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Jay8g-20260430034500-Robert_McClenon-20260429055600
 					(authorData.name === textContent &&
 						['B', 'STRONG', 'I', 'EM', 'SPAN'].includes(node.tagName))
 				) {
@@ -803,7 +804,7 @@ class Parser {
 					// Cases like https://ru.wikipedia.org/?diff=115909247
 					return false
 				}
-				authorData.isLastLinkAuthorLink = true
+				authorData.isLastElementAuthorLink = true
 			} else {
 				// Don't return false here in case the user mentioned a redirect to their user page here.
 			}
