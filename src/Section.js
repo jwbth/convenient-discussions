@@ -644,7 +644,12 @@ class Section extends SectionSkeleton {
 	 * @returns {boolean}
 	 */
 	canBeUnarchived() {
-		return this.canBeMoved() && cd.page.getArchivedPage() !== cd.page
+		return (
+			this.isTopic() &&
+			!this.isTranscludedFromTemplate() &&
+			cd.page.isArchive() &&
+			cd.page.getArchivedPage() !== cd.page
+		)
 	}
 
 	/**
