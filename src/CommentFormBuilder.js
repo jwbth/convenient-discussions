@@ -705,14 +705,12 @@ class CommentFormBuilder {
 		const dialogsConfig = wikiEditorModule.packageExports['jquery.wikiEditor.dialogs.config.js']
 		dialogsConfig.replaceIcons($input)
 		const dialogsDefaultConfig = dialogsConfig.getDefaultConfig()
-		if (this.form.uploadToCommons) {
-			const commentForm = this.form
-			dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons[
-				'wikieditor-toolbar-tool-file-upload'
-			] = function openUploadDialog() {
-				$(this).dialog('close')
-				commentForm.uploadImage(undefined, true)
-			}
+		const commentForm = this.form
+		dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons[
+			'wikieditor-toolbar-tool-file-upload'
+		] = function openUploadDialog() {
+			$(this).dialog('close')
+			commentForm.uploadImage(undefined, true)
 		}
 		$input.wikiEditor('addModule', dialogsDefaultConfig)
 	}
