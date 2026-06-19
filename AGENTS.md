@@ -12,7 +12,7 @@
   All comment parts have the attribute `data-cd-comment-index` specifying the comment's index.
 
 - Don't run `npm run dev` (assume already running).
-- In CLI commands, in paths, use forward slashes (/).
+- When commiting, don't wrap lines of the commit message.
 
 ## Project Structure
 
