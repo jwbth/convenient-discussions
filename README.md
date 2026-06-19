@@ -1,8 +1,8 @@
 # Convenient Discussions
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/logo_wordmark_codex_dark.svg">
-  <img src="assets/logo_wordmark_codex.svg" alt="Convenient Discussions logo" width="280">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo_wordmark_dark.svg">
+  <img src="assets/logo_wordmark.svg" alt="Convenient Discussions logo" width="280">
 </picture>
 
 **Convenient Discussions** (**CD**) is a JavaScript tool that enhances [MediaWiki](https://www.mediawiki.org/) talk pages, redesigning threads, adding more comment and section actions, new comment navigation, real-time updates, autocomplete, and dozens of other features to make wiki discussions smooth and efficient.
