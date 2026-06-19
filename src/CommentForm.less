@@ -77,9 +77,11 @@
 	.tool-button[rel='quote'] {
 		background-color: var(--color-base-fixed, #202122);
 
-		// `mask-image` was added to Chrome only in 2023-12-05
-		-webkit-mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
-		mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
+		// A `mask-image` (added to Chrome only in 2023-12-05) lets the icon be recolored via
+		// `background-color` above. The image is a Codex icon, flipped for RTL, injected as a custom
+		// property in commentFormManager.
+		-webkit-mask-image: var(--cd-quote-icon);
+		mask-image: var(--cd-quote-icon);
 		-webkit-mask-size: 1.428571em;
 		mask-size: 1.428571em;
 		-webkit-mask-repeat: no-repeat;

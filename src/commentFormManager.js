@@ -1,3 +1,5 @@
+import { cdxIconQuotes } from '@wikimedia/codex-icons'
+
 import CommentForm from './CommentForm'
 import EventEmitter from './EventEmitter'
 import LocalStorageItemWithKeysAndSaveTime from './LocalStorageItemWithKeysAndSaveTime'
@@ -12,7 +14,7 @@ import {
 	subtractDaysFromNow,
 } from './shared/utils-general'
 import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
-import { isInputFocused } from './utils-window'
+import { createIconDataUri, isInputFocused } from './utils-window'
 
 // TODO: make into a class extending a generic registry (with `items` etc.).
 
@@ -50,6 +52,7 @@ class CommentFormManager extends EventEmitter {
 	 * _For internal use._ Initialize the registry.
 	 */
 	init() {
+		this.setupQuoteButtonIcon()
 		this.configureClosePageConfirmation()
 
 		controller
@@ -104,6 +107,20 @@ class CommentFormManager extends EventEmitter {
 					cd.settings.get('useNativeAutocomplete'),
 				)
 		})
+	}
+
+	/**
+	 * Provide the quote toolbar button's icon as a CSS custom property. It is a Codex icon resolved
+	 * for the content direction (mirrored in RTL) and is exposed as a `mask-image` so that the
+	 * button's color can be controlled dynamically (see `.tool-button[rel='quote']` in
+	 * CommentForm.less).
+	 *
+	 * @private
+	 */
+	setupQuoteButtonIcon() {
+		mw.util.addCSS(
+			`:root { --cd-quote-icon: url('${createIconDataUri(cdxIconQuotes, cd.g.contentLanguage, cd.g.contentDirection)}') }`,
+		)
 	}
 
 	/**
