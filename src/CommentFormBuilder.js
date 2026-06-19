@@ -1,3 +1,5 @@
+import { cdxIconSpeechBubble } from '@wikimedia/codex-icons'
+
 import Button from './Button'
 import MultilineTextInputWidget from './MultilineTextInputWidget'
 import getOoUiInputCodeMirrorClass from './OoUiInputCodeMirror'
@@ -9,7 +11,7 @@ import cd from './loader/cd'
 import { defined, removeDoubleSpaces } from './shared/utils-general'
 import { isCmdModifierPressed } from './utils-keyboard'
 import { createCheckboxControl } from './utils-oojs'
-import { wrapHtml } from './utils-window'
+import { createIconDataUri, wrapHtml } from './utils-window'
 
 /**
  * Builder class responsible for constructing the UI elements of a CommentForm. Separates the
@@ -549,10 +551,7 @@ class CommentFormBuilder {
 						commentLink: {
 							label: cd.s('cf-commentlink-tooltip'),
 							type: 'button',
-							icon:
-								cd.g.userDirection === 'ltr'
-									? `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M3 2C2.46957 2 1.96086 2.21071 1.58579 2.58579C1.21071 2.96086 1 3.46957 1 4V20L5 16H17C17.5304 16 18.0391 15.7893 18.4142 15.4142C18.7893 15.0391 19 14.5304 19 14V4C19 3.46957 18.7893 2.96086 18.4142 2.58579C18.0391 2.21071 17.5304 2 17 2H3Z" /%3E%3C/svg%3E'`
-									: `'data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M17 2C17.5304 2 18.0391 2.21071 18.4142 2.58579C18.7893 2.96086 19 3.46957 19 4V20L15 16H3C2.46957 16 1.96086 15.7893 1.58579 15.4142C1.21071 15.0391 1 14.5304 1 14V4C1 3.46957 1.21071 2.96086 1.58579 2.58579C1.96086 2.21071 2.46957 2 3 2H17Z" /%3E%3C/svg%3E'`,
+							icon: `'${createIconDataUri(cdxIconSpeechBubble, cd.g.userLanguage, cd.g.userDirection)}'`,
 							action: {
 								type: 'callback',
 								execute: () => {

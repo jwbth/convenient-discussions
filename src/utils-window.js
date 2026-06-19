@@ -625,6 +625,30 @@ export function createIcon(icon, size) {
 }
 
 /**
+ * Create a `data:` URI of an `<svg>` for a Codex icon, suitable for use as a CSS `background-image`
+ * (for example, a WikiEditor toolbar button icon). The icon's direction-specific variant is
+ * resolved, and the icon is mirrored horizontally in RTL mode when it requires it (since a
+ * background image can't be flipped via CSS the way an inline element can).
+ *
+ * @param {import('@wikimedia/codex-icons').Icon} icon Codex icon.
+ * @param {string} langCode Language code.
+ * @param {string} dir Direction (`'ltr'` or `'rtl'`).
+ * @returns {string}
+ */
+export function createIconDataUri(icon, langCode, dir) {
+	const resolvedIcon = resolveIcon(icon, langCode, dir)
+	let inner = typeof resolvedIcon === 'string' ? resolvedIcon : `<path d="${resolvedIcon.path}" />`
+	if (dir === 'rtl' && shouldIconFlip(icon, langCode)) {
+		inner = `<g transform="matrix(-1 0 0 1 20 0)">${inner}</g>`
+	}
+	const svg =
+		`<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">` +
+		`${inner}</svg>`
+
+	return `data:image/svg+xml,${svg.replace(/</g, '%3C').replace(/>/g, '%3E')}`
+}
+
+/**
  * Wrap the response to the `compare` API request in a table.
  *
  * @param {string} body
