@@ -1,3 +1,5 @@
+import { cdxIconArrowDown } from '@wikimedia/codex-icons'
+
 import EventEmitter from './EventEmitter'
 import getSettingsDialogClass from './SettingsDialog'
 import TextMasker from './TextMasker'
@@ -14,7 +16,7 @@ import {
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api'
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-date'
 import { showConfirmDialog } from './utils-oojs'
-import { wrapHtml } from './utils-window'
+import { createIcon, wrapHtml } from './utils-window'
 
 /**
  * @typedef {object} SettingsValues
@@ -1050,13 +1052,7 @@ class Settings extends EventEmitter {
 						.addClass('cd-rcnotice-img'),
 					$('<div>')
 						.addClass('cd-rcnotice-img cd-rcnotice-arrow cd-icon')
-						.append(
-							cd.utils
-								.createSvg(30, 30, 20, 20)
-								.html(
-									`<path d="M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z" />`,
-								),
-						),
+						.append(createIcon(cdxIconArrowDown, 30)),
 					$('<img>')
 						// Set dimensions so that the dialog is rendered with the correct size
 						.attr('width', 631)

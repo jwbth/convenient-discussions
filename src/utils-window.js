@@ -4,6 +4,8 @@
  * @module utilsWindow
  */
 
+import { resolveIcon, shouldIconFlip } from '@wikimedia/codex-icons'
+
 import Button from './Button'
 import cd from './loader/cd'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
@@ -600,6 +602,26 @@ export function wrapHtml(html, options = {}) {
 	}
 
 	return $wrapper
+}
+
+/**
+ * Create an `<svg>` element for a Codex icon, resolving its direction-specific variant and flipping
+ * it horizontally in RTL mode when the icon requires it.
+ *
+ * @param {import('@wikimedia/codex-icons').Icon} icon Codex icon.
+ * @param {number} size Rendered width and height of the icon in pixels.
+ * @returns {JQuery<SVGElement>}
+ */
+export function createIcon(icon, size) {
+	const resolvedIcon = resolveIcon(icon, cd.g.contentLanguage, cd.g.contentDirection)
+	const $svg = cd.utils
+		.createSvg(size, size, 20, 20)
+		.html(typeof resolvedIcon === 'string' ? resolvedIcon : `<path d="${resolvedIcon.path}" />`)
+	if (cd.g.contentDirection === 'rtl' && shouldIconFlip(icon, cd.g.contentLanguage)) {
+		$svg.css('transform', 'scaleX(-1)')
+	}
+
+	return $svg
 }
 
 /**

@@ -4,10 +4,12 @@
  * @module jqueryExtensions
  */
 
+import { cdxIconClose } from '@wikimedia/codex-icons'
+
 import controller from './controller'
 import cd from './loader/cd'
 import { isMetadataNode, sleep } from './shared/utils-general'
-import { isHiddenByUntilFound, isVisible } from './utils-window'
+import { createIcon, isHiddenByUntilFound, isVisible } from './utils-window'
 
 /**
  * jQuery. See {@link JQuery.fn jQuery.fn} for extensions.
@@ -236,12 +238,7 @@ export default {
 			// Close button
 			$('<a>')
 				.attr('title', cd.s('cf-block-close'))
-				.append(
-					cd.utils.createSvg(20, 20).html(
-						// Don't use self-closing tags for old jQuery support
-						`<path d="M4.34 2.93l12.73 12.73-1.41 1.41L2.93 4.35z"></path><path d="M17.07 4.34L4.34 17.07l-1.41-1.41L15.66 2.93z"></path>`,
-					),
-				)
+				.append(createIcon(cdxIconClose, 20))
 				.addClass('cd-closeButton cd-icon')
 				.on('click', () => {
 					this.empty()

@@ -1,6 +1,9 @@
+import { cdxIconBell } from '@wikimedia/codex-icons'
+
 import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { isElement, isText } from './shared/utils-general'
+import { createIcon } from './utils-window'
 
 /**
  * An item of the table of contents.
@@ -122,19 +125,15 @@ export default class TocItem {
 		if (!cd.settings.get('modifyToc')) return
 
 		if (subscriptionState) {
-			this.$link.find(this.toc.isInSidebar() ? '.vector-toc-text' : '.toctext').append(
-				$('<span>').addClass('cd-toc-subscriptionIcon-before'),
-				$('<span>')
-					.addClass('cd-toc-subscriptionIcon cd-icon')
-					.append(
-						cd.utils
-							.createSvg(14, 14, 20, 20)
-							.html(
-								`<path d="M16 7a5.38 5.38 0 0 0-4.46-4.85C11.6 1.46 11.53 0 10 0S8.4 1.46 8.46 2.15A5.38 5.38 0 0 0 4 7v6l-2 2v1h16v-1l-2-2zm-6 13a3 3 0 0 0 3-3H7a3 3 0 0 0 3 3z" />`,
-							),
-					)
-					.attr('title', cd.s('toc-watched')),
-			)
+			this.$link
+				.find(this.toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
+				.append(
+					$('<span>').addClass('cd-toc-subscriptionIcon-before'),
+					$('<span>')
+						.addClass('cd-toc-subscriptionIcon cd-icon')
+						.append(createIcon(cdxIconBell, 14))
+						.attr('title', cd.s('toc-watched')),
+				)
 		} else {
 			this.$link
 				.removeAttr('title')
