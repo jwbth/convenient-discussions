@@ -164,16 +164,11 @@ ol > .cd-thread-button-container > .cd-thread-button {
 		display: block;
 		margin: 0 auto 2em;
 		width: 3.4375rem;
-		position: relative;
 
-		&-partBackground {
-			position: absolute;
-			left: 0.5rem;
-			top: 0.375rem;
-			width: 1.6875rem;
-			height: 1.3125rem;
-			z-index: -1;
-			background-color: var(--cd-sidebar-color);
+		// The bubble interior. Filled with the base background color so the dark
+		// face reads on any page background and adapts to the night theme.
+		&-fill {
+			fill: var(--background-color-base, #fff);
 		}
 	}
 }
