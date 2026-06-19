@@ -1,4 +1,5 @@
 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M18 1v18H2V1zM4 3v14h12V3z" fill="black"/>
-<path d="M11 5V11.879L12.586 10.293 14 11.707 10.707 15H9.293L6 11.707 7.414 10.293 9 11.879V5z" fill="black"/>
+<path d="M18 1V15H16V3H4V15H2V1H18Z" fill="black"/>
+<path d="M11 5V11.876L13 9.876L14.414 11.29L10.707 14.997H9.293L5.586 11.29L7 9.876L9 11.876V5H11Z" fill="black"/>
+<line x1="2" y1="18" x2="18" y2="18" stroke="black" stroke-width="2"/>
 </svg>
