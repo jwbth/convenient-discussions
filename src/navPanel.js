@@ -1,6 +1,4 @@
 import {
-	cdxIconArrowUp,
-	cdxIconArrowDown,
 	cdxIconOngoingConversation,
 	cdxIconReload,
 	resolveIcon,
@@ -143,7 +141,11 @@ class NavPanel {
 				commentManager.goToPreviousNewComment()
 			},
 		}).hide()
-		$(this.state.previousButton.element).append(this.createIcon(cdxIconArrowUp, 16))
+		$(this.state.previousButton.element).append(
+			cd.utils
+				.createSvg(16, 16, 20, 20)
+				.html(`<path d="M1.5 13.25l1.5 1.5 7-7 7 7 1.5-1.5-7.75-7.75h-1.5l-7.75 7.75z" />`),
+		)
 
 		this.state.nextButton = new Button({
 			tagName: 'div',
@@ -154,7 +156,11 @@ class NavPanel {
 				commentManager.goToNextNewComment()
 			},
 		}).hide()
-		$(this.state.nextButton.element).append(this.createIcon(cdxIconArrowDown, 16))
+		$(this.state.nextButton.element).append(
+			cd.utils
+				.createSvg(16, 16, 20, 20)
+				.html(`<path d="M18.5 6.75l-1.5-1.5-7 7-7-7-1.5 1.5 7.75 7.75h1.5l7.75-7.75z" />`),
+		)
 
 		this.state.firstUnseenButton = new Button({
 			tagName: 'div',
