@@ -51,6 +51,7 @@
 		"> 1%"
 	],
 	"dependencies": {
+		"@wikimedia/codex-icons": "^2.6.0",
 		"date-fns": "^4.1.0",
 		"date-fns-tz": "^3.2.0",
 		"dayjs": "^1.11.20",

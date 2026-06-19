@@ -1,3 +1,12 @@
+import {
+	cdxIconArrowUp,
+	cdxIconArrowDown,
+	cdxIconOngoingConversation,
+	cdxIconReload,
+	resolveIcon,
+	shouldIconFlip,
+} from '@wikimedia/codex-icons'
+
 import Button from './Button'
 import LiveTimestamp from './LiveTimestamp'
 import commentFormManager from './commentFormManager'
@@ -134,11 +143,7 @@ class NavPanel {
 				commentManager.goToPreviousNewComment()
 			},
 		}).hide()
-		$(this.state.previousButton.element).append(
-			cd.utils
-				.createSvg(16, 16, 20, 20)
-				.html(`<path d="M1 13.75l1.5 1.5 7.5-7.5 7.5 7.5 1.5-1.5-9-9-9 9z" />`),
-		)
+		$(this.state.previousButton.element).append(this.createIcon(cdxIconArrowUp, 16))
 
 		this.state.nextButton = new Button({
 			tagName: 'div',
@@ -149,11 +154,7 @@ class NavPanel {
 				commentManager.goToNextNewComment()
 			},
 		}).hide()
-		$(this.state.nextButton.element).append(
-			cd.utils
-				.createSvg(16, 16, 20, 20)
-				.html(`<path d="M19 6.25l-1.5-1.5-7.5 7.5-7.5-7.5L1 6.25l9 9 9-9z" />`),
-		)
+		$(this.state.nextButton.element).append(this.createIcon(cdxIconArrowDown, 16))
 
 		this.state.firstUnseenButton = new Button({
 			tagName: 'div',
@@ -174,15 +175,7 @@ class NavPanel {
 				commentFormManager.goToNextCommentForm()
 			},
 		}).hide()
-		$(this.state.commentFormButton.element).append(
-			cd.utils
-				.createSvg(16, 16, 20, 20)
-				.html(
-					cd.g.contentDirection === 'ltr'
-						? `<path d="M18 0H2a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V2a2 2 0 00-2-2zM5 9.06a1.39 1.39 0 111.37-1.39A1.39 1.39 0 015 9.06zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39z" />`
-						: `<path d="M0 2v12c0 1.1.9 2 2 2h14l4 4V2c0-1.1-.9-2-2-2H2C.9 0 0 .9 0 2zm13.6 5.7c0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.6 1.4-1.4 1.4c-.8-.1-1.4-.7-1.4-1.4zM9.9 9.1s-.1 0 0 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.7 1.4-1.4 1.4zm-5.2 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4 0 .7-.7 1.4-1.4 1.4z" />`,
-				),
-		)
+		$(this.state.commentFormButton.element).append(this.createIcon(cdxIconOngoingConversation, 16))
 
 		this.$element.append(
 			this.state.refreshButton.element,
@@ -191,6 +184,27 @@ class NavPanel {
 			this.state.firstUnseenButton.element,
 			this.state.commentFormButton.element,
 		)
+	}
+
+	/**
+	 * Create an `<svg>` element for a Codex icon, resolving its direction-specific variant and
+	 * flipping it horizontally in RTL mode when the icon requires it.
+	 *
+	 * @param {import('@wikimedia/codex-icons').Icon} icon Codex icon.
+	 * @param {number} size Rendered width and height of the icon in pixels.
+	 * @returns {JQuery<SVGElement>}
+	 * @private
+	 */
+	createIcon(icon, size) {
+		const resolvedIcon = resolveIcon(icon, cd.g.contentLanguage, cd.g.contentDirection)
+		const $svg = cd.utils
+			.createSvg(size, size, 20, 20)
+			.html(typeof resolvedIcon === 'string' ? resolvedIcon : `<path d="${resolvedIcon.path}" />`)
+		if (cd.g.contentDirection === 'rtl' && shouldIconFlip(icon, cd.g.contentLanguage)) {
+			$svg.css('transform', 'scaleX(-1)')
+		}
+
+		return $svg
 	}
 
 	/**
@@ -300,9 +314,7 @@ class NavPanel {
 							.attr('dir', 'ltr')
 
 							.text(`+${commentCount}`)
-					: cd.utils
-							.createSvg(20, 20)
-							.html(`<path d="M15.65 4.35A8 8 0 1017.4 13h-2.22a6 6 0 11-1-7.22L11 9h7V2z" />`),
+					: this.createIcon(cdxIconReload, 16),
 			)
 			.toggleClass('cd-navPanel-addedCommentCount', Boolean(commentCount))
 			.toggleClass('cd-icon', !commentCount)
