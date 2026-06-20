@@ -1,44 +1,90 @@
 import { spawn } from 'node:child_process'
+import path from 'node:path'
+
+import ts from 'typescript'
 
 /**
  * @typedef {Object} Project
  * @property {string} config Path to jsconfig.json relative to cwd.
- * @property {(filePath: string) => boolean} [shouldKeep] Returns true if an error from this path
+ * @property {(filePath: string) => boolean} shouldKeep Returns true if an error from this path
  *   should be reported.
  */
 
-/** @type {Project[]} */
-const projects = [
-	{
-		config: 'jsconfig.json',
-
-		// include: ["*", "misc/**/*"], exclude: ["misc/convenientDiscussions-generateBasicConfig.js"]
-		shouldKeep: (filePath) =>
-			!filePath.includes('/') ||
-			(filePath.startsWith('misc/') &&
-				filePath !== 'misc/convenientDiscussions-generateBasicConfig.js'),
-	},
-	{
-		config: 'src/jsconfig.json',
-		shouldKeep: (filePath) => !filePath.startsWith('src/worker/'),
-	},
-	{
-		config: 'src/worker/jsconfig.json',
-		shouldKeep: (filePath) => filePath.startsWith('src/worker/'),
-	},
-	{
-		config: 'src/shared/jsconfig.json',
-		shouldKeep: (filePath) => filePath.startsWith('src/shared/'),
-	},
-	// {
-	// 	config: 'tests/jsconfig.json',
-	// 	shouldKeep: (filePath) => filePath.startsWith('tests/'),
-	// },
-	// {
-	// 	config: 'e2e/jsconfig.json',
-	// 	shouldKeep: (filePath) => filePath.startsWith('e2e/'),
-	// },
+const configPaths = [
+	'jsconfig.json',
+	'src/jsconfig.json',
+	'src/worker/jsconfig.json',
+	'src/shared/jsconfig.json',
+	// 'tests/jsconfig.json',
+	// 'e2e/jsconfig.json',
 ]
+
+/**
+ * Resolve a jsconfig's `include`/`exclude` (and its `extends` chain) to the set of files TypeScript
+ * actually checks, using TypeScript's own parser so the semantics match `tsc` exactly. Paths are
+ * normalized to forward slashes relative to cwd, matching the form used when filtering error lines.
+ *
+ * @param {string} configPath
+ * @returns {Set<string>}
+ */
+function getOwnedFiles(configPath) {
+	const absConfigPath = path.resolve(configPath)
+	const { config, error } = ts.readConfigFile(absConfigPath, ts.sys.readFile)
+	if (error) {
+		throw new Error(ts.flattenDiagnosticMessageText(error.messageText, '\n'))
+	}
+
+	const { fileNames } = ts.parseJsonConfigFileContent(config, ts.sys, path.dirname(absConfigPath))
+
+	return new Set(
+		fileNames.map((fileName) => path.relative(process.cwd(), fileName).replaceAll('\\', '/')),
+	)
+}
+
+const ownedFilesByConfig = new Map(configPaths.map((config) => [config, getOwnedFiles(config)]))
+
+/**
+ * How specifically a config's directory contains a file: the depth of the config's directory when it
+ * is an ancestor of the file, or -1 when it isn't (e.g. `src/worker/jsconfig.json` pulls in
+ * `src/shared/*` via `../shared/**`, but its directory doesn't contain those files). A config that
+ * contains the file is thus always preferred over one that merely references it from elsewhere.
+ *
+ * @param {string} config
+ * @param {string} filePath
+ * @returns {number}
+ */
+function getContainmentDepth(config, filePath) {
+	const dir = path.dirname(config)
+	if (dir === '.') {
+		return 0
+	}
+
+	return filePath === dir || filePath.startsWith(dir + '/') ? dir.split('/').length : -1
+}
+
+/**
+ * The configs sharing a file (e.g. `src/jsconfig.json` and `src/shared/jsconfig.json` both include
+ * `src/shared/*`) all check it, so an error in it would otherwise be reported under each. The config
+ * whose directory most specifically contains the file is the most specific one, so it owns the file
+ * and reports it once.
+ *
+ * @param {string} filePath
+ * @returns {string | undefined}
+ */
+function getOwnerConfig(filePath) {
+	return configPaths
+		.filter((config) => ownedFilesByConfig.get(config)?.has(filePath))
+		.sort(
+			(config1, config2) =>
+				getContainmentDepth(config2, filePath) - getContainmentDepth(config1, filePath),
+		)[0]
+}
+
+/** @type {Project[]} */
+const projects = configPaths.map((config) => ({
+	config,
+	shouldKeep: (filePath) => getOwnerConfig(filePath) === config,
+}))
 
 /**
  * @param {Project} project
@@ -86,8 +132,7 @@ function checkProject(project) {
 
 				if (fileErrorMatch) {
 					const filePath = fileErrorMatch[1].replace(/\\/g, '/')
-					const keep =
-						!filePath.includes('node_modules/') && (project.shouldKeep?.(filePath) ?? true)
+					const keep = !filePath.includes('node_modules/') && project.shouldKeep(filePath)
 					isFiltering = !keep
 					if (keep) {
 						filteredLines.push(line)
