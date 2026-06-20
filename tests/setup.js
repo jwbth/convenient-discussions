@@ -1,4 +1,5 @@
-global.OO = {
+// Intentionally partial mock of the OO namespace; cast through `any`.
+global.OO = /** @type {any} */ ({
 	ui: new Proxy(
 		{
 			throttle: (fn) => fn,
@@ -44,13 +45,16 @@ global.OO = {
 	},
 	initClass: () => {},
 	mixinClass: () => {},
-}
+})
 
-global.$ = () => ({
+// `$` comes from @types/jquery as a non-assignable ambient global, so assign through a cast.
+const globalAny = /** @type {any} */ (global)
+globalAny.$ = () => ({
 	on: () => {},
 })
 
-global.mw = {
+// Intentionally partial mock of the mw global; cast through `any`.
+global.mw = /** @type {any} */ ({
 	config: {
 		/** @type {{ [key: string]: any }} */
 		values: {},
@@ -164,10 +168,10 @@ global.mw = {
 				mainText = mainText.charAt(0).toUpperCase() + mainText.slice(1)
 			}
 
-			return new mw.Title(namespaceId, mainText)
+			return new Title(namespaceId, mainText)
 		}
 	},
-}
+})
 
 const createProxy = (/** @type {string | symbol} */ name = '') => {
 	const proxy = new Proxy(() => {}, {
@@ -198,4 +202,4 @@ const createProxy = (/** @type {string | symbol} */ name = '') => {
 	return proxy
 }
 
-global.convenientDiscussions = createProxy()
+global.convenientDiscussions = /** @type {any} */ (createProxy())

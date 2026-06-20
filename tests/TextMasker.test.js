@@ -6,15 +6,15 @@ import cd from '../src/shared/cd'
 describe('TextMasker', () => {
 	beforeEach(() => {
 		// Set up minimal cd.config for tests
-		cd.config = {
+		cd.config = /** @type {typeof cd.config} */ ({
 			paragraphTemplates: ['pb'],
-		}
-		cd.g = {
+		})
+		cd.g = /** @type {typeof cd.g} */ ({
 			letterPattern: String.raw`a-zA-Z\xC0-\uFFFF`,
 			piePattern: 'br|p|span|div',
 			pniePattern:
 				'BLOCKQUOTE|DD|DIV|DL|DT|FORM|H1|H2|H3|H4|H5|H6|HR|INPUT|LI|LINK|OL|P|PRE|STYLE|TABLE|TBODY|TR|TH|TD|UL',
-		}
+		})
 	})
 
 	describe('maskTemplatesRecursively', () => {

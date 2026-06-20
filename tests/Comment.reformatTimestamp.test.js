@@ -84,7 +84,7 @@ import { formatDateNative, initDayjs } from '../src/utils-date.js'
 // TODO: use some interfaces for mocks and real objects alike?
 
 // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-const en = mock_i18n_en_json.default
+const en = /** @type {{ default: Record<string, string> }} */ (/** @type {unknown} */ (mock_i18n_en_json)).default
 const Comment = mock_src_Comment.default
 const commentManager = mock_src_commentManager.default
 const settings = mock_src_settings.default

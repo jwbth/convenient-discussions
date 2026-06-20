@@ -70,7 +70,6 @@ export async function runBasicLoadingTest(page, url, options = {}) {
 	const pageReadyPromise = page.evaluate(
 		() =>
 			new Promise((resolve) => {
-				// @ts-expect-error - cd is the convenientDiscussions object
 				window.mw.hook('convenientDiscussions.pageReady').add((cd) => {
 					resolve({
 						hookFired: true,

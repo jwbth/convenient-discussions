@@ -89,7 +89,7 @@ function testWithData({ label, code, expected, commentForm, action = 'submit', c
 		} finally {
 			// Reset
 			if (config) {
-				cd.config = defaultConfig
+				cd.config = /** @type {typeof cd.config} */ (defaultConfig)
 			}
 		}
 	})
@@ -132,7 +132,7 @@ const existingSignature = ' [[User:Example|Example]] 00:00, 1 October 2021 (UTC)
  */
 
 /**
- * @typedef {Partial<Omit<import('../src/CommentForm').default, 'headlineInput' | 'target'>> & CommentFormTestExtension} CommentFormMock
+ * @typedef {Partial<Omit<import('../src/CommentForm').default, 'headlineInput' | 'target' | 'constructor'>> & CommentFormTestExtension} CommentFormMock
  */
 
 /** @type {CommentFormMock} */

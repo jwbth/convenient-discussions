@@ -9,9 +9,9 @@ describe('pageRegistry.getFromTemplateName', () => {
 		pageRegistry.items = {}
 
 		// Set up minimal cd.g for Page constructor
-		global.convenientDiscussions.g = {
+		global.convenientDiscussions.g = /** @type {typeof global.convenientDiscussions.g} */ ({
 			pageName: 'Test Page',
-		}
+		})
 	})
 
 	test('should convert {{template}} to Template:Template', () => {

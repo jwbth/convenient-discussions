@@ -36,7 +36,7 @@ export async function ensureAuthenticated(page) {
 	}
 
 	const currentUrl = page.url()
-	const pageName = await page.evaluate(() => (window.mw ? mw.config.get('wgPageName') : null))
+	const pageName = await page.evaluate(() => (window.mw ? window.mw.config.get('wgPageName') : null))
 
 	// Navigate to login page, preserving the return to URL if possible. MediaWiki's returnto
 	// parameter expects a page title, not a full URL.

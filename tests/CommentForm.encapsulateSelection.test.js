@@ -81,7 +81,7 @@ import CommentForm from '../src/CommentForm'
  */
 
 /**
- * @typedef {Partial<import('../src/MultilineTextInputWidget').default> & WidgetMockExtension} WidgetMock
+ * @typedef {Partial<Omit<import('../src/MultilineTextInputWidget').default, 'constructor'>> & WidgetMockExtension} WidgetMock
  */
 
 /** @type {WidgetMock} */
