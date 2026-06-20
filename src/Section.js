@@ -2539,6 +2539,14 @@ class Section extends SectionSkeleton {
 	static initPrototypes() {
 		if (this.prototypesInitted) return
 
+		// `--cd-content-metadata-font-size` is consumed by Section.less. It is declared here, with its
+		// owner, rather than in the loader. This runs once and before any layout-reading code, so adding
+		// the style triggers no extra reflow.
+		const metadataFontSize = Number.parseFloat(
+			(cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7),
+		)
+		mw.util.addCSS(`:root { --cd-content-metadata-font-size: ${metadataFontSize}rem }`)
+
 		this.prototypes.add(
 			'replyButton',
 			new OO.ui.ButtonWidget({

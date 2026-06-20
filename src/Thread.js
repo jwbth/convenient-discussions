@@ -1556,6 +1556,11 @@ class Thread extends mixIntoObject(
 	static initPrototypes() {
 		if (this.prototypesInitted) return
 
+		// `--cd-thread-line-side-padding` is consumed by Thread.less. It is declared here, with its
+		// owner, rather than in the loader. This runs once and before any layout-reading code, so
+		// adding the style triggers no extra reflow.
+		mw.util.addCSS(`:root { --cd-thread-line-side-padding: ${cd.g.threadLineSidePadding}px }`)
+
 		this.prototypes.add(
 			'expandButton',
 			new OO.ui.ButtonWidget({

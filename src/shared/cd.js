@@ -103,6 +103,8 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  * @property {number} contentLineHeight
  * @property {number} contentFontSize
  * @property {number} defaultFontSize
+ * @property {string} contentBackgroundColor
+ * @property {string} sidebarColor
  * @property {number} bodyScrollPaddingTop
  * @property {{ [char: string]: string | 0 }} phpCharToUpper
  * @property {boolean} genderAffectsUserString

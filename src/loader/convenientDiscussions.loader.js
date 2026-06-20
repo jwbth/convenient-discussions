@@ -887,6 +887,19 @@ class Loader {
 		cd.g.contentLineHeight = Number.parseFloat(this.$content.css('line-height'))
 		cd.g.contentFontSize = Number.parseFloat(this.$content.css('font-size'))
 		cd.g.defaultFontSize = Number.parseFloat($(document.documentElement).css('font-size'))
+
+		// These colors are consumed as CSS variables by individual modules (comment forms, page
+		// navigation). We measure them here, together with the other reads above and before any CSS is
+		// added, to keep all layout-reading operations in a single batch and avoid extra reflows; the
+		// modules only declare the variables from these stored values.
+		cd.g.contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)'
+		cd.g.sidebarColor = cd.utils
+			.skin$({
+				'timeless': '#mw-content-container',
+				'vector-2022': '.mw-page-container',
+				'default': 'body',
+			})
+			.css('background-color')
 	}
 
 	/**
@@ -895,42 +908,21 @@ class Loader {
 	 * @private
 	 */
 	addTalkPageCss() {
-		const contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)'
-		const sidebarColor = cd.utils
-			.skin$({
-				'timeless': '#mw-content-container',
-				'vector-2022': '.mw-page-container',
-				'default': 'body',
-			})
-			.css('background-color')
-		const metadataFontSize = Number.parseFloat(
-			(cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7),
-		)
-		const sidebarTransparentColor = cd.utils.transparentize(sidebarColor)
-
 		// `float: inline-start` is too new: it appeared in Chrome in October 2023.
 		const floatContentStart = cd.g.contentDirection === 'ltr' ? 'left' : 'right'
 		const floatContentEnd = cd.g.contentDirection === 'ltr' ? 'right' : 'left'
 		const floatUserStart = cd.g.userDirection === 'ltr' ? 'left' : 'right'
 		const floatUserEnd = cd.g.userDirection === 'ltr' ? 'right' : 'left'
-		const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right'
 
+		// Only cross-cutting variables (consumed by several modules) are declared here. Variables owned
+		// by a single module are declared in that module's initialization routine instead.
 		mw.loader.addStyleTag(`:root {
-	--cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
-	--cd-comment-marker-width: ${cd.g.commentMarkerWidth}px;
-	--cd-thread-line-side-padding: ${cd.g.threadLineSidePadding}px;
-	--cd-content-background-color: ${contentBackgroundColor};
-	--cd-content-font-size: ${cd.g.contentFontSize}px;
-	--cd-content-metadata-font-size: ${metadataFontSize}rem;
-	--cd-sidebar-color: ${sidebarColor};
-	--cd-sidebar-transparent-color: ${sidebarTransparentColor};
 	--cd-direction-user: ${cd.g.userDirection};
 	--cd-direction-content: ${cd.g.contentDirection};
 	--cd-float-user-start: ${floatUserStart};
 	--cd-float-user-end: ${floatUserEnd};
 	--cd-float-content-start: ${floatContentStart};
 	--cd-float-content-end: ${floatContentEnd};
-	--cd-gradient-user-start: ${gradientUserStart};
 	--cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
 	--cd-pixel-deviation-ratio-for-1px: ${cd.g.pixelDeviationRatioFor1px};
 }`)

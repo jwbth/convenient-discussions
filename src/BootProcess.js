@@ -249,7 +249,7 @@ class BootProcess {
 		cd.debug.stopTimer('main code')
 
 		// Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
-		// in this section.
+		// after this line.
 		cd.debug.startTimer('final code')
 
 		// This should be done on rendering stage (would have resulted in unnecessary reflows were it
@@ -441,6 +441,7 @@ class BootProcess {
 			CommentFormInputTransformer.init()
 			notifications.init()
 			Parser.init()
+			pageNav.init()
 		}
 		controller.setup(this.passedData.parseData?.text)
 		toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc)

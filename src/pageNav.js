@@ -81,6 +81,19 @@ class PageNav {
 	bodyScrollPaddingTop
 
 	/**
+	 * _For internal use._ Declare the sidebar color CSS variables consumed by pageNav.less. The colors
+	 * are measured once during boot, before any CSS is added, so declaring the variables here adds no
+	 * reflow. This is kept separate from {@link PageNav#setup}, which runs in the render phase (after
+	 * layout-reading code) where adding a style would force an extra reflow.
+	 */
+	init() {
+		mw.util.addCSS(`:root {
+	--cd-sidebar-color: ${cd.g.sidebarColor};
+	--cd-sidebar-transparent-color: ${cd.utils.transparentize(cd.g.sidebarColor)};
+}`)
+	}
+
+	/**
 	 * _For internal use._ Setup the page navigation block (mount or update).
 	 */
 	setup() {

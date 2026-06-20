@@ -53,6 +53,7 @@ class CommentFormManager extends EventEmitter {
 	 */
 	init() {
 		this.setupQuoteButtonIcon()
+		this.setupContentBackgroundColorVariable()
 		this.configureClosePageConfirmation()
 
 		controller
@@ -121,6 +122,17 @@ class CommentFormManager extends EventEmitter {
 		mw.util.addCSS(
 			`:root { --cd-quote-icon: url('${createIconDataUri(cdxIconQuotes, cd.g.contentLanguage, cd.g.contentDirection)}') }`,
 		)
+	}
+
+	/**
+	 * Provide the content area's background color as a CSS custom property, consumed by comment form
+	 * styles (see `.cd-commentForm` in CommentForm.less). The color is measured once during boot,
+	 * before any CSS is added, so declaring the variable here adds no reflow.
+	 *
+	 * @private
+	 */
+	setupContentBackgroundColorVariable() {
+		mw.util.addCSS(`:root { --cd-content-background-color: ${cd.g.contentBackgroundColor} }`)
 	}
 
 	/**

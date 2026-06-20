@@ -1,5 +1,6 @@
 import PrototypeRegistry from './PrototypeRegistry'
 import commentManager from './commentManager'
+import cd from './loader/cd'
 import { sleep } from './shared/utils-general.js'
 
 /**
@@ -421,6 +422,16 @@ class CommentLayers {
 	 */
 	static initPrototypes() {
 		if (this.prototypesInitted) return
+
+		// `--cd-comment-marker-width` and `--cd-gradient-user-start` are consumed by CommentLayers.less
+		// and the optional background highlighting stylesheet. They are declared here, with their
+		// owner, rather than in the loader. This runs once and before any layout-reading code, so
+		// adding the style triggers no extra reflow.
+		const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right'
+		mw.util.addCSS(`:root {
+	--cd-comment-marker-width: ${cd.g.commentMarkerWidth}px;
+	--cd-gradient-user-start: ${gradientUserStart};
+}`)
 
 		// Create shared layer elements (underlay, overlay)
 		const commentUnderlay = document.createElement('div')
