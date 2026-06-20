@@ -16,3 +16,4 @@ test-results/
 playwright/.auth/
 .env
 .eslintcache
+.vscode/tasks.json
