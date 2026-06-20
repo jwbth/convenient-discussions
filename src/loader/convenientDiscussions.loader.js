@@ -1024,7 +1024,7 @@ class Loader {
 					.attr('title', cd.s('script-name'))
 					.append(
 						cd.utils
-							.createSvg(55, 55, 20, 20)
+							.createSvg(60, 60, 20, 20)
 							.html(
 								`<path class="cd-bootingOverlay-logo-fill" d="M3 14h3v2.58L9.685 14H13V7H3z"/><path class="cd-bootingOverlay-logo-fill" d="M5 3h12v10H5z"/><path d="M15 16h-4.685l-4.742 3.32L4 18.5V16H1V5h14zM3 14h3v2.58L9.685 14H13V7H3z"/><path d="M19 13h-2V3H5V1h14z"/><circle cx="5" cy="8.7" r="1"/><circle cx="11" cy="8.7" r="1"/><path d="M10.4 10.9a2 2 0 0 1-2 2h-.8a2 2 0 0 1-2-2z"/>`,
 							),
