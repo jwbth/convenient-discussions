@@ -1,5 +1,6 @@
 {
 	"semi": false,
 	"singleQuote": true,
-	"quoteProps": "consistent"
+	"quoteProps": "consistent",
+	"proseWrap": "never"
 }
