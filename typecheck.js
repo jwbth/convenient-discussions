@@ -15,8 +15,8 @@ const configPaths = [
 	'src/jsconfig.json',
 	'src/worker/jsconfig.json',
 	'src/shared/jsconfig.json',
-	// 'tests/jsconfig.json',
-	// 'e2e/jsconfig.json',
+	'tests/jsconfig.json',
+	'e2e/jsconfig.json',
 ]
 
 /**

@@ -1,7 +1,11 @@
 {
 	"extends": "../jsconfig-base.json",
 	"compilerOptions": {
-		"lib": ["ESNext", "DOM"],
+		"module": "esnext",
+		"target": "es2022",
+		"moduleResolution": "bundler",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["node", "oojs", "oojs-ui", "jquery", "jqueryui"],
 		"strict": false
 	}
 }

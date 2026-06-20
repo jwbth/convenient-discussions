@@ -1,20 +1,20 @@
 {
 	"compilerOptions": {
-		// The default in jsconfig.json
-		// "allowJs": true,
-		"checkJs": true,
+		// These four are implied by the `jsconfig.json` file name, but only for a file literally
+		// named `jsconfig.json`. This base is `extends`ed by such files, but `extends` doesn't carry
+		// the name-based defaults, and `tsc -p <leaf>` resolves options through the chain rather than
+		// the leaf's name. Declare them explicitly so every project gets them regardless.
+		"allowJs": true,
+		"noEmit": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
 
-		// The default in jsconfig.json
-		// "noEmit": true,
+		"checkJs": true,
 		"strict": true,
 		"isolatedModules": true,
-		// The default in jsconfig.json
-		// "resolveJsonModule": true,
 		"noImplicitOverride": true,
 		"strictPropertyInitialization": false,
 		"noUncheckedSideEffectImports": true,
-		// The default in jsconfig.json
-		// "skipLibCheck": true,
 		"moduleDetection": "force",
 
 		// Handled by typescript-eslint
