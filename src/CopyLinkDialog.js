@@ -260,12 +260,13 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 				mw.hook('wikipage.content').fire(diffPanelContent.$diffView)
 			})
 		} catch (error) {
+			errorText = cd.s('error-diffnotfound')
 			if (error instanceof CdError) {
-				errorText = cd.s(
-					error.getType() === 'network' ? 'cld-diff-error-network' : 'cld-diff-error',
-				)
+				if (error.getType() === 'network') {
+					errorText += cd.mws('word-separator') + cd.s('error-network')
+				}
 			} else {
-				errorText = cd.s('cld-diff-error-unknown')
+				errorText += cd.mws('word-separator') + cd.s('error-unknown')
 				cd.debug.logWarn(error)
 			}
 		}
@@ -273,6 +274,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 		const diffOptionTyped = /** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption)
 		diffOptionTyped.setDisabled(Boolean(errorText))
 		diffOptionTyped.setTitle(errorText || '')
+		if (errorText) {
+			mw.notify(errorText, { type: 'warn' })
+		}
 	}
 
 	/**
