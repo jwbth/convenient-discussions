@@ -415,7 +415,7 @@
 	"msd-move": "移動",
 	"msd-targetpage": "輸入將話題移至的討論頁面名稱：",
 	"msd-keeplink": "留下一個指向新位置的連結",
-	"msd-chronologicalorder": "將此話題恢復到其時間順序。",
+	"msd-chronologicalorder": "將此話題插入到其時間順序位置。",
 	"msd-summaryending": "編輯摘要（會添加在標準摘要）",
 	"msd-error-sourcepagedeleted": "目前的頁面已被刪除。",
 	"msd-error-invalidpagename": "無效頁面名稱。",
