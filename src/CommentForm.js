@@ -827,6 +827,9 @@ class CommentForm extends EventEmitter {
 					this.originalHeadline = this.headlineInput.getValue()
 				}
 			}
+			if (initialState.submit) {
+				this.submit(true, false, true)
+			}
 		} else {
 			this.originalComment = initialState.originalComment || ''
 			this.originalHeadline = initialState.originalHeadline || ''
