@@ -29,13 +29,13 @@ export function generateTagsRegexp(tags) {
 /**
  * Replace HTML comments (`<!-- -->`), `<nowiki>`, `<syntaxhighlight>`, `<source>`, and `<pre>` tags
  * content, left-to-right and right-to-left marks, and also newlines inside some tags (`<br\n>`) in
- * the code with spaces. Optionally, replace non-nested templates with spaces.
+ * the code with spaces. Optionally, replace templates with spaces.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
  * that could confuse search results) but get right positions and code in the result.
  *
  * @param {string} code
- * @param {boolean} [maskTemplates] Replace non-nested templates with spaces.
+ * @param {boolean} [maskTemplates] Replace templates with spaces.
  * @returns {string}
  */
 export function maskDistractingCode(code, maskTemplates = false) {
@@ -58,7 +58,12 @@ export function maskDistractingCode(code, maskTemplates = false) {
 		)
 
 	return maskTemplates ?
-		code.replace(/\{\{([^{]\{?)+?\}\}/g, (s) => ' '.repeat(s.length)) :
+		new TextMasker(code)
+			.maskTemplatesRecursively(undefined, true)
+			.withText((text) =>
+				text.replace(/\u0001\d+_template[^\u0002]*_(\d+)\u0002/g, (_m, n) => ' '.repeat(n)),
+			)
+			.getText() :
 		code
 }
 
