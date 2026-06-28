@@ -412,6 +412,15 @@ class Parser {
 				length = 0
 				signatureNodes = []
 			}
+
+			// Tag with `lang` wrapping the entire comment *with* the user link
+			// https://zh.wikipedia.org/w/index.php?diff=93178867
+			if (isElement(node) && node.getAttribute('lang')) {
+				const lastChild = treeWalker.lastChild()
+				if (lastChild) {
+					node = lastChild
+				}
+			}
 		} while (
 			length < cd.config.signatureScanLimit &&
 			node &&
