@@ -2628,7 +2628,11 @@ class CommentForm extends EventEmitter {
 		// Workaround to omit the signature when templates containing a signature, like
 		// https://en.wikipedia.org/wiki/Template:Requested_move, are substituted.
 		if (this.omitSignatureCheckbox && !this.omitSignatureCheckboxAltered) {
-			if (this.substRegexp.test(commentInputValue)) {
+			if (
+				this.substRegexp.test(commentInputValue) ||
+				// There is a sign code, but the comment doesn't *end* with it.
+				new RegExp(cd.g.signCode + String.raw`\s*\S[^]*$`).test(commentInputValue)
+			) {
 				const signatureText = this.$previewArea.find('.cd-commentForm-signature').text()
 				const previewText = this.$previewArea.text()
 				if (
