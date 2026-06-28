@@ -685,7 +685,7 @@ class CommentForm extends EventEmitter {
 		this.operations = new CommentFormOperationRegistry(this)
 
 		/**
-		 * Subst aliases string for regexps.
+		 * `subst:` aliases string for regexps.
 		 *
 		 * @type {string}
 		 * @private
@@ -693,7 +693,7 @@ class CommentForm extends EventEmitter {
 		this.substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
 
 		/**
-		 * Regexp to match subst templates.
+		 * Regexp to match substituted templates.
 		 *
 		 * @type {RegExp}
 		 * @private
@@ -701,7 +701,7 @@ class CommentForm extends EventEmitter {
 		this.substRegexp = new RegExp(`\\{\\{ *(${this.substAliasesString})`, 'i')
 
 		/**
-		 * Regexp to match templates that are not subst.
+		 * Regexp to match templates that are not substituted.
 		 *
 		 * @type {RegExp}
 		 * @private
@@ -709,7 +709,7 @@ class CommentForm extends EventEmitter {
 		this.substTemplateRegexp = new RegExp(`\\{\\{(?! *(${this.substAliasesString}))`, 'i')
 
 		/**
-		 * Regexp to match if comment starts with subst templates.
+		 * Regexp to match if comment starts with a substituted template.
 		 *
 		 * @type {RegExp}
 		 * @private
@@ -2513,6 +2513,17 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
+	 * Check whether the comment has a sign code but does not end with it.
+	 *
+	 * @param {string} commentInputValue
+	 * @returns {boolean}
+	 * @private
+	 */
+	hasSignCodeNotAtEnd(commentInputValue) {
+		return new RegExp(cd.g.signCode + String.raw`\s*\S[^]*$`).test(commentInputValue)
+	}
+
+	/**
 	 * Preview the comment.
 	 *
 	 * @param {boolean} [isAuto] Preview is initiated automatically (if the user has the
@@ -2628,11 +2639,7 @@ class CommentForm extends EventEmitter {
 		// Workaround to omit the signature when templates containing a signature, like
 		// https://en.wikipedia.org/wiki/Template:Requested_move, are substituted.
 		if (this.omitSignatureCheckbox && !this.omitSignatureCheckboxAltered) {
-			if (
-				this.substRegexp.test(commentInputValue) ||
-				// There is a sign code, but the comment doesn't *end* with it.
-				new RegExp(cd.g.signCode + String.raw`\s*\S[^]*$`).test(commentInputValue)
-			) {
+			if (this.substRegexp.test(commentInputValue) || this.hasSignCodeNotAtEnd(commentInputValue)) {
 				const signatureText = this.$previewArea.find('.cd-commentForm-signature').text()
 				const previewText = this.$previewArea.text()
 				if (
@@ -2808,7 +2815,8 @@ class CommentForm extends EventEmitter {
 				condition:
 					!doDelete &&
 					this.headlineInput?.getValue() === '' &&
-					!this.substStartsWithRegexp.test(this.commentInput.getValue()),
+					!this.substStartsWithRegexp.test(this.commentInput.getValue()) &&
+					!this.hasSignCodeNotAtEnd(this.commentInput.getValue()),
 				confirmation: () => {
 					const ending =
 						this.headlineInputPlaceholder === cd.s('cf-headline-topic') ? 'topic' : 'subsection'
