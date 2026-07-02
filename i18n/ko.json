@@ -134,7 +134,7 @@
 	"es-delete-addition": "추가를 삭제",
 	"es-delete-topic": "주제 삭제",
 	"es-delete-subsection": "하위 문단 삭제",
-	"es-delete-comment": "의견 지우기",
+	"es-delete-comment": "의견 삭제",
 	"es-delete-comment-by": "{{gender:$2|$1}}님의 댓글 삭제",
 	"es-new-topic": "새 주제",
 	"es-new-subsection": "새 하위 문단",
