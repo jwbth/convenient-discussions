@@ -572,7 +572,9 @@ export default function getMoveSectionDialogClass() {
 					summary: buildEditSummary({
 						text:
 							this.action === 'archive'
-								? cd.s('es-archive-from', source.sectionWikilink) + summaryEnding
+								? cd.page.isArchive()
+									? cd.s('es-unarchive-from', source.sectionWikilink) + summaryEnding
+									: cd.s('es-archive-from', source.sectionWikilink) + summaryEnding
 								: cd.s('es-move-from', source.sectionWikilink) + summaryEnding,
 						section: this.section.headline,
 					}),
@@ -639,7 +641,9 @@ export default function getMoveSectionDialogClass() {
 					summary: buildEditSummary({
 						text:
 							this.action === 'archive'
-								? cd.s('es-archive-to', target.sectionWikilink) + summaryEnding
+								? cd.page.isArchive()
+									? cd.s('es-unarchive-to', target.sectionWikilink) + summaryEnding
+									: cd.s('es-archive-to', target.sectionWikilink) + summaryEnding
 								: cd.s('es-move-to', target.sectionWikilink) + summaryEnding,
 						section: this.section.headline,
 					}),
