@@ -533,13 +533,14 @@ class CommentSkeleton {
 	isElementEligible(element, treeWalker, step) {
 		return !(
 			element === treeWalker.root ||
-			// When the parser "moves out" of a closed discussion, it should stop the comment at the
-			// discussion boundary (e.g.
-			// https://en.wikipedia.org/wiki/Project:Requests_for_comment/Archive.is_RFC_5). A closed
-			// discussion may not be a comment part altogether (unless the comment's last part is outside
-			// that discussion which means the class is used incorrectly as in
+			// When the parser "moves out" of a closed discussion, it should halt collecting comment parts
+			// at the discussion boundary (e.g. see at
+			// https://en.wikipedia.org/wiki/Project:Requests_for_comment/Archive.is_RFC_5). An entire
+			// closed discussion can not be a comment part (unless the comment's last part is outside that
+			// discussion which means the class is used incorrectly as in
 			// https://en.wikipedia.org/wiki/Special:GoToComment/c-Oklopfer-20260504060500-Test). Other
-			// elements with reject classes (e.g. `ombox`), however, may be parts of a comment altogether.
+			// elements with reject classes (e.g. `ombox`), however, can be parts of a comment in their
+			// entirety.
 			((step !== 'up' ||
 				CommentSkeleton.elementHasAnyClass(element, cd.g.closedDiscussionClasses)) &&
 				((CommentSkeleton.elementHasAnyClass(element, this.parser.rejectClasses) &&
