@@ -1381,7 +1381,16 @@ class Comment extends mixIntoClass(
 			// narrow than the comment. TODO: we can probably remove `overflow: hidden` if we have `float:
 			// left` and `float: right` in two elements (intersectsFloatingCount = 2); otherwise we get
 			// this: https://ru.wikipedia.org/w/index.php?title=Project:Форум/Новости&oldid=153443327
-			if (intersectsFloatingCount <= 1 || this.highlightables.some((el) => el.tagName === 'OL')) {
+			if (
+				intersectsFloatingCount <= 1 ||
+				this.highlightables.some(
+					(el) =>
+						// parentNode check fixes
+						// https://test2.wikipedia.org/w/index.php?title=Wikipedia:Russian_speedy_AfD&oldid=617271
+						el.tagName === 'OL' ||
+						/** @type {HTMLElement | null} */ (el.parentNode)?.tagName === 'OL',
+				)
+			) {
 				this.highlightables.forEach((el, i) => {
 					el.style.overflow = initialOverflows[i]
 				})
