@@ -36,6 +36,8 @@
 	"cm-thanked": "感謝を示しました",
 	"cm-thanked-tooltip": "感謝を送信済みのコメントです",
 	"cm-edit": "編集",
+	"cm-delete": "削除",
+	"cm-fix": "修正",
 	"cm-reply": "返信",
 	"cm-reply-outdented-tooltip": "アウトデントされた返信を含むコメントには返信できません",
 	"cm-quote": "引用",
