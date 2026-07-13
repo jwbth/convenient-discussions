@@ -7,6 +7,7 @@
 			"Luku123",
 			"MarMi wiki",
 			"Matma Rex",
+			"PanWor",
 			"Rail",
 			"WaldiSt"
 		]
@@ -102,7 +103,7 @@
 	"cf-save-short": "Zapisz",
 	"cf-delete-button": "Usuń",
 	"cf-delete-button-short": "Usuń",
-	"cf-addtopic": "Dodaj temat",
+	"cf-addtopic": "Dodaj wątek",
 	"cf-addtopic-short": "Dodaj",
 	"cf-addsubsection": "Dodaj podsekcję",
 	"cf-addsubsection-short": "Dodaj",
@@ -244,7 +245,7 @@
 	"lp-comment-tooltip": "Przejdź do komentarza",
 	"educationpopup-dismiss": "Ok, rozumiem",
 	"loading-ellipsis": "Wczytywanie…",
-	"addtopic": "Dodaj temat",
+	"addtopic": "Dodaj wątek",
 	"addtopicbutton-tooltip": "Otwórz w nowej karcie, aby utworzyć nowy temat na standardowej stronie, bez użycia Convenient Discussions",
 	"copy": "Kopiuj"
 }
