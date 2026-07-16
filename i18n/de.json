@@ -236,7 +236,7 @@
 	"deadanchor-section-reason": "Möglicherweise wurde es gelöscht oder umbenannt, oder du bist einem fehlerhaften Link gefolgt.",
 	"deadanchor-section-similar": "Auf der Seite wurde jedoch ein Abschnitt mit einem ähnlichen Namen „ <b>[[ $1 | $2 ]]</b> “ gefunden.",
 	"deadanchor-comment-lead": "Der Kommentar konnte auf der Seite nicht gefunden werden.",
-	"deadanchor-comment-exactmatch": "Anscheinend wurde der Abschnitt „$1“ archiviert. <b>[[$2|Siehe archivierter Abschnitt]]</b> (oder [$2 Suche im Archiv]).",
+	"deadanchor-comment-exactmatch": "Anscheinend wurde der Kommentar archiviert.\n\n<ul>\n<li><b>[[$1|Archivierten Kommentar anzeigen]]</b></li>\n<li>[$2 Suche im Archiv]</li>\n</ul>",
 	"deadanchor-comment-inexactmatch": "Der Kommentar scheint archiviert worden zu sein. [$1 Suche im Archiv].",
 	"deadanchor-comment-notfound": "[$1 Suche im Archiv] hat ebenfalls keine Ergebnisse geliefert. Es wurde möglicherweise gelöscht oder verschoben.",
 	"deadanchor-comment-previous": "[[ $1 |Der letzte Kommentar dieses Benutzers nach Zeit]].",
