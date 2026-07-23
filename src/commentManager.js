@@ -390,7 +390,10 @@ export class CommentManager extends EventEmitter {
 	 * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
 	 */
 	maybeRedrawLayers = (redrawAll = false) => {
-		if (cd.loader.isBooting() || (document.hidden && !redrawAll)) return
+		// controller.$root can be empty if a boot aborted before controller.setup() resolved a valid
+		// root element (e.g. #mw-content-text was momentarily absent). Guard against it so a persistent
+		// listener (like `resize`) doesn't crash on $root[0] being undefined.
+		if (cd.loader.isBooting() || (document.hidden && !redrawAll) || !controller.$root.length) return
 
 		this.layersContainers.forEach((container) => {
 			container.cdCouldHaveBeenDisplaced = true

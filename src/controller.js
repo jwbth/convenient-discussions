@@ -14,6 +14,7 @@ import navPanel from './navPanel'
 import notifications from './notifications'
 import pageRegistry from './pageRegistry'
 import sectionManager from './sectionManager'
+import CdError from './shared/CdError'
 import Parser from './shared/Parser'
 import TreeWalker from './shared/TreeWalker'
 import {
@@ -235,9 +236,13 @@ class Controller extends EventEmitter {
 	/**
 	 * Set up the boot manager for use in the current boot process. (Executed at every page load.)
 	 *
+	 * If the content root element (`#mw-content-text` or its `.mw-parser-output`) is momentarily
+	 * missing from the DOM, this waits and re-queries once before giving up, since such absence is
+	 * usually transient.
+	 *
 	 * @param {string} [pageHtml] HTML to update the page with.
 	 */
-	setup(pageHtml) {
+	async setup(pageHtml) {
 		// RevisionSlider replaces the #mw-content-text element.
 		if (!cd.loader.$content.get(0)?.parentNode) {
 			cd.loader.$content = $('#mw-content-text')
@@ -246,18 +251,30 @@ class Controller extends EventEmitter {
 		if (pageHtml) {
 			const div = document.createElement('div')
 			div.innerHTML = pageHtml
-			this.rootElement = /** @type {HTMLElement} */ (div.firstChild)
+			this.rootElement = /** @type {HTMLElement} */ (div.firstElementChild)
 			this.$root = $(this.rootElement)
 		} else {
-			// There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
-			this.$root = cd.loader.$content.children('.mw-parser-output').first()
+			this.setRootFromContent()
 
-			// 404 pages
+			// #mw-content-text (or its .mw-parser-output) can be momentarily missing from the DOM - e.g.
+			// removed or swapped out by another script or an extension, or during a RevisionSlider
+			// transition. The absence is usually transient, so wait and re-query once before giving up
+			// below.
 			if (!this.$root.length) {
-				this.$root = cd.loader.$content
+				await sleep(500)
+				cd.loader.$content = $('#mw-content-text')
+				this.setRootFromContent()
 			}
+		}
 
-			this.rootElement = this.$root[0]
+		// If a valid root element still can't be found, there is nothing to root the script to. Abort
+		// the boot process cleanly instead of proceeding with an undefined root element, which would
+		// otherwise throw an unclear error deep in parsing (this.parser.init()) and leave
+		// already-registered deferred handlers (such as commentManager's `visits` 'process' handler) to
+		// crash later on `$root[0]` being undefined. The DOM/jQuery types claim rootElement is always an
+		// HTMLElement, but at runtime it can be undefined here, so treat it as untrusted.
+		if (!(this.rootElement instanceof HTMLElement)) {
+			throw new CdError({ code: 'noRootElement' })
 		}
 
 		// Add the class immediately, not at the end of the boot process, to prevent the issue when any
@@ -267,6 +284,24 @@ class Controller extends EventEmitter {
 		this.$root.addClass('cd-parse-started')
 
 		this.setupBackgroundHighlightingCss()
+	}
+
+	/**
+	 * Set {@link Controller#$root} and {@link Controller#rootElement} from the current
+	 * `cd.loader.$content` (the `#mw-content-text` element).
+	 *
+	 * @private
+	 */
+	setRootFromContent() {
+		// There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
+		this.$root = cd.loader.$content.children('.mw-parser-output').first()
+
+		// 404 pages
+		if (!this.$root.length) {
+			this.$root = cd.loader.$content
+		}
+
+		this.rootElement = this.$root[0]
 	}
 
 	/**

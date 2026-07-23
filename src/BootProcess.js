@@ -443,7 +443,7 @@ class BootProcess {
 			Parser.init()
 			pageNav.init()
 		}
-		controller.setup(this.passedData.parseData?.text)
+		await controller.setup(this.passedData.parseData?.text)
 		toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc)
 		this.updateSignatureData()
 
