@@ -167,7 +167,7 @@
 	"topicsubscription-button-unsubscribe": "ofbestellen",
 	"topicsubscription-button-unsubscribe-tooltip": "{{GENDER:Ofbestelle}} fir keng Notifikatioune méi iwwer nei Kommentare ze kréien.",
 	"topicsubscription-notify-subscribed-title": "{{GENDER:Dir}} hutt Iech abonéiert!",
-	"topicsubscription-notify-subscribed-body": "{{GENDER:Dir}} kritt Notifikatiounen iwwer nei Kommentaren zu dësem Sujet.",
+	"topicsubscription-notify-subscribed-body": "{{GENDER:Dir}} kritt Notifikatioune fir nei Kommentaren zu dësem Sujet.",
 	"topicsubscription-notify-unsubscribed-title": "{{GENDER:Dir}} hutt Iech desabonéiert.",
 	"topicsubscription-notify-unsubscribed-body": "{{GENDER:Dir}} kritt keng Notifikatioune méi fir nei Kommentaren zu dësem Sujet.",
 	"newtopicssubscription-button-subscribe-label": "Abonéieren",
