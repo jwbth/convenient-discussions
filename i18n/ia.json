@@ -400,7 +400,7 @@
 	"msd-move": "Displaciar",
 	"msd-targetpage": "Insere le nomine del pagina de discussion al qual displaciar le topico:",
 	"msd-keeplink": "Lassar un ligamine al nove loco",
-	"msd-chronologicalorder": "Restaurar le topico a su position chronologic",
+	"msd-chronologicalorder": "Inserer le topico in su position chronologic",
 	"msd-summaryending": "Summario del modification (essera adjungite al summario predefinite)",
 	"msd-error-sourcepagedeleted": "Le pagina actual ha essite delite.",
 	"msd-error-invalidpagename": "Nomine de pagina non valide.",
