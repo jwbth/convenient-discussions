@@ -215,6 +215,13 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 	color: var(--color-subtle, #54595d);
 }
 
+// Override `display: none` added by ext.checkUser.styles to when `body` has no
+// .ext-checkuser-userinfocard-enabled - but for some reason that
+// .ext-checkuser-userinfocard-enabled may not be added
+.cd-comment-author-userInfoCard-button:not(#cd-dummyId) {
+	display: inline-flex;
+}
+
 // When the markblocked gadget is enabled, replace the icon for blocked users on page reloads or
 // when markblocked gadget was slow to run (when it executed earlier than CD, which is often the
 // case, this is taken care of by SpacioucComment#createUserInfoCardButton() which directly adds the
