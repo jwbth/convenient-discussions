@@ -148,6 +148,7 @@
 	"cf-help-autocomplete-mention": "Πληκτρολογήστε <code>$1</code> για να [[$2|αναφέρετε]] έναν χρήστη.",
 	"cf-help-autocomplete-commentlink": "If the comment menu obstructs a link behind it, make a long click/tap on it—it will disappear.",
 	"cf-help-autocomplete-displaytext": "Hold <b>Shift</b> while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).",
+	"cf-help-heading-problems": "Προβλήματα",
 	"cf-help-footer-documentation": "[[$1|Τεκμηρίωση σεναρίου]]",
 	"cf-code-tooltip": "Κώδικας",
 	"cf-code-placeholder": "Κώδικας",

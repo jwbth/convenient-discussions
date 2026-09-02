@@ -1,9 +1,11 @@
 {
 	"@metadata": {
 		"authors": [
+			"Renessaince",
 			"Ucukor"
 		]
 	},
+	"script-name": "Зручныя абмеркаваньні",
 	"page-title-reply": "Адказ на $1",
 	"page-title-edit": "Рэдагаваньне на $1",
 	"cm-copylink-tooltip": "Капіяваць спасылку",
