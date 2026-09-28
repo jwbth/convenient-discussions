@@ -1280,14 +1280,11 @@ class Controller extends EventEmitter {
 			? undefined
 			: pageRegistry.get(permalinkSpecialPagePrefix + permanentFragment)
 
-		const linkText =
+		const pipe =
 			object instanceof Comment
-				? cd.settings
-						.get('commentLinkText')
-						.replace(/\$1/g, () => object.author.getName())
-						.replace(/\$2/g, () => object.timestamp || '')
+				? '|' +
+					cd.s('cf-autocomplete-commentlinks-text', object.author.getName(), object.timestamp || '')
 				: ''
-		const pipe = linkText ? `|${linkText}` : ''
 
 		/** @type {import('./CopyLinkDialog').CopyLinkDialogContent} */
 		const content = {

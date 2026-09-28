@@ -392,8 +392,6 @@
 	"sd-showcontribslink": "Label of the checkbox in the settings dialog.",
 	"sd-showcontribslink-help": "Help text for the checkbox in the settings dialog.",
 	"sd-showtoolbar": "Label of the checkbox in the settings dialog.",
-	"sd-commentlinktext": "Label of the text input in the settings dialog.",
-	"sd-commentlinktext-help": "Help text for the text input labeled with the {{msg-wm|Convenient-discussions-sd-commentlinktext}} message in the settings dialog. $1 and $2 are to be kept as is (they are placeholders the user can type into the input).",
 	"sd-signatureprefix": "Label of the text input in the settings dialog.",
 	"sd-signatureprefix-help": "Help text for the text input labeled with the {{msg-wm|Convenient-discussions-sd-signatureprefix}} message in the settings dialog.",
 	"sd-timestampformat": "Label of the radio select in the settings dialog.",
