@@ -82,11 +82,17 @@ await downloadAndExtractMessages()
 
 // https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/core/+/HEAD/languages/messages → tgz
 const messagesDir = path.join(__dirname, 'messages')
-const outputFile = path.join(__dirname, '../data/language-fallbacks.json')
 /** @type {Record<string, string[]>} */
-const output = {}
+const fallbacks = {}
+/** @type {Record<string, string>} */
+const defaultDateFormats = {}
+/** @type {Record<string, Record<string, string>>} */
+const dateFormatsByLang = {}
 
 const fallbackRegex = /\$fallback\s*=\s*([^;]+);/
+const defaultDateFormatRegex = /\$defaultDateFormat\s*=\s*'([^']+)';/
+const dateFormatsRegex = /\$dateFormats\s*=\s*\[([^\]]*)\]/
+const dateFormatEntryRegex = /'([^']+)'\s*=>\s*'([^']*)'/g
 
 readdirSync(messagesDir).forEach((file) => {
 	if (!file.startsWith('Messages') || !file.endsWith('.php')) return
@@ -128,14 +134,60 @@ readdirSync(messagesDir).forEach((file) => {
 		} else {
 			value = []
 		}
-		output[code] = value
+		fallbacks[code] = value
 	} else {
-		output[code] = []
+		fallbacks[code] = []
+	}
+
+	const defaultDateFormat = content.match(defaultDateFormatRegex)?.[1]
+	if (defaultDateFormat) {
+		defaultDateFormats[code] = defaultDateFormat
+	}
+	const dateFormatsMatch = content.match(dateFormatsRegex)
+	if (dateFormatsMatch) {
+		dateFormatsByLang[code] = Object.fromEntries(
+			[...dateFormatsMatch[1].matchAll(dateFormatEntryRegex)].map(([, key, value]) => [key, value]),
+		)
 	}
 })
 
-writeFileSync(outputFile, JSON.stringify(output, null, '\t') + '\n', 'utf8')
+writeFileSync(
+	path.join(__dirname, '../data/language-fallbacks.json'),
+	JSON.stringify(fallbacks, null, '\t') + '\n',
+	'utf8',
+)
 console.log('language-fallbacks.json generated in data directory!')
+
+// Mirrors LocalisationCache (`defaultDateFormat` and `dateFormats` items are inherited along the
+// fallback chain, which ends with English) and Language::getDateFormatString() for the "default"
+// date preference. WMF wikis have $wgAmericanDates = false, hence "dmy or mdy" → "dmy".
+/** @type {Record<string, string>} */
+const dateFormats = {}
+Object.keys(fallbacks)
+	.sort()
+	.forEach((code) => {
+		const chain = [code, ...fallbacks[code], 'en']
+		const defaultDateFormat = defaultDateFormats[
+			chain.find((lang) => lang in defaultDateFormats) ?? 'en'
+		].replace('dmy or mdy', 'dmy')
+		const formatKey = `${defaultDateFormat} both`
+		const formatLang = chain.find(
+			(lang) => lang in dateFormatsByLang && formatKey in dateFormatsByLang[lang],
+		)
+		if (!formatLang) {
+			console.warn(`No date format found for ${code}.`)
+
+			return
+		}
+		dateFormats[code] = dateFormatsByLang[formatLang][formatKey]
+	})
+
+writeFileSync(
+	path.join(__dirname, '../data/date-formats.json'),
+	JSON.stringify(dateFormats, null, '\t') + '\n',
+	'utf8',
+)
+console.log('date-formats.json generated in data directory!')
 
 await rm(messagesDir, { recursive: true, force: true })
 console.log('Messages directory removed. You may delete messages.tar.gz.')
