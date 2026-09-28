@@ -12,7 +12,7 @@
   All comment parts have the attribute `data-cd-comment-index` specifying the comment's index.
 
 - Don't run `npm run dev` (assume already running).
-- When testing CD in a browser, keep its tab in the foreground. In a background tab, CD can stay on the booting overlay without errors, likely because the browser throttles the tab.
+- Before testing CD in a browser, check `document.visibilityState` in the tab. If it is `hidden`, ask the user to bring the tab's window to the front: a hidden tab gets no animation frames, and CD can stay on the booting overlay without errors there. Browser automation can't bring the tab to the front itself; taking screenshots of the tab doesn't do it either.
 - When commiting, don't wrap lines of the commit message.
 
 ## Project Structure
