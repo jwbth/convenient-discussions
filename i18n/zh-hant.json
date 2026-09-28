@@ -394,7 +394,7 @@
 	"sd-showcontribslink-help": "應啟用「寬鬆」的評論顯示功能。",
 	"sd-confirmthanks": "確認感謝",
 	"sd-showtoolbar": "顯示編輯工具列",
-	"sd-signatureprefix": "簽名前綴",
+	"sd-signatureprefix": "簽名字首",
 	"sd-signatureprefix-help": "會添加在簽名開頭前的文字，如有需要請在開頭<em>添加</em>一個空格。",
 	"sd-timestampformat": "時間戳記格式",
 	"sd-timestampformat-radio-default": "預設（「$1」）",
