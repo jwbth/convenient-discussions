@@ -3527,7 +3527,8 @@ class CommentForm extends EventEmitter {
 						subject = 'comment'
 					}
 				} else if (this.isTargetOpeningSection()) {
-					subject = this.targetSection.getParent() ? 'subsection' : 'topic'
+					this.target.maybeRequestAuthorGender(this.updateAutoSummary)
+					subject = this.targetSection.getParent() ? 'subsection-by' : 'topic-by'
 				} else {
 					this.target.maybeRequestAuthorGender(this.updateAutoSummary)
 					subject = 'comment-by'
@@ -3537,7 +3538,7 @@ class CommentForm extends EventEmitter {
 				return removeDoubleSpaces(
 					cd.s(
 						`es-${action}-${subject}`,
-						subject === 'comment-by' && realTarget.author.isRegistered()
+						subject.endsWith('-by') && realTarget.author.isRegistered()
 							? `[[${realTarget.author.getNamespaceAlias()}:${authorName}|${authorName}]]`
 							: authorName,
 						realTarget.author,
