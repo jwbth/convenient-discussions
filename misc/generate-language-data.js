@@ -88,11 +88,15 @@ const fallbacks = {}
 const defaultDateFormats = {}
 /** @type {Record<string, Record<string, string>>} */
 const dateFormatsByLang = {}
+/** @type {Record<string, string>} */
+const digitsByLang = {}
 
 const fallbackRegex = /\$fallback\s*=\s*([^;]+);/
 const defaultDateFormatRegex = /\$defaultDateFormat\s*=\s*'([^']+)';/
 const dateFormatsRegex = /\$dateFormats\s*=\s*\[([^\]]*)\]/
 const dateFormatEntryRegex = /'([^']+)'\s*=>\s*'([^']*)'/g
+const digitTransformTableRegex = /\$digitTransformTable\s*=\s*(?:null|\[([^\]]*)\])/
+const digitEntryRegex = /'(\d)'\s*=>\s*'([^']+)'/g
 
 readdirSync(messagesDir).forEach((file) => {
 	if (!file.startsWith('Messages') || !file.endsWith('.php')) return
@@ -149,6 +153,16 @@ readdirSync(messagesDir).forEach((file) => {
 			[...dateFormatsMatch[1].matchAll(dateFormatEntryRegex)].map(([, key, value]) => [key, value]),
 		)
 	}
+	const digitTransformTableMatch = content.match(digitTransformTableRegex)
+	if (digitTransformTableMatch) {
+		// An empty, null, or identity table (English and languages opting out of their fallback's
+		// digits) is kept as an empty string to stop the fallback chain.
+		const tableDigits = [...(digitTransformTableMatch[1] ?? '').matchAll(digitEntryRegex)]
+			.sort((a, b) => Number(a[1]) - Number(b[1]))
+			.map((entry) => entry[2])
+			.join('')
+		digitsByLang[code] = tableDigits === '0123456789' ? '' : tableDigits
+	}
 })
 
 writeFileSync(
@@ -188,6 +202,25 @@ writeFileSync(
 	'utf8',
 )
 console.log('date-formats.json generated in data directory!')
+
+// `digitTransformTable` isn't merged along the fallback chain: the first language defining it wins.
+/** @type {Record<string, string>} */
+const digits = {}
+Object.keys(fallbacks)
+	.sort()
+	.forEach((code) => {
+		const digitsLang = [code, ...fallbacks[code]].find((lang) => lang in digitsByLang)
+		if (digitsLang && digitsByLang[digitsLang]) {
+			digits[code] = digitsByLang[digitsLang]
+		}
+	})
+
+writeFileSync(
+	path.join(__dirname, '../data/digits.json'),
+	JSON.stringify(digits, null, '\t') + '\n',
+	'utf8',
+)
+console.log('digits.json generated in data directory!')
 
 await rm(messagesDir, { recursive: true, force: true })
 console.log('Messages directory removed. You may delete messages.tar.gz.')
