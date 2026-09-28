@@ -12,7 +12,15 @@
   All comment parts have the attribute `data-cd-comment-index` specifying the comment's index.
 
 - Don't run `npm run dev` (assume already running).
-- Before testing CD in a browser, check `document.visibilityState` in the tab. If it is `hidden`, ask the user to bring the tab's window to the front: a hidden tab gets no animation frames, and CD can stay on the booting overlay without errors there. Browser automation can't bring the tab to the front itself; taking screenshots of the tab doesn't do it either.
+- Test CD in the browser through the Chrome DevTools MCP: its Chrome is logged in to a test account and keeps tabs visible, which CD needs to boot. Unless the task calls for another page, use https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page. Load the dev build with:
+
+  ```js
+  const script = document.createElement('script')
+  script.type = 'module'
+  script.src = 'http://localhost:9000/src/loader/startup.js'
+  document.head.appendChild(script)
+  ```
+
 - When commiting, don't wrap lines of the commit message.
 
 ## Project Structure
