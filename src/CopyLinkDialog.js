@@ -258,6 +258,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			this.contentStack.addItems([this.diffPanel])
 			this.readyDeferred.then(() => {
 				mw.hook('wikipage.content').fire(diffPanelContent.$diffView)
+
+				// For diff scripts like SmartDiff. MediaWiki passes the table, so we do too.
+				mw.hook('wikipage.diff').fire(diffPanelContent.$diffView.find('table.diff'))
 			})
 		} catch (error) {
 			errorText = cd.s('error-diffnotfound')
