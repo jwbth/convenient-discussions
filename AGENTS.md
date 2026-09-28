@@ -12,6 +12,7 @@
   All comment parts have the attribute `data-cd-comment-index` specifying the comment's index.
 
 - Don't run `npm run dev` (assume already running).
+- When testing CD in a browser, keep its tab in the foreground. In a background tab, CD can stay on the booting overlay without errors, likely because the browser throttles the tab.
 - When commiting, don't wrap lines of the commit message.
 
 ## Project Structure
