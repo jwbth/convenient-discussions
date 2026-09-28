@@ -4,7 +4,7 @@ import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { createCopyTextControl } from './utils-oojs'
 import { es6ClassToOoJsClass } from './utils-oojs-class'
-import { mergeJquery, wrapHtml } from './utils-window'
+import { fireContentHooks, mergeJquery, wrapHtml } from './utils-window'
 
 /**
  * @typedef {object} CopyLinkDialogContent
@@ -257,10 +257,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 			})
 			this.contentStack.addItems([this.diffPanel])
 			this.readyDeferred.then(() => {
-				mw.hook('wikipage.content').fire(diffPanelContent.$diffView)
-
-				// For diff scripts like SmartDiff. MediaWiki passes the table, so we do too.
-				mw.hook('wikipage.diff').fire(diffPanelContent.$diffView.find('table.diff'))
+				fireContentHooks(diffPanelContent.$diffView)
 			})
 		} catch (error) {
 			errorText = cd.s('error-diffnotfound')

@@ -8,7 +8,7 @@ import CheckboxInputWidget from './CheckboxInputWidget'
 import RadioOptionWidget from './RadioOptionWidget'
 import TextInputWidget from './TextInputWidget'
 import cd from './loader/cd'
-import { copyText } from './utils-window'
+import { copyText, fireContentHooks } from './utils-window'
 
 /**
  * OOjs namespace.
@@ -171,7 +171,7 @@ export async function showConfirmDialog(message, options = {}) {
 	const win = cd.getWindowManager().openWindow(dialog, { message, ...options })
 	win.opened.then(() => {
 		if (message instanceof $) {
-			mw.hook('wikipage.content').fire(message)
+			fireContentHooks(message)
 		}
 	})
 	const closeData = await win.closed

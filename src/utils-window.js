@@ -649,6 +649,22 @@ export function createIconDataUri(icon, langCode, dir) {
 }
 
 /**
+ * Fire the `wikipage.content` hook for content added outside the page, plus `wikipage.diff` if it
+ * contains diffs, so that scripts like SmartDiff can process them.
+ *
+ * @param {JQuery} $content
+ */
+export function fireContentHooks($content) {
+	mw.hook('wikipage.content').fire($content)
+
+	// MediaWiki passes the table, so we do too.
+	const $diff = $content.find('table.diff')
+	if ($diff.length) {
+		mw.hook('wikipage.diff').fire($diff)
+	}
+}
+
+/**
  * Wrap the response to the `compare` API request in a table.
  *
  * @param {string} body
