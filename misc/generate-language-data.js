@@ -95,7 +95,7 @@ const fallbackRegex = /\$fallback\s*=\s*([^;]+);/
 const defaultDateFormatRegex = /\$defaultDateFormat\s*=\s*'([^']+)';/
 const dateFormatsRegex = /\$dateFormats\s*=\s*\[([^\]]*)\]/
 const dateFormatEntryRegex = /'([^']+)'\s*=>\s*'([^']*)'/g
-const digitTransformTableRegex = /\$digitTransformTable\s*=\s*(?:null|\[([^\]]*)\])/
+const digitTransformTableRegex = /\$digitTransformTable\s*=\s*(null|\[[^\]]*\])/
 const digitEntryRegex = /'(\d)'\s*=>\s*'([^']+)'/g
 
 readdirSync(messagesDir).forEach((file) => {
@@ -157,7 +157,7 @@ readdirSync(messagesDir).forEach((file) => {
 	if (digitTransformTableMatch) {
 		// An empty, null, or identity table (English and languages opting out of their fallback's
 		// digits) is kept as an empty string to stop the fallback chain.
-		const tableDigits = [...(digitTransformTableMatch[1] ?? '').matchAll(digitEntryRegex)]
+		const tableDigits = [...digitTransformTableMatch[1].matchAll(digitEntryRegex)]
 			.sort((a, b) => Number(a[1]) - Number(b[1]))
 			.map((entry) => entry[2])
 			.join('')
