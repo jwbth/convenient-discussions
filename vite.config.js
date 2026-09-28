@@ -1,7 +1,9 @@
+import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { defineConfig } from 'vite'
+import { defineConfig, normalizePath } from 'vite'
 
 import nonNullableConfig from './config.js'
 import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.js'
@@ -282,6 +284,55 @@ function disableFullReloadPlugin() {
 }
 
 /**
+ * Custom plugin to load the element picker in dev. The picker lives in the `_shared` repo beside
+ * the main checkout (worktrees included); the plugin does nothing where that repo is absent.
+ *
+ * @returns {import('vite').Plugin[]}
+ */
+function elementPickerPlugin() {
+	let sharedDir
+	try {
+		const gitDir = execFileSync(
+			'git',
+			['rev-parse', '--path-format=absolute', '--git-common-dir'],
+			{
+				cwd: __dirname,
+				encoding: 'utf8',
+			},
+		).trim()
+		sharedDir = normalizePath(path.resolve(gitDir, '../../_shared'))
+	} catch {
+		return []
+	}
+	if (!fs.existsSync(`${sharedDir}/element-picker.ts`)) return []
+
+	const entry = normalizePath(path.resolve(__dirname, 'src/loader/startup.js'))
+
+	return [
+		{
+			name: 'element-picker',
+			apply: 'serve',
+			config: () => ({
+				define: { __ELEMENT_PICKER_ROOT__: JSON.stringify(normalizePath(__dirname)) },
+			}),
+			transform(code, id) {
+				if (normalizePath(id.split('?')[0]) !== entry) return
+
+				// On the entry's first line, so that its line numbers, which the picker reports, stay put.
+				// The stacks go first: elements made before them have no source.
+				return {
+					code:
+						`import '/@fs/${sharedDir}/element-picker-stacks.ts';` +
+						`import '/@fs/${sharedDir}/element-picker.ts';` +
+						code,
+					map: null,
+				}
+			},
+		},
+	]
+}
+
+/**
  * Custom plugin for build notifications. Matches webpack-build-notifier behavior: suppress success
  * and warning notifications, only show errors (unless it's the first successful build after an
  * error).
@@ -460,7 +511,13 @@ export default defineConfig(({ mode, command }) => {
 				 * @returns {string | undefined}
 				 */
 				transform(code, id) {
-					if (id.includes('node_modules')) return
+					// Code outside the repo, like the element picker, has identifiers of its own
+					if (
+						id.includes('node_modules') ||
+						!normalizePath(id).startsWith(normalizePath(__dirname))
+					) {
+						return
+					}
 
 					// Replace environment defines in source code
 					let transformedCode = code
@@ -473,6 +530,7 @@ export default defineConfig(({ mode, command }) => {
 				},
 			},
 			disableFullReloadPlugin(),
+			...elementPickerPlugin(),
 		)
 	}
 
