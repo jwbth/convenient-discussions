@@ -29,6 +29,7 @@ import { createIcon, wrapHtml } from './utils-window'
  * @property {boolean} collapseThreadsByMutees
  * @property {boolean} collapseThreadsByMutees-onboarded
  * @property {number} collapseThreadsLevel
+ * @property {string} commentLinkText
  * @property {boolean} countEditsAsNewComments
  * @property {'all'|'toMe'|'none'|'unknown'} desktopNotifications
  * @property {boolean} enableThreads
@@ -218,6 +219,7 @@ class Settings extends EventEmitter {
 			collapseThreads: 'checkbox',
 			collapseThreadsLevel: 'number',
 			collapseThreadsByMutees: 'checkbox',
+			commentLinkText: 'text',
 			countEditsAsNewComments: 'checkbox',
 			desktopNotifications: 'radio',
 			enableThreads: 'checkbox',
@@ -282,6 +284,7 @@ class Settings extends EventEmitter {
 			'collapseThreadsByMutees': true,
 			'collapseThreadsByMutees-onboarded': false,
 			'commentDisplay': cd.user.isRegistered() ? null : 'spacious',
+			'commentLinkText': cd.s('cf-autocomplete-commentlinks-text'),
 			'countEditsAsNewComments': false,
 			'desktopNotifications': 'unknown',
 			'enableThreads': true,
@@ -450,6 +453,13 @@ class Settings extends EventEmitter {
 						type: this.scheme.controlTypes.improvePerformance,
 						label: cd.s('sd-improveperformance'),
 						help: cd.s('sd-improveperformance-help'),
+					},
+					{
+						name: 'commentLinkText',
+						type: this.scheme.controlTypes.commentLinkText,
+						maxLength: 100,
+						label: cd.s('sd-commentlinktext'),
+						help: cd.s('sd-commentlinktext-help'),
 					},
 				],
 			},

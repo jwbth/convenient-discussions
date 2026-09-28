@@ -415,6 +415,8 @@
 	"sd-showcontribslink-help": "\"Spacious\" comment display should be enabled.",
 	"sd-confirmthanks": "Confirm thanks",
 	"sd-showtoolbar": "Show the editing toolbar",
+	"sd-commentlinktext": "Link text for wikilinks to comments",
+	"sd-commentlinktext-help": "Used in wikilinks copied with \"Copy link\". $1 is replaced with the author name, $2 with the timestamp. Leave empty to copy wikilinks without link text.",
 	"sd-signatureprefix": "Signature prefix",
 	"sd-signatureprefix-help": "Text that is added before the signature, <em>including</em> a space at the beginning if needed.",
 	"sd-timestampformat": "Timestamp format",

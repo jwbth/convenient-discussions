@@ -1280,6 +1280,15 @@ class Controller extends EventEmitter {
 			? undefined
 			: pageRegistry.get(permalinkSpecialPagePrefix + permanentFragment)
 
+		const linkText =
+			object instanceof Comment
+				? cd.settings
+						.get('commentLinkText')
+						.replace(/\$1/g, () => object.author.getName())
+						.replace(/\$2/g, () => object.timestamp || '')
+				: ''
+		const pipe = linkText ? `|${linkText}` : ''
+
 		/** @type {import('./CopyLinkDialog').CopyLinkDialogContent} */
 		const content = {
 			copyMessages: {
@@ -1287,10 +1296,10 @@ class Controller extends EventEmitter {
 				fail: cd.s('copylink-error'),
 			},
 			fragment,
-			wikilink: `[[${cd.page.name}#${fragment}]]`,
-			currentPageWikilink: `[[#${fragment}]]`,
+			wikilink: `[[${cd.page.name}#${fragment}${pipe}]]`,
+			currentPageWikilink: `[[#${fragment}${pipe}]]`,
 			// See https://phabricator.wikimedia.org/T426732#11947138 for why it can be undefined
-			permanentWikilink: permalinkPage ? `[[${permalinkPage.name}]]` : undefined,
+			permanentWikilink: permalinkPage ? `[[${permalinkPage.name}${pipe}]]` : undefined,
 
 			// This dialog should be shown only for comments that have a timestamp; therefore a date;
 			// therefore an ID. In that case Comment#getUrl() returns a string.
