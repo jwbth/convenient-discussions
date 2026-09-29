@@ -13,6 +13,8 @@ let textarea
 /** @type {import('@playwright/test').Locator} */
 let highlightedItem
 
+// Insertion logic, including the label, fragment, and tail-length cases, is unit-tested in
+// tests/autocomplete.insertion.test.js. These tests check it end-to-end with real keystrokes.
 test.describe('Wikilinks autocomplete', () => {
 	test.beforeEach(async ({ page }) => {
 		await setupConvenientDiscussions(page, { url: TEST_PAGES.JWBTH_TEST })
@@ -33,13 +35,6 @@ test.describe('Wikilinks autocomplete', () => {
 		highlightedItem = page.locator('.tribute-container li.tribute-item.highlight')
 	})
 
-	test('completes a new link', async () => {
-		await textarea.type('[[Main Pa')
-		const page = await chooseHighlighted()
-
-		await expect(textarea).toHaveValue(`[[${page}]]`)
-	})
-
 	test('replaces the rest of the link target', async () => {
 		await textarea.type('[[Ma (old tail)]] after')
 		await placeCaretAfter('[[Ma')
@@ -57,34 +52,6 @@ test.describe('Wikilinks autocomplete', () => {
 		const page = await chooseHighlighted()
 
 		await expect(textarea).toHaveValue(`[[${page}]] after`)
-	})
-
-	test('keeps the label', async () => {
-		await textarea.type('[[Ma (old tail)|label]]')
-		await placeCaretAfter('[[Ma')
-		await textarea.type('in Pa')
-		const page = await chooseHighlighted()
-
-		await expect(textarea).toHaveValue(`[[${page}|label]]`)
-	})
-
-	test('keeps the fragment', async () => {
-		await textarea.type('[[Ma (old tail)#Fragment]]')
-		await placeCaretAfter('[[Ma')
-		await textarea.type('in Pa')
-		const page = await chooseHighlighted()
-
-		await expect(textarea).toHaveValue(`[[${page}#Fragment]]`)
-	})
-
-	test('leaves a tail over 50 characters intact', async () => {
-		const tail = ' and then some unrelated text that runs on for well over fifty characters'
-		await textarea.type(`[[Ma${tail}]]`)
-		await placeCaretAfter('[[Ma')
-		await textarea.type('in Pa')
-		const page = await chooseHighlighted()
-
-		await expect(textarea).toHaveValue(`[[${page}]]${tail}]]`)
 	})
 })
 
