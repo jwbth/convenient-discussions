@@ -382,9 +382,24 @@ describe('TributeRange#prepareTriggerTextReplacement', () => {
 			expect(replacement?.selection).toBeUndefined()
 		})
 
-		it.todo(
-			'decide what Tab does with a wrapped selection: now it inserts start + the selected text with no end',
-		)
+		it('drops a previously selected text instead of wrapping it', () => {
+			const { result } = prepare({
+				before: 'a [[Main Pa',
+				after: 'b',
+				trigger: '[[',
+				data: { start: '[[Main Page', end: '' },
+				collection: wikilinksCollection,
+				autocompleteSelection: {
+					selectedText: 'foo',
+					start: 2,
+					leadingSpaces: ' ',
+					trailingSpaces: ' ',
+				},
+				isTab: true,
+			})
+
+			expect(result).toBe('a  [[Main Page b')
+		})
 	})
 
 	describe('selection', () => {

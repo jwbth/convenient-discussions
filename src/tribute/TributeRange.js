@@ -209,11 +209,12 @@ class TributeRange {
 		const start = autocompleteSelection
 			? autocompleteSelection.leadingSpaces + data.start
 			: data.start
-		const content = autocompleteSelection ? autocompleteSelection.selectedText : data.content
-		let end =
-			autocompleteSelection && data.end
-				? data.end + autocompleteSelection.trailingSpaces
-				: data.end
+		// jwbth: Tab inserts only the start, so the text typed over is dropped rather than wrapped.
+		const content =
+			autocompleteSelection && !isTab ? autocompleteSelection.selectedText : data.content
+		let end = autocompleteSelection
+			? data.end + autocompleteSelection.trailingSpaces
+			: data.end
 		let to = endPos
 
 		if (context.collection.keepAsEnd && !isTab) {
