@@ -1,15 +1,4 @@
-# AGENTS.md
-
 **Convenient Discussions** (**CD**) is a JavaScript tool that provides an enhanced user experience for MediaWiki talk pages. It acts as a shell over the existing MediaWiki discussion system.
-
-## Instructions
-
-- Don't run tests unless asked.
-- There is no CSS class `cd-comment` because a comment often consists of multiple elements at different nesting levels in the DOM. Instead, there are classes:
-  - `cd-comment-part-first` for the first comment part;
-  - `cd-comment-part` for any comment part.
-
-  All comment parts have the attribute `data-cd-comment-index` specifying the comment's index.
 
 - Don't run `npm run dev` (assume already running).
 - Test CD in the browser through the Chrome DevTools MCP: its Chrome is logged in to a test account and keeps tabs visible, which CD needs to boot. Unless the task calls for another page, use https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page. Load the dev build with:
@@ -21,33 +10,7 @@
   document.head.appendChild(script)
   ```
 
-- When commiting, don't wrap lines of the commit message.
-
-## Project Structure
-
-### Core Application Files
-
-- **src/app.js**: Main application entry point
-- **src/loader/loader.js**: Entry point for the build loading the main app
-- **src/loader/cd.js**: `cd`, core Convenient Discussions object
-- **src/loader/convenientDiscussions.js**: Main initialization script, populating `cd`
-- **src/BootProcess.js**: Application bootstrap logic for talk pages
-- **src/controller.js**: Main controller
-
-### Types
-
-- **src/global.d.ts** (at most one per directory): Global type definitions
-- **Per-module .d.ts files**: Type definitions for some external modules
-- JSDoc type definitions inside individual module files
-
-### Subdirectories
-
-- **i18n/**: Internationalization files (English is the source language in en.json; documentation for each string is in qqq.json)
-- **src/loader/**: Modules that create a scaffolding for the script to run (the object structure, some utilities) and load the main app with a custom caching strategy
-- **src/worker/**: Page parsing module that runs in a web worker and is accessed from updateChecker.js
-- **src/shared/**: Classes and modules shared between the window context and web worker context
-
-## Coding Conventions
+## Coding conventions
 
 ### JavaScript & TypeScript
 
