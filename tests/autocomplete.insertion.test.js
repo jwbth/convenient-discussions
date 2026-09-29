@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-vi.mock('../src/utils-window', () => ({ inputPropsAffectingCoords: [] }))
+vi.mock('../src/utils-window', () => ({
+	inputPropsAffectingCoords: [],
+	interlanguagePrefixes: new Set(),
+	allowedTags: [],
+}))
 vi.mock('../src/AutocompleteFactory', () => ({ default: { create: vi.fn() } }))
 vi.mock('../src/AutocompletePerformanceMonitor', () => ({ default: class {} }))
 vi.mock('../src/loader/cd', () => ({
@@ -13,70 +17,56 @@ vi.mock('../src/tribute/Tribute', () => ({
 }))
 
 import AutocompleteManager from '../src/AutocompleteManager'
+import TagsAutocomplete from '../src/TagsAutocomplete'
+import TemplatesAutocomplete from '../src/TemplatesAutocomplete'
+import WikilinksAutocomplete from '../src/WikilinksAutocomplete'
 import TributeRange from '../src/tribute/TributeRange'
 
-// Collection settings as the autocomplete classes define them (see their `getCollectionProperties()`).
-const wikilinksCollection = {
-	keepAsEnd: /^[^[\]{}|#\n]{0,50}(\||\]\]|#)/,
-	replaceEnd: true,
-	tabSelectsStartOnly: true,
-}
-const templatesCollection = {
-	keepAsEnd: /^(?:\||\}\})/,
-	replaceEnd: true,
-	tabSelectsStartOnly: true,
-}
-const tagsCollection = { keepAsEnd: /^>/, replaceEnd: false, allowNesting: true }
+const { default: Tribute } = /** @type {typeof import('../src/tribute/Tribute')} */ (
+	await vi.importActual('../src/tribute/Tribute')
+)
+
+const wikilinks = new WikilinksAutocomplete()
+const templates = new TemplatesAutocomplete()
+const tags = new TagsAutocomplete()
+
+// Skips `mw.util.addCSS`, which the test environment lacks.
+Tribute.cssInjected = true
+
+// Collections as Tribute normalizes the autocompletes' `getCollectionProperties()`.
+const [wikilinksCollection, templatesCollection, tagsCollection] = new Tribute({
+	collection: [wikilinks, templates, tags].map(
+		(autocomplete) =>
+			/** @type {import('../src/tribute/Tribute').TributeCollection} */ (
+				autocomplete.getCollectionProperties()
+			),
+	),
+}).collection
 
 /**
- * Mirrors `WikilinksAutocomplete#getInsertionFromEntry`.
- *
- * @param {string} pageName
+ * @param {string} pageName A main-namespace page name.
  * @param {string} [selectedText]
  */
-function wikilinkInsertion(pageName, selectedText) {
-	return {
-		start: '[[' + pageName,
-		end: ']]',
-		content: selectedText,
-		shiftModify() {
-			this.content ||= pageName
-			this.start += '|'
-		},
-	}
-}
+const wikilinkInsertion = (pageName, selectedText) =>
+	wikilinks.getInsertionFromEntry(
+		/** @type {any} */ ({
+			title: { getNamespaceId: () => 0, getMainText: () => pageName },
+			pageName,
+		}),
+		selectedText,
+	)
 
 /**
- * Mirrors `TemplatesAutocomplete#getInsertionFromEntry`.
- *
  * @param {string} name
  * @param {string} [selectedText]
  */
-function templateInsertion(name, selectedText) {
-	return {
-		start: '{{' + name,
-		end: '}}',
-		content: selectedText,
-		shiftModify() {
-			this.start += '|'
-		},
-	}
-}
+const templateInsertion = (name, selectedText) => templates.getInsertionFromEntry(name, selectedText)
 
 /**
- * Mirrors `TagsAutocomplete#getInsertionFromEntry`.
- *
- * @param {string | string[]} entry
+ * @param {import('../src/TagsAutocomplete').TagEntry} entry
  * @param {string} [selectedText]
  */
-function tagInsertion(entry, selectedText) {
-	return {
-		start: Array.isArray(entry) ? entry[1] : `<${entry}>`,
-		end: Array.isArray(entry) ? entry[2] : `</${entry}>`,
-		content: selectedText,
-		selectContent: !selectedText,
-	}
-}
+const tagInsertion = (entry, selectedText) => tags.getInsertionFromEntry(entry, selectedText)
 
 /**
  * Run `prepareTriggerTextReplacement` for a caret placed right after `before` in `before + after`,
