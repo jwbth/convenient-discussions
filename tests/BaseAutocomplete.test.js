@@ -64,26 +64,11 @@ const collectValues = async (autocomplete, text) => {
 	return calls
 }
 
-/** @type {TestAutocomplete[]} */
-let instances = []
-
 /**
  * @param {object} [config]
  * @returns {TestAutocomplete}
  */
-const create = (config) => {
-	const autocomplete = new TestAutocomplete(config)
-	instances.push(autocomplete)
-
-	return autocomplete
-}
-
-afterEach(() => {
-	instances.forEach((autocomplete) => {
-		autocomplete.destroy()
-	})
-	instances = []
-})
+const create = (config) => new TestAutocomplete(config)
 
 describe('BaseAutocomplete local search', () => {
 	it('matches strings case-insensitively anywhere, ranking prefix matches first', () => {
@@ -224,16 +209,6 @@ describe('BaseAutocomplete.getValues', () => {
 		autocomplete.makeApiRequest.mockRejectedValueOnce(new Error('network'))
 
 		expect(await collectValues(autocomplete, 'foo')).toEqual([['foo']])
-	})
-
-	it('prefetches only queries that pass validation', async () => {
-		const autocomplete = create()
-		autocomplete.makeApiRequest.mockResolvedValue(['X'])
-		await autocomplete.prefetchCommonQueries(['a', 'b#'])
-
-		expect(autocomplete.makeApiRequest).toHaveBeenCalledTimes(1)
-		expect(autocomplete.handleCache('a')).toEqual(['X'])
-		expect(autocomplete.handleCache('b#')).toEqual([])
 	})
 })
 

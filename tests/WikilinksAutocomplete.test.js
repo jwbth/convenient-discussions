@@ -188,7 +188,7 @@ beforeEach(() => {
 
 afterEach(() => {
 	vi.unstubAllGlobals()
-	autocomplete.cache.destroy()
+	autocomplete.cache.clear()
 })
 
 describe('getInsertionFromEntry', () => {

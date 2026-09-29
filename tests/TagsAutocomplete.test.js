@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const cdMock = vi.hoisted(() => ({
 	g: { msInMin: 60_000, phpCharToUpper: {} },
@@ -19,10 +19,6 @@ let autocomplete
 
 beforeEach(() => {
 	autocomplete = new TagsAutocomplete()
-})
-
-afterEach(() => {
-	autocomplete.destroy()
 })
 
 /**

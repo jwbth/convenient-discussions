@@ -6,7 +6,6 @@ vi.mock('../src/utils-window', () => ({
 	allowedTags: [],
 }))
 vi.mock('../src/AutocompleteFactory', () => ({ default: { create: vi.fn() } }))
-vi.mock('../src/AutocompletePerformanceMonitor', () => ({ default: class {} }))
 vi.mock('../src/loader/cd', () => ({
 	default: { settings: { get: () => [] }, g: {} },
 }))

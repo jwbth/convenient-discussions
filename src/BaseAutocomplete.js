@@ -1,4 +1,3 @@
-import AutocompleteCache from './AutocompleteCache'
 import CdError from './shared/CdError'
 import {
 	charAt,
@@ -19,15 +18,6 @@ import {
  * @property {string} label Text searched against and displayed
  * @property {T} entry
  * @property {import('./BaseAutocomplete').default} autocomplete Reference to the autocomplete instance
- */
-
-/**
- * @typedef {object} PerformanceMetrics
- * @property {string} type
- * @property {import('./AutocompleteCache').CacheStats & { memoryUsage: number }} cache
- * @property {number} defaultEntriesCount
- * @property {number} lastEntriesCount
- * @property {string} lastQuery
  */
 
 /**
@@ -52,11 +42,11 @@ import {
  */
 class BaseAutocomplete {
 	/**
-	 * Advanced cache for storing API results by query text.
+	 * API results by query text, with the time they were stored.
 	 *
-	 * @type {AutocompleteCache}
+	 * @type {Map<string, { entries: any[], time: number }>}
 	 */
-	cache
+	cache = new Map()
 
 	/**
 	 * Entries from the last API request.
@@ -115,6 +105,13 @@ class BaseAutocomplete {
 	static delay = 100
 
 	/**
+	 * Time after which a cached API result is refetched.
+	 *
+	 * @type {number}
+	 */
+	static cacheTtl = 5 * 60_000
+
+	/**
 	 * Current promise for tracking superseded requests.
 	 *
 	 * @type {Promise<any> | undefined}
@@ -128,13 +125,6 @@ class BaseAutocomplete {
 	 */
 	constructor(config = {}) {
 		Object.assign(this, config)
-
-		// Initialize advanced cache if not provided
-		this.cache = new AutocompleteCache({
-			maxSize: config.cacheMaxSize || 500,
-			ttl: config.cacheTtl || 5 * 60_000,
-			maxMemory: config.cacheMaxMemory || 5 * 1024 * 1024, // 5MB
-		})
 	}
 
 	/**
@@ -442,20 +432,29 @@ class BaseAutocomplete {
 	 * Check cache for existing entries.
 	 *
 	 * @param {string} text Search text
-	 * @returns {string[] | undefined} Cached entries or `undefined` if not found
+	 * @returns {any[] | undefined} Cached entries or `undefined` if not found or expired
 	 */
 	handleCache(text) {
-		return this.cache.get(text)
+		const cached = this.cache.get(text)
+		if (!cached) return
+
+		if (Date.now() - cached.time > BaseAutocomplete.cacheTtl) {
+			this.cache.delete(text)
+
+			return
+		}
+
+		return cached.entries
 	}
 
 	/**
 	 * Update cache with new entries.
 	 *
 	 * @param {string} text Search text
-	 * @param {string[]} entries Entries to cache
+	 * @param {any[]} entries Entries to cache
 	 */
 	updateCache(text, entries) {
-		this.cache.set(text, entries)
+		this.cache.set(text, { entries: [...entries], time: Date.now() })
 	}
 
 	/**
@@ -548,48 +547,6 @@ class BaseAutocomplete {
 	}
 
 	/**
-	 * Get performance metrics for this autocomplete instance.
-	 *
-	 * @returns {PerformanceMetrics} Performance metrics
-	 */
-	getPerformanceMetrics() {
-		const cacheStats = this.cache.getStats()
-
-		return {
-			type: this.constructor.name,
-			cache: cacheStats,
-			defaultEntriesCount: this.getDefaultEntries().length,
-			lastEntriesCount: this.lastApiResults.length,
-			lastQuery: this.lastQuery,
-		}
-	}
-
-	/**
-	 * Optimize cache by removing least used entries.
-	 */
-	optimizeCache() {
-		// The AutocompleteCache handles optimization automatically, but we can trigger manual cleanup
-		// if needed
-		this.cache.cleanup()
-	}
-
-	/**
-	 * Prefetch data for common queries to improve performance.
-	 *
-	 * @param {string[]} commonQueries Array of common query strings
-	 * @returns {Promise<void>}
-	 */
-	async prefetchCommonQueries(commonQueries) {
-		await this.cache.prefetch(commonQueries, async (query) => {
-			if (this.validateInput(query)) {
-				return await this.makeApiRequest(query)
-			}
-
-			return []
-		})
-	}
-
-	/**
 	 * Use the original first character case from the query in the result.
 	 *
 	 * @param {string} result
@@ -615,13 +572,6 @@ class BaseAutocomplete {
 			),
 			firstChar,
 		)
-	}
-
-	/**
-	 * Destroy the autocomplete instance and clean up resources.
-	 */
-	destroy() {
-		this.cache.destroy()
 	}
 }
 

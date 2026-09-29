@@ -27,7 +27,6 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-	autocomplete.destroy()
 	vi.restoreAllMocks()
 })
 

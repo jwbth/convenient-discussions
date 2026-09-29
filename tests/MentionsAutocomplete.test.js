@@ -55,10 +55,6 @@ beforeEach(() => {
 	autocomplete = new MentionsAutocomplete()
 })
 
-afterEach(() => {
-	autocomplete.destroy()
-})
-
 describe('MentionsAutocomplete.getInsertionFromEntry', () => {
 	it('uses the pipe trick for a registered user', () => {
 		const insertion = autocomplete.getInsertionFromEntry(' Example ')

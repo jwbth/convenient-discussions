@@ -1,7 +1,5 @@
 import AutocompleteFactory from './AutocompleteFactory'
-import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor'
 import cd from './loader/cd'
-import { typedEntries } from './shared/utils-general'
 import Tribute from './tribute/Tribute'
 
 /**
@@ -25,9 +23,6 @@ import Tribute from './tribute/Tribute'
  * @property {() => import('./tribute/Tribute').Insertion} [getInsertionFromEntry] Function
  *   that transforms the entry into the insertion data that is actually inserted
  * @property {AnyByKey} [data] Any additional data to be used by methods
- * @property {number} [cacheMaxSize]
- * @property {number} [cacheTtl]
- * @property {number} [cacheMaxMemory]
  */
 
 /**
@@ -63,9 +58,8 @@ class AutocompleteManager {
 	 *   {@link OO.ui.TextInputWidget#insertContent OO.ui.TextInputWidget#insertContent}.
 	 * @param {Partial<Record<AutocompleteType, object>>} [options.typeConfigs] Configuration objects
 	 *   for each autocomplete type, passed to the autocomplete factory when creating instances.
-	 * @param {boolean} [options.enablePerformanceMonitoring] Whether to enable performance monitoring
 	 */
-	constructor({ types, inputs, typeConfigs = {}, enablePerformanceMonitoring = false }) {
+	constructor({ types, inputs, typeConfigs = {} }) {
 		/** @type {AutocompleteType[]} @private */
 		this.types = cd.settings.get('autocompleteTypes')
 
@@ -73,20 +67,6 @@ class AutocompleteManager {
 		this.useTemplateData = cd.settings.get('useTemplateData')
 
 		types = types.filter((type) => this.types.includes(type))
-
-		/**
-		 * Performance monitor for tracking autocomplete performance.
-		 *
-		 * @type {AutocompletePerformanceMonitor | undefined}
-		 * @private
-		 */
-		this.performanceMonitor = enablePerformanceMonitoring
-			? new AutocompletePerformanceMonitor({
-					enabled: true,
-					maxMetrics: 500,
-					reportInterval: 0, // Disable automatic reporting
-				})
-			: undefined
 
 		/**
 		 * Map of autocomplete type to autocomplete instance.
@@ -176,19 +156,6 @@ class AutocompleteManager {
 			this.tribute.detach(element)
 			$(element).trigger('autocomplete-detached.cd', { autocompleteManager: this })
 		})
-
-		// Clean up autocomplete instances
-		for (const instance of this.autocompleteInstances.values()) {
-			if (typeof instance.destroy === 'function') {
-				instance.destroy()
-			}
-		}
-
-		// Clean up performance monitor
-		if (this.performanceMonitor) {
-			this.performanceMonitor.destroy()
-			this.performanceMonitor = undefined
-		}
 	}
 
 	/**
@@ -200,7 +167,7 @@ class AutocompleteManager {
 	getCollections() {
 		const collections = []
 
-		for (const [type, instance] of this.autocompleteInstances) {
+		for (const instance of this.autocompleteInstances.values()) {
 			collections.push(
 				/** @type {import('./tribute/Tribute').TributeCollection<import('./BaseAutocomplete').Option>} */ ({
 					lookup: 'label',
@@ -209,27 +176,7 @@ class AutocompleteManager {
 					searchOpts: { skip: true },
 					selectTemplate: this.onOptionChoose,
 					values: async (/** @type {string} */ text, /** @type {ProcessOptions} */ callback) => {
-						// Start performance monitoring if enabled
-						const perfContext = this.performanceMonitor?.startOperation('getValues', type, text)
-
-						try {
-							// Check if result will come from cache
-							const cacheHit = instance.handleCache(text) !== undefined
-
-							await instance.getValues(text, (results) => {
-								// End performance monitoring
-								if (perfContext) {
-									perfContext.end(results.length, cacheHit)
-								}
-								callback(results)
-							})
-						} catch (error) {
-							// End performance monitoring on error
-							if (perfContext) {
-								perfContext.end(0, false)
-							}
-							throw error
-						}
+						await instance.getValues(text, callback)
 					},
 
 					// Add type-specific properties from the instance
@@ -344,116 +291,6 @@ class AutocompleteManager {
 	 */
 	static getActiveMenu() {
 		return this.activeMenu
-	}
-
-	/**
-	 * @typedef {object} CombinedPerformanceMetrics
-	 * @property {object} manager
-	 * @property {number} manager.instanceCount
-	 * @property {AutocompleteType[]} manager.types
-	 * @property {boolean} manager.monitoringEnabled
-	 * @property {TypeByStringKey<import('./BaseAutocomplete').PerformanceMetrics>} instances
-	 * @property {import('./AutocompletePerformanceMonitor').PerformanceSummary} [monitor]
-	 */
-
-	/**
-	 * Get performance metrics for all autocomplete instances.
-	 *
-	 * @returns {CombinedPerformanceMetrics} Combined performance metrics
-	 */
-	getPerformanceMetrics() {
-		const metrics = /** @type {CombinedPerformanceMetrics} */ ({
-			manager: {
-				instanceCount: this.autocompleteInstances.size,
-				types: Array.from(this.autocompleteInstances.keys()),
-				monitoringEnabled: this.performanceMonitor !== undefined,
-			},
-			instances:
-				/** @type {TypeByStringKey<import('./BaseAutocomplete').PerformanceMetrics>} */ ({}),
-			monitor: undefined,
-		})
-
-		// Get metrics from each instance
-		for (const [type, instance] of this.autocompleteInstances) {
-			if (typeof instance.getPerformanceMetrics === 'function') {
-				metrics.instances[type] = instance.getPerformanceMetrics()
-			}
-		}
-
-		// Get monitor metrics if available
-		if (this.performanceMonitor) {
-			metrics.monitor = this.performanceMonitor.generateSummary()
-		}
-
-		return metrics
-	}
-
-	/**
-	 * Generate a performance report.
-	 *
-	 * @returns {string} Formatted performance report
-	 */
-	generatePerformanceReport() {
-		if (!this.performanceMonitor) {
-			return 'Performance monitoring is not enabled.'
-		}
-
-		return this.performanceMonitor.generateReport()
-	}
-
-	/**
-	 * Optimize all autocomplete instances.
-	 */
-	optimizePerformance() {
-		for (const instance of this.autocompleteInstances.values()) {
-			if (typeof instance.optimizeCache === 'function') {
-				instance.optimizeCache()
-			}
-		}
-	}
-
-	/**
-	 * Prefetch common queries for all instances.
-	 *
-	 * @param {Record<AutocompleteType, string[]>} commonQueriesByType Object mapping type to array of
-	 *   common queries
-	 * @returns {Promise<void>}
-	 */
-	async prefetchCommonQueries(commonQueriesByType) {
-		const promises = []
-
-		for (const [type, queries] of typedEntries(commonQueriesByType)) {
-			const instance = this.autocompleteInstances.get(type)
-			if (instance?.prefetchCommonQueries) {
-				promises.push(instance.prefetchCommonQueries(queries))
-			}
-		}
-
-		await Promise.all(promises)
-	}
-
-	/**
-	 * Enable performance monitoring.
-	 */
-	enablePerformanceMonitoring() {
-		if (this.performanceMonitor) {
-			this.performanceMonitor.enable()
-		} else {
-			this.performanceMonitor = new AutocompletePerformanceMonitor({
-				enabled: true,
-				maxMetrics: 500,
-				reportInterval: 0,
-			})
-		}
-	}
-
-	/**
-	 * Disable performance monitoring.
-	 */
-	disablePerformanceMonitoring() {
-		if (this.performanceMonitor) {
-			this.performanceMonitor.disable()
-		}
 	}
 
 	/**

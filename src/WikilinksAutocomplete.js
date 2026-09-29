@@ -584,7 +584,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		// Check cache for sections of this page
 		const cacheKey = `sections:${hostname ?? ''}:${normalizedPageName}`
 		let sections = /** @type {Array<{ anchor: string, line: string }> | undefined} */ (
-			this.cache.get(cacheKey)
+			this.handleCache(cacheKey)
 		)
 
 		if (!sections) {
@@ -616,8 +616,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 				sections = parsedSections
 
-				// Cache sections for this page (cast to any[] for cache compatibility)
-				this.cache.set(cacheKey, /** @type {any[]} */ (parsedSections))
+				this.updateCache(cacheKey, parsedSections)
 			} catch {
 				// API error or page doesn't exist, return user's input as-is
 				return this.makeFallbackSectionEntry(pageName, fragmentQuery, colonPrefix, interwikiPrefix)

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 const cdMock = vi.hoisted(() => ({
 	g: { msInMin: 60_000, phpCharToUpper: {} },
@@ -29,26 +29,11 @@ const createComment = ({ urlFragment = 'c-Author-20250101000000', author = 'Auth
 	getText: () => text,
 })
 
-/** @type {CommentLinksAutocomplete[]} */
-let instances = []
-
 /**
  * @param {{ comments?: any[], sections?: any[] }} data
  * @returns {CommentLinksAutocomplete}
  */
-const create = (data) => {
-	const autocomplete = new CommentLinksAutocomplete({ data })
-	instances.push(autocomplete)
-
-	return autocomplete
-}
-
-afterEach(() => {
-	instances.forEach((autocomplete) => {
-		autocomplete.destroy()
-	})
-	instances = []
-})
+const create = (data) => new CommentLinksAutocomplete({ data })
 
 describe('CommentLinksAutocomplete entries', () => {
 	it('labels comments with author, timestamp, and text, and skips comments without a URL fragment', () => {
