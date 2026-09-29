@@ -151,7 +151,8 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	findWrappers() {
 		// `getText()` rather than `this.text` because TypeScript 7 reports reading an inherited property
-		// before assigning it in the same method as "used before being assigned."
+		// before assigning it in the same method as "used before being assigned." See
+		// https://github.com/microsoft/TypeScript/issues/64520.
 
 		// Find tags around potential markup.
 		if (this.isIndented()) {

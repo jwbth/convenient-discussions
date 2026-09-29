@@ -1,6 +1,7 @@
 /* eslint-disable jsdoc/valid-types */
 // TypeScript 7 ignores `@override` on JSDoc `@overload` signatures, failing `noImplicitOverride`.
-// The methods only delegate to the parent; their JSDoc still types the callers.
+// The methods only delegate to the parent; their JSDoc still types the callers. See
+// https://github.com/microsoft/TypeScript/issues/64524.
 // @ts-nocheck
 import { es6ClassToOoJsClass } from './utils-oojs-class'
 

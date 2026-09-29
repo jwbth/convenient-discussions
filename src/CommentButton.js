@@ -59,7 +59,8 @@ class CommentButton extends Button {
 		}
 
 		// Destructured because TypeScript 7 reports reading an inherited property before assigning it in
-		// the same method as "used before being assigned."
+		// the same method as "used before being assigned." See
+		// https://github.com/microsoft/TypeScript/issues/64520.
 		const { buttonElement: oldButtonElement, element: oldElement } = this
 		const originalHref = oldButtonElement.getAttribute('href')
 
