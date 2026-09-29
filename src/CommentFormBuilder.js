@@ -492,11 +492,12 @@ class CommentFormBuilder {
 		])
 
 		$toolbarPlaceholder.remove()
-		this.tweakToolbar()
 
-		// A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
-		this.form.commentInput.$input.data('wikiEditor-context').instance = 5
+		// WikiEditor keys the cookies storing the active section and booklet pages by the instance
+		// number, which it takes from the length of this array when creating the context (i.e. before
+		// building the tabs). Fixing the length gives every comment form the same instance number.
 		$.wikiEditor.instances = Array.from({ length: 5 })
+		this.tweakToolbar()
 
 		/**
 		 * The comment form toolbar is ready; all the requested custom comment form modules have been
