@@ -59,6 +59,19 @@ import { interlanguagePrefixes } from './utils-window'
  * @property {string} pageName The page name without the interwiki prefix
  */
 
+// The text after the caret that a completion replaces: the rest of the link target, so that editing
+// the target of an existing link replaces the target instead of leaving its tail after the
+// insertion. The length caps keep a `]]` of unrelated text further on from swallowing the text in
+// between; real tails, like a disambiguator, are much shorter. A page completion keeps the fragment
+// and the label.
+const pageKeepAsEnd = /^[^[\]{}|#\n]{0,50}(\||\]\]|#)/
+
+// A section completion also replaces the fragment.
+const sectionKeepAsEnd = /^[^[\]{}|#\n]{0,50}(?:#[^[\]{}|\n]{0,255})?(\||\]\])/
+
+// A completion with a label replaces the rest of the link.
+const labeledKeepAsEnd = /^[^[\]{}|#\n]{0,50}(?:#[^[\]{}|\n]{0,255})?(?:\|[^[\]{}\n]{0,255})?(\]\])/
+
 /**
  * Autocomplete class for wikilinks (page links). Handles page name validation, title search API
  * integration, colon prefixes, namespace logic, case sensitivity, section autocomplete, and
@@ -114,12 +127,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			start: '[[' + colonStr + interwikiPrefix + pageNameForInsertion + fragmentStr,
 			end: ']]',
 			content: selectedText,
+			keepAsEnd: fragment === undefined ? undefined : sectionKeepAsEnd,
 			shiftModify() {
 				const insertText = isWikidataEntity
 					? /** @type {string} */ (displayLabel)
 					: pageNameForInsertion
 				this.content ||= insertText + fragmentStr
 				this.start += '|'
+				this.keepAsEnd = labeledKeepAsEnd
 			},
 		}
 	}
@@ -764,11 +779,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	getCollectionProperties() {
 		return {
-			// Consume the rest of the link target, so that editing the target of an existing link
-			// replaces the target instead of leaving its tail after the insertion. Keep the fragment.
-			// The length cap keeps a `]]` of unrelated text further on from swallowing the text in
-			// between; real tails, like a disambiguator, are much shorter.
-			keepAsEnd: /^[^[\]{}|#\n]{0,50}(\||\]\]|#)/,
+			keepAsEnd: pageKeepAsEnd,
 			tabSelectsStartOnly: true,
 			menuItemTemplate: (
 				/** @type {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<WikilinkEntry>>} */ item,

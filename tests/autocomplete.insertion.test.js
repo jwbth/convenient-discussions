@@ -611,6 +611,37 @@ describe('TributeRange#replaceTriggerText', () => {
 		expect(selectedText()).toBe('Main Page')
 	})
 
+	it('Shift replaces the label and fragment of an existing link', () => {
+		setUp('[[Main Pa', ' (old)#Sec|label]] after', '[[', wikilinksCollection)
+		replace(wikilinkInsertion('Main Page'), { key: 'Enter', shiftKey: true })
+
+		expect(field.value).toBe('[[Main Page|Main Page]] after')
+		expect(selectedText()).toBe('Main Page')
+	})
+
+	it('a section completion replaces the fragment and keeps the label', () => {
+		setUp('[[Foo#Ne', 'w old|label]]', '[[', wikilinksCollection)
+		replace(
+			wikilinks.getInsertionFromEntry(
+				/** @type {any} */ ({
+					title: { getNamespaceId: () => 0, getMainText: () => 'Foo' },
+					pageName: 'Foo',
+					fragment: 'New',
+				}),
+			),
+			{ key: 'Enter' },
+		)
+
+		expect(field.value).toBe('[[Foo#New|label]]')
+	})
+
+	it('a page completion keeps the fragment of an existing section link', () => {
+		setUp('[[Fo', 'o#Old]]', '[[', wikilinksCollection)
+		replace(wikilinkInsertion('Foo bar'), { key: 'Enter' })
+
+		expect(field.value).toBe('[[Foo bar#Old]]')
+	})
+
 	it('Shift on a template puts the caret after the pipe', () => {
 		setUp('{{Fo', '', '{{', templatesCollection)
 		replace(templateInsertion('Foo'), { key: 'Enter', shiftKey: true })

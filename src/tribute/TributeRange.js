@@ -217,9 +217,9 @@ class TributeRange {
 			: data.end
 		let to = endPos
 
-		if (context.collection.keepAsEnd && !isTab) {
-			const [keptEnd, keptDelimiter = keptEnd] =
-				value.substring(endPos).match(context.collection.keepAsEnd) || []
+		const keepAsEnd = data.keepAsEnd || context.collection.keepAsEnd
+		if (keepAsEnd && !isTab) {
+			const [keptEnd, keptDelimiter = keptEnd] = value.substring(endPos).match(keepAsEnd) || []
 			if (keptEnd) {
 				to += keptEnd.length
 				if (context.collection.replaceEnd) {
