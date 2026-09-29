@@ -1036,7 +1036,7 @@ class TextInputWidgetMixin {
 
 			// Check if it's a single link (e.g. dragging and dropping a link passes; copying anything
 			// containing a link or copying text from a link fails).
-			const linkCandidate = tempDiv.children[0]
+			const linkCandidate = /** @type {Element | undefined} */ (tempDiv.children[0])
 			if (linkCandidate?.tagName === 'A' && tempDiv.childNodes.length === 1) {
 				url = /** @type {HTMLAnchorElement} */ (linkCandidate).href
 				label =
