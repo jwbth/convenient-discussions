@@ -658,7 +658,7 @@ export function fireContentHooks($content) {
 	mw.hook('wikipage.content').fire($content)
 
 	// MediaWiki passes the table, so we do too.
-	const $diff = $content.find('table.diff')
+	const $diff = /** @type {JQuery<HTMLTableElement>} */ ($content.find('table.diff'))
 	if ($diff.length) {
 		mw.hook('wikipage.diff').fire($diff)
 	}
