@@ -11,14 +11,35 @@ vi.mock('../src/shared/cd', () => ({ default: cdMock }))
 import BaseAutocomplete from '../src/BaseAutocomplete'
 
 class TestAutocomplete extends BaseAutocomplete {
+	/** @override */
 	makeApiRequest = vi.fn(async (/** @type {string} */ _text) => /** @type {any[]} */ ([]))
 
+	localOnly = false
+
+	/** @override */
 	getLabelFromEntry(/** @type {any} */ entry) {
 		return typeof entry === 'string' ? entry : entry.label
 	}
 
+	/** @override */
 	validateInput(/** @type {string} */ text) {
 		return Boolean(text) && !text.includes('#')
+	}
+
+	/** @override */
+	isLocalOnly() {
+		return this.localOnly
+	}
+
+	/**
+	 * Expose the protected `searchLocal()` to the tests.
+	 *
+	 * @param {string} text
+	 * @param {any[]} list
+	 * @returns {any[]}
+	 */
+	search(text, list) {
+		return this.searchLocal(text, list)
 	}
 }
 
@@ -68,7 +89,7 @@ describe('BaseAutocomplete local search', () => {
 	it('matches strings case-insensitively anywhere, ranking prefix matches first', () => {
 		const autocomplete = create()
 
-		expect(autocomplete.searchLocal('ba', ['Foobar', 'Bar', 'Baz', 'qux', 'abacus'])).toEqual([
+		expect(autocomplete.search('ba', ['Foobar', 'Bar', 'Baz', 'qux', 'abacus'])).toEqual([
 			'Bar',
 			'Baz',
 			'Foobar',
@@ -79,23 +100,23 @@ describe('BaseAutocomplete local search', () => {
 	it('treats regexp special characters in the query literally', () => {
 		const autocomplete = create()
 
-		expect(autocomplete.searchLocal('a.b', ['axb', 'a.b', 'A.Bc'])).toEqual(['a.b', 'A.Bc'])
-		expect(autocomplete.searchLocal('(x', ['(x)', 'x'])).toEqual(['(x)'])
+		expect(autocomplete.search('a.b', ['axb', 'a.b', 'A.Bc'])).toEqual(['a.b', 'A.Bc'])
+		expect(autocomplete.search('(x', ['(x)', 'x'])).toEqual(['(x)'])
 	})
 
 	it('searches labeled entries by label', () => {
 		const autocomplete = create()
 		const list = [{ label: 'Alpha' }, { label: 'beta' }, { label: 'Gamma' }]
 
-		expect(autocomplete.searchLocal('A', list)).toEqual(list)
-		expect(autocomplete.searchLocal('mm', list)).toEqual([list[2]])
+		expect(autocomplete.search('A', list)).toEqual(list)
+		expect(autocomplete.search('mm', list)).toEqual([list[2]])
 	})
 
 	it('returns an empty list for an empty source and throws for unsupported entry types', () => {
 		const autocomplete = create()
 
-		expect(autocomplete.searchLocal('a', [])).toEqual([])
-		expect(() => autocomplete.searchLocal('a', [1, 2])).toThrow()
+		expect(autocomplete.search('a', [])).toEqual([])
+		expect(() => autocomplete.search('a', [1, 2])).toThrow()
 	})
 
 	it('drops null, undefined, and duplicate entries when building options', () => {
@@ -127,7 +148,7 @@ describe('BaseAutocomplete.getValues', () => {
 
 	it('returns only local matches when the type is local-only', async () => {
 		const autocomplete = create({ defaultEntries: ['abc'] })
-		vi.spyOn(autocomplete, 'isLocalOnly').mockReturnValue(true)
+		autocomplete.localOnly = true
 
 		expect(await collectValues(autocomplete, 'ab')).toEqual([['abc']])
 		expect(autocomplete.makeApiRequest).not.toHaveBeenCalled()
@@ -242,7 +263,10 @@ describe('BaseAutocomplete.makeTitleSearchRequest', () => {
 	})
 
 	it('queries the REST title search after a delay', async () => {
-		const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ pages: [] }) }))
+		const fetchMock = vi.fn(async (/** @type {string} */ _url) => ({
+			ok: true,
+			json: async () => ({ pages: [] }),
+		}))
 		vi.stubGlobal('fetch', fetchMock)
 		const promise = BaseAutocomplete.makeTitleSearchRequest('Foo bar', 5)
 
@@ -263,7 +287,10 @@ describe('BaseAutocomplete.makeTitleSearchRequest', () => {
 	})
 
 	it('rejects a request superseded by a newer one without fetching', async () => {
-		const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ pages: [] }) }))
+		const fetchMock = vi.fn(async (/** @type {string} */ _url) => ({
+			ok: true,
+			json: async () => ({ pages: [] }),
+		}))
 		vi.stubGlobal('fetch', fetchMock)
 		const first = BaseAutocomplete.makeTitleSearchRequest('Fo')
 		const firstAssertion = expect(first).rejects.toBeDefined()
