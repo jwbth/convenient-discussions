@@ -205,7 +205,7 @@ describe('TemplatesAutocomplete.insertTemplateData', () => {
 				input[method] = vi.fn(() => input)
 			},
 		)
-		input.getRange = () => ({ to: caret })
+		input.getRange = () => ({ from: caret, to: caret })
 
 		return input
 	}
@@ -244,8 +244,8 @@ describe('TemplatesAutocomplete.insertTemplateData', () => {
 		await autocomplete.insertTemplateData(option('Foo'), input)
 
 		expect(get).toHaveBeenCalledWith(expect.objectContaining({ action: 'templatedata', titles: 'Template:Foo' }))
-		expect(input.insertContent).toHaveBeenCalledWith('|name=|date=')
-		expect(input.selectRange).toHaveBeenCalledWith(100 - '|name=|date='.length)
+		expect(input.insertContent).toHaveBeenCalledWith('||name=|date=')
+		expect(input.selectRange).toHaveBeenLastCalledWith(100 - '|name=|date='.length)
 		expect(input.popPending).toHaveBeenCalled()
 	})
 
@@ -254,21 +254,24 @@ describe('TemplatesAutocomplete.insertTemplateData', () => {
 		const input = createInput(100)
 		await autocomplete.insertTemplateData(option('Foo'), input)
 
-		expect(input.insertContent).toHaveBeenCalledWith('name=')
-		expect(input.selectRange).toHaveBeenCalledWith(100)
+		expect(input.insertContent).toHaveBeenCalledWith('|name=')
+		expect(input.selectRange).toHaveBeenLastCalledWith(100)
 	})
 
-	it.fails('does not produce an empty positional parameter ("||") in block format (slice(1) strips "\\n", not "|")', async () => {
+	it('replaces the pipe after the template name with block-format parameters', async () => {
 		mockApi({
 			pages: { 1: { format: 'block', params: { a: { required: true }, b: { suggested: true } } } },
 		})
-		const input = createInput()
+		const input = createInput(100)
 		await autocomplete.insertTemplateData(option('Foo'), input)
 
-		expect(input.insertContent.mock.calls[0][0]).not.toMatch(/^\|/)
+		expect(input.selectRange).toHaveBeenNthCalledWith(1, 99, 100)
+		const params = '\n| a = \n| b = \n'
+		expect(input.insertContent).toHaveBeenCalledWith(params)
+		expect(input.selectRange).toHaveBeenLastCalledWith(100 - params.length + '\n| a = '.length)
 	})
 
-	it.fails('requests TemplateData for the page itself when the entry has an explicit namespace', async () => {
+	it('requests TemplateData for the page itself when the entry has an explicit namespace', async () => {
 		const get = mockApi({ pages: { 1: { params: {} } } })
 		await autocomplete.insertTemplateData(option('User:Foo/sig'), createInput())
 

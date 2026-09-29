@@ -186,7 +186,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 				.getApi(BaseAutocomplete.apiConfig)
 				.get({
 					action: 'templatedata',
-					titles: `Template:${option.original.label}`,
+					titles: mw.Title.newFromText(option.original.label, 10)?.getPrefixedText(),
 					redirects: true,
 				})
 				.catch(handleApiReject)
@@ -224,18 +224,21 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			}
 		})
 
-		// Remove leading "|".
-		paramsString = paramsString.slice(1)
+		const { from, to } = input.getRange()
 
 		input
 			.setDisabled(false)
+
+			// Replace the pipe that Shift has put after the template name: the parameters come with
+			// their own, preceded by a newline in block format.
+			.selectRange((from ?? 0) - 1, to ?? undefined)
 			.insertContent(paramsString)
 
 			// `input.getRange().to` is the current caret index
 			.selectRange(
 				/** @type {number} */ (input.getRange().to || 0) -
 					paramsString.length +
-					(firstValueIndex ? firstValueIndex - 1 : 0),
+					firstValueIndex,
 			)
 
 			.popPending()

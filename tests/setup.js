@@ -131,17 +131,13 @@ global.mw = /** @type {any} */ ({
 			return (namespaceNames[this.namespace] || '') + this.title
 		}
 
-		static newFromText(name) {
+		static newFromText(name, defaultNamespace = 0) {
 			if (!name) return null
 
-			// Parse namespace from the name
-			let namespaceId = 0 // Main namespace by default
+			// Parse namespace from the name. A leading colon forces the main namespace.
+			let namespaceId = name.startsWith(':') ? 0 : defaultNamespace
+			name = name.replace(/^:/, '')
 			let mainText = name
-
-			// Handle leading colon
-			if (name.startsWith(':')) {
-				name = name.slice(1)
-			}
 
 			// Check for namespace prefix
 			const colonIndex = name.indexOf(':')
