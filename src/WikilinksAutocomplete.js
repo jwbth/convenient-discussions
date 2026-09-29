@@ -782,7 +782,9 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		return {
 			// Consume the rest of the link target, so that editing the target of an existing link
 			// replaces the target instead of leaving its tail after the insertion. Keep the fragment.
-			keepAsEnd: /^[^[\]{}|#\n]*(\||\]\]|#)/,
+			// The length cap keeps a `]]` of unrelated text further on from swallowing the text in
+			// between; real tails, like a disambiguator, are much shorter.
+			keepAsEnd: /^[^[\]{}|#\n]{0,50}(\||\]\]|#)/,
 			tabSelectsStartOnly: true,
 			menuItemTemplate: (
 				/** @type {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<WikilinkEntry>>} */ item,
