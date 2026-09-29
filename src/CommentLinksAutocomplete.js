@@ -170,7 +170,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 				const spacePos = snippet.lastIndexOf(cd.mws('word-separator', { language: 'content' }))
 				if (spacePos !== -1) {
 					snippet = snippet.slice(0, spacePos)
-					if (/[.…,;!?:-—–]/.test(snippet[snippet.length - 1])) {
+					if (/[.…,;!?:—–-]/.test(snippet[snippet.length - 1])) {
 						snippet += ' '
 					}
 					snippet += cd.s('ellipsis')

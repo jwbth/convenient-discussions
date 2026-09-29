@@ -82,7 +82,7 @@ describe('CommentLinksAutocomplete entries', () => {
 	const word = 'word '
 	const longText = word.repeat(20)
 
-	it.fails('truncates long comment text at a word boundary with a tight ellipsis after a letter (`:-—` in the punctuation class is a range that covers letters)', () => {
+	it('truncates long comment text at a word boundary with a tight ellipsis after a letter', () => {
 		const label = create({ comments: [createComment({ text: longText })] }).getDefaultEntries()[0].label
 
 		expect(label).toBe(`Author: ${word.repeat(16).trim()}…`)
