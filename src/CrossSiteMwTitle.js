@@ -361,17 +361,6 @@ export default class CrossSiteMwTitle extends mw.Title {
 	}
 
 	/**
-	 * Get the prefixed text with the original namespace alias (if present).
-	 *
-	 * @returns {string}
-	 */
-	getPrefixedTextWithOriginalNamespaceAlias() {
-		return this.originalNamespaceAlias
-			? this.originalNamespaceAlias + ':' + this.getMainText()
-			: this.getPrefixedText()
-	}
-
-	/**
 	 * @override
 	 * @returns {string}
 	 */

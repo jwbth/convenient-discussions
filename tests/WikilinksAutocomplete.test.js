@@ -99,8 +99,8 @@ vi.mock('../src/CrossSiteMwTitle', () => {
 			return this.getNamespacePrefix() + this.title
 		}
 
-		getPrefixedTextWithOriginalNamespaceAlias() {
-			return this.alias ? this.alias + ':' + this.title : this.getPrefixedText()
+		getOriginalNamespaceAlias() {
+			return this.alias
 		}
 	}
 
@@ -529,8 +529,7 @@ describe('getPageSuggestions', () => {
 		])
 	})
 
-	it.fails(
-		// Bug: the redirect entry gets the typed query, not the redirect title, outside the main namespace.
+	it(
 		'names a redirect source after the redirect, keeping the typed namespace alias',
 		async () => {
 			respondWithPages([
@@ -703,8 +702,7 @@ describe('getSectionSuggestions', () => {
 		expect(insert(entry)).toBe('[[Foo#Bar]]')
 	})
 
-	it.fails(
-		// Bug: the fallback entry keeps the colon in `pageName` and also gets one added for Category.
+	it(
 		'falls back without doubling the leading colon',
 		async () => {
 			cdMock.getApi.mockReturnValue({ get: vi.fn().mockRejectedValue(new Error()) })
@@ -715,8 +713,7 @@ describe('getSectionSuggestions', () => {
 		},
 	)
 
-	it.fails(
-		// Bug: the fallback entry is built from the remote page name, dropping the interwiki prefix.
+	it(
 		'falls back keeping the interwiki prefix',
 		async () => {
 			foreignApiGet.mockRejectedValue(new Error())
@@ -727,8 +724,7 @@ describe('getSectionSuggestions', () => {
 		},
 	)
 
-	it.fails(
-		// Bug: the sections cache key omits the host, so a remote page gets the local page's sections.
+	it(
 		'does not reuse sections of a same-named page on another wiki',
 		async () => {
 			respondWithSections(['Local'])

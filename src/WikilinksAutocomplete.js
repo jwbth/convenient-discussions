@@ -175,12 +175,9 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	validatePageName(text) {
 		const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter(Boolean).join('|')
 
-		// A candidate interwiki prefix: matches `prefix:rest` where prefix is not a known namespace.
-		// These are allowed through so that interwiki resolution can be attempted.
-		const isCandidateInterwiki =
-			/^[a-z-]\w*:/.test(text) && !new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)
-
-		// Check if text after leading colon is a candidate interwiki
+		// A candidate interwiki prefix after a leading colon: matches `:prefix:rest` where prefix is
+		// not a known namespace. These are allowed through so that interwiki resolution can be
+		// attempted.
 		const isCandidateInterwikiWithColon =
 			/^:[a-z-]\w*:/.test(text) && !new RegExp(`^:(?:${allNssPattern}):`, 'i').test(text)
 
@@ -199,12 +196,6 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				text.startsWith(':') &&
 				!isCandidateInterwikiWithColon &&
 				!new RegExp(`^:?(?:${allNssPattern}):`, 'i').test(text)
-			) &&
-			// Reject explicit non-namespace colon prefixes that aren't interwiki candidates
-			!(
-				!isCandidateInterwiki &&
-				/^[a-z-]\w*:/.test(text) &&
-				!new RegExp(`^(?:${allNssPattern}):`, 'i').test(text)
 			)
 
 		return Boolean(valid)
@@ -343,10 +334,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			if (page.matched_title && page.matched_title !== page.title) {
 				const redirectTitle = CrossSiteMwTitle.newFromText(page.matched_title)
 				if (redirectTitle) {
-					// Use the namespace alias from the user's input if available
-					let redirectPageName = inputTitle
-						? inputTitle.getPrefixedTextWithOriginalNamespaceAlias()
-						: page.matched_title
+					let redirectPageName = this.getRedirectPageName(redirectTitle, inputTitle)
 					if (redirectTitle.getNamespaceId() === 0) {
 						const caseSensitiveNamespaces = mw.config.get('wgCaseSensitiveNamespaces')
 						const isCaseSensitive =
@@ -499,10 +487,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 			if (page.matched_title && page.matched_title !== page.title) {
 				const redirectTitle = CrossSiteMwTitle.newFromText(page.matched_title, undefined, hostname)
 				if (redirectTitle) {
-					// Use the namespace alias from the user's input if available
-					const redirectPageName = inputTitle
-						? inputTitle.getPrefixedTextWithOriginalNamespaceAlias()
-						: page.matched_title
+					const redirectPageName = this.getRedirectPageName(redirectTitle, inputTitle)
 					const redirectLabel = (colonPrefix ? ':' : '') + interwikiPrefix + redirectPageName
 
 					entries.push(
@@ -524,6 +509,23 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
+	 * Get the name of a redirect source to insert, written with the namespace alias the user typed if
+	 * the redirect is in the same namespace.
+	 *
+	 * @param {CrossSiteMwTitle} redirectTitle
+	 * @param {CrossSiteMwTitle | null} inputTitle
+	 * @returns {string}
+	 * @private
+	 */
+	getRedirectPageName(redirectTitle, inputTitle) {
+		const alias = inputTitle?.getOriginalNamespaceAlias()
+
+		return alias && inputTitle?.getNamespaceId() === redirectTitle.getNamespaceId()
+			? alias + ':' + redirectTitle.getMainText()
+			: redirectTitle.getPrefixedText()
+	}
+
+	/**
 	 * Get section suggestions for a page using the Parse API.
 	 *
 	 * @param {string} pageName The page to get sections from
@@ -533,21 +535,22 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	async getSectionSuggestions(pageName, fragmentQuery) {
 		// Strip leading colon if present (for categories, files, or interwikis)
-		let colonPrefix = false
-		let pageNameForApi = pageName
-		if (pageName.startsWith(':')) {
-			pageNameForApi = pageName.slice(1)
-			colonPrefix = true
+		const colonPrefix = pageName.startsWith(':')
+		if (colonPrefix) {
+			pageName = pageName.slice(1)
 		}
 
-		// Attempt interwiki resolution for cross-site pages (use stripped page name)
-		const interwiki = await this.resolveInterwikiPrefix(pageNameForApi)
+		const interwiki = await this.resolveInterwikiPrefix(pageName)
 
 		/** @type {mw.ForeignApi | undefined} */
 		let foreignApi
 		/** @type {string | undefined} */
 		let hostname
+		/** @type {string | undefined} */
+		let interwikiPrefix
 		if (interwiki) {
+			// The interwiki prefix is everything before the remote page name in the typed page name
+			interwikiPrefix = this.extractInterwikiPrefix(pageName, interwiki.pageName)
 			;({ hostname, pageName } = interwiki)
 			const wgScriptPath = mw.config.get('wgScriptPath')
 			foreignApi = new mw.ForeignApi(`https://${hostname}${wgScriptPath}/api.php`, {
@@ -558,18 +561,13 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 
 		const pageTitle = CrossSiteMwTitle.newFromText(pageName, undefined, hostname)
 		if (!pageTitle) {
-			return this.makeFallbackSectionEntry(pageName, fragmentQuery)
+			return this.makeFallbackSectionEntry(pageName, fragmentQuery, colonPrefix, interwikiPrefix)
 		}
 
 		const normalizedPageName = pageTitle.getPrefixedText()
 
-		// The interwiki prefix is everything before the remote page name in the original pageNameForApi
-		const interwikiPrefix = interwiki
-			? this.extractInterwikiPrefix(pageNameForApi, interwiki.pageName)
-			: undefined
-
 		// Check cache for sections of this page
-		const cacheKey = `sections:${normalizedPageName}`
+		const cacheKey = `sections:${hostname ?? ''}:${normalizedPageName}`
 		let sections = /** @type {Array<{ anchor: string, line: string }> | undefined} */ (
 			this.cache.get(cacheKey)
 		)
@@ -607,13 +605,14 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				this.cache.set(cacheKey, /** @type {any[]} */ (parsedSections))
 			} catch {
 				// API error or page doesn't exist, return user's input as-is
-				return this.makeFallbackSectionEntry(pageName, fragmentQuery)
+				return this.makeFallbackSectionEntry(pageName, fragmentQuery, colonPrefix, interwikiPrefix)
 			}
 		}
 
 		// Filter and format results
 		const normalizedQuery = this.normalizeSectionName(fragmentQuery)
-		let results = sections
+
+		return sections
 			.filter((section) => this.normalizeSectionName(section.line).includes(normalizedQuery))
 			.sort((a, b) => {
 				// Prioritize prefix matches
@@ -635,37 +634,20 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 					label,
 				})
 			})
-
-		// If no matches or empty query, show all sections (up to limit)
-		if (results.length === 0 && fragmentQuery === '') {
-			results = sections.slice(0, 10).map((section) => {
-				const pageNamePart = (colonPrefix ? ':' : '') + (interwikiPrefix ?? '') + normalizedPageName
-				const label = pageNamePart + '#' + section.anchor
-
-				return /** @type {WikilinkEntry} */ ({
-					title: /** @type {CrossSiteMwTitle} */ (pageTitle),
-					pageName: normalizedPageName,
-					fragment: section.anchor,
-					colonPrefix,
-					interwikiPrefix,
-					label,
-				})
-			})
-		}
-
-		return results
 	}
 
 	/**
 	 * Create a fallback entry for when a page title can't be resolved, using a plain string label.
 	 * The title is constructed from the page name as a best-effort local title.
 	 *
-	 * @param {string} pageName
+	 * @param {string} pageName The page name without the leading colon and interwiki prefix
 	 * @param {string} fragment
+	 * @param {boolean} colonPrefix
+	 * @param {string} [interwikiPrefix]
 	 * @returns {WikilinkEntry[]}
 	 * @private
 	 */
-	makeFallbackSectionEntry(pageName, fragment) {
+	makeFallbackSectionEntry(pageName, fragment, colonPrefix, interwikiPrefix = '') {
 		const title =
 			CrossSiteMwTitle.newFromText(pageName) || CrossSiteMwTitle.newFromText('Main_Page')
 		if (!title) return []
@@ -675,7 +657,9 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 				title,
 				pageName,
 				fragment,
-				label: pageName + '#' + fragment,
+				colonPrefix,
+				interwikiPrefix,
+				label: (colonPrefix ? ':' : '') + interwikiPrefix + pageName + '#' + fragment,
 			},
 		]
 	}
