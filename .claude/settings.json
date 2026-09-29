@@ -1,0 +1,5 @@
+{
+	"enablePlugins": {
+		"playwright@claude-plugins-official": true
+	}
+}
