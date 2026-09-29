@@ -1,7 +1,7 @@
-import { isText } from 'domhandler'
+import { isTag, isText } from 'domhandler'
 
 import CommentSkeleton from '../shared/CommentSkeleton'
-import { isElement, isHeadingNode, isMetadataNode } from '../shared/utils-general'
+import { isHeadingNode, isMetadataNode } from '../shared/utils-general'
 
 import { keepSafeKeys } from './worker'
 
@@ -200,7 +200,7 @@ export default class CommentWorker extends CommentSkeleton {
 		const filteredElements = /** @type {import('domhandler').Element[]} */ (
 			element.filterRecursively(
 				(node) =>
-					isElement(node) &&
+					isTag(node) &&
 					(['autonumber', 'reference', 'references'].some((name) =>
 						node.classList.contains(name),
 					) ||

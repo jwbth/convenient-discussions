@@ -162,6 +162,7 @@ class CdError extends Error {
 	}
 
 	/**
+	 * @template {ErrorType} T
 	 * @typedef {( T extends 'api'
 	 *     ? import('types-mediawiki/mw/Api').ApiResponse
 	 *     : T extends 'response'
@@ -173,10 +174,10 @@ class CdError extends Error {
 	/**
 	 * Get the whole API response if available.
 	 *
-	 * @returns {ApiResponseType}
+	 * @returns {ApiResponseType<T>}
 	 */
 	getApiResponse() {
-		return /** @type {ApiResponseType} */ (
+		return /** @type {ApiResponseType<T>} */ (
 			this.isServerDefinedApiError() ? this.data.apiResponse : undefined
 		)
 	}

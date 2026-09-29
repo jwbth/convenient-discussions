@@ -226,7 +226,7 @@ class CompactComment extends Comment {
 
 			// FIXME: decouple
 			const commentManagerTyped =
-				/** @type {import('./commentManager').default<CompactComment>} */ (commentManager)
+				/** @type {import('./commentManager').CommentManager<CompactComment>} */ (commentManager)
 			commentManagerTyped
 				.query((comment) => comment.flags.has('hovered'))
 				.forEach((comment) => {

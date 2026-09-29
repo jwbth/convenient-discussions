@@ -508,21 +508,21 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
 }
 
 /**
+ * @typedef {{
+ *   [title: string]: {
+ *     exists: boolean;
+ *     normalized: string;
+ *   };
+ * }} Results
+ */
+
+/**
  * Get existence of a list of pages by title.
  *
  * @param {string[]} titles Titles to check existence of.
  * @returns {Promise.<Results>}
  */
 export async function getPagesExistence(titles) {
-	/**
-	 * @typedef {{
-	 *   [title: string]: {
-	 *     exists: boolean;
-	 *     normalized: string;
-	 *   };
-	 * }} Results
-	 */
-
 	const results = /** @type {Results} */ ({})
 	const normalized = []
 	const pages = []

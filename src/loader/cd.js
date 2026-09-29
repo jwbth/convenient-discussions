@@ -6,22 +6,22 @@ import cd from '../shared/cd'
 
 /**
  * @typedef {object} ConvenientDiscussionsApi
- * @property {import('../commentManager').default['getById']} getCommentById
- * @property {import('../commentManager').default['getByDtId']} getCommentByDtId
- * @property {import('../sectionManager').default['getById']} getSectionById
- * @property {import('../sectionManager').default['getByHeadline']} getSectionsByHeadline
- * @property {import('../commentFormManager').default['getLastActive']} getLastActiveCommentForm
- * @property {import('../commentFormManager').default['getLastActiveAltered']} getLastActiveAlteredCommentForm
- * @property {import('../controller').default['rebootPage']} reloadPage Legacy property name
- * @property {import('../controller').default['rebootPage']} rebootPage
- * @property {import('../controller').default['getRootElement']} getRootElement
- * @property {import('../pageRegistry').default} pageRegistry
+ * @property {(typeof import('../commentManager').default)['getById']} getCommentById
+ * @property {(typeof import('../commentManager').default)['getByDtId']} getCommentByDtId
+ * @property {(typeof import('../sectionManager').default)['getById']} getSectionById
+ * @property {(typeof import('../sectionManager').default)['getByHeadline']} getSectionsByHeadline
+ * @property {(typeof import('../commentFormManager').default)['getLastActive']} getLastActiveCommentForm
+ * @property {(typeof import('../commentFormManager').default)['getLastActiveAltered']} getLastActiveAlteredCommentForm
+ * @property {(typeof import('../controller').default)['rebootPage']} reloadPage Legacy property name
+ * @property {(typeof import('../controller').default)['rebootPage']} rebootPage
+ * @property {(typeof import('../controller').default)['getRootElement']} getRootElement
+ * @property {typeof import('../pageRegistry').default} pageRegistry
  * @property {(typeof import('../Comment').default)['generateId']} generateCommentId
  * @property {(typeof import('../Comment').default)['parseId']} parseCommentId
- * @property {import('../utils-window')['buildEditSummary']} buildEditSummary
- * @property {import('../utils-window').wrapHtml} wrapHtml
- * @property {import('../utils-window').wrapHtml} wrap
- * @property {import('../utils-window').wrapDiffBody} wrapDiffBody
+ * @property {typeof import('../utils-window').buildEditSummary} buildEditSummary
+ * @property {typeof import('../utils-window').wrapHtml} wrapHtml
+ * @property {typeof import('../utils-window').wrapHtml} wrap
+ * @property {typeof import('../utils-window').wrapDiffBody} wrapDiffBody
  */
 
 /**
@@ -31,7 +31,7 @@ import cd from '../shared/cd'
  *   script. Some of them continue to be used after the fact to avoid duplication.
  * @property {typeof import('./convenientDiscussions.utils').utils} utils Several utilities that
  *   would be avaliable before the main script is loaded.
- * @property {import('../settings').default} settings User settings.
+ * @property {typeof import('../settings').default} settings User settings.
  * @property {import('../Comment').default[]} comments List of all comments for convenience.
  * @property {import('../Section').default[]} sections List of all sections for convenience.
  * @property {import('../CommentForm').default[]} commentForms List of all comment forms for
@@ -39,7 +39,7 @@ import cd from '../shared/cd'
  * @property {ConvenientDiscussionsApi} api Several API methods.
  * @property {boolean} isRunning Whether the script has launched (used to prevent two parallel
  *   scripts running).
- * @property {ReturnType<import('./startup').getStringsPromise> | undefined} getStringsPromise
+ * @property {ReturnType<typeof import('./startup').getStringsPromise> | undefined} getStringsPromise
  *   Promise that is set in per-wiki configs that resolves to the i18n strings, as well as some date
  *   and time formats.
  */

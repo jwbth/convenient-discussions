@@ -5,7 +5,7 @@ import CdError from './shared/CdError'
 import { es6ClassToOoJsClass, mixIntoClass } from './utils-oojs-class'
 
 /**
- * @typedef {ReturnType<getForeignStructuredUploadBookletLayoutClass>} ForeignStructuredUploadBookletLayout
+ * @typedef {ReturnType<typeof getForeignStructuredUploadBookletLayoutClass>} ForeignStructuredUploadBookletLayout
  */
 
 // eslint-disable-next-line jsdoc/require-jsdoc

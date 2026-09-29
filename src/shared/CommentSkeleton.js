@@ -1916,7 +1916,7 @@ class CommentSkeleton {
 
 	/**
 	 * @overload
-	 * @param {undefined} [date]
+	 * @param {undefined} date
 	 * @param {string} author
 	 * @param {string[]} [existingIds]
 	 * @returns {undefined}

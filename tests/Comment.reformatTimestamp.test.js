@@ -1,10 +1,10 @@
 import { vi, test, expect } from 'vitest'
 
-// Mock mw global before imports
 const mwConfig = new Map()
 const mwMessages = new Map()
 
-globalThis.mw = {
+// Mock mw global before imports. The mock is partial, so cast through `any`.
+globalThis.mw = /** @type {any} */ ({
 	Title: class MockTitle {
 		static newFromText(title) {
 			return new this(title)
@@ -38,7 +38,7 @@ globalThis.mw = {
 	loader: {
 		require: vi.fn(),
 	},
-}
+})
 
 vi.mock('../src/CrossSiteMwTitle', () => ({
 	default: class MockCrossSiteMwTitle {

@@ -84,7 +84,7 @@ export default function getSettingsDialogClass() {
 		bookletLayout
 
 		controls =
-			/** @type {Expand<ControlTypesByName<import('./settings').default['scheme']['controlTypes']>>} */ ({})
+			/** @type {Expand<ControlTypesByName<(typeof import('./settings').default)['scheme']['controlTypes']>>} */ ({})
 
 		/** @type {Partial<import('./settings').SettingsValues>} */
 		loadedSettings
@@ -458,7 +458,7 @@ export default function getSettingsDialogClass() {
 				(settingsValues, [name, control]) => {
 					const n = /** @type {keyof import('./settings').DocumentedSettingsValues} */ (name)
 					/**
-					 * @typedef {Partial<import('./settings').DocumentedSettingsValues>[n]} RelevantSettingType
+					 * @typedef {Partial<import('./settings').DocumentedSettingsValues>[keyof import('./settings').DocumentedSettingsValues]} RelevantSettingType
 					 */
 
 					switch (control.type) {

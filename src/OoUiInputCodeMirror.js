@@ -28,7 +28,7 @@ export default function getOoUiInputCodeMirrorClass(/** @type {boolean} */ showT
 			 * @property {typeof import('@codemirror/state').Compartment} Compartment
 			 * @property {typeof import('@codemirror/state').EditorState} EditorState
 			 * @property {typeof import('@codemirror/view').EditorView} EditorView
-			 * @property {import('@codemirror/view').placeholder} placeholder
+			 * @property {typeof import('@codemirror/view').placeholder} placeholder
 			 */
 
 			/**

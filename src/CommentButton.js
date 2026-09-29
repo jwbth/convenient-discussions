@@ -58,7 +58,10 @@ class CommentButton extends Button {
 			throw new CdError()
 		}
 
-		const originalHref = this.buttonElement.getAttribute('href')
+		// Destructured because TypeScript 7 reports reading an inherited property before assigning it in
+		// the same method as "used before being assigned."
+		const { buttonElement: oldButtonElement, element: oldElement } = this
+		const originalHref = oldButtonElement.getAttribute('href')
 
 		/**
 		 * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
@@ -70,7 +73,7 @@ class CommentButton extends Button {
 		this.buttonWidget = this.widgetConstructor()
 
 		const element = this.buttonWidget.$element[0]
-		this.element.replaceWith(element)
+		oldElement.replaceWith(element)
 		this.element = element
 		this.element.classList.add('cd-comment-button')
 		this.buttonElement = /** @type {HTMLElement} */ (element.firstChild)

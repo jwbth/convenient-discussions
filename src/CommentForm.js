@@ -171,7 +171,7 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Target section.
 	 *
-	 * @type {CommentFormTargetSection}
+	 * @type {CommentFormTargetSection<Mode>}
 	 */
 	targetSection
 
@@ -536,6 +536,7 @@ class CommentForm extends EventEmitter {
 	captchaWidget
 
 	/**
+	 * @template {CommentFormMode} Mode
 	 * @typedef {Mode extends 'addSection' ? undefined : import('./Section').default | undefined} CommentFormTargetSection
 	 */
 
@@ -574,8 +575,7 @@ class CommentForm extends EventEmitter {
 
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof CommentForm} */
-		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor
+		this.constructor = new.target
 
 		this.commentFormManager = commentFormManager
 
@@ -898,7 +898,7 @@ class CommentForm extends EventEmitter {
 	 */
 	setTargets(target) {
 		this.target = target
-		this.targetSection = /** @type {CommentFormTargetSection} */ (this.target.getRelevantSection())
+		this.targetSection = /** @type {CommentFormTargetSection<Mode>} */ (this.target.getRelevantSection())
 		// For comments, we need to consult the source or DiscussionTools API first.
 		this.targetPage = this.isCommentTarget()
 			? undefined
@@ -1348,7 +1348,7 @@ class CommentForm extends EventEmitter {
 
 		this.uploadDialog.uploadBooklet.on('fileSaved', (/** @type {ImageInfo} */ imageInfo) => {
 			const uploadDialogTyped =
-				/** @type {InstanceType<ReturnType<import('./UploadDialog').default>>} */ (
+				/** @type {InstanceType<ReturnType<typeof import('./UploadDialog').default>>} */ (
 					this.uploadDialog
 				)
 			uploadDialogTyped.close()
@@ -1962,7 +1962,7 @@ class CommentForm extends EventEmitter {
 				this.cancelButton.setLabel(cd.s('cf-cancel'))
 			}
 		} else {
-			this.buttonsTotalWidthStandard = /** @type {(keyof CommentForm)[]} */ ([
+			this.buttonsTotalWidthStandard = /** @type {const} */ ([
 				'submitButton',
 				'previewButton',
 				'viewChangesButton',

@@ -18,10 +18,11 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 
 	/**
+	 * @template {import('./CommentForm').CommentFormMode} Mode
 	 * @typedef {import('./CommentForm').TypedTarget<Mode> & CommentFormTargetWithSourceSet} CommentFormTarget
 	 */
 
-	/** @type {CommentFormTarget} */
+	/** @type {CommentFormTarget<Mode>} */
 	target
 
 	/** @type {string} */
@@ -44,7 +45,7 @@ class CommentFormInputTransformer extends TextMasker {
 		super(text.trim())
 		this.initialText = this.text
 		this.commentForm = commentForm
-		this.target = /** @type {CommentFormTarget} */ (commentForm.getTarget())
+		this.target = /** @type {CommentFormTarget<Mode>} */ (commentForm.getTarget())
 		this.action = action
 
 		this.initIndentationData()
@@ -149,14 +150,17 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	findWrappers() {
+		// `getText()` rather than `this.text` because TypeScript 7 reports reading an inherited property
+		// before assigning it in the same method as "used before being assigned."
+
 		// Find tags around potential markup.
 		if (this.isIndented()) {
 			const matches = /** @type {string[]} */ ([]).concat(
 				// Tag matches
-				this.text.match(generateTagsRegexp(['[a-z]+'])) || [],
+				this.getText().match(generateTagsRegexp(['[a-z]+'])) || [],
 
 				// Quote matches
-				this.text.match(cd.g.quoteRegexp) || [],
+				this.getText().match(cd.g.quoteRegexp) || [],
 			)
 			this.areThereTagsAroundMultipleLines = matches.some((match) => match.includes('\n'))
 			this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match))
@@ -167,7 +171,7 @@ class CommentFormInputTransformer extends TextMasker {
 		// spacing.
 		this.wrapInSmall = false
 		if (!this.commentForm.headlineInput) {
-			this.text = this.text.replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
+			this.text = this.getText().replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
 				// Filter out <small>text</small><small>text</small>
 				if (/<\/small>/i.test(content)) {
 					return s

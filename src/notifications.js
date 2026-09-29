@@ -13,7 +13,7 @@ import controller from './controller'
  * Notification object created by running
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification.notify(...)}.
  *
- * @typedef {ReturnType<mw['notification']['notify']>} Notification
+ * @typedef {ReturnType<typeof mw.notification.notify>} Notification
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.Notification.html
  */
 

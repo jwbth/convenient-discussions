@@ -1,14 +1,14 @@
 import { describe, test, expect, beforeEach } from 'vitest'
 
-// Mock mw global before imports
 const mwConfig = new Map()
 
-globalThis.mw = {
+// Mock mw global before imports. The mock is partial, so cast through `any`.
+globalThis.mw = /** @type {any} */ ({
 	config: {
 		set: (key, value) => mwConfig.set(key, value),
 		get: (key) => mwConfig.get(key),
 	},
-}
+})
 
 import { utils } from '../src/loader/convenientDiscussions.utils.js'
 

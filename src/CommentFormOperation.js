@@ -16,6 +16,15 @@
  * A comment form operation.
  */
 export default class CommentFormOperation {
+	/** @type {Date | undefined} */
+	date
+
+	/** @type {boolean | undefined} */
+	closed
+
+	/** @type {boolean | undefined} */
+	suspended
+
 	/**
 	 * Create a comment form operation.
 	 *

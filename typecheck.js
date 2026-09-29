@@ -93,7 +93,7 @@ const projects = configPaths.map((config) => ({
 function checkProject(project) {
 	return new Promise((resolve, reject) => {
 		const tscProcess = spawn('node', [
-			'node_modules/typescript/bin/tsc',
+			'node_modules/@typescript/native/bin/tsc',
 			'-p',
 			project.config,
 			'--pretty',

@@ -45,6 +45,7 @@ class TreeWalker {
 	nextSiblingProp
 
 	/**
+	 * @template {NodeLike} AcceptedNode
 	 * @callback AcceptNode
 	 * @param {NodeLike} node
 	 * @returns {node is AcceptedNode}
@@ -55,7 +56,7 @@ class TreeWalker {
 	 *
 	 * @param {NodeLike} root Node that limits where the tree walker can go within this document's
 	 *   tree: only the root node and its descendants.
-	 * @param {AcceptNode} [acceptNode] Function that returns `true` if the tree walker should accept
+	 * @param {AcceptNode<AcceptedNode>} [acceptNode] Function that returns `true` if the tree walker should accept
 	 *   the node and `false` if it should reject.
 	 * @param {boolean} [elementsOnly] Walk only on element nodes, ignoring nodes of other
 	 *   types.
@@ -66,7 +67,7 @@ class TreeWalker {
 	 * @throws {Error}
 	 */
 	constructor(root, acceptNode, elementsOnly = false, startNode) {
-		this.acceptNode = acceptNode || /** @type {AcceptNode} */ (elementsOnly ? isElement : isNode)
+		this.acceptNode = acceptNode || /** @type {AcceptNode<AcceptedNode>} */ (elementsOnly ? isElement : isNode)
 
 		this.root = root
 		let currentNode =

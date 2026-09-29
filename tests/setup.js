@@ -53,38 +53,40 @@ globalAny.$ = () => ({
 	on: () => {},
 })
 
+/** @type {{ [key: string]: any }} */
+const configValues = {}
+
+/** @type {{ [key: string]: string }} */
+const messageValues = {}
+
 // Intentionally partial mock of the mw global; cast through `any`.
 global.mw = /** @type {any} */ ({
 	config: {
-		/** @type {{ [key: string]: any }} */
-		values: {},
-		get: (/** @type {string} */ name) => mw.config.values[name],
+		get: (/** @type {string} */ name) => configValues[name],
 		set: (/** @type {string} */ name, /** @type {any} */ value) => {
-			mw.config.values[name] = value
+			configValues[name] = value
 		},
 	},
 	messages: {
-		/** @type {{ [key: string]: string }} */
-		values: {},
 		get: (/** @type {string[]} | string */ ...args) => {
 			if (Array.isArray(args[0])) {
 				return args[0].reduce((obj, name) => {
-					obj[name] = mw.messages.values[name]
+					obj[name] = messageValues[name]
 
 					return obj
 				}, {})
 			}
 
-			return mw.messages.values[args[0]]
+			return messageValues[args[0]]
 		},
 		set: (/** @type {string | { [key: string]: string }} */ name, /** @type {string} */ value) => {
 			if (typeof name === 'object') {
-				Object.assign(mw.messages.values, name)
+				Object.assign(messageValues, name)
 			} else {
-				mw.messages.values[name] = value
+				messageValues[name] = value
 			}
 		},
-		exists: (/** @type {string} */ name) => name in mw.messages.values,
+		exists: (/** @type {string} */ name) => name in messageValues,
 	},
 	loader: {
 		getState: () => {},
@@ -100,7 +102,7 @@ global.mw = /** @type {any} */ ({
 			str.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, String.raw`\$&`),
 		getUrl: (/** @type {string} */ page) => `/wiki/${encodeURIComponent(page)}`,
 	},
-	msg: (/** @type {string} */ name) => mw.messages.values[name] || name,
+	msg: (/** @type {string} */ name) => messageValues[name] || name,
 	Title: class Title {
 		constructor(namespace, title) {
 			this.namespace = namespace

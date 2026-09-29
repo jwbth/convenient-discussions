@@ -278,7 +278,7 @@ export default class Page {
 	 *   if the page is missing.
 	 *
 	 * @overload
-	 * @param {import('./CommentForm').default} [_] Not used.
+	 * @param {import('./CommentForm').default | undefined} _ Not used.
 	 * @param {false} tolerateMissing Return `undefined` if the page is missing instead of throwing an
 	 *   error.
 	 * @returns {Promise<PageSource>} A promise resolving to the wikitext of the page.

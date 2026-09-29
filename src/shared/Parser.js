@@ -90,8 +90,7 @@ class Parser {
 
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof Parser} */
-		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor
+		this.constructor = new.target
 	}
 
 	/**
@@ -244,6 +243,7 @@ class Parser {
 	}
 
 	/**
+	 * @template {AnyNode} N
 	 * @typedef {object} Timestamp
 	 * @property {HTMLElementFor<N>} element
 	 * @property {Date} date
@@ -256,7 +256,7 @@ class Parser {
 	 * Find a timestamp in a text node.
 	 *
 	 * @param {TextLike} node
-	 * @returns {Timestamp | undefined}
+	 * @returns {Timestamp<N> | undefined}
 	 * @private
 	 */
 	findTimestamp(node) {
@@ -304,7 +304,7 @@ class Parser {
 	/**
 	 * Collect nodes related to a signature starting from a timestamp node.
 	 *
-	 * @param {Timestamp} timestamp
+	 * @param {Timestamp<N>} timestamp
 	 * @returns {Partial<SignatureTarget<N>> | undefined}
 	 * @private
 	 */

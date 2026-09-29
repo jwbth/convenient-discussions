@@ -153,7 +153,7 @@ export default class TocItem {
 	 * Update the comment count text in the TOC item, removing the "new" indicator.
 	 *
 	 * @param {import('./Section').default} section
-	 * @param {import('./sectionManager').default} sectionManager
+	 * @param {typeof import('./sectionManager').default} sectionManager
 	 */
 	updateCommentCount(section, sectionManager) {
 		const $bdi = this.$text.find('.cd-toc-commentCount bdi')

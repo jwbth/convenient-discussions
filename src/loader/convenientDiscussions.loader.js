@@ -608,7 +608,7 @@ class Loader {
 
 				return acc
 			},
-			/** @type {import('../../config/default').default['specialPageAliases']} */ ({}),
+			/** @type {StringArraysByKey} */ ({}),
 		)
 
 		const content = cd.g.timestampTools.content

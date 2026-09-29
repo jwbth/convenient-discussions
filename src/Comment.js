@@ -3518,7 +3518,7 @@ class Comment extends mixIntoClass(
 	 * @returns {CommentSource}
 	 *
 	 * @overload
-	 * @param {undefined} [sectionCode]
+	 * @param {undefined} sectionCode
 	 * @param {string} code
 	 * @param {import('./updateChecker').CommentWorkerMatched} [commentData]
 	 * @returns {CommentSource}

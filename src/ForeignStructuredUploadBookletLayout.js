@@ -17,7 +17,7 @@ import { es6ClassToOoJsClass } from './utils-oojs-class'
 import { mergeJquery, wrapHtml } from './utils-window'
 
 /**
- * @typedef {ReturnType<getForeignStructuredUploadClass>} ForeignStructuredUploadClass
+ * @typedef {ReturnType<typeof getForeignStructuredUploadClass>} ForeignStructuredUploadClass
  */
 
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -69,8 +69,7 @@ export function getForeignStructuredUploadBookletLayoutClass() {
 
 			// Workaround to make this.constructor in methods to be type-checked correctly
 			/** @type {typeof ForeignStructuredUploadBookletLayout} */
-			// eslint-disable-next-line no-self-assign
-			this.constructor = this.constructor
+			this.constructor = new.target
 		}
 
 		/**

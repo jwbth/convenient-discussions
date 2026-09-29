@@ -131,8 +131,7 @@ export default class CrossSiteMwTitle extends mw.Title {
 
 		// Workaround to make this.constructor in methods to be type-checked correctly
 		/** @type {typeof CrossSiteMwTitle} */
-		// eslint-disable-next-line no-self-assign
-		this.constructor = this.constructor
+		this.constructor = new.target
 	}
 
 	/**

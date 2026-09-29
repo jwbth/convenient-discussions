@@ -1,5 +1,5 @@
-// Mock mw global before imports
-globalThis.mw = {
+// Mock mw global before imports. The mock is partial, so cast through `any`.
+globalThis.mw = /** @type {any} */ ({
 	Title: class MockTitle {
 		static newFromText(title) {
 			return new this(title)
@@ -13,7 +13,7 @@ globalThis.mw = {
 			return this.title
 		}
 	},
-}
+})
 
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 

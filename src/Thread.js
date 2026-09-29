@@ -531,7 +531,7 @@ class Thread extends mixIntoObject(
 				alignment: target.logicalLevel === this.rootComment.logicalLevel ? 'top' : 'bottom',
 			})
 
-			/** @type {import('./Comment').default} */
+			/** @type {import('./Comment').default | undefined} */
 			this.navScrolledTo = target
 		}
 	}
@@ -1417,7 +1417,7 @@ class Thread extends mixIntoObject(
 				return !comment.getParent()
 			}
 
-			/** @type {ClickAreaOffset} */
+			/** @type {ClickAreaOffset | undefined} */
 			// eslint-disable-next-line object-shorthand
 			this.clickAreaOffset = { top, left, height }
 

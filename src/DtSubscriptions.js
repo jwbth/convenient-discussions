@@ -116,21 +116,21 @@ class DtSubscriptions extends Subscriptions {
 		)
 		if (!portletLink) return
 
-		this.pageSubscribeButton = new Button({
+		const button = new Button({
 			buttonElement: /** @type {HTMLElement} */ (portletLink.firstElementChild),
-			action: async () => {
-				this.pageSubscribeButton.setPending(true)
+			action: async (_event, actionButton) => {
+				actionButton.setPending(true)
 				try {
 					await (this.getState(this.pageSubscribeId)
 						? this.unsubscribe(this.pageSubscribeId)
 						: this.subscribe(this.pageSubscribeId))
-					this.updatePageSubscribeButton()
+					this.updatePageSubscribeButton(actionButton)
 				} finally {
-					this.pageSubscribeButton.setPending(false)
+					actionButton.setPending(false)
 				}
 			},
 		})
-		this.updatePageSubscribeButton()
+		this.updatePageSubscribeButton(button)
 	}
 
 	/**
@@ -190,10 +190,11 @@ class DtSubscriptions extends Subscriptions {
 	/**
 	 * Update the page subscription button label and tooltip.
 	 *
+	 * @param {Button} button
 	 * @protected
 	 */
-	updatePageSubscribeButton() {
-		this.pageSubscribeButton
+	updatePageSubscribeButton(button) {
+		button
 			.setLabel(
 				this.getState(this.pageSubscribeId)
 					? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label')

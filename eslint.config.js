@@ -142,8 +142,6 @@ const config = defineConfig(
 			}),
 		},
 		plugins: {
-			// @ts-expect-error - Plugin type from eslint-plugin-no-one-time-vars doesn't match ESLint's
-			// expected Plugin interface
 			'no-one-time-vars': noOneTimeVars,
 			'unused-imports': unusedImports,
 		},
