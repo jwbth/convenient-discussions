@@ -50,14 +50,13 @@ class MentionsAutocomplete extends BaseAutocomplete {
 			? `${userNamespace}:${name}`
 			: `${cd.g.contribsPages[0]}/${name}`
 
-		// Use selected text as content if available, otherwise use the user name
-
 		return {
 			start: `@[[${pageName}|`,
-			end: pageName.match(/[(,]/) ? `${name}]]` : ']]',
+			end: ']]',
 			content: selectedText || name,
 			omitContentCheck() {
-				return !selectedText && !this.start.includes('/')
+				// The pipe trick would mangle a name with a parenthesis or a comma.
+				return !selectedText && !this.start.includes('/') && !/[(,]/.test(name)
 			},
 			altModify() {
 				this.end += cd.mws('colon-separator', { language: 'content' })

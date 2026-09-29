@@ -86,7 +86,7 @@ describe('MentionsAutocomplete.getInsertionFromEntry', () => {
 		},
 	)
 
-	it.fails('uses only the selected text as the link text for a name with a parenthesis (the name is appended to it via `end`)', () => {
+	it('uses only the selected text as the link text for a name with a parenthesis', () => {
 		expect(assemble(autocomplete.getInsertionFromEntry('Foo (bar)', 'my friend'))).toBe(
 			'@[[User:Foo (bar)|my friend]]',
 		)
