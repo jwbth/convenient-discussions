@@ -772,7 +772,7 @@ export default defineConfig(({ mode, command }) => {
 			// File watching configuration
 			watch: {
 				// Watch source files for changes
-				ignored: ['**/node_modules/**'],
+				ignored: ['**/node_modules/**', '**/playwright-report/**', '**/test-results/**'],
 			},
 		},
 

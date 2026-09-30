@@ -20,6 +20,8 @@ const config = defineConfig(
 			'i18n/**',
 			'e2e/**',
 			'tests/**',
+			'playwright-report/**',
+			'test-results/**',
 		],
 	},
 	{
