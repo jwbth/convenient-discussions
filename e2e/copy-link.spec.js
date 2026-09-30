@@ -126,21 +126,21 @@ test.describe('Copy link', () => {
 		// Check initial fields
 		const wikilinkInput = dialog.locator('.oo-ui-fieldLayout:has-text("Wikilink") input').first()
 		await expect(wikilinkInput).toHaveValue(
-			'[[User talk:JWBTH/CD test page#c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100]]',
+			'[[User talk:JWBTH/CD test page#c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100|Jack who built the house @ 06:09, 27 August 2025 (UTC)]]',
 		)
 
 		const wikilinkSamePageInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Wikilink from the same page") input')
 			.first()
 		await expect(wikilinkSamePageInput).toHaveValue(
-			'[[#c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100]]',
+			'[[#c-Jack_who_built_the_house-20250827060900-Jack_who_built_the_house-20241120024100|Jack who built the house @ 06:09, 27 August 2025 (UTC)]]',
 		)
 
 		const permanentWikilinkInput = dialog
 			.locator('.oo-ui-fieldLayout:has-text("Permanent wikilink") input')
 			.first()
 		await expect(permanentWikilinkInput).toHaveValue(
-			'[[Special:GoToComment/c-Jack who built the house-20250827060900-Jack who built the house-20241120024100]]',
+			'[[Special:GoToComment/c-Jack who built the house-20250827060900-Jack who built the house-20241120024100|Jack who built the house @ 06:09, 27 August 2025 (UTC)]]',
 		)
 
 		const regularLinkInput = dialog
