@@ -401,6 +401,63 @@ describe('TributeRange#prepareTriggerTextReplacement', () => {
 		})
 	})
 
+	describe('auto-closed brackets', () => {
+		const data = { start: '[[Foo (bar)', end: ']]' }
+
+		it('replaces a closer auto-inserted for the query', () => {
+			expect(
+				prepare({ before: '[[Foo (', after: ')', trigger: '[[', data, collection: wikilinksCollection })
+					.result,
+			).toBe('[[Foo (bar)]]')
+		})
+
+		it('replaces a closer auto-inserted for the query on Tab', () => {
+			expect(
+				prepare({
+					before: '[[Foo (',
+					after: ')',
+					trigger: '[[',
+					data: { start: '[[Foo (bar)', end: '' },
+					collection: wikilinksCollection,
+					isTab: true,
+				}).result,
+			).toBe('[[Foo (bar)')
+		})
+
+		it('replaces the closers and then the rest of the link', () => {
+			expect(
+				prepare({ before: '[[Foo (', after: ')]] x', trigger: '[[', data, collection: wikilinksCollection })
+					.result,
+			).toBe('[[Foo (bar)]] x')
+		})
+
+		it('replaces nested closers innermost first', () => {
+			expect(
+				prepare({
+					before: '[[Foo ("',
+					after: '")',
+					trigger: '[[',
+					data: { start: '[[Foo ("bar")', end: ']]' },
+					collection: wikilinksCollection,
+				}).result,
+			).toBe('[[Foo ("bar")]]')
+		})
+
+		it('keeps a closer for a bracket closed in the query', () => {
+			expect(
+				prepare({ before: '[[Foo (b)', after: ')', trigger: '[[', data, collection: wikilinksCollection })
+					.result,
+			).toBe('[[Foo (bar)]])')
+		})
+
+		it('keeps a closer other than the expected one', () => {
+			expect(
+				prepare({ before: '[[Foo (', after: ']', trigger: '[[', data, collection: wikilinksCollection })
+					.result,
+			).toBe('[[Foo (bar)]]]')
+		})
+	})
+
 	describe('selection', () => {
 		it('selects content with selectContent when there is no content', () => {
 			const { selected, replacement } = prepare({
