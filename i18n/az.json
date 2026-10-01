@@ -122,6 +122,8 @@
 	"es-edit-addition": "əlavə redaktə olundu",
 	"es-edit-topic": "açılış şərhi redaktə olundu",
 	"es-edit-subsection": "açılış şərhi redaktə olundu",
+	"es-edit-topic-by": "{{gender:$2|$1}} istifadəçisinin açılış şərhini redaktə",
+	"es-edit-subsection-by": "{{gender:$2|$1}} istifadəçisinin açılış şərhini redaktə",
 	"es-edit-comment": "şərh redaktə olundu",
 	"es-edit-comment-by": "{{gender:$2|$1}} istifadəçisinin şərhi redaktə olundu",
 	"es-fix-layout": "{{gender:$2|$1}} istifadəçisinin şərhinin görünüşünü düzəltmək",
