@@ -1026,7 +1026,7 @@ class Loader {
 						cd.utils
 							.createSvg(60, 60, 20, 20)
 							.html(
-								`<path class="cd-bootingOverlay-logo-fill" d="M3 14h3v2.58L9.685 14H13V7H3z"/><path class="cd-bootingOverlay-logo-fill" d="M5 3h12v10H5z"/><path d="M15 16h-4.685l-4.742 3.32L4 18.5V16H1V5h14zM3 14h3v2.58L9.685 14H13V7H3z"/><path d="M19 13h-2V3H5V1h14z"/><circle cx="5" cy="8.7" r="1"/><circle cx="11" cy="8.7" r="1"/><path d="M10.4 10.9a2 2 0 0 1-2 2h-.8a2 2 0 0 1-2-2z"/>`,
+								`<path class="cd-bootingOverlay-logo-fill" d="M4.273 2.636h13.091v11.455H4.273z"/><path class="cd-bootingOverlay-logo-fill" d="M2.636 17.297l2.762-2.21 0.224-0.178H14.091V5.909H2.636z"/><path d="M19 14.091h-1.636V2.636H4.273v-1.636h14.727z"/><path d="M15.727 16.545H6.197l-3.068 2.455H1V4.273h14.727z m-13.091 0.752l2.762-2.21 0.224-0.178H14.091V5.909H2.636z"/><circle cx="5.5" cy="8.773" r="1.227"/><circle cx="11.227" cy="8.773" r="1.227"/><path d="M11.682 11.282C11.138 12.828 10.096 13.273 8.364 13.273C6.632 13.273 5.59 12.828 5.045 11.282z"/>`,
 							),
 					),
 			)
