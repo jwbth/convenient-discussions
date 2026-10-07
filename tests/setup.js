@@ -131,6 +131,12 @@ global.mw = /** @type {any} */ ({
 				14: 'Category:',
 			}
 
+			// Tests of a specific wiki's config can supply its namespace names, as on the wiki.
+			const formattedNamespace = mw.config.get('wgFormattedNamespaces')?.[this.namespace]
+			if (formattedNamespace !== undefined) {
+				return (formattedNamespace ? formattedNamespace + ':' : '') + this.title
+			}
+
 			return (namespaceNames[this.namespace] || '') + this.title
 		}
 

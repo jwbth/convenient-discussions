@@ -174,7 +174,7 @@ export default /** @type {Partial<typeof import('../default').default>} */ ({
 			archive: 'Википедия:Форум/Архив/$1/',
 			replacements: [/[^/]+/],
 		},
-		/\/Архив/,
+		/\/Архивы?(?![а-яё])/,
 	],
 
 	pagesWithoutArchives: [
