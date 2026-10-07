@@ -1,5 +1,18 @@
 {
 	"enablePlugins": {
 		"playwright@claude-plugins-official": true
+	},
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node bin/eslint-fix-edit.js"
+					}
+				]
+			}
+		]
 	}
 }

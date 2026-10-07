@@ -1,0 +1,2 @@
+#!/bin/sh
+exec node bin/eslint-fix-staged.js
