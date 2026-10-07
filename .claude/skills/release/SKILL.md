@@ -14,7 +14,7 @@ Publishing a GitHub release triggers [`prod-build.yml`](../../../.github/workflo
    gh release create <new> --target <HEAD SHA> --title <new> --notes-file <file>
    ```
 
-   Notes list every `feat` and `fix` commit since the previous release (oldest first, each type in its own section, an empty section omitted), then the diff link:
+   Notes list every `feat`, `fix`, and `ui` commit since the previous release (oldest first, each type in its own section, an empty section omitted), then the diff link:
 
    ```md
    Feature commits:
@@ -23,9 +23,14 @@ Publishing a GitHub release triggers [`prod-build.yml`](../../../.github/workflo
    Fix commits:
    - [fix(form): …](https://github.com/jwbth/convenient-discussions/commit/<full SHA>)
 
+   UI commits:
+   - [ui(form): …](https://github.com/jwbth/convenient-discussions/commit/<full SHA>)
+
    **Full Changelog**: https://github.com/jwbth/convenient-discussions/compare/<prev>...<new>
    ```
 
 5. `git fetch --tags origin`.
 6. Watch the deploy run: get its ID with `gh run list --workflow prod-build.yml --event release --limit 1 --json databaseId,headSha` (confirm `headSha` is the released commit; the run may take a few seconds to appear), then run `gh run watch <id> --exit-status` in the background. The run takes about 2 minutes.
-7. Report the release URL and the run's outcome. On failure, include the failed step and its log tail (`gh run view <id> --log-failed`).
+7. Report the release URL and the run's outcome. On failure, include the failed step and its log tail (`gh run view <id> --log-failed`). On success, give the user these links to check the deploy:
+   - https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=history
+   - https://en.wikipedia.org/wiki/Project:Village_pump_(technical)
