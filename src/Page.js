@@ -196,6 +196,15 @@ export default class Page {
 	 * @returns {boolean}
 	 */
 	isArchive() {
+		// The talk page of a page explicitly whitelisted for CD (e.g. of an archive) holds discussions
+		// about that page; treat it as not an archive even if its name matches an archive path.
+		// Namespace-wide `customTalkNamespaces` don't count: e.g. "Wikipedia talk:Foo/Archive 5" is
+		// a real archive while "Wikipedia:" is a CD namespace on enwiki.
+		const subjectTitle = this.namespaceId % 2 === 1 ? this.mwTitle.getSubjectPage() : undefined
+		if (subjectTitle && cd.loader.pageWhitelistRegexp?.test(subjectTitle.getPrefixedText())) {
+			return false
+		}
+
 		let result = false
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const name = this.realName || this.name

@@ -120,8 +120,11 @@ global.mw = /** @type {any} */ ({
 		getPrefixedText() {
 			const namespaceNames = {
 				0: '',
+				1: 'Talk:',
 				2: 'User:',
+				3: 'User talk:',
 				4: 'Wikipedia:',
+				5: 'Wikipedia talk:',
 				6: 'File:',
 				10: 'Template:',
 				12: 'Help:',
@@ -129,6 +132,10 @@ global.mw = /** @type {any} */ ({
 			}
 
 			return (namespaceNames[this.namespace] || '') + this.title
+		}
+
+		getSubjectPage() {
+			return new Title(this.namespace - (this.namespace % 2), this.title)
 		}
 
 		static newFromText(name, defaultNamespace = 0) {

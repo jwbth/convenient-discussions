@@ -231,6 +231,9 @@ const defaultConfig = {
 	 * page will be obtained by removing everything that starts with the pattern in the page name
 	 * (i.e., the actually used regexp will end with `.*`).
 	 *
+	 * Talk pages of pages matching {@link defaultConfig.pageWhitelist} are never considered archive
+	 * pages.
+	 *
 	 * The entries are applied in the order of their presence in the array. So, if a page name fits
 	 * two patterns, the one closer to the beginning of the array is used.
 	 *
