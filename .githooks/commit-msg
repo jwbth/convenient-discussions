@@ -1,0 +1,4 @@
+#!/bin/sh
+# core.hooksPath bypasses .git/hooks, where Gerrit's commit-msg hook adding Change-Id lives.
+hook="$(git rev-parse --git-common-dir)/hooks/commit-msg"
+if test -f "$hook"; then exec sh "$hook" "$@"; fi
