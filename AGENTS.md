@@ -15,33 +15,10 @@
 
 ### JavaScript & TypeScript
 
-- Functions should be ordered in a top-down fashion (high-level first).
-- Types, however, should be ordered in a bottom-up (low-level first) fashion.
 - Avoid introducing variables used only once. Exceptions:
   - Variables used in template strings. Prefer them to having function calls inside template strings.
   - Cases where the use of the variable is in a loop or function while the assignment is not.
-
-- When using a method in a callback, don't bind it using `.bind()`. Instead, turn it into an arrow function:
-
-  ```js
-  someMethod() {
-    document.addEventListener('click', this.onClick);
-  }
-
-  onClick = () => {
-    // ...
-  };
-  ```
-
 - Use functional patterns where possible.
-- Don't introduce new `null` values or return `null` in newly created functions. Use `undefined` instead, but omit assigning or returning it where the value is `undefined` anyway.
+- Prefer `undefined` over `null`, but drop `undefined` where it's not needed, e.g. `return undefined`.
 - When a function parameter is not used in the function, put an underscore in front of it.
 - Leave auto-fixable ESLint problems (import order, unused imports, indentation) to the hooks: they fix every file you write or commit.
-
-### JSDoc
-
-- Don't fix type errors by changing types to `any`.
-- Don't use the `object` type when you know a more precise type is known. If that type is not defined, define it with `@typedef` and use it.
-- Don't use tags that are already reflected in the syntax (e.g. `@static`).
-- When a class method is overriding a method of the parent class, add `@override` tag to its JSDoc comment.
-- Don't start every comment sentence on a new line. Use periods. If it is necessary to separate different groups of information, use paragraphs.
