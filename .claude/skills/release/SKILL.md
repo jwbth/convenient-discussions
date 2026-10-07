@@ -5,7 +5,7 @@ description: Publish a CD release on GitHub, which deploys it to the wikis. Use 
 
 Publishing a GitHub release triggers [`prod-build.yml`](../../../.github/workflows/prod-build.yml), which builds, tests, and deploys to the wikis. `deploy.js` takes the version from the release's tag for its edit summaries.
 
-1. `git pull --rebase --autostash origin main`: Translatewiki pushes localisation commits to `origin`. Then `git push origin main`.
+1. `git pull --rebase --autostash origin main`: Translatewiki pushes localisation commits to `origin`. Resolve trivial conflicts yourself; on a non-trivial one, stop and ask the user. Then `git push origin main`.
 2. Find the previous release: `gh release list --limit 1 --json tagName -q '.[0].tagName'`.
 3. Pick the version: minor bump if `git log <prev>..HEAD` has any `feat` commit, patch bump otherwise. If any commit is breaking (`!` before the colon, or `BREAKING CHANGE` in the body), stop and ask the user.
 4. Create the release on the pushed commit, title equal to the tag:
@@ -14,11 +14,14 @@ Publishing a GitHub release triggers [`prod-build.yml`](../../../.github/workflo
    gh release create <new> --target <HEAD SHA> --title <new> --notes-file <file>
    ```
 
-   Notes list every `feat` commit since the previous release (oldest first), then the diff link. Without `feat` commits, the notes are the diff link alone:
+   Notes list every `feat` and `fix` commit since the previous release (oldest first, each type in its own section, an empty section omitted), then the diff link:
 
    ```md
    Feature commits:
    - [feat(form): add programmatic autosubmit](https://github.com/jwbth/convenient-discussions/commit/<full SHA>)
+
+   Fix commits:
+   - [fix(form): …](https://github.com/jwbth/convenient-discussions/commit/<full SHA>)
 
    **Full Changelog**: https://github.com/jwbth/convenient-discussions/compare/<prev>...<new>
    ```
