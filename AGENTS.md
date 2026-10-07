@@ -36,7 +36,7 @@
 - Use functional patterns where possible.
 - Don't introduce new `null` values or return `null` in newly created functions. Use `undefined` instead, but omit assigning or returning it where the value is `undefined` anyway.
 - When a function parameter is not used in the function, put an underscore in front of it.
-- If ESLint reports wrong import order, unused imports, or wrong indentation, don't fix it. Hooks apply ESLint's automatic fixes to every file you write and everything that reaches the index.
+- Leave auto-fixable ESLint problems (import order, unused imports, indentation) to the hooks: they fix every file you write or commit.
 
 ### JSDoc
 
