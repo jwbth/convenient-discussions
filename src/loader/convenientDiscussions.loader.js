@@ -1,6 +1,7 @@
 import dateFormats from '../../data/date-formats.json'
 import digitsData from '../../data/digits.json'
 import languageFallbacks from '../../data/language-fallbacks.json'
+import logoSvg from '../../assets/logo_textless_bw.svg?raw'
 import addCommentLinksCss from '../addCommentLinks.less?inline'
 import globalCss from '../global.less?inline'
 import {
@@ -1025,9 +1026,7 @@ class Loader {
 					.append(
 						cd.utils
 							.createSvg(60, 60, 20, 20)
-							.html(
-								`<path class="cd-bootingOverlay-logo-fill" d="M4.273 2.636h13.091v11.455H4.273z"/><path class="cd-bootingOverlay-logo-fill" d="M2.636 17.297l2.762-2.21 0.224-0.178H14.091V5.909H2.636z"/><path d="M19 14.091h-1.636V2.636H4.273v-1.636h14.727z"/><path d="M15.727 16.545H6.197l-3.068 2.455H1V4.273h14.727z m-13.091 0.752l2.762-2.21 0.224-0.178H14.091V5.909H2.636z"/><circle cx="5.5" cy="8.773" r="1.227"/><circle cx="11.227" cy="8.773" r="1.227"/><path d="M11.427 11.282C10.925 12.828 9.963 13.273 8.364 13.273C6.764 13.273 5.802 12.828 5.3 11.282z"/>`,
-							),
+							.html($(logoSvg).html()),
 					),
 			)
 			.appendTo(document.body)

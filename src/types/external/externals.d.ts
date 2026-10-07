@@ -7,3 +7,8 @@ declare module '*.less?inline' {
 	const resource: string
 	export default resource
 }
+
+declare module '*.svg?raw' {
+	const resource: string
+	export default resource
+}

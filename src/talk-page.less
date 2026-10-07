@@ -165,9 +165,15 @@ ol > .cd-thread-button-container > .cd-thread-button {
 		margin: 0 auto 2em;
 		width: 3.4375rem;
 
-		// The bubble interior. Filled with the base background color so the dark
-		// face reads on any page background and adapts to the night theme.
-		&-fill {
+		// Override the asset's hardcoded colors so that the logo adapts to the night theme. The
+		// bubble interior is filled with the base background color so the dark face reads on any
+		// page background.
+		path,
+		circle {
+			fill: currentcolor;
+		}
+
+		[fill='#fff'] {
 			fill: var(--background-color-base, #fff);
 		}
 	}
