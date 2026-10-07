@@ -140,10 +140,6 @@ global.mw = /** @type {any} */ ({
 			return (namespaceNames[this.namespace] || '') + this.title
 		}
 
-		getSubjectPage() {
-			return new Title(this.namespace - (this.namespace % 2), this.title)
-		}
-
 		static newFromText(name, defaultNamespace = 0) {
 			if (!name) return null
 

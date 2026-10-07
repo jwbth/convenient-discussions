@@ -2,7 +2,6 @@ import { describe, test, expect, beforeAll, beforeEach } from 'vitest'
 
 import Page from '../src/Page'
 import pageRegistry from '../src/pageRegistry'
-import { mergeRegexps } from '../src/shared/utils-general'
 
 const isArchive = (/** @type {number} */ namespaceId, /** @type {string} */ title) =>
 	new Page(new mw.Title(namespaceId, title), pageRegistry).isArchive()
@@ -20,15 +19,13 @@ describe('Page#isArchive', () => {
 				/\/Archive/,
 			],
 		})
-		global.convenientDiscussions.loader = /** @type {any} */ ({
-			pageWhitelistRegexp: /^Wikipedia:Requests/,
-		})
 	})
 
 	test('matches an archive path', () => {
 		expect(isArchive(4, 'Requests/Archive/2020')).toBe(true)
 		expect(isArchive(3, 'Foo/Archive 5')).toBe(true)
 		expect(isArchive(1, 'Article/Archive 1')).toBe(true)
+		expect(isArchive(5, 'Manual of Style/Archive 200')).toBe(true)
 	})
 
 	test('matches an archive path entry with replacements', () => {
@@ -41,24 +38,6 @@ describe('Page#isArchive', () => {
 		expect(isArchive(4, 'Village pump/Technical')).toBe(false)
 	})
 
-	test('matches an archive path in a talk namespace whose subject page is not whitelisted', () => {
-		expect(isArchive(5, 'Manual of Style/Archive 5')).toBe(true)
-	})
-
-	test('excludes the talk page of a whitelisted page', () => {
-		expect(isArchive(5, 'Requests/Archive/2020')).toBe(false)
-		expect(isArchive(5, 'Requests/Archive')).toBe(false)
-	})
-
-	test("doesn't apply the whitelist exclusion to subject namespaces", () => {
-		expect(isArchive(4, 'Requests/Archive')).toBe(true)
-	})
-
-	test("doesn't apply the whitelist exclusion without a whitelist", () => {
-		global.convenientDiscussions.loader = /** @type {any} */ ({})
-
-		expect(isArchive(5, 'Requests/Archive')).toBe(true)
-	})
 })
 
 describe('Page#isArchive with the ruwiki config', () => {
@@ -79,9 +58,6 @@ describe('Page#isArchive with the ruwiki config', () => {
 
 		const { default: config } = await import('../config/wikis/w-ru.js')
 		global.convenientDiscussions.config = /** @type {any} */ (config)
-		global.convenientDiscussions.loader = /** @type {any} */ ({
-			pageWhitelistRegexp: mergeRegexps(config.pageWhitelist),
-		})
 		Page.pagesMaps = undefined
 	})
 
@@ -93,6 +69,7 @@ describe('Page#isArchive with the ruwiki config', () => {
 		expect(isArchive(3, 'Пример/Архивы/2020')).toBe(true)
 		expect(isArchive(1, 'Статья/Архив/1')).toBe(true)
 		expect(isArchive(4, 'Форум/Архив/Общий/2020')).toBe(true)
+		expect(isArchive(5, 'Форум/Архив/Общий/2020')).toBe(true)
 	})
 
 	test('matches explicit archive paths', () => {
@@ -109,14 +86,5 @@ describe('Page#isArchive with the ruwiki config', () => {
 	test("doesn't match active pages", () => {
 		expect(isArchive(4, 'Форум/Общий')).toBe(false)
 		expect(isArchive(3, 'Пример')).toBe(false)
-	})
-
-	test('excludes talk pages of whitelisted pages', () => {
-		expect(isArchive(105, 'Текущие события/Кандидаты/Недавно умершие/Архив')).toBe(false)
-		expect(isArchive(5, 'Форум/Архив/Общий/2020')).toBe(false)
-	})
-
-	test('matches archives in talk namespaces whose subject pages are not whitelisted', () => {
-		expect(isArchive(5, 'Правила/Архив/1')).toBe(true)
 	})
 })
