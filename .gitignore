@@ -10,11 +10,9 @@ credentials.*
 dist/
 docs/
 i18n-list.json
-misc/messages/
 node_modules/
 playwright-report/
 playwright/.auth/
 sandbox/
-src/test*
 test-results/
 tests/worker-test-cases-regenerated.json
