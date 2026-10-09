@@ -1,3 +1,4 @@
+.backup/
 .env
 .eslintcache
 .idea/
@@ -5,7 +6,6 @@
 .vscode/tasks.json
 *.local.md
 *.sublime-workspace
-backup/
 credentials.*
 dist/
 docs/
