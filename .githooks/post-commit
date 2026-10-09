@@ -1,0 +1,4 @@
+#!/bin/sh
+# The hook itself lives in ~/projects/_shared, beside the main checkout; a clone without it goes without.
+hook="$(git rev-parse --path-format=absolute --git-common-dir)/../../_shared/githooks/post-commit"
+if test -f "$hook"; then exec sh "$hook"; fi
