@@ -22,3 +22,17 @@
 - Prefer `undefined` over `null`, but drop `undefined` where it's not needed, e.g. `return undefined`.
 - When a function parameter is not used in the function, put an underscore in front of it.
 - Leave auto-fixable ESLint problems (import order, unused imports, indentation) to the hooks: they fix every file you write or commit.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default triage roles, each label equal to its role name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
