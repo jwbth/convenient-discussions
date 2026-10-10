@@ -33,9 +33,10 @@ import { keyCombination } from './utils-keyboard'
 import { showConfirmDialog } from './utils-oojs'
 import {
 	buildEditSummary,
+	cleanUpPasteDom,
+	getElementFromPasteHtml,
 	inputPropsAffectingCoords,
 	isExistentAnchor,
-	isHtmlConvertibleToWikitext,
 	isInputFocused,
 	mergeJquery,
 	wrapDiffBody,
@@ -1251,11 +1252,11 @@ class CommentForm extends EventEmitter {
 	 * When the user inserted text that was copied with rich formatting, suggest to convert it to
 	 * wikitext.
 	 *
-	 * @param {string} html
+	 * @param {import('./utils-window').CleanUpPasteDomReturn} paste
 	 * @param {string} insertedText
 	 * @private
 	 */
-	async suggestConvertToWikitext(html, insertedText) {
+	async suggestConvertToWikitext(paste, insertedText) {
 		await sleep()
 
 		const button = new OO.ui.ButtonWidget({
@@ -1269,7 +1270,7 @@ class CommentForm extends EventEmitter {
 		button.on('click', async () => {
 			// The input is made disabled, so the content can't be changed by the user during the
 			// loading stage.
-			const text = await this.commentInput.getWikitextFromPaste(html)
+			const text = await this.commentInput.convertPasteToWikitext(paste)
 
 			this.commentInput.selectRange(position - insertedText.length, position).insertContent(text)
 			this.teardownInputPopups()
@@ -1410,10 +1411,13 @@ class CommentForm extends EventEmitter {
 
 		// Handle rich text conversion only if URL conversion won't happen
 		if (!willConvertUrl && data.types.includes('text/html')) {
-			const html = data.getData('text/html')
-			if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return
+			const paste = cleanUpPasteDom(
+				getElementFromPasteHtml(data.getData('text/html')),
+				this.commentInput.$element[0],
+			)
+			if (!paste.isConvertible) return
 
-			this.suggestConvertToWikitext(html, data.getData('text/plain').replace(/\r/g, ''))
+			this.suggestConvertToWikitext(paste, data.getData('text/plain').replace(/\r/g, ''))
 		}
 	}
 

@@ -6,9 +6,7 @@ import { convertHtmlToWikitext } from './utils-api'
 import { es6ClassToOoJsClass, getMixinBaseClassPrototype } from './utils-oojs-class'
 import {
 	cleanUpPasteDom,
-	getElementFromPasteHtml,
 	interlanguagePrefixes,
-	isElementConvertibleToWikitext,
 } from './utils-window'
 
 /**
@@ -258,38 +256,21 @@ class TextInputWidgetMixin {
 		if (selection.type === 'Range') {
 			div.append(selection.getRangeAt(0).cloneContents())
 
-			return await this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]))
+			return await this.convertPasteToWikitext(cleanUpPasteDom(div, this.$element[0]))
 		}
 
 		return ''
 	}
 
 	/**
-	 * Convert the HTML code of a paste into wikitext.
+	 * Convert a cleaned-up paste to wikitext if it is convertible, otherwise return its text.
 	 *
-	 * @param {string} html Pasted HTML.
+	 * @param {import('./utils-window').CleanUpPasteDomReturn} paste
 	 * @returns {Promise<string>}
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	getWikitextFromPaste(html) {
-		return this.maybeConvertElementToWikitext(
-			cleanUpPasteDom(getElementFromPasteHtml(html), this.$element[0]),
-		)
-	}
-
-	/**
-	 * Given the return value of {@link module:utilsWindow.cleanUpPasteDom}, convert the HTML to
-	 * wikitext if necessary.
-	 *
-	 * @param {object} data Return value of {@link module:utilsWindow.cleanUpPasteDom}.
-	 * @param {Element} data.element
-	 * @param {string} data.text
-	 * @param {Array.<string|undefined>} data.syntaxHighlightLanguages
-	 * @returns {Promise<string>}
-	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
-	 */
-	async maybeConvertElementToWikitext({ element, text, syntaxHighlightLanguages }) {
-		if (!isElementConvertibleToWikitext(element)) {
+	async convertPasteToWikitext({ element, text, syntaxHighlightLanguages, isConvertible }) {
+		if (!isConvertible) {
 			return text
 		}
 

@@ -903,41 +903,12 @@ export function copyText(text, messages) {
 }
 
 /**
- * Check whether there is something in the HTML that can be converted to wikitext.
- *
- * @param {string} html
- * @param {HTMLElement} containerElement
- * @returns {boolean}
- */
-export function isHtmlConvertibleToWikitext(html, containerElement) {
-	return isElementConvertibleToWikitext(
-		cleanUpPasteDom(getElementFromPasteHtml(html), containerElement).element,
-	)
-}
-
-/**
- * Check whether there is something in the element that can be converted to wikitext.
- *
- * @param {Element} element
- * @returns {boolean}
- */
-export function isElementConvertibleToWikitext(element) {
-	return Boolean(
-		element.childElementCount &&
-		!(
-			[...element.querySelectorAll('*')].length === 1 &&
-			element.childNodes.length === 1 &&
-			['P', 'LI', 'DD'].includes(element.children[0].tagName)
-		) &&
-		![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR'),
-	)
-}
-
-/**
  * @typedef {object} CleanUpPasteDomReturn
  * @property {HTMLElement} element
  * @property {string} text
  * @property {(string|undefined)[]} syntaxHighlightLanguages
+ * @property {boolean} isConvertible Whether the element has markup that makes converting it to
+ *   wikitext worthwhile.
  */
 
 /**
@@ -1111,6 +1082,10 @@ export function cleanUpPasteDom(element, containerElement) {
 				el.removeAttribute(attr.name)
 			})
 	})
+
+	// Links that wrapped only images, such as icons before station names. The images themselves
+	// are not kept as they are not in allowedTags.
+	;[...element.querySelectorAll('a')].filter((el) => !el.textContent.trim()).forEach(removeElement)
 	;[...element.children]
 		// <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
 		// don't create `*` markup in the API.)
@@ -1118,12 +1093,14 @@ export function cleanUpPasteDom(element, containerElement) {
 
 		.forEach(replaceWithChildren)
 
-	// Firefox adds newlines of unclear nature. In general, two newlines should be enough for anyone
+	// Firefox adds newlines of unclear nature. In general, two newlines should be enough for anyone.
+	// Runs of spaces, e.g. left around removed links, render as one space but would stay in the
+	// wikitext.
 	element.normalize()
 	getAllTextNodes(element)
-		.filter((node) => /** @type {HTMLElement} */ (node.parentElement).tagName !== 'PRE')
+		.filter((node) => !(/** @type {HTMLElement} */ (node.parentElement).closest('pre, code')))
 		.forEach((node) => {
-			node.textContent = node.textContent.replace(/\n\s*\n\s+/g, '\n\n')
+			node.textContent = node.textContent.replace(/\n\s*\n\s+/g, '\n\n').replace(/ {2,}/g, ' ')
 		})
 
 	// Need to do it before removing the element; if we do it later, the literal textual content of
@@ -1144,7 +1121,22 @@ export function cleanUpPasteDom(element, containerElement) {
 			el.remove()
 		})
 
-	return { element, text, syntaxHighlightLanguages }
+	const allElements = [...element.querySelectorAll('*')]
+
+	return {
+		element,
+		text,
+		syntaxHighlightLanguages,
+		isConvertible: Boolean(
+			allElements.length &&
+			!(
+				allElements.length === 1 &&
+				element.childNodes.length === 1 &&
+				['P', 'LI', 'DD'].includes(allElements[0].tagName)
+			) &&
+			!allElements.every((el) => el.tagName === 'BR'),
+		),
+	}
 }
 
 /**
