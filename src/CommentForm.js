@@ -941,7 +941,9 @@ class CommentForm extends EventEmitter {
 	async loadComment(initialState) {
 		const operation = this.operations.add('load')
 		try {
-			const source = await this.target.loadCode(this)
+			const source = /** @type {import('./CommentSource').default | undefined} */ (
+				await this.loadTargetCode()
+			)
 
 			// Can't edit existing comments with DiscussionTools API.
 			if (!source) {
@@ -1060,7 +1062,7 @@ class CommentForm extends EventEmitter {
 	 */
 	checkCode(operation) {
 		if (!this.checkCodeRequest) {
-			this.checkCodeRequest = this.target.loadCode(this).catch((/** @type {unknown} */ error) => {
+			this.checkCodeRequest = this.loadTargetCode().catch((/** @type {unknown} */ error) => {
 				this.$messageArea.empty()
 				delete this.checkCodeRequest
 				this.handleError({ error, operation })
@@ -1068,6 +1070,28 @@ class CommentForm extends EventEmitter {
 		}
 
 		return /** @type {NonNullable<typeof this.checkCodeRequest>} */ (this.checkCodeRequest)
+	}
+
+	/**
+	 * Load the context code of the target comment or section, locate the target in it, and set the
+	 * form state the result implies: whether the section code is submitted and whether the
+	 * DiscussionTools API is used.
+	 *
+	 * @returns {Promise<import('./CommentSource').default | import('./SectionSource').default | undefined>}
+	 * @private
+	 */
+	async loadTargetCode() {
+		const { source, isInSectionContext, needsDtApi } = this.isCommentTarget()
+			? await this.target.loadCode({ useDtFallback: true })
+			: await /** @type {import('./Section').default} */ (this.target).loadCode()
+		if (needsDtApi) {
+			// TODO: currently, once set to 'discussiontoolsedit', we can't set it back to 'edit'.
+			// Allowing so could introduce unsynchronization of various components.
+			this.setApi('discussiontoolsedit')
+		}
+		this.setSectionSubmitted(isInSectionContext)
+
+		return source
 	}
 
 	/**
@@ -2425,7 +2449,9 @@ class CommentForm extends EventEmitter {
 
 		if (!this.isNewSectionApi()) {
 			try {
-				await this.target.loadCode(this, !cd.page.exists())
+				await (this.isPageTarget()
+					? this.target.loadCode(undefined, !cd.page.exists())
+					: this.loadTargetCode())
 				// Apply the actual level if we've detected broken indentation
 				this.applyActualLevel(this.target.source)
 			} catch (error) {
