@@ -34,7 +34,6 @@ import { formatDate, formatDateNative } from './utils-date'
 import { showConfirmDialog } from './utils-oojs'
 import { mixIntoClass } from './utils-oojs-class'
 import {
-	extractSignatures,
 	getExtendedRect,
 	isItemProbablyEditableAtAll,
 	isVisible,
@@ -3457,59 +3456,63 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Search for the comment in the source code and return possible matches.
+	 * Build the comment data to locate the comment with.
 	 *
-	 * @param {string} contextCode
-	 * @param {import('./updateChecker').CommentWorkerBase} [commentData]
-	 * @param {boolean} [isInSectionContext]
-	 * @returns {CommentSource|undefined}
+	 * @param {boolean} isInSectionContext Whether the comment is located in its section's code.
+	 * @param {import('./updateChecker').CommentWorkerBase} [matchedData] The worker's data of the
+	 *   comment in other code, to identify the comment by instead of its data on the page.
+	 * @returns {import('./CommentSource').CommentData}
 	 * @private
 	 */
-	searchInCode(contextCode, commentData, isInSectionContext = false) {
-		let thisData
-		if (commentData) {
-			thisData = {
-				index: commentData.index,
+	buildCommentData(isInSectionContext, matchedData) {
+		let identification
+		if (matchedData) {
+			identification = {
+				index: matchedData.index,
 
 				// For the reserve method; the main method uses one date.
-				previousComments: commentData.previousComments,
+				previousComments: matchedData.previousComments,
 
-				followsHeading: commentData.followsHeading,
-				sectionHeadline: commentData.section?.headline,
-				commentText: commentData.text,
+				followsHeading: matchedData.followsHeading,
+				sectionHeadline: matchedData.section?.headline,
+				text: matchedData.text,
 			}
 		} else {
 			const comments = isInSectionContext
 				? /** @type {import('./Section').default} */ (this.section).comments
 				: this.manager.getAll()
 			const index = comments.indexOf(this)
-			thisData = {
+			identification = {
 				index,
 				previousComments: comments.slice(Math.max(0, index - 2), index).reverse(),
 				followsHeading: this.followsHeading,
 				sectionHeadline: this.section?.headline,
-				commentText: this.getText(),
+				text: this.getText(),
 			}
 		}
 
-		const signatures = extractSignatures(contextCode)
+		return {
+			...identification,
+			author: this.author,
+			timestamp: this.timestamp,
+			level: this.level,
+			own: this.hasFlag('own'),
+			openingSection: this.isOpeningSection(),
+			tableComment: this.isTableComment(),
 
-		return signatures
-			.filter(
-				(signature) =>
-					(signature.author === this.author || signature.author.getName() === '<undated>') &&
-					(this.timestamp === signature.timestamp ||
-						// .startsWith() to account for cases where you can ignore the timezone string in
-						// "unsigned" templates (it may be present and may be not), but it appears on the page.
+			// Dirty workaround to tell if there are foreign timestamps inside the comment
+			hasForeignTimestamps: this.elements.some((el) => {
+				const timestamp = el.querySelector('.cd-timestamp')
 
-						(this.timestamp &&
-							signature.timestamp &&
-							this.timestamp.startsWith(signature.timestamp))),
-			)
-			.map((signature) => new CommentSource(this, signature, contextCode, isInSectionContext))
-			.map((source, _, sources) => source.calculateMatchScore(thisData, sources, signatures))
-			.filter((sourcesWithScores) => sourcesWithScores.score > 2.5)
-			.sort((s1, s2) => s2.score - s1.score)[0]?.source
+				return timestamp && !timestamp.closest('.cd-signature')
+			}),
+
+			hasPreWithElements: this.elements.some(
+				(el) => (el.tagName === 'PRE' && el.firstElementChild) || el.querySelector('pre *'),
+			),
+			childLevels: this.getChildren().map((child) => child.level),
+			hasValidReplies: this.brokenCommentHasValidReplies(),
+		}
 	}
 
 	/**
@@ -3556,7 +3559,11 @@ class Comment extends mixIntoClass(
 			})
 		}
 
-		const source = this.searchInCode(code, commentData, Boolean(sectionCode))
+		const source = CommentSource.locate(
+			code,
+			this.buildCommentData(Boolean(sectionCode), commentData),
+			Boolean(sectionCode),
+		)
 		if (!source) {
 			throw new CdError({
 				type: 'parse',
@@ -3564,6 +3571,7 @@ class Comment extends mixIntoClass(
 			})
 		}
 
+		source.comment = this
 		if (!customCodePassed) {
 			this.source = source
 		}
