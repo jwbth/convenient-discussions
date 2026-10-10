@@ -62,10 +62,10 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 *
 	 * @override
 	 * @param {CommentLinkEntry} entry The comment links entry to transform
-	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
+	 * @param {import('./autocompleteInsertion').InsertionKeys} [keys]
 	 * @returns {import('./autocompleteInsertion').Insertion & { end: string, content: string }}
 	 */
-	getInsertionFromEntry(entry, selectedText) {
+	getInsertionFromEntry(entry, { selectedText } = {}) {
 		// Use selected text if available, otherwise use the default content
 		const defaultContent =
 			'timestamp' in entry

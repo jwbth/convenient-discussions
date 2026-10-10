@@ -4,24 +4,27 @@
  */
 
 /**
- * An Insertion along with some modification logic.
- *
  * @typedef {object} Insertion
  * @property {string} start Start text
  * @property {string} [end] End text
  * @property {string} [content] Text between start and end
- * @property {() => boolean} [omitContentCheck] Function that checks whether to omit
- *   {@link Insertion#content}. This can be done so that the inserted text ends up having a pipe
- *   trick (e.g. `[[User:Example|]]` that would be saved as `[[User:Example|Example]]`)
  * @property {boolean} [selectContent] Whether to select content, or put caret at its place if it's
  *   empty (this is done automatically when Shift is held)
  * @property {RegExp} [keepAsEnd] Overrides {@link InsertionTraits#keepAsEnd} for this insertion
- * @property {() => void} [altModify] Function that modifies this insertion if the Alt key is held
- * @property {() => void} [shiftModify] Function that modifies this insertion if the Shift key is
- *   held
- * @property {() => void} [cmdModify] Function that modifies this insertion if the Command key is
- *   held
- * @property {SavedSelection[]} [autocompleteSelections] Saved selections that the insertion wraps.
+ */
+
+/**
+ * The keys held when an option is chosen, and the text it wraps. Each defaults to false or none.
+ *
+ * @typedef {object} InsertionKeys
+ * @property {boolean} [shift]
+ * @property {boolean} [alt]
+ * @property {boolean} [cmd] Meta on Mac, Ctrl elsewhere
+ * @property {string} [selectedText] Text of the saved selection that the Insertion wraps
+ */
+
+/**
+ * @typedef {(keys: Required<Pick<InsertionKeys, 'shift' | 'alt' | 'cmd'>> & Pick<InsertionKeys, 'selectedText'>) => Insertion} InsertionSource
  */
 
 /**
@@ -83,42 +86,39 @@ function getAutoClosers(text) {
  * Compute the Replacements that a chosen autocomplete option makes in the input.
  *
  * @param {object} options
- * @param {Insertion} options.insertion
+ * @param {InsertionSource} options.getInsertion Called once.
  * @param {KeyState} options.event The event that chose the option.
  * @param {boolean} options.isMac Whether the Command key is Meta rather than Ctrl.
  * @param {InsertionTraits} options.traits
  * @param {TriggerContext} options.context
  * @param {string} options.text The input's text.
  * @param {SelectionRange[]} options.selectionRanges The input's selection ranges.
+ * @param {SavedSelection[]} options.savedSelections Saved selections that the Insertion wraps.
  * @returns {TextReplacement[]} Empty when nothing can be replaced.
  */
 export function getReplacements({
-	insertion,
+	getInsertion,
 	event,
 	isMac,
 	traits: { tabSelectsStartOnly = false, keepAsEnd: traitKeepAsEnd, replaceEnd = true },
 	context,
 	text,
 	selectionRanges,
+	savedSelections,
 }) {
 	const isTab = event.key === 'Tab' && tabSelectsStartOnly
+	const insertion = isTab
+		? getInsertion({ shift: false, alt: false, cmd: false, selectedText: undefined })
+		: getInsertion({
+				shift: Boolean(event.shiftKey),
+				alt: Boolean(event.altKey),
+				cmd: Boolean(isMac ? event.metaKey : event.ctrlKey),
+				selectedText: savedSelections[0]?.selectedText,
+			})
 	const data = {
 		...insertion,
 		end: isTab ? '' : insertion.end || '',
-		content: isTab
-			? ''
-			: (!(insertion.omitContentCheck?.() && !event.shiftKey) && insertion.content) || '',
-	}
-	if (!isTab) {
-		if (event.altKey) {
-			data.altModify?.()
-		}
-		if (isMac ? event.metaKey : event.ctrlKey) {
-			data.cmdModify?.()
-		}
-		if (event.shiftKey || data.content) {
-			data.shiftModify?.()
-		}
+		content: isTab ? '' : insertion.content || '',
 	}
 
 	const triggerText = context.triggerText + context.query
@@ -176,14 +176,14 @@ export function getReplacements({
 	if (selectionRanges.length > 1) {
 		const replacements = [...selectionRanges]
 			.sort((a, b) => a.from - b.from)
-			.map((range, index) => getReplacement(range, data.autocompleteSelections?.[index]))
+			.map((range, index) => getReplacement(range, savedSelections[index]))
 		if (replacements.every((replacement) => replacement !== undefined)) {
 			return replacements
 		}
 	}
 
 	const endPos = context.mentionPosition + triggerText.length
-	const replacement = getReplacement({ from: endPos, to: endPos }, data.autocompleteSelections?.[0])
+	const replacement = getReplacement({ from: endPos, to: endPos }, savedSelections[0])
 
 	return replacement ? [replacement] : []
 }

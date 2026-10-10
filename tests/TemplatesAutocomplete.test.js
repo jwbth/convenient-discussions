@@ -39,19 +39,16 @@ describe('TemplatesAutocomplete.getInsertionFromEntry', () => {
 		})
 	})
 
-	it('puts the selected text inside the template', () => {
-		expect(autocomplete.getInsertionFromEntry('Foo', 'bar')).toMatchObject({
-			start: '{{Foo',
+	it('puts the selected text inside the template after a pipe', () => {
+		expect(autocomplete.getInsertionFromEntry('Foo', { selectedText: 'bar' })).toMatchObject({
+			start: '{{Foo|',
 			end: '}}',
 			content: 'bar',
 		})
 	})
 
 	it('adds a pipe after the name on Shift', () => {
-		const insertion = autocomplete.getInsertionFromEntry('Foo')
-		insertion.shiftModify?.()
-
-		expect(insertion.start).toBe('{{Foo|')
+		expect(autocomplete.getInsertionFromEntry('Foo', { shift: true }).start).toBe('{{Foo|')
 	})
 })
 

@@ -59,7 +59,7 @@ describe('TagsAutocomplete.getInsertionFromEntry', () => {
 	})
 
 	it('wraps a plain tag around the selected text without selecting it', () => {
-		expect(autocomplete.getInsertionFromEntry('b', 'bold')).toEqual({
+		expect(autocomplete.getInsertionFromEntry('b', { selectedText: 'bold' })).toEqual({
 			start: '<b>',
 			end: '</b>',
 			content: 'bold',
@@ -74,7 +74,7 @@ describe('TagsAutocomplete.getInsertionFromEntry', () => {
 	it('uses custom start and end markup', () => {
 		const entry = autocomplete.getDefaultEntries().find((item) => item[0] === 'gallery')
 
-		expect(autocomplete.getInsertionFromEntry(/** @type {any} */ (entry), 'File:A.png')).toMatchObject({
+		expect(autocomplete.getInsertionFromEntry(/** @type {any} */ (entry), { selectedText: 'File:A.png' })).toMatchObject({
 			start: '<gallery>\n',
 			end: '\n</gallery>',
 			content: 'File:A.png',

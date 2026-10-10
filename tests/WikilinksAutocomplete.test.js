@@ -136,13 +136,10 @@ const title = (text, hostname = 'test.wikipedia.org') =>
  * Get the text that selecting the entry inserts, as `[[start` + `content` + `end`.
  *
  * @param {object} entry
- * @param {{ shift?: boolean, selectedText?: string }} [options]
+ * @param {import('../src/autocompleteInsertion').InsertionKeys} [keys]
  */
-const insert = (entry, { shift = false, selectedText } = {}) => {
-	const insertion = autocomplete.getInsertionFromEntry(entry, selectedText)
-	if (shift) {
-		insertion.shiftModify()
-	}
+const insert = (entry, keys = {}) => {
+	const insertion = autocomplete.getInsertionFromEntry(entry, keys)
 
 	return insertion.start + (insertion.content ?? '') + insertion.end
 }
@@ -268,7 +265,7 @@ describe('getInsertionFromEntry', () => {
 		)
 	})
 
-	describe('shiftModify', () => {
+	describe('labeled', () => {
 		it('makes a piped link labeled with the page name, without the interwiki prefix', () => {
 			expect(
 				insert(
@@ -296,6 +293,12 @@ describe('getInsertionFromEntry', () => {
 					{ shift: true },
 				),
 			).toBe('[[d:Q42|Douglas Adams]]')
+		})
+
+		it('uses the selected text as the label without Shift', () => {
+			expect(insert({ title: title('Foo'), pageName: 'Foo' }, { selectedText: 'text' })).toBe(
+				'[[Foo|text]]',
+			)
 		})
 
 		it('keeps the selected text as the label', () => {

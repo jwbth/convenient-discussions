@@ -3693,16 +3693,11 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	getMentionText(userName, addColon = false) {
-		const data = MentionsAutocomplete.prototype.getInsertionFromEntry(userName)
-		if (/** @type {NonNullable<typeof data.omitContentCheck>} */ (data.omitContentCheck)()) {
-			data.content = ''
-		}
-		if (addColon) {
-			const altModifyTyped = /** @type {NonNullable<typeof data.altModify>} */ (data.altModify)
-			altModifyTyped.call(data)
-		}
+		const { start, content, end } = MentionsAutocomplete.prototype.getInsertionFromEntry(userName, {
+			alt: addColon,
+		})
 
-		return data.start + (data.content || '') + (data.end || '')
+		return start + content + end
 	}
 
 	/**
