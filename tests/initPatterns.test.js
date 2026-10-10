@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 
 import cd from '../src/loader/cd'
+import { calculateWordOverlap, removeNonLetters } from '../src/shared/utils-general'
 import { extractSignatures } from '../src/utils-window'
 
 import { initCommonsGlobals } from './utils-wikiGlobals'
@@ -27,6 +28,12 @@ describe('wiki globals built from the Commons configuration', () => {
 
 		expect(signature.author.getName()).toBe('Example')
 		expect(signature.timestamp).toBe('12:34, 5 October 2026 (UTC)')
+	})
+
+	test('word scoring counts letters of any script', () => {
+		expect(calculateWordOverlap('Привет, как дела?', 'Привет, как дела?')).toBe(1)
+		expect(calculateWordOverlap('Привет, как дела?', 'Hello there')).toBe(0)
+		expect(removeNonLetters('Ça va, ça?')).toBe('Çavaça')
 	})
 
 	test('the signature ending matches the Commons talk link', () => {
