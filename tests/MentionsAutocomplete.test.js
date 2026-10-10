@@ -40,7 +40,7 @@ import MentionsAutocomplete from '../src/MentionsAutocomplete'
 /**
  * Assemble the wikitext Tribute inserts for a plain Enter (no modifier keys).
  *
- * @param {import('../src/tribute/Tribute').Insertion} insertion
+ * @param {import('../src/autocompleteInsertion').Insertion} insertion
  * @returns {string}
  */
 const assemble = (insertion) =>

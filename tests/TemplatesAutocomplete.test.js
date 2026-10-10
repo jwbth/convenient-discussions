@@ -79,65 +79,35 @@ describe('TemplatesAutocomplete.getCollectionProperties', () => {
 		expect(keepAsEnd?.test('} ')).toBe(false)
 		expect(tabSelectsStartOnly).toBe(true)
 	})
+})
 
-	describe('selectTemplate', () => {
-		/**
-		 * @param {{ useTemplateData?: boolean, selectedText?: string }} [options]
-		 */
-		const setUpManager = ({ useTemplateData = true, selectedText } = {}) => {
-			const selectionData = selectedText
-				? { selectedText, selections: [{ selectedText, start: 0, leadingSpaces: '', trailingSpaces: '' }] }
-				: undefined
-			autocomplete.manager = /** @type {any} */ ({
-				useTemplateData,
-				tribute: { current: { element: { cdInput: {} } } },
-				getSelectedTextForInsertion: vi.fn(() => selectionData),
-				applySelectionDataToInsertion: vi.fn((insertion, data) => {
-					if (data) {
-						insertion.autocompleteSelections = data.selections
-					}
-				}),
-			})
+describe('TemplatesAutocomplete.afterOptionChoose', () => {
+	const option = /** @type {any} */ ({ original: { entry: 'Foo', label: 'Foo' } })
+	const input = /** @type {any} */ ({})
+
+	beforeEach(() => {
+		vi.useFakeTimers()
+	})
+
+	afterEach(() => {
+		vi.useRealTimers()
+	})
+
+	it.each([
+		[{ shiftKey: true, altKey: false }, true, true],
+		[{ shiftKey: true, altKey: true }, true, false],
+		[{ shiftKey: false, altKey: false }, true, false],
+		[{ shiftKey: true, altKey: false }, false, false],
+	])('with keys %j and useTemplateData=%s, inserts TemplateData: %s', (event, useTemplateData, expected) => {
+		autocomplete.manager = /** @type {any} */ ({ useTemplateData })
+		const insertTemplateData = vi.spyOn(autocomplete, 'insertTemplateData').mockResolvedValue()
+		autocomplete.afterOptionChoose(option, /** @type {any} */ (event), input)
+		vi.runAllTimers()
+
+		expect(insertTemplateData).toHaveBeenCalledTimes(expected ? 1 : 0)
+		if (expected) {
+			expect(insertTemplateData).toHaveBeenCalledWith(option, input)
 		}
-
-		const option = /** @type {any} */ ({ original: { entry: 'Foo', label: 'Foo' } })
-
-		beforeEach(() => {
-			vi.useFakeTimers()
-		})
-
-		afterEach(() => {
-			vi.useRealTimers()
-		})
-
-		it('returns an empty string when there is no option', () => {
-			const { selectTemplate } = autocomplete.getCollectionProperties()
-
-			expect(selectTemplate?.(undefined, /** @type {any} */ ({}))).toBe('')
-		})
-
-		it('builds the insertion around the saved selection', () => {
-			setUpManager({ selectedText: 'bar' })
-			const { selectTemplate } = autocomplete.getCollectionProperties()
-			const insertion = /** @type {any} */ (selectTemplate?.(option, /** @type {any} */ ({ shiftKey: false })))
-
-			expect(insertion).toMatchObject({ start: '{{Foo', end: '}}', content: 'bar' })
-			expect(insertion.autocompleteSelections).toHaveLength(1)
-		})
-
-		it.each([
-			[{ shiftKey: true, altKey: false }, true, true],
-			[{ shiftKey: true, altKey: true }, true, false],
-			[{ shiftKey: false, altKey: false }, true, false],
-			[{ shiftKey: true, altKey: false }, false, false],
-		])('with keys %j and useTemplateData=%s, inserts TemplateData: %s', (event, useTemplateData, expected) => {
-			setUpManager({ useTemplateData })
-			const insertTemplateData = vi.spyOn(autocomplete, 'insertTemplateData').mockResolvedValue()
-			autocomplete.getCollectionProperties().selectTemplate?.(option, /** @type {any} */ (event))
-			vi.runAllTimers()
-
-			expect(insertTemplateData).toHaveBeenCalledTimes(expected ? 1 : 0)
-		})
 	})
 })
 

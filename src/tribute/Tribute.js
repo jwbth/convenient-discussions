@@ -75,9 +75,19 @@ import tributeCss from './tribute.less?inline'
  * @property {boolean} [replaceEnd] Whether to replace text at the end
  * @property {boolean} [requireLeadingSpace] Specify whether a space is required before the trigger
  *   string
- * @property {(item: TributeSearchResults<Value> | undefined, event: KeyboardEvent | MouseEvent) =>
- *   string | Insertion} [selectTemplate] Function called on select that returns the content to
- *   insert
+ * @property {(item: TributeSearchResults<Value> | undefined, event: KeyboardEvent | MouseEvent,
+ *   context: TriggerContext) => import('../TextInputWidgetMixin').TextReplacement[]} selectTemplate
+ *   Function called on select that returns the replacements to apply to the field
+ */
+
+/**
+ * The trigger typed before the caret when an item is selected.
+ *
+ * @typedef {object} TriggerContext
+ * @property {string} triggerText The trigger as typed
+ * @property {string} query The text typed after the trigger
+ * @property {number} mentionPosition Position of the trigger in the field's text
+ * @property {number} [triggerPos] Caret position when the trigger was typed
  */
 
 /**
@@ -92,7 +102,6 @@ import tributeCss from './tribute.less?inline'
  * @property {string | ((value: string) => string | null) | null} [noMatchTemplate=null] Template
  *   for when no match is found
  * @property {boolean} [positionMenu=true] Specify whether the menu should be positioned
- * @property {string | null} [replaceTextSuffix=null] Custom suffix for the replace text
  */
 
 /**
@@ -131,28 +140,6 @@ import tributeCss from './tribute.less?inline'
  */
 
 /**
- * Data to insert into the input along with some modification logic that can be supplied to
- * {@link TributeDange#replaceTriggerText} in addition to strings.
- *
- * @typedef {object} Insertion
- * @property {string} start Start text
- * @property {string} [end] End text
- * @property {string} [content] Text between start and end
- * @property {() => boolean} [omitContentCheck] Function that checks whether to omit
- *   {@link Insertion#content}. This can be done so that the inserted text ends up having a pipe
- *   trick (e.g. `[[User:Example|]]` that would be saved as `[[User:Example|Example]]`)
- * @property {boolean} [selectContent] Whether to select content, or put caret at its place if it's
- *   empty (this is done automatically when Shift is held)
- * @property {RegExp} [keepAsEnd] Overrides {@link TributeCollectionSpecific#keepAsEnd} for this
- *   insertion
- * @property {() => void} [altModify] Function that modifies this data if the Alt key is held
- * @property {() => void} [shiftModify] Function that modifies this data if the Shift key is held
- * @property {() => void} [cmdModify] Function that modifies this data if the Command key is held
- * @property {Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>}
- *   [autocompleteSelections] Text selections replaced by autocomplete triggers.
- */
-
-/**
  * @typedef {Element | NodeList | HTMLCollection | Element[] | JQuery} TributeElement
  */
 
@@ -171,7 +158,6 @@ class Tribute {
 			menuContainer = null,
 			noMatchTemplate = null,
 			allowSpaces = false,
-			replaceTextSuffix = null,
 			positionMenu = true,
 			searchOpts = {},
 			menuItemLimit = null,
@@ -205,7 +191,6 @@ class Tribute {
 		this.isActive = false
 		this.menuContainer = menuContainer
 		this.allowSpaces = allowSpaces
-		this.replaceTextSuffix = replaceTextSuffix
 		this.positionMenu = positionMenu
 		this.hasTrailingSpace = false
 		this.direction = direction
@@ -222,7 +207,7 @@ class Tribute {
 				selectClass: item.selectClass || selectClass,
 				containerClass: item.containerClass || containerClass,
 				itemClass: item.itemClass || itemClass,
-				selectTemplate: (item.selectTemplate || Tribute.defaultSelectTemplate).bind(this),
+				selectTemplate: item.selectTemplate,
 				menuItemTemplate: (item.menuItemTemplate || Tribute.defaultMenuItemTemplate).bind(this),
 				// function called when menu is empty, disables hiding of menu.
 				noMatchTemplate: ((t) => {
@@ -283,17 +268,6 @@ class Tribute {
 				this.current.element.dispatchEvent(noMatchEvent)
 			}
 		}
-	}
-
-	/**
-	 * @this {Tribute}
-	 * @param {TributeSearchResults<any>} item
-	 */
-	static defaultSelectTemplate(item) {
-		if (typeof item === 'undefined')
-			return `${this.current.collection.trigger}${this.current.mentionText}`
-
-		return this.current.collection.trigger + item.original[this.current.collection.fillAttr]
 	}
 
 	/**
@@ -627,20 +601,7 @@ class Tribute {
 	selectItemAtIndex(index, originalEvent) {
 		index = Number.parseInt(index)
 		if (typeof index !== 'number' || isNaN(index)) return
-		let item = this.current.filteredItems[index]
-		let data = this.current.collection.selectTemplate(item, originalEvent)
-		if (data !== null) {
-			this.replaceText(data, originalEvent, item)
-		}
-	}
-
-	/**
-	 * @param {any} data
-	 * @param {Event} originalEvent
-	 * @param {TributeSearchResults<any>} item
-	 */
-	replaceText(data, originalEvent, item) {
-		this.range.replaceTriggerText(data, true, true, originalEvent, item)
+		this.range.replaceTriggerText(this.current.filteredItems[index], originalEvent)
 	}
 
 	/**

@@ -67,12 +67,12 @@ class TagsAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
-	 * Transform a tag entry into insertion data for the Tribute library.
+	 * Transform a tag entry into an Insertion.
 	 *
 	 * @override
 	 * @param {TagEntry} entry The tag entry to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').Insertion}
+	 * @returns {import('./autocompleteInsertion').Insertion}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		return {

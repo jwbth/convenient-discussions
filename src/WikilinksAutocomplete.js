@@ -97,7 +97,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
-	 * Transform a wikilink entry into insertion data for the Tribute library.
+	 * Transform a wikilink entry into an Insertion.
 	 *
 	 * Inserts a leading `:` after `[[` when:
 	 * - the page is in the Category namespace (namespace 14), or
@@ -106,7 +106,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 * @override
 	 * @param {WikilinkEntry} entry The wikilink entry to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').Insertion & { end: string }}
+	 * @returns {import('./autocompleteInsertion').Insertion & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		const {

@@ -101,12 +101,12 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
-	 * Transform a template name entry into insertion data for the Tribute library.
+	 * Transform a template name entry into an Insertion.
 	 *
 	 * @override
 	 * @param {string} entry The template name to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').Insertion & { end: string }}
+	 * @returns {import('./autocompleteInsertion').Insertion & { end: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		return {
@@ -140,31 +140,21 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 		return {
 			keepAsEnd: /^(?:\||\}\})/,
 			tabSelectsStartOnly: true,
-			selectTemplate: (option, event) => {
-				if (!option) {
-					return ''
-				}
+		}
+	}
 
-				// Handle special template data insertion for templates
-				if (this.manager?.useTemplateData && event.shiftKey && !event.altKey) {
-					const input = /** @type {import('./TextInputWidget').default} */ (
-						/** @type {HTMLElement} */ (this.manager.tribute.current.element).cdInput
-					)
-					setTimeout(() => this.insertTemplateData(option, input))
-				}
-
-				const selectionData = this.manager?.getSelectedTextForInsertion(option)
-
-				/** @type {import('./tribute/Tribute').Insertion} */
-				const insertion = this.getInsertionFromEntry(
-					option.original.entry,
-					selectionData?.selectedText,
-				)
-
-				this.manager?.applySelectionDataToInsertion(insertion, selectionData)
-
-				return insertion
-			},
+	/**
+	 * Insert the template's parameters from TemplateData when the option is chosen with Shift and
+	 * without Alt.
+	 *
+	 * @override
+	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<string>>} option
+	 * @param {KeyboardEvent | MouseEvent} event
+	 * @param {import('./TextInputWidget').default | undefined} input
+	 */
+	afterOptionChoose(option, event, input) {
+		if (this.manager?.useTemplateData && event.shiftKey && !event.altKey && input) {
+			setTimeout(() => this.insertTemplateData(option, input))
 		}
 	}
 

@@ -35,12 +35,12 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	}
 
 	/**
-	 * Transform a user name entry into insertion data for the Tribute library.
+	 * Transform a user name entry into an Insertion.
 	 *
 	 * @override
 	 * @param {string} entry The user name to transform
 	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').Insertion & { end: string, content: string }}
+	 * @returns {import('./autocompleteInsertion').Insertion & { end: string, content: string }}
 	 */
 	getInsertionFromEntry(entry, selectedText) {
 		const name = entry.trim()
