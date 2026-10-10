@@ -12,7 +12,7 @@ import { highlightLinkedComments } from './processUrl'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
 import { defined, underlinesToSpaces, unique } from './shared/utils-general'
-import { encodeWikilink, maskDistractingCode, normalizeCode } from './shared/utils-wikitext'
+import { encodeWikilink } from './shared/utils-wikitext'
 import toc from './toc'
 import { handleApiReject } from './utils-api'
 import { formatDate } from './utils-date'
@@ -2096,9 +2096,12 @@ class Section extends SectionSkeleton {
 	locateInCode(sectionCode) {
 		this.source = undefined
 
-		const source = this.searchInCode(
-			sectionCode || this.getSourcePage().source.getCode(),
-			Boolean(sectionCode),
+		const contextCode = sectionCode || this.getSourcePage().source.getCode()
+		const isInSectionContext = Boolean(sectionCode)
+		const source = SectionSource.locate(
+			contextCode,
+			this.buildSectionData(isInSectionContext),
+			isInSectionContext,
 		)
 		if (!source) {
 			throw new CdError({
@@ -2107,50 +2110,37 @@ class Section extends SectionSkeleton {
 			})
 		}
 
+		source.section = this
 		this.source = source
 
 		return source
 	}
 
 	/**
-	 * Search for the section in the source code and return possible matches.
+	 * Build the section data to locate the section with.
 	 *
-	 * @param {string} contextCode
-	 * @param {boolean} isInSectionContext
-	 * @returns {SectionSource | undefined}
+	 * @param {boolean} isInSectionContext Whether the section is located in its own code.
+	 * @returns {import('./SectionSource').SectionData}
 	 * @private
 	 */
-	searchInCode(contextCode, isInSectionContext) {
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const thisHeadline = normalizeCode(this.headline)
-		const adjustedContextCode = maskDistractingCode(contextCode, true)
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\u0001\u0002]*)\n/gm
+	buildSectionData(isInSectionContext) {
+		const lastComment = this.commentsInFirstChunk.at(-1)
 
-		const sourcesWithScores = []
-		/** @type {string[]} */
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const headlines = []
-		let sectionIndex = -1
-		let sectionHeadingMatch
-		while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedContextCode))) {
-			sectionIndex++
-			const sourceWithScore = new SectionSource({
-				section: this,
-				sectionHeadingMatch,
-				contextCode,
-				adjustedContextCode,
-				isInSectionContext,
-			}).calculateMatchScore(sectionIndex, thisHeadline, headlines)
-			if (sourceWithScore.score <= 1) continue
-
-			sourcesWithScores.push(sourceWithScore)
-
-			// Maximal possible score
-			if (sourceWithScore.score === 3.75) break
+		return {
+			headline: this.headline,
+			index: this.index,
+			previousHeadlines: this.manager
+				.getAll()
+				.slice(0, this.index)
+				.reverse()
+				.map((section) => section.headline),
+			oldestComment: this.oldestComment && {
+				author: this.oldestComment.author,
+				timestamp: this.oldestComment.timestamp,
+				text: this.oldestComment.getText(),
+			},
+			lastCommentData: lastComment?.buildCommentData(isInSectionContext),
 		}
-
-		return sourcesWithScores.sort((m1, m2) => m2.score - m1.score)[0]?.source
 	}
 
 	/**

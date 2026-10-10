@@ -3456,13 +3456,12 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Build the comment data to locate the comment with.
+	 * _For internal use._ Build the comment data to locate the comment with.
 	 *
 	 * @param {boolean} isInSectionContext Whether the comment is located in its section's code.
 	 * @param {import('./updateChecker').CommentWorkerBase} [matchedData] The worker's data of the
 	 *   comment in other code, to identify the comment by instead of its data on the page.
 	 * @returns {import('./CommentSource').CommentData}
-	 * @private
 	 */
 	buildCommentData(isInSectionContext, matchedData) {
 		let identification

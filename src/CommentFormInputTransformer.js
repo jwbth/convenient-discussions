@@ -85,7 +85,7 @@ class CommentFormInputTransformer extends TextMasker {
 			this.indentation = this.target.source.indentation
 		} else if (this.isMode('replyInSection')) {
 			const lastCommentIndentation = this.target.source.extractLastCommentIndentation(
-				this.commentForm,
+				this.commentForm.getContainerListType(),
 			)
 			this.indentation =
 				lastCommentIndentation &&

@@ -189,6 +189,7 @@ export function buildCorpusGroup(parsedGroup) {
 	/** @type {Section[]} */
 	const groupSections = []
 	const manager = { getAll: () => groupComments }
+	const sectionManager = { getAll: () => groupSections }
 
 	const cases = parsedGroup.cases.map(({ testCase, comments, sections }) => {
 		const sectionCodes = splitIntoSectionCodes(testCase.wikitext)
@@ -207,6 +208,7 @@ export function buildCorpusGroup(parsedGroup) {
 					index: groupSections.length,
 					presumedCode: sectionCodes[i],
 					sourcePage,
+					manager: sectionManager,
 				})
 			)
 			sectionMap.set(sectionWorker, section)

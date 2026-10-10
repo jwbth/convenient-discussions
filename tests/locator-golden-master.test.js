@@ -13,7 +13,6 @@
 import { beforeAll, describe, expect, test } from 'vitest'
 
 import cd from '../src/loader/cd'
-import sectionManager from '../src/sectionManager'
 import CdError from '../src/shared/CdError'
 
 import { buildCorpusGroup, parseCorpus } from './utils-locatorCorpus'
@@ -287,12 +286,7 @@ function recordSection(section, context, group) {
 		lastCommentIndentation: Object.fromEntries(
 			/** @type {const} */ (['ol', 'ul']).map((containerListType) => [
 				containerListType,
-				locateSection(section, context).extractLastCommentIndentation(
-					/** @type {any} */ ({
-						getContainerListType: () => containerListType,
-						isSectionSubmitted: () => context === 'section',
-					}),
-				),
+				locateSection(section, context).extractLastCommentIndentation(containerListType),
 			]),
 		),
 		replyInSection: tryOrError(() =>
@@ -323,7 +317,6 @@ describe.each(testGroups.map((group) => group.name))('%s', (groupName) => {
 		).map((testCase, i) => [testCase.headline, i]),
 	)('%s', (_headline, caseIndex) => {
 		const group = /** @type {CorpusGroup} */ (groups.get(groupName))
-		Object.assign(sectionManager, { items: group.sections })
 		const { comments, sections } = group.cases[/** @type {number} */ (caseIndex)]
 
 		const result = {

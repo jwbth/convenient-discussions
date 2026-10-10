@@ -60,6 +60,7 @@ function testWithData({ label, code, expected, commentForm, action = 'submit', c
 			isMode: (/** @type {string} */ mode) => commentForm.mode === mode,
 			getTarget: () => commentForm.target,
 			isNewSectionApi: () => commentForm.newSectionApi,
+			getContainerListType: () => commentForm.containerListType,
 		})
 		Object.assign(commentForm.target, {
 			TYPE: ['addSection', 'addSubsection'].includes(commentForm.mode)
