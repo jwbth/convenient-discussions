@@ -31,6 +31,17 @@
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 			}
 
+			// Guard against redirects to an untrusted origin and against unexpected content
+			// types before the response body is ever executed as code.
+			if (!response.url.startsWith('http://localhost:9000/')) {
+				throw new Error('Response came from an unexpected origin, refusing to execute it')
+			}
+
+			const contentType = response.headers.get('content-type') || ''
+			if (!contentType.includes('javascript')) {
+				throw new Error(`Unexpected content type "${contentType}", refusing to execute it`)
+			}
+
 			return response.text()
 		})
 		.then((code) => {
