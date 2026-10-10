@@ -486,7 +486,8 @@ export default defineConfig(({ mode, command }) => {
 	}
 
 	const host = 'localhost'
-	const port = 9000
+	// Overridable to run a second server, e.g. from a git worktree, next to the main one
+	const port = Number(process.env.CD_DEV_PORT) || 9000
 
 	// Add inline worker string plugin (must be early in pipeline)
 	plugins.push(

@@ -34,7 +34,7 @@ npx playwright test --headed
 
 ## How It Works
 
-Tests run against live Wikipedia pages with the Convenient Discussions script injected from the local dev server (`http://localhost:9000`). Make sure the dev server is running before executing tests.
+Tests run against live Wikipedia pages with the Convenient Discussions script injected from the local dev server (`http://localhost:9000`, or the port in the `CD_DEV_PORT` environment variable). Make sure the dev server is running before executing tests.
 
 Each test calls `setupConvenientDiscussions(page)` from `helpers/test-utils.js`, which:
 

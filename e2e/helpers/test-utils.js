@@ -19,6 +19,9 @@ async function waitForConvenientDiscussions(page) {
 	)
 }
 
+// Mirrors the port logic in vite.config.js
+const DEV_STARTUP_URL = `http://localhost:${process.env.CD_DEV_PORT || 9000}/src/loader/startup.js`
+
 /**
  * Test page URLs for different scenarios
  */
@@ -305,7 +308,7 @@ async function getConsoleMessages(page) {
 
 /**
  * Complete setup for Convenient Discussions browser testing using the development server.
- * This injects the script from localhost:9000 instead of the built dist file.
+ * This injects the script from the dev server instead of the built dist file.
  *
  * @param {import('@playwright/test').Page} page
  * @param {string | { url?: string, settings?: Record<string, unknown> }} [urlOrOptions]
@@ -319,10 +322,9 @@ async function setupConvenientDiscussions(page, urlOrOptions = TEST_PAGES.JWBTH_
 		page,
 		url,
 		async () => {
-			// Inject the development script from localhost:9000
 			await page.addScriptTag({
 				type: 'module',
-				url: 'http://localhost:9000/src/loader/startup.js',
+				url: DEV_STARTUP_URL,
 			})
 		},
 		settings,
@@ -395,6 +397,7 @@ function getSectionButtonContainer(page, headline) {
 }
 
 export {
+	DEV_STARTUP_URL,
 	TEST_PAGES,
 	waitForConvenientDiscussions,
 	setupConvenientDiscussionsFromDevBuild,

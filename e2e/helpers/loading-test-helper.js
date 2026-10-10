@@ -2,7 +2,7 @@
 import { expect } from '@playwright/test'
 
 import { ensureAuthenticated } from './login.js'
-import { shouldIgnoreConsoleMessage } from './test-utils.js'
+import { DEV_STARTUP_URL, shouldIgnoreConsoleMessage } from './test-utils.js'
 
 /**
  * Shared logic for basic loading tests.
@@ -83,7 +83,7 @@ export async function runBasicLoadingTest(page, url, options = {}) {
 	// Inject the built Convenient Discussions script
 	await page.addScriptTag({
 		type: 'module',
-		url: 'http://localhost:9000/src/loader/startup.js',
+		url: DEV_STARTUP_URL,
 	})
 	console.log('💉 Convenient Discussions script injected from dev server')
 
