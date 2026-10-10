@@ -98,8 +98,10 @@ global.mw = /** @type {any} */ ({
 		},
 	},
 	util: {
+		// MediaWiki's implementation: callers such as generatePageNamePattern() rely on spaces staying
+		// unescaped.
 		escapeRegExp: (/** @type {string} */ str) =>
-			str.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, String.raw`\$&`),
+			str.replace(/([\\{}()|.?*+\-^$[\]])/g, String.raw`\$1`),
 		getUrl: (/** @type {string} */ page) => `/wiki/${encodeURIComponent(page)}`,
 		isIPv6Address: () => false,
 	},

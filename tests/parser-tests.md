@@ -14,7 +14,7 @@ Parser tests verify the correctness of the page parsing logic by running it in a
 - **tests/worker-regenerate-test-cases.test.js**: Regenerates test cases with current parser output
 - **tests/worker-test-cases-regenerated.json**: Output file from regeneration (temporary)
 
-Each case carries the `wikitext` it was rendered from next to its `html`. The locator's golden master (the test of locating comments and sections in wikitext) runs over these cases' wikitext, so keep it in sync with the HTML: replace both together when reconverting.
+Each case carries the `wikitext` it was rendered from next to its `html`. The locator's golden master (`tests/locator-golden-master.test.js`) runs over these cases' wikitext, so keep it in sync with the HTML: replace both together when reconverting. A corpus change is the one legitimate reason to update the golden master's snapshot (`-u`), in the same commit.
 
 ## Adding New Tests
 
