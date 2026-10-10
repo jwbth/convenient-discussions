@@ -1159,15 +1159,28 @@ export function cleanUpPasteDom(element, containerElement) {
  * `resource` and the link target relative to the wiki, while copying makes them absolute.
  *
  * @param {Element} fileElement
- * @returns {boolean} Whether the file name is known.
+ * @returns {boolean} Whether the file is known to exist on this wiki.
  */
 function prepareFileForConversion(fileElement) {
 	const img = fileElement.querySelector('img')
+	const src = img?.getAttribute('src') || ''
 
 	// Take the name from the upload path, e.g. `…/commons/thumb/d/db/Name.svg/40px-Name.svg.png`,
 	// as the legacy parser doesn't add `resource`.
-	const fileName = img?.getAttribute('src')?.match(/\/[\da-f]\/[\da-f]{2}\/([^/?#]+)/)?.[1]
-	if (!img || !fileName) {
+	const fileName = src.match(/\/[\da-f]\/[\da-f]{2}\/([^/?#]+)/)?.[1]
+	const link = img?.closest('a')
+	const filePageUrl =
+		img?.getAttribute('resource') ||
+		(link?.classList.contains('mw-file-description') && link.getAttribute('href'))
+	if (
+		!img ||
+		!fileName ||
+		// A link to a file missing on this wiki would be worse than no image.
+		!(
+			(cd.g.isProbablyWmfSulWiki && src.includes('/wikipedia/commons/')) ||
+			(filePageUrl && parseWikiUrl(filePageUrl)?.hostname === location.hostname)
+		)
+	) {
 		return false
 	}
 
@@ -1178,7 +1191,6 @@ function prepareFileForConversion(fileElement) {
 		decodeURIComponent(fileName).replace(/_/g, ' ')
 	img.setAttribute('resource', resource)
 
-	const link = img.closest('a')
 	if (link?.classList.contains('mw-file-description')) {
 		link.setAttribute('href', resource)
 	} else if (link) {

@@ -8,6 +8,7 @@ import { cleanUpPasteDom, getElementFromPasteHtml } from '../src/utils-window'
 cd.config = /** @type {any} */ ({ paragraphTemplates: [] })
 Object.assign(cd.g, {
 	serverName: 'ru.wikipedia.org',
+	isProbablyWmfSulWiki: true,
 	articlePathRegexp: /^\/wiki\/(.*)/,
 	startsWithScriptTitleRegexp: /^\/w\/index\.php\?title=/,
 })
@@ -76,6 +77,34 @@ describe('cleanUpPasteDom', () => {
 		)
 
 		expect(element.innerHTML).toBe('между <a href="https://ru.wikipedia.org/wiki/B">B</a>')
+	})
+
+	test.each([
+		[
+			'a Commons file from another wiki on a wiki without Commons',
+			false,
+			`<img resource="https://en.wikipedia.org/wiki/File:X.svg" src="${iconSrc}">`,
+			false,
+		],
+		[
+			'a local file of another wiki',
+			true,
+			'<img resource="https://uk.wikipedia.org/wiki/Файл:X.png" ' +
+				'src="https://upload.wikimedia.org/wikipedia/uk/a/ab/X.png">',
+			false,
+		],
+		[
+			'a file of this wiki',
+			false,
+			'<img resource="./Файл:X.png" src="/images/a/ab/X.png">',
+			true,
+		],
+	])('%s is kept: %s', (_description, isProbablyWmfSulWiki, imgHtml, isKept) => {
+		cd.g.isProbablyWmfSulWiki = isProbablyWmfSulWiki
+		const { element } = cleanUp(`<span typeof="mw:File">${imgHtml}</span> text`)
+		cd.g.isProbablyWmfSulWiki = true
+
+		expect(Boolean(element.querySelector('img'))).toBe(isKept)
 	})
 
 	test('keeps runs of spaces in code', () => {
