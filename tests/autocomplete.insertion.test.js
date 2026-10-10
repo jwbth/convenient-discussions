@@ -5,7 +5,6 @@ vi.mock('../src/utils-window', () => ({
 	interlanguagePrefixes: new Set(),
 	allowedTags: [],
 }))
-vi.mock('../src/AutocompleteFactory', () => ({ default: { create: vi.fn() } }))
 vi.mock('../src/loader/cd', () => ({
 	default: { settings: { get: () => [] }, g: {} },
 }))
