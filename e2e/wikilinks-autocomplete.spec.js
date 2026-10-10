@@ -53,6 +53,15 @@ test.describe('Wikilinks autocomplete', () => {
 
 		await expect(textarea).toHaveValue(`[[${page}]] after`)
 	})
+
+	test('wraps the selection as the link label when typing a trigger over it', async () => {
+		await textarea.type('see label')
+		await textarea.press('Shift+Home')
+		await textarea.type('[[Main Pa')
+		const page = await chooseHighlighted()
+
+		await expect(textarea).toHaveValue(`[[${page}|see label]]`)
+	})
 })
 
 /**
