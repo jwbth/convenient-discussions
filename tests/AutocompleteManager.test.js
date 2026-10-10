@@ -64,17 +64,18 @@ describe('AutocompleteManager.onOptionChoose', () => {
 		expect(makeManager('a [[').manager.onOptionChoose(undefined, event, context)).toEqual([])
 	})
 
-	it('replaces the trigger text with the insertion and calls the after-choice hook', () => {
+	it('replaces the trigger text with the insertion, then calls the after-choice hook', () => {
 		const { manager, input } = makeManager('a [[')
 		const option = makeOption()
+		const { autocomplete } = option.original
+		const getInsertionFromEntry = vi.spyOn(autocomplete, 'getInsertionFromEntry')
 
 		expect(manager.onOptionChoose(option, event, context)).toEqual([
 			{ from: 2, to: 4, insert: '[[Main Page]]', selection: undefined },
 		])
-		expect(option.original.autocomplete.afterOptionChoose).toHaveBeenCalledWith(
-			option,
-			event,
-			input,
+		expect(autocomplete.afterOptionChoose).toHaveBeenCalledWith(option, event, input)
+		expect(autocomplete.afterOptionChoose.mock.invocationCallOrder[0]).toBeGreaterThan(
+			getInsertionFromEntry.mock.invocationCallOrder[0],
 		)
 	})
 
