@@ -46,19 +46,16 @@ describe('AutocompleteManager.onOptionChoose', () => {
 		return { manager, input }
 	}
 
-	const makeOption = () => {
-		const autocomplete = Object.assign(Object.create(wikilinks), { afterOptionChoose: vi.fn() })
-
-		return /** @type {any} */ ({
+	const makeOption = () =>
+		/** @type {any} */ ({
 			original: {
 				entry: {
 					title: { getNamespaceId: () => 0, getMainText: () => 'Main Page' },
 					pageName: 'Main Page',
 				},
-				autocomplete,
+				autocomplete: Object.assign(Object.create(wikilinks), { afterOptionChoose: vi.fn() }),
 			},
 		})
-	}
 
 	it('returns no replacements without an option', () => {
 		expect(makeManager('a [[').manager.onOptionChoose(undefined, event, context)).toEqual([])

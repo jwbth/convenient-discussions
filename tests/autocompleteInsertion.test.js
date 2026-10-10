@@ -338,15 +338,15 @@ describe('getReplacements', () => {
 		})
 
 		it('does not select even with Shift or selectContent', () => {
-			const { replacements } = complete({
-				before: '{{Fo',
-				trigger: '{{',
-				insertion: (keys) => ({ ...templateInsertion('Foo')(keys), selectContent: true }),
-				traits: templates,
-				event: { key: 'Tab', shiftKey: true },
-			})
-
-			expect(replacements[0].selection).toBeUndefined()
+			expect(
+				complete({
+					before: '{{Fo',
+					trigger: '{{',
+					insertion: (keys) => ({ ...templateInsertion('Foo')(keys), selectContent: true }),
+					traits: templates,
+					event: { key: 'Tab', shiftKey: true },
+				}).replacements[0].selection,
+			).toBeUndefined()
 		})
 
 		it('drops a previously selected text instead of wrapping it', () => {
@@ -365,21 +365,18 @@ describe('getReplacements', () => {
 
 		it('ignores the Shift, Alt, and Ctrl modifiers', () => {
 			const getInsertion = vi.fn(templateInsertion('Foo'))
-			const { result } = complete({
-				before: '{{Fo',
-				trigger: '{{',
-				insertion: getInsertion,
-				traits: templates,
-				event: { key: 'Tab', shiftKey: true, altKey: true, ctrlKey: true },
-				savedSelections: [savedSelection('foo', 0)],
-			})
 
-			expect(getInsertion).toHaveBeenCalledExactlyOnceWith({
-				shift: false,
-				alt: false,
-				cmd: false,
-			})
-			expect(result).toBe('{{Foo')
+			expect(
+				complete({
+					before: '{{Fo',
+					trigger: '{{',
+					insertion: getInsertion,
+					traits: templates,
+					event: { key: 'Tab', shiftKey: true, altKey: true, ctrlKey: true },
+					savedSelections: [savedSelection('foo', 0)],
+				}).result,
+			).toBe('{{Foo')
+			expect(getInsertion).toHaveBeenCalledExactlyOnceWith({ shift: false, alt: false, cmd: false })
 		})
 
 		it('acts like Enter without tabSelectsStartOnly', () => {
@@ -450,13 +447,13 @@ describe('getReplacements', () => {
 		})
 
 		it('does not select with selectContent when there is content', () => {
-			const { replacements } = complete({
-				before: '<sm',
-				trigger: '<',
-				insertion: { start: '<small>', content: 'x', end: '</small>', selectContent: true },
-			})
-
-			expect(replacements[0].selection).toBeUndefined()
+			expect(
+				complete({
+					before: '<sm',
+					trigger: '<',
+					insertion: { start: '<small>', content: 'x', end: '</small>', selectContent: true },
+				}).replacements[0].selection,
+			).toBeUndefined()
 		})
 
 		it('selects content with Shift', () => {
@@ -612,16 +609,16 @@ describe('getReplacements', () => {
 
 	describe('multiple selection ranges', () => {
 		it('replaces at every range, sorted by position, with a selection per range', () => {
-			const { replacements } = complete({
-				before: 'x {{ y {{',
-				trigger: '{{',
-				insertion: templateInsertion('Foo'),
-				traits: templates,
-				savedSelections: [savedSelection('a', 2), savedSelection('b', 7, '', ' ')],
-				carets: [9, 4],
-			})
-
-			expect(replacements).toEqual([
+			expect(
+				complete({
+					before: 'x {{ y {{',
+					trigger: '{{',
+					insertion: templateInsertion('Foo'),
+					traits: templates,
+					savedSelections: [savedSelection('a', 2), savedSelection('b', 7, '', ' ')],
+					carets: [9, 4],
+				}).replacements,
+			).toEqual([
 				{ from: 2, to: 4, insert: '{{Foo|a}}', selection: undefined },
 				{ from: 7, to: 9, insert: '{{Foo|b}} ', selection: undefined },
 			])
@@ -642,48 +639,48 @@ describe('getReplacements', () => {
 		})
 
 		it('falls back to the single caret when some range is not collapsed', () => {
-			const replacements = getReplacements({
-				getInsertion: templateInsertion('Foo'),
-				event: {},
-				isMac: false,
-				traits: templates,
-				context: { triggerText: '{{', query: '', mentionPosition: 7 },
-				text: 'x {{ y {{',
-				selectionRanges: [
-					{ from: 2, to: 4 },
-					{ from: 9, to: 9 },
-				],
-				savedSelections: [],
-			})
-
-			expect(replacements).toEqual([{ from: 7, to: 9, insert: '{{Foo}}', selection: undefined }])
+			expect(
+				getReplacements({
+					getInsertion: templateInsertion('Foo'),
+					event: {},
+					isMac: false,
+					traits: templates,
+					context: { triggerText: '{{', query: '', mentionPosition: 7 },
+					text: 'x {{ y {{',
+					selectionRanges: [
+						{ from: 2, to: 4 },
+						{ from: 9, to: 9 },
+					],
+					savedSelections: [],
+				}),
+			).toEqual([{ from: 7, to: 9, insert: '{{Foo}}', selection: undefined }])
 		})
 
 		it('falls back to the single caret when the trigger text would start before the text', () => {
-			const { replacements } = complete({
-				before: '[[Ma',
-				trigger: '[[',
-				insertion: wikilinkInsertion('Main'),
-				traits: wikilinks,
-				carets: [1, 4],
-			})
-
-			expect(replacements).toEqual([{ from: 0, to: 4, insert: '[[Main]]', selection: undefined }])
+			expect(
+				complete({
+					before: '[[Ma',
+					trigger: '[[',
+					insertion: wikilinkInsertion('Main'),
+					traits: wikilinks,
+					carets: [1, 4],
+				}).replacements,
+			).toEqual([{ from: 0, to: 4, insert: '[[Main]]', selection: undefined }])
 		})
 
 		it('takes the single caret path for one range', () => {
-			const replacements = getReplacements({
-				getInsertion: templateInsertion('Foo'),
-				event: {},
-				isMac: false,
-				traits: templates,
-				context: { triggerText: '{{', query: '', mentionPosition: 7 },
-				text: 'x {{ y {{',
-				selectionRanges: [{ from: 4, to: 4 }],
-				savedSelections: [],
-			})
-
-			expect(replacements).toEqual([{ from: 7, to: 9, insert: '{{Foo}}', selection: undefined }])
+			expect(
+				getReplacements({
+					getInsertion: templateInsertion('Foo'),
+					event: {},
+					isMac: false,
+					traits: templates,
+					context: { triggerText: '{{', query: '', mentionPosition: 7 },
+					text: 'x {{ y {{',
+					selectionRanges: [{ from: 4, to: 4 }],
+					savedSelections: [],
+				}),
+			).toEqual([{ from: 7, to: 9, insert: '{{Foo}}', selection: undefined }])
 		})
 	})
 })
