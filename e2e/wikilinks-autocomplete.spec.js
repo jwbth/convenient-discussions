@@ -87,7 +87,7 @@ test.describe('Wikilinks autocomplete', () => {
 
 		await expect(textarea).toHaveValue(`[[${page}|${page}]]`)
 		expect(
-			await textarea.evaluate((element) =>
+			await textarea.evaluate((/** @type {HTMLTextAreaElement} */ element) =>
 				element.value.slice(element.selectionStart, element.selectionEnd),
 			),
 		).toBe(page)
