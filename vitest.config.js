@@ -6,6 +6,11 @@ export default defineConfig({
 		environment: 'jsdom',
 		setupFiles: ['./tests/setup.js'],
 		include: ['tests/**/*.test.js'],
+
+		// The worker tests' first import transforms the whole worker module graph, which under the
+		// full suite's load can exceed the defaults (10 s for hooks, 5 s for tests).
+		hookTimeout: 30_000,
+		testTimeout: 30_000,
 	},
 	// define: {
 	// 	IS_DEV: true,
