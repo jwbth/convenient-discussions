@@ -12,6 +12,9 @@ import { allowedTags } from './utils-window'
  * with parameters.
  */
 class TagsAutocomplete extends BaseAutocomplete {
+	/** @override */
+	allowNesting = true
+
 	/**
 	 * Create the default lazy loading function for tags.
 	 *
@@ -75,11 +78,16 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 * @returns {import('./autocompleteInsertion').Insertion}
 	 */
 	getInsertionFromEntry(entry, { selectedText } = {}) {
+		const end = Array.isArray(entry) ? entry[2] : `</${entry}>`
+
+		// A self-closing tag like `<references />` can't wrap the selected text.
+		const content = end ? selectedText : undefined
+
 		return {
 			start: Array.isArray(entry) ? entry[1] : `<${entry}>`,
-			end: Array.isArray(entry) ? entry[2] : `</${entry}>`,
-			content: selectedText,
-			selectContent: !selectedText,
+			end,
+			content,
+			selectContent: !content,
 			keepAsEnd: /^>/,
 		}
 	}
@@ -143,18 +151,6 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 */
 	getLabelFromEntry(entry) {
 		return Array.isArray(entry) ? entry[0] : entry
-	}
-
-	/**
-	 * Get collection-specific properties for Tribute configuration.
-	 *
-	 * @override
-	 * @returns {Partial<import('./tribute/Tribute').TributeCollection>} Collection properties
-	 */
-	getCollectionProperties() {
-		return {
-			allowNesting: true,
-		}
 	}
 }
 

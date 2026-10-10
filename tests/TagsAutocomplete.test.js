@@ -71,6 +71,12 @@ describe('TagsAutocomplete.getInsertionFromEntry', () => {
 		expect(autocomplete.getInsertionFromEntry(['br', '<br>']).end).toBeUndefined()
 	})
 
+	it('ignores the selected text for a self-closing tag', () => {
+		expect(
+			autocomplete.getInsertionFromEntry(['references', '<references />'], { selectedText: 'foo' }),
+		).toMatchObject({ content: undefined, selectContent: true })
+	})
+
 	it('uses custom start and end markup', () => {
 		const entry = autocomplete.getDefaultEntries().find((item) => item[0] === 'gallery')
 
@@ -107,8 +113,4 @@ it.each([
 	['b c', false],
 ])('validates %j as %s', (text, expected) => {
 	expect(autocomplete.validateInput(text)).toBe(expected)
-})
-
-it('allows nesting', () => {
-	expect(autocomplete.getCollectionProperties().allowNesting).toBe(true)
 })

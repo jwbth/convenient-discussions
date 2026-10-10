@@ -80,6 +80,9 @@ const labeledKeepAsEnd = /^[^[\]{}|#\n]{0,50}(?:#[^[\]{}|\n]{0,255})?(?:\|[^[\]{
  * @augments BaseAutocomplete
  */
 class WikilinksAutocomplete extends BaseAutocomplete {
+	/** @override */
+	tabSelectsStartOnly = true
+
 	/**
 	 * @override
 	 * @returns {string}
@@ -782,7 +785,6 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	getCollectionProperties() {
 		return {
-			tabSelectsStartOnly: true,
 			menuItemTemplate: (
 				/** @type {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<WikilinkEntry>>} */ item,
 			) => {

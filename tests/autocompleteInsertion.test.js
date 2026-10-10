@@ -28,9 +28,6 @@ const templates = new TemplatesAutocomplete()
 const tags = new TagsAutocomplete()
 const mentions = new MentionsAutocomplete()
 
-const wikilinksTraits = wikilinks.getCollectionProperties()
-const templatesTraits = templates.getCollectionProperties()
-const tagsTraits = tags.getCollectionProperties()
 
 /** @typedef {import('../src/autocompleteInsertion').InsertionSource} InsertionSource */
 
@@ -96,6 +93,7 @@ const savedSelection = (selectedText, start, leadingSpaces = '', trailingSpaces 
  * @param {boolean} [options.isMac]
  * @param {number[]} [options.carets] Caret positions of all selection ranges.
  * @param {import('../src/autocompleteInsertion').SavedSelection[]} [options.savedSelections]
+ * @param {number} [options.triggerPos] Defaults to the position of the trigger.
  */
 function complete({
 	before,
@@ -107,6 +105,7 @@ function complete({
 	isMac = false,
 	carets = [before.length],
 	savedSelections = [],
+	triggerPos,
 }) {
 	const text = before + after
 	const mentionPosition = before.lastIndexOf(trigger)
@@ -119,6 +118,7 @@ function complete({
 			triggerText: trigger,
 			query: before.slice(mentionPosition + trigger.length),
 			mentionPosition,
+			triggerPos: triggerPos ?? mentionPosition,
 		},
 		text,
 		selectionRanges: carets.map((caret) => ({ from: caret, to: caret })),
@@ -172,7 +172,7 @@ describe('getReplacements', () => {
 		 * @param {import('../src/autocompleteInsertion').KeyState} [event]
 		 */
 		const completeMainPage = (after, event) =>
-			complete({ before: '[[Main Pa', after, trigger: '[[', insertion, traits: wikilinksTraits, event })
+			complete({ before: '[[Main Pa', after, trigger: '[[', insertion, traits: wikilinks, event })
 
 		it('completes a new link', () => {
 			expect(completeMainPage('').result).toBe('[[Main Page]]')
@@ -236,7 +236,7 @@ describe('getReplacements', () => {
 					after: 'w old|label]]',
 					trigger: '[[',
 					insertion: wikilinkInsertion('Foo', 'New'),
-					traits: wikilinksTraits,
+					traits: wikilinks,
 				}).result,
 			).toBe('[[Foo#New|label]]')
 		})
@@ -248,7 +248,7 @@ describe('getReplacements', () => {
 					after: 'o#Old]]',
 					trigger: '[[',
 					insertion: wikilinkInsertion('Foo bar'),
-					traits: wikilinksTraits,
+					traits: wikilinks,
 				}).result,
 			).toBe('[[Foo bar#Old]]')
 		})
@@ -258,7 +258,7 @@ describe('getReplacements', () => {
 				before: '[[Main Pa',
 				trigger: '[[',
 				insertion: wikilinkInsertion('Main Page'),
-				traits: wikilinksTraits,
+				traits: wikilinks,
 				savedSelections: [savedSelection('label', 0)],
 			})
 
@@ -275,7 +275,7 @@ describe('getReplacements', () => {
 				after,
 				trigger: '{{',
 				insertion: templateInsertion('Foo'),
-				traits: templatesTraits,
+				traits: templates,
 			}).result
 
 		it('uses the group as the end: `}}`', () => {
@@ -295,7 +295,7 @@ describe('getReplacements', () => {
 				before: '{{Fo',
 				trigger: '{{',
 				insertion: templateInsertion('Foo'),
-				traits: templatesTraits,
+				traits: templates,
 				event: { key: 'Enter', shiftKey: true },
 			})
 
@@ -311,7 +311,7 @@ describe('getReplacements', () => {
 				after: '>',
 				trigger: '<',
 				insertion: tagInsertion('small'),
-				traits: tagsTraits,
+				traits: tags,
 			})
 
 			expect(result).toBe('<small></small>')
@@ -329,7 +329,7 @@ describe('getReplacements', () => {
 				after: ' (old tail)]] after',
 				trigger: '[[',
 				insertion: wikilinkInsertion('Main Page'),
-				traits: wikilinksTraits,
+				traits: wikilinks,
 				event: tab,
 			})
 
@@ -342,7 +342,7 @@ describe('getReplacements', () => {
 				before: '{{Fo',
 				trigger: '{{',
 				insertion: (keys) => ({ ...templateInsertion('Foo')(keys), selectContent: true }),
-				traits: templatesTraits,
+				traits: templates,
 				event: { key: 'Tab', shiftKey: true },
 			})
 
@@ -356,7 +356,7 @@ describe('getReplacements', () => {
 					after: 'b',
 					trigger: '[[',
 					insertion: wikilinkInsertion('Main Page'),
-					traits: wikilinksTraits,
+					traits: wikilinks,
 					event: tab,
 					savedSelections: [savedSelection('foo', 2, ' ', ' ')],
 				}).result,
@@ -369,7 +369,7 @@ describe('getReplacements', () => {
 				before: '{{Fo',
 				trigger: '{{',
 				insertion: getInsertion,
-				traits: templatesTraits,
+				traits: templates,
 				event: { key: 'Tab', shiftKey: true, altKey: true, ctrlKey: true },
 				savedSelections: [savedSelection('foo', 0)],
 			})
@@ -389,7 +389,7 @@ describe('getReplacements', () => {
 					before: '<sm',
 					trigger: '<',
 					insertion: tagInsertion('small'),
-					traits: tagsTraits,
+					traits: tags,
 					event: tab,
 				}).result,
 			).toBe('<small></small>')
@@ -409,7 +409,7 @@ describe('getReplacements', () => {
 				after,
 				trigger: '[[',
 				insertion: wikilinkInsertion(pageName),
-				traits: wikilinksTraits,
+				traits: wikilinks,
 				event,
 			}).result
 
@@ -480,10 +480,70 @@ describe('getReplacements', () => {
 					after: 'b',
 					trigger: '[[',
 					insertion: wikilinkInsertion('Main Page'),
-					traits: wikilinksTraits,
-					savedSelections: [savedSelection('foo', 0, ' ', '  ')],
+					traits: wikilinks,
+					savedSelections: [savedSelection('foo', 2, ' ', '  ')],
 				}).result,
 			).toBe('a  [[Main Page|foo]]  b')
+		})
+
+		/**
+		 * @param {import('../src/autocompleteInsertion').SavedSelection[]} savedSelections
+		 * @param {number} [triggerPos]
+		 */
+		const completeLink = (savedSelections, triggerPos) =>
+			complete({
+				before: 'a [[',
+				trigger: '[[',
+				insertion: wikilinkInsertion('Main Page'),
+				traits: wikilinks,
+				savedSelections,
+				triggerPos,
+			}).result
+
+		it('is ignored when it does not start at the trigger', () => {
+			expect(completeLink([savedSelection('foo', 5)])).toBe('a [[Main Page]]')
+		})
+
+		it('skips the start check when there are several', () => {
+			expect(completeLink([savedSelection('a', 10), savedSelection('b', 20)])).toBe(
+				'a [[Main Page|a]]',
+			)
+		})
+
+		it('is ignored when it contains the trigger', () => {
+			expect(completeLink([savedSelection('a [[b]]', 2)])).toBe('a [[Main Page]]')
+		})
+
+		it('is ignored when any of several contains the trigger', () => {
+			expect(completeLink([savedSelection('a', 1), savedSelection('[[b]]', 9)])).toBe(
+				'a [[Main Page]]',
+			)
+		})
+
+		it('contains the trigger when the autocomplete allows nesting', () => {
+			expect(
+				complete({
+					before: 'a <',
+					trigger: '<',
+					insertion: tagInsertion('small'),
+					traits: tags,
+					savedSelections: [savedSelection('<b>x</b>', 2)],
+				}).result,
+			).toBe('a <small><b>x</b></small>')
+		})
+
+		it('is ignored by an Insertion without an end', () => {
+			const { result, selected } = complete({
+				before: 'a <',
+				after: ' b',
+				trigger: '<',
+				insertion: tagInsertion(['references', '<references />']),
+				traits: tags,
+				savedSelections: [savedSelection('foo', 2, '', ' ')],
+			})
+
+			expect(result).toBe('a <references /> b')
+			expect(selected).toBe('')
 		})
 	})
 
@@ -536,7 +596,7 @@ describe('getReplacements', () => {
 				before: '[[',
 				trigger: '[[',
 				insertion: getInsertion,
-				traits: wikilinksTraits,
+				traits: wikilinks,
 				event: { key: 'Enter', shiftKey: true, altKey: true, metaKey: true },
 				isMac: true,
 				savedSelections: [savedSelection('foo', 0)],
@@ -557,7 +617,7 @@ describe('getReplacements', () => {
 				before: 'x {{ y {{',
 				trigger: '{{',
 				insertion: templateInsertion('Foo'),
-				traits: templatesTraits,
+				traits: templates,
 				savedSelections: [savedSelection('a', 2), savedSelection('b', 7, '', ' ')],
 				carets: [9, 4],
 			})
@@ -574,7 +634,7 @@ describe('getReplacements', () => {
 				after: ' y {',
 				trigger: '{{',
 				insertion: templateInsertion('Foo'),
-				traits: templatesTraits,
+				traits: templates,
 				carets: [8, 4],
 			})
 
@@ -587,7 +647,7 @@ describe('getReplacements', () => {
 				getInsertion: templateInsertion('Foo'),
 				event: {},
 				isMac: false,
-				traits: templatesTraits,
+				traits: templates,
 				context: { triggerText: '{{', query: '', mentionPosition: 7 },
 				text: 'x {{ y {{',
 				selectionRanges: [
@@ -605,7 +665,7 @@ describe('getReplacements', () => {
 				before: '[[Ma',
 				trigger: '[[',
 				insertion: wikilinkInsertion('Main'),
-				traits: wikilinksTraits,
+				traits: wikilinks,
 				carets: [1, 4],
 			})
 
@@ -617,7 +677,7 @@ describe('getReplacements', () => {
 				getInsertion: templateInsertion('Foo'),
 				event: {},
 				isMac: false,
-				traits: templatesTraits,
+				traits: templates,
 				context: { triggerText: '{{', query: '', mentionPosition: 7 },
 				text: 'x {{ y {{',
 				selectionRanges: [{ from: 4, to: 4 }],

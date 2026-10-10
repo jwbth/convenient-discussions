@@ -53,10 +53,6 @@ import tributeCss from './tribute.less?inline'
  *   results list
  * @property {string} [selectClass='highlight'] Class added in the flyout menu for active item
  * @property {string} [trigger='@'] Symbol or string that starts the lookup
- * @property {boolean} [tabSelectsStartOnly] Whether Tab inserts only `data.start` (no content/end
- *   wrapping), unlike Enter which inserts the full text
- * @property {boolean} [allowNesting=false] Whether this autocomplete type allows nesting of the
- *   same trigger
  */
 
 /**
@@ -160,8 +156,6 @@ class Tribute {
 			menuItemLimit = null,
 			menuShowMinLength = 0,
 			direction = 'ltr',
-			allowNesting = false,
-			tabSelectsStartOnly = false,
 		},
 	) {
 		if (!Tribute.cssInjected) {
@@ -229,8 +223,6 @@ class Tribute {
 				menuItemLimit: item.menuItemLimit || menuItemLimit,
 				menuShowMinLength: item.menuShowMinLength || menuShowMinLength,
 				label: item.label,
-				allowNesting: item.allowNesting || allowNesting,
-				tabSelectsStartOnly: item.tabSelectsStartOnly || tabSelectsStartOnly,
 			}
 		})
 

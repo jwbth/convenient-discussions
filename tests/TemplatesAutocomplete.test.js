@@ -75,10 +75,6 @@ it('keeps an existing pipe or closing braces after the caret as the end', () => 
 	expect(keepAsEnd?.test('} ')).toBe(false)
 })
 
-it('Tab inserts the name only', () => {
-	expect(autocomplete.getCollectionProperties().tabSelectsStartOnly).toBe(true)
-})
-
 describe('TemplatesAutocomplete.afterOptionChoose', () => {
 	const option = /** @type {any} */ ({ original: { entry: 'Foo', label: 'Foo' } })
 	const input = /** @type {any} */ ({})

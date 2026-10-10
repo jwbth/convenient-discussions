@@ -40,6 +40,7 @@
 /**
  * @typedef {object} InsertionTraits
  * @property {boolean} [tabSelectsStartOnly] Whether Tab inserts only the start, unlike Enter
+ * @property {boolean} [allowNesting] Whether a saved selection containing the trigger is wrapped
  */
 
 /**
@@ -91,28 +92,38 @@ function getAutoClosers(text) {
  * @param {TriggerContext} options.context
  * @param {string} options.text The input's text.
  * @param {SelectionRange[]} options.selectionRanges The input's selection ranges.
- * @param {SavedSelection[]} options.savedSelections Saved selections that the Insertion wraps.
+ * @param {SavedSelection[]} options.savedSelections The input's saved selections.
  * @returns {TextReplacement[]} Empty when nothing can be replaced.
  */
 export function getReplacements({
 	getInsertion,
 	event,
 	isMac,
-	traits: { tabSelectsStartOnly = false },
+	traits: { tabSelectsStartOnly = false, allowNesting = false },
 	context,
 	text,
 	selectionRanges,
-	savedSelections,
+	savedSelections: allSavedSelections,
 }) {
 	const isTab = event.key === 'Tab' && tabSelectsStartOnly
+	const applicableSelections =
+		Boolean(allSavedSelections.length) &&
+		(allSavedSelections.length > 1 || allSavedSelections[0].start === context.triggerPos) &&
+		(allowNesting ||
+			allSavedSelections.every((selection) => !selection.selectedText.includes(context.triggerText)))
+			? allSavedSelections
+			: []
 	const insertion = isTab
 		? getInsertion({ shift: false, alt: false, cmd: false, selectedText: undefined })
 		: getInsertion({
 				shift: Boolean(event.shiftKey),
 				alt: Boolean(event.altKey),
 				cmd: Boolean(isMac ? event.metaKey : event.ctrlKey),
-				selectedText: savedSelections[0]?.selectedText,
+				selectedText: applicableSelections[0]?.selectedText,
 			})
+
+	// Only an Insertion with an end can wrap text, as self-closing tags like `<references />` can't.
+	const savedSelections = insertion.end ? applicableSelections : []
 	const data = {
 		...insertion,
 		end: isTab ? '' : insertion.end || '',
