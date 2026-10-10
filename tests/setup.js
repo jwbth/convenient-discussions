@@ -104,7 +104,8 @@ global.mw = /** @type {any} */ ({
 	},
 	msg: (/** @type {string} */ name) => messageValues[name] || name,
 	Title: class Title {
-		constructor(namespace, title) {
+		// The argument order of the real mw.Title.
+		constructor(title, namespace = 0) {
 			this.namespace = namespace
 			this.title = title
 		}
@@ -175,7 +176,7 @@ global.mw = /** @type {any} */ ({
 				mainText = mainText.charAt(0).toUpperCase() + mainText.slice(1)
 			}
 
-			return new Title(namespaceId, mainText)
+			return new Title(mainText, namespaceId)
 		}
 	},
 })

@@ -4,7 +4,7 @@ import Page from '../src/Page'
 import pageRegistry from '../src/pageRegistry'
 
 const isArchive = (/** @type {number} */ namespaceId, /** @type {string} */ title) =>
-	new Page(new mw.Title(namespaceId, title), pageRegistry).isArchive()
+	new Page(new mw.Title(title, namespaceId), pageRegistry).isArchive()
 
 describe('Page#isArchive', () => {
 	beforeEach(() => {
