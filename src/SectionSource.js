@@ -11,6 +11,20 @@ import {
 import { extractSignatures } from './utils-window'
 
 /**
+ * Weights of the match score factors, each factor ranging from 0 to 1.
+ */
+const scoreWeights = {
+	oldestCommentMatch: 1,
+	oldestCommentWordOverlap: 1,
+	headlineMatch: 1,
+	sectionIndexMatch: 0.5,
+	// Shouldn't give too high a weight to this factor as it is true for every first section.
+	previousHeadlinesMatch: 0.25,
+}
+
+const maxScore = Object.values(scoreWeights).reduce((sum, weight) => sum + weight, 0)
+
+/**
  * @typedef {object} SectionData
  * @property {string} headline
  * @property {number} index Index among the sections of the page.
@@ -405,16 +419,14 @@ class SectionSource {
 			)
 		}
 
-		// If changing this, change the maximal possible score in SectionSource.locate
 		return {
 			source: this,
 			score:
-				Number(doesOldestCommentMatch) * 1 +
-				oldestCommentWordOverlap +
-				Number(doesHeadlineMatch) * 1 +
-				Number(doesSectionIndexMatch) * 0.5 +
-				// Shouldn't give too high a weight to this factor as it is true for every first section.
-				Number(doPreviousHeadlinesMatch) * 0.25,
+				Number(doesOldestCommentMatch) * scoreWeights.oldestCommentMatch +
+				oldestCommentWordOverlap * scoreWeights.oldestCommentWordOverlap +
+				Number(doesHeadlineMatch) * scoreWeights.headlineMatch +
+				Number(doesSectionIndexMatch) * scoreWeights.sectionIndexMatch +
+				Number(doPreviousHeadlinesMatch) * scoreWeights.previousHeadlinesMatch,
 		}
 	}
 
@@ -453,8 +465,7 @@ class SectionSource {
 
 			sourcesWithScores.push(sourceWithScore)
 
-			// Maximal possible score
-			if (sourceWithScore.score === 3.75) break
+			if (sourceWithScore.score === maxScore) break
 		}
 
 		return sourcesWithScores.sort((m1, m2) => m2.score - m1.score)[0]?.source
