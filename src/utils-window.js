@@ -967,6 +967,16 @@ export function cleanUpPasteDom(element, containerElement) {
 		.filter((el) => window.getComputedStyle(el).userSelect === 'none')
 		.forEach(removeElement)
 
+	// The cleanup below would strip images, so they wait it out in placeholders.
+	const filePlaceholders = [...element.querySelectorAll('[typeof^="mw:File"]')]
+		.filter(prepareFileForConversion)
+		.map((el) => {
+			const placeholder = document.createComment('')
+			el.replaceWith(placeholder)
+
+			return { placeholder, el }
+		})
+
 	// Replace paragraph break divs with <p> elements
 	;[...element.querySelectorAll('div')]
 		.filter((el) => {
@@ -1083,8 +1093,8 @@ export function cleanUpPasteDom(element, containerElement) {
 			})
 	})
 
-	// Links that wrapped only images, such as icons before station names. The images themselves
-	// are not kept as they are not in allowedTags.
+	// Links that wrapped only images with an unknown file name, which are not kept as they are not
+	// in allowedTags.
 	;[...element.querySelectorAll('a')].filter((el) => !el.textContent.trim()).forEach(removeElement)
 	;[...element.children]
 		// <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
@@ -1121,6 +1131,10 @@ export function cleanUpPasteDom(element, containerElement) {
 			el.remove()
 		})
 
+	filePlaceholders.forEach(({ placeholder, el }) => {
+		placeholder.replaceWith(el)
+	})
+
 	const allElements = [...element.querySelectorAll('*')]
 
 	return {
@@ -1137,6 +1151,53 @@ export function cleanUpPasteDom(element, containerElement) {
 			!allElements.every((el) => el.tagName === 'BR'),
 		),
 	}
+}
+
+/**
+ * Bring a pasted image (an element with `typeof="mw:File…"`) to the form that the transform API
+ * turns into `[[File:…]]`, keeping the size, alignment, link, alt text, and caption. The API needs
+ * `resource` and the link target relative to the wiki, while copying makes them absolute.
+ *
+ * @param {Element} fileElement
+ * @returns {boolean} Whether the file name is known.
+ */
+function prepareFileForConversion(fileElement) {
+	const img = fileElement.querySelector('img')
+
+	// Take the name from the upload path, e.g. `…/commons/thumb/d/db/Name.svg/40px-Name.svg.png`,
+	// as the legacy parser doesn't add `resource`.
+	const fileName = img?.getAttribute('src')?.match(/\/[\da-f]\/[\da-f]{2}\/([^/?#]+)/)?.[1]
+	if (!img || !fileName) {
+		return false
+	}
+
+	const resource =
+		'./' +
+		mw.config.get('wgFormattedNamespaces')[6] +
+		':' +
+		decodeURIComponent(fileName).replace(/_/g, ' ')
+	img.setAttribute('resource', resource)
+
+	const link = img.closest('a')
+	if (link?.classList.contains('mw-file-description')) {
+		link.setAttribute('href', resource)
+	} else if (link) {
+		const urlData = parseWikiUrl(link.getAttribute('href') || '')
+		if (urlData?.hostname === location.hostname) {
+			link.setAttribute(
+				'href',
+				'./' + urlData.pageName + (urlData.fragment ? '#' + urlData.fragment : ''),
+			)
+		}
+	}
+
+	const figcaption = fileElement.querySelector('figcaption')
+	if (figcaption) {
+		// eslint-disable-next-line no-self-assign
+		figcaption.textContent = figcaption.textContent
+	}
+
+	return true
 }
 
 /**
