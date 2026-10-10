@@ -57,7 +57,7 @@ test.describe('Move section', () => {
 		// Wait for the success message.
 		const successMessage = dialog
 			.locator('div', {
-				hasText: 'The topic has been successfully moved',
+				hasText: 'The topic has been moved',
 			})
 			.last()
 		await expect(successMessage).toBeVisible({ timeout: 15_000 })
@@ -110,7 +110,7 @@ test.describe('Move section', () => {
 
 		const successMessageBack = dialogBack
 			.locator('div', {
-				hasText: 'The topic has been successfully moved',
+				hasText: 'The topic has been moved',
 			})
 			.last()
 		await expect(successMessageBack).toBeVisible({ timeout: 15_000 })
