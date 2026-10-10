@@ -6,6 +6,7 @@ import PrototypeRegistry from './PrototypeRegistry'
 import SectionSource from './SectionSource'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
+import loadContextCode from './loadContextCode'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import { highlightLinkedComments } from './processUrl'
@@ -2038,47 +2039,18 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
-	 * Load the section wikitext. See also {@link Section#requestCode}.
+	 * Load the section's context code and locate the section in it, setting {@link Section#source}.
+	 * See also {@link Section#requestCode}.
 	 *
-	 * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
-	 *   changes are viewed.
-	 * @returns {Promise<SectionSource>}
+	 * @returns {Promise<import('./loadContextCode').LoadContextCodeResult<SectionSource>>}
 	 * @throws {CdError|Error}
 	 */
-	async loadCode(commentForm) {
-		let source
-
-		let isSectionSubmitted = false
-		try {
-			if (commentForm && this.liveSectionNumber !== undefined) {
-				try {
-					const sectionCode = await this.requestCode()
-					source = this.locateInCode(sectionCode)
-					isSectionSubmitted = true
-				} catch (error) {
-					if (
-						!(
-							error instanceof CdError &&
-							['noSuchSection', 'locateSection'].includes(error.getCode() || '')
-						)
-					) {
-						throw error
-					}
-				}
-			}
-			if (!isSectionSubmitted) {
-				await this.getSourcePage().loadCode()
-				source = this.locateInCode()
-			}
-		} catch (error) {
-			if (error instanceof CdError) {
-				error.setMessage(cd.sParse('cf-error-getpagecode'))
-			}
-			throw error
-		}
-		commentForm?.setSectionSubmitted(isSectionSubmitted)
-
-		return /** @type {SectionSource} */ (source)
+	loadCode() {
+		return loadContextCode({
+			section: this,
+			sourcePage: this.getSourcePage(),
+			locate: (sectionCode) => this.locateInCode(sectionCode),
+		})
 	}
 
 	/**

@@ -8,6 +8,7 @@ import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
 import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
+import loadContextCode from './loadContextCode'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import CdError from './shared/CdError'
@@ -2991,75 +2992,31 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Load the comment's source code.
+	 * Load the comment's context code and locate the comment in it, setting {@link Comment#source}.
+	 * For a comment in a section with a live section number, the section is located first, setting
+	 * {@link Section#source}.
 	 *
-	 * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
-	 *   changes are viewed.
-	 * @returns {Promise<CommentSource | undefined>}
+	 * @param {object} [options]
+	 * @param {boolean} [options.useDtFallback] Whether to ask the DiscussionTools API where the
+	 *   comment is when the page code doesn't have it.
+	 * @returns {Promise<import('./loadContextCode').LoadContextCodeResult<CommentSource>>}
 	 * @throws {CdError|Error}
 	 */
-	async loadCode(commentForm) {
-		let source
-		let isSectionSubmitted = false
-		try {
-			if (this.section?.liveSectionNumber !== undefined) {
-				try {
-					const sectionCode = await this.section.requestCode()
-					this.section.locateInCode(sectionCode)
-					source = this.locateInCode(sectionCode)
-					isSectionSubmitted = true
-				} catch (error) {
-					if (
-						!(
-							// If there is some issue with the section code, then it's likely an outdated section
-							// ID. We should just expand the search scope to the entire page code.
-							(
-								error instanceof CdError &&
-								['noSuchSection', 'locateSection', 'locateComment'].includes(error.getCode() || '')
-							)
-						)
-					) {
-						throw error
-					}
-				}
-			}
-			try {
-				if (!isSectionSubmitted) {
-					await this.getSourcePage().loadCode()
-					source = this.locateInCode()
-				}
-			} catch (error) {
-				if (
-					!commentForm ||
-					!commentForm.isCommentTarget() ||
-					!this.dtId ||
-					!(
-						error instanceof CdError &&
-						['noSuchSection', 'locateSection', 'locateComment'].includes(error.getCode() || '')
-					)
-				) {
-					throw error
+	loadCode({ useDtFallback = false } = {}) {
+		const section = this.section
+
+		return loadContextCode({
+			section,
+			sourcePage: this.getSourcePage(),
+			locate: (sectionCode) => {
+				if (sectionCode) {
+					/** @type {import('./Section').default} */ (section).locateInCode(sectionCode)
 				}
 
-				// Try DiscussionTools API fallback
-				source = await this.locateUsingDt()
-
-				if (!source) {
-					// DiscussionTools API will be used for adding the comment. TODO: currently, once set to
-					// 'discussiontoolsedit', we can't set it back to 'edit'. Allowing so could introduce
-					// unsynchronization of various components.
-					commentForm.setApi('discussiontoolsedit')
-				}
-			}
-		} catch (error) {
-			if (error instanceof CdError) {
-				error.setMessage(cd.sParse('cf-error-getpagecode'))
-			}
-			throw error
-		}
-		commentForm?.setSectionSubmitted(isSectionSubmitted)
-
-		return source
+				return this.locateInCode(sectionCode)
+			},
+			locateUsingDt: useDtFallback && this.dtId ? () => this.locateUsingDt() : undefined,
+		})
 	}
 
 	/**
@@ -3317,7 +3274,7 @@ class Comment extends mixIntoClass(
 		this.manager.incrementBrokenLayoutCheckCount()
 
 		try {
-			const source = await this.loadCode()
+			const { source } = await this.loadCode()
 			if (!source?.detectedActualLevel) {
 				return
 			}
