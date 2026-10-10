@@ -741,8 +741,10 @@ export default defineConfig(({ mode, command }) => {
 
 		// Development server configuration (for HMR with npm run start)
 		server: {
-			// Port configuration
 			port,
+			// Falling through to the next port would take another checkout's and leave HMR and source
+			// maps on this one
+			strictPort: true,
 
 			// CORS headers for cross-origin development access
 			cors: {

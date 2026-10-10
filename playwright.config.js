@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url'
 
 import { defineConfig, devices } from '@playwright/test'
 
+import { devPort } from './dev-port.js'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const authFile = path.join(__dirname, 'playwright', '.auth', 'user.json')
@@ -69,6 +71,7 @@ export default defineConfig({
 	/* Run your local dev server before starting the tests */
 	webServer: {
 		command: 'npm run dev',
+		port: devPort,
 		reuseExistingServer: !process.env.CI,
 	},
 

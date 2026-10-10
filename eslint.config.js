@@ -23,6 +23,7 @@ const config = defineConfig(
 			'tests/**',
 			'playwright-report/**',
 			'test-results/**',
+			'playwright/.auth/**',
 		],
 	},
 	{
