@@ -4,7 +4,7 @@
 import { eslintFixFile } from './eslint-fix-file.js'
 
 let stdin = ''
-for await (const chunk of process.stdin) stdin += chunk
+for await (const chunk of process.stdin) stdin += String(chunk)
 
 /** @type {string | undefined} */
 const file = JSON.parse(stdin)?.tool_input?.file_path

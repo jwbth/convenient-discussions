@@ -33,5 +33,6 @@ export async function eslintFixFile(file) {
 	const [result] = await eslint.lintFiles([file])
 	if (result.output === undefined) return false
 	await ESLint.outputFixes([result])
+
 	return true
 }

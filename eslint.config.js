@@ -13,10 +13,11 @@ import tseslint from 'typescript-eslint'
 const config = defineConfig(
 	{
 		ignores: [
+			'.claude/**',
 			'dist/**',
 			'src/tribute/**',
 			'sandbox/**',
-			'backup/**',
+			'.backup/**',
 			'i18n/**',
 			'e2e/**',
 			'tests/**',
