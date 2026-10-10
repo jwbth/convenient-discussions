@@ -7,7 +7,12 @@
 
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
-import { getContentLanguageMessages } from './shared/utils-general'
+import {
+	defined,
+	generatePageNamePattern,
+	getContentLanguageMessages,
+	unique,
+} from './shared/utils-general'
 import { dateTokenToMessageNames } from './shared/utils-timestamp'
 import userRegistry from './userRegistry'
 
@@ -96,6 +101,20 @@ export function initTimestampTools() {
 		// Empty
 	}
 
+	initContentTimestampTools()
+
+	user.regexp = new RegExp(getTimestampMainPartPattern('user'))
+	user.parseRegexp = new RegExp(`^([^]*)(${user.regexp.source})`)
+	user.matchingGroups = getMatchingGroups(user.dateFormat)
+}
+
+/**
+ * Set the {@link convenientDiscussions} properties related to parsing timestamps in content
+ * language. Unlike the user language ones, they don't depend on user preferences, so tests can
+ * build them from a wiki configuration.
+ */
+export function initContentTimestampTools() {
+	const content = cd.g.timestampTools.content
 	const mainPartPattern = getTimestampMainPartPattern('content')
 	const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse())
 	const timezonePattern = `\\((?:${utcPattern}|[A-Z]{1,5}|[+-]\\d{0,4})\\)`
@@ -105,10 +124,6 @@ export function initTimestampTools() {
 	content.noTzRegexp = new RegExp(mainPartPattern)
 	content.matchingGroups = getMatchingGroups(content.dateFormat)
 	content.timezoneRegexp = new RegExp(timezonePattern, 'g')
-
-	user.regexp = new RegExp(getTimestampMainPartPattern('user'))
-	user.parseRegexp = new RegExp(`^([^]*)(${user.regexp.source})`)
-	user.matchingGroups = getMatchingGroups(user.dateFormat)
 }
 
 /**
@@ -250,4 +265,174 @@ function getMatchingGroups(format) {
 	}
 
 	return matchingGroups
+}
+
+/**
+ * @typedef {object} PatternsMwConfig
+ * @property {Record<number, string>} wgFormattedNamespaces
+ * @property {Record<string, number>} wgNamespaceIds
+ * @property {string} wgArticlePath
+ * @property {string} wgScript
+ * @property {Record<string, string>} wgActionPaths
+ */
+
+/**
+ * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
+ *
+ * Reads `cd.config` and the `cd.g` values the loader sets, but neither the page nor the live
+ * `mw.config`, so that tests can build the patterns from a wiki configuration.
+ *
+ * @param {PatternsMwConfig} mwConfig MediaWiki config values the patterns depend on.
+ */
+export function initPatterns(mwConfig) {
+	const signatureEndingRegexp = cd.config.signatureEndingRegexp
+	cd.g.signatureEndingRegexp = signatureEndingRegexp
+		? new RegExp(
+				signatureEndingRegexp.source + (signatureEndingRegexp.source.endsWith('$') ? '' : '$'),
+				signatureEndingRegexp.flags,
+			)
+		: undefined
+
+	const nss = mwConfig.wgFormattedNamespaces
+	const nsIds = mwConfig.wgNamespaceIds
+
+	const anySpace = (/** @type {string} */ s) =>
+		s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*')
+	const joinNsNames = (/** @type {number[]} */ ...ids) =>
+		Object.keys(nsIds)
+			.filter((key) => ids.includes(nsIds[key]))
+
+			// Sometimes wgNamespaceIds has a string that doesn't transform into one of the keys of
+			// wgFormattedNamespaces when converting the first letter to uppercase, like in Azerbaijani
+			// Wikipedia (compare Object.keys(mw.config.get('wgNamespaceIds'))[4] = 'i̇stifadəçi' with
+			// mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
+			// wgFormattedNamespaces name separately.
+			.concat(ids.map((id) => nss[id]))
+			.map(mw.util.escapeRegExp)
+
+			.map(anySpace)
+			.join('|')
+
+	const userNssAliasesPattern = joinNsNames(2, 3)
+	cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i')
+
+	const userNsAliasesPattern = joinNsNames(2)
+	cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i')
+	cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i')
+
+	const userTalkNsAliasesPattern = joinNsNames(3)
+	cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i')
+	cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i')
+
+	const contribsTitleAliases = cd.g.specialPageAliases.Contributions.concat('Contributions')
+	cd.g.contribsPages = contribsTitleAliases.filter(unique).map((alias) => `${nss[-1]}:${alias}`)
+
+	const specialNsPattern = joinNsNames(-1)
+	const contribsPagesTitlePattern = contribsTitleAliases.join('|')
+	const contribsPagesLinkPattern = `(?:${specialNsPattern}):(?:${contribsPagesTitlePattern})/`
+	cd.g.contribsPageLinkRegexp = new RegExp(`^${contribsPagesLinkPattern}`)
+
+	cd.g.captureUserNamePattern =
+		`\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
+		`(?:${specialNsPattern})[ _]*:[ _]*(?:${contribsPagesTitlePattern})\\/[ _]*)([^|\\]/]+)(/)?`
+
+	cd.g.isThumbRegexp = new RegExp(
+		['thumb', 'thumbnail']
+			.concat(cd.config.thumbAliases)
+			.map((alias) => `\\| *${alias} *[|\\]]`)
+			.join('|'),
+	)
+
+	const unsignedTemplatesPattern = cd.config.unsignedTemplates
+		.map(generatePageNamePattern)
+		.join('|')
+	cd.g.unsignedTemplatesPattern = unsignedTemplatesPattern
+		? `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
+		: undefined
+
+	const clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|')
+	const reflistTalkTemplatesPattern = cd.config.reflistTalkTemplates
+		.map(generatePageNamePattern)
+		.join('|')
+
+	cd.g.keepInSectionEnding = [
+		...cd.config.keepInSectionEnding,
+		clearTemplatesPattern
+			? new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`)
+			: undefined,
+		reflistTalkTemplatesPattern
+			? new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`)
+			: undefined,
+	].filter(defined)
+
+	const pieJoined = cd.g.popularInlineElements.join('|')
+	cd.g.piePattern = `(?:${pieJoined})`
+
+	const pnieJoined = cd.g.popularNotInlineElements.join('|')
+	cd.g.pniePattern = `(?:${pnieJoined})`
+
+	cd.g.articlePathRegexp = new RegExp(
+		'^' + mw.util.escapeRegExp(mwConfig.wgArticlePath).replace(String.raw`\$1`, '(.*)'),
+	)
+	cd.g.startsWithScriptTitleRegexp = new RegExp(
+		'^' + mw.util.escapeRegExp(mwConfig.wgScript + '?title='),
+	)
+	const editActionpath = mwConfig.wgActionPaths.edit
+	if (editActionpath) {
+		cd.g.startsWithEditActionPathRegexp = new RegExp(
+			'^' + mw.util.escapeRegExp(editActionpath).replace(String.raw`\$1`, '(.*)') + '.*',
+		)
+	}
+
+	// Template names are not case-sensitive here for code simplicity.
+	const quoteTemplateToPattern = (/** @type {string} */ tpl) =>
+		String.raw`\{\{ *` + anySpace(mw.util.escapeRegExp(tpl))
+	const quoteBeginningsPattern = ['<blockquote', '<q']
+		.concat(cd.config.pairQuoteTemplates[0].map(quoteTemplateToPattern))
+		.join('|')
+	const quoteEndingsPattern = ['</blockquote>', '</q>']
+		.concat(cd.config.pairQuoteTemplates[1].map(quoteTemplateToPattern))
+		.join('|')
+	cd.g.quoteRegexp = new RegExp(
+		`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
+		'ig',
+	)
+
+	cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses)
+	cd.g.closedDiscussionClasses.push(...cd.config.closedDiscussionClasses)
+	cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses)
+
+	const noSignatureClassesPattern = cd.g.noSignatureClasses.join(String.raw`\b|\b`)
+	const noSignatureTemplatesPattern = cd.config.noSignatureTemplates
+		.map(generatePageNamePattern)
+		.join('|')
+	cd.g.commentAntipatternsPattern = [
+		`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`,
+		noSignatureTemplatesPattern
+			? `\\{\\{ *(?:${noSignatureTemplatesPattern}) *(?:\\||\\}\\})`
+			: undefined,
+		...cd.config.commentAntipatterns.map((regexp) => regexp.source),
+	]
+		.filter(defined)
+		.join('|')
+
+	const fileNssPattern = joinNsNames(6)
+	cd.g.filePrefixPattern = `(?:${fileNssPattern}):`
+
+	const colonNssPattern = joinNsNames(6, 14)
+	cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i')
+
+	cd.g.badCommentBeginnings = [
+		...cd.g.badCommentBeginnings,
+		new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'),
+		...cd.config.badCommentBeginnings,
+		// Mirrors `CommentSkeleton#filterParts()`, which drops elements like move marks at the
+		// comment beginning
+		new RegExp(`^.*(?:${cd.g.commentAntipatternsPattern}).*\\n+`),
+		clearTemplatesPattern
+			? new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i')
+			: undefined,
+	].filter(defined)
+
+	cd.g.pipeTrickRegexp = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g
 }
