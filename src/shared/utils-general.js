@@ -607,13 +607,18 @@ export function isDomHandlerElement(node) {
 }
 
 /**
- * Check whether the provided node is a metadata node (`<style>`, `<link>`).
+ * Check whether the provided node is a metadata node (`<style>`, `<link>`) or an element wrapping
+ * only such nodes, like the `<span class="mw-empty-elt">` Parsoid puts around TemplateStyles output.
  *
  * @param {any} node
  * @returns {boolean}
  */
 export function isMetadataNode(node) {
-	return isElement(node) && ['STYLE', 'LINK', 'META'].includes(node.tagName)
+	return (
+		isElement(node) &&
+		(['STYLE', 'LINK', 'META'].includes(node.tagName) ||
+			(node.childNodes.length > 0 && [...node.childNodes].every(isMetadataNode)))
+	)
 }
 
 /**

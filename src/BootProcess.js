@@ -620,6 +620,20 @@ class BootProcess {
 		cd.g.closedDiscussionClasses.push(...cd.config.closedDiscussionClasses)
 		cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses)
 
+		const noSignatureClassesPattern = cd.g.noSignatureClasses.join(String.raw`\b|\b`)
+		const noSignatureTemplatesPattern = cd.config.noSignatureTemplates
+			.map(generatePageNamePattern)
+			.join('|')
+		cd.g.commentAntipatternsPattern = [
+			`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`,
+			noSignatureTemplatesPattern
+				? `\\{\\{ *(?:${noSignatureTemplatesPattern}) *(?:\\||\\}\\})`
+				: undefined,
+			...cd.config.commentAntipatterns.map((regexp) => regexp.source),
+		]
+			.filter(defined)
+			.join('|')
+
 		const fileNssPattern = joinNsNames(6)
 		cd.g.filePrefixPattern = `(?:${fileNssPattern}):`
 
@@ -630,6 +644,9 @@ class BootProcess {
 			...cd.g.badCommentBeginnings,
 			new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'),
 			...cd.config.badCommentBeginnings,
+			// Mirrors `CommentSkeleton#filterParts()`, which drops elements like move marks at the
+			// comment beginning
+			new RegExp(`^.*(?:${cd.g.commentAntipatternsPattern}).*\\n+`),
 			clearTemplatesPattern
 				? new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i')
 				: undefined,

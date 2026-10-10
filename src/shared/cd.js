@@ -97,6 +97,8 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared)
  * @property {RegExp} quoteRegexp
  * @property {string} filePrefixPattern
  * @property {RegExp} colonNamespacesPrefixRegexp
+ * @property {string} commentAntipatternsPattern Matches code that marks its line as not
+ *   containing a signature.
  * @property {RegExp[]} badCommentBeginnings
  * @property {RegExp} pipeTrickRegexp
  * @property {boolean} isProbablyWmfSulWiki

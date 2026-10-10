@@ -13,7 +13,6 @@ import Parser from './shared/Parser'
 import {
 	decodeHtmlEntities,
 	defined,
-	generatePageNamePattern,
 	isInline,
 	parseWikiUrl,
 	removeDirMarks,
@@ -1424,19 +1423,6 @@ export function extractSignatures(code) {
 	// TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
 	// templates and tags?
 	// But keep in mind that this code may still be part of comments.
-	const noSignatureClassesPattern = cd.g.noSignatureClasses.join(String.raw`\b|\b`)
-	const commentAntipatternsPatternParts = [
-		`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`,
-	]
-	if (cd.config.noSignatureTemplates.length) {
-		const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|')
-		commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`)
-	}
-	commentAntipatternsPatternParts.push(
-		...cd.config.commentAntipatterns.map((regexp) => regexp.source),
-	)
-	const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|')
-
 	// Hide HTML comments, quotes and lines containing antipatterns.
 	const adjustedCode = maskDistractingCode(code)
 		.replace(
@@ -1444,7 +1430,7 @@ export function extractSignatures(code) {
 			/** @type {ReplaceCallback<4>} */
 			(_, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending,
 		)
-		.replace(new RegExp(`^.*(?:${commentAntipatternsPattern}).*$`, 'mg'), (s) =>
+		.replace(new RegExp(`^.*(?:${cd.g.commentAntipatternsPattern}).*$`, 'mg'), (s) =>
 			' '.repeat(s.length),
 		)
 
