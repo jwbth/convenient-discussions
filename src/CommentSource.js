@@ -961,7 +961,8 @@ class CommentSource {
 	 * @param {number} [options.replyPlace] Result of {@link CommentSource#findReplyPlace}. Required
 	 *   when `action` is `'reply'`.
 	 * @param {import('./SectionSource').default} [options.sectionSource] Source of the comment's
-	 *   section. Required when deleting the opening comment of a section.
+	 *   section. Required when {@link CommentSource#deletesWholeSection} is `true` and `doDelete`
+	 *   is set.
 	 * @param {string} [options.contextCode] Code that has the comment, when it isn't the code the
 	 *   source was located in.
 	 * @returns {{
@@ -1001,7 +1002,7 @@ class CommentSource {
 				if (doDelete) {
 					let startIndex
 					let endIndex
-					if (this.commentData.openingSection && this.headingStartIndex !== undefined) {
+					if (this.deletesWholeSection()) {
 						if (!sectionSource) {
 							throw new CdError({
 								type: 'internal',
@@ -1049,6 +1050,16 @@ class CommentSource {
 		}
 
 		return { contextCode, commentCode }
+	}
+
+	/**
+	 * Check whether deleting the comment deletes its whole section: it opens the section, and its
+	 * span has the heading. Then the splice needs the section's source.
+	 *
+	 * @returns {boolean}
+	 */
+	deletesWholeSection() {
+		return this.commentData.openingSection && this.headingStartIndex !== undefined
 	}
 
 	/**

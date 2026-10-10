@@ -2467,7 +2467,9 @@ class CommentForm extends EventEmitter {
 				doDelete,
 				replyPlace,
 				sectionSource:
-					doDelete && this.target instanceof Comment && this.target.isOpeningSection()
+					doDelete &&
+					this.target instanceof Comment &&
+					/** @type {import('./CommentSource').default} */ (source).deletesWholeSection()
 						? /** @type {import('./Section').default} */ (this.target.section).getSource()
 						: undefined,
 				isNewTopicOnTop: this.isNewTopicOnTop(),
