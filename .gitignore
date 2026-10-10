@@ -15,3 +15,4 @@ playwright/.auth/
 sandbox/
 test-results/
 tests/worker-test-cases-regenerated.json
+.claude/worktrees/

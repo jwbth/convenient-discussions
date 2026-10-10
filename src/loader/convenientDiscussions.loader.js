@@ -1,7 +1,7 @@
+import logoSvg from '../../assets/logo_textless_bw.svg?raw'
 import dateFormats from '../../data/date-formats.json'
 import digitsData from '../../data/digits.json'
 import languageFallbacks from '../../data/language-fallbacks.json'
-import logoSvg from '../../assets/logo_textless_bw.svg?raw'
 import addCommentLinksCss from '../addCommentLinks.less?inline'
 import globalCss from '../global.less?inline'
 import {

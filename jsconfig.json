@@ -9,8 +9,8 @@
 		]
 	},
 
-	// No subdirectories except for misc/
-	"include": ["*", "misc/**/*"],
+	// No subdirectories except for bin/ and misc/
+	"include": ["*", "bin/**/*", "misc/**/*"],
 	"exclude": ["misc/convenientDiscussions-generateBasicConfig.js"],
 
 	"typeAcquisition": {
