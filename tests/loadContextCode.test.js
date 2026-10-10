@@ -4,6 +4,8 @@ import loadContextCode from '../src/loadContextCode'
 import cd from '../src/loader/cd'
 import CdError from '../src/shared/CdError'
 
+import { rejection } from './utils-rejection.js'
+
 cd.sParse = /** @type {any} */ ((/** @type {string} */ name) => name)
 
 const sectionCode = 'SECTION CODE\n'
@@ -61,19 +63,6 @@ function makeInput({
 		}),
 		locateUsingDt: locateUsingDt && vi.fn(locateUsingDt),
 	}
-}
-
-/**
- * @param {Promise<unknown>} promise
- * @returns {Promise<CdError>}
- */
-async function rejection(promise) {
-	try {
-		await promise
-	} catch (error) {
-		return /** @type {CdError} */ (error)
-	}
-	throw new Error('Expected a rejection')
 }
 
 describe('loadContextCode', () => {

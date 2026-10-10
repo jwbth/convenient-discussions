@@ -41,8 +41,8 @@ beforeAll(async () => {
 
 	initCommonsGlobals()
 	cd.settings = /** @type {any} */ ({
-		// Below the default of 15, so that the outdenting branch of reply placement is taken in the
-		// corpus
+		// Low enough for the corpus replies to reach, so that the outdenting branch of reply placement
+		// is taken
 		get: (/** @type {string} */ name) => ({ outdent: true, outdentLevel: 4 })[name],
 	})
 })
@@ -100,16 +100,16 @@ function describeChange(before, after) {
 	) {
 		end++
 	}
-	const a = beforeLines.slice(start, beforeLines.length - end)
-	const b = afterLines.slice(start, afterLines.length - end)
+	const trimmedBefore = beforeLines.slice(start, beforeLines.length - end)
+	const trimmedAfter = afterLines.slice(start, afterLines.length - end)
 
 	// Lengths of the longest common subsequences of the line suffixes
-	const lcs = Array.from({ length: a.length + 1 }, () =>
-		Array.from({ length: b.length + 1 }, () => 0),
+	const lcs = Array.from({ length: trimmedBefore.length + 1 }, () =>
+		Array.from({ length: trimmedAfter.length + 1 }, () => 0),
 	)
-	for (let i = a.length - 1; i >= 0; i--) {
-		for (let j = b.length - 1; j >= 0; j--) {
-			lcs[i][j] = a[i] === b[j] ? lcs[i + 1][j + 1] + 1 : Math.max(lcs[i + 1][j], lcs[i][j + 1])
+	for (let i = trimmedBefore.length - 1; i >= 0; i--) {
+		for (let j = trimmedAfter.length - 1; j >= 0; j--) {
+			lcs[i][j] = trimmedBefore[i] === trimmedAfter[j] ? lcs[i + 1][j + 1] + 1 : Math.max(lcs[i + 1][j], lcs[i][j + 1])
 		}
 	}
 
@@ -119,8 +119,8 @@ function describeChange(before, after) {
 	let hunk
 	let i = 0
 	let j = 0
-	while (i < a.length || j < b.length) {
-		if (i < a.length && j < b.length && a[i] === b[j]) {
+	while (i < trimmedBefore.length || j < trimmedAfter.length) {
+		if (i < trimmedBefore.length && j < trimmedAfter.length && trimmedBefore[i] === trimmedAfter[j]) {
 			hunk = undefined
 			i++
 			j++
@@ -130,11 +130,11 @@ function describeChange(before, after) {
 			hunk = { line: start + i, removed: [], inserted: [] }
 			hunks.push(hunk)
 		}
-		if (j < b.length && (i === a.length || lcs[i][j + 1] >= lcs[i + 1][j])) {
-			hunk.inserted.push(b[j])
+		if (j < trimmedAfter.length && (i === trimmedBefore.length || lcs[i][j + 1] >= lcs[i + 1][j])) {
+			hunk.inserted.push(trimmedAfter[j])
 			j++
 		} else {
-			hunk.removed.push(a[i])
+			hunk.removed.push(trimmedBefore[i])
 			i++
 		}
 	}

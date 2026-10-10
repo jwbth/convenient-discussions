@@ -5,6 +5,8 @@ import cd from '../src/loader/cd'
 import pageRegistry from '../src/pageRegistry'
 import CdError from '../src/shared/CdError'
 
+import { rejection } from './utils-rejection.js'
+
 /** @typedef {import('../src/CommentSource').default} CommentSource */
 
 const pageCode = 'PAGE CODE\n'
@@ -65,19 +67,6 @@ function setUp({ transcludedFrom }) {
 	)
 
 	return { comment, source, transcludedPage, get }
-}
-
-/**
- * @param {Promise<unknown>} promise
- * @returns {Promise<CdError>}
- */
-async function rejection(promise) {
-	try {
-		await promise
-	} catch (error) {
-		return /** @type {CdError} */ (error)
-	}
-	throw new Error('Expected a rejection')
 }
 
 cd.sParse = /** @type {any} */ ((/** @type {string} */ name) => name)

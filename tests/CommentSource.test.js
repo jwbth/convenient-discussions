@@ -107,29 +107,9 @@ describe('deleting an opening comment', () => {
 	const openingLine =
 		'Opening text. [[User:Alice|Alice]] ([[User talk:Alice|talk]]) 10:00, 1 January 2024 (UTC)'
 
-	/**
-	 * Comment data of Alice's opening comment.
-	 *
-	 * @returns {CommentData}
-	 */
-	function makeOpeningData() {
-		return {
-			...makeReplyData(),
-			author: userRegistry.get('Alice'),
-			timestamp: '10:00, 1 January 2024 (UTC)',
-			index: 0,
-			previousComments: [],
-			followsHeading: true,
-			followsHeadingOnPage: true,
-			text: 'Opening text.',
-			level: 0,
-			openingSection: true,
-		}
-	}
-
 	test('needs the section source when the span has the heading', () => {
 		const code = ['== Topic ==', openingLine, '', '== Next ==', 'Next text.', ''].join('\n')
-		const source = /** @type {CommentSource} */ (CommentSource.locate(code, makeOpeningData()))
+		const source = /** @type {CommentSource} */ (CommentSource.locate(code, makeOpeningCommentData()))
 
 		expect(source.deletesWholeSection()).toBe(true)
 		expect(() => source.modifyContext({ action: 'edit', doDelete: true })).toThrow(
@@ -139,7 +119,7 @@ describe('deleting an opening comment', () => {
 
 	test('deletes only its lines, with no section source, when the span has no heading', () => {
 		const code = [openingLine, '', 'Other text.', ''].join('\n')
-		const source = /** @type {CommentSource} */ (CommentSource.locate(code, makeOpeningData()))
+		const source = /** @type {CommentSource} */ (CommentSource.locate(code, makeOpeningCommentData()))
 
 		expect(source.deletesWholeSection()).toBe(false)
 		expect(source.modifyContext({ action: 'edit', doDelete: true }).contextCode).toBe(
@@ -223,8 +203,9 @@ function getErrorCode(func) {
 
 describe('reply place', () => {
 	test('is found before a long run of spaces without catastrophic backtracking', () => {
-		// The outdent template regexp backtracked over whitespace quadratically before 4f3abd75; with
-		// that regexp, this call took 4 s (measured 2026-10-10 on the dev machine).
+		// The outdent template regexp runs over the code after the reply place, so whitespace runs
+		// there must be matched in linear time; a regexp backtracking over them quadratically took 4 s
+		// on this code (measured 2026-10-10 on the dev machine).
 		const code = [
 			'== Topic ==',
 			`Opening text. ${sign('Alice', '10:00')}`,
