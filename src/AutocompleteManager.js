@@ -211,42 +211,6 @@ class AutocompleteManager {
 	}
 
 	/**
-	 * Get the selected text from the input widget if it should be used for autocomplete insertion.
-	 *
-	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>>} option
-	 * @returns {{selectedText: string, selections: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined}
-	 */
-	getSelectedTextForInsertion(option) {
-		const autocomplete = option.original.autocomplete
-		const element = autocomplete.manager?.tribute.current.element
-		const savedSelections =
-			element?.cdInput && typeof element.cdInput.getAutocompleteSavedSelection === 'function'
-				? element.cdInput.getAutocompleteSavedSelection()
-				: undefined
-		const insertion = autocomplete.getInsertionFromEntry(option.original.entry)
-
-		if (
-			savedSelections?.length &&
-			(savedSelections.length > 1 ||
-				savedSelections[0].start === autocomplete.manager?.tribute.current.triggerPos) &&
-			savedSelections.every(
-				(selection) =>
-					!selection.selectedText.includes(autocomplete.getTrigger()) ||
-					autocomplete.manager?.tribute.current.collection?.allowNesting,
-			) &&
-			// Self-closing tags like `<references />` don't have `end`
-			insertion.end
-		) {
-			const [firstSelection] = savedSelections
-
-			return {
-				selectedText: firstSelection.selectedText,
-				selections: savedSelections,
-			}
-		}
-	}
-
-	/**
 	 * Get the Replacements that choosing an option makes in the input.
 	 *
 	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>> | undefined} option
@@ -262,20 +226,18 @@ class AutocompleteManager {
 		const autocomplete = option.original.autocomplete
 
 		const element = /** @type {HTMLTextAreaElement} */ (this.tribute.current.element)
-		const input = element.cdInput
+		const input = this.inputs.find((candidate) => candidate.getEditableElement()[0] === element)
 		autocomplete.afterOptionChoose(option, event, input)
 
 		return getReplacements({
 			getInsertion: (keys) => autocomplete.getInsertionFromEntry(option.original.entry, keys),
 			event,
 			isMac: navigator.platform.includes('Mac'),
-			traits: /** @type {import('./tribute/Tribute').TributeCollection} */ (
-				this.tribute.current.collection
-			),
+			traits: autocomplete,
 			context,
 			text: element.value,
 			selectionRanges: input?.getSelectionRanges() || [],
-			savedSelections: this.getSelectedTextForInsertion(option)?.selections || [],
+			savedSelections: input?.getAutocompleteSavedSelection() || [],
 		})
 	}
 

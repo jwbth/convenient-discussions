@@ -84,6 +84,20 @@ class BaseAutocomplete {
 	data = {}
 
 	/**
+	 * Whether Tab inserts only the start of the Insertion, unlike Enter.
+	 *
+	 * @type {boolean}
+	 */
+	tabSelectsStartOnly = false
+
+	/**
+	 * Whether a saved selection containing the trigger is wrapped.
+	 *
+	 * @type {boolean}
+	 */
+	allowNesting = false
+
+	/**
 	 * Reference to the AutocompleteManager instance.
 	 *
 	 * @type {import('./AutocompleteManager').default | undefined}

@@ -14,6 +14,9 @@ import { handleApiReject } from './utils-api'
  * @augments BaseAutocomplete
  */
 class TemplatesAutocomplete extends BaseAutocomplete {
+	/** @override */
+	tabSelectsStartOnly = true
+
 	/**
 	 * @override
 	 * @returns {string}
@@ -127,18 +130,6 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 */
 	getLabelFromEntry(entry) {
 		return entry
-	}
-
-	/**
-	 * Get collection-specific properties for Tribute configuration.
-	 *
-	 * @override
-	 * @returns {Partial<import('./tribute/Tribute').TributeCollection>} Collection properties
-	 */
-	getCollectionProperties() {
-		return {
-			tabSelectsStartOnly: true,
-		}
 	}
 
 	/**

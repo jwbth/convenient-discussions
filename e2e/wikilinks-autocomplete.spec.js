@@ -13,9 +13,10 @@ let textarea
 /** @type {import('@playwright/test').Locator} */
 let highlightedItem
 
-// Insertion logic, including the label, fragment, and tail-length cases, is unit-tested through
-// getReplacements() in tests/autocompleteInsertion.test.js. These tests check it end-to-end with
-// real keystrokes.
+// Insertion logic, including the label, fragment, tail-length, and saved selection cases, is
+// unit-tested through getReplacements() in tests/autocompleteInsertion.test.js, and the lookup of
+// the input's saved selection through AutocompleteManager#onOptionChoose in
+// tests/AutocompleteManager.test.js. These tests check it end-to-end with real keystrokes.
 test.describe('Wikilinks autocomplete', () => {
 	test.beforeEach(async ({ page }) => {
 		await setupConvenientDiscussions(page, { url: TEST_PAGES.JWBTH_TEST })
