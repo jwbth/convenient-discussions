@@ -64,6 +64,35 @@ test.describe('Wikilinks autocomplete', () => {
 
 		await expect(textarea).toHaveValue(`[[${page}|see label]]`)
 	})
+
+	test('selects the label on Shift+Enter, firing input and tribute-replaced once each', async () => {
+		await textarea.type('[[Main Pa')
+		await expect(highlightedItem).toBeVisible({ timeout: 10_000 })
+		const firedEvents = await textarea.evaluateHandle((element) => {
+			/** @type {string[]} */
+			const types = []
+			for (const type of ['input', 'tribute-replaced']) {
+				element.addEventListener(type, (event) => {
+					// The browser's own `input` from the undo-preserving edit is trusted; this counts the
+					// ones CD dispatches.
+					if (!event.isTrusted) {
+						types.push(type)
+					}
+				})
+			}
+
+			return types
+		})
+		const page = await chooseHighlighted('Shift+Enter')
+
+		await expect(textarea).toHaveValue(`[[${page}|${page}]]`)
+		expect(
+			await textarea.evaluate((/** @type {HTMLTextAreaElement} */ element) =>
+				element.value.slice(element.selectionStart, element.selectionEnd),
+			),
+		).toBe(page)
+		expect(await firedEvents.jsonValue()).toEqual(['input', 'tribute-replaced'])
+	})
 })
 
 /**
@@ -81,14 +110,15 @@ async function placeCaretAfter(prefix) {
 }
 
 /**
- * Wait for the suggestions, choose the highlighted one with Enter, and return its text.
+ * Wait for the suggestions, choose the highlighted one, and return its text.
  *
+ * @param {string} [key]
  * @returns {Promise<string>}
  */
-async function chooseHighlighted() {
+async function chooseHighlighted(key = 'Enter') {
 	await expect(highlightedItem).toBeVisible({ timeout: 10_000 })
 	const text = (await highlightedItem.innerText()).trim()
-	await textarea.press('Enter')
+	await textarea.press(key)
 	await expect(highlightedItem).toBeHidden()
 
 	return text

@@ -227,9 +227,7 @@ class AutocompleteManager {
 
 		const element = /** @type {HTMLTextAreaElement} */ (this.tribute.current.element)
 		const input = this.inputs.find((candidate) => candidate.getEditableElement()[0] === element)
-		autocomplete.afterOptionChoose(option, event, input)
-
-		return getReplacements({
+		const replacements = getReplacements({
 			getInsertion: (keys) => autocomplete.getInsertionFromEntry(option.original.entry, keys),
 			event,
 			isMac: navigator.platform.includes('Mac'),
@@ -239,6 +237,9 @@ class AutocompleteManager {
 			selectionRanges: input?.getSelectionRanges() || [],
 			savedSelections: input?.getAutocompleteSavedSelection() || [],
 		})
+		autocomplete.afterOptionChoose(option, event, input)
+
+		return replacements
 	}
 
 	// Static properties and methods for backward compatibility

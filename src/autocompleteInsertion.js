@@ -113,8 +113,8 @@ export function getReplacements({
 			allSavedSelections.every((selection) => !selection.selectedText.includes(context.triggerText)))
 			? allSavedSelections
 			: []
-	const insertion = isTab
-		? getInsertion({ shift: false, alt: false, cmd: false, selectedText: undefined })
+	const chosenInsertion = isTab
+		? getInsertion({ shift: false, alt: false, cmd: false })
 		: getInsertion({
 				shift: Boolean(event.shiftKey),
 				alt: Boolean(event.altKey),
@@ -123,11 +123,11 @@ export function getReplacements({
 			})
 
 	// Only an Insertion with an end can wrap text, as self-closing tags like `<references />` can't.
-	const savedSelections = insertion.end ? applicableSelections : []
-	const data = {
-		...insertion,
-		end: isTab ? '' : insertion.end || '',
-		content: isTab ? '' : insertion.content || '',
+	const savedSelections = chosenInsertion.end ? applicableSelections : []
+	const insertion = {
+		...chosenInsertion,
+		end: isTab ? '' : chosenInsertion.end || '',
+		content: isTab ? '' : chosenInsertion.content || '',
 	}
 
 	const triggerText = context.triggerText + context.query
@@ -144,11 +144,11 @@ export function getReplacements({
 			return
 		}
 
-		const start = savedSelection ? savedSelection.leadingSpaces + data.start : data.start
+		const start = savedSelection ? savedSelection.leadingSpaces + insertion.start : insertion.start
 
 		// Tab inserts only the start, so the text typed over is dropped rather than wrapped.
-		const content = savedSelection && !isTab ? savedSelection.selectedText : data.content
-		let end = savedSelection ? data.end + savedSelection.trailingSpaces : data.end
+		const content = savedSelection && !isTab ? savedSelection.selectedText : insertion.content
+		let end = savedSelection ? insertion.end + savedSelection.trailingSpaces : insertion.end
 		let to = endPos
 
 		// The typed text ends up inside the insertion, so the closers auto-inserted for it go too.
@@ -158,12 +158,10 @@ export function getReplacements({
 			to++
 		}
 
-		const keptMatch = data.keepAsEnd && !isTab ? text.substring(to).match(data.keepAsEnd) : null
+		const keptMatch = !isTab && insertion.keepAsEnd && text.substring(to).match(insertion.keepAsEnd)
 		if (keptMatch) {
 			to += keptMatch[0].length
-			if (keptMatch[1] !== undefined) {
-				end = keptMatch[1]
-			}
+			end = keptMatch.at(1) ?? end
 		}
 
 		const insert = start + content + end
@@ -173,7 +171,7 @@ export function getReplacements({
 			to,
 			insert,
 			selection:
-				!isTab && (event.shiftKey || (data.selectContent && !content))
+				!isTab && (event.shiftKey || (insertion.selectContent && !content))
 					? { from: start.length, to: insert.length - end.length }
 					: undefined,
 		}
