@@ -661,8 +661,11 @@ declare global {
 		modifyContext(options: {
 			action?: CommentFormMode
 			commentCode?: string
-			commentForm?: CommentForm
 			doDelete?: boolean
+			replyPlace?: number
+			sectionSource?: SectionSource
+			isNewTopicOnTop?: boolean
+			isNewSectionApi?: boolean
 			contextCode?: string
 		}): {
 			contextCode: string

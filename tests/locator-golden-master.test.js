@@ -225,9 +225,11 @@ function recordComment(comment, context, group) {
 					})(),
 		reply: tryOrError(() => {
 			const replySource = locateComment(comment, context)
+			const replyPlace = replySource.findReplyPlace()
 			const { contextCode: codeAfter } = replySource.modifyContext({
 				action: 'reply',
 				commentCode: dummyReply,
+				replyPlace,
 			})
 
 			return {
@@ -249,10 +251,17 @@ function recordComment(comment, context, group) {
 		delete: tryOrError(() =>
 			describeChange(
 				contextCode,
-				locateComment(comment, context).modifyContext({
-					action: 'edit',
-					doDelete: true,
-				}).contextCode,
+				(() => {
+					const deleteSource = locateComment(comment, context)
+
+					return deleteSource.modifyContext({
+						action: 'edit',
+						doDelete: true,
+						sectionSource: deleteSource.deletesWholeSection()
+							? /** @type {Section} */ (comment.section).getSource()
+							: undefined,
+					}).contextCode
+				})(),
 			),
 		),
 	}
