@@ -269,16 +269,16 @@ class TextInputWidgetMixin {
 	 * @returns {Promise<string>}
 	 * @this {TextInputWidgetMixin & OO.ui.TextInputWidget}
 	 */
-	async convertPasteToWikitext({ element, text, syntaxHighlightLanguages, isConvertible }) {
-		if (!isConvertible) {
-			return text
+	async convertPasteToWikitext(paste) {
+		if (!paste.isConvertible) {
+			return paste.text
 		}
 
 		this.pushPending().setDisabled(true)
-		const wikitext = await convertHtmlToWikitext(element.innerHTML, syntaxHighlightLanguages)
+		const wikitext = await convertHtmlToWikitext(paste.element.innerHTML, paste.syntaxHighlightLanguages)
 		this.popPending().setDisabled(false)
 
-		return wikitext ?? text
+		return wikitext ?? paste.text
 	}
 
 	/**
