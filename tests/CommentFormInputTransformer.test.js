@@ -57,7 +57,7 @@ function testWithData({ label, code, expected, commentForm, action = 'submit', c
 	test(label, () => {
 		Object.assign(commentForm, {
 			getMode: () => commentForm.mode,
-			isMode: () => commentForm.mode === commentForm.mode,
+			isMode: (/** @type {string} */ mode) => commentForm.mode === mode,
 			getTarget: () => commentForm.target,
 			isNewSectionApi: () => commentForm.newSectionApi,
 		})
