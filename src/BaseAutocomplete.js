@@ -154,12 +154,12 @@ class BaseAutocomplete {
 	}
 
 	/**
-	 * Transform an entry into insertion data for the Tribute library.
+	 * Transform an entry into an Insertion.
 	 *
 	 * @abstract
 	 * @param {any} _entry The entry to transform
 	 * @param {string} [_selectedText] Text that was selected before typing the autocomplete trigger
-	 * @returns {import('./tribute/Tribute').Insertion}
+	 * @returns {import('./autocompleteInsertion').Insertion}
 	 */
 	getInsertionFromEntry(_entry, _selectedText) {
 		throw new CdError({
@@ -477,6 +477,15 @@ class BaseAutocomplete {
 	getCollectionProperties() {
 		return {}
 	}
+
+	/**
+	 * Act on the chosen option before its Replacements are applied to the input.
+	 *
+	 * @param {import('./tribute/Tribute').TributeSearchResults<Option>} _option
+	 * @param {KeyboardEvent | MouseEvent} _event
+	 * @param {import('./TextInputWidget').default | undefined} _input
+	 */
+	afterOptionChoose(_option, _event, _input) {}
 
 	/**
 	 * Check if the specified promise is not the current promise to detect superseded requests.

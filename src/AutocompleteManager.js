@@ -3,6 +3,7 @@ import MentionsAutocomplete from './MentionsAutocomplete'
 import TagsAutocomplete from './TagsAutocomplete'
 import TemplatesAutocomplete from './TemplatesAutocomplete'
 import WikilinksAutocomplete from './WikilinksAutocomplete'
+import { getReplacements } from './autocompleteInsertion'
 import cd from './loader/cd'
 import Tribute from './tribute/Tribute'
 
@@ -33,7 +34,7 @@ const autocompleteClasses = {
  * @property {any[]} [default] Default set of entries to search across (may be more narrow than the
  *   list of all potential values, as in the case of user names)
  * @property {(() => any[])} [defaultLazy] Function for lazy loading of the defaults
- * @property {() => import('./tribute/Tribute').Insertion} [getInsertionFromEntry] Function
+ * @property {() => import('./autocompleteInsertion').Insertion} [getInsertionFromEntry] Function
  *   that transforms the entry into the insertion data that is actually inserted
  * @property {AnyByKey} [data] Any additional data to be used by methods
  */
@@ -103,7 +104,6 @@ class AutocompleteManager {
 			menuItemLimit: this.itemLimit,
 			noMatchTemplate: () => null,
 			containerClass: 'tribute-container cd-autocompleteContainer',
-			replaceTextSuffix: '',
 			direction: cd.g.contentDirection,
 		})
 
@@ -247,36 +247,47 @@ class AutocompleteManager {
 	}
 
 	/**
-	 * Handle the option choose event.
+	 * Get the Replacements that choosing an option makes in the input.
 	 *
 	 * @param {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<any>> | undefined} option
-	 * @returns {import('./tribute/Tribute').Insertion | string}
+	 * @param {KeyboardEvent | MouseEvent} event
+	 * @param {import('./tribute/Tribute').TriggerContext} context
+	 * @returns {import('./TextInputWidgetMixin').TextReplacement[]}
 	 */
-	onOptionChoose = (option) => {
-		const autocomplete = option?.original.autocomplete
-		if (!autocomplete) {
-			return ''
+	onOptionChoose = (option, event, context) => {
+		if (!option) {
+			return []
 		}
 
-		const selectionData = this.getSelectedTextForInsertion(
-			/** @type {NonNullable<typeof option>} */ (option),
-		)
-
-		/** @type {import('./tribute/Tribute').Insertion} */
+		const autocomplete = option.original.autocomplete
+		const selectionData = this.getSelectedTextForInsertion(option)
 		const insertion = autocomplete.getInsertionFromEntry(
-			/** @type {NonNullable<typeof option>} */ (option).original.entry,
+			option.original.entry,
 			selectionData?.selectedText,
 		)
-
 		this.applySelectionDataToInsertion(insertion, selectionData)
 
-		return insertion
+		const element = /** @type {HTMLTextAreaElement} */ (this.tribute.current.element)
+		const input = element.cdInput
+		autocomplete.afterOptionChoose(option, event, input)
+
+		return getReplacements({
+			insertion,
+			event,
+			isMac: navigator.platform.includes('Mac'),
+			traits: /** @type {import('./tribute/Tribute').TributeCollection} */ (
+				this.tribute.current.collection
+			),
+			context,
+			text: element.value,
+			selectionRanges: input?.getSelectionRanges() || [],
+		})
 	}
 
 	/**
 	 * Apply saved selection data to insertion data.
 	 *
-	 * @param {import('./tribute/Tribute').Insertion} insertion Insertion data.
+	 * @param {import('./autocompleteInsertion').Insertion} insertion Insertion data.
 	 * @param {{selections: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined} selectionData Selection data.
 	 */
 	applySelectionDataToInsertion(insertion, selectionData) {
