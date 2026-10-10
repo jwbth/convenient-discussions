@@ -22,22 +22,22 @@ const tags = new TagsAutocomplete()
 
 /**
  * @param {string} pageName A main-namespace page name.
- * @param {string} [selectedText]
+ * @param {import('../src/autocompleteInsertion').InsertionKeys} [keys]
  */
-const wikilinkInsertion = (pageName, selectedText) =>
+const wikilinkInsertion = (pageName, keys) =>
 	wikilinks.getInsertionFromEntry(
 		/** @type {any} */ ({
 			title: { getNamespaceId: () => 0, getMainText: () => pageName },
 			pageName,
 		}),
-		selectedText,
+		keys,
 	)
 
 /**
  * @param {import('../src/TagsAutocomplete').TagEntry} entry
- * @param {string} [selectedText]
+ * @param {import('../src/autocompleteInsertion').InsertionKeys} [keys]
  */
-const tagInsertion = (entry, selectedText) => tags.getInsertionFromEntry(entry, selectedText)
+const tagInsertion = (entry, keys) => tags.getInsertionFromEntry(entry, keys)
 
 describe('AutocompleteManager insertion', () => {
 	/** @type {AutocompleteManager} */
@@ -53,7 +53,7 @@ describe('AutocompleteManager insertion', () => {
 	 * @param {number} [options.triggerPos]
 	 * @param {boolean} [options.allowNesting]
 	 * @param {string} [options.trigger]
-	 * @param {(entry: any, selectedText?: string) => any} [options.getInsertionFromEntry]
+	 * @param {(entry: any, keys?: import('../src/autocompleteInsertion').InsertionKeys) => any} [options.getInsertionFromEntry]
 	 * @param {any} [options.entry]
 	 * @param {string} [options.text] The input's text.
 	 */
@@ -212,23 +212,6 @@ describe('AutocompleteManager insertion', () => {
 					{ triggerText: '[[', query: '', mentionPosition: 2 },
 				),
 			).toEqual([{ from: 2, to: 4, insert: '[[Main Page|foo]]', selection: undefined }])
-		})
-	})
-
-	describe('applySelectionDataToInsertion', () => {
-		it('does nothing without selection data', () => {
-			const insertion = { start: 'a' }
-			manager.applySelectionDataToInsertion(insertion, undefined)
-
-			expect(insertion).toEqual({ start: 'a' })
-		})
-
-		it('sets autocompleteSelections', () => {
-			const insertion = { start: 'a' }
-			const selections = [selection()]
-			manager.applySelectionDataToInsertion(insertion, { selections })
-
-			expect(insertion.autocompleteSelections).toBe(selections)
 		})
 	})
 })

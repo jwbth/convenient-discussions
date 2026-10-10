@@ -105,10 +105,10 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 *
 	 * @override
 	 * @param {WikilinkEntry} entry The wikilink entry to transform
-	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
+	 * @param {import('./autocompleteInsertion').InsertionKeys} [keys]
 	 * @returns {import('./autocompleteInsertion').Insertion & { end: string }}
 	 */
-	getInsertionFromEntry(entry, selectedText) {
+	getInsertionFromEntry(entry, { shift = false, selectedText } = {}) {
 		const {
 			title,
 			pageName,
@@ -122,20 +122,24 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		const needsColon = !colonPrefix && this.needsColonPrefix(title, interwikiPrefix)
 		const colonStr = colonPrefix ? ':' : needsColon ? ':' : ''
 		const fragmentStr = fragment === undefined ? '' : '#' + fragment
+		const start = '[[' + colonStr + interwikiPrefix + pageNameForInsertion + fragmentStr
+
+		if (shift || selectedText) {
+			return {
+				start: start + '|',
+				end: ']]',
+				content:
+					selectedText ||
+					(isWikidataEntity ? /** @type {string} */ (displayLabel) : pageNameForInsertion) +
+						fragmentStr,
+				keepAsEnd: labeledKeepAsEnd,
+			}
+		}
 
 		return {
-			start: '[[' + colonStr + interwikiPrefix + pageNameForInsertion + fragmentStr,
+			start,
 			end: ']]',
-			content: selectedText,
 			keepAsEnd: fragment === undefined ? undefined : sectionKeepAsEnd,
-			shiftModify() {
-				const insertText = isWikidataEntity
-					? /** @type {string} */ (displayLabel)
-					: pageNameForInsertion
-				this.content ||= insertText + fragmentStr
-				this.start += '|'
-				this.keepAsEnd = labeledKeepAsEnd
-			},
 		}
 	}
 

@@ -5,9 +5,19 @@ vi.mock('../src/utils-window', () => ({
 	allowedTags: [],
 }))
 vi.mock('../src/loader/cd', () => ({
-	default: { settings: { get: () => [] }, g: {} },
+	default: {
+		settings: { get: () => [] },
+		g: {},
+		mws: (/** @type {string} */ key) => (key === 'colon-separator' ? ': ' : ''),
+	},
+}))
+vi.mock('../src/userRegistry', () => ({
+	default: {
+		get: () => ({ getNamespaceAlias: () => 'User', isRegistered: () => true }),
+	},
 }))
 
+import MentionsAutocomplete from '../src/MentionsAutocomplete'
 import TagsAutocomplete from '../src/TagsAutocomplete'
 import TemplatesAutocomplete from '../src/TemplatesAutocomplete'
 import WikilinksAutocomplete from '../src/WikilinksAutocomplete'
@@ -16,38 +26,60 @@ import { getReplacements } from '../src/autocompleteInsertion'
 const wikilinks = new WikilinksAutocomplete()
 const templates = new TemplatesAutocomplete()
 const tags = new TagsAutocomplete()
+const mentions = new MentionsAutocomplete()
 
 const wikilinksTraits = wikilinks.getCollectionProperties()
 const templatesTraits = templates.getCollectionProperties()
 const tagsTraits = tags.getCollectionProperties()
 
+/** @typedef {import('../src/autocompleteInsertion').InsertionSource} InsertionSource */
+
 /**
  * @param {string} pageName A main-namespace page name.
- * @param {object} [options]
- * @param {string} [options.selectedText]
- * @param {string} [options.fragment]
+ * @param {string} [fragment]
+ * @returns {InsertionSource}
  */
-const wikilinkInsertion = (pageName, { selectedText, fragment } = {}) =>
+const wikilinkInsertion = (pageName, fragment) => (keys) =>
 	wikilinks.getInsertionFromEntry(
 		/** @type {any} */ ({
 			title: { getNamespaceId: () => 0, getMainText: () => pageName },
 			pageName,
 			fragment,
 		}),
-		selectedText,
+		keys,
 	)
 
 /**
  * @param {string} name
- * @param {string} [selectedText]
+ * @returns {InsertionSource}
  */
-const templateInsertion = (name, selectedText) => templates.getInsertionFromEntry(name, selectedText)
+const templateInsertion = (name) => (keys) => templates.getInsertionFromEntry(name, keys)
 
 /**
  * @param {import('../src/TagsAutocomplete').TagEntry} entry
- * @param {string} [selectedText]
+ * @returns {InsertionSource}
  */
-const tagInsertion = (entry, selectedText) => tags.getInsertionFromEntry(entry, selectedText)
+const tagInsertion = (entry) => (keys) => tags.getInsertionFromEntry(entry, keys)
+
+/**
+ * @param {string} name
+ * @returns {InsertionSource}
+ */
+const mentionInsertion = (name) => (keys) => mentions.getInsertionFromEntry(name, keys)
+
+/**
+ * @param {string} selectedText
+ * @param {number} start
+ * @param {string} [leadingSpaces]
+ * @param {string} [trailingSpaces]
+ * @returns {import('../src/autocompleteInsertion').SavedSelection}
+ */
+const savedSelection = (selectedText, start, leadingSpaces = '', trailingSpaces = '') => ({
+	selectedText,
+	start,
+	leadingSpaces,
+	trailingSpaces,
+})
 
 /**
  * Complete the trigger text that ends `before` in `before + after`, with Tribute's caret right
@@ -57,11 +89,13 @@ const tagInsertion = (entry, selectedText) => tags.getInsertionFromEntry(entry, 
  * @param {string} options.before Text before the caret, ending with the trigger and query.
  * @param {string} [options.after]
  * @param {string} options.trigger
- * @param {import('../src/autocompleteInsertion').Insertion} options.insertion
+ * @param {InsertionSource | import('../src/autocompleteInsertion').Insertion} options.insertion
+ *   A plain Insertion stands for a source that returns it whatever the keys.
  * @param {import('../src/autocompleteInsertion').InsertionTraits} [options.traits]
  * @param {import('../src/autocompleteInsertion').KeyState} [options.event]
  * @param {boolean} [options.isMac]
  * @param {number[]} [options.carets] Caret positions of all selection ranges.
+ * @param {import('../src/autocompleteInsertion').SavedSelection[]} [options.savedSelections]
  */
 function complete({
 	before,
@@ -72,11 +106,12 @@ function complete({
 	event = { key: 'Enter' },
 	isMac = false,
 	carets = [before.length],
+	savedSelections = [],
 }) {
 	const text = before + after
 	const mentionPosition = before.lastIndexOf(trigger)
 	const replacements = getReplacements({
-		insertion,
+		getInsertion: typeof insertion === 'function' ? insertion : () => insertion,
 		event,
 		isMac,
 		traits,
@@ -87,6 +122,7 @@ function complete({
 		},
 		text,
 		selectionRanges: carets.map((caret) => ({ from: caret, to: caret })),
+		savedSelections,
 	})
 	const [first] = replacements
 
@@ -116,13 +152,14 @@ describe('getReplacements', () => {
 	it('returns nothing when the text before the caret is not the trigger text', () => {
 		expect(
 			getReplacements({
-				insertion: { start: '[[Main', end: ']]' },
+				getInsertion: () => ({ start: '[[Main', end: ']]' }),
 				event: {},
 				isMac: false,
 				traits: {},
 				context: { triggerText: '[[', query: 'Ma', mentionPosition: 0 },
 				text: 'xx[[Ma',
 				selectionRanges: [],
+				savedSelections: [],
 			}),
 		).toEqual([])
 	})
@@ -198,7 +235,7 @@ describe('getReplacements', () => {
 					before: '[[Foo#Ne',
 					after: 'w old|label]]',
 					trigger: '[[',
-					insertion: wikilinkInsertion('Foo', { fragment: 'New' }),
+					insertion: wikilinkInsertion('Foo', 'New'),
 					traits: wikilinksTraits,
 				}).result,
 			).toBe('[[Foo#New|label]]')
@@ -216,12 +253,13 @@ describe('getReplacements', () => {
 			).toBe('[[Foo bar#Old]]')
 		})
 
-		it('pipes a link with content without Shift and puts the caret after it', () => {
+		it('pipes a link with selected text without Shift and puts the caret after it', () => {
 			const { result, replacements } = complete({
 				before: '[[Main Pa',
 				trigger: '[[',
-				insertion: wikilinkInsertion('Main Page', { selectedText: 'label' }),
+				insertion: wikilinkInsertion('Main Page'),
 				traits: wikilinksTraits,
+				savedSelections: [savedSelection('label', 0)],
 			})
 
 			expect(result).toBe('[[Main Page|label]]')
@@ -303,7 +341,7 @@ describe('getReplacements', () => {
 			const { replacements } = complete({
 				before: '{{Fo',
 				trigger: '{{',
-				insertion: { ...templateInsertion('Foo'), selectContent: true },
+				insertion: (keys) => ({ ...templateInsertion('Foo')(keys), selectContent: true }),
 				traits: templatesTraits,
 				event: { key: 'Tab', shiftKey: true },
 			})
@@ -317,37 +355,32 @@ describe('getReplacements', () => {
 					before: 'a [[Main Pa',
 					after: 'b',
 					trigger: '[[',
-					insertion: {
-						...wikilinkInsertion('Main Page', { selectedText: 'foo' }),
-						autocompleteSelections: [
-							{ selectedText: 'foo', start: 2, leadingSpaces: ' ', trailingSpaces: ' ' },
-						],
-					},
+					insertion: wikilinkInsertion('Main Page'),
 					traits: wikilinksTraits,
 					event: tab,
+					savedSelections: [savedSelection('foo', 2, ' ', ' ')],
 				}).result,
 			).toBe('a  [[Main Page b')
 		})
 
 		it('ignores the Shift, Alt, and Ctrl modifiers', () => {
-			const insertion = {
-				...wikilinkInsertion('Main Page'),
-				altModify: vi.fn(),
-				cmdModify: vi.fn(),
-				shiftModify: vi.fn(),
-			}
+			const getInsertion = vi.fn(templateInsertion('Foo'))
 			const { result } = complete({
-				before: '[[Main Pa',
-				trigger: '[[',
-				insertion,
-				traits: wikilinksTraits,
+				before: '{{Fo',
+				trigger: '{{',
+				insertion: getInsertion,
+				traits: templatesTraits,
 				event: { key: 'Tab', shiftKey: true, altKey: true, ctrlKey: true },
+				savedSelections: [savedSelection('foo', 0)],
 			})
 
-			expect(insertion.shiftModify).not.toHaveBeenCalled()
-			expect(insertion.altModify).not.toHaveBeenCalled()
-			expect(insertion.cmdModify).not.toHaveBeenCalled()
-			expect(result).toBe('[[Main Page')
+			expect(getInsertion).toHaveBeenCalledExactlyOnceWith({
+				shift: false,
+				alt: false,
+				cmd: false,
+				selectedText: undefined,
+			})
+			expect(result).toBe('{{Foo')
 		})
 
 		it('acts like Enter without tabSelectsStartOnly', () => {
@@ -446,104 +479,75 @@ describe('getReplacements', () => {
 					before: 'a [[',
 					after: 'b',
 					trigger: '[[',
-					insertion: {
-						...wikilinkInsertion('Main Page', { selectedText: 'foo' }),
-						autocompleteSelections: [
-							{ selectedText: 'foo', start: 0, leadingSpaces: ' ', trailingSpaces: '  ' },
-						],
-					},
+					insertion: wikilinkInsertion('Main Page'),
 					traits: wikilinksTraits,
+					savedSelections: [savedSelection('foo', 0, ' ', '  ')],
 				}).result,
 			).toBe('a  [[Main Page|foo]]  b')
 		})
 	})
 
-	describe('modifier callbacks', () => {
-		it('omitContentCheck drops content unless Shift is held', () => {
-			const insertion = {
-				start: '[[Main Page|',
-				content: 'X',
-				end: ']]',
-				omitContentCheck: () => true,
-			}
+	describe('keys', () => {
+		/**
+		 * @param {import('../src/autocompleteInsertion').KeyState} event
+		 * @param {boolean} [isMac]
+		 */
+		const completeMention = (event, isMac = false) =>
+			complete({ before: 'Hi @Ex', trigger: '@', insertion: mentionInsertion('Example'), event, isMac })
 
-			expect(complete({ before: '[[Main Pa', trigger: '[[', insertion }).result).toBe(
-				'[[Main Page|]]',
-			)
-			expect(
-				complete({
-					before: '[[Main Pa',
-					trigger: '[[',
-					insertion,
-					event: { key: 'Enter', shiftKey: true },
-				}).result,
-			).toBe('[[Main Page|X]]')
+		it('uses the pipe trick for a mention without Shift', () => {
+			expect(completeMention({ key: 'Enter' }).result).toBe('Hi @[[User:Example|]]')
 		})
 
-		it('Alt runs altModify', () => {
-			expect(
-				complete({
-					before: '@Us',
-					trigger: '@',
-					insertion: {
-						start: 'A',
-						altModify() {
-							this.start = 'B'
-						},
-					},
-					event: { altKey: true },
-				}).result,
-			).toBe('B')
+		it('spells out the mentioned name and selects it with Shift', () => {
+			const { result, selected } = completeMention({ key: 'Enter', shiftKey: true })
+
+			expect(result).toBe('Hi @[[User:Example|Example]]')
+			expect(selected).toBe('Example')
+		})
+
+		it('appends a colon to a mention with Alt', () => {
+			expect(completeMention({ key: 'Enter', altKey: true }).result).toBe(
+				'Hi @[[User:Example|]]: ',
+			)
 		})
 
 		describe('Ctrl/Meta', () => {
-			/**
-			 * @param {import('../src/autocompleteInsertion').KeyState} event
-			 * @param {boolean} isMac
-			 */
-			const completeCmd = (event, isMac) =>
-				complete({
-					before: '@Us',
-					trigger: '@',
-					insertion: {
-						start: 'A',
-						cmdModify() {
-							this.start = 'C'
-						},
-					},
-					event,
-					isMac,
-				}).result
-
-			it('Ctrl runs cmdModify outside Mac', () => {
-				expect(completeCmd({ ctrlKey: true }, false)).toBe('C')
+			it('Ctrl appends a colon outside Mac', () => {
+				expect(completeMention({ ctrlKey: true }).result).toBe('Hi @[[User:Example|]]: ')
 			})
 
-			it('Meta does not run cmdModify outside Mac', () => {
-				expect(completeCmd({ metaKey: true }, false)).toBe('A')
+			it('Meta does not append a colon outside Mac', () => {
+				expect(completeMention({ metaKey: true }).result).toBe('Hi @[[User:Example|]]')
 			})
 
-			it('Meta runs cmdModify on Mac', () => {
-				expect(completeCmd({ metaKey: true }, true)).toBe('C')
+			it('Meta appends a colon on Mac', () => {
+				expect(completeMention({ metaKey: true }, true).result).toBe('Hi @[[User:Example|]]: ')
 			})
 
-			it('Ctrl does not run cmdModify on Mac', () => {
-				expect(completeCmd({ ctrlKey: true }, true)).toBe('A')
+			it('Ctrl does not append a colon on Mac', () => {
+				expect(completeMention({ ctrlKey: true }, true).result).toBe('Hi @[[User:Example|]]')
 			})
 		})
 
-		it('leaves the passed Insertion unchanged', () => {
-			const insertion = wikilinkInsertion('Main Page')
-			const copy = { ...insertion }
+		it('calls the insertion source once with the keys and the saved selection text', () => {
+			const getInsertion = vi.fn(wikilinkInsertion('Main Page'))
 			complete({
-				before: '[[Main Pa',
+				before: '[[',
 				trigger: '[[',
-				insertion,
+				insertion: getInsertion,
 				traits: wikilinksTraits,
-				event: { key: 'Enter', shiftKey: true },
+				event: { key: 'Enter', shiftKey: true, altKey: true, metaKey: true },
+				isMac: true,
+				savedSelections: [savedSelection('foo', 0)],
 			})
 
-			expect(insertion).toEqual(copy)
+			expect(getInsertion).toHaveBeenCalledExactlyOnceWith({
+				shift: true,
+				alt: true,
+				cmd: true,
+				selectedText: 'foo',
+			})
 		})
 	})
 
@@ -552,14 +556,9 @@ describe('getReplacements', () => {
 			const { replacements } = complete({
 				before: 'x {{ y {{',
 				trigger: '{{',
-				insertion: {
-					...templateInsertion('Foo', 'a'),
-					autocompleteSelections: [
-						{ selectedText: 'a', start: 2, leadingSpaces: '', trailingSpaces: '' },
-						{ selectedText: 'b', start: 7, leadingSpaces: '', trailingSpaces: ' ' },
-					],
-				},
+				insertion: templateInsertion('Foo'),
 				traits: templatesTraits,
+				savedSelections: [savedSelection('a', 2), savedSelection('b', 7, '', ' ')],
 				carets: [9, 4],
 			})
 
@@ -585,7 +584,7 @@ describe('getReplacements', () => {
 
 		it('falls back to the single caret when some range is not collapsed', () => {
 			const replacements = getReplacements({
-				insertion: templateInsertion('Foo'),
+				getInsertion: templateInsertion('Foo'),
 				event: {},
 				isMac: false,
 				traits: templatesTraits,
@@ -595,6 +594,7 @@ describe('getReplacements', () => {
 					{ from: 2, to: 4 },
 					{ from: 9, to: 9 },
 				],
+				savedSelections: [],
 			})
 
 			expect(replacements).toEqual([{ from: 7, to: 9, insert: '{{Foo}}', selection: undefined }])
@@ -614,13 +614,14 @@ describe('getReplacements', () => {
 
 		it('takes the single caret path for one range', () => {
 			const replacements = getReplacements({
-				insertion: templateInsertion('Foo'),
+				getInsertion: templateInsertion('Foo'),
 				event: {},
 				isMac: false,
 				traits: templatesTraits,
 				context: { triggerText: '{{', query: '', mentionPosition: 7 },
 				text: 'x {{ y {{',
 				selectionRanges: [{ from: 4, to: 4 }],
+				savedSelections: [],
 			})
 
 			expect(replacements).toEqual([{ from: 7, to: 9, insert: '{{Foo}}', selection: undefined }])

@@ -105,17 +105,15 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 *
 	 * @override
 	 * @param {string} entry The template name to transform
-	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
+	 * @param {import('./autocompleteInsertion').InsertionKeys} [keys]
 	 * @returns {import('./autocompleteInsertion').Insertion & { end: string }}
 	 */
-	getInsertionFromEntry(entry, selectedText) {
+	getInsertionFromEntry(entry, { shift = false, selectedText } = {}) {
 		return {
-			start: '{{' + entry.trim(),
+			// `insertTemplateData()` relies on the pipe to find where the parameters go.
+			start: '{{' + entry.trim() + (shift || selectedText ? '|' : ''),
 			end: '}}',
 			content: selectedText,
-			shiftModify() {
-				this.start += '|'
-			},
 		}
 	}
 

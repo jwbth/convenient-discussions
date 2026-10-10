@@ -38,15 +38,10 @@ import BaseAutocomplete from '../src/BaseAutocomplete'
 import MentionsAutocomplete from '../src/MentionsAutocomplete'
 
 /**
- * Assemble the wikitext Tribute inserts for a plain Enter (no modifier keys).
- *
  * @param {import('../src/autocompleteInsertion').Insertion} insertion
  * @returns {string}
  */
-const assemble = (insertion) =>
-	insertion.start +
-	((!insertion.omitContentCheck?.() && insertion.content) || '') +
-	(insertion.end || '')
+const assemble = (insertion) => insertion.start + (insertion.content || '') + (insertion.end || '')
 
 /** @type {MentionsAutocomplete} */
 let autocomplete
@@ -59,12 +54,17 @@ describe('MentionsAutocomplete.getInsertionFromEntry', () => {
 	it('uses the pipe trick for a registered user', () => {
 		const insertion = autocomplete.getInsertionFromEntry(' Example ')
 
-		expect(insertion).toMatchObject({ start: '@[[User:Example|', end: ']]', content: 'Example' })
 		expect(assemble(insertion)).toBe('@[[User:Example|]]')
 	})
 
+	it('spells out the name with Shift', () => {
+		expect(assemble(autocomplete.getInsertionFromEntry('Example', { shift: true }))).toBe(
+			'@[[User:Example|Example]]',
+		)
+	})
+
 	it('uses the selected text as the link text', () => {
-		const insertion = autocomplete.getInsertionFromEntry('Example', 'my friend')
+		const insertion = autocomplete.getInsertionFromEntry('Example', { selectedText: 'my friend' })
 
 		expect(assemble(insertion)).toBe('@[[User:Example|my friend]]')
 	})
@@ -83,16 +83,21 @@ describe('MentionsAutocomplete.getInsertionFromEntry', () => {
 	)
 
 	it('uses only the selected text as the link text for a name with a parenthesis', () => {
-		expect(assemble(autocomplete.getInsertionFromEntry('Foo (bar)', 'my friend'))).toBe(
+		expect(assemble(autocomplete.getInsertionFromEntry('Foo (bar)', { selectedText: 'my friend' }))).toBe(
 			'@[[User:Foo (bar)|my friend]]',
 		)
 	})
 
-	it.each(['altModify', 'cmdModify'])('appends a colon after the link on %s', (method) => {
-		const insertion = autocomplete.getInsertionFromEntry('Example')
-		insertion[method]()
+	it.each(['alt', 'cmd'])('appends a colon after the link with %s', (key) => {
+		expect(assemble(autocomplete.getInsertionFromEntry('Example', { [key]: true }))).toBe(
+			'@[[User:Example|]]: ',
+		)
+	})
 
-		expect(assemble(insertion)).toBe('@[[User:Example|]]: ')
+	it('appends two colons with both Alt and Cmd', () => {
+		expect(
+			assemble(autocomplete.getInsertionFromEntry('Example', { alt: true, cmd: true })),
+		).toBe('@[[User:Example|]]: : ')
 	})
 })
 

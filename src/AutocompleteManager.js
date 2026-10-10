@@ -260,19 +260,13 @@ class AutocompleteManager {
 		}
 
 		const autocomplete = option.original.autocomplete
-		const selectionData = this.getSelectedTextForInsertion(option)
-		const insertion = autocomplete.getInsertionFromEntry(
-			option.original.entry,
-			selectionData?.selectedText,
-		)
-		this.applySelectionDataToInsertion(insertion, selectionData)
 
 		const element = /** @type {HTMLTextAreaElement} */ (this.tribute.current.element)
 		const input = element.cdInput
 		autocomplete.afterOptionChoose(option, event, input)
 
 		return getReplacements({
-			insertion,
+			getInsertion: (keys) => autocomplete.getInsertionFromEntry(option.original.entry, keys),
 			event,
 			isMac: navigator.platform.includes('Mac'),
 			traits: /** @type {import('./tribute/Tribute').TributeCollection} */ (
@@ -281,19 +275,8 @@ class AutocompleteManager {
 			context,
 			text: element.value,
 			selectionRanges: input?.getSelectionRanges() || [],
+			savedSelections: this.getSelectedTextForInsertion(option)?.selections || [],
 		})
-	}
-
-	/**
-	 * Apply saved selection data to insertion data.
-	 *
-	 * @param {import('./autocompleteInsertion').Insertion} insertion Insertion data.
-	 * @param {{selections: Array<{selectedText: string, start: number, leadingSpaces: string, trailingSpaces: string}>} | undefined} selectionData Selection data.
-	 */
-	applySelectionDataToInsertion(insertion, selectionData) {
-		if (!selectionData) return
-
-		insertion.autocompleteSelections = selectionData.selections
 	}
 
 	// Static properties and methods for backward compatibility

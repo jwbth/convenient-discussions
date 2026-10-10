@@ -107,7 +107,7 @@ describe('CommentLinksAutocomplete.getInsertionFromEntry', () => {
 
 	it('uses the selected text as the link text', () => {
 		expect(
-			autocomplete.getInsertionFromEntry({ label: 'Foo', urlFragment: 'Foo', headline: 'Foo' }, 'see here')
+			autocomplete.getInsertionFromEntry({ label: 'Foo', urlFragment: 'Foo', headline: 'Foo' }, { selectedText: 'see here' })
 				.content,
 		).toBe('see here')
 	})

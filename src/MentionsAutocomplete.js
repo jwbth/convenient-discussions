@@ -39,10 +39,10 @@ class MentionsAutocomplete extends BaseAutocomplete {
 	 *
 	 * @override
 	 * @param {string} entry The user name to transform
-	 * @param {string} [selectedText] Text that was selected before typing the autocomplete trigger
+	 * @param {import('./autocompleteInsertion').InsertionKeys} [keys]
 	 * @returns {import('./autocompleteInsertion').Insertion & { end: string, content: string }}
 	 */
-	getInsertionFromEntry(entry, selectedText) {
+	getInsertionFromEntry(entry, { shift = false, alt = false, cmd = false, selectedText } = {}) {
 		const name = entry.trim()
 		const user = userRegistry.get(name)
 		const userNamespace = user.getNamespaceAlias()
@@ -50,20 +50,16 @@ class MentionsAutocomplete extends BaseAutocomplete {
 			? `${userNamespace}:${name}`
 			: `${cd.g.contribsPages[0]}/${name}`
 
+		const colon = cd.mws('colon-separator', { language: 'content' })
+
 		return {
 			start: `@[[${pageName}|`,
-			end: ']]',
-			content: selectedText || name,
-			omitContentCheck() {
+			end: ']]' + (alt ? colon : '') + (cmd ? colon : ''),
+			content:
 				// The pipe trick would mangle a name with a parenthesis or a comma.
-				return !selectedText && !this.start.includes('/') && !/[(,]/.test(name)
-			},
-			altModify() {
-				this.end += cd.mws('colon-separator', { language: 'content' })
-			},
-			cmdModify() {
-				this.end += cd.mws('colon-separator', { language: 'content' })
-			},
+				!selectedText && !shift && !pageName.includes('/') && !/[(,]/.test(name)
+					? ''
+					: selectedText || name,
 		}
 	}
 
