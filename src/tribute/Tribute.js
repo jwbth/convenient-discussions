@@ -2,8 +2,8 @@
 /**
  * Tribute.js
  * Native ES6 JavaScript @mention Plugin
- * Improved and adapted for use in the Convenient Discussions script. (There shoudln't be
- * any hardcode related to CD here.)
+ * Improved and adapted for use in the Convenient Discussions script. (There shouldn't be any
+ * hardcode related to CD here.)
  *
  * @license
  * The MIT License (MIT)
