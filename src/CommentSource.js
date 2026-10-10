@@ -23,9 +23,11 @@ import { extractSignatures } from './utils-window'
  * @property {number} index Index among the comments of the context code.
  * @property {{ authorName: string, timestamp?: string }[]} previousComments Up to two comments
  *   before the comment, nearest first.
- * @property {boolean} followsHeading
+ * @property {boolean} followsHeading Whether the comment follows a heading, to score the candidates.
  * @property {string} [sectionHeadline]
  * @property {string} text Text of the comment as rendered.
+ * @property {boolean} followsHeadingOnPage Whether the comment follows a heading as rendered on the
+ *   page. Differs from `followsHeading` when the comment is identified by its data in other code.
  * @property {number} level
  * @property {boolean} own Whether the comment is the current user's.
  * @property {boolean} openingSection Whether the comment opens a section.
@@ -44,9 +46,10 @@ import { extractSignatures } from './utils-window'
  */
 class CommentSource {
 	/**
-	 * Comment the source was located for. Only the splice reads it.
+	 * Comment the source was located for, set by {@link Comment#locateInCode}. Only the splice reads
+	 * it.
 	 *
-	 * @type {import('./Comment').default}
+	 * @type {import('./Comment').default | undefined}
 	 */
 	comment
 
@@ -439,7 +442,11 @@ class CommentSource {
 	 */
 	detectBrokenIndentation() {
 		// Only check for comments at level 0 that aren't own comments and don't follow headings
-		if (this.commentData.level !== 0 || this.commentData.own || this.commentData.followsHeading) {
+		if (
+			this.commentData.level !== 0 ||
+			this.commentData.own ||
+			this.commentData.followsHeadingOnPage
+		) {
 			return
 		}
 
@@ -974,8 +981,8 @@ class CommentSource {
 		commentFormAction,
 		commentCode,
 		contextCode: originalContextCode = this.isInSectionContext
-			? /** @type {import('./Section').default} */ (this.comment.section).presumedCode
-			: this.comment.getSourcePage().source.getCode(),
+			? /** @type {import('./Section').default} */ (this.getComment().section).presumedCode
+			: this.getComment().getSourcePage().source.getCode(),
 		doDelete,
 		commentForm,
 	}) {
@@ -1008,11 +1015,10 @@ class CommentSource {
 				if (doDelete) {
 					let startIndex
 					let endIndex
-					if (this.comment.isOpeningSection() && this.headingStartIndex !== undefined) {
+					const comment = this.getComment()
+					if (comment.isOpeningSection() && this.headingStartIndex !== undefined) {
 						// Usually, `.source` is set in CommentForm#buildSource(), but sometimes it's not.
-						const source = /** @type {import('./Section').default} */ (
-							this.comment.section
-						).getSource()
+						const source = /** @type {import('./Section').default} */ (comment.section).getSource()
 
 						if (extractSignatures(source.code).length > 1) {
 							throw new CdError({
@@ -1085,6 +1091,24 @@ class CommentSource {
 			.map((source, _, sources) => source.calculateMatchScore(commentData, sources, signatures))
 			.filter((sourceWithScore) => sourceWithScore.score > 2.5)
 			.sort((s1, s2) => s2.score - s1.score)[0]?.source
+	}
+
+	/**
+	 * Get the comment the source was located for.
+	 *
+	 * @returns {import('./Comment').default}
+	 * @throws {CdError}
+	 * @private
+	 */
+	getComment() {
+		if (!this.comment) {
+			throw new CdError({
+				type: 'internal',
+				message: 'The comment source was located without a comment.',
+			})
+		}
+
+		return this.comment
 	}
 
 	/**

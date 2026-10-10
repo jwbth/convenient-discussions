@@ -876,10 +876,10 @@ class Comment extends mixIntoClass(
 	 * Check if a level 0 comment with broken layout has any valid replies (newer or same date, and
 	 * level 1).
 	 *
+	 * @param {Comment[]} [children] The comment's children, if already found.
 	 * @returns {boolean}
 	 */
-	brokenCommentHasValidReplies() {
-		const children = this.getChildren()
+	brokenCommentHasValidReplies(children = this.getChildren()) {
 		if (children.length === 0) {
 			return false
 		}
@@ -3470,7 +3470,6 @@ class Comment extends mixIntoClass(
 			identification = {
 				index: matchedData.index,
 
-				// For the reserve method; the main method uses one date.
 				previousComments: matchedData.previousComments,
 
 				followsHeading: matchedData.followsHeading,
@@ -3491,8 +3490,18 @@ class Comment extends mixIntoClass(
 			}
 		}
 
+		const children = this.getChildren()
+
 		return {
 			...identification,
+
+			// For the reserve method; the main method uses one date.
+			previousComments: identification.previousComments.map(({ authorName, timestamp }) => ({
+				authorName,
+				timestamp,
+			})),
+
+			followsHeadingOnPage: this.followsHeading,
 			author: this.author,
 			timestamp: this.timestamp,
 			level: this.level,
@@ -3510,8 +3519,8 @@ class Comment extends mixIntoClass(
 			hasPreWithElements: this.elements.some(
 				(el) => (el.tagName === 'PRE' && el.firstElementChild) || el.querySelector('pre *'),
 			),
-			childLevels: this.getChildren().map((child) => child.level),
-			hasValidReplies: this.brokenCommentHasValidReplies(),
+			childLevels: children.map((child) => child.level),
+			hasValidReplies: this.brokenCommentHasValidReplies(children),
 		}
 	}
 

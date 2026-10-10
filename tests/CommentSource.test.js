@@ -30,6 +30,7 @@ function makeReplyData() {
 		index: 1,
 		previousComments: [{ authorName: 'Alice', timestamp: '10:00, 1 January 2024 (UTC)' }],
 		followsHeading: false,
+		followsHeadingOnPage: false,
 		sectionHeadline: 'Topic',
 		text: 'Reply text.',
 		level: 1,
@@ -65,5 +66,34 @@ describe('CommentSource.locate', () => {
 				true,
 			),
 		).toBeUndefined()
+	})
+})
+
+describe('broken indentation', () => {
+	const brokenCode = [
+		'== Topic ==',
+		'Opening text. [[User:Alice|Alice]] ([[User talk:Alice|talk]]) 10:00, 1 January 2024 (UTC)',
+		':: Reply text. [[User:Bob|Bob]] ([[User talk:Bob|talk]]) 11:00, 1 January 2024 (UTC)',
+		'',
+	].join('\n')
+
+	test('is detected in a level-0 comment that starts with indentation characters', () => {
+		const source = /** @type {CommentSource} */ (
+			CommentSource.locate(brokenCode, { ...makeReplyData(), level: 0 }, true)
+		)
+
+		expect(source.detectedActualLevel).toBe(2)
+	})
+
+	test("isn't detected when the comment follows a heading on the page, whatever identifies it", () => {
+		const source = /** @type {CommentSource} */ (
+			CommentSource.locate(
+				brokenCode,
+				{ ...makeReplyData(), level: 0, followsHeading: false, followsHeadingOnPage: true },
+				true,
+			)
+		)
+
+		expect(source.detectedActualLevel).toBeUndefined()
 	})
 })
