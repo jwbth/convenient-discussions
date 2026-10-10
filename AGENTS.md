@@ -2,7 +2,6 @@
 
 - The dev server on port 9000 serves the main checkout; assume it's running. In a worktree, run `npm run dev` in the background, use the port it prints in place of 9000, and stop it with `npm run dev:stop`.
 - Cover non-trivial behaviors and fixes with unit tests, or e2e tests where unit tests can't reach.
-- Before committing, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
 - Test CD in the browser through the Chrome DevTools MCP: its Chrome is logged in to a test account and keeps tabs visible, which CD needs to boot. Unless the task calls for another page, use https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page. Load the dev build with:
 
   ```js
@@ -12,13 +11,10 @@
   document.head.appendChild(script)
   ```
 
+- Before committing, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
+
 ## Coding conventions
 
-### JavaScript & TypeScript
-
-- Avoid introducing variables used only once. Exceptions:
-  - Variables used in template strings. Prefer them to having function calls inside template strings.
-  - Cases where the use of the variable is in a loop or function while the assignment is not.
 - Use functional patterns where possible.
 - Prefer `undefined` over `null`, but drop `undefined` where it's not needed, e.g. `return undefined`.
 - When a function parameter is not used in the function, put an underscore in front of it.
