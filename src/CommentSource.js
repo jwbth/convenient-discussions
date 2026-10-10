@@ -17,10 +17,39 @@ import {
 import { extractSignatures } from './utils-window'
 
 /**
+ * @typedef {object} CommentData
+ * @property {import('./User').default} author Author, to pick the candidate signatures.
+ * @property {string} [timestamp] Timestamp as on the page, to pick the candidate signatures.
+ * @property {number} index Index among the comments of the context code.
+ * @property {{ authorName: string, timestamp?: string }[]} previousComments Up to two comments
+ *   before the comment, nearest first.
+ * @property {boolean} followsHeading
+ * @property {string} [sectionHeadline]
+ * @property {string} text Text of the comment as rendered.
+ * @property {number} level
+ * @property {boolean} own Whether the comment is the current user's.
+ * @property {boolean} openingSection Whether the comment opens a section.
+ * @property {boolean} tableComment Whether the comment (or its signature) is inside a table
+ *   containing only that comment.
+ * @property {boolean} hasForeignTimestamps Whether the comment has timestamps outside its signature.
+ * @property {boolean} hasPreWithElements Whether the comment has `<pre>` blocks with elements inside.
+ * @property {number[]} childLevels Levels of the comment's children.
+ * @property {boolean} hasValidReplies Whether the comment has a child of level 1 that is not older
+ *   than the comment.
+ */
+
+/**
  * Class that keeps the methods and data related to a comment's source code. Also used for comment
  * source match candidates before a single match is chosen among them.
  */
 class CommentSource {
+	/**
+	 * Comment the source was located for. Only the splice reads it.
+	 *
+	 * @type {import('./Comment').default}
+	 */
+	comment
+
 	/** @type {number} */
 	lineStartIndex
 
@@ -45,14 +74,15 @@ class CommentSource {
 	/**
 	 * Create a comment's source object.
 	 *
-	 * @param {import('./Comment').default} comment Comment.
 	 * @param {import('./utils-window').SignatureInWikitext} signature Data about the source code of
 	 *   the signature.
 	 * @param {string} contextCode Wikitext used as a reference point for the indexes.
+	 * @param {CommentData} commentData
 	 * @param {boolean} isInSectionContext Is the source code of the section (not page) used.
+	 * @private
 	 */
-	constructor(comment, signature, contextCode, isInSectionContext) {
-		this.comment = comment
+	constructor(signature, contextCode, commentData, isInSectionContext) {
+		this.commentData = commentData
 		this.index = signature.index
 		this.author = signature.author
 		this.timestamp = signature.timestamp
@@ -122,8 +152,8 @@ class CommentSource {
 
 			// Try to edit the first comment at
 			// https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
-			// to see the bug happening if we don't check for this.comment.isOpeningSection.
-			this.lineStartIndex = this.comment.isOpeningSection()
+			// to see the bug happening if we don't check for the opening section.
+			this.lineStartIndex = this.commentData.openingSection
 				? this.headingStartIndex
 				: this.startIndex
 		} else {
@@ -135,12 +165,7 @@ class CommentSource {
 			;[
 				cd.g.signatureEndingRegexp,
 
-				// Dirty workaround to tell if there are foreign timestamps inside the comment
-				this.comment.elements.some((el) => {
-					const timestamp = el.querySelector('.cd-timestamp')
-
-					return timestamp && !timestamp.closest('.cd-signature')
-				})
+				this.commentData.hasForeignTimestamps
 					? undefined
 					: cd.g.timestampTools.content.timezoneRegexp,
 			]
@@ -174,7 +199,7 @@ class CommentSource {
 					}
 				})
 
-			// This should be before the `this.comment.level > 0` block to account for cases like
+			// This should run before excludeIndentationAndIntro() to account for cases like
 			// https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (the regexp
 			// doesn't catch the comment because of a newline inside the `syntaxhighlight` element).
 			cd.g.badCommentBeginnings.forEach((regexp) => {
@@ -200,11 +225,11 @@ class CommentSource {
 	 * with `:` that is used to indent some side note. It shouldn't be considered an indentation
 	 * character.
 	 *
-	 * @param {number} [level] Optional level to use instead of this.comment.level
+	 * @param {number} [level] Optional level to use instead of the comment's level
 	 * @private
 	 */
 	excludeIndentationAndIntro(level) {
-		const commentLevel = level === undefined ? this.comment.level : level
+		const commentLevel = level === undefined ? this.commentData.level : level
 		if (commentLevel === 0) return
 
 		/** @type {ReplaceCallback} */
@@ -312,7 +337,7 @@ class CommentSource {
 		// here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
 		movePartsToSignature(
 			[
-				this.comment.hasFlag('own') ? cd.g.userSignaturePrefixRegexp : undefined,
+				this.commentData.own ? cd.g.userSignaturePrefixRegexp : undefined,
 				/'+$/,
 				cd.config.signaturePrefixRegexp || undefined,
 				tagRegexp,
@@ -376,7 +401,7 @@ class CommentSource {
 		// different sets depending on the mode (edit/reply). Here we set the reply indentation, but
 		// also adjust the edit intendation if necessary.
 		let replyIndentationBase = this.indentation
-		if (!this.comment.isOpeningSection()) {
+		if (!this.commentData.openingSection) {
 			// If the last line ends with `#`, it's probably a numbered list _inside_ the comment, not two
 			// comments in one, so we exclude such cases. The signature code is used because it may start
 			// with a newline.
@@ -414,7 +439,7 @@ class CommentSource {
 	 */
 	detectBrokenIndentation() {
 		// Only check for comments at level 0 that aren't own comments and don't follow headings
-		if (this.comment.level !== 0 || this.comment.hasFlag('own') || this.comment.followsHeading) {
+		if (this.commentData.level !== 0 || this.commentData.own || this.commentData.followsHeading) {
 			return
 		}
 
@@ -466,47 +491,29 @@ class CommentSource {
 
 		// Don't fix if there are <pre>...</pre> blocks with content - that's the sign of the markup
 		// with lines starting with a space. No way we can convert that.
-		if (
-			this.comment.elements.some(
-				(el) => (el.tagName === 'PRE' && el.firstElementChild) || el.querySelector('pre *'),
-			)
-		) {
+		if (this.commentData.hasPreWithElements) {
 			return false
 		}
 
-		const children = this.comment.getChildren()
-
 		// If no children, it's safe to fix
-		if (children.length === 0) {
+		if (this.commentData.childLevels.length === 0) {
 			return true
 		}
 
-		// Check if there are valid replies (newer or same date + level 1)
-		const hasValidReply = this.comment.brokenCommentHasValidReplies()
-
 		// If there are children but none are valid replies, it's safe to fix
-		if (!hasValidReply) {
+		if (!this.commentData.hasValidReplies) {
 			return true
 		}
 
 		// If there are valid replies, check that all children have level > detectedActualLevel
 		// This ensures we won't disrupt the layout after fixing
-		return children.every(
-			(child) => this.detectedActualLevel !== undefined && child.level > this.detectedActualLevel,
+		return this.commentData.childLevels.every(
+			(level) => this.detectedActualLevel !== undefined && level > this.detectedActualLevel,
 		)
 	}
 
 	/**
-	 * @typedef {object} CommentData
-	 * @property {number} index
-	 * @property {import('./updateChecker').CommentWorkerBase[]|import('./Comment').default[]} previousComments
-	 * @property {boolean} followsHeading
-	 * @property {string} [sectionHeadline]
-	 * @property {string} commentText
-	 */
-
-	/**
-	 * _For internal use._ Calculate and set a score for the match.
+	 * Calculate and set a score for the match.
 	 *
 	 * @param {CommentData} commentData Data about the comment.
 	 * @param {CommentSource[]} sources List of all matches.
@@ -516,6 +523,7 @@ class CommentSource {
 	 *   source: CommentSource,
 	 *   score: number,
 	 * }}
+	 * @private
 	 */
 	calculateMatchScore(commentData, sources, signatures) {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -558,7 +566,7 @@ class CommentSource {
 			doesHeadlineMatch = !this.headingMatch
 		}
 
-		const wordOverlap = calculateWordOverlap(commentData.commentText, removeWikiMarkup(this.code))
+		const wordOverlap = calculateWordOverlap(commentData.text, removeWikiMarkup(this.code))
 
 		return {
 			source: this,
@@ -606,11 +614,11 @@ class CommentSource {
 	 * Convert the comment's source code to code to set as a value of an input (practically, to the
 	 * {@link CommentForm#commentInput comment form's input}).
 	 *
-	 * @param {number} [level] Optional level to use instead of this.comment.level
+	 * @param {number} [level] Optional level to use instead of the comment's level
 	 * @returns {string}
 	 */
 	toInputValue(level) {
-		const commentLevel = level === undefined ? this.comment.level : level
+		const commentLevel = level === undefined ? this.commentData.level : level
 		const originalIndentationLength = this.originalIndentation.length
 
 		let inputValue = new TextMasker(this.code)
@@ -754,7 +762,7 @@ class CommentSource {
 	matchProperPlaceRegexps(adjustedChunkCodeAfter) {
 		const anySignaturePattern =
 			'^(' +
-			(this.comment.isTableComment() ? String.raw`[^]*?(?:(?:\s*\n\|\})+|</table>).*\n` : '') +
+			(this.commentData.tableComment ? String.raw`[^]*?(?:(?:\s*\n\|\})+|</table>).*\n` : '') +
 			'[^]*?(?:' +
 			mw.util.escapeRegExp(this.signatureCode) +
 			'|' +
@@ -1046,6 +1054,37 @@ class CommentSource {
 		}
 
 		return { contextCode, commentCode }
+	}
+
+	/**
+	 * Locate a comment in context code.
+	 *
+	 * @param {string} contextCode
+	 * @param {CommentData} commentData
+	 * @param {boolean} [isInSectionContext] Whether the context code is the code of the comment's
+	 *   section (not page).
+	 * @returns {CommentSource | undefined} The best-scoring candidate, if any scores enough.
+	 */
+	static locate(contextCode, commentData, isInSectionContext = false) {
+		const signatures = extractSignatures(contextCode)
+
+		return signatures
+			.filter(
+				(signature) =>
+					(signature.author === commentData.author || signature.author.getName() === '<undated>') &&
+					(commentData.timestamp === signature.timestamp ||
+						// .startsWith() to account for cases where you can ignore the timezone string in
+						// "unsigned" templates (it may be present and may be not), but it appears on the page.
+						(commentData.timestamp &&
+							signature.timestamp &&
+							commentData.timestamp.startsWith(signature.timestamp))),
+			)
+			.map(
+				(signature) => new CommentSource(signature, contextCode, commentData, isInSectionContext),
+			)
+			.map((source, _, sources) => source.calculateMatchScore(commentData, sources, signatures))
+			.filter((sourceWithScore) => sourceWithScore.score > 2.5)
+			.sort((s1, s2) => s2.score - s1.score)[0]?.source
 	}
 
 	/**
