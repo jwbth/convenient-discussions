@@ -225,9 +225,11 @@ function recordComment(comment, context, group) {
 					})(),
 		reply: tryOrError(() => {
 			const replySource = locateComment(comment, context)
+			const replyPlace = replySource.findReplyPlace()
 			const { contextCode: codeAfter } = replySource.modifyContext({
 				action: 'reply',
 				commentCode: dummyReply,
+				replyPlace,
 			})
 
 			return {
@@ -252,6 +254,9 @@ function recordComment(comment, context, group) {
 				locateComment(comment, context).modifyContext({
 					action: 'edit',
 					doDelete: true,
+					sectionSource: comment.isOpeningSection()
+						? /** @type {Section} */ (comment.section).getSource()
+						: undefined,
 				}).contextCode,
 			),
 		),

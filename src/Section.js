@@ -2110,7 +2110,6 @@ class Section extends SectionSkeleton {
 			})
 		}
 
-		source.section = this
 		this.source = source
 
 		return source

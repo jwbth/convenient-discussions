@@ -3579,7 +3579,6 @@ class Comment extends mixIntoClass(
 			})
 		}
 
-		source.comment = this
 		if (!customCodePassed) {
 			this.source = source
 		}

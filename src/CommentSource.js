@@ -45,14 +45,6 @@ import { extractSignatures } from './utils-window'
  * source match candidates before a single match is chosen among them.
  */
 class CommentSource {
-	/**
-	 * Comment the source was located for, set by {@link Comment#locateInCode}. Only the splice reads
-	 * it.
-	 *
-	 * @type {import('./Comment').default | undefined}
-	 */
-	comment
-
 	/** @type {number} */
 	lineStartIndex
 
@@ -95,6 +87,7 @@ class CommentSource {
 		this.endIndex = signature.startIndex
 		this.signatureEndIndex = signature.startIndex + signature.dirtyCode.length
 		this.code = contextCode.slice(signature.commentStartIndex, signature.startIndex)
+		this.contextCode = contextCode
 		this.isInSectionContext = isInSectionContext
 
 		this.lineStartIndex = this.startIndex
@@ -843,18 +836,20 @@ class CommentSource {
 	}
 
 	/**
-	 * Determine an offset in the code to insert a reply to the comment into.
+	 * Find the reply place: the index in the context code where a reply to the comment goes. Sets
+	 * {@link CommentSource#replyIndentation} to the reply's final indentation and
+	 * {@link CommentSource#isReplyOutdented}. Run it exactly once, before building the reply's code,
+	 * which reads both, and pass the result to {@link CommentSource#modifyContext}.
 	 *
-	 * @param {string} contextCode
 	 * @returns {number}
-	 * @private
+	 * @throws {CdError}
 	 */
-	findProperPlaceForReply(contextCode) {
+	findReplyPlace() {
 		let currentIndex = this.endIndex
 
 		const adjustedChunkCodeAfter = CommentSource.getAdjustedChunkCodeAfter(
 			currentIndex,
-			contextCode,
+			this.contextCode,
 		)
 		if (/^ +\u0002/.test(adjustedChunkCodeAfter)) {
 			throw new CdError({
@@ -914,7 +909,6 @@ class CommentSource {
 	 * @param {object} options
 	 * @param {'edit'} options.action
 	 * @param {string} options.commentCode
-	 * @param {boolean} [options.doDelete]
 	 * @param {string} [options.contextCode]
 	 * @returns {{
 	 *   contextCode: string;
@@ -925,6 +919,7 @@ class CommentSource {
 	 * @param {object} options
 	 * @param {'edit'} options.action
 	 * @param {true} options.doDelete
+	 * @param {import('./SectionSource').default} [options.sectionSource]
 	 * @param {string} [options.contextCode]
 	 * @returns {{
 	 *   contextCode: string;
@@ -933,7 +928,8 @@ class CommentSource {
 	 * @overload
 	 * @param {object} options
 	 * @param {'reply'} options.action
-	 * @param {string} [options.commentCode]
+	 * @param {string} options.commentCode
+	 * @param {number} options.replyPlace
 	 * @param {string} [options.contextCode]
 	 * @returns {{
 	 *   contextCode: string;
@@ -945,12 +941,12 @@ class CommentSource {
 	 * @param {import('./CommentForm').CommentFormMode} options.action
 	 * @param {string} [options.commentCode]
 	 * @param {boolean} [options.doDelete]
+	 * @param {number} [options.replyPlace]
+	 * @param {import('./SectionSource').default} [options.sectionSource]
 	 * @param {string} [options.contextCode]
-	 * @param {import('./CommentForm').default} options.commentForm
-	 * @param {import('./CommentForm').CommentFormAction} options.commentFormAction
 	 * @returns {{
 	 *   contextCode: string;
-	 *   commentCode: string;
+	 *   commentCode?: string;
 	 * }}
 	 */
 
@@ -960,16 +956,14 @@ class CommentSource {
 	 * @param {object} options
 	 * @param {import('./CommentForm').CommentFormMode} options.action `'reply'` or `'edit'`.
 	 * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
-	 *   characters, and the signature. Omit when `doDelete` is `true`. Can omit when `action` is
-	 *   `'reply'` and `commentForm` and `commentFormAction` are set.
+	 *   characters, and the signature. Omit when `doDelete` is `true`.
 	 * @param {boolean} [options.doDelete] Whether to delete the comment.
-	 * @param {string} [options.contextCode] Code that has the comment. Usually not needed; provide it
-	 *   only if you need to perform operations on some code that is not the code of a section or
-	 *   page).
-	 * @param {import('./CommentForm').default} [options.commentForm] Comment form that has the code.
-	 *   Can be not set if `commentCode` is set or `action` is `'edit'`.
-	 * @param {import('./CommentForm').CommentFormAction} [options.commentFormAction] Comment form
-	 *   action. Can be not set if `commentCode` is set or `action` is `'edit'`.
+	 * @param {number} [options.replyPlace] Result of {@link CommentSource#findReplyPlace}. Required
+	 *   when `action` is `'reply'`.
+	 * @param {import('./SectionSource').default} [options.sectionSource] Source of the comment's
+	 *   section. Required when deleting the opening comment of a section.
+	 * @param {string} [options.contextCode] Code that has the comment, when it isn't the code the
+	 *   source was located in.
 	 * @returns {{
 	 *   contextCode: string;
 	 *   commentCode?: string;
@@ -978,36 +972,28 @@ class CommentSource {
 	 */
 	modifyContext({
 		action,
-		commentFormAction,
 		commentCode,
-		contextCode: originalContextCode = this.isInSectionContext
-			? /** @type {import('./Section').default} */ (this.getComment().section).presumedCode
-			: this.getComment().getSourcePage().source.getCode(),
+		contextCode: originalContextCode = this.contextCode,
 		doDelete,
-		commentForm,
+		replyPlace,
+		sectionSource,
 	}) {
-		if (!originalContextCode) {
-			throw new CdError({
-				type: 'internal',
-				message: 'Context (section or page) code is not set.',
-			})
-		}
-
 		/** @type {string} */
 		let contextCode
 		switch (/** @type {'reply' | 'edit'} */ (action)) {
 			case 'reply': {
-				// This also sets .isReplyOutdented which CommentForm#inputToCode() will need. TODO:
-				// refactor this "action at a distance".
-				const currentIndex = this.findProperPlaceForReply(originalContextCode)
+				if (replyPlace === undefined) {
+					throw new CdError({
+						type: 'internal',
+						message: 'The reply place is not set.',
+					})
+				}
 
-				commentCode ??= /** @type {import('./CommentForm').default} */ (commentForm).inputToCode(
-					/** @type {import('./CommentForm').CommentFormAction} */ (commentFormAction),
-				)
 				contextCode =
-					originalContextCode.slice(0, currentIndex) +
-					commentCode +
-					originalContextCode.slice(currentIndex)
+					originalContextCode.slice(0, replyPlace) +
+					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+					/** @type {string} */ (commentCode) +
+					originalContextCode.slice(replyPlace)
 				break
 			}
 
@@ -1015,12 +1001,15 @@ class CommentSource {
 				if (doDelete) {
 					let startIndex
 					let endIndex
-					const comment = this.getComment()
-					if (comment.isOpeningSection() && this.headingStartIndex !== undefined) {
-						// Usually, `.source` is set in CommentForm#buildSource(), but sometimes it's not.
-						const source = /** @type {import('./Section').default} */ (comment.section).getSource()
+					if (this.commentData.openingSection && this.headingStartIndex !== undefined) {
+						if (!sectionSource) {
+							throw new CdError({
+								type: 'internal',
+								message: 'The section source is not set.',
+							})
+						}
 
-						if (extractSignatures(source.code).length > 1) {
+						if (extractSignatures(sectionSource.code).length > 1) {
 							throw new CdError({
 								type: 'parse',
 								code: 'delete-repliesInSection',
@@ -1028,7 +1017,7 @@ class CommentSource {
 						} else {
 							// Deleting the whole section is safer as we don't want to leave any content in the
 							// end anyway.
-							;({ startIndex, contentEndIndex: endIndex } = source)
+							;({ startIndex, contentEndIndex: endIndex } = sectionSource)
 						}
 					} else {
 						endIndex = this.signatureEndIndex + 1
@@ -1091,24 +1080,6 @@ class CommentSource {
 			.map((source, _, sources) => source.calculateMatchScore(commentData, sources, signatures))
 			.filter((sourceWithScore) => sourceWithScore.score > 2.5)
 			.sort((s1, s2) => s2.score - s1.score)[0]?.source
-	}
-
-	/**
-	 * Get the comment the source was located for.
-	 *
-	 * @returns {import('./Comment').default}
-	 * @throws {CdError}
-	 * @private
-	 */
-	getComment() {
-		if (!this.comment) {
-			throw new CdError({
-				type: 'internal',
-				message: 'The comment source was located without a comment.',
-			})
-		}
-
-		return this.comment
 	}
 
 	/**

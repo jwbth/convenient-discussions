@@ -28,14 +28,6 @@ import { extractSignatures } from './utils-window'
  */
 class SectionSource {
 	/**
-	 * Section the source was located for, set by {@link Section#locateInCode}. Only the splice reads
-	 * it.
-	 *
-	 * @type {import('./Section').default | undefined}
-	 */
-	section
-
-	/**
 	 * Indentation of the last comment in the section's first chunk or a reply placeholder, cached by
 	 * {@link SectionSource#extractLastCommentIndentation}.
 	 *
@@ -206,17 +198,7 @@ class SectionSource {
 	 * }}
 	 */
 	modifyContext({ action, commentCode }) {
-		const section = this.getSection()
-		const originalContextCode = this.isInSectionContext
-			? section.presumedCode
-			: section.getSourcePage().source.getCode()
-		if (!originalContextCode) {
-			throw new CdError({
-				type: 'internal',
-				message: 'Context (section or page) code is not set.',
-			})
-		}
-
+		const originalContextCode = this.contextCode
 		let contextCode
 		switch (/** @type {'replyInSection' | 'addSubsection'} */ (action)) {
 			case 'replyInSection': {
@@ -476,24 +458,6 @@ class SectionSource {
 		}
 
 		return sourcesWithScores.sort((m1, m2) => m2.score - m1.score)[0]?.source
-	}
-
-	/**
-	 * Get the section the source was located for.
-	 *
-	 * @returns {import('./Section').default}
-	 * @throws {CdError}
-	 * @private
-	 */
-	getSection() {
-		if (!this.section) {
-			throw new CdError({
-				type: 'internal',
-				message: 'The section source was located without a section.',
-			})
-		}
-
-		return this.section
 	}
 }
 

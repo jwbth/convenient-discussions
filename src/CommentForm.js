@@ -2448,21 +2448,30 @@ class CommentForm extends EventEmitter {
 			}
 		}
 
+		const source = /** @type {Source} */ (this.target.source)
+		const doDelete = this.deleteCheckbox?.isSelected()
+
 		/** @type {string} */
 		let contextCode
 		let commentCode
 		try {
-			;({ contextCode, commentCode } = /** @type {Source} */ (this.target.source).modifyContext({
-				// Ugly solution to avoid overcomplication of code: for replies, we need to get
-				// CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
-				// So let CommentSource#modifyContext() compute it. In the rest of cases just get the
-				// comment code.
-				commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
-
+			// The reply place sets the reply indentation and the outdent flag, which building the
+			// comment code reads.
+			const replyPlace = this.isMode('reply')
+				? /** @type {import('./CommentSource').default} */ (source).findReplyPlace()
+				: undefined
+			commentCode = this.inputToCode(action)
+			;({ contextCode } = source.modifyContext({
 				action: this.mode,
-				doDelete: this.deleteCheckbox?.isSelected(),
-				commentForm: this,
-				commentFormAction: action,
+				commentCode,
+				doDelete,
+				replyPlace,
+				sectionSource:
+					doDelete && this.target instanceof Comment && this.target.isOpeningSection()
+						? /** @type {import('./Section').default} */ (this.target.section).getSource()
+						: undefined,
+				isNewTopicOnTop: this.isNewTopicOnTop(),
+				isNewSectionApi: this.isNewSectionApi(),
 			}))
 			contextCode = this.addAnchorsToComments(contextCode, commentIds)
 		} catch (error) {

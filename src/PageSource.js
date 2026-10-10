@@ -85,16 +85,18 @@ export default class PageSource {
 	 * @param {string} [options.commentCode] Comment code, including trailing newlines and the
 	 *   signature. NOTE: It is required (set to optional for polymorphism with CommentSource and
 	 *   SectionSource).
-	 * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
+	 * @param {boolean} [options.isNewTopicOnTop] Whether the new topic goes on top of the page.
+	 * @param {boolean} [options.isNewSectionApi] Whether the new topic is sent with the new section
+	 *   API, so that the context code is the topic code alone.
 	 * @returns {{
 	 *   contextCode: string;
 	 *   commentCode?: string;
 	 * }}
 	 * @throws {CdError}
 	 */
-	modifyContext({ commentCode, commentForm }) {
+	modifyContext({ commentCode, isNewTopicOnTop, isNewSectionApi }) {
 		let contextCode
-		if (commentForm.isNewTopicOnTop()) {
+		if (isNewTopicOnTop) {
 			this.assertCode("Can't modify the context: context (page) code is not set.")
 
 			const firstSectionStartIndex = maskDistractingCode(this.code).search(
@@ -110,7 +112,7 @@ export default class PageSource {
 				/** @type {string} */ (commentCode) +
 				'\n' +
 				this.code.slice(firstSectionStartIndex)
-		} else if (commentForm.isNewSectionApi()) {
+		} else if (isNewSectionApi) {
 			contextCode = /** @type {string} */ (commentCode)
 		} else {
 			this.assertCode("Can't modify the context: context (page) code is not set.")
