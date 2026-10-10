@@ -14,6 +14,8 @@ Parser tests verify the correctness of the page parsing logic by running it in a
 - **tests/worker-regenerate-test-cases.test.js**: Regenerates test cases with current parser output
 - **tests/worker-test-cases-regenerated.json**: Output file from regeneration (temporary)
 
+Each case carries the `wikitext` it was rendered from next to its `html`. The locator's golden master (the test of locating comments and sections in wikitext) runs over these cases' wikitext, so keep it in sync with the HTML: replace both together when reconverting.
+
 ## Adding New Tests
 
 ### Step 1: Convert from Wiki Page
@@ -113,6 +115,8 @@ The workflow is the same as adding new tests, but applied to the entire test sui
    ```bash
    node tests/worker-convert-test-cases.js --page "User_talk:Jack_who_built_the_house/CD_test_cases" --domain "commons.wikimedia.org" worker-test-cases-new.json
    ```
+
+   The Commons page holds all CD test cases, not only parser ones. Keep only the cases already in `tests/worker-test-cases.json`, matched by group name and headline, and report any corpus case missing from the page rather than dropping it.
 
 2. **Review the converted output:**
 

@@ -121,7 +121,6 @@ describe.skipIf(!isDirectRun)('Regenerate expected test data', () => {
 					// Drop some props from test case itself
 					delete testCase.id
 					delete testCase.level
-					delete testCase.wikitext
 					delete testCase.url
 
 					processedTests++

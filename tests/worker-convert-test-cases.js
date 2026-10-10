@@ -27,9 +27,10 @@ let BASE_URL = `https://${DOMAIN}`
  * Make a MediaWiki API request.
  *
  * @param {object} params API parameters
+ * @param {number} [attempt] Number of 429 responses retried so far
  * @returns {Promise<any>}
  */
-async function apiRequest(params) {
+async function apiRequest(params, attempt = 0) {
 	const url = new URL(API_URL)
 	url.search = new URLSearchParams({
 		format: 'json',
@@ -38,7 +39,17 @@ async function apiRequest(params) {
 		...params,
 	}).toString()
 
-	const response = await fetch(url)
+	// Wikimedia throttles anonymous requests harder without a descriptive User-Agent
+	const response = await fetch(url, {
+		headers: {
+			'User-Agent': 'ConvenientDiscussionsTestConverter (https://github.com/jwbth/convenient-discussions)',
+		},
+	})
+	if (response.status === 429 && attempt < 5) {
+		await sleep(Number(response.headers.get('Retry-After')) * 1000 || 5000 * 2 ** attempt)
+
+		return apiRequest(params, attempt + 1)
+	}
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.statusText}`)
 	}
