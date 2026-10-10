@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, normalizePath } from 'vite'
 
 import nonNullableConfig from './config.js'
+import { devPort as port } from './dev-port.js'
 import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.js'
 import { treeShakeImportsPlugin } from './vite-plugin-tree-shake-imports.js'
 
@@ -486,8 +487,6 @@ export default defineConfig(({ mode, command }) => {
 	}
 
 	const host = 'localhost'
-	// Overridable to run a second server, e.g. from a git worktree, next to the main one
-	const port = Number(process.env.CD_DEV_PORT) || 9000
 
 	// Add inline worker string plugin (must be early in pipeline)
 	plugins.push(

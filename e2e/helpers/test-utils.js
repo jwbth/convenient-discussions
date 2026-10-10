@@ -2,6 +2,8 @@
  * Browser test utilities
  */
 
+import { devPort } from '../../dev-port.js'
+
 import { ensureAuthenticated } from './login'
 
 /**
@@ -19,8 +21,7 @@ async function waitForConvenientDiscussions(page) {
 	)
 }
 
-// Mirrors the port logic in vite.config.js
-const DEV_STARTUP_URL = `http://localhost:${process.env.CD_DEV_PORT || 9000}/src/loader/startup.js`
+const DEV_STARTUP_URL = `http://localhost:${devPort}/src/loader/startup.js`
 
 /**
  * Test page URLs for different scenarios
