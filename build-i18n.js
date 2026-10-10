@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 
 import chalk from 'chalk'
@@ -18,6 +19,11 @@ const warning = (/** @type {string} */ text) => {
 	console.log(chalk.yellowBright(text))
 }
 const code = chalk.inverse
+
+const require = createRequire(import.meta.url)
+const getPackageDir = (/** @type {string} */ name) =>
+	path.dirname(require.resolve(`${name}/package.json`))
+const viteBin = path.join(getPackageDir('vite'), 'bin/vite.js')
 const keyword = chalk.cyan
 
 const ALLOWED_TAGS = [
@@ -104,7 +110,7 @@ function buildDayjsLocales(i18nWithFallbacks) {
 
 	// Add temporary language files to that folder that import respective locales if they exist.
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-	const dayjsLocales = JSON.parse(fs.readFileSync('./node_modules/dayjs/locale.json', 'utf8'))
+	const dayjsLocales = JSON.parse(fs.readFileSync(require.resolve('dayjs/locale.json'), 'utf8'))
 	const locales = new Set(dayjsLocales.map((/** @type {StringsByKey} */ locale) => locale.key))
 	/** @type {string[]} */
 	const langsHavingLocale = []
@@ -153,7 +159,7 @@ export default defineConfig({
 `,
 			)
 			execSync(
-				`node ./node_modules/vite/bin/vite.js build --config "${DAYJS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`,
+				`node "${viteBin}" build --config "${DAYJS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`,
 				{ stdio: 'inherit' },
 			)
 		})
@@ -184,7 +190,7 @@ function buildDateFnsLocales(i18nWithFallbacks) {
 
 		// We have to rewrite the original name to build easily
 		langData.path = `date-fns/locale/${dirName}`
-		langData.fullPath = `node_modules/` + langData.path + '.js'
+		langData.fullPath = path.join(getPackageDir('date-fns'), `locale/${dirName}.js`)
 	})
 
 	fs.mkdirSync(`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist`, { recursive: true })
@@ -248,7 +254,7 @@ export default defineConfig({
 `,
 			)
 			execSync(
-				`node ./node_modules/vite/bin/vite.js build --config "${DATE_FNS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`,
+				`node "${viteBin}" build --config "${DATE_FNS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`,
 				{ stdio: 'inherit' },
 			)
 		})

@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -471,6 +472,16 @@ export default defineConfig(({ mode, command }) => {
 		SINGLE_LANG_CODE:
 			buildMode.isSingle && buildMode.lang ? JSON.stringify(buildMode.lang) : 'undefined',
 		CACHE_BUSTER: JSON.stringify(generateRandomId()),
+		// A worktree has no node_modules of its own, so its root-relative URL wouldn't do
+		NODE_MODULES_URL: isDevServer
+			? JSON.stringify(
+					`/@fs/${normalizePath(
+						path.dirname(
+							path.dirname(createRequire(import.meta.url).resolve('dayjs/package.json')),
+						),
+					)}`,
+				)
+			: 'undefined',
 	}
 
 	const plugins = []

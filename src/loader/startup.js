@@ -128,13 +128,13 @@ async function loadSingleLangInDevOrSingleMode(lang) {
 	if (lang !== 'en') {
 		const dayjsLang = lang.replace(/^zh-hans$/, 'zh-cn').replace(/^zh-hant$/, 'zh-tw')
 		const dayjsModule = await import(
-			/* @vite-ignore */ `../../node_modules/dayjs/esm/locale/${dayjsLang}.js`
+			/* @vite-ignore */ `${NODE_MODULES_URL}/dayjs/esm/locale/${dayjsLang}.js`
 		)
 		langObj.dayjsLocale = dayjsModule.default
 
 		const dateFnsLang = dayjsLang.replace(/-.+$/, (s) => s.toUpperCase())
 		const dateFnsModule = await import(
-			/* @vite-ignore */ `../../node_modules/date-fns/locale/${dateFnsLang}.js`
+			/* @vite-ignore */ `${NODE_MODULES_URL}/date-fns/locale/${dateFnsLang}.js`
 		)
 		langObj.dateFnsLocale = dateFnsModule.default || dateFnsModule[dateFnsLang.replace(/-/g, '')]
 	}

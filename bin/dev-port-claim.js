@@ -1,4 +1,3 @@
-// Node builtins only: setup-worktree.js runs this before node_modules exists.
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
