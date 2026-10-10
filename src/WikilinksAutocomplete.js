@@ -139,7 +139,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 		return {
 			start,
 			end: ']]',
-			keepAsEnd: fragment === undefined ? undefined : sectionKeepAsEnd,
+			keepAsEnd: fragment === undefined ? pageKeepAsEnd : sectionKeepAsEnd,
 		}
 	}
 
@@ -782,7 +782,6 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 	 */
 	getCollectionProperties() {
 		return {
-			keepAsEnd: pageKeepAsEnd,
 			tabSelectsStartOnly: true,
 			menuItemTemplate: (
 				/** @type {import('./tribute/Tribute').TributeSearchResults<import('./BaseAutocomplete').Option<WikilinkEntry>>} */ item,

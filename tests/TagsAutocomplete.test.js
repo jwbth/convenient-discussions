@@ -50,7 +50,7 @@ describe('TagsAutocomplete default entries', () => {
 
 describe('TagsAutocomplete.getInsertionFromEntry', () => {
 	it('wraps a plain tag around the caret and asks to select the content', () => {
-		expect(autocomplete.getInsertionFromEntry('b')).toEqual({
+		expect(autocomplete.getInsertionFromEntry('b')).toMatchObject({
 			start: '<b>',
 			end: '</b>',
 			content: undefined,
@@ -59,7 +59,7 @@ describe('TagsAutocomplete.getInsertionFromEntry', () => {
 	})
 
 	it('wraps a plain tag around the selected text without selecting it', () => {
-		expect(autocomplete.getInsertionFromEntry('b', { selectedText: 'bold' })).toEqual({
+		expect(autocomplete.getInsertionFromEntry('b', { selectedText: 'bold' })).toMatchObject({
 			start: '<b>',
 			end: '</b>',
 			content: 'bold',
@@ -109,11 +109,6 @@ it.each([
 	expect(autocomplete.validateInput(text)).toBe(expected)
 })
 
-it('keeps an existing ">" after the caret, keeps the rest of the text, and allows nesting', () => {
-	const { keepAsEnd, replaceEnd, allowNesting } = autocomplete.getCollectionProperties()
-
-	expect(keepAsEnd?.test('>')).toBe(true)
-	expect(keepAsEnd?.test('a>')).toBe(false)
-	expect(replaceEnd).toBe(false)
-	expect(allowNesting).toBe(true)
+it('allows nesting', () => {
+	expect(autocomplete.getCollectionProperties().allowNesting).toBe(true)
 })

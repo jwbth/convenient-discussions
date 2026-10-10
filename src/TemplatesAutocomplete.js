@@ -114,6 +114,7 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 			start: '{{' + entry.trim() + (shift || selectedText ? '|' : ''),
 			end: '}}',
 			content: selectedText,
+			keepAsEnd: /^(\||\}\})/,
 		}
 	}
 
@@ -136,7 +137,6 @@ class TemplatesAutocomplete extends BaseAutocomplete {
 	 */
 	getCollectionProperties() {
 		return {
-			keepAsEnd: /^(?:\||\}\})/,
 			tabSelectsStartOnly: true,
 		}
 	}

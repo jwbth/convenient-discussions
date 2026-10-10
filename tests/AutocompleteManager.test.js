@@ -68,7 +68,7 @@ describe('AutocompleteManager insertion', () => {
 	}) {
 		manager.tribute.current = /** @type {any} */ ({
 			triggerPos,
-			collection: { allowNesting, replaceEnd: true },
+			collection: { allowNesting },
 			element: {
 				value: text,
 				cdInput: {

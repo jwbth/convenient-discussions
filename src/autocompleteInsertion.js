@@ -10,7 +10,9 @@
  * @property {string} [content] Text between start and end
  * @property {boolean} [selectContent] Whether to select content, or put caret at its place if it's
  *   empty (this is done automatically when Shift is held)
- * @property {RegExp} [keepAsEnd] Overrides {@link InsertionTraits#keepAsEnd} for this insertion
+ * @property {RegExp} [keepAsEnd] Regex matching the text after the caret that the insertion
+ *   swallows. If its first capture group matches, the group's text becomes the end; otherwise the
+ *   insertion keeps its own end.
  */
 
 /**
@@ -38,10 +40,6 @@
 /**
  * @typedef {object} InsertionTraits
  * @property {boolean} [tabSelectsStartOnly] Whether Tab inserts only the start, unlike Enter
- * @property {RegExp} [keepAsEnd] Regex matching the text after the caret that the insertion
- *   replaces. With `replaceEnd`, the first capture group (or, absent it, the whole match) becomes the
- *   insertion's end.
- * @property {boolean} [replaceEnd=true] Whether the text matched by `keepAsEnd` becomes the end
  */
 
 /**
@@ -100,7 +98,7 @@ export function getReplacements({
 	getInsertion,
 	event,
 	isMac,
-	traits: { tabSelectsStartOnly = false, keepAsEnd: traitKeepAsEnd, replaceEnd = true },
+	traits: { tabSelectsStartOnly = false },
 	context,
 	text,
 	selectionRanges,
@@ -149,14 +147,11 @@ export function getReplacements({
 			to++
 		}
 
-		const keepAsEnd = data.keepAsEnd || traitKeepAsEnd
-		if (keepAsEnd && !isTab) {
-			const [keptEnd, keptDelimiter = keptEnd] = text.substring(to).match(keepAsEnd) || ['']
-			if (keptEnd) {
-				to += keptEnd.length
-				if (replaceEnd) {
-					end = keptDelimiter
-				}
+		const keptMatch = data.keepAsEnd && !isTab ? text.substring(to).match(data.keepAsEnd) : null
+		if (keptMatch) {
+			to += keptMatch[0].length
+			if (keptMatch[1] !== undefined) {
+				end = keptMatch[1]
 			}
 		}
 

@@ -80,6 +80,7 @@ class TagsAutocomplete extends BaseAutocomplete {
 			end: Array.isArray(entry) ? entry[2] : `</${entry}>`,
 			content: selectedText,
 			selectContent: !selectedText,
+			keepAsEnd: /^>/,
 		}
 	}
 
@@ -152,8 +153,6 @@ class TagsAutocomplete extends BaseAutocomplete {
 	 */
 	getCollectionProperties() {
 		return {
-			keepAsEnd: /^>/,
-			replaceEnd: false,
 			allowNesting: true,
 		}
 	}

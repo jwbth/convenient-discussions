@@ -76,6 +76,7 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 			start: `[[#${entry.urlFragment}|`,
 			end: ']]',
 			content: selectedText || defaultContent,
+			keepAsEnd: /^(\]\])/,
 		}
 	}
 
@@ -124,18 +125,6 @@ class CommentLinksAutocomplete extends BaseAutocomplete {
 	 */
 	getLabelFromEntry(entry) {
 		return entry.label
-	}
-
-	/**
-	 * Get collection-specific properties for Tribute configuration.
-	 *
-	 * @override
-	 * @returns {Partial<import('./tribute/Tribute').TributeCollection>} Collection properties
-	 */
-	getCollectionProperties() {
-		return {
-			keepAsEnd: /^\]\]/,
-		}
 	}
 
 	/**

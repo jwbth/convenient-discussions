@@ -67,15 +67,16 @@ describe('TemplatesAutocomplete.validateInput', () => {
 	})
 })
 
-describe('TemplatesAutocomplete.getCollectionProperties', () => {
-	it('keeps an existing pipe or closing braces after the caret, and Tab inserts the name only', () => {
-		const { keepAsEnd, tabSelectsStartOnly } = autocomplete.getCollectionProperties()
+it('keeps an existing pipe or closing braces after the caret as the end', () => {
+	const { keepAsEnd } = autocomplete.getInsertionFromEntry('Foo')
 
-		expect(keepAsEnd?.test('|param}}')).toBe(true)
-		expect(keepAsEnd?.test('}}')).toBe(true)
-		expect(keepAsEnd?.test('} ')).toBe(false)
-		expect(tabSelectsStartOnly).toBe(true)
-	})
+	expect(keepAsEnd?.exec('|param}}')?.[1]).toBe('|')
+	expect(keepAsEnd?.exec('}}')?.[1]).toBe('}}')
+	expect(keepAsEnd?.test('} ')).toBe(false)
+})
+
+it('Tab inserts the name only', () => {
+	expect(autocomplete.getCollectionProperties().tabSelectsStartOnly).toBe(true)
 })
 
 describe('TemplatesAutocomplete.afterOptionChoose', () => {
