@@ -1,6 +1,6 @@
 **Convenient Discussions** (**CD**) is a JavaScript tool that provides an enhanced user experience for MediaWiki talk pages. It acts as a shell over the existing MediaWiki discussion system.
 
-- The dev server on port 9000 serves the main checkout; assume it's running. A worktree needs its own: junction `node_modules` to the main checkout's, start `CD_DEV_PORT=<free port> npm run dev` in the background, and use that port in place of 9000, including in `CD_DEV_PORT` for `npm run test:browser`. When done, `taskkill //T //F` the parent of the process listening on that port.
+- The dev server on port 9000 serves the main checkout; assume it's running. In a worktree, run `npm run dev` in the background, use the port it prints in place of 9000, and stop it with `npm run dev:stop`.
 - Cover non-trivial behaviors and fixes with unit tests, or e2e tests where unit tests can't reach.
 - Before committing, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
 - Test CD in the browser through the Chrome DevTools MCP: its Chrome is logged in to a test account and keeps tabs visible, which CD needs to boot. Unless the task calls for another page, use https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page. Load the dev build with:

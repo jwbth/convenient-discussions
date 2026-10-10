@@ -1,2 +1,8 @@
-// Overridable to run a second dev server, e.g. from a git worktree, next to the main one
-export const devPort = Number(process.env.CD_DEV_PORT) || 9000
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { getCheckoutPort } from './bin/dev-port-claim.js'
+
+export const devPort =
+	Number(process.env.CD_DEV_PORT) ||
+	getCheckoutPort(path.dirname(fileURLToPath(import.meta.url)))
