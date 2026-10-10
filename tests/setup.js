@@ -101,8 +101,13 @@ global.mw = /** @type {any} */ ({
 		escapeRegExp: (/** @type {string} */ str) =>
 			str.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, String.raw`\$&`),
 		getUrl: (/** @type {string} */ page) => `/wiki/${encodeURIComponent(page)}`,
+		isIPv6Address: () => false,
 	},
 	msg: (/** @type {string} */ name) => messageValues[name] || name,
+	Map,
+	message: (/** @type {string} */ name) => ({
+		parse: () => messageValues[name] ?? name,
+	}),
 	Title: class Title {
 		// The argument order of the real mw.Title.
 		constructor(title, namespace = 0) {
