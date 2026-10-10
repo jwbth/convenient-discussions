@@ -1,15 +1,48 @@
+import CommentSource from './CommentSource'
 import cd from './loader/cd'
-import sectionManager from './sectionManager'
 import CdError from './shared/CdError'
 import { calculateWordOverlap, genericGetOldestOrNewestByDateProp } from './shared/utils-general'
-import { endWithTwoNewlines, normalizeCode, removeWikiMarkup } from './shared/utils-wikitext'
+import {
+	endWithTwoNewlines,
+	maskDistractingCode,
+	normalizeCode,
+	removeWikiMarkup,
+} from './shared/utils-wikitext'
 import { extractSignatures } from './utils-window'
+
+/**
+ * @typedef {object} SectionData
+ * @property {string} headline
+ * @property {number} index Index among the sections of the page.
+ * @property {string[]} previousHeadlines Headlines of the sections before the section, nearest
+ *   first.
+ * @property {{ author: import('./User').default, timestamp?: string, text: string }} [oldestComment]
+ *   Oldest comment of the section.
+ * @property {import('./CommentSource').CommentData} [lastCommentData] Comment data of the last
+ *   comment in the section's first chunk.
+ */
 
 /**
  * Class that keeps the methods and data related to a section's source code. Also used for section
  * source match candidates before a single match is chosen among them.
  */
 class SectionSource {
+	/**
+	 * Section the source was located for, set by {@link Section#locateInCode}. Only the splice reads
+	 * it.
+	 *
+	 * @type {import('./Section').default | undefined}
+	 */
+	section
+
+	/**
+	 * Indentation of the last comment in the section's first chunk or a reply placeholder, cached by
+	 * {@link SectionSource#extractLastCommentIndentation}.
+	 *
+	 * @type {string | null | undefined}
+	 */
+	lastCommentIndentation
+
 	/**
 	 * Index of the first character of the section code.
 	 *
@@ -88,20 +121,22 @@ class SectionSource {
 	 * Create a section's source object.
 	 *
 	 * @param {object} options
-	 * @param {import('./Section').default} options.section
+	 * @param {SectionData} options.sectionData
 	 * @param {RegExpMatchArray} options.sectionHeadingMatch
 	 * @param {string} options.contextCode
 	 * @param {string} options.adjustedContextCode
 	 * @param {boolean} options.isInSectionContext
+	 * @private
 	 */
 	constructor({
-		section,
+		sectionData,
 		sectionHeadingMatch,
 		contextCode,
 		adjustedContextCode,
 		isInSectionContext,
 	}) {
-		this.section = section
+		this.sectionData = sectionData
+		this.contextCode = contextCode
 		this.isInSectionContext = isInSectionContext
 
 		try {
@@ -117,10 +152,11 @@ class SectionSource {
 	 * _For internal use._ Extract the section's last comment's indentation characters if needed or a
 	 * vote / bulleted reply placeholder.
 	 *
-	 * @param {import('./CommentForm').default} commentForm
+	 * @param {ListType | undefined} containerListType Type of the list the comment form
+	 *   is in.
 	 * @returns {?string}
 	 */
-	extractLastCommentIndentation(commentForm) {
+	extractLastCommentIndentation(containerListType) {
 		if (this.lastCommentIndentation === undefined) {
 			const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || []
 			if (replyPlaceholder) {
@@ -128,29 +164,25 @@ class SectionSource {
 			} else {
 				this.lastCommentIndentation = null
 
-				const lastComment = this.section.commentsInFirstChunk.at(-1)
+				const { lastCommentData } = this.sectionData
 				if (
-					lastComment &&
-					(commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
+					lastCommentData &&
+					(containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
 				) {
-					try {
-						// TODO: get rid of "action at a distance" with the use of
-						// commentForm.isSectionSubmitted()
-						const source = lastComment.locateInCode(
-							commentForm.isSectionSubmitted() ? this.section.presumedCode : undefined,
-						)
-
-						if (
-							!source.indentation.startsWith('#') ||
-							// For now we use the workaround with commentForm.getContainerListType() to make
-							// sure `#` is a part of comments organized in a numbered list, not of a numbered list
-							// _in_ the target comment.
-							commentForm.getContainerListType() === 'ol'
-						) {
-							this.lastCommentIndentation = source.indentation
-						}
-					} catch {
-						// Empty
+					const source = CommentSource.locate(
+						this.contextCode,
+						lastCommentData,
+						this.isInSectionContext,
+					)
+					if (
+						source &&
+						(!source.indentation.startsWith('#') ||
+							// For now we use the workaround with the container list type to make sure `#` is a
+							// part of comments organized in a numbered list, not of a numbered list _in_ the
+							// target comment.
+							containerListType === 'ol')
+					) {
+						this.lastCommentIndentation = source.indentation
 					}
 				}
 			}
@@ -174,9 +206,10 @@ class SectionSource {
 	 * }}
 	 */
 	modifyContext({ action, commentCode }) {
+		const section = this.getSection()
 		const originalContextCode = this.isInSectionContext
-			? this.section.presumedCode
-			: this.section.getSourcePage().source.getCode()
+			? section.presumedCode
+			: section.getSourcePage().source.getCode()
 		if (!originalContextCode) {
 			throw new CdError({
 				type: 'internal',
@@ -324,7 +357,7 @@ class SectionSource {
 	}
 
 	/**
-	 * _For internal use._ Calculate and set a score for the match.
+	 * Calculate and set a score for the match.
 	 *
 	 * @param {number} sectionIndex
 	 * @param {string} thisHeadline
@@ -333,8 +366,10 @@ class SectionSource {
 	 *   source: SectionSource,
 	 *   score: number,
 	 * }}
+	 * @private
 	 */
 	calculateMatchScore(sectionIndex, thisHeadline, headlines) {
+		const { index, previousHeadlines, oldestComment } = this.sectionData
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const doesHeadlineMatch = thisHeadline.includes('{{') ? 0.5 : this.headline === thisHeadline
 
@@ -346,15 +381,12 @@ class SectionSource {
 		} else {
 			// Matching section index is one of the most unreliable ways to tell matching sections as
 			// sections may be added and removed from the page, so we don't rely on it very much.
-			doesSectionIndexMatch = this.section.index === sectionIndex
+			doesSectionIndexMatch = index === sectionIndex
 
 			const previousHeadlinesToCheckCount = 3
 			const previousHeadlinesInCode = headlines.slice(-previousHeadlinesToCheckCount).reverse()
-			doPreviousHeadlinesMatch = sectionManager
-				.getAll()
-				.slice(Math.max(0, this.section.index - previousHeadlinesToCheckCount), this.section.index)
-				.reverse()
-				.map((section) => section.headline)
+			doPreviousHeadlinesMatch = previousHeadlines
+				.slice(0, previousHeadlinesToCheckCount)
 				.every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i])
 		}
 
@@ -365,34 +397,33 @@ class SectionSource {
 			'oldest',
 			true,
 		)
-		const sectionOldestComment = this.section.oldestComment
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const doesOldestCommentMatch = oldestSig
 			? Boolean(
-					sectionOldestComment &&
-						oldestSig.timestamp === sectionOldestComment.timestamp &&
-						oldestSig.author === sectionOldestComment.author,
+					oldestComment &&
+						oldestSig.timestamp === oldestComment.timestamp &&
+						oldestSig.author === oldestComment.author,
 				)
 			: // There's no comments neither in the code nor on the page.
-				!sectionOldestComment
+				!oldestComment
 
 		// Multiply by 0.5 to avoid situations like
 		// https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house&oldid=956309089#Unwanted_pings_on_en.wikipedia,
 		// even though they are not CD's fault
-		let oldestCommentWordOverlap = Number(!this.section.oldestComment && !oldestSig) * 0.5
+		let oldestCommentWordOverlap = Number(!oldestComment && !oldestSig) * 0.5
 
-		if (this.section.oldestComment && oldestSig) {
+		if (oldestComment && oldestSig) {
 			// Use the comment text overlap factor due to this error
 			// https://www.wikidata.org/w/index.php?diff=1410718962. The comment's source code is
 			// extracted only superficially, without exluding the headline code and other operations
 			// performed in Comment#adjustCommentBeginning.
 			oldestCommentWordOverlap = calculateWordOverlap(
-				this.section.oldestComment.getText(),
+				oldestComment.text,
 				removeWikiMarkup(this.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex)),
 			)
 		}
 
-		// If changing this, change the maximal possible score in Section#searchInCode
+		// If changing this, change the maximal possible score in SectionSource.locate
 		return {
 			source: this,
 			score:
@@ -403,6 +434,66 @@ class SectionSource {
 				// Shouldn't give too high a weight to this factor as it is true for every first section.
 				Number(doPreviousHeadlinesMatch) * 0.25,
 		}
+	}
+
+	/**
+	 * Locate a section in context code.
+	 *
+	 * @param {string} contextCode
+	 * @param {SectionData} sectionData
+	 * @param {boolean} [isInSectionContext] Whether the context code is the code of the section (not
+	 *   page).
+	 * @returns {SectionSource | undefined} The best-scoring candidate, if any scores enough.
+	 */
+	static locate(contextCode, sectionData, isInSectionContext = false) {
+		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+		const thisHeadline = normalizeCode(sectionData.headline)
+		const adjustedContextCode = maskDistractingCode(contextCode, true)
+		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+		const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\u0001\u0002]*)\n/gm
+
+		const sourcesWithScores = []
+		/** @type {string[]} */
+		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+		const headlines = []
+		let sectionIndex = -1
+		let sectionHeadingMatch
+		while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedContextCode))) {
+			sectionIndex++
+			const sourceWithScore = new SectionSource({
+				sectionData,
+				sectionHeadingMatch,
+				contextCode,
+				adjustedContextCode,
+				isInSectionContext,
+			}).calculateMatchScore(sectionIndex, thisHeadline, headlines)
+			if (sourceWithScore.score <= 1) continue
+
+			sourcesWithScores.push(sourceWithScore)
+
+			// Maximal possible score
+			if (sourceWithScore.score === 3.75) break
+		}
+
+		return sourcesWithScores.sort((m1, m2) => m2.score - m1.score)[0]?.source
+	}
+
+	/**
+	 * Get the section the source was located for.
+	 *
+	 * @returns {import('./Section').default}
+	 * @throws {CdError}
+	 * @private
+	 */
+	getSection() {
+		if (!this.section) {
+			throw new CdError({
+				type: 'internal',
+				message: 'The section source was located without a section.',
+			})
+		}
+
+		return this.section
 	}
 }
 
