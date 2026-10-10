@@ -6,14 +6,13 @@
 		"target": "es2022",
 		"moduleResolution": "bundler",
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
+		"types": ["oojs", "oojs-ui", "jquery", "jqueryui", "types-mediawiki"]
 	},
 	"include": [
 		"**/*",
 		"../config/**/*",
 		"../misc/convenientDiscussions-generateBasicConfig.js",
-		"../data/**/*",
-		"../node_modules/types-mediawiki"
+		"../data/**/*"
 	],
 	// This has no effect unfortunately - worker files are included due to references from
 	// updateChecker.js.

@@ -23,6 +23,8 @@ declare global {
 	const SINGLE_CONFIG_FILE_NAME: string | undefined
 	const SINGLE_LANG_CODE: string | undefined
 	const CACHE_BUSTER: string
+	/** Dev server only */
+	const NODE_MODULES_URL: string
 	const moment: (...args: any) => any
 
 	var convenientDiscussionsMain: {

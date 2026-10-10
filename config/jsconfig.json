@@ -6,7 +6,7 @@
 		"target": "es2015",
 		"moduleResolution": "bundler",
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
-		"types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
+		"types": ["oojs", "oojs-ui", "jquery", "jqueryui", "types-mediawiki"]
 	},
-	"include": ["**/*", "../node_modules/types-mediawiki", "../src/**/*"]
+	"include": ["**/*", "../src/**/*"]
 }

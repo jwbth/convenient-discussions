@@ -1,5 +1,7 @@
-// Makes a git worktree runnable by borrowing from the main checkout. Node builtins only: it runs
-// before node_modules exists.
+// Makes a git worktree runnable by borrowing from the main checkout. The worktree has no
+// node_modules of its own: inside the main checkout, Node, npm and TypeScript find the main one by
+// walking up. Linking it instead would be unsafe on Windows: `git worktree remove` follows a junction
+// and empties its target.
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -14,8 +16,8 @@ if (commonDir) {
 	const mainDir = path.dirname(commonDir)
 	const inRoot = (/** @type {string} */ name) => path.join(rootDir, name)
 
-	if (!fs.existsSync(inRoot('node_modules'))) {
-		fs.symlinkSync(path.join(mainDir, 'node_modules'), inRoot('node_modules'), 'junction')
+	if (path.relative(mainDir, rootDir).startsWith('..')) {
+		throw new Error(`The worktree must be inside the main checkout (${mainDir}) to use its node_modules.`)
 	}
 
 	if (!fs.existsSync(inRoot('.env')) && fs.existsSync(path.join(mainDir, '.env'))) {

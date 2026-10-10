@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 
 import ts from 'typescript'
@@ -93,7 +94,10 @@ const projects = configPaths.map((config) => ({
 function checkProject(project) {
 	return new Promise((resolve, reject) => {
 		const tscProcess = spawn('node', [
-			'node_modules/@typescript/native/bin/tsc',
+			path.join(
+				path.dirname(createRequire(import.meta.url).resolve('@typescript/native/package.json')),
+				'bin/tsc',
+			),
 			'-p',
 			project.config,
 			'--pretty',
