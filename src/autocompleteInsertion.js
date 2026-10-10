@@ -114,7 +114,7 @@ export function getReplacements({
 			? allSavedSelections
 			: []
 	const chosenInsertion = isTab
-		? getInsertion({ shift: false, alt: false, cmd: false, selectedText: undefined })
+		? getInsertion({ shift: false, alt: false, cmd: false })
 		: getInsertion({
 				shift: Boolean(event.shiftKey),
 				alt: Boolean(event.altKey),
@@ -158,12 +158,10 @@ export function getReplacements({
 			to++
 		}
 
-		const keptMatch = insertion.keepAsEnd && !isTab ? text.substring(to).match(insertion.keepAsEnd) : null
+		const keptMatch = !isTab && insertion.keepAsEnd && text.substring(to).match(insertion.keepAsEnd)
 		if (keptMatch) {
 			to += keptMatch[0].length
-			if (keptMatch[1] !== undefined) {
-				end = keptMatch[1]
-			}
+			end = keptMatch.at(1) ?? end
 		}
 
 		const insert = start + content + end

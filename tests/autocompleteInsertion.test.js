@@ -378,7 +378,6 @@ describe('getReplacements', () => {
 				shift: false,
 				alt: false,
 				cmd: false,
-				selectedText: undefined,
 			})
 			expect(result).toBe('{{Foo')
 		})
@@ -403,7 +402,7 @@ describe('getReplacements', () => {
 		 * @param {string} [pageName]
 		 * @param {import('../src/autocompleteInsertion').KeyState} [event]
 		 */
-		const completeLink = (before, after, pageName = 'Foo (bar)', event = undefined) =>
+		const completeLink = (before, after, pageName = 'Foo (bar)', event) =>
 			complete({
 				before,
 				after,
