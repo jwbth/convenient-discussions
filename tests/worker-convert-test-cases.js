@@ -5,11 +5,7 @@
  * Level 2 sections (h2) are test groups, and bottom-level nested sections are test cases.
  */
 
-function sleep(ms) {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms)
-	})
-}
+import { fetchRetryingOn429, sleep } from './utils-fetch.js'
 
 // Default values
 const DEFAULT_TEST_PAGE = 'User_talk:JWBTH/CD_test_cases'
@@ -27,10 +23,9 @@ let BASE_URL = `https://${DOMAIN}`
  * Make a MediaWiki API request.
  *
  * @param {object} params API parameters
- * @param {number} [attempt] Number of 429 responses retried so far
  * @returns {Promise<any>}
  */
-async function apiRequest(params, attempt = 0) {
+async function apiRequest(params) {
 	const url = new URL(API_URL)
 	url.search = new URLSearchParams({
 		format: 'json',
@@ -40,16 +35,11 @@ async function apiRequest(params, attempt = 0) {
 	}).toString()
 
 	// Wikimedia throttles anonymous requests harder without a descriptive User-Agent
-	const response = await fetch(url, {
+	const response = await fetchRetryingOn429(url, {
 		headers: {
 			'User-Agent': 'ConvenientDiscussionsTestConverter (https://github.com/jwbth/convenient-discussions)',
 		},
 	})
-	if (response.status === 429 && attempt < 5) {
-		await sleep(Number(response.headers.get('Retry-After')) * 1000 || 5000 * 2 ** attempt)
-
-		return apiRequest(params, attempt + 1)
-	}
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.statusText}`)
 	}
