@@ -1,10 +1,23 @@
-import AutocompleteFactory from './AutocompleteFactory'
+import CommentLinksAutocomplete from './CommentLinksAutocomplete'
+import MentionsAutocomplete from './MentionsAutocomplete'
+import TagsAutocomplete from './TagsAutocomplete'
+import TemplatesAutocomplete from './TemplatesAutocomplete'
+import WikilinksAutocomplete from './WikilinksAutocomplete'
 import cd from './loader/cd'
 import Tribute from './tribute/Tribute'
 
 /**
- * @import {AutocompleteType} from './AutocompleteFactory';
+ * @typedef {'mentions' | 'commentLinks' | 'wikilinks' | 'templates' | 'tags'} AutocompleteType
  */
+
+/** @type {Record<AutocompleteType, new (options: AutocompleteConfigShared) => import('./BaseAutocomplete').default>} */
+const autocompleteClasses = {
+	mentions: MentionsAutocomplete,
+	commentLinks: CommentLinksAutocomplete,
+	wikilinks: WikilinksAutocomplete,
+	templates: TemplatesAutocomplete,
+	tags: TagsAutocomplete,
+}
 
 /**
  * @typedef {Parameters<
@@ -113,7 +126,7 @@ class AutocompleteManager {
 	createAutocompleteInstances(types, typeConfigs) {
 		types.forEach((type) => {
 			const config = typeConfigs[type] || {}
-			const instance = AutocompleteFactory.create(type, config)
+			const instance = new autocompleteClasses[type](config)
 			instance.manager = this
 			this.autocompleteInstances.set(type, instance)
 		})
@@ -274,15 +287,8 @@ class AutocompleteManager {
 
 	// Static properties and methods for backward compatibility
 
-	static delay = 100
-
-	static apiConfig = { ajax: { timeout: 1000 * 5 } }
-
 	/** @type {HTMLElement|undefined} */
 	static activeMenu
-
-	/** @type {Promise<any> | undefined} */
-	static currentPromise
 
 	/**
 	 * Get the active autocomplete menu element.
@@ -291,32 +297,6 @@ class AutocompleteManager {
 	 */
 	static getActiveMenu() {
 		return this.activeMenu
-	}
-
-	/**
-	 * Search for a string in a list of strings. Return the matching strings.
-	 *
-	 * @param {string} string
-	 * @param {string[]} list
-	 * @returns {string[]}
-	 */
-	static search(string, list) {
-		const containsRegexp = new RegExp(mw.util.escapeRegExp(string), 'i')
-		const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i')
-
-		return list
-			.filter((item) => containsRegexp.test(item))
-			.sort((item1, item2) => {
-				const item1StartsWith = startsWithRegexp.test(item1)
-				const item2StartsWith = startsWithRegexp.test(item2)
-				if (item1StartsWith && !item2StartsWith) {
-					return -1
-				} else if (!item1StartsWith && item2StartsWith) {
-					return 1
-				}
-
-				return 0
-			})
 	}
 }
 

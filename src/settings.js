@@ -23,7 +23,7 @@ import { createIcon, wrapHtml } from './utils-window'
  * @property {boolean} allowEditOthersComments
  * @property {boolean} alwaysExpandAdvanced
  * @property {'name'|'count'|'date'} authorsSort
- * @property {import('./AutocompleteFactory').AutocompleteType[]} autocompleteTypes
+ * @property {import('./AutocompleteManager').AutocompleteType[]} autocompleteTypes
  * @property {boolean} autopreview
  * @property {boolean} collapseThreads
  * @property {boolean} collapseThreadsByMutees
