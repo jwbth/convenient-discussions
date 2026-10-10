@@ -267,7 +267,7 @@ describe('getReplacements', () => {
 		})
 	})
 
-	describe('templates: keepAsEnd without a capture group', () => {
+	describe('templates: keepAsEnd with a capture group', () => {
 		/** @param {string} after */
 		const completeFoo = (after) =>
 			complete({
@@ -278,11 +278,11 @@ describe('getReplacements', () => {
 				traits: templatesTraits,
 			}).result
 
-		it('uses the whole match as the end: `}}`', () => {
+		it('uses the group as the end: `}}`', () => {
 			expect(completeFoo('}} text')).toBe('{{Foo}} text')
 		})
 
-		it('uses the whole match as the end: `|`', () => {
+		it('uses the group as the end: `|`', () => {
 			expect(completeFoo('|a=1}}')).toBe('{{Foo|a=1}}')
 		})
 
@@ -304,8 +304,8 @@ describe('getReplacements', () => {
 		})
 	})
 
-	describe('tags: keepAsEnd with replaceEnd: false', () => {
-		it('consumes the matched text but keeps the own end, with the caret between the tags', () => {
+	describe('tags: keepAsEnd without a capture group', () => {
+		it('swallows the match but keeps the own end, with the caret between the tags', () => {
 			const { result, selected, replacements } = complete({
 				before: '<sm',
 				after: '>',

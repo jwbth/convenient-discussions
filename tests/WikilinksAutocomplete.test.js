@@ -416,7 +416,9 @@ describe('keepAsEnd', () => {
 	 * @returns {[string, string] | undefined} The replaced text and the kept delimiter
 	 */
 	const matchEnd = (textAfterCaret) => {
-		const match = autocomplete.getCollectionProperties().keepAsEnd.exec(textAfterCaret)
+		const match = /** @type {RegExp} */ (
+			autocomplete.getInsertionFromEntry({ title: title('Foo'), pageName: 'Foo' }).keepAsEnd
+		).exec(textAfterCaret)
 
 		return match ? [match[0], match[1]] : undefined
 	}

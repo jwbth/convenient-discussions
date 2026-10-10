@@ -92,7 +92,7 @@ describe('CommentLinksAutocomplete.getInsertionFromEntry', () => {
 				authorName: 'A',
 				timestamp: '12:00',
 			}),
-		).toEqual({
+		).toMatchObject({
 			start: '[[#c-A-1|',
 			end: ']]',
 			content: 'cf-autocomplete-commentlinks-text|A|12:00',
@@ -135,8 +135,12 @@ it.each([
 })
 
 it('keeps existing closing brackets after the caret', () => {
-	const { keepAsEnd } = create({}).getCollectionProperties()
+	const { keepAsEnd } = create({}).getInsertionFromEntry({
+		label: 'Foo',
+		urlFragment: 'Foo',
+		headline: 'Foo',
+	})
 
-	expect(keepAsEnd?.test(']]')).toBe(true)
+	expect(keepAsEnd?.exec(']]')?.[1]).toBe(']]')
 	expect(keepAsEnd?.test(']')).toBe(false)
 })
