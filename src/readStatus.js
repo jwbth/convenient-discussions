@@ -190,8 +190,11 @@ class ReadStatus extends EventEmitter {
 			} else {
 				comment.removeFlag('new', false)
 			}
+			// A comment restored as old was made read along with old, even if it postdates the latest
+			// visit, e.g. after `cd.tests.visits.rollBack()`.
 			comment.setRead(
-				(commentTime + 60 <= Number(visits.at(-1)) || comment.hasFlag('own')) && !restoredUnread,
+				(commentTime + 60 <= Number(visits.at(-1)) || comment.hasFlag('own') || restoredOld) &&
+					!restoredUnread,
 			)
 		})
 		this.saveUnread()

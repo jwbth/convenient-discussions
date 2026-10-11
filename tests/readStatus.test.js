@@ -684,6 +684,29 @@ describe('read status across a reboot and a reload', () => {
 	)
 
 	test.each(/** @type {const} */ (['reboot', 'reload']))(
+		'keeps a comment made old read when it postdates the latest visit across a %s',
+		async (kind) => {
+			const rememberedVisits = [String(now - 4 * hour), String(now - 2 * hour)]
+			const comment = makeComment({ id: 'a', time: now - hour })
+			startVisit({ comments: [comment], visits: rememberedVisits })
+			readStatus.markAsRead([comment])
+			const rendered = makeComment({ id: 'a', time: now - hour })
+			const nextBoot = await bootAgain(kind)
+
+			// The visits as they were before this visit, as after `cd.tests.visits.rollBack()`
+			nextBoot.startVisit({
+				comments: [rendered],
+				visits: rememberedVisits,
+				currentTime: now + 60,
+				markAsRead: false,
+			})
+
+			expect(statusOf(rendered)).toEqual({ new: false, read: true })
+			expect(nextBoot.getUnreadAtLoad()).toEqual([])
+		},
+	)
+
+	test.each(/** @type {const} */ (['reboot', 'reload']))(
 		'makes an old comment changed after "Mark as read" elsewhere unread and new across a %s',
 		async (kind) => {
 			settings.countEditsAsNewComments = true
