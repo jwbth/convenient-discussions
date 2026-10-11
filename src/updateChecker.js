@@ -5,6 +5,7 @@ import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
+import readStatus from './readStatus'
 import sectionManager from './sectionManager'
 import CdError from './shared/CdError'
 import {
@@ -14,7 +15,6 @@ import {
 } from './shared/utils-general'
 import userRegistry from './userRegistry'
 import { loadUserGenders } from './utils-api'
-import visits from './visits'
 
 // TODO: Move worker-related stuff to controller.
 
@@ -973,11 +973,10 @@ class UpdateChecker extends EventEmitter {
 	init(worker) {
 		this.worker = worker
 
-		visits.on('process', (/** @type {string[]} */ currentPageData) => {
+		readStatus.on('newOld', (change) => {
 			const bootProcess = controller.getBootProcess()
-			const previousVisitTime = currentPageData.at(-2)
 			this.setup(
-				previousVisitTime ? Number(previousVisitTime) : undefined,
+				change.previousVisitTime,
 				(bootProcess.passedData.submittedCommentForm && bootProcess.passedData.commentIds?.[0]) ||
 					undefined,
 			)

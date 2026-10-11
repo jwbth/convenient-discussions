@@ -1,11 +1,11 @@
 import EventEmitter from './EventEmitter'
 import LocalStorageItemWithKeys from './LocalStorageItemWithKeys'
-import SessionStorageItemWithKeys from './SessionStorageItemWithKeys'
 import Thread from './Thread'
 import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
 import { processCommentReferencesInUrl } from './processUrl'
+import readStatus from './readStatus'
 import TreeWalker from './shared/TreeWalker'
 import {
 	definedAndNotNull,
@@ -17,7 +17,6 @@ import {
 import updateChecker from './updateChecker'
 import { getPagesExistence } from './utils-api'
 import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window'
-import visits from './visits'
 
 // TODO: Make it extend a generic registry (with `items` etc.).
 
@@ -186,7 +185,10 @@ export class CommentManager extends EventEmitter {
 			.on('desktopNotificationClick', () => {
 				this.maybeRedrawLayers(true)
 			})
-		visits.on('process', this.registerRead).on('process', async () => {
+		readStatus.on('newOld', async () => {
+			this.configureAndAddLayers((comment) => comment.hasFlag('new'))
+			this.registerRead()
+
 			// A workaround to fight the bug in Chromium where comments layers are misplaced after page
 			// load. I couldn't establish the cause of it - comment positions are rechecked on events
 			// and also periodically, and if a comment is displaced, it's layers are redrawn. But then these
@@ -297,65 +299,6 @@ export class CommentManager extends EventEmitter {
 	 */
 	reset() {
 		this.items = []
-	}
-
-	/**
-	 * Set the `new` flag and {@link Comment#read} property to comments.
-	 *
-	 * @param {string[]} currentPageData Visits data for the current page.
-	 * @param {number} currentTime Unix timestamp.
-	 * @param {boolean} markAsReadRequested Whether to mark all previously shown comments on the page
-	 *   as read.
-	 * @returns {boolean} Whether there is a time conflict.
-	 */
-	initNewAndRead(currentPageData, currentTime, markAsReadRequested) {
-		let timeConflict = false
-		const isFirstBoot = controller.getBootProcess().isFirstBoot()
-		const unreadComments = controller.getBootProcess().passedData.unreadComments
-
-		/** @type {string[] | undefined} */
-		let unreadCommentIds
-		/** @type {string[] | undefined} */
-		let oldCommentIds
-		if (isFirstBoot) {
-			const articleId = mw.config.get('wgArticleId')
-			if (articleId) {
-				const unreadStorageItem = new SessionStorageItemWithKeys('unreadComments')
-				unreadCommentIds = unreadStorageItem.get(articleId) || []
-
-				const oldStorageItem = new SessionStorageItemWithKeys('oldComments')
-				oldCommentIds = oldStorageItem.get(articleId) || []
-			}
-		}
-
-		this.items.forEach((comment) => {
-			/** @type {import('./Comment').default | true | undefined} */
-			let passedUnreadComment
-			if (isFirstBoot) {
-				if (comment.id && unreadCommentIds?.includes(comment.id)) {
-					passedUnreadComment = true
-				}
-			} else {
-				passedUnreadComment = unreadComments?.find((c) => c.id === comment.id)
-			}
-
-			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const commentTimeConflict = comment.initNewAndRead(
-				currentPageData,
-				currentTime,
-				markAsReadRequested ? undefined : passedUnreadComment,
-				// Check if comment was marked as read - if so, don't flag it as new
-				Boolean(comment.id && oldCommentIds?.includes(comment.id)),
-			)
-
-			timeConflict ||= commentTimeConflict
-		})
-
-		this.emit('updateRead')
-
-		this.configureAndAddLayers((comment) => comment.hasFlag('new'))
-
-		return timeConflict
 	}
 
 	/**
@@ -1007,20 +950,7 @@ export class CommentManager extends EventEmitter {
 		if (!this.unreadStorageDirty && !cd.loader.isBooting()) return
 
 		this.unreadStorageDirty = false
-
-		const articleId = mw.config.get('wgArticleId')
-		if (!articleId) return
-
-		const unreadStorageItem = new SessionStorageItemWithKeys('unreadComments')
-		const unreadIds = this.items
-			.filter((comment) => comment.isRead() === false && comment.id)
-			.map((comment) => comment.id)
-
-		if (unreadIds.length) {
-			unreadStorageItem.set(articleId, unreadIds).save()
-		} else {
-			unreadStorageItem.remove(articleId).save()
-		}
+		readStatus.saveUnread(this.items)
 	}
 
 	/**
@@ -1030,20 +960,7 @@ export class CommentManager extends EventEmitter {
 		if (!this.oldStorageDirty && !cd.loader.isBooting()) return
 
 		this.oldStorageDirty = false
-
-		const articleId = mw.config.get('wgArticleId')
-		if (!articleId) return
-
-		const oldStorageItem = new SessionStorageItemWithKeys('oldComments')
-		const oldIds = this.items
-			.filter((comment) => !comment.hasFlag('new') && comment.id)
-			.map((comment) => comment.id)
-
-		if (oldIds.length) {
-			oldStorageItem.set(articleId, oldIds).save()
-		} else {
-			oldStorageItem.remove(articleId).save()
-		}
+		readStatus.saveOld(this.items)
 	}
 
 	/**

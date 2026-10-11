@@ -270,8 +270,8 @@ class Controller extends EventEmitter {
 		// If a valid root element still can't be found, there is nothing to root the script to. Abort
 		// the boot process cleanly instead of proceeding with an undefined root element, which would
 		// otherwise throw an unclear error deep in parsing (this.parser.init()) and leave
-		// already-registered deferred handlers (such as commentManager's `visits` 'process' handler) to
-		// crash later on `$root[0]` being undefined. The DOM/jQuery types claim rootElement is always an
+		// already-registered deferred handlers (such as commentManager's handler of the start of a
+		// visit) to crash later on `$root[0]` being undefined. The DOM/jQuery types claim rootElement is always an
 		// HTMLElement, but at runtime it can be undefined here, so treat it as untrusted.
 		if (!(this.rootElement instanceof HTMLElement)) {
 			throw new CdError({ code: 'noRootElement' })

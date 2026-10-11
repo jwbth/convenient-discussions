@@ -1,28 +1,16 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 
-import EventEmitter from './EventEmitter'
-import commentManager from './commentManager'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { subtractDaysFromNow, typedKeysOf } from './shared/utils-general'
 import { getUserInfo, saveLocalOption } from './utils-api'
 
 /**
- * @typedef {object} EventMap
- * @property {[string[]]} process
+ * Class implementing loading and saving of page visits.
  */
-
-/**
- * Class implementing loading, processing, storing, and saving of page visits.
- *
- * @augments EventEmitter<EventMap>
- */
-class Visits extends EventEmitter {
+class Visits {
 	/** @type {{ [articleId: number]: string[] }} */
 	data
-
-	/** @type {string[]} */
-	currentPageData
 
 	/**
 	 * Request the pages visits data from the server.
@@ -32,10 +20,11 @@ class Visits extends EventEmitter {
 	 * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
 	 * focused, so an indefinite amount of time can pass.
 	 *
-	 * @param {import('./BootProcess').default} bootProcess
 	 * @param {boolean} [reuse] Whether to reuse a cached userinfo request.
+	 * @returns {Promise<string[] | undefined>} Visits to the current page, oldest first, if the user
+	 *   is registered and the visits have loaded.
 	 */
-	async load(bootProcess, reuse = false) {
+	async load(reuse = false) {
 		if (!cd.user.isRegistered()) return
 
 		try {
@@ -49,84 +38,18 @@ class Visits extends EventEmitter {
 		}
 
 		const articleId = mw.config.get('wgArticleId')
-		if (!(articleId in this.data)) {
-			this.data[articleId] = []
-		}
-		this.currentPageData = this.data[articleId]
 
-		this.process(bootProcess.passedData.markAsRead || false)
+		return articleId in this.data ? this.data[articleId] : []
 	}
 
 	/**
-	 * Process the visits data and emit events.
+	 * Save the visits to the current page, along with those to other pages, to the server.
 	 *
-	 * @param {boolean} markAsReadRequested
-	 * @fires newCommentsHighlighted
-	 * @private
+	 * @param {string[]} currentPageVisits
 	 */
-	process(markAsReadRequested) {
-		const currentTime = Math.floor(Date.now() / 1000)
-
-		this.update(currentTime, markAsReadRequested)
-
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const shiftDueToTimeConflict =
-			this.currentPageData.length &&
-			commentManager.initNewAndRead(this.currentPageData, currentTime, markAsReadRequested)
-				? 60
-				: 0
-
-		// (Nearly) eliminate the possibility that we will wrongfully mark a read comment as unread/new
-		// at the next page load by adding a minute to the visit time if there is at least one comment
-		// posted at the same minute. If instead we required the comment time to be less than the
-		// current time to be highlighted, it would result in missed comments if the comment was posted
-		// at the same minute as our visit but after that moment.
-		//
-		// We sacrifice the chance that sometimes we will wrongfully mark an unread comment as read -
-		// but for that,
-		// * one comment should be added at the same minute as our visit but earlier;
-		// * another comment should be added at the same minute as our visit but later.
-		//
-		// We could decide that not marking unread comments as read is an absolute priority and remove
-		// the timeConflict stuff.
-		this.currentPageData.push(String(currentTime + shiftDueToTimeConflict))
-
-		this.save()
-		this.emit('process', this.currentPageData)
-
-		/**
-		 * New comments have been highlighted.
-		 *
-		 * @event newCommentsHighlighted
-		 * @param {object} cd {@link convenientDiscussions} object.
-		 */
-		mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd)
-	}
-
-	/**
-	 * Remove timestamps that we don't need anymore from the visits array.
-	 *
-	 * @param {number} currentTime
-	 * @param {boolean} markAsReadRequested
-	 * @private
-	 */
-	update(currentTime, markAsReadRequested) {
-		for (let i = this.currentPageData.length - 1; i >= 0; i--) {
-			if (
-				Number(this.currentPageData[i]) <
-					currentTime - 60 * cd.settings.get('highlightNewInterval') ||
-				// Add this condition for rare cases when the time of the previous visit is later than the
-				// current time (see timeConflict). In that case, when highlightNewInterval is set to 0,
-				// the user shouldn't get comments highlighted again all of a sudden.
-				!cd.settings.get('highlightNewInterval') ||
-				markAsReadRequested
-			) {
-				// Remove visits _before_ the found one.
-				this.currentPageData.splice(0, i)
-
-				break
-			}
-		}
+	save(currentPageVisits) {
+		this.data[mw.config.get('wgArticleId')] = currentPageVisits
+		this.upload()
 	}
 
 	/**
@@ -168,9 +91,11 @@ class Visits extends EventEmitter {
 	}
 
 	/**
-	 * Save the pages visits data to the server.
+	 * Upload the pages visits data to the server.
+	 *
+	 * @private
 	 */
-	async save() {
+	async upload() {
 		let compressed = this.pack()
 		if (compressed.length > 20_480) {
 			this.cleanUp((compressed.length - 20_480) / compressed.length + 0.05)
@@ -183,7 +108,7 @@ class Visits extends EventEmitter {
 			if (error instanceof CdError) {
 				if (error.getType() === 'internal' && error.getCode() === 'sizeLimit') {
 					this.cleanUp(0.1)
-					this.save()
+					this.upload()
 				} else {
 					cd.debug.logError(error)
 				}
@@ -221,12 +146,12 @@ class Visits extends EventEmitter {
 	 * @param {Date|number} [dateOrDays]
 	 */
 	rollBack(dateOrDays = 1) {
-		this.currentPageData.splice(1)
-		this.currentPageData[0] = (
-			(typeof dateOrDays === 'object' ? dateOrDays.getTime() : subtractDaysFromNow(dateOrDays)) /
-			1000
-		).toFixed(0)
-		this.save()
+		this.save([
+			(
+				(typeof dateOrDays === 'object' ? dateOrDays.getTime() : subtractDaysFromNow(dateOrDays)) /
+				1000
+			).toFixed(0),
+		])
 	}
 }
 

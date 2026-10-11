@@ -6,12 +6,12 @@ import commentFormManager from './commentFormManager'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
+import readStatus from './readStatus'
 import { removeWikiMarkup } from './shared/utils-wikitext'
 import updateChecker from './updateChecker'
 import { formatDate } from './utils-date'
 import { isCmdModifierPressed, keyCombination } from './utils-keyboard'
 import { createIcon, isInputFocused } from './utils-window'
-import visits from './visits'
 
 /**
  * Singleton representing the navigation panel.
@@ -97,7 +97,7 @@ class NavPanel {
 					.on('add', this.updateCommentFormButton)
 					.on('remove', this.updateCommentFormButton)
 				LiveTimestamp.on('updateImproved', this.updateTimestampsInRefreshButtonTooltip)
-				visits.on('process', this.fill)
+				readStatus.on('newOld', this.fill)
 				commentManager.on('updateRead', this.updateFirstUnreadButton)
 				commentManager.on('updateNew', this.updateNew)
 			}
@@ -240,8 +240,8 @@ class NavPanel {
 			this.updateRefreshButtonTooltip(0)
 			this.state.previousButton.show()
 			this.state.nextButton.show()
-			this.updateFirstUnreadButton()
 		}
+		this.updateFirstUnreadButton()
 	}
 
 	/**

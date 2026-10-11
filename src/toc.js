@@ -10,6 +10,7 @@ import TocItem from './TocItem'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
+import readStatus from './readStatus'
 import sectionManager from './sectionManager'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
@@ -17,7 +18,6 @@ import { defined } from './shared/utils-general'
 import updateChecker from './updateChecker'
 import { formatDate, formatDateNative } from './utils-date'
 import { getLinkedAnchor } from './utils-window'
-import visits from './visits'
 
 /**
  * @typedef {Pick<TocItem, 'level' | 'number' | '$element'>} TocItemShort
@@ -37,7 +37,7 @@ class Toc {
 	floating
 
 	/** @type {Promise<void> | undefined} */
-	visitsPromise
+	visitStartPromise
 
 	/** @type {Promise<void> | undefined} */
 	updateTocSectionsPromise
@@ -55,7 +55,7 @@ class Toc {
 			this.resolveUpdateTocSectionsPromise?.()
 		})
 
-		visits.on('process', () => {
+		readStatus.on('newOld', () => {
 			// If all the comments on the page are unread, don't add them to the TOC - the user would
 			// definitely prefer to read the names of the topics easily. (But still consider them new -
 			// otherwise the user can be confused, especially if there are few topics on an unpopular
@@ -109,8 +109,8 @@ class Toc {
 		this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc')
 		this.items = undefined
 		this.floating = undefined
-		this.visitsPromise = new Promise((resolve) => {
-			visits.once('process', () => {
+		this.visitStartPromise = new Promise((resolve) => {
+			readStatus.once('newOld', () => {
 				resolve()
 			})
 		})
@@ -160,9 +160,9 @@ class Toc {
 	markSubscriptions = async () => {
 		if (!this.isPresent()) return
 
-		// Ensure the bell icons are added after the TOC is updated and the comment counts are added in
-		// visits#process().
-		await Promise.all([this.visitsPromise, this.updateTocSectionsPromise].filter(defined))
+		// Ensure the bell icons are added after the TOC is updated and the comment counts are added at
+		// the start of a visit.
+		await Promise.all([this.visitStartPromise, this.updateTocSectionsPromise].filter(defined))
 
 		sectionManager
 			.query((section) => section.subscriptionState || this.isInSidebar())

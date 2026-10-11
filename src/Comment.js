@@ -3841,59 +3841,17 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Set the `new` {@link CommentFlagSet comment} and {@link Comment#read} property for the
-	 * comment given the list of the current page visits.
+	 * _For internal use._ Add the change note that the comment's counterpart had before a reboot.
 	 *
-	 * @param {string[]} currentPageVisits
-	 * @param {number} currentTime
-	 * @param {Comment | boolean} [unreadComment] The corresponding comment from the previous
-	 *   in-memory session (which may carry additional info such as change notes), or simply `true`
-	 *   to mark this comment as unread without extra metadata (e.g. when restored from session
-	 *   storage).
-	 * @param {boolean} [wasMadeOld] Whether the comment was made old in the previous session.
-	 * @returns {boolean} Whether there is a time conflict.
+	 * @param {Comment} previousComment
 	 */
-	initNewAndRead(currentPageVisits, currentTime, unreadComment, wasMadeOld) {
-		// Let's take 3 minutes as a tolerable time discrepancy.
-		if (
-			!this.date ||
-			// Is the comment date in the future?
-			this.date.getTime() > Date.now() + cd.g.msInMin * 3
-		) {
-			this.removeFlag('new')
-			this.setRead(true)
+	carryOverChangeNote(previousComment) {
+		if (!previousComment.isChangedSincePreviousVisit() || !previousComment.$changeNote) return
 
-			return false
+		this.addChangeNote(previousComment.$changeNote)
+		if (previousComment.willFlashChangedOnSight) {
+			this.flashChangedOnSight()
 		}
-
-		const commentTime = Math.floor(this.date.getTime() / 1000)
-
-		// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
-		// has. See also timeConflict in BootProcess#processVisits(). Unread comment might be not new if
-		// it's a *changed* old comment.
-		if (!wasMadeOld && (commentTime + 60 > Number(currentPageVisits[0]) || unreadComment)) {
-			this.addFlag('new', false)
-		} else {
-			this.removeFlag('new', false)
-		}
-		this.setRead(
-			(commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) ||
-				this.hasFlag('own')) &&
-				!unreadComment,
-		)
-
-		if (
-			typeof unreadComment !== 'boolean' &&
-			unreadComment?.isChangedSincePreviousVisit() &&
-			unreadComment.$changeNote
-		) {
-			this.addChangeNote(unreadComment.$changeNote)
-			if (unreadComment.willFlashChangedOnSight) {
-				this.flashChangedOnSight()
-			}
-		}
-
-		return commentTime <= currentTime && currentTime < commentTime + 60
 	}
 
 	/**

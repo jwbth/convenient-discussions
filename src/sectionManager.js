@@ -1,6 +1,7 @@
 import controller from './controller'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
+import readStatus from './readStatus'
 import {
 	definedAndNotNull,
 	ensureArray,
@@ -11,7 +12,6 @@ import {
 	spacesToUnderlines,
 } from './shared/utils-general'
 import { getExtendedRect, getVisibilityByRects } from './utils-window'
-import visits from './visits'
 
 /**
  * @typedef {{
@@ -56,7 +56,7 @@ export class SectionManager {
 	init(subscriptions) {
 		controller.on('viewportMove', this.maybeUpdateVisibility)
 		subscriptions.on('process', this.addSubscribeButtons)
-		visits.on('process', this.updateUnreadCommentsData)
+		readStatus.on('newOld', this.updateUnreadCommentsData)
 	}
 
 	/**

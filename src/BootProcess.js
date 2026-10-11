@@ -14,10 +14,12 @@ import navPanel from './navPanel'
 import notifications from './notifications'
 import pageNav from './pageNav'
 import processUrlOnLoad from './processUrl'
+import readStatus from './readStatus'
 import sectionManager from './sectionManager'
 import CdError from './shared/CdError'
 import Parser from './shared/Parser'
 import {
+	defined,
 	definedAndNotNull,
 	getQueryParamBooleanValue,
 	isElement,
@@ -204,7 +206,7 @@ class BootProcess {
 
 		if (cd.page.exists()) {
 			if (cd.page.isActive()) {
-				visits.load(this, true)
+				this.startVisit()
 			}
 
 			/**
@@ -288,7 +290,7 @@ class BootProcess {
 			// viewport position restoration as it may shift the layout (if the viewport position
 			// restoration relies on elements that are made hidden when threads are collapsed, the
 			// algorithm finds the expand note). Should better be above comment highlighting
-			// (commentManager.configureAndAddLayers(), visits#process()) to avoid spending time on
+			// (commentManager.configureAndAddLayers(), the start of a visit) to avoid spending time on
 			// comments in collapsed threads.
 			Thread.reset()
 
@@ -422,8 +424,8 @@ class BootProcess {
 			// way.
 
 			// Caution: Fragile code here - sectionManager.init() is placed above toc.init() and
-			// commentManager.init(), to add event handlers for its methods quicker than `sectionManager`
-			// and `toc` do for theirs:
+			// commentManager.init(), to add handlers of the read status module's events quicker than
+			// `toc` and `commentManager` do for theirs:
 			// 1. sectionManager.updateUnreadCommentsData() sets Section#unreadComments that is later
 			//    used in toc.addCommentCount().
 			// 2. sectionManager.updateUnreadCommentsData() must set Section#unreadComments before
@@ -894,6 +896,35 @@ class BootProcess {
 						location.reload()
 					},
 				},
+			}),
+		)
+	}
+
+	/**
+	 * Load the visits to the page, start a visit, and save the visits. The comments must be processed
+	 * by the time the visits load, which they are, as processing them is synchronous.
+	 *
+	 * @private
+	 */
+	async startVisit() {
+		const pageVisits = await visits.load(true)
+		if (!pageVisits) return
+
+		const markAsRead = Boolean(this.passedData.markAsRead)
+		if (!markAsRead) {
+			this.passedData.unreadComments?.forEach((previousComment) => {
+				commentManager.getById(previousComment.id)?.carryOverChangeNote(previousComment)
+			})
+		}
+		visits.save(
+			readStatus.startVisit({
+				comments: commentManager.getAll(),
+				visits: pageVisits,
+				currentTime: Math.floor(Date.now() / 1000),
+				markAsRead,
+				carriedOverUnreadIds: this.firstBoot
+					? undefined
+					: (this.passedData.unreadComments || []).map((comment) => comment.id).filter(defined),
 			}),
 		)
 	}
