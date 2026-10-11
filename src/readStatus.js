@@ -174,9 +174,10 @@ class ReadStatus extends EventEmitter {
 			const restoredOld = Boolean(comment.id && oldIds.includes(comment.id))
 
 			// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
-			// has. See also the time conflict in startVisit(). A comment restored as unread can predate the
-			// earliest visit if it was changed; it is new nonetheless.
-			if (!restoredOld && (commentTime + 60 > Number(visits[0]) || restoredUnread)) {
+			// has. See also the time conflict in startVisit(). A comment restored as unread is new even if
+			// it predates the earliest visit or is restored as old: it was changed, possibly after being
+			// made old.
+			if (restoredUnread || (!restoredOld && commentTime + 60 > Number(visits[0]))) {
 				comment.addFlag('new', false)
 			} else {
 				comment.removeFlag('new', false)

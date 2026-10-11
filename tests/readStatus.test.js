@@ -668,6 +668,31 @@ describe('read status across a reboot and a reload', () => {
 	)
 
 	test.each(/** @type {const} */ (['reboot', 'reload']))(
+		'makes an old comment changed after "Mark as read" elsewhere unread and new across a %s',
+		async (kind) => {
+			settings.countEditsAsNewComments = true
+			const elsewhere = makeComment({ id: 'elsewhere', time: now - 3 * hour })
+			const old = makeComment({ id: 'old', time: now - 5 * hour })
+			const visits = startVisit({
+				comments: [elsewhere, old],
+				visits: [String(now - 4 * hour), String(now - 2 * hour)],
+			})
+			readStatus.markAsRead([elsewhere])
+			readStatus.markAsChanged(old)
+			const rendered = makeComment({ id: 'old', time: now - 5 * hour })
+
+			;(await bootAgain(kind)).startVisit({
+				comments: [makeComment({ id: 'elsewhere', time: now - 3 * hour }), rendered],
+				visits,
+				currentTime: now + 60,
+				markAsRead: false,
+			})
+
+			expect(statusOf(rendered)).toEqual({ new: true, read: false })
+		},
+	)
+
+	test.each(/** @type {const} */ (['reboot', 'reload']))(
 		'recomputes new across a %s',
 		async (kind) => {
 			settings.highlightNewInterval = 60
