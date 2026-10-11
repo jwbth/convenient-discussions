@@ -56,7 +56,9 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	on(event, method, args, context) {
-		return super.on(event, method, args, context)
+		// OOjs tells an omitted context from an explicit `undefined` by the argument count, defaulting
+		// the former to `null`, so forward the arguments as given.
+		return super.on(...[event, method, args, context].slice(0, arguments.length))
 	}
 
 	/**
@@ -116,7 +118,9 @@ export default class EventEmitter extends OO.EventEmitter {
 	 * @override
 	 */
 	off(event, method, context) {
-		return super.off(event, method, context)
+		// OOjs removes one-time listeners with `this.off(event, method)` and matches them by a `null`
+		// context, which an explicit `undefined` wouldn't match. See also on().
+		return super.off(...[event, method, context].slice(0, arguments.length))
 	}
 
 	// @ts-expect-error: TypeScript-in-JSDoc bug

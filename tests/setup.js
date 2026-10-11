@@ -1,94 +1,16 @@
+import oojs from 'oojs'
+
 /**
- * A fake of `OO.EventEmitter` that delivers events, so tests can observe them. A function rather
- * than a class because `Comment` mixes the emitter in with `OO.EventEmitter.call(this)`. Unlike the
- * real one, it lets listeners' exceptions propagate, so they fail the test that triggered them.
+ * OOjs' event emitter, except that listeners' exceptions propagate to the emitting code, failing the
+ * test that triggered them, rather than being rethrown on the next tick, attributed to no test.
  *
  * @this {any}
  */
 function EventEmitter() {
-	this.bindings = {}
+	oojs.EventEmitter.call(this)
 }
-
-/**
- * @param {any} emitter
- * @param {string} event
- * @returns {{ method: Function | string, args?: any[], context?: any }[]}
- */
-const getBindings = (emitter, event) => {
-	emitter.bindings ??= {}
-	emitter.bindings[event] ??= []
-
-	return emitter.bindings[event]
-}
-
-Object.assign(
-	EventEmitter.prototype,
-	/** @type {any} */ ({
-		on(event, method, args, context) {
-			getBindings(this, event).push({ method, args, context })
-
-			return this
-		},
-
-		once(event, listener) {
-			const wrapper = (/** @type {any[]} */ ...args) => {
-				this.off(event, wrapper)
-				listener(...args)
-			}
-
-			return this.on(event, wrapper)
-		},
-
-		off(event, method, context) {
-			this.bindings[event] = getBindings(this, event).filter(
-				(binding) =>
-					method !== undefined &&
-					(binding.method !== method || (context !== undefined && binding.context !== context)),
-			)
-
-			return this
-		},
-
-		emit(event, ...args) {
-			const bindings = getBindings(this, event).slice()
-			bindings.forEach(({ method, args: boundArgs = [], context }) => {
-				;(typeof method === 'string' ? context[method] : method).apply(context ?? null, [
-					...boundArgs,
-					...args,
-				])
-			})
-
-			return Boolean(bindings.length)
-		},
-
-		emitThrow(event, ...args) {
-			return this.emit(event, ...args)
-		},
-
-		connect(context, methods) {
-			Object.entries(methods).forEach(([event, value]) => {
-				const [method, ...args] = Array.isArray(value) ? value : [value]
-				this.on(event, method, args, context)
-			})
-
-			return this
-		},
-
-		disconnect(context, methods) {
-			;(methods ? Object.keys(methods) : Object.keys(this.bindings ?? {})).forEach((event) => {
-				this.bindings[event] = getBindings(this, event).filter(
-					(binding) =>
-						binding.context !== context ||
-						(methods &&
-							binding.method !==
-								(Array.isArray(methods[event]) ? methods[event][0] : methods[event])),
-				)
-			})
-
-			return this
-		},
-	}),
-)
+oojs.inheritClass(EventEmitter, oojs.EventEmitter)
+EventEmitter.prototype.emit = oojs.EventEmitter.prototype.emitThrow
 
 // Intentionally partial mock of the OO namespace; cast through `any`.
 global.OO = /** @type {any} */ ({
