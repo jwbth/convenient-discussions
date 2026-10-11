@@ -6,6 +6,7 @@ import CommentFormOperationRegistry from './CommentFormOperationRegistry'
 import EventEmitter from './EventEmitter'
 import MentionsAutocomplete from './MentionsAutocomplete'
 import getUploadDialogClass from './UploadDialog'
+import buildEdit, { loadTarget } from './buildEdit'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
@@ -105,6 +106,24 @@ import {
  * @property {boolean} omitSignatureCheckboxAltered
  * @property {Date|undefined} lastFocused
  * @property {number|undefined} actualCommentLevel
+ */
+
+/**
+ * Plain snapshot of a comment form's inputs that building the comment code and the edit read.
+ *
+ * @template {CommentFormMode} [Mode=CommentFormMode]
+ * @typedef {object} CommentFormValues
+ * @property {Mode} mode
+ * @property {string} comment
+ * @property {string|undefined} headline `undefined` when the form has no headline input.
+ * @property {boolean} omitSignature
+ * @property {boolean} delete
+ * @property {boolean} newTopicOnTop
+ * @property {ListType|undefined} containerListType
+ * @property {number|undefined} actualCommentLevel The level the user accepted when fixing broken
+ *   indentation.
+ * @property {CommentForm<Mode>} commentForm Only for passing to the wiki configuration's transform
+ *   hooks, which on-wiki configurations may use.
  */
 
 /**
@@ -660,24 +679,6 @@ class CommentForm extends EventEmitter {
 		this.targetWithOutdentedReplies = initialState.targetWithOutdentedReplies
 
 		/**
-		 * Whether a new section will be added on submit using a dedicated API request. (Filled upon
-		 * submitting or viewing changes.)
-		 *
-		 * @type {boolean | undefined}
-		 * @private
-		 */
-		this.newSectionApi = undefined
-
-		// Making this private harms type checking.
-		/**
-		 * Whether the wikitext of a section will be submitted to the server instead of a page. (Filled
-		 * upon submitting or viewing changes.)
-		 *
-		 * @type {boolean | undefined}
-		 */
-		this.sectionSubmitted = undefined
-
-		/**
 		 * Operation registry.
 		 *
 		 * @type {CommentFormOperationRegistry}
@@ -1014,24 +1015,6 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Apply the actual comment level to a source object. This is used when the comment has broken
-	 * indentation and we need to reprocess it with the correct level.
-	 *
-	 * @param {import('./CommentSource').default | import('./SectionSource').default | import('./PageSource').default} [source]
-	 * @private
-	 */
-	applyActualLevel(source) {
-		if (
-			this.actualCommentLevel !== undefined &&
-			source &&
-			'reprocessWithLevel' in source &&
-			typeof source.reprocessWithLevel === 'function'
-		) {
-			source.reprocessWithLevel(this.actualCommentLevel)
-		}
-	}
-
-	/**
 	 * Fix broken markup in a comment, including broken indentation and deprecated `<pre>` tags.
 	 *
 	 * @param {import('./CommentSource').default} source Comment source
@@ -1043,7 +1026,7 @@ class CommentForm extends EventEmitter {
 		this.actualCommentLevel = source.detectedActualLevel
 
 		// Re-process the source with the detected level
-		this.applyActualLevel(source)
+		source.reprocessWithLevel(/** @type {number} */ (this.actualCommentLevel))
 		let commentInputValue = source.toInputValue(source.detectedActualLevel)
 
 		// Replace <pre>...</pre> and sequences of lines starting with a space
@@ -1073,25 +1056,24 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Load the context code of the target comment or section, locate the target in it, and set the
-	 * form state the result implies: whether the section code is submitted and whether the
-	 * DiscussionTools API is used.
+	 * Load the context code of the target comment or section, locate the target in it, and switch
+	 * the form to the DiscussionTools API if the result requires it.
 	 *
 	 * @returns {Promise<import('./CommentSource').default | import('./SectionSource').default | undefined>}
 	 * @private
 	 */
 	async loadTargetCode() {
-		const { source, isInSectionContext, needsDtApi } = this.isCommentTarget()
-			? await this.target.loadCode({ useDtFallback: true })
-			: await /** @type {import('./Section').default} */ (this.target).loadCode()
+		// Only comment and section targets get here, so the source is never a page source.
+		const { source, needsDtApi } = await loadTarget(this.mode, this.target)
 		if (needsDtApi) {
 			// TODO: currently, once set to 'discussiontoolsedit', we can't set it back to 'edit'.
 			// Allowing so could introduce unsynchronization of various components.
 			this.setApi('discussiontoolsedit')
 		}
-		this.setSectionSubmitted(isInSectionContext)
 
-		return source
+		return /** @type {import('./CommentSource').default | import('./SectionSource').default | undefined} */ (
+			source
+		)
 	}
 
 	/**
@@ -2348,13 +2330,11 @@ class CommentForm extends EventEmitter {
 	 * @throws {CdError}
 	 */
 	inputToCode(action) {
-		// Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
-		// part of it)?..
-
-		let code = this.commentInput.getValue()
-		code = cd.config.preTransformCode?.(code, this) || code
-
-		const transformer = new CommentFormInputTransformer(code, this, action)
+		const { code, isIndented } = CommentFormInputTransformer.inputToCode(
+			this.getValues(),
+			this.target,
+			action,
+		)
 
 		/**
 		 * Will the comment be indented (is a reply or an edited reply).
@@ -2364,151 +2344,56 @@ class CommentForm extends EventEmitter {
 		 *
 		 * @type {boolean|undefined}
 		 */
-		this.willCommentBeIndented = transformer.isIndented()
-
-		code = transformer.transform()
-		code = cd.config.postTransformCode?.(code, this) || code
+		this.willCommentBeIndented = isIndented
 
 		return code
 	}
 
 	/**
-	 * Add anchor code to comments linked from the comment.
+	 * Snapshot the form's inputs.
 	 *
-	 * @param {string} originalContextCode Code of the section or page.
-	 * @param {string[]} commentIds
-	 * @returns {string} New code of the section or page.
-	 * @throws {CdError}
-	 * @private
+	 * @returns {CommentFormValues<Mode>}
 	 */
-	addAnchorsToComments(originalContextCode, commentIds) {
-		let contextCode = originalContextCode
-		commentIds.forEach((id) => {
-			const comment = commentManager.getById(id)
-			if (comment) {
-				const commentSource = comment.locateInCode(undefined, contextCode)
-				const anchorCode = cd.config.getAnchorCode(id)
-				if (commentSource.code.includes(anchorCode)) return
-
-				const commentCodePart = CommentFormInputTransformer.prependIndentationToLine(
-					commentSource.indentation,
-					commentSource.code,
-				)
-				const commentTextIndex = /** @type {RegExpMatchArray} */ (
-					commentCodePart.match(/^[:*#]* */)
-				)[0].length
-				;({ contextCode } = commentSource.modifyContext({
-					action: 'edit',
-					commentCode:
-						(commentSource.headingCode || '') +
-						commentCodePart.slice(0, commentTextIndex) +
-						anchorCode +
-						commentCodePart.slice(commentTextIndex) +
-						commentSource.signatureDirtyCode,
-					contextCode,
-				}))
-			} else if (!$('#' + id).length) {
-				throw new CdError({
-					type: 'parse',
-					code: 'commentLinks-commentNotFound',
-					details: { id },
-				})
-			}
-		})
-
-		return contextCode
+	getValues() {
+		return {
+			mode: this.mode,
+			comment: this.commentInput.getValue(),
+			headline: this.headlineInput?.getValue(),
+			omitSignature: Boolean(this.omitSignatureCheckbox?.isSelected()),
+			delete: Boolean(this.deleteCheckbox?.isSelected()),
+			newTopicOnTop: Boolean(this.newTopicOnTop),
+			containerListType: this.containerListType,
+			actualCommentLevel: this.actualCommentLevel,
+			commentForm: this,
+		}
 	}
 
 	/**
-	 * Prepare the new wikitext of the section or page based on the comment form input and handle
-	 * errors.
+	 * Build the form's edit from a snapshot of its values and handle errors. Switch the form to the
+	 * DiscussionTools API if the edit goes through it.
 	 *
 	 * @param {'submit'|'viewChanges'} action
 	 * @param {import('./CommentFormOperation').default} operation Operation the form is undergoing.
-	 * @returns {Promise<
-	 *     {
-	 *       contextCode: string;
-	 *       commentCode?: string;
-	 *     }
-	 *   | void
-	 * >}
+	 * @returns {Promise<import('./buildEdit').Edit | undefined>}
 	 * @private
 	 */
-	async buildSource(action, operation) {
-		const commentIds = CommentForm.extractCommentIds(this.commentInput.getValue())
-
-		// FIXME: bad place to put this in
-		this.setNewSectionApi(
-			Boolean(
-				this.isMode('addSection') &&
-				!this.newTopicOnTop &&
-				this.headlineInput?.getValue().trim() &&
-				!commentIds.length,
-			),
-		)
-
-		if (!this.isNewSectionApi()) {
-			try {
-				await (this.isPageTarget()
-					? this.target.loadCode(undefined, !cd.page.exists())
-					: this.loadTargetCode())
-				// Apply the actual level if we've detected broken indentation
-				this.applyActualLevel(this.target.source)
-			} catch (error) {
-				this.handleError({
-					error,
-					message: error instanceof CdError ? cd.sParse('cf-error-getpagecode') : undefined,
-					operation,
-				})
-
-				return
-			}
-
-			if (!this.target.source) {
-				// For submit action, will try to use DiscussionTools API in submit() if we can
-				if (action === 'viewChanges') {
-					operation.close()
-				}
-
-				return
-			}
-		}
-
-		const source = /** @type {Source} */ (this.target.source)
-		const doDelete = this.deleteCheckbox?.isSelected()
-
-		/** @type {string} */
-		let contextCode
-		let commentCode
+	async buildEditHandlingErrors(action, operation) {
+		let edit
 		try {
-			// The reply place sets the reply indentation and the outdent flag, which building the
-			// comment code reads.
-			const replyPlace = this.isMode('reply')
-				? /** @type {import('./CommentSource').default} */ (source).findReplyPlace()
-				: undefined
-			commentCode = this.inputToCode(action)
-			;({ contextCode } = source.modifyContext({
-				action: this.mode,
-				commentCode,
-				doDelete,
-				replyPlace,
-				sectionSource:
-					doDelete &&
-					this.target instanceof Comment &&
-					/** @type {import('./CommentSource').default} */ (source).deletesWholeSection()
-						? /** @type {import('./Section').default} */ (this.target.section).getSource()
-						: undefined,
-				isNewTopicOnTop: this.isNewTopicOnTop(),
-				isNewSectionApi: this.isNewSectionApi(),
-			}))
-			contextCode = this.addAnchorsToComments(contextCode, commentIds)
+			edit = await buildEdit(this.getValues(), this.target, action)
 		} catch (error) {
 			this.handleError({ error, operation })
 
 			return
 		}
 
-		return { contextCode, commentCode }
+		if (edit.api === 'discussiontoolsedit') {
+			this.setApi('discussiontoolsedit')
+		} else {
+			this.willCommentBeIndented = edit.isIndented
+		}
+
+		return edit
 	}
 
 	/**
@@ -2727,8 +2612,14 @@ class CommentForm extends EventEmitter {
 
 		const operation = this.operations.add('viewChanges')
 
-		const { contextCode } = (await this.buildSource('viewChanges', operation)) || {}
-		if (contextCode === undefined) return
+		const edit = await this.buildEditHandlingErrors('viewChanges', operation)
+		if (!edit) return
+
+		if (edit.api === 'discussiontoolsedit') {
+			operation.close()
+
+			return
+		}
 
 		mw.loader.load('mediawiki.diff.styles')
 
@@ -2738,17 +2629,17 @@ class CommentForm extends EventEmitter {
 				'action': 'compare',
 				'totitle': this.getTargetPage().name,
 				'toslots': 'main',
-				'totext-main': contextCode,
+				'totext-main': edit.params.text,
 				'topst': true,
 				'prop': 'diff',
 				...cd.g.apiErrorFormatHtml,
 			})
 
-			if (this.sectionSubmitted || this.newSectionApi || !this.getTargetPage().revisionId) {
+			if ('code' in edit.diffBase) {
 				options.fromslots = 'main'
-				options['fromtext-main'] = this.isSectionSubmitted() ? this.targetSection.presumedCode : ''
+				options['fromtext-main'] = edit.diffBase.code
 			} else {
-				options.fromrev = this.getTargetPage().revisionId
+				options.fromrev = edit.diffBase.revisionId
 			}
 
 			response = /** @type {import('./utils-api').APIResponseCompare} */ (
@@ -2912,15 +2803,13 @@ class CommentForm extends EventEmitter {
 	 * Submit a reply using the DiscussionTools API when the target comment cannot be found using
 	 * standard means.
 	 *
+	 * @param {import('./buildEdit').DtApiEdit['params']} params The edit's content parameters.
 	 * @param {import('./CommentFormOperation').default} operation Operation the form is undergoing.
 	 * @returns {Promise<boolean>}
 	 * @private
 	 */
-	async submitViaDt(operation) {
+	async submitViaDt(params, operation) {
 		try {
-			const targetTyped = /** @type {Comment} */ (this.target)
-			// Currently (April 2026) it's always false at this point
-
 			const response =
 				/** @type {{ discussiontoolsedit: { result: string, edit: { captcha?: any } } }} */ (
 					await cd
@@ -2928,10 +2817,7 @@ class CommentForm extends EventEmitter {
 						.postWithEditToken(
 							cd.getApi().assertCurrentUser({
 								action: 'discussiontoolsedit',
-								paction: 'addcomment',
-								page: targetTyped.getSourcePage().name,
-								wikitext: this.commentInput.getValue(),
-								commentid: targetTyped.dtId,
+								...params,
 								autosubscribe: this.subscribeCheckbox?.isSelected() ? 'yes' : 'no',
 								summary: buildEditSummary({ text: this.summaryInput.getValue() }),
 								captchaid: this.captchaInput?.getCaptchaId(),
@@ -3071,17 +2957,17 @@ class CommentForm extends EventEmitter {
 	/**
 	 * Send a post request to edit the page and handle errors.
 	 *
-	 * @param {string} code Code to save.
+	 * @param {import('./buildEdit').EditApiParams} params The edit's content parameters.
 	 * @param {import('./CommentFormOperation').default} operation Operation the form is undergoing.
 	 * @param {boolean} [suppressTag]
 	 * @returns {Promise<string | undefined>}
 	 * @private
 	 */
-	async editPage(code, operation, suppressTag = false) {
+	async editPage(params, operation, suppressTag = false) {
 		let result
 		try {
 			const options = /** @type {import('types-mediawiki/api_params').ApiEditPageParams} */ ({
-				text: code,
+				...params,
 				summary: buildEditSummary({ text: this.summaryInput.getValue() }),
 				minor: this.minorCheckbox?.isSelected(),
 				watchlist: this.watchCheckbox?.isSelected() ? 'watch' : 'unwatch',
@@ -3091,21 +2977,6 @@ class CommentForm extends EventEmitter {
 					? await this.captchaWidget.getCaptchaDataForSubmission().catch(handleApiReject)
 					: {}),
 			})
-			let sectionOrPage
-			if (this.isNewSectionApi()) {
-				options.sectiontitle = this.headlineInput.getValue().trim()
-				options.section = 'new'
-			} else if (this.isSectionSubmitted()) {
-				options.section =
-					typeof this.targetSection.liveSectionNumber === 'number'
-						? String(this.targetSection.liveSectionNumber)
-						: undefined
-				sectionOrPage = this.targetSection
-			} else {
-				sectionOrPage = this.getTargetPage()
-			}
-			options.baserevid = sectionOrPage?.revisionId
-			options.starttimestamp = sectionOrPage?.queryTimestamp
 			if (suppressTag) {
 				options.tags = undefined
 			}
@@ -3290,27 +3161,26 @@ class CommentForm extends EventEmitter {
 
 		const operation = this.operations.add('submit', undefined, clearMessages)
 
-		// Attempt to build source without DT API even when apiName is 'discussiontoolsedit'
-		const { contextCode, commentCode } = (await this.buildSource('submit', operation)) || {}
-		let editDate
-		if (contextCode === undefined) {
-			if (this.apiName === 'discussiontoolsedit') {
-				if (!(await this.submitViaDt(operation))) return
+		// The edit goes through the edit API whenever the target is located, even when apiName is
+		// 'discussiontoolsedit'.
+		const edit = await this.buildEditHandlingErrors('submit', operation)
+		if (!edit) return
 
-				// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
-				// just look at the newest own comment after the reload?
-				editDate = new Date()
-			} else {
-				return
-			}
+		let editDate
+		if (edit.api === 'discussiontoolsedit') {
+			if (!(await this.submitViaDt(edit.params, operation))) return
+
+			// FIXME: replace with the actual timestamp of the new comment. Can we obtain it? Or should we
+			// just look at the newest own comment after the reload?
+			editDate = new Date()
 		} else {
-			const editTimestamp = await this.editPage(contextCode, operation, suppressTag)
+			const editTimestamp = await this.editPage(edit.params, operation, suppressTag)
 
 			// The operation is closed inside CommentForm#editPage().
 			if (!editTimestamp) return
 
 			editDate = new Date(editTimestamp)
-			this.updateSubscriptionStatus(editDate, commentCode)
+			this.updateSubscriptionStatus(editDate, edit.commentCode)
 		}
 
 		// Here we use a trick where we pass, in bootData, the name of the section that was set to be
@@ -4122,42 +3992,6 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Set whether a new section will be added on submit using a dedicated API request.
-	 *
-	 * @param {boolean} value
-	 */
-	setNewSectionApi(value) {
-		this.newSectionApi = value
-	}
-
-	/**
-	 * Check whether a new section will be added on submit using a dedicated API request.
-	 *
-	 * @returns {this is { headlineInput: import('./TextInputWidget').default }}
-	 */
-	isNewSectionApi() {
-		return Boolean(this.newSectionApi)
-	}
-
-	/**
-	 * Set whether the section code will be sent on submit, not the whole page code.
-	 *
-	 * @param {boolean} value
-	 */
-	setSectionSubmitted(value) {
-		this.sectionSubmitted = value
-	}
-
-	/**
-	 * Check whether the section code will be sent on submit, not the whole page code.
-	 *
-	 * @returns {this is { sectionSubmitted: true; targetSection: import('./Section').default }}
-	 */
-	isSectionSubmitted() {
-		return Boolean(this.sectionSubmitted)
-	}
-
-	/**
 	 * Get the name of the tag of the list that this form is an item of.
 	 *
 	 * @returns {ListType | undefined}
@@ -4468,28 +4302,6 @@ class CommentForm extends EventEmitter {
 				},
 			}[toolName]
 		)
-	}
-
-	/**
-	 * Extract IDs from comment links in the code.
-	 *
-	 * @param {string} code
-	 * @returns {string[]}
-	 * @private
-	 */
-	static extractCommentIds(code) {
-		// Russian Wikipedia's Wikificator may mangle these links, replacing `_` with ` `, so we search
-		// for both characters.
-		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-		const idRegexp = /\[\[#(\d{12}[_ ][^|\]]+)/g
-
-		const ids = []
-		let match
-		while ((match = idRegexp.exec(code))) {
-			ids.push(match[1])
-		}
-
-		return ids
 	}
 
 	/**
