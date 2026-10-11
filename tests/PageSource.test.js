@@ -43,6 +43,16 @@ describe('PageSource#modifyContext', () => {
 		).toBe('Intro.\n\n== New ==\nNew text.\n\n== First ==\nText.\n')
 	})
 
+	test('appends the topic when new topics go on top but the page has no sections', () => {
+		expect(
+			makeSource('Intro.\n').modifyContext({
+				commentCode: topicCode,
+				isNewTopicOnTop: true,
+				isNewSectionApi: false,
+			}).contextCode,
+		).toBe('Intro.\n\n== New ==\nNew text.\n')
+	})
+
 	test('returns the topic code alone with the new section API', () => {
 		expect(
 			makeSource().modifyContext({

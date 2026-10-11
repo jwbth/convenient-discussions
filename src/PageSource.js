@@ -96,22 +96,16 @@ export default class PageSource {
 	 */
 	modifyContext({ commentCode, isNewTopicOnTop, isNewSectionApi }) {
 		let contextCode
-		if (isNewTopicOnTop) {
-			this.assertCode("Can't modify the context: context (page) code is not set.")
-
-			const firstSectionStartIndex = maskDistractingCode(this.code).search(
-				/^(=+).*\1[ \t\u0001\u0002]*$/m,
-			)
+		const firstSectionStartIndex = isNewTopicOnTop
+			? maskDistractingCode(this.getCode()).search(/^(=+).*\1[ \t\u0001\u0002]*$/m)
+			: -1
+		if (firstSectionStartIndex !== -1) {
 			contextCode =
-				(firstSectionStartIndex === -1
-					? this.code
-						? this.code + '\n'
-						: ''
-					: this.code.slice(0, firstSectionStartIndex)) +
+				this.getCode().slice(0, firstSectionStartIndex) +
 				// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
 				/** @type {string} */ (commentCode) +
 				'\n' +
-				this.code.slice(firstSectionStartIndex)
+				this.getCode().slice(firstSectionStartIndex)
 		} else if (isNewSectionApi) {
 			contextCode = /** @type {string} */ (commentCode)
 		} else {
