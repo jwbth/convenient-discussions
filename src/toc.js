@@ -200,8 +200,7 @@ class Toc {
 			const item = section.getTocItem()
 			if (!item) return
 
-			const count = section.comments.length
-			if (!count) return
+			if (!section.comments.length) return
 
 			const beforeSpan = document.createElement('span')
 			beforeSpan.className = 'cd-toc-commentCount-before'
@@ -210,18 +209,7 @@ class Toc {
 			span.className = 'cd-toc-commentCount'
 
 			const bdi = document.createElement('bdi')
-			const unreadCount = section.getUnreadAtLoad().length
-			if (unreadCount) {
-				bdi.textContent = cd.s(
-					usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
-					String(count),
-					String(unreadCount),
-				)
-			} else {
-				bdi.textContent = usedFullForm
-					? String(count)
-					: cd.s('toc-commentcount-full', String(count))
-			}
+			bdi.textContent = TocItem.formatCommentCount(section, !usedFullForm)
 
 			span.append(bdi)
 			item.$text.append(beforeSpan, span)

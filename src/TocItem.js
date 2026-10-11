@@ -152,18 +152,33 @@ export default class TocItem {
 		const $bdi = this.$text.find('.cd-toc-commentCount bdi')
 		if (!$bdi.length) return
 
-		const count = String(section.comments.length)
-		const isFirstWithComments = sectionManager.getAll().find((s) => s.comments.length) === section
-		const unreadCount = section.getUnreadAtLoad().length
+		$bdi.text(
+			TocItem.formatCommentCount(
+				section,
+				sectionManager.getAll().find((s) => s.comments.length) === section,
+			),
+		)
+	}
 
-		if (unreadCount) {
-			$bdi.text(
-				isFirstWithComments
-					? cd.s('toc-commentcount-new-full', count, String(unreadCount))
-					: cd.s('toc-commentcount-new', count, String(unreadCount)),
+	/**
+	 * Format the comment count of a section, with the count of comments unread at load, for its TOC
+	 * item.
+	 *
+	 * @param {import('./Section').default} section
+	 * @param {boolean} full Whether to use the full form, which the first TOC item with comments has.
+	 * @returns {string}
+	 */
+	static formatCommentCount(section, full) {
+		const count = String(section.comments.length)
+		const unreadAtLoadCount = section.getUnreadAtLoad().length
+		if (unreadAtLoadCount) {
+			return cd.s(
+				full ? 'toc-commentcount-new-full' : 'toc-commentcount-new',
+				count,
+				String(unreadAtLoadCount),
 			)
-		} else {
-			$bdi.text(isFirstWithComments ? cd.s('toc-commentcount-full', count) : count)
 		}
+
+		return full ? cd.s('toc-commentcount-full', count) : count
 	}
 }
