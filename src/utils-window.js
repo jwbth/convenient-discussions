@@ -1439,7 +1439,7 @@ export function extractSignatures(code) {
 	signatureDrafts.push(...unsigneds)
 
 	// This is for the procedure adding anchors to comments linked from the comment in
-	// CommentForm#addAnchorsToComments().
+	// buildEdit.
 	const signatureIndex = adjustedCode.indexOf(cd.g.signCode)
 	if (signatureIndex !== -1) {
 		// Dummy signature

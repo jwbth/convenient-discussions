@@ -18,3 +18,7 @@ A shell over MediaWiki talk pages: it parses comments and sections out of the re
 - **Comment data**: The plain facts about a comment that locating it needs: what identifies it (author, timestamp, index, previous comments, section headline, text, whether it follows a heading) and what shapes its span (level, own, opening comment of a section, table comment, foreign timestamps in it, `<pre>` blocks in it, its children's levels and whether it has valid replies).
 - **Section data**: The plain facts about a section that locating it needs: headline, index, the headlines of the sections before it, its oldest comment's author, timestamp and text, and the comment data of the last comment in its first chunk.
 - **Reply place**: The index in context code where a reply to a comment goes, found together with the reply's final indentation and whether it gets outdented.
+
+### Submitting
+
+- **Edit**: A change to a page's wikitext, in MediaWiki's sense. Once saved, it is a revision, by any user; `Comment#findEdit` looks for the one that added a comment. A comment form builds its edit before sending it: the API it goes through (edit, new section, or DiscussionTools), the section or page it lands in, the new code, and the revision it is based on.
