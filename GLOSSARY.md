@@ -25,9 +25,10 @@ A shell over MediaWiki talk pages: it parses comments and sections out of the re
 
 ### Read status
 
-- **Read status**: Where a comment stands for the user: new or not, seen or unseen, read or not.
+- **Read status**: Where a comment stands for the user on two axes: new or old, and read or unread.
 - **Visit**: A time the user loaded a talk page, remembered per page across sessions for as long as the highlight interval setting says.
-- **New**: Posted after the user's earliest remembered visit to the page. New comments are highlighted.
-- **Seen**: Been in the viewport, at this visit or an earlier one, or the user's own.
-- **Unseen**: Posted since the user's latest visit, or edited since it when edits count as new comments, and not yet seen.
-- **Read**: Taken out of new by the user, through a section's "Mark as read" or a refresh with the mark-as-read modifier. A read comment is seen and not new. *Avoid*: seen, for this.
+- **New**: Posted after the user's earliest remembered visit to the page, and not made old by the user since. New comments are highlighted.
+- **Old**: Not new. A section's "Mark as read" and a refresh with the mark-as-read modifier make comments old as well as read.
+- **Read**: Been in the viewport, at this visit or an earlier one, or marked as read, or the user's own. *Avoid*: seen.
+- **Unread**: Posted since the user's latest visit, or edited since it when edits count as new comments, and not yet read. *Avoid*: unseen.
+- **Unread at load**: Unread when the page loaded, and not made old since. Section and TOC comment counts show these.
