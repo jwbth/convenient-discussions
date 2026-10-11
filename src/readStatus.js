@@ -39,13 +39,22 @@ const getUnixTime = (comment) => comment.date && Math.floor(comment.date.getTime
  */
 
 /**
+ * Comments made old with "Mark as read".
+ *
+ * @typedef {object} MarkAsRead
+ * @property {'markAsRead'} type
+ * @property {ReadStatusComment[]} comments
+ */
+
+/**
  * A change on the new/old axis.
  *
- * @typedef {VisitStart} NewOldChange
+ * @typedef {VisitStart | MarkAsRead} NewOldChange
  */
 
 /**
  * @typedef {object} EventMap
+ * @property {[]} readUnread
  * @property {[NewOldChange]} newOld
  */
 
@@ -64,6 +73,22 @@ class ReadStatus extends EventEmitter {
 	previousVisitTime
 
 	/**
+	 * Comments on the page at the started visit.
+	 *
+	 * @type {ReadStatusComment[]}
+	 * @private
+	 */
+	comments = []
+
+	/**
+	 * Whether each comment marked as changed was read before its first change.
+	 *
+	 * @type {Map<ReadStatusComment, boolean | undefined>}
+	 * @private
+	 */
+	readBeforeChange = new Map()
+
+	/**
 	 * Start a visit: apply the read status rules to the comments. Call
 	 * {@link ReadStatus#announceVisitStart} once the returned visits are saved.
 	 *
@@ -71,6 +96,8 @@ class ReadStatus extends EventEmitter {
 	 * @returns {string[]} Visits to save.
 	 */
 	startVisit({ comments, visits: rememberedVisits, currentTime, markAsRead, carriedOverUnreadIds }) {
+		this.comments = comments
+		this.readBeforeChange = new Map()
 		const visits = this.forgetVisits(rememberedVisits, currentTime, markAsRead)
 		const timeConflict =
 			visits.length > 0 &&
@@ -152,7 +179,7 @@ class ReadStatus extends EventEmitter {
 				(commentTime + 60 <= Number(visits.at(-1)) || comment.hasFlag('own')) && !restoredUnread,
 			)
 		})
-		this.saveUnread(comments)
+		this.saveUnread()
 
 		return comments.some((comment) => {
 			const commentTime = getUnixTime(comment)
@@ -177,28 +204,114 @@ class ReadStatus extends EventEmitter {
 	}
 
 	/**
-	 * _For internal use._ Store the IDs of the unread comments among the page's comments in
-	 * sessionStorage.
+	 * Register that a comment came into view: make it read if it is unread.
+	 *
+	 * @param {ReadStatusComment} comment
+	 * @returns {boolean} Whether the comment became read.
+	 */
+	registerInView(comment) {
+		if (comment.isRead() !== false) {
+			return false
+		}
+
+		this.setRead([comment], true)
+
+		return true
+	}
+
+	/**
+	 * Make comments read and old (a section's "Mark as read").
 	 *
 	 * @param {ReadStatusComment[]} comments
 	 */
-	saveUnread(comments) {
+	markAsRead(comments) {
+		this.setRead(comments, true)
+		comments.forEach((comment) => {
+			comment.removeFlag('new')
+		})
+		this.saveOld()
+		this.emit('newOld', { type: 'markAsRead', comments })
+	}
+
+	/**
+	 * Make comments read, keeping them new ("Mark the thread as read").
+	 *
+	 * @param {ReadStatusComment[]} comments
+	 */
+	markThreadAsRead(comments) {
+		this.setRead(comments, true)
+	}
+
+	/**
+	 * Register that a comment was changed: make it unread if edits count as new comments.
+	 *
+	 * @param {ReadStatusComment} comment
+	 */
+	markAsChanged(comment) {
+		if (!cd.settings.get('countEditsAsNewComments')) return
+
+		if (!this.readBeforeChange.has(comment)) {
+			this.readBeforeChange.set(comment, comment.isRead())
+		}
+		this.setRead([comment], false)
+	}
+
+	/**
+	 * Register that a comment's change was undone: make it read again if it was read before the
+	 * change and hasn't been read since.
+	 *
+	 * @param {ReadStatusComment} comment
+	 */
+	unmarkAsChanged(comment) {
+		if (!cd.settings.get('countEditsAsNewComments')) return
+
+		const readBefore = this.readBeforeChange.get(comment)
+		this.readBeforeChange.delete(comment)
+		if (readBefore) {
+			this.setRead([comment], true)
+		}
+	}
+
+	/**
+	 * Set the comments' read field, store the unread comments, and announce the change if there is
+	 * one.
+	 *
+	 * @param {ReadStatusComment[]} comments
+	 * @param {boolean} value
+	 * @private
+	 */
+	setRead(comments, value) {
+		const changed = comments.filter((comment) => comment.isRead() !== value)
+		if (!changed.length) return
+
+		changed.forEach((comment) => {
+			comment.setRead(value)
+		})
+		this.saveUnread()
+		this.emit('readUnread')
+	}
+
+	/**
+	 * Store the IDs of the page's unread comments in sessionStorage.
+	 *
+	 * @private
+	 */
+	saveUnread() {
 		this.saveIds(
 			'unreadComments',
-			comments.filter((comment) => comment.isRead() === false),
+			this.comments.filter((comment) => comment.isRead() === false),
 		)
 	}
 
 	/**
-	 * _For internal use._ Store the IDs of the old comments among the page's comments in
-	 * sessionStorage.
+	 * Store the IDs of the page's old comments in sessionStorage.
 	 *
-	 * @param {ReadStatusComment[]} comments
+	 * @private
 	 */
-	saveOld(comments) {
+	saveOld() {
 		this.saveIds(
 			'oldComments',
-			comments.filter((comment) => !comment.hasFlag('new')),
+			this.comments.filter((comment) => !comment.hasFlag('new')),
 		)
 	}
 

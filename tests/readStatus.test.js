@@ -366,3 +366,203 @@ describe('readStatus.announceVisitStart', () => {
 		expect(calls).toEqual(['newOld', 'convenientDiscussions.newCommentsHighlighted'])
 	})
 })
+
+/**
+ * Record the read status module's events while running a function.
+ *
+ * @param {() => void} fn
+ * @returns {any[][]} Event names with their arguments.
+ */
+const recordEvents = (fn) => {
+	/** @type {any[][]} */
+	const events = []
+	const onReadUnread = (/** @type {any[]} */ ...args) => {
+		events.push(['readUnread', ...args])
+	}
+	const onNewOld = (/** @type {any[]} */ ...args) => {
+		events.push(['newOld', ...args])
+	}
+	readStatus.on('readUnread', onReadUnread)
+	readStatus.on('newOld', onNewOld)
+	try {
+		fn()
+	} finally {
+		readStatus.off('readUnread', onReadUnread)
+		readStatus.off('newOld', onNewOld)
+	}
+
+	return events
+}
+
+/**
+ * @param {'unreadComments' | 'oldComments'} key
+ * @returns {string[] | undefined}
+ */
+const storedIds = (key) =>
+	JSON.parse(sessionStorage.getItem(`convenientDiscussions-${key}`) ?? '{}')[articleId]
+
+/**
+ * Start a visit where both comments are new and unread.
+ */
+const startVisitWithTwoUnread = () => {
+	const a = makeComment({ id: 'a', time: now - hour })
+	const b = makeComment({ id: 'b', time: now - hour })
+	startVisit({ comments: [a, b], visits: [String(now - 2 * hour)] })
+
+	return [a, b]
+}
+
+describe('readStatus.registerInView', () => {
+	test('makes an unread comment read, emitting only the read/unread event', () => {
+		const [a] = startVisitWithTwoUnread()
+
+		let becameRead
+		const events = recordEvents(() => {
+			becameRead = readStatus.registerInView(a)
+		})
+
+		expect(becameRead).toBe(true)
+		expect(statusOf(a)).toEqual({ new: true, read: true })
+		expect(events).toEqual([['readUnread']])
+	})
+
+	test('leaves a read comment alone', () => {
+		const [a] = startVisitWithTwoUnread()
+		readStatus.registerInView(a)
+
+		let becameRead
+		const events = recordEvents(() => {
+			becameRead = readStatus.registerInView(a)
+		})
+
+		expect(becameRead).toBe(false)
+		expect(events).toEqual([])
+	})
+
+	test('stores the comments left unread in sessionStorage', () => {
+		const [a] = startVisitWithTwoUnread()
+
+		readStatus.registerInView(a)
+
+		expect(storedIds('unreadComments')).toEqual(['b'])
+	})
+})
+
+describe('readStatus.markAsRead', () => {
+	test('makes comments read and old, emitting both events', () => {
+		const [a, b] = startVisitWithTwoUnread()
+
+		const events = recordEvents(() => {
+			readStatus.markAsRead([a])
+		})
+
+		expect(statusOf(a)).toEqual({ new: false, read: true })
+		expect(statusOf(b)).toEqual({ new: true, read: false })
+		expect(events).toEqual([['readUnread'], ['newOld', { type: 'markAsRead', comments: [a] }]])
+	})
+
+	test('emits only the new/old event for read comments', () => {
+		const [a] = startVisitWithTwoUnread()
+		readStatus.registerInView(a)
+
+		const events = recordEvents(() => {
+			readStatus.markAsRead([a])
+		})
+
+		expect(events).toEqual([['newOld', { type: 'markAsRead', comments: [a] }]])
+	})
+
+	test('stores the unread and old comments in sessionStorage', () => {
+		const [a] = startVisitWithTwoUnread()
+
+		readStatus.markAsRead([a])
+
+		expect(storedIds('unreadComments')).toEqual(['b'])
+		expect(storedIds('oldComments')).toEqual(['a'])
+	})
+})
+
+describe('readStatus.markThreadAsRead', () => {
+	test('makes comments read but keeps them new, emitting only the read/unread event', () => {
+		const [a, b] = startVisitWithTwoUnread()
+
+		const events = recordEvents(() => {
+			readStatus.markThreadAsRead([a, b])
+		})
+
+		expect(statusOf(a)).toEqual({ new: true, read: true })
+		expect(statusOf(b)).toEqual({ new: true, read: true })
+		expect(events).toEqual([['readUnread']])
+		expect(storedIds('unreadComments')).toBeUndefined()
+	})
+})
+
+describe('readStatus.markAsChanged and readStatus.unmarkAsChanged', () => {
+	/**
+	 * Start a visit where the comment is read.
+	 */
+	const startVisitWithRead = () => {
+		const comment = makeComment({ id: 'a', time: now - 2 * hour })
+		startVisit({ comments: [comment], visits: [String(now - hour)] })
+
+		return comment
+	}
+
+	beforeEach(() => {
+		settings.countEditsAsNewComments = true
+	})
+
+	test('makes a changed comment unread, emitting the read/unread event', () => {
+		const comment = startVisitWithRead()
+
+		const events = recordEvents(() => {
+			readStatus.markAsChanged(comment)
+		})
+
+		expect(comment.isRead()).toBe(false)
+		expect(events).toEqual([['readUnread']])
+		expect(storedIds('unreadComments')).toEqual(['a'])
+	})
+
+	test('makes the comment read again when the change is undone', () => {
+		const comment = startVisitWithRead()
+		readStatus.markAsChanged(comment)
+		readStatus.markAsChanged(comment)
+
+		const events = recordEvents(() => {
+			readStatus.unmarkAsChanged(comment)
+		})
+
+		expect(comment.isRead()).toBe(true)
+		expect(events).toEqual([['readUnread']])
+		expect(storedIds('unreadComments')).toBeUndefined()
+	})
+
+	test('keeps the comment unread when the change is undone if it was unread before', () => {
+		const [a] = startVisitWithTwoUnread()
+		readStatus.markAsChanged(a)
+
+		readStatus.unmarkAsChanged(a)
+
+		expect(a.isRead()).toBe(false)
+	})
+
+	test('keeps the comment read when the change is undone after it was read', () => {
+		const comment = startVisitWithRead()
+		readStatus.markAsChanged(comment)
+		readStatus.registerInView(comment)
+
+		readStatus.unmarkAsChanged(comment)
+
+		expect(comment.isRead()).toBe(true)
+	})
+
+	test("leaves the read status alone when edits don't count as new comments", () => {
+		settings.countEditsAsNewComments = false
+		const comment = startVisitWithRead()
+
+		readStatus.markAsChanged(comment)
+
+		expect(comment.isRead()).toBe(true)
+	})
+})

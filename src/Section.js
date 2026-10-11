@@ -10,6 +10,7 @@ import loadContextCode from './loadContextCode'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
 import { highlightLinkedComments } from './processUrl'
+import readStatus from './readStatus'
 import CdError from './shared/CdError'
 import SectionSkeleton from './shared/SectionSkeleton'
 import { defined, underlinesToSpaces, unique } from './shared/utils-general'
@@ -1555,29 +1556,12 @@ class Section extends SectionSkeleton {
 	 * Mark all new comments in the section as read.
 	 */
 	markAsRead() {
-		this.comments
-			.filter((comment) => comment.hasFlag('new'))
-			.forEach((comment) => {
-				comment.markAsRead()
-			})
-		this.commentManager.emit('updateRead')
-		this.commentManager.emit('updateNew')
+		readStatus.markAsRead(this.comments.filter((comment) => comment.hasFlag('new')))
 
 		const sections = [this, ...this.getChildren(true)]
 		sections.forEach((section) => {
 			section.$unreadCommentCountWrapper?.remove()
 			section.unreadComments = []
-
-			const moreMenuSelect = section.actions.moreMenuSelect
-			if (moreMenuSelect) {
-				const menu = moreMenuSelect.getMenu()
-				const item = /** @type {OO.ui.MenuOptionWidget[]} */ (menu.getItems()).find(
-					(itm) => itm.getData() === 'markAsRead',
-				)
-				if (item) {
-					menu.removeItems([/** @type {OO.ui.OptionWidget} */ (item)])
-				}
-			}
 
 			const tocItem = section.getTocItem()
 			if (tocItem) {
@@ -1593,6 +1577,23 @@ class Section extends SectionSkeleton {
 			if (tocItem) {
 				tocItem.updateCommentCount(parent, this.manager)
 			}
+		}
+	}
+
+	/**
+	 * _For internal use._ Remove the "Mark as read" item from the section's menu if no comment in the
+	 * section is new.
+	 */
+	updateMarkAsReadItem() {
+		const moreMenuSelect = this.actions.moreMenuSelect
+		if (!moreMenuSelect || this.comments.some((comment) => comment.hasFlag('new'))) return
+
+		const menu = moreMenuSelect.getMenu()
+		const item = /** @type {OO.ui.MenuOptionWidget[]} */ (menu.getItems()).find(
+			(itm) => itm.getData() === 'markAsRead',
+		)
+		if (item) {
+			menu.removeItems([/** @type {OO.ui.OptionWidget} */ (item)])
 		}
 	}
 

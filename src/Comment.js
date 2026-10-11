@@ -11,6 +11,7 @@ import controller from './controller'
 import loadContextCode from './loadContextCode'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
+import readStatus from './readStatus'
 import CdError from './shared/CdError'
 import CommentSkeleton from './shared/CommentSkeleton'
 import ElementsTreeWalker from './shared/ElementsTreeWalker'
@@ -340,14 +341,6 @@ class Comment extends mixIntoClass(
 	 */
 	lineGapped
 
-	/**
-	 * Has the comment been read before it was changed.
-	 *
-	 * @type {boolean | undefined}
-	 * @private
-	 */
-	readBeforeChanged
-
 	/** @type {import('./Thread').default | undefined} */
 	thread
 
@@ -553,24 +546,12 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Set whether the comment has been read.
+	 * _For use by the read status module only._ Set whether the comment has been read.
 	 *
 	 * @param {boolean | undefined} value
 	 */
 	setRead(value) {
-		if (this.read === value) return
-
 		this.read = value
-		this.manager.markUnreadStorageDirty()
-	}
-
-	/**
-	 * Mark the comment as read and old.
-	 */
-	markAsRead() {
-		this.setRead(true)
-		this.removeFlag('new')
-		this.manager.markOldStorageDirty()
 	}
 
 	/**
@@ -627,31 +608,6 @@ class Comment extends mixIntoClass(
 	 */
 	isLineGapped() {
 		return this.lineGapped
-	}
-
-	/**
-	 * Has the comment been read before it was changed.
-	 *
-	 * @returns {boolean | undefined}
-	 */
-	isReadBeforeChanged() {
-		return this.readBeforeChanged
-	}
-
-	/**
-	 * Set whether the comment was read before it was changed. Only sets the value if it is currently
-	 * undefined. Resets the value when undefined is passed. This is used to remember whether the
-	 * comment has been read when it is marked as changed, and forget it when it is unmarked.
-	 *
-	 * This all is only relevant when the user has `countEditsAsNewComments` enabled (disabled by
-	 * default).
-	 *
-	 * @param {boolean | undefined} value
-	 */
-	initiallySetOrResetReadBeforeChanged(value) {
-		if (this.readBeforeChanged === undefined || value === undefined) {
-			this.readBeforeChanged = value
-		}
 	}
 
 	/**
@@ -2113,13 +2069,8 @@ class Comment extends mixIntoClass(
 			this.flashChangedOnSight()
 		}
 
-		if (
-			cd.settings.get('countEditsAsNewComments') &&
-			(type === 'changed' || type === 'changedSince')
-		) {
-			this.initiallySetOrResetReadBeforeChanged(this.isRead())
-			this.setRead(false)
-			this.manager.emit('updateRead')
+		if (type === 'changed' || type === 'changedSince') {
+			readStatus.markAsChanged(this)
 		}
 
 		// Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -2176,15 +2127,7 @@ class Comment extends mixIntoClass(
 		this.$changeNote?.remove()
 		delete this.$changeNote
 
-		if (
-			cd.settings.get('countEditsAsNewComments') &&
-			this.isRead() === false &&
-			this.isReadBeforeChanged() === true
-		) {
-			this.setRead(true)
-			this.initiallySetOrResetReadBeforeChanged(undefined)
-			this.manager.emit('updateRead')
-		}
+		readStatus.unmarkAsChanged(this)
 
 		if (type === 'changed') {
 			// The change was reverted and the user hasn't seen the change - no need to flash the comment.
@@ -2347,11 +2290,9 @@ class Comment extends mixIntoClass(
 						this.collapsedNotification?.close()
 					},
 					'cd-notification-markThreadAsRead': () => {
-						const threadTyped = /** @type {import('./Thread').default} */ (this.thread)
-						threadTyped.getComments().forEach((comment) => {
-							comment.setRead(true)
-						})
-						this.manager.emit('updateRead')
+						readStatus.markThreadAsRead(
+							/** @type {import('./Thread').default} */ (this.thread).getComments(),
+						)
 						this.manager.goToFirstUnreadComment()
 						this.collapsedNotification?.close()
 					},
@@ -3217,11 +3158,8 @@ class Comment extends mixIntoClass(
 	 * @param {boolean} flash Whether to flash the comment as a target.
 	 */
 	async handleInViewport(flash) {
-		if (this.isRead() === false) {
-			this.setRead(true)
-			if (flash) {
-				this.flashTarget()
-			}
+		if (readStatus.registerInView(this) && flash) {
+			this.flashTarget()
 		}
 
 		if (this.willFlashChangedOnSight) {

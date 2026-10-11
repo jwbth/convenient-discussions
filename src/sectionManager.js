@@ -56,7 +56,15 @@ export class SectionManager {
 	init(subscriptions) {
 		controller.on('viewportMove', this.maybeUpdateVisibility)
 		subscriptions.on('process', this.addSubscribeButtons)
-		readStatus.on('newOld', this.updateUnreadCommentsData)
+		readStatus.on('newOld', (change) => {
+			if (change.type === 'visitStart') {
+				this.updateUnreadCommentsData()
+			} else {
+				this.items.forEach((section) => {
+					section.updateMarkAsReadItem()
+				})
+			}
+		})
 	}
 
 	/**

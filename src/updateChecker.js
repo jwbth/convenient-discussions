@@ -974,6 +974,8 @@ class UpdateChecker extends EventEmitter {
 		this.worker = worker
 
 		readStatus.on('newOld', (change) => {
+			if (change.type !== 'visitStart') return
+
 			const bootProcess = controller.getBootProcess()
 			this.setup(
 				change.previousVisitTime,

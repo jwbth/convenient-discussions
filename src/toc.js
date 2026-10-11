@@ -55,7 +55,9 @@ class Toc {
 			this.resolveUpdateTocSectionsPromise?.()
 		})
 
-		readStatus.on('newOld', () => {
+		readStatus.on('newOld', (change) => {
+			if (change.type !== 'visitStart') return
+
 			// If all the comments on the page are unread, don't add them to the TOC - the user would
 			// definitely prefer to read the names of the topics easily. (But still consider them new -
 			// otherwise the user can be confused, especially if there are few topics on an unpopular
@@ -110,9 +112,14 @@ class Toc {
 		this.items = undefined
 		this.floating = undefined
 		this.visitStartPromise = new Promise((resolve) => {
-			readStatus.once('newOld', () => {
+			/** @param {import('./readStatus').NewOldChange} change */
+			const resolveAtVisitStart = (change) => {
+				if (change.type !== 'visitStart') return
+
+				readStatus.off('newOld', resolveAtVisitStart)
 				resolve()
-			})
+			}
+			readStatus.on('newOld', resolveAtVisitStart)
 		})
 
 		if (this.isInSidebar() && sections) {

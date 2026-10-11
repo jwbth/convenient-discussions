@@ -22,8 +22,6 @@ import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection } f
 
 /**
  * @typedef {object} EventMap
- * @property {[]} updateRead
- * @property {[]} updateNew
  * @property {[import('./Comment').default]} unselect
  * @property {[import('./Comment').default]} select
  */
@@ -108,22 +106,6 @@ export class CommentManager extends EventEmitter {
 	brokenLayoutCheckCount = 0
 
 	/**
-	 * Whether the unread storage needs to be updated.
-	 *
-	 * @type {boolean}
-	 * @private
-	 */
-	unreadStorageDirty = false
-
-	/**
-	 * Whether the old comments storage needs to be updated.
-	 *
-	 * @type {boolean}
-	 * @private
-	 */
-	oldStorageDirty = false
-
-	/**
 	 * Set the comment classes.
 	 *
 	 * @param {object} classes
@@ -170,9 +152,6 @@ export class CommentManager extends EventEmitter {
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
 
-		this.on('updateRead', this.saveUnreadStorage)
-		this.on('updateNew', this.saveOldStorage)
-
 		controller
 			.on('viewportMove', this.registerRead)
 			.on('mutate', this.maybeRedrawLayers)
@@ -185,7 +164,10 @@ export class CommentManager extends EventEmitter {
 			.on('desktopNotificationClick', () => {
 				this.maybeRedrawLayers(true)
 			})
-		readStatus.on('newOld', async () => {
+		readStatus.on('newOld', async (change) => {
+			// "Mark as read" updates the styles of the comments it makes old itself.
+			if (change.type !== 'visitStart') return
+
 			this.configureAndAddLayers((comment) => comment.hasFlag('new'))
 			this.registerRead()
 
@@ -441,8 +423,6 @@ export class CommentManager extends EventEmitter {
 
 		// Forward
 		this.items.slice(commentInViewport.index).some(registerIfInViewport)
-
-		this.emit('updateRead')
 	}
 
 	/**
@@ -927,40 +907,6 @@ export class CommentManager extends EventEmitter {
 			comment.setSelected(false)
 			this.emit('unselect', comment)
 		}
-	}
-
-	/**
-	 * Mark the unread storage as needing an update.
-	 */
-	markUnreadStorageDirty() {
-		this.unreadStorageDirty = true
-	}
-
-	/**
-	 * Mark the old comments storage as needing an update.
-	 */
-	markOldStorageDirty() {
-		this.oldStorageDirty = true
-	}
-
-	/**
-	 * Save the storage item for unread comments if it has been marked as dirty.
-	 */
-	saveUnreadStorage = () => {
-		if (!this.unreadStorageDirty && !cd.loader.isBooting()) return
-
-		this.unreadStorageDirty = false
-		readStatus.saveUnread(this.items)
-	}
-
-	/**
-	 * Save the old comments storage if it has been marked as dirty.
-	 */
-	saveOldStorage = () => {
-		if (!this.oldStorageDirty && !cd.loader.isBooting()) return
-
-		this.oldStorageDirty = false
-		readStatus.saveOld(this.items)
 	}
 
 	/**

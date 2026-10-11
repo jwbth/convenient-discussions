@@ -97,9 +97,15 @@ class NavPanel {
 					.on('add', this.updateCommentFormButton)
 					.on('remove', this.updateCommentFormButton)
 				LiveTimestamp.on('updateImproved', this.updateTimestampsInRefreshButtonTooltip)
-				readStatus.on('newOld', this.fill)
-				commentManager.on('updateRead', this.updateFirstUnreadButton)
-				commentManager.on('updateNew', this.updateNew)
+				readStatus
+					.on('newOld', (change) => {
+						if (change.type === 'visitStart') {
+							this.fill()
+						} else {
+							this.updateNew()
+						}
+					})
+					.on('readUnread', this.updateFirstUnreadButton)
 			}
 		} else if (this.isMounted()) {
 			this.unmount()
