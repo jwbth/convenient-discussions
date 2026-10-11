@@ -206,14 +206,14 @@ class Comment extends mixIntoClass(
 	layersContainer
 
 	/**
-	 * Has the comment been seen if it is new. Is set only on active pages (not archived, not old
+	 * Has the comment been read if it is new. Is set only on active pages (not archived, not old
 	 * diffs) excluding pages that are visited for the first time. Check using `=== false` if you
-	 * need to know if the comment is highlighted as new and unseen.
+	 * need to know if the comment is highlighted as new and unread.
 	 *
 	 * @type {boolean | undefined}
 	 * @private
 	 */
-	seen
+	read
 
 	/**
 	 * Has the comment been scrolled to while it was in a collapsed thread.
@@ -341,12 +341,12 @@ class Comment extends mixIntoClass(
 	lineGapped
 
 	/**
-	 * Has the comment been seen before it was changed.
+	 * Has the comment been read before it was changed.
 	 *
 	 * @type {boolean | undefined}
 	 * @private
 	 */
-	seenBeforeChanged
+	readBeforeChanged
 
 	/** @type {import('./Thread').default | undefined} */
 	thread
@@ -544,33 +544,33 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Has the comment been seen if it is new.
+	 * Has the comment been read if it is new.
 	 *
 	 * @returns {boolean | undefined}
 	 */
-	isSeen() {
-		return this.seen
+	isRead() {
+		return this.read
 	}
 
 	/**
-	 * Set whether the comment has been seen.
+	 * Set whether the comment has been read.
 	 *
 	 * @param {boolean | undefined} value
 	 */
-	setSeen(value) {
-		if (this.seen === value) return
+	setRead(value) {
+		if (this.read === value) return
 
-		this.seen = value
-		this.manager.markSeenStorageDirty()
+		this.read = value
+		this.manager.markUnreadStorageDirty()
 	}
 
 	/**
-	 * Mark the comment as read (seen and not new).
+	 * Mark the comment as read and old.
 	 */
 	markAsRead() {
-		this.setSeen(true)
+		this.setRead(true)
 		this.removeFlag('new')
-		this.manager.markReadStorageDirty()
+		this.manager.markOldStorageDirty()
 	}
 
 	/**
@@ -630,27 +630,27 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Has the comment been seen before it was changed.
+	 * Has the comment been read before it was changed.
 	 *
 	 * @returns {boolean | undefined}
 	 */
-	isSeenBeforeChanged() {
-		return this.seenBeforeChanged
+	isReadBeforeChanged() {
+		return this.readBeforeChanged
 	}
 
 	/**
-	 * Set whether the comment was seen before it was changed. Only sets the value if it is currently
+	 * Set whether the comment was read before it was changed. Only sets the value if it is currently
 	 * undefined. Resets the value when undefined is passed. This is used to remember whether the
-	 * comment has been seen when it is marked as changed, and forget it when it is unmarked.
+	 * comment has been read when it is marked as changed, and forget it when it is unmarked.
 	 *
 	 * This all is only relevant when the user has `countEditsAsNewComments` enabled (disabled by
 	 * default).
 	 *
 	 * @param {boolean | undefined} value
 	 */
-	initiallySetOrResetSeenBeforeChanged(value) {
-		if (this.seenBeforeChanged === undefined || value === undefined) {
-			this.seenBeforeChanged = value
+	initiallySetOrResetReadBeforeChanged(value) {
+		if (this.readBeforeChanged === undefined || value === undefined) {
+			this.readBeforeChanged = value
 		}
 	}
 
@@ -2117,9 +2117,9 @@ class Comment extends mixIntoClass(
 			cd.settings.get('countEditsAsNewComments') &&
 			(type === 'changed' || type === 'changedSince')
 		) {
-			this.initiallySetOrResetSeenBeforeChanged(this.isSeen())
-			this.setSeen(false)
-			this.manager.emit('updateSeen')
+			this.initiallySetOrResetReadBeforeChanged(this.isRead())
+			this.setRead(false)
+			this.manager.emit('updateRead')
 		}
 
 		// Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -2178,12 +2178,12 @@ class Comment extends mixIntoClass(
 
 		if (
 			cd.settings.get('countEditsAsNewComments') &&
-			this.isSeen() === false &&
-			this.isSeenBeforeChanged() === true
+			this.isRead() === false &&
+			this.isReadBeforeChanged() === true
 		) {
-			this.setSeen(true)
-			this.initiallySetOrResetSeenBeforeChanged(undefined)
-			this.manager.emit('updateSeen')
+			this.setRead(true)
+			this.initiallySetOrResetReadBeforeChanged(undefined)
+			this.manager.emit('updateRead')
 		}
 
 		if (type === 'changed') {
@@ -2349,15 +2349,15 @@ class Comment extends mixIntoClass(
 					'cd-notification-markThreadAsRead': () => {
 						const threadTyped = /** @type {import('./Thread').default} */ (this.thread)
 						threadTyped.getComments().forEach((comment) => {
-							comment.setSeen(true)
+							comment.setRead(true)
 						})
-						this.manager.emit('updateSeen')
-						this.manager.goToFirstUnseenComment()
+						this.manager.emit('updateRead')
+						this.manager.goToFirstUnreadComment()
 						this.collapsedNotification?.close()
 					},
 				},
 			})
-			if (this.isSeen()) {
+			if (this.isRead()) {
 				$message.find('.cd-notification-markThreadAsRead').remove()
 			}
 			this.collapsedNotification = mw.notification.notify($message, {
@@ -3181,14 +3181,14 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Mark the comment as seen, and also {@link Comment#flash flash} comments that are set to flash.
+	 * Mark the comment as read, and also {@link Comment#flash flash} comments that are set to flash.
 	 * If direction is provided, then proceed to the next comment in provided direction.
 	 *
 	 * @param {'forward'|'backward'} [registerAllInDirection] Mark all comments in the forward or
-	 *   backward direction from this comment as seen.
+	 *   backward direction from this comment as read.
 	 * @param {boolean} [flash] Whether to flash the comment as a target.
 	 */
-	registerSeen(registerAllInDirection, flash = false) {
+	registerRead(registerAllInDirection, flash = false) {
 		const isInViewport = !registerAllInDirection || this.isInViewport()
 		if (isInViewport) {
 			this.handleInViewport(flash)
@@ -3197,13 +3197,13 @@ class Comment extends mixIntoClass(
 		if (
 			registerAllInDirection &&
 			// Makes sense to register further?
-			this.manager.getAll().some((comment) => comment.isSeen() || comment.willFlashChangedOnSight)
+			this.manager.getAll().some((comment) => comment.isRead() || comment.willFlashChangedOnSight)
 		) {
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 			const change = registerAllInDirection === 'backward' ? -1 : 1
 			const nextComment = this.manager.getByIndex(this.index + change)
 			if (nextComment && nextComment.isInViewport() !== false) {
-				nextComment.registerSeen(registerAllInDirection, flash)
+				nextComment.registerRead(registerAllInDirection, flash)
 			}
 		}
 	}
@@ -3212,13 +3212,13 @@ class Comment extends mixIntoClass(
 	 * Behavior for comments in the viewport. This is triggered after 'scroll' and 'moveViewport'
 	 * controller events.
 	 *
-	 * Mark the comment as seen, and also {@link Comment#flash flash} comments that are set to flash.
+	 * Mark the comment as read, and also {@link Comment#flash flash} comments that are set to flash.
 	 *
 	 * @param {boolean} flash Whether to flash the comment as a target.
 	 */
 	async handleInViewport(flash) {
-		if (this.isSeen() === false) {
-			this.setSeen(true)
+		if (this.isRead() === false) {
+			this.setRead(true)
 			if (flash) {
 				this.flashTarget()
 			}
@@ -3841,19 +3841,19 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Set the `new` {@link CommentFlagSet comment} and {@link Comment#seen} property for the
+	 * Set the `new` {@link CommentFlagSet comment} and {@link Comment#read} property for the
 	 * comment given the list of the current page visits.
 	 *
 	 * @param {string[]} currentPageVisits
 	 * @param {number} currentTime
-	 * @param {Comment | boolean} [unseenComment] The corresponding comment from the previous
+	 * @param {Comment | boolean} [unreadComment] The corresponding comment from the previous
 	 *   in-memory session (which may carry additional info such as change notes), or simply `true`
-	 *   to mark this comment as unseen without extra metadata (e.g. when restored from session
+	 *   to mark this comment as unread without extra metadata (e.g. when restored from session
 	 *   storage).
-	 * @param {boolean} [wasRead] Whether the comment was read in the previous session.
+	 * @param {boolean} [wasMadeOld] Whether the comment was made old in the previous session.
 	 * @returns {boolean} Whether there is a time conflict.
 	 */
-	initNewAndSeen(currentPageVisits, currentTime, unseenComment, wasRead) {
+	initNewAndRead(currentPageVisits, currentTime, unreadComment, wasMadeOld) {
 		// Let's take 3 minutes as a tolerable time discrepancy.
 		if (
 			!this.date ||
@@ -3861,7 +3861,7 @@ class Comment extends mixIntoClass(
 			this.date.getTime() > Date.now() + cd.g.msInMin * 3
 		) {
 			this.removeFlag('new')
-			this.setSeen(true)
+			this.setRead(true)
 
 			return false
 		}
@@ -3869,26 +3869,26 @@ class Comment extends mixIntoClass(
 		const commentTime = Math.floor(this.date.getTime() / 1000)
 
 		// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
-		// has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
+		// has. See also timeConflict in BootProcess#processVisits(). Unread comment might be not new if
 		// it's a *changed* old comment.
-		if (!wasRead && (commentTime + 60 > Number(currentPageVisits[0]) || unseenComment)) {
+		if (!wasMadeOld && (commentTime + 60 > Number(currentPageVisits[0]) || unreadComment)) {
 			this.addFlag('new', false)
 		} else {
 			this.removeFlag('new', false)
 		}
-		this.setSeen(
+		this.setRead(
 			(commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) ||
 				this.hasFlag('own')) &&
-				!unseenComment,
+				!unreadComment,
 		)
 
 		if (
-			typeof unseenComment !== 'boolean' &&
-			unseenComment?.isChangedSincePreviousVisit() &&
-			unseenComment.$changeNote
+			typeof unreadComment !== 'boolean' &&
+			unreadComment?.isChangedSincePreviousVisit() &&
+			unreadComment.$changeNote
 		) {
-			this.addChangeNote(unseenComment.$changeNote)
-			if (unseenComment.willFlashChangedOnSight) {
+			this.addChangeNote(unreadComment.$changeNote)
+			if (unreadComment.willFlashChangedOnSight) {
 				this.flashChangedOnSight()
 			}
 		}

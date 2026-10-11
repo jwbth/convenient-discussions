@@ -866,8 +866,8 @@ class Controller extends EventEmitter {
 	}
 
 	/**
-	 * _For internal use._ Handle a document's `scroll` event: Register seen comments, update the
-	 * navigation panel's first unseen button, and update the current section block. Trigger the
+	 * _For internal use._ Handle a document's `scroll` event: Register read comments, update the
+	 * navigation panel's first unread button, and update the current section block. Trigger the
 	 * `horizontalscroll` event.
 	 */
 	handleViewportMove = () => {
@@ -1011,7 +1011,7 @@ class Controller extends EventEmitter {
 	animationFrameRequestedToHandlePageMutate = false
 
 	// Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
-	// comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
+	// comments may be registered as read after a press of Page Down/Page Up. One scroll in Chrome,
 	// Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to benot
 	// enough, so we try 300ms.
 	throttledActuallyHandleViewportMove = OO.ui.throttle(this.actuallyHandleViewportMove, 300)
@@ -2027,8 +2027,8 @@ class Controller extends EventEmitter {
 		mw.loader.load(bootProcess.passedData.parseData.modulestyles)
 		mw.config.set(bootProcess.passedData.parseData.jsconfigvars)
 
-		bootProcess.passedData.unseenComments = commentManager.query(
-			(comment) => comment.isSeen() === false,
+		bootProcess.passedData.unreadComments = commentManager.query(
+			(comment) => comment.isRead() === false,
 		)
 
 		if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {

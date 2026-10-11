@@ -161,13 +161,13 @@ export default class TocItem {
 
 		const count = String(section.comments.length)
 		const isFirstWithComments = sectionManager.getAll().find((s) => s.comments.length) === section
-		const unseenCount = section.unseenComments?.length
+		const unreadCount = section.unreadComments?.length
 
-		if (unseenCount) {
+		if (unreadCount) {
 			$bdi.text(
 				isFirstWithComments
-					? cd.s('toc-commentcount-new-full', count, String(unseenCount))
-					: cd.s('toc-commentcount-new', count, String(unseenCount)),
+					? cd.s('toc-commentcount-new-full', count, String(unreadCount))
+					: cd.s('toc-commentcount-new', count, String(unreadCount)),
 			)
 		} else {
 			$bdi.text(isFirstWithComments ? cd.s('toc-commentcount-full', count) : count)

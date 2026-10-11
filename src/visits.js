@@ -72,22 +72,22 @@ class Visits extends EventEmitter {
 		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 		const shiftDueToTimeConflict =
 			this.currentPageData.length &&
-			commentManager.initNewAndSeen(this.currentPageData, currentTime, markAsReadRequested)
+			commentManager.initNewAndRead(this.currentPageData, currentTime, markAsReadRequested)
 				? 60
 				: 0
 
-		// (Nearly) eliminate the possibility that we will wrongfully mark a seen comment as unseen/new
+		// (Nearly) eliminate the possibility that we will wrongfully mark a read comment as unread/new
 		// at the next page load by adding a minute to the visit time if there is at least one comment
 		// posted at the same minute. If instead we required the comment time to be less than the
 		// current time to be highlighted, it would result in missed comments if the comment was posted
 		// at the same minute as our visit but after that moment.
 		//
-		// We sacrifice the chance that sometimes we will wrongfully mark an unseen comment as seen -
+		// We sacrifice the chance that sometimes we will wrongfully mark an unread comment as read -
 		// but for that,
 		// * one comment should be added at the same minute as our visit but earlier;
 		// * another comment should be added at the same minute as our visit but later.
 		//
-		// We could decide that not marking unseen comments as seen is an absolute priority and remove
+		// We could decide that not marking unread comments as read is an absolute priority and remove
 		// the timeConflict stuff.
 		this.currentPageData.push(String(currentTime + shiftDueToTimeConflict))
 

@@ -111,7 +111,7 @@ function processDtElements(elements) {
  * @property {string} [sectionId] ID of a section to scroll to.
  * @property {boolean} [pushState] Whether to add a state to the browser history.
  * @property {ScrollData} [scrollData] Data about the page's Y offset to avoid reflow.
- * @property {Comment[]} [unseenComments] Unseen comments on this page.
+ * @property {Comment[]} [unreadComments] Unread comments on this page.
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
  * @property {boolean} [isPageReloadedExternally] Whether the page was reloaded externally (e.g. by
  *   some script).
@@ -424,11 +424,10 @@ class BootProcess {
 			// Caution: Fragile code here - sectionManager.init() is placed above toc.init() and
 			// commentManager.init(), to add event handlers for its methods quicker than `sectionManager`
 			// and `toc` do for theirs:
-			// 1. sectionManager.updateNewCommentsData() sets Section#newComments that is later used in
-			//    toc.addCommentCount().
-			// 2. sectionManager.updateNewCommentsData() must set Section#newComments before
-			//    commentManager.registerSeen() registers them as seen (= not new, in section's
-			//    terminology).
+			// 1. sectionManager.updateUnreadCommentsData() sets Section#unreadComments that is later
+			//    used in toc.addCommentCount().
+			// 2. sectionManager.updateUnreadCommentsData() must set Section#unreadComments before
+			//    commentManager.registerRead() registers them as read.
 			sectionManager.init(this.subscriptions)
 
 			updateChecker.init(controller.getWorker())

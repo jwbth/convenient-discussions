@@ -56,16 +56,16 @@ class Toc {
 		})
 
 		visits.on('process', () => {
-			// If all the comments on the page are unseen, don't add them to the TOC - the user would
+			// If all the comments on the page are unread, don't add them to the TOC - the user would
 			// definitely prefer to read the names of the topics easily. (But still consider them new -
 			// otherwise the user can be confused, especially if there are few topics on an unpopular
 			// page.)
 			if (
-				commentManager.query((c) => c.isSeen() === false || !c.date).length !==
+				commentManager.query((c) => c.isRead() === false || !c.date).length !==
 				commentManager.getCount()
 			) {
 				this.addNewComments(
-					Comment.groupBySection(commentManager.query((c) => c.isSeen() === false)),
+					Comment.groupBySection(commentManager.query((c) => c.isRead() === false)),
 					controller.getBootProcess(),
 				)
 			}
@@ -195,12 +195,12 @@ class Toc {
 			span.className = 'cd-toc-commentCount'
 
 			const bdi = document.createElement('bdi')
-			const unseenCount = section.unseenComments?.length
-			if (unseenCount) {
+			const unreadCount = section.unreadComments?.length
+			if (unreadCount) {
 				bdi.textContent = cd.s(
 					usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
 					String(count),
-					String(unseenCount),
+					String(unreadCount),
 				)
 			} else {
 				bdi.textContent = usedFullForm

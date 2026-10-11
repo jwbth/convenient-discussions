@@ -1432,83 +1432,82 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
-	 * Flash the unseen comments in the section and scroll to the first one of them.
+	 * Flash the unread comments in the section and scroll to the first one of them.
 	 *
 	 * @param {MouseEvent} event
 	 * @private
 	 */
-	scrollToUnseenComments = (event) => {
+	scrollToUnreadComments = (event) => {
 		if (event.altKey) return
 
 		event.preventDefault()
 
-		// If all new comments are also unseen, flash them as before rather than highlighting as linked
+		// If all new comments are also unread, flash them as before rather than highlighting as linked
 		// comments, since they are the same set.
 		const newComments = this.comments.filter((comment) => comment.hasFlag('new'))
-		if (newComments.length === this.unseenComments?.length) {
-			Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.unseenComments))
+		if (newComments.length === this.unreadComments?.length) {
+			Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.unreadComments))
 
 			return
 		}
 
-		Comment.markAsLinked(/** @type {Comment[]} */ (this.unseenComments), true, false)
+		Comment.markAsLinked(/** @type {Comment[]} */ (this.unreadComments), true, false)
 	}
 
 	/**
-	 * _For internal use._ Update the unseen (worded as "new" in the UI) comments data for the section
-	 * and add the unseen comment count to the metadata element. ("Unseen" actually means "not seen at
-	 * the moment of load".).
+	 * _For internal use._ Update the data on comments unread at load (worded as "new" in the UI) for the section
+	 * and add their count to the metadata element.
 	 */
-	updateUnseenCommentsData() {
+	updateUnreadCommentsData() {
 		/**
-		 * List of comments in the section that were unseen at the moment of load.
+		 * List of comments in the section that were unread at load.
 		 *
 		 * @type {import('./Comment').default[] | undefined}
 		 */
-		this.unseenComments = this.comments.filter((comment) => comment.isSeen() === false)
+		this.unreadComments = this.comments.filter((comment) => comment.isRead() === false)
 
 		if (
 			!this.isTopic() ||
-			!this.unseenComments.length ||
-			this.unseenComments.length === this.comments.length
+			!this.unreadComments.length ||
+			this.unreadComments.length === this.comments.length
 		) {
 			return
 		}
 
-		const oldestUnseenComment = Comment.getOldest(this.unseenComments, true)
+		const oldestUnreadComment = Comment.getOldest(this.unreadComments, true)
 
 		let href
-		if (oldestUnseenComment?.dtId) {
+		if (oldestUnreadComment?.dtId) {
 			const url = new URL(location.href)
-			url.searchParams.set('dtnewcommentssince', oldestUnseenComment.dtId)
+			url.searchParams.set('dtnewcommentssince', oldestUnreadComment.dtId)
 			url.searchParams.set('dtinthread', '1')
 			url.hash = ''
 			href = url.toString()
 		} else {
-			href = `#${oldestUnseenComment?.getUrlFragment() || ''}`
+			href = `#${oldestUnreadComment?.getUrlFragment() || ''}`
 		}
 
-		const unseenLink = document.createElement('a')
-		unseenLink.textContent = cd.s(
+		const unreadLink = document.createElement('a')
+		unreadLink.textContent = cd.s(
 			'section-metadata-newcommentcount',
-			String(this.unseenComments.length),
+			String(this.unreadComments.length),
 		)
-		unseenLink.href = href
-		unseenLink.className = 'cd-clickHandled'
-		unseenLink.addEventListener('click', this.scrollToUnseenComments)
+		unreadLink.href = href
+		unreadLink.className = 'cd-clickHandled'
+		unreadLink.addEventListener('click', this.scrollToUnreadComments)
 
-		const unseenCommentCountWrapper = document.createElement('span')
-		unseenCommentCountWrapper.className = 'cd-section-bar-item'
-		unseenCommentCountWrapper.append(unseenLink)
+		const unreadCommentCountWrapper = document.createElement('span')
+		unreadCommentCountWrapper.className = 'cd-section-bar-item'
+		unreadCommentCountWrapper.append(unreadLink)
 
 		const metadataElementTyped = /** @type {HTMLElement} */ (this.metadataElement)
 		metadataElementTyped.insertBefore(
-			unseenCommentCountWrapper,
+			unreadCommentCountWrapper,
 			/** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null,
 		)
 
-		this.unseenCommentCountWrapper = unseenCommentCountWrapper
-		this.$unseenCommentCountWrapper = $(unseenCommentCountWrapper)
+		this.unreadCommentCountWrapper = unreadCommentCountWrapper
+		this.$unreadCommentCountWrapper = $(unreadCommentCountWrapper)
 	}
 
 	/**
@@ -1561,13 +1560,13 @@ class Section extends SectionSkeleton {
 			.forEach((comment) => {
 				comment.markAsRead()
 			})
-		this.commentManager.emit('updateSeen')
+		this.commentManager.emit('updateRead')
 		this.commentManager.emit('updateNew')
 
 		const sections = [this, ...this.getChildren(true)]
 		sections.forEach((section) => {
-			section.$unseenCommentCountWrapper?.remove()
-			section.unseenComments = []
+			section.$unreadCommentCountWrapper?.remove()
+			section.unreadComments = []
 
 			const moreMenuSelect = section.actions.moreMenuSelect
 			if (moreMenuSelect) {
@@ -1588,8 +1587,8 @@ class Section extends SectionSkeleton {
 		})
 
 		for (let parent = this.getParent(); parent; parent = parent.getParent()) {
-			parent.$unseenCommentCountWrapper?.remove()
-			parent.updateUnseenCommentsData()
+			parent.$unreadCommentCountWrapper?.remove()
+			parent.updateUnreadCommentsData()
 			const tocItem = parent.getTocItem()
 			if (tocItem) {
 				tocItem.updateCommentCount(parent, this.manager)

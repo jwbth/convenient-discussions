@@ -23,7 +23,7 @@ import visits from './visits'
 
 /**
  * @typedef {object} EventMap
- * @property {[]} updateSeen
+ * @property {[]} updateRead
  * @property {[]} updateNew
  * @property {[import('./Comment').default]} unselect
  * @property {[import('./Comment').default]} select
@@ -109,20 +109,20 @@ export class CommentManager extends EventEmitter {
 	brokenLayoutCheckCount = 0
 
 	/**
-	 * Whether the seen storage needs to be updated.
+	 * Whether the unread storage needs to be updated.
 	 *
 	 * @type {boolean}
 	 * @private
 	 */
-	seenStorageDirty = false
+	unreadStorageDirty = false
 
 	/**
-	 * Whether the read storage needs to be updated.
+	 * Whether the old comments storage needs to be updated.
 	 *
 	 * @type {boolean}
 	 * @private
 	 */
-	readStorageDirty = false
+	oldStorageDirty = false
 
 	/**
 	 * Set the comment classes.
@@ -171,11 +171,11 @@ export class CommentManager extends EventEmitter {
 			.cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
 			.save()
 
-		this.on('updateSeen', this.saveUnseenStorage)
-		this.on('updateNew', this.saveReadStorage)
+		this.on('updateRead', this.saveUnreadStorage)
+		this.on('updateNew', this.saveOldStorage)
 
 		controller
-			.on('viewportMove', this.registerSeen)
+			.on('viewportMove', this.registerRead)
 			.on('mutate', this.maybeRedrawLayers)
 			.on('resize', this.maybeRedrawLayers)
 			.on('mouseMove', this.maybeHighlightHovered)
@@ -186,7 +186,7 @@ export class CommentManager extends EventEmitter {
 			.on('desktopNotificationClick', () => {
 				this.maybeRedrawLayers(true)
 			})
-		visits.on('process', this.registerSeen).on('process', async () => {
+		visits.on('process', this.registerRead).on('process', async () => {
 			// A workaround to fight the bug in Chromium where comments layers are misplaced after page
 			// load. I couldn't establish the cause of it - comment positions are rechecked on events
 			// and also periodically, and if a comment is displaced, it's layers are redrawn. But then these
@@ -213,7 +213,7 @@ export class CommentManager extends EventEmitter {
 			.on('commentsUpdate', ({ all }) => {
 				this.addNewCommentsNotes(all)
 			})
-		commentFormManager.on('teardown', this.registerSeen)
+		commentFormManager.on('teardown', this.registerRead)
 		Thread.on('init', this.addToggleChildThreadsButtons)
 	}
 
@@ -300,7 +300,7 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Set the `new` flag and {@link Comment#seen} property to comments.
+	 * Set the `new` flag and {@link Comment#read} property to comments.
 	 *
 	 * @param {string[]} currentPageData Visits data for the current page.
 	 * @param {number} currentTime Unix timestamp.
@@ -308,50 +308,50 @@ export class CommentManager extends EventEmitter {
 	 *   as read.
 	 * @returns {boolean} Whether there is a time conflict.
 	 */
-	initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
+	initNewAndRead(currentPageData, currentTime, markAsReadRequested) {
 		let timeConflict = false
 		const isFirstBoot = controller.getBootProcess().isFirstBoot()
-		const unseenComments = controller.getBootProcess().passedData.unseenComments
+		const unreadComments = controller.getBootProcess().passedData.unreadComments
 
 		/** @type {string[] | undefined} */
-		let unseenCommentIds
+		let unreadCommentIds
 		/** @type {string[] | undefined} */
-		let readCommentIds
+		let oldCommentIds
 		if (isFirstBoot) {
 			const articleId = mw.config.get('wgArticleId')
 			if (articleId) {
-				const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
-				unseenCommentIds = unseenStorageItem.get(articleId) || []
+				const unreadStorageItem = new SessionStorageItemWithKeys('unreadComments')
+				unreadCommentIds = unreadStorageItem.get(articleId) || []
 
-				const readStorageItem = new SessionStorageItemWithKeys('readComments')
-				readCommentIds = readStorageItem.get(articleId) || []
+				const oldStorageItem = new SessionStorageItemWithKeys('oldComments')
+				oldCommentIds = oldStorageItem.get(articleId) || []
 			}
 		}
 
 		this.items.forEach((comment) => {
 			/** @type {import('./Comment').default | true | undefined} */
-			let passedUnseenComment
+			let passedUnreadComment
 			if (isFirstBoot) {
-				if (comment.id && unseenCommentIds?.includes(comment.id)) {
-					passedUnseenComment = true
+				if (comment.id && unreadCommentIds?.includes(comment.id)) {
+					passedUnreadComment = true
 				}
 			} else {
-				passedUnseenComment = unseenComments?.find((c) => c.id === comment.id)
+				passedUnreadComment = unreadComments?.find((c) => c.id === comment.id)
 			}
 
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
-			const commentTimeConflict = comment.initNewAndSeen(
+			const commentTimeConflict = comment.initNewAndRead(
 				currentPageData,
 				currentTime,
-				markAsReadRequested ? undefined : passedUnseenComment,
+				markAsReadRequested ? undefined : passedUnreadComment,
 				// Check if comment was marked as read - if so, don't flag it as new
-				Boolean(comment.id && readCommentIds?.includes(comment.id)),
+				Boolean(comment.id && oldCommentIds?.includes(comment.id)),
 			)
 
 			timeConflict ||= commentTimeConflict
 		})
 
-		this.emit('updateSeen')
+		this.emit('updateRead')
 
 		this.configureAndAddLayers((comment) => comment.hasFlag('new'))
 
@@ -475,7 +475,7 @@ export class CommentManager extends EventEmitter {
 	 * _For internal use._ Mark comments that are currently in the viewport as read, and also
 	 * {@link Comment#flash flash} comments that are prescribed to flash.
 	 */
-	registerSeen = () => {
+	registerRead = () => {
 		if (document.hidden) return
 
 		const commentInViewport = this.findOneInViewport()
@@ -484,7 +484,7 @@ export class CommentManager extends EventEmitter {
 		const registerIfInViewport = (/** @type {C} */ comment) => {
 			const isInViewport = comment.isInViewport()
 			if (isInViewport) {
-				comment.registerSeen()
+				comment.registerRead()
 
 				return false
 			} else if (isInViewport === false) {
@@ -499,7 +499,7 @@ export class CommentManager extends EventEmitter {
 		// Forward
 		this.items.slice(commentInViewport.index).some(registerIfInViewport)
 
-		this.emit('updateSeen')
+		this.emit('updateRead')
 	}
 
 	/**
@@ -987,62 +987,62 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Mark the seen storage as needing an update.
+	 * Mark the unread storage as needing an update.
 	 */
-	markSeenStorageDirty() {
-		this.seenStorageDirty = true
+	markUnreadStorageDirty() {
+		this.unreadStorageDirty = true
 	}
 
 	/**
-	 * Mark the read storage as needing an update.
+	 * Mark the old comments storage as needing an update.
 	 */
-	markReadStorageDirty() {
-		this.readStorageDirty = true
+	markOldStorageDirty() {
+		this.oldStorageDirty = true
 	}
 
 	/**
-	 * Save the storage item for unseen comments if it has been marked as dirty.
+	 * Save the storage item for unread comments if it has been marked as dirty.
 	 */
-	saveUnseenStorage = () => {
-		if (!this.seenStorageDirty && !cd.loader.isBooting()) return
+	saveUnreadStorage = () => {
+		if (!this.unreadStorageDirty && !cd.loader.isBooting()) return
 
-		this.seenStorageDirty = false
+		this.unreadStorageDirty = false
 
 		const articleId = mw.config.get('wgArticleId')
 		if (!articleId) return
 
-		const unseenStorageItem = new SessionStorageItemWithKeys('unseenComments')
-		const unseenIds = this.items
-			.filter((comment) => comment.isSeen() === false && comment.id)
+		const unreadStorageItem = new SessionStorageItemWithKeys('unreadComments')
+		const unreadIds = this.items
+			.filter((comment) => comment.isRead() === false && comment.id)
 			.map((comment) => comment.id)
 
-		if (unseenIds.length) {
-			unseenStorageItem.set(articleId, unseenIds).save()
+		if (unreadIds.length) {
+			unreadStorageItem.set(articleId, unreadIds).save()
 		} else {
-			unseenStorageItem.remove(articleId).save()
+			unreadStorageItem.remove(articleId).save()
 		}
 	}
 
 	/**
-	 * Save the read storage if it has been marked as dirty.
+	 * Save the old comments storage if it has been marked as dirty.
 	 */
-	saveReadStorage = () => {
-		if (!this.readStorageDirty && !cd.loader.isBooting()) return
+	saveOldStorage = () => {
+		if (!this.oldStorageDirty && !cd.loader.isBooting()) return
 
-		this.readStorageDirty = false
+		this.oldStorageDirty = false
 
 		const articleId = mw.config.get('wgArticleId')
 		if (!articleId) return
 
-		const readStorageItem = new SessionStorageItemWithKeys('readComments')
-		const readIds = this.items
+		const oldStorageItem = new SessionStorageItemWithKeys('oldComments')
+		const oldIds = this.items
 			.filter((comment) => !comment.hasFlag('new') && comment.id)
 			.map((comment) => comment.id)
 
-		if (readIds.length) {
-			readStorageItem.set(articleId, readIds).save()
+		if (oldIds.length) {
+			oldStorageItem.set(articleId, oldIds).save()
 		} else {
-			readStorageItem.remove(articleId).save()
+			oldStorageItem.remove(articleId).save()
 		}
 	}
 
@@ -1457,7 +1457,7 @@ export class CommentManager extends EventEmitter {
 				// The default controller.handleViewportMove() callback is executed in $#cdScrollTo, but
 				// that happens after a 300ms timeout, so we have a chance to have our callback executed
 				// first.
-				comment.registerSeen(direction, true)
+				comment.registerRead(direction, true)
 			},
 		})
 	}
@@ -1477,12 +1477,12 @@ export class CommentManager extends EventEmitter {
 	}
 
 	/**
-	 * Scroll to the first unseen comment.
+	 * Scroll to the first unread comment.
 	 */
-	goToFirstUnseenComment() {
+	goToFirstUnreadComment() {
 		if (controller.isAutoScrolling()) return
 
-		const candidates = this.query((c) => c.isSeen() === false)
+		const candidates = this.query((c) => c.isRead() === false)
 		const comment = candidates.find((c) => c.isInViewport() === false) || candidates[0]
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		comment?.scrollTo({
@@ -1491,7 +1491,7 @@ export class CommentManager extends EventEmitter {
 				// The default controller.handleViewportMove() callback is executed in $#cdScrollTo, but
 				// that happens after a 300ms timeout, so we have a chance to have our callback executed
 				// first.
-				comment.registerSeen('forward', true)
+				comment.registerRead('forward', true)
 			},
 		})
 	}

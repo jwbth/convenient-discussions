@@ -31,7 +31,7 @@ class NavPanel {
 	 * @property {Button} refreshButton
 	 * @property {Button} previousButton
 	 * @property {Button} nextButton
-	 * @property {Button} firstUnseenButton
+	 * @property {Button} firstUnreadButton
 	 * @property {Button} commentFormButton
 	 * @property {number} cachedCommentCount
 	 * @property {import('./updateChecker').AddedComments['bySection']} cachedCommentsBySection
@@ -81,7 +81,7 @@ class NavPanel {
 
 					// F
 					if (keyCombination(event, 70)) {
-						commentManager.goToFirstUnseenComment()
+						commentManager.goToFirstUnreadComment()
 					}
 
 					// C
@@ -98,7 +98,7 @@ class NavPanel {
 					.on('remove', this.updateCommentFormButton)
 				LiveTimestamp.on('updateImproved', this.updateTimestampsInRefreshButtonTooltip)
 				visits.on('process', this.fill)
-				commentManager.on('updateSeen', this.updateFirstUnseenButton)
+				commentManager.on('updateRead', this.updateFirstUnreadButton)
 				commentManager.on('updateNew', this.updateNew)
 			}
 		} else if (this.isMounted()) {
@@ -157,13 +157,13 @@ class NavPanel {
 				.html(`<path d="M18.5 6.75l-1.5-1.5-7 7-7-7-1.5 1.5 7.75 7.75h1.5l7.75-7.75z" />`),
 		)
 
-		this.state.firstUnseenButton = new Button({
+		this.state.firstUnreadButton = new Button({
 			tagName: 'div',
 			classes: ['cd-navPanel-button'],
 			id: 'cd-navPanel-firstUnseenButton',
 			tooltip: cd.s('navpanel-firstunseen') + cd.mws('word-separator') + cd.mws('parentheses', 'F'),
 			action: () => {
-				commentManager.goToFirstUnseenComment()
+				commentManager.goToFirstUnreadComment()
 			},
 		}).hide()
 
@@ -182,7 +182,7 @@ class NavPanel {
 			this.state.refreshButton.element,
 			this.state.previousButton.element,
 			this.state.nextButton.element,
-			this.state.firstUnseenButton.element,
+			this.state.firstUnreadButton.element,
 			this.state.commentFormButton.element,
 		)
 	}
@@ -223,13 +223,13 @@ class NavPanel {
 		this.updateRefreshButton(0)
 		this.state.previousButton.hide()
 		this.state.nextButton.hide()
-		this.state.firstUnseenButton.hide()
+		this.state.firstUnreadButton.hide()
 		this.state.commentFormButton.hide()
 		clearTimeout(this.utirbtTimeout)
 	}
 
 	/**
-	 * Count the new and unseen comments on the page and update the navigation panel to reflect that.
+	 * Count the new and unread comments on the page and update the navigation panel to reflect that.
 	 *
 	 * @private
 	 */
@@ -240,7 +240,7 @@ class NavPanel {
 			this.updateRefreshButtonTooltip(0)
 			this.state.previousButton.show()
 			this.state.nextButton.show()
-			this.updateFirstUnseenButton()
+			this.updateFirstUnreadButton()
 		}
 	}
 
@@ -390,17 +390,17 @@ class NavPanel {
 
 	/**
 	 * Update the state of the
-	 * {@link module:navPanel.firstUnseenButton "Go to the first unseen comment"} button.
+	 * {@link module:navPanel.firstUnreadButton "Go to the first unread comment"} button.
 	 *
 	 * @private
 	 */
-	updateFirstUnseenButton = () => {
+	updateFirstUnreadButton = () => {
 		if (!this.state) return
 
-		const unseenCommentCount = commentManager.query((c) => c.isSeen() === false).length
-		this.state.firstUnseenButton
-			.toggle(Boolean(unseenCommentCount))
-			.setLabel(String(unseenCommentCount))
+		const unreadCommentCount = commentManager.query((c) => c.isRead() === false).length
+		this.state.firstUnreadButton
+			.toggle(Boolean(unreadCommentCount))
+			.setLabel(String(unreadCommentCount))
 	}
 
 	/**
