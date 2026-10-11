@@ -151,7 +151,10 @@ describe('readStatus.startVisit', () => {
 			'convenientDiscussions-unreadComments',
 			JSON.stringify({ [articleId]: ['a'] }),
 		)
-		sessionStorage.setItem('convenientDiscussions-oldComments', JSON.stringify({ [articleId]: ['b'] }))
+		sessionStorage.setItem(
+			'convenientDiscussions-oldComments',
+			JSON.stringify({ [articleId]: ['b'] }),
+		)
 		const unread = makeComment({ id: 'a', time: now - 5 * hour })
 		const old = makeComment({ id: 'b', time: now - 3 * hour })
 
@@ -162,45 +165,6 @@ describe('readStatus.startVisit', () => {
 
 		expect(statusOf(unread)).toEqual({ new: true, read: false })
 		expect(statusOf(old)).toEqual({ new: false, read: true })
-	})
-
-	test('announces the start of a visit with the previous visit time', () => {
-		/** @type {any[]} */
-		const changes = []
-		const listener = (/** @type {any} */ change) => {
-			changes.push(change)
-		}
-		readStatus.on('newOld', listener)
-
-		startVisit({ visits: [String(now - 3 * hour), String(now - hour)] })
-		startVisit({})
-
-		readStatus.off('newOld', listener)
-		expect(changes).toEqual([
-			{ type: 'visitStart', previousVisitTime: now - hour },
-			{ type: 'visitStart', previousVisitTime: undefined },
-		])
-	})
-
-	test('fires the newCommentsHighlighted hook after announcing the start of a visit', () => {
-		/** @type {string[]} */
-		const calls = []
-		Object.assign(mw, {
-			hook: (/** @type {string} */ name) => ({
-				fire: () => {
-					calls.push(name)
-				},
-			}),
-		})
-		const listener = () => {
-			calls.push('newOld')
-		}
-		readStatus.on('newOld', listener)
-
-		startVisit({ visits: [String(now - hour)] })
-
-		readStatus.off('newOld', listener)
-		expect(calls).toEqual(['newOld', 'convenientDiscussions.newCommentsHighlighted'])
 	})
 
 	test('stores the unread comments in sessionStorage', () => {
@@ -250,6 +214,19 @@ describe('readStatus.startVisit', () => {
 		expect(statusOf(sinceLatest)).toEqual({ new: true, read: false })
 	})
 
+	test('makes a comment new at an earlier visit old when the rules turn false', () => {
+		const comment = makeComment({ id: 'a', time: now - 2 * hour })
+		const visits = startVisit({
+			comments: [comment],
+			visits: [String(now - 3 * hour), String(now - hour)],
+		})
+		expect(statusOf(comment)).toEqual({ new: true, read: true })
+
+		startVisit({ comments: [comment], visits, markAsRead: true })
+
+		expect(statusOf(comment)).toEqual({ new: false, read: true })
+	})
+
 	test('makes no comment new or unread at the first visit to the page', () => {
 		const comment = makeComment({ id: 'a', time: minuteStart })
 
@@ -258,19 +235,134 @@ describe('readStatus.startVisit', () => {
 		expect(comment.isRead()).not.toBe(false)
 	})
 
-	test('shifts the visit by 60 seconds when a comment is dated in its minute', () => {
-		expect(
-			startVisit({
-				comments: [makeComment({ id: 'a', time: minuteStart })],
-				visits: [String(now - hour)],
-			}),
-		).toEqual([String(now - hour), String(now + 60)])
+	test('makes a comment new if dated less than 60 seconds before the earliest visit', () => {
+		const time = minuteStart - hour
+		const atBoundary = makeComment({ id: 'a', time })
+		const insideBoundary = makeComment({ id: 'a', time })
 
-		expect(
-			startVisit({
-				comments: [makeComment({ id: 'a', time: minuteStart - 60 })],
-				visits: [String(now - hour)],
+		startVisit({
+			comments: [atBoundary],
+			visits: [String(time + 60), String(now - hour / 2)],
+		})
+		startVisit({
+			comments: [insideBoundary],
+			visits: [String(time + 59), String(now - hour / 2)],
+		})
+
+		expect(atBoundary.hasFlag('new')).toBe(false)
+		expect(insideBoundary.hasFlag('new')).toBe(true)
+	})
+
+	test('makes a comment unread if dated less than 60 seconds before the latest visit', () => {
+		const time = minuteStart - hour
+		const atBoundary = makeComment({ id: 'a', time })
+		const insideBoundary = makeComment({ id: 'a', time })
+
+		startVisit({
+			comments: [atBoundary],
+			visits: [String(time - hour), String(time + 60)],
+		})
+		startVisit({
+			comments: [insideBoundary],
+			visits: [String(time - hour), String(time + 59)],
+		})
+
+		expect(atBoundary.isRead()).toBe(true)
+		expect(insideBoundary.isRead()).toBe(false)
+	})
+
+	test('shifts the visit by 60 seconds when a comment is dated in its minute', () => {
+		/**
+		 * @param {number} time
+		 */
+		const visitWithCommentAt = (time) =>
+			startVisit({ comments: [makeComment({ id: 'a', time })], visits: [String(now - hour)] }).at(
+				-1,
+			)
+
+		expect(visitWithCommentAt(now)).toBe(String(now + 60))
+		expect(visitWithCommentAt(now - 59)).toBe(String(now + 60))
+		expect(visitWithCommentAt(now - 60)).toBe(String(now))
+		expect(visitWithCommentAt(now + 1)).toBe(String(now))
+	})
+
+	test('makes a comment dated in the minute of a visit read at the next visit', () => {
+		const time = minuteStart
+		const visits = startVisit({
+			comments: [makeComment({ id: 'a', time })],
+			visits: [String(now - hour)],
+		})
+		const atNextVisit = makeComment({ id: 'a', time })
+
+		// A visit in another tab session
+		sessionStorage.clear()
+		startVisit({ comments: [atNextVisit], visits, currentTime: now + hour })
+
+		expect(statusOf(atNextVisit)).toEqual({ new: true, read: true })
+	})
+})
+
+describe('readStatus.announceVisitStart', () => {
+	test('announces the started visit with the comments read status in place', () => {
+		const comment = makeComment({ id: 'a', time: now - hour })
+		/** @type {any[]} */
+		const deliveries = []
+		const listener = (/** @type {any} */ change) => {
+			deliveries.push({ change, status: statusOf(comment) })
+		}
+		readStatus.on('newOld', listener)
+
+		startVisit({ comments: [comment], visits: [String(now - 3 * hour), String(now - 2 * hour)] })
+		const deliveriesBeforeAnnouncing = [...deliveries]
+		readStatus.announceVisitStart()
+
+		readStatus.off('newOld', listener)
+		expect(deliveriesBeforeAnnouncing).toEqual([])
+		expect(deliveries).toEqual([
+			{
+				change: { type: 'visitStart', previousVisitTime: now - 2 * hour },
+				status: { new: true, read: false },
+			},
+		])
+	})
+
+	test('announces no previous visit time at the first visit to the page', () => {
+		/** @type {any[]} */
+		const changes = []
+		const listener = (/** @type {any} */ change) => {
+			changes.push(change)
+		}
+		readStatus.on('newOld', listener)
+
+		startVisit({ comments: [makeComment({ id: 'a', time: now - hour })] })
+		readStatus.announceVisitStart()
+
+		readStatus.off('newOld', listener)
+		expect(changes).toEqual([{ type: 'visitStart', previousVisitTime: undefined }])
+	})
+
+	test('fires the newCommentsHighlighted hook after the new/old event', () => {
+		/** @type {string[]} */
+		const calls = []
+		Object.assign(mw, {
+			hook: (/** @type {string} */ name) => ({
+				fire: () => {
+					calls.push(name)
+				},
 			}),
-		).toEqual([String(now - hour), String(now)])
+		})
+		const listener = () => {
+			calls.push('newOld')
+		}
+		readStatus.on('newOld', listener)
+
+		startVisit({
+			comments: [makeComment({ id: 'a', time: now - hour })],
+			visits: [String(now - 2 * hour)],
+		})
+		readStatus.announceVisitStart()
+
+		readStatus.off('newOld', listener)
+		expect(calls).toEqual(['newOld', 'convenientDiscussions.newCommentsHighlighted'])
 	})
 })

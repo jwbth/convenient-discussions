@@ -901,8 +901,9 @@ class BootProcess {
 	}
 
 	/**
-	 * Load the visits to the page, start a visit, and save the visits. The comments must be processed
-	 * by the time the visits load, which they are, as processing them is synchronous.
+	 * Load the visits to the page, start a visit, save the visits, and announce the visit. The comments
+	 * must be processed by the time the visits load, which they are, as processing them is
+	 * synchronous.
 	 *
 	 * @private
 	 */
@@ -927,6 +928,7 @@ class BootProcess {
 					: (this.passedData.unreadComments || []).map((comment) => comment.id).filter(defined),
 			}),
 		)
+		readStatus.announceVisitStart()
 	}
 
 	/**

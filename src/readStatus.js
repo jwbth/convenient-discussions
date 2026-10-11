@@ -56,30 +56,26 @@ const getUnixTime = (comment) => comment.date && Math.floor(comment.date.getTime
  */
 class ReadStatus extends EventEmitter {
 	/**
-	 * Start a visit: apply the read status rules to the comments and announce it.
+	 * Unix time in seconds of the latest remembered visit before the started one.
+	 *
+	 * @type {number | undefined}
+	 * @private
+	 */
+	previousVisitTime
+
+	/**
+	 * Start a visit: apply the read status rules to the comments. Call
+	 * {@link ReadStatus#announceVisitStart} once the returned visits are saved.
 	 *
 	 * @param {VisitStartOptions} options
 	 * @returns {string[]} Visits to save.
-	 * @fires newCommentsHighlighted
 	 */
 	startVisit({ comments, visits: rememberedVisits, currentTime, markAsRead, carriedOverUnreadIds }) {
 		const visits = this.forgetVisits(rememberedVisits, currentTime, markAsRead)
 		const timeConflict =
 			visits.length > 0 &&
 			this.applyRules(comments, visits, currentTime, markAsRead, carriedOverUnreadIds)
-
-		this.emit('newOld', {
-			type: 'visitStart',
-			previousVisitTime: visits.length ? Number(visits.at(-1)) : undefined,
-		})
-
-		/**
-		 * New comments have been highlighted.
-		 *
-		 * @event newCommentsHighlighted
-		 * @param {object} cd {@link convenientDiscussions} object.
-		 */
-		mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd)
+		this.previousVisitTime = visits.length ? Number(visits.at(-1)) : undefined
 
 		// (Nearly) eliminate the possibility that we will wrongfully mark a read comment as unread/new
 		// at the next page load by adding a minute to the visit time if there is at least one comment
@@ -95,6 +91,23 @@ class ReadStatus extends EventEmitter {
 		// We could decide that not marking unread comments as read is an absolute priority and remove
 		// the time conflict stuff.
 		return [...visits, String(currentTime + (timeConflict ? 60 : 0))]
+	}
+
+	/**
+	 * Announce the visit started with {@link ReadStatus#startVisit}.
+	 *
+	 * @fires newCommentsHighlighted
+	 */
+	announceVisitStart() {
+		this.emit('newOld', { type: 'visitStart', previousVisitTime: this.previousVisitTime })
+
+		/**
+		 * New comments have been highlighted.
+		 *
+		 * @event newCommentsHighlighted
+		 * @param {object} cd {@link convenientDiscussions} object.
+		 */
+		mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd)
 	}
 
 	/**
@@ -132,6 +145,8 @@ class ReadStatus extends EventEmitter {
 			// earliest visit if it was changed; it is new nonetheless.
 			if (!restoredOld && (commentTime + 60 > Number(visits[0]) || restoredUnread)) {
 				comment.addFlag('new', false)
+			} else {
+				comment.removeFlag('new', false)
 			}
 			comment.setRead(
 				(commentTime + 60 <= Number(visits.at(-1)) || comment.hasFlag('own')) && !restoredUnread,
