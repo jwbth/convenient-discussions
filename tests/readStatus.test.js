@@ -224,6 +224,22 @@ describe('readStatus.startVisit', () => {
 		expect(comment.isRead()).not.toBe(false)
 	})
 
+	test('restores unread comments from sessionStorage at the first visit to the page', () => {
+		sessionStorage.setItem(
+			'convenientDiscussions-unreadComments',
+			JSON.stringify({ [articleId]: ['a'] }),
+		)
+		const unread = makeComment({ id: 'a', time: now - hour })
+		const other = makeComment({ id: 'b', time: now - hour })
+
+		startVisit({ comments: [unread, other] })
+
+		expect(statusOf(unread)).toEqual({ new: true, read: false })
+		expect(other.hasFlag('new')).toBe(false)
+		expect(other.isRead()).not.toBe(false)
+		expect(readStatus.getUnreadAtLoad()).toEqual([unread])
+	})
+
 	test('makes a comment new if dated less than 60 seconds before the earliest visit', () => {
 		const time = minuteStart - hour
 		const atBoundary = makeComment({ id: 'a', time })

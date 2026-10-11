@@ -106,9 +106,7 @@ class ReadStatus extends EventEmitter {
 		this.comments = comments
 		this.readBeforeChange = new Map()
 		const visits = this.forgetVisits(rememberedVisits, currentTime, markAsRead)
-		const timeConflict =
-			visits.length > 0 &&
-			this.applyRules(comments, visits, currentTime, markAsRead)
+		const timeConflict = this.applyRules(comments, visits, currentTime, markAsRead)
 		this.previousVisitTime = visits.length ? Number(visits.at(-1)) : undefined
 		this.unreadAtLoad = new Set(comments.filter((comment) => comment.isRead() === false))
 
@@ -149,17 +147,28 @@ class ReadStatus extends EventEmitter {
 	 * Set the comments' read status given the visits.
 	 *
 	 * @param {ReadStatusComment[]} comments
-	 * @param {string[]} visits At least one.
+	 * @param {string[]} visits None at the first visit to the page, where only the comments restored
+	 *   as unread get a read status.
 	 * @param {number} currentTime
 	 * @param {boolean} markAsRead
-	 * @returns {boolean} Whether a comment is dated in the minute of the current time (a time
-	 *   conflict).
+	 * @returns {boolean} Whether there are visits and a comment is dated in the minute of the current
+	 *   time (a time conflict).
 	 * @private
 	 */
 	applyRules(comments, visits, currentTime, markAsRead) {
 		const unreadIds = markAsRead ? [] : this.loadIds('unreadComments')
 		const oldIds = this.loadIds('oldComments')
 		comments.forEach((comment) => {
+			const restoredUnread = Boolean(comment.id && unreadIds.includes(comment.id))
+			if (!visits.length) {
+				if (restoredUnread) {
+					comment.addFlag('new', false)
+					comment.setRead(false)
+				}
+
+				return
+			}
+
 			const commentTime = getUnixTime(comment)
 
 			// Let's take 3 minutes as a tolerable time discrepancy.
@@ -170,7 +179,6 @@ class ReadStatus extends EventEmitter {
 				return
 			}
 
-			const restoredUnread = Boolean(comment.id && unreadIds.includes(comment.id))
 			const restoredOld = Boolean(comment.id && oldIds.includes(comment.id))
 
 			// Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
@@ -188,7 +196,7 @@ class ReadStatus extends EventEmitter {
 		})
 		this.saveUnread()
 
-		return comments.some((comment) => {
+		return visits.length > 0 && comments.some((comment) => {
 			const commentTime = getUnixTime(comment)
 
 			return (
