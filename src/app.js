@@ -15,6 +15,7 @@ import controller from './controller'
 import { initGlobals, initTimestampTools } from './init'
 import cd from './loader/cd'
 import pageRegistry from './pageRegistry'
+import readStatus from './readStatus'
 import sectionManager from './sectionManager'
 import settings from './settings'
 import { parseWikiUrl } from './shared/utils-general'
@@ -44,7 +45,16 @@ cd.commentForms = commentFormManager.getAll()
 
 cd.tests.controller = controller
 cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker)
-cd.tests.visits = visits
+/**
+ * Set the last visit to a date or a number of days before the current date, and forget the read
+ * status stored in the tab, so that the next boot or reload highlights the comments since then.
+ *
+ * @param {Date | number} [dateOrDays]
+ */
+cd.tests.rollBack = (dateOrDays) => {
+	visits.rollBack(dateOrDays)
+	readStatus.forgetStored()
+}
 cd.tests.showSettingsDialog = settings.showDialog.bind(cd.settings)
 cd.tests.parseWikiUrl = parseWikiUrl
 

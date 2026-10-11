@@ -191,7 +191,7 @@ class ReadStatus extends EventEmitter {
 				comment.removeFlag('new', false)
 			}
 			// A comment restored as old was made read along with old, even if it postdates the latest
-			// visit, e.g. after `cd.tests.visits.rollBack()`.
+			// visit, e.g. when saving the visit failed.
 			comment.setRead(
 				(commentTime + 60 <= Number(visits.at(-1)) || comment.hasFlag('own') || restoredOld) &&
 					!restoredUnread,
@@ -351,6 +351,15 @@ class ReadStatus extends EventEmitter {
 			'oldComments',
 			this.comments.filter((comment) => !comment.hasFlag('new')),
 		)
+	}
+
+	/**
+	 * Forget the page's unread and old comments stored in sessionStorage, leaving the next visit to
+	 * the rules alone.
+	 */
+	forgetStored() {
+		this.saveIds('unreadComments', [])
+		this.saveIds('oldComments', [])
 	}
 
 	/**

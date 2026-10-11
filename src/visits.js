@@ -141,7 +141,7 @@ class Visits {
 
 	/**
 	 * For tests: set the last visit to a date or a number of days before the current date. Use via
-	 * `cd.tests.visits.rollBack()`, then refresh the page.
+	 * `cd.tests.rollBack()`, then refresh the page.
 	 *
 	 * @param {Date|number} [dateOrDays]
 	 */

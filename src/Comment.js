@@ -1856,7 +1856,7 @@ class Comment extends mixIntoClass(
 
 				// To test hiding of halves of a diff, go to
 				// https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Alex_NB_IT, run
-				// cd.tests.visits.rollBack(new Date(1776447136102)) and then open the diff of the comment
+				// cd.tests.rollBack(new Date(1776447136102)) and then open the diff of the comment
 				// "этот год у нас насыщенный получается по заявкам)". page.
 				if (sideRelevant[0] || sideRelevant[1]) {
 					const clearSide =

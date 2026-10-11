@@ -417,6 +417,32 @@ const startVisitWithTwoUnread = () => {
 	return [a, b]
 }
 
+describe('readStatus.forgetStored', () => {
+	test('leaves the next visit to the rules alone', () => {
+		const visits = [String(now - 4 * hour), String(now - 2 * hour)]
+		const madeOld = makeComment({ id: 'a', time: now - hour })
+		const unread = makeComment({ id: 'b', time: now - 5 * hour })
+		sessionStorage.setItem(
+			'convenientDiscussions-unreadComments',
+			JSON.stringify({ [articleId]: ['b'] }),
+		)
+		startVisit({ comments: [madeOld, unread], visits })
+		readStatus.markAsRead([madeOld])
+
+		readStatus.forgetStored()
+		const rendered = [
+			makeComment({ id: 'a', time: now - hour }),
+			makeComment({ id: 'b', time: now - 5 * hour }),
+		]
+		startVisit({ comments: rendered, visits })
+
+		expect(rendered.map(statusOf)).toEqual([
+			{ new: true, read: false },
+			{ new: false, read: true },
+		])
+	})
+})
+
 describe('readStatus.registerInView', () => {
 	test('makes an unread comment read, emitting only the read/unread event', () => {
 		const [a] = startVisitWithTwoUnread()
@@ -693,7 +719,7 @@ describe('read status across a reboot and a reload', () => {
 			const rendered = makeComment({ id: 'a', time: now - hour })
 			const nextBoot = await bootAgain(kind)
 
-			// The visits as they were before this visit, as after `cd.tests.visits.rollBack()`
+			// The visits as they were before this visit, as when saving it failed
 			nextBoot.startVisit({
 				comments: [rendered],
 				visits: rememberedVisits,
