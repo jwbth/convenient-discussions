@@ -143,14 +143,7 @@ export default class TocItem {
 	}
 
 	/**
-	 * Remove the new comment list from the TOC item.
-	 */
-	removeNewCommentList() {
-		this.$link.next('.cd-toc-newCommentList').remove()
-	}
-
-	/**
-	 * Update the comment count text in the TOC item, removing the "new" indicator.
+	 * Update the comment count text in the TOC item, with the count of comments unread at load.
 	 *
 	 * @param {import('./Section').default} section
 	 * @param {typeof import('./sectionManager').default} sectionManager
@@ -161,7 +154,7 @@ export default class TocItem {
 
 		const count = String(section.comments.length)
 		const isFirstWithComments = sectionManager.getAll().find((s) => s.comments.length) === section
-		const unreadCount = section.unreadComments?.length
+		const unreadCount = section.getUnreadAtLoad().length
 
 		if (unreadCount) {
 			$bdi.text(

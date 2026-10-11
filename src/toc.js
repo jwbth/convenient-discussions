@@ -39,6 +39,13 @@ class Toc {
 	/** @type {Promise<void> | undefined} */
 	visitStartPromise
 
+	/**
+	 * Whether the TOC lists the comments unread at load, decided at the start of a visit.
+	 *
+	 * @type {boolean}
+	 */
+	listsUnreadAtLoad = false
+
 	/** @type {Promise<void> | undefined} */
 	updateTocSectionsPromise
 
@@ -56,20 +63,21 @@ class Toc {
 		})
 
 		readStatus.on('newOld', (change) => {
-			if (change.type !== 'visitStart') return
+			if (change.type === 'markAsRead') {
+				this.updateUnreadAtLoad()
+
+				return
+			}
 
 			// If all the comments on the page are unread, don't add them to the TOC - the user would
 			// definitely prefer to read the names of the topics easily. (But still consider them new -
 			// otherwise the user can be confused, especially if there are few topics on an unpopular
 			// page.)
-			if (
-				commentManager.query((c) => c.isRead() === false || !c.date).length !==
+			this.listsUnreadAtLoad =
+				commentManager.query((c) => readStatus.isUnreadAtLoad(c) || !c.date).length !==
 				commentManager.getCount()
-			) {
-				this.addNewComments(
-					Comment.groupBySection(commentManager.query((c) => c.isRead() === false)),
-					controller.getBootProcess(),
-				)
+			if (this.listsUnreadAtLoad) {
+				this.addNewComments(this.groupUnreadAtLoadBySection(), controller.getBootProcess())
 			}
 			this.addCommentCount()
 		})
@@ -202,7 +210,7 @@ class Toc {
 			span.className = 'cd-toc-commentCount'
 
 			const bdi = document.createElement('bdi')
-			const unreadCount = section.unreadComments?.length
+			const unreadCount = section.getUnreadAtLoad().length
 			if (unreadCount) {
 				bdi.textContent = cd.s(
 					usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
@@ -224,6 +232,39 @@ class Toc {
 		if (cd.g.isDtVisualEnhancementsEnabled) {
 			this.$element.find('.ext-discussiontools-init-sidebar-meta').remove()
 		}
+	}
+
+	/**
+	 * @returns {import('./Comment').CommentsBySection}
+	 * @private
+	 */
+	groupUnreadAtLoadBySection() {
+		return Comment.groupBySection(commentManager.query((c) => readStatus.isUnreadAtLoad(c)))
+	}
+
+	/**
+	 * Refresh the comment counts and the lists of comments unread at load after comments were made
+	 * old.
+	 *
+	 * @private
+	 */
+	updateUnreadAtLoad() {
+		if (!this.isPresent()) return
+
+		sectionManager.getAll().forEach((section) => {
+			section.getTocItem()?.updateCommentCount(section, sectionManager)
+		})
+
+		if (!cd.settings.get('modifyToc')) return
+
+		this.$element.find('.cd-toc-newCommentList').remove()
+		if (!this.listsUnreadAtLoad) return
+
+		this.groupUnreadAtLoadBySection().forEach((comments, section) => {
+			if (!section) return
+
+			this.addCommentList(comments, this.getTargetElementForSection(section))
+		})
 	}
 
 	/**

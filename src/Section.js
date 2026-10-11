@@ -1443,39 +1443,46 @@ class Section extends SectionSkeleton {
 
 		event.preventDefault()
 
-		// If all new comments are also unread, flash them as before rather than highlighting as linked
-		// comments, since they are the same set.
+		// If all new comments are also unread at load, flash them as before rather than highlighting as
+		// linked comments, since they are the same set.
+		const unreadAtLoad = this.getUnreadAtLoad()
 		const newComments = this.comments.filter((comment) => comment.hasFlag('new'))
-		if (newComments.length === this.unreadComments?.length) {
-			Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.unreadComments))
+		if (newComments.length === unreadAtLoad.length) {
+			Comment.scrollToFirstFlashAll(unreadAtLoad)
 
 			return
 		}
 
-		Comment.markAsLinked(/** @type {Comment[]} */ (this.unreadComments), true, false)
+		Comment.markAsLinked(unreadAtLoad, true, false)
 	}
 
 	/**
-	 * _For internal use._ Update the data on comments unread at load (worded as "new" in the UI) for the section
-	 * and add their count to the metadata element.
+	 * Get the comments in the section, including subsections, that were unread at load.
+	 *
+	 * @returns {Comment[]}
 	 */
-	updateUnreadCommentsData() {
-		/**
-		 * List of comments in the section that were unread at load.
-		 *
-		 * @type {import('./Comment').default[] | undefined}
-		 */
-		this.unreadComments = this.comments.filter((comment) => comment.isRead() === false)
+	getUnreadAtLoad() {
+		return this.comments.filter((comment) => readStatus.isUnreadAtLoad(comment))
+	}
 
+	/**
+	 * _For internal use._ Show the count of comments unread at load (worded as "new" in the UI) in
+	 * the metadata element, replacing the shown one.
+	 */
+	updateUnreadAtLoadCount() {
+		this.unreadAtLoadCountWrapper?.remove()
+		this.unreadAtLoadCountWrapper = undefined
+
+		const unreadAtLoad = this.getUnreadAtLoad()
 		if (
 			!this.isTopic() ||
-			!this.unreadComments.length ||
-			this.unreadComments.length === this.comments.length
+			!unreadAtLoad.length ||
+			unreadAtLoad.length === this.comments.length
 		) {
 			return
 		}
 
-		const oldestUnreadComment = Comment.getOldest(this.unreadComments, true)
+		const oldestUnreadComment = Comment.getOldest(unreadAtLoad, true)
 
 		let href
 		if (oldestUnreadComment?.dtId) {
@@ -1491,7 +1498,7 @@ class Section extends SectionSkeleton {
 		const unreadLink = document.createElement('a')
 		unreadLink.textContent = cd.s(
 			'section-metadata-newcommentcount',
-			String(this.unreadComments.length),
+			String(unreadAtLoad.length),
 		)
 		unreadLink.href = href
 		unreadLink.className = 'cd-clickHandled'
@@ -1507,8 +1514,12 @@ class Section extends SectionSkeleton {
 			/** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null,
 		)
 
-		this.unreadCommentCountWrapper = unreadCommentCountWrapper
-		this.$unreadCommentCountWrapper = $(unreadCommentCountWrapper)
+		/**
+		 * Section bar item with the count of comments unread at load.
+		 *
+		 * @type {HTMLElement | undefined}
+		 */
+		this.unreadAtLoadCountWrapper = unreadCommentCountWrapper
 	}
 
 	/**
@@ -1557,27 +1568,6 @@ class Section extends SectionSkeleton {
 	 */
 	markAsRead() {
 		readStatus.markAsRead(this.comments.filter((comment) => comment.hasFlag('new')))
-
-		const sections = [this, ...this.getChildren(true)]
-		sections.forEach((section) => {
-			section.$unreadCommentCountWrapper?.remove()
-			section.unreadComments = []
-
-			const tocItem = section.getTocItem()
-			if (tocItem) {
-				tocItem.removeNewCommentList()
-				tocItem.updateCommentCount(section, this.manager)
-			}
-		})
-
-		for (let parent = this.getParent(); parent; parent = parent.getParent()) {
-			parent.$unreadCommentCountWrapper?.remove()
-			parent.updateUnreadCommentsData()
-			const tocItem = parent.getTocItem()
-			if (tocItem) {
-				tocItem.updateCommentCount(parent, this.manager)
-			}
-		}
 	}
 
 	/**

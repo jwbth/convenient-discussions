@@ -81,6 +81,14 @@ class ReadStatus extends EventEmitter {
 	comments = []
 
 	/**
+	 * Comments unread at the start of the visit and not made old since.
+	 *
+	 * @type {Set<ReadStatusComment>}
+	 * @private
+	 */
+	unreadAtLoad = new Set()
+
+	/**
 	 * Whether each comment marked as changed was read before its first change.
 	 *
 	 * @type {Map<ReadStatusComment, boolean | undefined>}
@@ -103,6 +111,7 @@ class ReadStatus extends EventEmitter {
 			visits.length > 0 &&
 			this.applyRules(comments, visits, currentTime, markAsRead, carriedOverUnreadIds)
 		this.previousVisitTime = visits.length ? Number(visits.at(-1)) : undefined
+		this.unreadAtLoad = new Set(comments.filter((comment) => comment.isRead() === false))
 
 		// (Nearly) eliminate the possibility that we will wrongfully mark a read comment as unread/new
 		// at the next page load by adding a minute to the visit time if there is at least one comment
@@ -228,9 +237,29 @@ class ReadStatus extends EventEmitter {
 		this.setRead(comments, true)
 		comments.forEach((comment) => {
 			comment.removeFlag('new')
+			this.unreadAtLoad.delete(comment)
 		})
 		this.saveOld()
 		this.emit('newOld', { type: 'markAsRead', comments })
+	}
+
+	/**
+	 * Get the comments unread at the start of the visit and not made old since, in page order.
+	 *
+	 * @returns {ReadStatusComment[]}
+	 */
+	getUnreadAtLoad() {
+		return [...this.unreadAtLoad]
+	}
+
+	/**
+	 * Check whether a comment was unread at the start of the visit and hasn't been made old since.
+	 *
+	 * @param {ReadStatusComment} comment
+	 * @returns {boolean}
+	 */
+	isUnreadAtLoad(comment) {
+		return this.unreadAtLoad.has(comment)
 	}
 
 	/**

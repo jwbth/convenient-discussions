@@ -422,14 +422,6 @@ class BootProcess {
 		if (this.firstBoot) {
 			// The order of the subsequent calls matters because the modules depend on others in a certain
 			// way.
-
-			// Caution: Fragile code here - sectionManager.init() is placed above toc.init() and
-			// commentManager.init(), to add handlers of the read status module's events quicker than
-			// `toc` and `commentManager` do for theirs:
-			// 1. sectionManager.updateUnreadCommentsData() sets Section#unreadComments that is later
-			//    used in toc.addCommentCount().
-			// 2. sectionManager.updateUnreadCommentsData() must set Section#unreadComments before
-			//    commentManager.registerRead() registers them as read.
 			sectionManager.init(this.subscriptions)
 
 			updateChecker.init(controller.getWorker())

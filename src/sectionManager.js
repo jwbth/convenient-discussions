@@ -57,13 +57,12 @@ export class SectionManager {
 		controller.on('viewportMove', this.maybeUpdateVisibility)
 		subscriptions.on('process', this.addSubscribeButtons)
 		readStatus.on('newOld', (change) => {
-			if (change.type === 'visitStart') {
-				this.updateUnreadCommentsData()
-			} else {
-				this.items.forEach((section) => {
+			this.items.forEach((section) => {
+				section.updateUnreadAtLoadCount()
+				if (change.type === 'markAsRead') {
 					section.updateMarkAsReadItem()
-				})
-			}
+				}
+			})
 		})
 	}
 
@@ -302,15 +301,6 @@ export class SectionManager {
 	addMetadataAndActions() {
 		this.items.forEach((section) => {
 			section.addMetadataAndActions()
-		})
-	}
-
-	/**
-	 * _For internal use._ Update the unread comments data for sections and render the updates.
-	 */
-	updateUnreadCommentsData = () => {
-		this.items.forEach((section) => {
-			section.updateUnreadCommentsData()
 		})
 	}
 

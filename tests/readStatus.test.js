@@ -566,3 +566,50 @@ describe('readStatus.markAsChanged and readStatus.unmarkAsChanged', () => {
 		expect(comment.isRead()).toBe(true)
 	})
 })
+
+describe('readStatus.getUnreadAtLoad', () => {
+	test('lists the comments unread at the start of the visit', () => {
+		const read = makeComment({ id: 'a', time: now - 3 * hour })
+		const unread = makeComment({ id: 'b', time: now - hour })
+		const own = makeComment({ id: 'c', time: now - hour, own: true })
+
+		startVisit({ comments: [read, unread, own], visits: [String(now - 2 * hour)] })
+
+		expect(readStatus.getUnreadAtLoad()).toEqual([unread])
+	})
+
+	test('ignores comments read or made unread after the start of the visit', () => {
+		settings.countEditsAsNewComments = true
+		const a = makeComment({ id: 'a', time: now - hour })
+		const b = makeComment({ id: 'b', time: now - hour })
+		const read = makeComment({ id: 'c', time: now - 3 * hour })
+		startVisit({ comments: [a, b, read], visits: [String(now - 2 * hour)] })
+
+		readStatus.registerInView(a)
+		readStatus.markThreadAsRead([b])
+		readStatus.markAsChanged(read)
+
+		expect(readStatus.getUnreadAtLoad()).toEqual([a, b])
+	})
+
+	test('drops the comments made old, keeping the rest of a parent section', () => {
+		const parentOwn = makeComment({ id: 'p1', time: now - hour })
+		const parentScrolledPast = makeComment({ id: 'p2', time: now - hour })
+		const child = makeComment({ id: 'c', time: now - hour })
+		const grandchild = makeComment({ id: 'g', time: now - hour })
+		const parentSection = [parentOwn, parentScrolledPast, child, grandchild]
+		const childSection = [child, grandchild]
+		startVisit({ comments: parentSection, visits: [String(now - 2 * hour)] })
+		readStatus.registerInView(parentScrolledPast)
+
+		// A section's "Mark as read" covers its subsections' comments.
+		readStatus.markAsRead(childSection)
+
+		expect(readStatus.getUnreadAtLoad()).toEqual([parentOwn, parentScrolledPast])
+		expect(parentSection.filter((comment) => readStatus.isUnreadAtLoad(comment))).toEqual([
+			parentOwn,
+			parentScrolledPast,
+		])
+		expect(childSection.filter((comment) => readStatus.isUnreadAtLoad(comment))).toEqual([])
+	})
+})
