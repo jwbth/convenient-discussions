@@ -2,6 +2,8 @@ import { describe, test, expect } from 'vitest'
 
 import * as mock_src_CommentFormInputTransformer from '../src/CommentFormInputTransformer'
 import * as mock_src_shared_cd from '../src/shared/cd'
+
+import { makeCommentFormValues } from './utils-commentFormValues'
 // TODO: use some interfaces for mocks and real objects alike?
 
 window.mw = {
@@ -63,20 +65,10 @@ Object.assign(cd, {
 function testWithData({ label, code, expected, form, action = 'submit', config }) {
 	test(label, () => {
 		const { target, isNewSectionApi = false, ...partialValues } = form
-		/** @type {import('../src/CommentForm').CommentFormValues} */
-		const values = {
-			mode: 'reply',
+		const values = makeCommentFormValues(partialValues.mode || 'reply', {
 			comment: code,
-			headline: undefined,
-			omitSignature: false,
-			delete: false,
-			newTopicOnTop: false,
-			containerListType: undefined,
-			commentTemplate: undefined,
-			actualCommentLevel: undefined,
-			commentForm: /** @type {any} */ ({}),
 			...partialValues,
-		}
+		})
 		Object.assign(target, {
 			TYPE: ['addSection', 'addSubsection'].includes(values.mode)
 				? 'section'

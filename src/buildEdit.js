@@ -103,7 +103,7 @@ function addAnchorsToComments(originalContextCode, commentIds) {
  * @returns {Promise<import('./loadContextCode').LoadContextCodeResult<import('./CommentForm').Source>>}
  * @throws {CdError|Error}
  */
-async function loadTarget(mode, target) {
+export async function loadTarget(mode, target) {
 	if (mode === 'addSection') {
 		const page = /** @type {import('./CurrentPage').default} */ (target)
 		await page.loadCode(undefined, !page.exists())
@@ -119,7 +119,7 @@ async function loadTarget(mode, target) {
 /**
  * Build a comment form's edit: load the target's context code, locate the target, build the
  * comment code, splice it, and add anchors to linked comments. Loads fresh context code on every
- * call.
+ * call, except for the new-section API, which needs no context code.
  *
  * @template {import('./CommentForm').CommentFormMode} Mode
  * @param {import('./CommentForm').CommentFormValues<Mode>} values

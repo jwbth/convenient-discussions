@@ -9,6 +9,7 @@ import commentManager from '../src/commentManager'
 import cd from '../src/loader/cd'
 import userRegistry from '../src/userRegistry'
 
+import { makeCommentFormValues } from './utils-commentFormValues'
 import { rejection } from './utils-rejection'
 import { initCommonsGlobals } from './utils-wikiGlobals'
 
@@ -192,33 +193,11 @@ function makePage({
 	return { page, topic, other, alice, bob, carol }
 }
 
-/**
- * @template {import('../src/CommentForm').CommentFormMode} Mode
- * @param {Mode} mode
- * @param {Partial<import('../src/CommentForm').CommentFormValues<Mode>>} [values]
- * @returns {import('../src/CommentForm').CommentFormValues<Mode>}
- */
-function makeValues(mode, values = {}) {
-	return {
-		mode,
-		comment: '',
-		headline: undefined,
-		omitSignature: false,
-		delete: false,
-		newTopicOnTop: false,
-		containerListType: undefined,
-		commentTemplate: undefined,
-		actualCommentLevel: undefined,
-		commentForm: /** @type {any} */ ({}),
-		...values,
-	}
-}
-
 describe('buildEdit', () => {
 	test('replies to a comment in its section code', async () => {
 		const { bob } = makePage()
 
-		expect(await buildEdit(makeValues('reply', { comment: 'Thanks.' }), bob, 'submit')).toEqual({
+		expect(await buildEdit(makeCommentFormValues('reply', { comment: 'Thanks.' }), bob, 'submit')).toEqual({
 			api: 'edit',
 			params: {
 				text: topicCode + ':: Thanks. ~~~~\n',
@@ -235,7 +214,7 @@ describe('buildEdit', () => {
 	test('replies to a comment in the page code when the section has no live section number', async () => {
 		const { bob } = makePage({ hasLiveSectionNumber: false })
 
-		expect(await buildEdit(makeValues('reply', { comment: 'Thanks.' }), bob, 'submit')).toEqual({
+		expect(await buildEdit(makeCommentFormValues('reply', { comment: 'Thanks.' }), bob, 'submit')).toEqual({
 			api: 'edit',
 			params: {
 				text: 'Intro.\n\n' + topicCode + ':: Thanks. ~~~~\n\n' + otherCode,
@@ -252,7 +231,7 @@ describe('buildEdit', () => {
 		const { topic } = makePage()
 
 		expect(
-			await buildEdit(makeValues('replyInSection', { comment: 'Thanks.' }), topic, 'submit'),
+			await buildEdit(makeCommentFormValues('replyInSection', { comment: 'Thanks.' }), topic, 'submit'),
 		).toEqual({
 			api: 'edit',
 			params: {
@@ -270,7 +249,7 @@ describe('buildEdit', () => {
 	test('edits a comment', async () => {
 		const { bob } = makePage()
 
-		const edit = await buildEdit(makeValues('edit', { comment: 'Edited.' }), bob, 'submit')
+		const edit = await buildEdit(makeCommentFormValues('edit', { comment: 'Edited.' }), bob, 'submit')
 
 		expect(edit.api === 'edit' && edit.params.text).toBe(
 			topicCode.replace('Reply text.', 'Edited.'),
@@ -281,7 +260,7 @@ describe('buildEdit', () => {
 		const { alice } = makePage()
 
 		const edit = await buildEdit(
-			makeValues('edit', { comment: 'Opening edited.', headline: 'Renamed' }),
+			makeCommentFormValues('edit', { comment: 'Opening edited.', headline: 'Renamed' }),
 			alice,
 			'submit',
 		)
@@ -295,7 +274,7 @@ describe('buildEdit', () => {
 		const { bob } = makePage()
 
 		const edit = await buildEdit(
-			makeValues('edit', { comment: 'Reply text.', delete: true }),
+			makeCommentFormValues('edit', { comment: 'Reply text.', delete: true }),
 			bob,
 			'submit',
 		)
@@ -309,7 +288,7 @@ describe('buildEdit', () => {
 		const { carol } = makePage({ hasLiveSectionNumber: false })
 
 		const edit = await buildEdit(
-			makeValues('edit', { comment: 'Other text.', headline: 'Other', delete: true }),
+			makeCommentFormValues('edit', { comment: 'Other text.', headline: 'Other', delete: true }),
 			carol,
 			'submit',
 		)
@@ -321,7 +300,7 @@ describe('buildEdit', () => {
 		const { topic } = makePage()
 
 		const edit = await buildEdit(
-			makeValues('addSubsection', { comment: 'Sub text.', headline: 'Sub' }),
+			makeCommentFormValues('addSubsection', { comment: 'Sub text.', headline: 'Sub' }),
 			topic,
 			'submit',
 		)
@@ -337,7 +316,7 @@ describe('buildEdit', () => {
 
 			expect(
 				await buildEdit(
-					makeValues('addSection', { comment: 'Topic text.', headline: ' New topic ' }),
+					makeCommentFormValues('addSection', { comment: 'Topic text.', headline: ' New topic ' }),
 					page,
 					'submit',
 				),
@@ -355,7 +334,7 @@ describe('buildEdit', () => {
 			const { page } = makePage()
 
 			const edit = await buildEdit(
-				makeValues('addSection', { comment: 'Topic text.', headline: 'New topic' }),
+				makeCommentFormValues('addSection', { comment: 'Topic text.', headline: 'New topic' }),
 				page,
 				'viewChanges',
 			)
@@ -370,7 +349,7 @@ describe('buildEdit', () => {
 
 			expect(
 				await buildEdit(
-					makeValues('addSection', { comment: 'Topic text.', headline: '' }),
+					makeCommentFormValues('addSection', { comment: 'Topic text.', headline: '' }),
 					page,
 					'submit',
 				),
@@ -391,7 +370,7 @@ describe('buildEdit', () => {
 			const { page } = makePage()
 
 			const edit = await buildEdit(
-				makeValues('addSection', {
+				makeCommentFormValues('addSection', {
 					comment: 'Topic text.',
 					headline: 'New topic',
 					newTopicOnTop: true,
@@ -410,7 +389,7 @@ describe('buildEdit', () => {
 
 			expect(
 				await buildEdit(
-					makeValues('addSection', { comment: 'Topic text.', headline: '' }),
+					makeCommentFormValues('addSection', { comment: 'Topic text.', headline: '' }),
 					page,
 					'submit',
 				),
@@ -428,7 +407,7 @@ describe('buildEdit', () => {
 			vi.spyOn(commentManager, 'getById').mockReturnValue(alice)
 
 			const edit = await buildEdit(
-				makeValues('addSection', {
+				makeCommentFormValues('addSection', {
 					comment: 'See [[#202401011000_Alice]].',
 					headline: 'New topic',
 				}),
@@ -459,7 +438,7 @@ describe('buildEdit', () => {
 		const { bob } = makePage({ hasLiveSectionNumber: false, loadedPageCode: 'Intro.\n' })
 
 		const error = await rejection(
-			buildEdit(makeValues('reply', { comment: 'Thanks.' }), bob, 'submit'),
+			buildEdit(makeCommentFormValues('reply', { comment: 'Thanks.' }), bob, 'submit'),
 		)
 
 		expect(error.getCode()).toBe('locateComment')
@@ -471,7 +450,7 @@ describe('buildEdit', () => {
 		vi.spyOn(commentManager, 'getById').mockReturnValue(undefined)
 
 		const error = await rejection(
-			buildEdit(makeValues('reply', { comment: 'See [[#202401011000_Dave]].' }), bob, 'submit'),
+			buildEdit(makeCommentFormValues('reply', { comment: 'See [[#202401011000_Dave]].' }), bob, 'submit'),
 		)
 
 		expect(error.getCode()).toBe('commentLinks-commentNotFound')
@@ -487,7 +466,7 @@ describe('buildEdit', () => {
 		cd.getApi = /** @type {any} */ (() => ({ get }))
 
 		expect(
-			await buildEdit(makeValues('reply', { comment: ' Thanks. ' }), bob, 'submit'),
+			await buildEdit(makeCommentFormValues('reply', { comment: ' Thanks. ' }), bob, 'submit'),
 		).toEqual({
 			api: 'discussiontoolsedit',
 			params: {
@@ -503,7 +482,7 @@ describe('buildEdit', () => {
 		const brokenTopicCode = topicCode.replace(': Reply text.', ':: Reply text.')
 		const { bob } = makePage({ sectionCode: brokenTopicCode })
 		bob.level = 0
-		const values = makeValues('edit', { comment: 'Edited.' })
+		const values = makeCommentFormValues('edit', { comment: 'Edited.' })
 
 		const edit = await buildEdit({ ...values, actualCommentLevel: 2 }, bob, 'submit')
 

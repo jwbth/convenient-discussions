@@ -6,7 +6,7 @@ import CommentFormOperationRegistry from './CommentFormOperationRegistry'
 import EventEmitter from './EventEmitter'
 import MentionsAutocomplete from './MentionsAutocomplete'
 import getUploadDialogClass from './UploadDialog'
-import buildEdit from './buildEdit'
+import buildEdit, { loadTarget } from './buildEdit'
 import commentManager from './commentManager'
 import controller from './controller'
 import cd from './loader/cd'
@@ -120,7 +120,6 @@ import {
  * @property {boolean} delete
  * @property {boolean} newTopicOnTop
  * @property {ListType|undefined} containerListType
- * @property {string|undefined} commentTemplate The preload configuration's comment template.
  * @property {number|undefined} actualCommentLevel The level the user accepted when fixing broken
  *   indentation.
  * @property {CommentForm<Mode>} commentForm Only for passing to the wiki configuration's transform
@@ -1016,24 +1015,6 @@ class CommentForm extends EventEmitter {
 	}
 
 	/**
-	 * Apply the actual comment level to a source object. This is used when the comment has broken
-	 * indentation and we need to reprocess it with the correct level.
-	 *
-	 * @param {import('./CommentSource').default | import('./SectionSource').default | import('./PageSource').default} [source]
-	 * @private
-	 */
-	applyActualLevel(source) {
-		if (
-			this.actualCommentLevel !== undefined &&
-			source &&
-			'reprocessWithLevel' in source &&
-			typeof source.reprocessWithLevel === 'function'
-		) {
-			source.reprocessWithLevel(this.actualCommentLevel)
-		}
-	}
-
-	/**
 	 * Fix broken markup in a comment, including broken indentation and deprecated `<pre>` tags.
 	 *
 	 * @param {import('./CommentSource').default} source Comment source
@@ -1045,7 +1026,7 @@ class CommentForm extends EventEmitter {
 		this.actualCommentLevel = source.detectedActualLevel
 
 		// Re-process the source with the detected level
-		this.applyActualLevel(source)
+		source.reprocessWithLevel(/** @type {number} */ (this.actualCommentLevel))
 		let commentInputValue = source.toInputValue(source.detectedActualLevel)
 
 		// Replace <pre>...</pre> and sequences of lines starting with a space
@@ -1082,16 +1063,17 @@ class CommentForm extends EventEmitter {
 	 * @private
 	 */
 	async loadTargetCode() {
-		const { source, needsDtApi } = this.isCommentTarget()
-			? await this.target.loadCode({ useDtFallback: true })
-			: await /** @type {import('./Section').default} */ (this.target).loadCode()
+		// Only comment and section targets get here, so the source is never a page source.
+		const { source, needsDtApi } = await loadTarget(this.mode, this.target)
 		if (needsDtApi) {
 			// TODO: currently, once set to 'discussiontoolsedit', we can't set it back to 'edit'.
 			// Allowing so could introduce unsynchronization of various components.
 			this.setApi('discussiontoolsedit')
 		}
 
-		return source
+		return /** @type {import('./CommentSource').default | import('./SectionSource').default | undefined} */ (
+			source
+		)
 	}
 
 	/**
@@ -2381,7 +2363,6 @@ class CommentForm extends EventEmitter {
 			delete: Boolean(this.deleteCheckbox?.isSelected()),
 			newTopicOnTop: Boolean(this.newTopicOnTop),
 			containerListType: this.containerListType,
-			commentTemplate: this.preloadConfig.commentTemplate,
 			actualCommentLevel: this.actualCommentLevel,
 			commentForm: this,
 		}
