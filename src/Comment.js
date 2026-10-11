@@ -207,9 +207,10 @@ class Comment extends mixIntoClass(
 	layersContainer
 
 	/**
-	 * Has the comment been read if it is new. Is set only on active pages (not archived, not old
-	 * diffs) excluding pages that are visited for the first time. Check using `=== false` if you
-	 * need to know if the comment is highlighted as new and unread.
+	 * Has the comment been read. This axis is independent of new/old: a new comment can be read, and
+	 * an old one unread when it was changed. Can be unset (on pages other than active ones, such as
+	 * archives and old diffs, and at the first visit to the page), so check using `=== false` to know
+	 * if the comment is unread.
 	 *
 	 * @type {boolean | undefined}
 	 * @private
@@ -537,7 +538,8 @@ class Comment extends mixIntoClass(
 	}
 
 	/**
-	 * Has the comment been read if it is new.
+	 * Has the comment been read, independently of whether it is new. `undefined` where read status
+	 * isn't set; see {@link Comment#read}.
 	 *
 	 * @returns {boolean | undefined}
 	 */

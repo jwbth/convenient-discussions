@@ -1433,18 +1433,19 @@ class Section extends SectionSkeleton {
 	}
 
 	/**
-	 * Flash the unread comments in the section and scroll to the first one of them.
+	 * Flash the comments in the section unread at load and scroll to the first one of them.
 	 *
 	 * @param {MouseEvent} event
 	 * @private
 	 */
-	scrollToUnreadComments = (event) => {
+	scrollToUnreadAtLoad = (event) => {
 		if (event.altKey) return
 
 		event.preventDefault()
 
-		// If all new comments are also unread at load, flash them as before rather than highlighting as
-		// linked comments, since they are the same set.
+		// If the comments unread at load are all the new comments, the new highlight already sets them
+		// apart, so just flash them. Otherwise, highlight them as linked comments to set them apart from
+		// the other new comments.
 		const unreadAtLoad = this.getUnreadAtLoad()
 		const newComments = this.comments.filter((comment) => comment.hasFlag('new'))
 		if (newComments.length === unreadAtLoad.length) {
@@ -1482,35 +1483,35 @@ class Section extends SectionSkeleton {
 			return
 		}
 
-		const oldestUnreadComment = Comment.getOldest(unreadAtLoad, true)
+		const oldestUnreadAtLoad = Comment.getOldest(unreadAtLoad, true)
 
 		let href
-		if (oldestUnreadComment?.dtId) {
+		if (oldestUnreadAtLoad?.dtId) {
 			const url = new URL(location.href)
-			url.searchParams.set('dtnewcommentssince', oldestUnreadComment.dtId)
+			url.searchParams.set('dtnewcommentssince', oldestUnreadAtLoad.dtId)
 			url.searchParams.set('dtinthread', '1')
 			url.hash = ''
 			href = url.toString()
 		} else {
-			href = `#${oldestUnreadComment?.getUrlFragment() || ''}`
+			href = `#${oldestUnreadAtLoad?.getUrlFragment() || ''}`
 		}
 
-		const unreadLink = document.createElement('a')
-		unreadLink.textContent = cd.s(
+		const unreadAtLoadLink = document.createElement('a')
+		unreadAtLoadLink.textContent = cd.s(
 			'section-metadata-newcommentcount',
 			String(unreadAtLoad.length),
 		)
-		unreadLink.href = href
-		unreadLink.className = 'cd-clickHandled'
-		unreadLink.addEventListener('click', this.scrollToUnreadComments)
+		unreadAtLoadLink.href = href
+		unreadAtLoadLink.className = 'cd-clickHandled'
+		unreadAtLoadLink.addEventListener('click', this.scrollToUnreadAtLoad)
 
-		const unreadCommentCountWrapper = document.createElement('span')
-		unreadCommentCountWrapper.className = 'cd-section-bar-item'
-		unreadCommentCountWrapper.append(unreadLink)
+		const unreadAtLoadCountWrapper = document.createElement('span')
+		unreadAtLoadCountWrapper.className = 'cd-section-bar-item'
+		unreadAtLoadCountWrapper.append(unreadAtLoadLink)
 
 		const metadataElementTyped = /** @type {HTMLElement} */ (this.metadataElement)
 		metadataElementTyped.insertBefore(
-			unreadCommentCountWrapper,
+			unreadAtLoadCountWrapper,
 			/** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null,
 		)
 
@@ -1519,7 +1520,7 @@ class Section extends SectionSkeleton {
 		 *
 		 * @type {HTMLElement | undefined}
 		 */
-		this.unreadAtLoadCountWrapper = unreadCommentCountWrapper
+		this.unreadAtLoadCountWrapper = unreadAtLoadCountWrapper
 	}
 
 	/**
