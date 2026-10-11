@@ -19,8 +19,6 @@ import { defined } from './shared/utils-general'
  * @property {number} currentTime Unix time in seconds.
  * @property {boolean} markAsRead Whether the user requested to make every comment shown so far read
  *   and old.
- * @property {string[]} [carriedOverUnreadIds] IDs of the comments unread when the previous boot
- *   ended; absent on a first boot, where the unread and old comments come from sessionStorage.
  */
 
 /**
@@ -89,19 +87,20 @@ class ReadStatus extends EventEmitter {
 	readBeforeChange = new Map()
 
 	/**
-	 * Start a visit: apply the read status rules to the comments. Call
+	 * Start a visit: apply the read status rules to the comments, keeping the unread and old comments
+	 * stored in sessionStorage, whether the page was booted anew, rebooted, or reloaded. Call
 	 * {@link ReadStatus#announceVisitStart} once the returned visits are saved.
 	 *
 	 * @param {VisitStartOptions} options
 	 * @returns {string[]} Visits to save.
 	 */
-	startVisit({ comments, visits: rememberedVisits, currentTime, markAsRead, carriedOverUnreadIds }) {
+	startVisit({ comments, visits: rememberedVisits, currentTime, markAsRead }) {
 		this.comments = comments
 		this.readBeforeChange = new Map()
 		const visits = this.forgetVisits(rememberedVisits, currentTime, markAsRead)
 		const timeConflict =
 			visits.length > 0 &&
-			this.applyRules(comments, visits, currentTime, markAsRead, carriedOverUnreadIds)
+			this.applyRules(comments, visits, currentTime, markAsRead)
 		this.previousVisitTime = visits.length ? Number(visits.at(-1)) : undefined
 
 		// (Nearly) eliminate the possibility that we will wrongfully mark a read comment as unread/new
@@ -144,15 +143,13 @@ class ReadStatus extends EventEmitter {
 	 * @param {string[]} visits At least one.
 	 * @param {number} currentTime
 	 * @param {boolean} markAsRead
-	 * @param {string[]} [carriedOverUnreadIds]
 	 * @returns {boolean} Whether a comment is dated in the minute of the current time (a time
 	 *   conflict).
 	 * @private
 	 */
-	applyRules(comments, visits, currentTime, markAsRead, carriedOverUnreadIds) {
-		const isFirstBoot = !carriedOverUnreadIds
-		const unreadIds = markAsRead ? [] : (carriedOverUnreadIds ?? this.loadIds('unreadComments'))
-		const oldIds = isFirstBoot ? this.loadIds('oldComments') : []
+	applyRules(comments, visits, currentTime, markAsRead) {
+		const unreadIds = markAsRead ? [] : this.loadIds('unreadComments')
+		const oldIds = this.loadIds('oldComments')
 		comments.forEach((comment) => {
 			const commentTime = getUnixTime(comment)
 

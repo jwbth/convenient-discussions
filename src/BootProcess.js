@@ -19,7 +19,6 @@ import sectionManager from './sectionManager'
 import CdError from './shared/CdError'
 import Parser from './shared/Parser'
 import {
-	defined,
 	definedAndNotNull,
 	getQueryParamBooleanValue,
 	isElement,
@@ -113,7 +112,8 @@ function processDtElements(elements) {
  * @property {string} [sectionId] ID of a section to scroll to.
  * @property {boolean} [pushState] Whether to add a state to the browser history.
  * @property {ScrollData} [scrollData] Data about the page's Y offset to avoid reflow.
- * @property {Comment[]} [unreadComments] Unread comments on this page.
+ * @property {Comment[]} [unreadComments] Unread comments on this page, to carry their change notes
+ *   over a reboot.
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
  * @property {boolean} [isPageReloadedExternally] Whether the page was reloaded externally (e.g. by
  *   some script).
@@ -923,9 +923,6 @@ class BootProcess {
 				visits: pageVisits,
 				currentTime: Math.floor(Date.now() / 1000),
 				markAsRead,
-				carriedOverUnreadIds: this.firstBoot
-					? undefined
-					: (this.passedData.unreadComments || []).map((comment) => comment.id).filter(defined),
 			}),
 		)
 		readStatus.announceVisitStart()

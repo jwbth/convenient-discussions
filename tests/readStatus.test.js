@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from 'vitest'
+import { describe, test, expect, beforeEach, vi } from 'vitest'
 
 import readStatus from '../src/readStatus'
 
@@ -146,7 +146,7 @@ describe('readStatus.startVisit', () => {
 		expect(statusOf(sinceLatest)).toEqual({ new: true, read: false })
 	})
 
-	test('restores unread and old comments from sessionStorage on a first boot', () => {
+	test('restores unread and old comments from sessionStorage', () => {
 		sessionStorage.setItem(
 			'convenientDiscussions-unreadComments',
 			JSON.stringify({ [articleId]: ['a'] }),
@@ -181,17 +181,6 @@ describe('readStatus.startVisit', () => {
 		).toEqual({ [articleId]: ['b'] })
 	})
 
-	test('makes the comments carried over as unread by a reboot new and unread', () => {
-		const comment = makeComment({ id: 'a', time: now - 5 * hour })
-
-		startVisit({
-			comments: [comment],
-			visits: [String(now - 4 * hour), String(now - 2 * hour)],
-			carriedOverUnreadIds: ['a'],
-		})
-
-		expect(statusOf(comment)).toEqual({ new: true, read: false })
-	})
 
 	test('makes every comment shown so far read and old on a mark-as-read refresh', () => {
 		sessionStorage.setItem(
@@ -565,4 +554,92 @@ describe('readStatus.markAsChanged and readStatus.unmarkAsChanged', () => {
 
 		expect(comment.isRead()).toBe(true)
 	})
+})
+
+describe('read status across a reboot and a reload', () => {
+	/**
+	 * The page's comments as rendered at a boot, with the read status not yet set: `madeOld` is dated
+	 * after the earliest remembered visit, `unread` before it, `sinceLatest` after the latest one.
+	 */
+	const renderComments = () => ({
+		madeOld: makeComment({ id: 'madeOld', time: now - 3 * hour }),
+		unread: makeComment({ id: 'unread', time: now - 5 * hour }),
+		sinceLatest: makeComment({ id: 'sinceLatest', time: now - hour }),
+	})
+
+	/**
+	 * Start a visit where `unread` is restored as unread, then make `madeOld` old with "Mark as read".
+	 */
+	const startVisitAndMarkAsRead = () => {
+		sessionStorage.setItem(
+			'convenientDiscussions-unreadComments',
+			JSON.stringify({ [articleId]: ['unread'] }),
+		)
+		const comments = renderComments()
+		const visits = startVisit({
+			comments: Object.values(comments),
+			visits: [String(now - 4 * hour), String(now - 2 * hour)],
+		})
+		readStatus.markAsRead([comments.madeOld])
+
+		return visits
+	}
+
+	/**
+	 * Boot the page again, returning the read status module of the new boot: the same one on a reboot,
+	 * a fresh one on a browser reload.
+	 *
+	 * @param {'reboot' | 'reload'} kind
+	 * @returns {Promise<typeof readStatus>}
+	 */
+	const bootAgain = async (kind) => {
+		if (kind === 'reboot') {
+			return readStatus
+		}
+		vi.resetModules()
+
+		return (await import('../src/readStatus')).default
+	}
+
+	test.each(/** @type {const} */ (['reboot', 'reload']))(
+		'keeps comments made old old, and unread ones unread and new, across a %s',
+		async (kind) => {
+			const visits = startVisitAndMarkAsRead()
+			const comments = renderComments()
+
+			;(await bootAgain(kind)).startVisit({
+				comments: Object.values(comments),
+				visits,
+				currentTime: now + 60,
+				markAsRead: false,
+			})
+
+			expect(statusOf(comments.madeOld)).toEqual({ new: false, read: true })
+			expect(statusOf(comments.unread)).toEqual({ new: true, read: false })
+			expect(statusOf(comments.sinceLatest)).toEqual({ new: true, read: false })
+		},
+	)
+
+	test.each(/** @type {const} */ (['reboot', 'reload']))(
+		'recomputes new across a %s',
+		async (kind) => {
+			settings.highlightNewInterval = 60
+			const comment = makeComment({ id: 'a', time: now - 2 * hour })
+			const visits = startVisit({
+				comments: [comment],
+				visits: [String(now - 3 * hour), String(now - hour / 2)],
+			})
+			expect(comment.hasFlag('new')).toBe(true)
+			const rendered = makeComment({ id: 'a', time: now - 2 * hour })
+
+			;(await bootAgain(kind)).startVisit({
+				comments: [rendered],
+				visits,
+				currentTime: now + hour,
+				markAsRead: false,
+			})
+
+			expect(statusOf(rendered)).toEqual({ new: false, read: true })
+		},
+	)
 })
