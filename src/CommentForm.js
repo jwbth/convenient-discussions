@@ -108,6 +108,25 @@ import {
  */
 
 /**
+ * Plain snapshot of a comment form's inputs that building the comment code and the edit read.
+ *
+ * @template {CommentFormMode} [Mode=CommentFormMode]
+ * @typedef {object} CommentFormValues
+ * @property {Mode} mode
+ * @property {string} comment
+ * @property {string|undefined} headline `undefined` when the form has no headline input.
+ * @property {boolean} omitSignature
+ * @property {boolean} delete
+ * @property {boolean} newTopicOnTop
+ * @property {ListType|undefined} containerListType
+ * @property {string|undefined} commentTemplate The preload configuration's comment template.
+ * @property {number|undefined} actualCommentLevel The level the user accepted when fixing broken
+ *   indentation.
+ * @property {CommentForm<Mode>} commentForm Only for passing to the wiki configuration's transform
+ *   hooks, which on-wiki configurations may use.
+ */
+
+/**
  * @typedef {object} CommentFormInitialStateExtension
  * @property {boolean} [focus]
  * @property {boolean} [focusHeadline]
@@ -2348,13 +2367,12 @@ class CommentForm extends EventEmitter {
 	 * @throws {CdError}
 	 */
 	inputToCode(action) {
-		// Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
-		// part of it)?..
-
-		let code = this.commentInput.getValue()
-		code = cd.config.preTransformCode?.(code, this) || code
-
-		const transformer = new CommentFormInputTransformer(code, this, action)
+		const { code, isIndented } = CommentFormInputTransformer.inputToCode(
+			this.getValues(),
+			this.target,
+			action,
+			this.isNewSectionApi(),
+		)
 
 		/**
 		 * Will the comment be indented (is a reply or an edited reply).
@@ -2364,12 +2382,29 @@ class CommentForm extends EventEmitter {
 		 *
 		 * @type {boolean|undefined}
 		 */
-		this.willCommentBeIndented = transformer.isIndented()
-
-		code = transformer.transform()
-		code = cd.config.postTransformCode?.(code, this) || code
+		this.willCommentBeIndented = isIndented
 
 		return code
+	}
+
+	/**
+	 * Snapshot the form's inputs.
+	 *
+	 * @returns {CommentFormValues<Mode>}
+	 */
+	getValues() {
+		return {
+			mode: this.mode,
+			comment: this.commentInput.getValue(),
+			headline: this.headlineInput?.getValue(),
+			omitSignature: Boolean(this.omitSignatureCheckbox?.isSelected()),
+			delete: Boolean(this.deleteCheckbox?.isSelected()),
+			newTopicOnTop: Boolean(this.newTopicOnTop),
+			containerListType: this.containerListType,
+			commentTemplate: this.preloadConfig.commentTemplate,
+			actualCommentLevel: this.actualCommentLevel,
+			commentForm: this,
+		}
 	}
 
 	/**

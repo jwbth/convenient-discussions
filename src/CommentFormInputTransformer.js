@@ -38,15 +38,18 @@ class CommentFormInputTransformer extends TextMasker {
 	 * Create a comment form input processor.
 	 *
 	 * @param {string} text
-	 * @param {import('./CommentForm').default<Mode>} commentForm
+	 * @param {import('./CommentForm').CommentFormValues<Mode>} values
+	 * @param {import('./CommentForm').TypedTarget<Mode>} target
 	 * @param {import('./CommentForm').CommentFormAction} action
+	 * @param {boolean} isNewSectionApi
 	 */
-	constructor(text, commentForm, action) {
+	constructor(text, values, target, action, isNewSectionApi) {
 		super(text.trim())
 		this.initialText = this.text
-		this.commentForm = commentForm
-		this.target = /** @type {CommentFormTarget<Mode>} */ (commentForm.getTarget())
+		this.values = values
+		this.target = /** @type {CommentFormTarget<Mode>} */ (target)
 		this.action = action
+		this.isNewSectionApi = isNewSectionApi
 
 		this.initIndentationData()
 	}
@@ -69,7 +72,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 */
 	isMode(mode) {
 		return (
-			/** @type {import('./CommentForm').CommentFormMode} */ (this.commentForm.getMode()) === mode
+			/** @type {import('./CommentForm').CommentFormMode} */ (this.values.mode) === mode
 		)
 	}
 
@@ -85,7 +88,7 @@ class CommentFormInputTransformer extends TextMasker {
 			this.indentation = this.target.source.indentation
 		} else if (this.isMode('replyInSection')) {
 			const lastCommentIndentation = this.target.source.extractLastCommentIndentation(
-				this.commentForm.getContainerListType(),
+				this.values.containerListType,
 			)
 			this.indentation =
 				lastCommentIndentation &&
@@ -171,7 +174,7 @@ class CommentFormInputTransformer extends TextMasker {
 		// comment together with the signature into the tags and possibly ensure the correct line
 		// spacing.
 		this.wrapInSmall = false
-		if (!this.commentForm.headlineInput) {
+		if (this.values.headline === undefined) {
 			this.text = this.getText().replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
 				// Filter out <small>text</small><small>text</small>
 				if (/<\/small>/i.test(content)) {
@@ -194,7 +197,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	initSignatureAndFixCode() {
-		this.signature = this.commentForm.omitSignatureCheckbox?.isSelected()
+		this.signature = this.values.omitSignature
 			? ''
 			: this.isMode('edit')
 				? this.target.source.signatureCode
@@ -205,7 +208,7 @@ class CommentFormInputTransformer extends TextMasker {
 		if (
 			this.signature &&
 			// The existing signature doesn't start with a newline.
-			!(this.commentForm.isMode('edit') && /^[ \t]*\n/.test(this.signature)) &&
+			!(this.isMode('edit') && /^[ \t]*\n/.test(this.signature)) &&
 			/(^|\n)[:*#;].*$/.test(this.text)
 		) {
 			this.text += '\n'
@@ -420,8 +423,8 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	addHeadline() {
-		const headline = this.commentForm.headlineInput?.getValue().trim()
-		if (!headline || (this.commentForm.isNewSectionApi() && this.action === 'submit')) {
+		const headline = this.values.headline?.trim()
+		if (!headline || (this.isNewSectionApi && this.action === 'submit')) {
 			return this
 		}
 
@@ -470,7 +473,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	addSignature() {
-		if (!this.commentForm.omitSignatureCheckbox?.isSelected()) {
+		if (!this.values.omitSignature) {
 			// Remove signature tildes from the end of the comment.
 			this.text = this.text.replace(/\s*~{3,}$/, '')
 		}
@@ -571,6 +574,38 @@ class CommentFormInputTransformer extends TextMasker {
 		}
 
 		return this
+	}
+
+	/**
+	 * Convert comment form values to the comment code, calling the wiki configuration's transform
+	 * hooks.
+	 *
+	 * @template {import('./CommentForm').CommentFormMode} M
+	 * @param {import('./CommentForm').CommentFormValues<M>} values
+	 * @param {import('./CommentForm').TypedTarget<M>} target Its source must be set.
+	 * @param {import('./CommentForm').CommentFormAction} action
+	 * @param {boolean} [isNewSectionApi]
+	 * @returns {{ code: string; isIndented: boolean }}
+	 * @throws {CdError}
+	 */
+	static inputToCode(values, target, action, isNewSectionApi = false) {
+		// Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
+		// part of it)?..
+
+		let code = values.comment
+		code = cd.config.preTransformCode?.(code, values.commentForm) || code
+		const transformer = new CommentFormInputTransformer(
+			code,
+			values,
+			target,
+			action,
+			isNewSectionApi,
+		)
+		const isIndented = transformer.isIndented()
+		code = transformer.transform()
+		code = cd.config.postTransformCode?.(code, values.commentForm) || code
+
+		return { code, isIndented }
 	}
 
 	/** @type {string} */
