@@ -22,7 +22,8 @@ const excludedRules = new Set(
 )
 
 // Type information costs a TypeScript program per run, which doubles the hook's time and memory
-// (measured 2026-10-12: 3–4 s and 0.3–0.4 GB per file without it, 6–14 s and 0.5–0.8 GB with it).
+// (measured 2026-10-12 on an idle machine: 2.7–3.6 s and 0.32–0.41 GB per file without it, 4.7–8.1 s
+// and 0.53–0.84 GB with it).
 // `npm run lint` still runs these rules.
 const typeAwareRules = new Set(
 	Object.entries(/** @type {import('eslint').ESLint.Plugin} */ (tseslint.plugin).rules ?? {})
