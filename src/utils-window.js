@@ -924,6 +924,18 @@ export function cleanUpPasteDom(element, containerElement) {
 	element.className = 'cd-commentForm-dummyElement'
 	containerElement.append(element)
 
+	// Hidden elements, such as table sort keys, get into the DOM of a selection but are not seen by
+	// the user. Runs before the inline styles are removed below.
+	;[...element.querySelectorAll('*')]
+		.filter((el) => {
+			const style = window.getComputedStyle(el)
+
+			return style.userSelect === 'none' || style.display === 'none'
+		})
+		.forEach((el) => {
+			el.remove()
+		})
+
 	const styledElements = /** @type {HTMLElement[]} */ ([
 		...element.querySelectorAll('[style]:not(pre [style])'),
 	])
@@ -961,10 +973,6 @@ export function cleanUpPasteDom(element, containerElement) {
 		}
 		el.replaceWith(...el.childNodes)
 	}
-
-	;[...element.querySelectorAll('*')]
-		.filter((el) => window.getComputedStyle(el).userSelect === 'none')
-		.forEach(removeElement)
 
 	// The cleanup below would strip images, so they wait it out in placeholders.
 	const filePlaceholders = [...element.querySelectorAll('[typeof^="mw:File"]')]

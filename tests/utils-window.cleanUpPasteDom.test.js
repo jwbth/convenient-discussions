@@ -107,6 +107,12 @@ describe('cleanUpPasteDom', () => {
 		expect(Boolean(element.querySelector('img'))).toBe(isKept)
 	})
 
+	test('drops hidden elements, such as table sort keys', () => {
+		expect(
+			cleanUp('<b>a</b> <span style="display:none" class="sortkey">key</span>b').element.innerHTML,
+		).toBe('<b>a</b> b')
+	})
+
 	test('keeps runs of spaces in code', () => {
 		expect(cleanUp('<b>a</b> <code>x  y</code>').element.innerHTML).toBe(
 			'<b>a</b> <code>x  y</code>',

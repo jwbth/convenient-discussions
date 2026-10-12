@@ -211,7 +211,8 @@ export function escapePipesOutsideLinks(code, maskedTexts) {
 	}
 
 	return textMasker
-		.mask(/\[\[[^\]|]+\|/g, 'link')
+		// A link may contain one level of nested links, as in file captions.
+		.mask(/\[\[[^[\]|]+\|(?:[^[\]]|\[\[[^[\]]*\]\])*\]\]/g, 'link')
 		.withText((text) =>
 			text.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;').replace(/\|/g, '{{!}}'),
 		)
