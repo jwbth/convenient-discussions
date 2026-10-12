@@ -11,7 +11,7 @@
   document.head.appendChild(script)
   ```
 
-- Before committing, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
+- Before commiting changes that touch code, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
 
 ## Coding conventions
 
