@@ -1,7 +1,12 @@
 import fs from 'node:fs'
+import os from 'node:os'
 
 import { ESLint } from 'eslint'
 import ts from 'typescript'
+import tseslint from 'typescript-eslint'
+
+// Agents edit while other sessions lint; the machine stays responsive if the hooks yield.
+os.setPriority(os.constants.priority.PRIORITY_BELOW_NORMAL)
 
 // The rules whose fixes need a human eye live in .vscode/settings.json, where fix-on-save reads them
 // too. TypeScript's parser because the file is JSONC.
@@ -16,9 +21,24 @@ const excludedRules = new Set(
 		.map((rule) => rule.slice(1)),
 )
 
+// Type information costs a TypeScript program per run, which doubles the hook's time and memory
+// (measured 2026-10-12: 3–4 s and 0.3–0.4 GB per file without it, 6–14 s and 0.5–0.8 GB with it).
+// `npm run lint` still runs these rules.
+const typeAwareRules = new Set(
+	Object.entries(/** @type {import('eslint').ESLint.Plugin} */ (tseslint.plugin).rules ?? {})
+		.filter(
+			([, rule]) =>
+				/** @type {{ requiresTypeChecking?: boolean } | undefined} */ (rule.meta?.docs)
+					?.requiresTypeChecking,
+		)
+		.map(([name]) => `@typescript-eslint/${name}`),
+)
+
 const eslint = new ESLint({
 	cache: true,
-	fix: (message) => !message.ruleId || !excludedRules.has(message.ruleId),
+	fix: true,
+	overrideConfig: { languageOptions: { parserOptions: { project: null } } },
+	ruleFilter: ({ ruleId }) => !excludedRules.has(ruleId) && !typeAwareRules.has(ruleId),
 })
 
 /**
