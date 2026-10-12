@@ -4,78 +4,31 @@
 //
 // Usage: node bin/with-lint-lock.js "<shell command>"
 
-import { spawnSync } from 'node:child_process'
-import fs from 'node:fs'
+import { spawn } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
-import { setTimeout as sleep } from 'node:timers/promises'
 
-const lockPath = path.join(os.tmpdir(), 'convenient-discussions-lint.lock')
+import lockfile from 'proper-lockfile'
 
-/**
- * @param {number} pid
- * @returns {boolean}
- */
-function isAlive(pid) {
-	try {
-		process.kill(pid, 0)
+const lockPath = path.join(os.tmpdir(), 'convenient-discussions-lint')
+const lockOptions = { realpath: false }
 
-		return true
-	} catch (error) {
-		// EPERM: the process exists but belongs to another user
-		return /** @type {NodeJS.ErrnoException} */ (error).code === 'EPERM'
-	}
+if (await lockfile.check(lockPath, lockOptions)) {
+	console.error('Waiting for another lint run to finish…')
 }
 
-/**
- * @returns {number | undefined} `undefined` if the lock was released meanwhile.
- */
-function readHolder() {
-	try {
-		return Number(fs.readFileSync(lockPath, 'utf8')) || undefined
-	} catch {
-		return undefined
-	}
-}
-
-/**
- * Wait until no other live process holds the lock, then take it.
- */
-async function acquire() {
-	let isAnnounced = false
-	for (;;) {
-		try {
-			fs.writeFileSync(lockPath, String(process.pid), { flag: 'wx' })
-
-			return
-		} catch (error) {
-			if (/** @type {NodeJS.ErrnoException} */ (error).code !== 'EEXIST') throw error
-		}
-
-		// A holder killed without cleanup (e.g. the process tree killed by Ctrl+C on Windows) leaves its
-		// PID behind.
-		const holder = readHolder()
-		if (holder && !isAlive(holder)) {
-			fs.rmSync(lockPath, { force: true })
-			continue
-		}
-
-		if (!isAnnounced) {
-			console.error(`Waiting for another lint run${holder ? ` (PID ${holder})` : ''} to finish…`)
-			isAnnounced = true
-		}
-		await sleep(1000)
-	}
-}
-
-await acquire()
-process.on('exit', () => {
-	if (readHolder() === process.pid) {
-		fs.rmSync(lockPath, { force: true })
-	}
+// The lock stays fresh only while the event loop runs, hence `spawn` below, not `spawnSync`.
+const release = await lockfile.lock(lockPath, {
+	...lockOptions,
+	retries: { forever: true, minTimeout: 1000, maxTimeout: 1000 },
 })
 
 // Children inherit the priority, so the rest of the machine stays responsive during the run.
 os.setPriority(os.constants.priority.PRIORITY_BELOW_NORMAL)
 
-process.exitCode = spawnSync(process.argv[2], { shell: true, stdio: 'inherit' }).status ?? 1
+process.exitCode = await new Promise((resolve) => {
+	spawn(process.argv[2], { shell: true, stdio: 'inherit' }).on('close', (code) => {
+		resolve(code ?? 1)
+	})
+})
+await release()
