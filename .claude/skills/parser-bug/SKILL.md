@@ -1,6 +1,6 @@
 ---
-name: parser-bugs
-description: Reproduce and fix CD parser bugs, where a talk page comment or section comes out with wrong boundaries, author, date, level, or parent. Use when such a bug is reported, usually with a page link or comment ID, including under a debugging skill.
+name: parser-bug
+description: Reproduce and fix a CD parser bug, where a talk page comment or section comes out with wrong boundaries or properties. Use when such a bug is reported, usually with a page link or comment ID.
 ---
 
 The parser runs the same code (`src/shared/Parser.js`, `src/shared/CommentSkeleton.js`) in the window and in the worker. The worker runs in Vitest, which makes it the fast seam: a parse takes 2–5 s. Build the loop there and go to the browser only if the worker can't reproduce the bug.
