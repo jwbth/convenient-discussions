@@ -113,6 +113,17 @@ describe('cleanUpPasteDom', () => {
 		).toBe('<b>a</b> b')
 	})
 
+	test('drops Parsoid attributes that need the removed data-mw', () => {
+		expect(
+			cleanUp(
+				'<code about="#mwt1" typeof="mw:Transclusion" data-mw="{}">' +
+					'<span typeof="mw:Entity">{</span>{x}}</code> ' +
+					'<code class="mw-highlight" typeof="mw:Extension/syntaxhighlight" about="#mwt2">' +
+					'<span class="p">[[</span>y]]</code>',
+			).element.innerHTML,
+		).toBe('<code>{{x}}</code> <code>[[y]]</code>')
+	})
+
 	test('keeps runs of spaces in code', () => {
 		expect(cleanUp('<b>a</b> <code>x  y</code>').element.innerHTML).toBe(
 			'<b>a</b> <code>x  y</code>',

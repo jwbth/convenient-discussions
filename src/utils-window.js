@@ -1044,10 +1044,6 @@ export function cleanUpPasteDom(element, containerElement) {
 	;[...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
 		// eslint-disable-next-line no-self-assign
 		el.textContent = el.textContent
-
-		// Parsoid generates this, but itself can't handle this at endpoint
-		// /api/rest_v1/transform/html/to/wikitext, returning an empty syntaxhighlight tag
-		el.removeAttribute('typeof')
 	})
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -1093,8 +1089,12 @@ export function cleanUpPasteDom(element, containerElement) {
 			return
 		}
 
+		// Parsoid's `typeof` and `about` describe the removed `data-mw`, and the transform API fails
+		// on a transclusion without it or returns an empty syntaxhighlight tag.
 		;[...el.attributes]
-			.filter((attr) => attr.name === 'class' || attr.name.startsWith('data-'))
+			.filter(
+				(attr) => ['class', 'typeof', 'about'].includes(attr.name) || attr.name.startsWith('data-'),
+			)
 			.forEach((attr) => {
 				el.removeAttribute(attr.name)
 			})
