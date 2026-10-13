@@ -1223,16 +1223,16 @@ class CommentSkeleton {
 						this.parts[i - 1].node) ||
 				// E.g. `mw-notalk` elements at the beginning of the comment (example:
 				// https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Wikisaurus#c-Khidistavi-20240209164000-Против)
-				this.parser.noSignatureElements.some((el) => this.parser.constructor.contains(el, node)) ||
+				this.parser.nonCommentElements.some((el) => this.parser.constructor.contains(el, node)) ||
 				// Such elements wrapped into a list item, e.g. `* {{Moved to|...}}` between replies
 				(this.parser
 					.getChildElements(node)
-					.some((child) => this.parser.noSignatureElements.includes(child)) &&
+					.some((child) => this.parser.nonCommentElements.includes(child)) &&
 					[...node.childNodes].every((child) =>
 						isText(child)
 							? !child.textContent.trim()
 							: isMetadataNode(child) ||
-								this.parser.noSignatureElements.includes(/** @type {AnyElement} */ (child)),
+								this.parser.nonCommentElements.includes(/** @type {AnyElement} */ (child)),
 					))
 			) {
 				this.parts.splice(i, 1)

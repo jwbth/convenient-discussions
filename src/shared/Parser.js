@@ -75,6 +75,14 @@ class Parser {
 	/** @type {AnyElement[]} */
 	noSignatureElements
 
+	/**
+	 * Elements with no-signature classes. Unlike quotes and figures, which can't hold a signature
+	 * either, these are never parts of comments.
+	 *
+	 * @type {AnyElement[]}
+	 */
+	nonCommentElements
+
 	/** @type {string[]} */
 	rejectClasses
 
@@ -120,6 +128,7 @@ class Parser {
 		this.noSignatureElements = [
 			...this.context.rootElement.querySelectorAll(`${tagSelector}, ${classSelector}`),
 		]
+		this.nonCommentElements = [...this.context.rootElement.querySelectorAll(classSelector)]
 	}
 
 	/**

@@ -69,17 +69,18 @@ describe('worker', () => {
 		expect(parseResult.comments[0].authorName).toBe('Example')
 	})
 
-	describe('move marks', () => {
-		const parse = (/** @type {string} */ text) => {
-			const payload = structuredClone(defaultPayload)
-			payload.text = `<div class="mw-content-ltr mw-parser-output" lang="en" dir="ltr">${text}</div>`
-			window.dispatchEvent(new MessageEvent('message', { data: payload }))
+	const parse = (/** @type {string} */ text) => {
+		const payload = structuredClone(defaultPayload)
+		payload.text = `<div class="mw-content-ltr mw-parser-output" lang="en" dir="ltr">${text}</div>`
+		window.dispatchEvent(new MessageEvent('message', { data: payload }))
 
-			return postMessageSpy.mock.calls.find((call) => call[0]?.task === 'parse')[0]
-		}
-		const heading = '<div class="mw-heading mw-heading2"><h2 id="Section">Section</h2></div>\n'
-		const firstComment =
-			'<p>Comment. <a href="/wiki/User:Alice" title="User:Alice">Alice</a> 00:00, 1 January 2026 (UTC)\n</p>\n'
+		return postMessageSpy.mock.calls.find((call) => call[0]?.task === 'parse')[0]
+	}
+	const heading = '<div class="mw-heading mw-heading2"><h2 id="Section">Section</h2></div>\n'
+	const firstComment =
+		'<p>Comment. <a href="/wiki/User:Alice" title="User:Alice">Alice</a> 00:00, 1 January 2026 (UTC)\n</p>\n'
+
+	describe('move marks', () => {
 		const moveMark =
 			'<div class="mw-notalk cd-moveMark">Moved to <a href="/wiki/Elsewhere" title="Elsewhere">Elsewhere</a>. <a href="/wiki/User:Carol" title="User:Carol">Carol</a> 02:00, 1 January 2026 (UTC)</div>'
 		// Parsoid wraps the TemplateStyles output of a template into a span
@@ -110,6 +111,37 @@ describe('worker', () => {
 			expect(comments[0].elementHtmls).toContainEqual(
 				expect.stringMatching(/^<div class="mw-notalk cd-moveMark cd-comment-part">/),
 			)
+		})
+	})
+
+	describe('quotes', () => {
+		// The output of {{tqb}}
+		const quote = '<style>.x{}</style><blockquote class="talkquote"><p>Quote.</p></blockquote>'
+
+		test('a quote in its own list item opens a reply', () => {
+			const { comments } = parse(
+				heading +
+					firstComment +
+					'<dl><dd>Reply. <a href="/wiki/User:Bob" title="User:Bob">Bob</a> 01:00, 1 January 2026 (UTC)</dd>\n' +
+					`<dd>${quote}</dd>\n` +
+					'<dd>Another reply. <a href="/wiki/User:Carol" title="User:Carol">Carol</a> 02:00, 1 January 2026 (UTC)</dd></dl>',
+			)
+
+			expect(comments.map((c) => c.authorName)).toEqual(['Alice', 'Bob', 'Carol'])
+			// The worker's text keeps the content of <style> tags inside elements
+			expect(comments[2].text).toMatch(/Quote\.\nAnother reply\.$/)
+		})
+
+		test('a quote opens an unindented comment', () => {
+			const { comments } = parse(
+				heading +
+					firstComment +
+					`${quote}\n` +
+					'<p>Another comment. <a href="/wiki/User:Carol" title="User:Carol">Carol</a> 02:00, 1 January 2026 (UTC)</p>',
+			)
+
+			expect(comments.map((c) => c.authorName)).toEqual(['Alice', 'Carol'])
+			expect(comments[1].text).toBe('Quote.\nAnother comment.')
 		})
 	})
 })
