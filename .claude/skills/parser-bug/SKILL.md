@@ -41,6 +41,6 @@ If the loop stays green on markup that is red on the page, the cause is window-o
 
 Write the regression test in `tests/worker-basic.test.js`, using its `parse`, `heading`, and `firstComment` helpers. Keep the shape of the real template output, like the `<style>` TemplateStyles puts before a template's first use on a page.
 
-Expectations in `tests/worker-test-cases.json` were generated from parser output, so one that a fix breaks may have recorded a bug. Judge it by the intent of the code before updating it.
+Treat parser output that your test has to work around as a lead to another bug, and trace it to its source. Likewise, expectations in `tests/worker-test-cases.json` were generated from parser output, so one that a fix breaks may have recorded a bug: judge it by the intent of the code before updating it.
 
 Finally, run the harness on the whole page's HTML and confirm the reported comment, then trash `tests/zz-parse-html.test.js`.
