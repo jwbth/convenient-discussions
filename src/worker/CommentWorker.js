@@ -98,7 +98,7 @@ export default class CommentWorker extends CommentSkeleton {
 			this.processElementAttributes(element)
 
 			if (element.classList.contains('references') || isMetadataNode(element)) {
-				return /** @type {import('domhandler').Element} */ (this.hideElement(element)).textContent
+				return this.hideElement(element).textContent
 			}
 			this.processReferenceElements(element)
 
@@ -313,6 +313,8 @@ export default class CommentWorker extends CommentSkeleton {
 		this.text = this.elements
 			.map((el) => el.textContent)
 			.join('\n')
+			// Markers of hidden elements
+			.replaceAll(/\u0001\d+_\w+\u0002/g, '')
 			.trim()
 
 		this.elementNames = this.elements.map((el) => el.tagName)
@@ -320,17 +322,13 @@ export default class CommentWorker extends CommentSkeleton {
 	}
 
 	/**
-	 * Replace a comment element with a marker.
+	 * Replace a comment element, or an element inside it, with a marker.
 	 *
 	 * @param {import('domhandler').Element} element
-	 * @returns {import('domhandler').Element | undefined}
+	 * @returns {import('domhandler').Element}
 	 * @private
 	 */
 	hideElement(element) {
-		if (!this.elements.includes(element)) {
-			return
-		}
-
 		let type
 		if (element.classList.contains('reference')) {
 			type = 'reference'
@@ -349,10 +347,13 @@ export default class CommentWorker extends CommentSkeleton {
 		})
 		const span = document.createElement('span')
 		span.textContent = `\u0001${num}_${type}\u0002`
-		// span.before(element);
+		span.before(element)
 		element.remove()
 
-		this.elements[this.elements.indexOf(element)] = span
+		const index = this.elements.indexOf(element)
+		if (index !== -1) {
+			this.elements[index] = span
+		}
 
 		return span
 	}

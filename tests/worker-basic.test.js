@@ -128,8 +128,7 @@ describe('worker', () => {
 			)
 
 			expect(comments.map((c) => c.authorName)).toEqual(['Alice', 'Bob', 'Carol'])
-			// The worker's text keeps the content of <style> tags inside elements
-			expect(comments[2].text).toMatch(/Quote\.\nAnother reply\.$/)
+			expect(comments[2].text).toBe('Quote.\nAnother reply.')
 		})
 
 		test('a quote opens an unindented comment', () => {
@@ -143,5 +142,31 @@ describe('worker', () => {
 			expect(comments.map((c) => c.authorName)).toEqual(['Alice', 'Carol'])
 			expect(comments[1].text).toBe('Quote.\nAnother comment.')
 		})
+	})
+
+	test('TemplateStyles inside a comment part are hidden from comparison', () => {
+		// TemplateStyles emits <style> for the first use of a template on the page and <link> for the
+		// rest, so which one a comment gets depends on the comments above it.
+		const parseReply = (/** @type {string} */ styles) =>
+			parse(
+				heading +
+					firstComment +
+					`<dl><dd>${styles}<blockquote class="talkquote"><p>Quote.</p></blockquote>Reply. <a href="/wiki/User:Bob" title="User:Bob">Bob</a> 01:00, 1 January 2026 (UTC)</dd></dl>`,
+			).comments[1]
+		const withStyle = parseReply('<style data-mw-deduplicate="TemplateStyles:r1">.x{}</style>')
+		const withLink = parseReply(
+			'<link rel="mw-deduplicated-inline-style" href="mw-data:TemplateStyles:r1">',
+		)
+
+		expect(withStyle.text).toBe('Quote.Reply.')
+		expect(withStyle.htmlToCompare).toBe(withLink.htmlToCompare)
+		expect(withStyle.elementHtmls).toEqual(withLink.elementHtmls)
+		expect(withStyle.hiddenElementsData).toEqual([
+			{
+				type: 'templateStyles',
+				tagName: 'STYLE',
+				html: '<style>.x{}</style>',
+			},
+		])
 	})
 })

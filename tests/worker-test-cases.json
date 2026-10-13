@@ -2785,7 +2785,7 @@
 					{
 						"level": 1,
 						"authorName": "Example",
-						"htmlToCompare": "Comment. <sup id=\"cite&#95;ref-1\" class=\"reference\"><a href=\"#cite_note-1\"><span class=\"cite-bracket\">&#91;</span>note 1<span class=\"cite-bracket\">&#93;</span></a></sup> — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">21:00, 20 January 2020 (UTC)</span></span>",
+						"htmlToCompare": "Comment. <span>\u00011_reference\u0002</span> — <span class=\"cd-signature\"><a href=\"/wiki/User:Example\" title=\"User:Example\">Example</a> (<a href=\"/wiki/User_talk:Example\" title=\"User talk:Example\">talk</a>) <span class=\"cd-timestamp\">21:00, 20 January 2020 (UTC)</span></span>",
 						"followsHeading": true,
 						"date": "2020-01-20T21:00:00.000Z"
 					},
