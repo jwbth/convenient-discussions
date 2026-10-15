@@ -18,6 +18,7 @@ const config = defineConfig(
 			'src/tribute/**',
 			'sandbox/**',
 			'.backup/**',
+			'.scratch/**',
 			'i18n/**',
 			'e2e/**',
 			'tests/**',
