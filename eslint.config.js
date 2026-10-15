@@ -1,3 +1,4 @@
+import { includeIgnoreFile } from '@eslint/compat'
 import js from '@eslint/js'
 import stylistic from '@stylistic/eslint-plugin'
 import { defineConfig } from 'eslint/config'
@@ -11,21 +12,9 @@ import unusedImports from 'eslint-plugin-unused-imports'
 import tseslint from 'typescript-eslint'
 
 const config = defineConfig(
+	includeIgnoreFile(`${import.meta.dirname}/.gitignore`),
 	{
-		ignores: [
-			'.claude/**',
-			'dist/**',
-			'src/tribute/**',
-			'sandbox/**',
-			'.backup/**',
-			'.scratch/**',
-			'i18n/**',
-			'e2e/**',
-			'tests/**',
-			'playwright-report/**',
-			'test-results/**',
-			'playwright/.auth/**',
-		],
+		ignores: ['.claude/**', 'src/tribute/**', 'i18n/**', 'e2e/**', 'tests/**'],
 	},
 	{
 		settings: {
@@ -141,7 +130,6 @@ const config = defineConfig(
 					'./src/worker/jsconfig.json',
 					'./src/shared/jsconfig.json',
 					'./config/jsconfig.json',
-					// './sandbox/jsconfig.json',
 				],
 				tsconfigRootDir: import.meta.dirname,
 			}),
