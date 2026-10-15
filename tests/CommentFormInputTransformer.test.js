@@ -463,6 +463,12 @@ describe('Tags and templates', () => {
 		form: firstCommentReplyForm,
 	})
 	testWithData({
+		label: 'Newline inside <noinclude>, add section',
+		code: '{{Notice}}<noinclude>\n{{Help}}</noinclude>\nText.',
+		expected: '{{Notice}}<noinclude>\n{{Help}}</noinclude>\nText. ~~~~\n',
+		form: addSectionForm,
+	})
+	testWithData({
 		label: 'Template, add section',
 		code: '{{Template 1}}\n{{Template 2}}\nEnd.',
 		expected: '{{Template 1}}\n{{Template 2}}\nEnd. ~~~~\n',

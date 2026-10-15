@@ -341,6 +341,28 @@ describe('editing an opening comment', () => {
 		expect(source.toInputValue()).toBe('Opening text.')
 	})
 
+	test.each(['noinclude', 'includeonly', 'onlyinclude'])(
+		'keeps newlines inside <%s> in the input value',
+		(tag) => {
+			const source = locate(
+				[
+					'== Topic ==',
+					`{{Notice}}<${tag}>`,
+					`{{Help}}</${tag}>`,
+					'Opening',
+					`text. ${sign('Alice', '10:00')}`,
+					`: Reply text. ${sign('Bob', '11:00')}`,
+					'',
+				].join('\n'),
+				makeOpeningCommentData(),
+			)
+
+			expect(source.toInputValue()).toBe(
+				`{{Notice}}<${tag}>\n{{Help}}</${tag}> Opening text.`,
+			)
+		},
+	)
+
 	test('replaces the heading together with the comment', () => {
 		const source = locate(code, makeOpeningCommentData())
 

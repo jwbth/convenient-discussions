@@ -211,7 +211,10 @@ class TextMasker {
 	 */
 	maskSensitiveCode(templateHandler) {
 		return (
-			this.maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
+			// Transclusion tags lay out their content for either the page or its transclusions, so
+			// line breaks inside them can't be judged by the comment's own layout.
+			this.maskTags(['noinclude', 'includeonly', 'onlyinclude'], 'block')
+				.maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
 				.maskTags(['gallery', 'poem'], 'gallery')
 				.maskTags(['nowiki'], 'inline')
 				.maskTemplatesRecursively(templateHandler)
