@@ -19,9 +19,10 @@ curl -s -A "cd-dev" "https://<wiki>/w/api.php?action=compare&fromrev=<rev>&torel
 
 ## 2. Build the loop
 
-Both directions have a Vitest seam that runs in about a second, so the browser stays out of the loop:
+Vitest seams run in about a second, so the browser stays out of the loop:
 
-- **Editing**: `tests/CommentSource.test.js`. Build the section's code, locate the comment with `locate`, `sign`, and `makeOpeningCommentData` (or `makeData` for replies), and assert `toInputValue()`.
+- **Round trip**: `tests/CommentSource.toInputValue.test.js` (`post`, `editUnchanged`) runs both directions on the same markup. Start here when it's unclear which direction is at fault: a red assertion on one side names it.
+- **Editing**: `toInputValue()` on a comment located with the helpers in `tests/utils-commentSource.js`.
 - **Posting**: `testWithData` in `tests/CommentFormInputTransformer.test.js`, with a form fixture matching the comment's mode and level (`addSectionForm` for level 0, `firstCommentReplyForm` for an indented reply).
 
 Put the reported markup in, run `npx vitest run <file>`, and see the loop go red on the symptom. The transformer test's `cd.g` and `cd.config` are hand-written mocks: when a rule depends on `pniePattern` or a config value, check the mock against `src/loader/baseGlobals.js` and `config/default.js`.
