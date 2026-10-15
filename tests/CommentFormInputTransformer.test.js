@@ -469,6 +469,18 @@ describe('Tags and templates', () => {
 		form: addSectionForm,
 	})
 	testWithData({
+		label: 'Whole comment in <small>, pipe inside <noinclude>, edit 0-level comment',
+		code: '<small>Text <noinclude>a|b</noinclude></small>',
+		expected: '{{smalldiv|1=Text <noinclude>a{{!}}b</noinclude>' + existingSignature + '}}',
+		form: {
+			mode: 'edit',
+			target: {
+				source: { indentation: '', code: 'Text.', signatureCode: existingSignature },
+				openingSection: false,
+			},
+		},
+	})
+	testWithData({
 		label: 'Template, add section',
 		code: '{{Template 1}}\n{{Template 2}}\nEnd.',
 		expected: '{{Template 1}}\n{{Template 2}}\nEnd. ~~~~\n',

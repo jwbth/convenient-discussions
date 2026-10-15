@@ -284,7 +284,7 @@ describe('editing an opening comment', () => {
 				makeOpeningCommentData(),
 			)
 
-			expect(source.toInputValue()).toBe(`{{Notice}}<${tag}>\n{{Help}}</${tag}> Opening text.`)
+			expect(source.toInputValue()).toBe(`{{Notice}}<${tag}>\n{{Help}}</${tag}>\nOpening text.`)
 		},
 	)
 

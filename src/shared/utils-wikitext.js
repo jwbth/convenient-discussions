@@ -177,6 +177,45 @@ export function endWithTwoNewlines(code) {
 }
 
 /**
+ * Regexps for `<noinclude>`, `<includeonly>`, and `<onlyinclude>` tags, capturing the opening tag
+ * and the content. These tags lay out their content for either the page or its transclusions, so
+ * line breaks inside them can't be judged by the comment's own layout. Only unindented comments
+ * keep such line breaks as they are: in an indented one, a raw newline would end the list item.
+ */
+export const transclusionTagRegexps = ['noinclude', 'includeonly', 'onlyinclude'].map(
+	(tag) => new RegExp(`(<${tag}(?: [^/>]*)?>)([^]+?)(?=</${tag}>)`, 'gi'),
+)
+
+/**
+ * Make a function telling whether a position in the code is inside the content of a tag matched by
+ * {@link transclusionTagRegexps}.
+ *
+ * @param {string} code
+ * @returns {(index: number) => boolean}
+ */
+export function makeTransclusionTagContentTester(code) {
+	const ranges = transclusionTagRegexps.flatMap((regexp) =>
+		[...code.matchAll(regexp)].map((match) => ({
+			start: match.index + match[1].length,
+			end: match.index + match[0].length,
+		})),
+	)
+
+	return (index) => ranges.some(({ start, end }) => index >= start && index < end)
+}
+
+/**
+ * Remove `<noinclude>`, `<includeonly>`, and `<onlyinclude>` tags, leaving their content. The tags
+ * leave no trace on the page, so line break rules should judge a line without them.
+ *
+ * @param {string} code
+ * @returns {string}
+ */
+export function removeTransclusionTags(code) {
+	return code.replace(/<\/?(?:noinclude|includeonly|onlyinclude)(?: [^/>]*)?>/gi, '')
+}
+
+/**
  * Replace `<br>`s with `\n`, except in list elements and `<pre>`'s created by a space starting a
  * line.
  *

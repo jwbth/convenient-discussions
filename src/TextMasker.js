@@ -1,6 +1,6 @@
 import cd from './loader/cd'
 import { removeNonLetters } from './shared/utils-general'
-import { generateTagsRegexp } from './shared/utils-wikitext'
+import { generateTagsRegexp, transclusionTagRegexps } from './shared/utils-wikitext'
 
 /**
  * Class for replacing parts of a text that shouldn't be modified, with a placeholder, in order to
@@ -204,15 +204,15 @@ class TextMasker {
 	}
 
 	/**
-	 * Replace `<noinclude>`, `<includeonly>`, and `<onlyinclude>` tags with placeholders. They lay out
-	 * their content for either the page or its transclusions, so line breaks inside them can't be
-	 * judged by the comment's own layout. Only for unindented comments: in an indented one, a raw
-	 * newline would end the list item.
+	 * Replace the content of tags matched by {@link transclusionTagRegexps} with placeholders.
 	 *
 	 * @returns {this}
 	 */
 	maskTransclusionTags() {
-		return this.maskTags(['noinclude', 'includeonly', 'onlyinclude'], 'block')
+		return transclusionTagRegexps.reduce(
+			(masker, regexp) => masker.mask(regexp, 'transclusion', true),
+			this,
+		)
 	}
 
 	/**

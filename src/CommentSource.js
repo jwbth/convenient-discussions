@@ -10,8 +10,10 @@ import {
 } from './shared/utils-general'
 import {
 	brsToNewlines,
+	makeTransclusionTagContentTester,
 	maskDistractingCode,
 	normalizeCode,
+	removeTransclusionTags,
 	removeWikiMarkup,
 } from './shared/utils-wikitext'
 import { extractSignatures } from './utils-window'
@@ -619,13 +621,9 @@ class CommentSource {
 		const commentLevel = level === undefined ? this.commentData.level : level
 		const originalIndentationLength = this.originalIndentation.length
 
-		const textMasker = new TextMasker(this.code)
-		if (commentLevel === 0) {
-			textMasker.maskTransclusionTags()
-		}
-		let inputValue = textMasker
+		let inputValue = new TextMasker(this.code)
 			.maskSensitiveCode()
-			.withText((code) => {
+			.withText((code, textMasker) => {
 				if (commentLevel === 0) {
 					// Collapse random line breaks that do not affect text rendering but would otherwise
 					// transform into <br> on posting. \u0001 and \u0002 mean the beginning and ending of
@@ -644,22 +642,41 @@ class CommentSource {
 						'i',
 					)
 					const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/
+					const isInTransclusionTag = makeTransclusionTagContentTester(code)
 					code = code.replace(
 						/^((?![:*#; ]).+)\n(?![\n:*#; \u0003])(?=(.*))/gm,
-						/** @type {ReplaceCallback} */ (_s, currentLine, nextLine) =>
-							currentLine +
-							// Newline or space
-							(entireLineRegexp.test(currentLine) ||
-							entireLineRegexp.test(nextLine) ||
-							fileRegexp.test(currentLine) ||
-							fileRegexp.test(nextLine) ||
-							entireLineFromStartRegexp.test(currentLine) ||
-							entireLineFromStartRegexp.test(nextLine) ||
-							currentLineEndingRegexp.test(currentLine) ||
-							nextLineBeginningRegexp.test(nextLine)
-								? '\n'
-								: ' '),
+						/** @type {(s: string, currentLine: string, nextLine: string, offset: number) => string} */ (
+							s,
+							currentLine,
+							nextLine,
+							offset,
+						) => {
+							if (isInTransclusionTag(offset + currentLine.length)) {
+								return s
+							}
+
+							const current = removeTransclusionTags(currentLine)
+							const next = removeTransclusionTags(nextLine)
+
+							return (
+								currentLine +
+								// Newline or space
+								(entireLineRegexp.test(current) ||
+								entireLineRegexp.test(next) ||
+								fileRegexp.test(current) ||
+								fileRegexp.test(next) ||
+								entireLineFromStartRegexp.test(current) ||
+								entireLineFromStartRegexp.test(next) ||
+								currentLineEndingRegexp.test(current) ||
+								nextLineBeginningRegexp.test(next)
+									? '\n'
+									: ' ')
+							)
+						},
 					)
+
+					// Keep <br>s inside these tags from turning into newlines, which posting would keep raw.
+					code = new TextMasker(code, textMasker.getMaskedTexts()).maskTransclusionTags().getText()
 				}
 
 				code = brsToNewlines(code, '\u0001\n')

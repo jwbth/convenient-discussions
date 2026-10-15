@@ -2,7 +2,12 @@ import TextMasker from './TextMasker'
 import cd from './loader/cd'
 import CdError from './shared/CdError'
 import { isKeyOf } from './shared/utils-general'
-import { escapePipesOutsideLinks, generateTagsRegexp } from './shared/utils-wikitext'
+import {
+	escapePipesOutsideLinks,
+	generateTagsRegexp,
+	makeTransclusionTagContentTester,
+	removeTransclusionTags,
+} from './shared/utils-wikitext'
 
 /**
  * Class that processes the comment form input and prepares the wikitext to insert into the page.
@@ -143,10 +148,6 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	processAndMaskSensitiveCode() {
-		if (!this.isIndented()) {
-			this.maskTransclusionTags()
-		}
-
 		return this.maskSensitiveCode((code) => this.processCode(code, true))
 	}
 
@@ -354,36 +355,52 @@ class CommentFormInputTransformer extends TextMasker {
 			'i',
 		)
 
+		const isInTransclusionTag = this.isIndented()
+			? () => false
+			: makeTransclusionTagContentTester(code)
+
 		code = code.replace(
 			// Capture newline characters
 			this.isIndented()
 				? /^(.+)\n(?![:#])(?=(.*))/gm
 				: /^((?![:*#; ]).+)\n(?![\n:*#; \u0003])(?=(.*))/gm,
 
-			/** @type {ReplaceCallback} */ (_s, currentLine, nextLine) =>
-				currentLine +
-				// Line break if needed
-				(entireLineRegexp.test(currentLine) ||
-				entireLineRegexp.test(nextLine) ||
-				(!this.isIndented() &&
-					(entireLineFromStartRegexp.test(currentLine) ||
-						entireLineFromStartRegexp.test(nextLine))) ||
-				fileRegexp.test(currentLine) ||
-				fileRegexp.test(nextLine) ||
-				CommentFormInputTransformer.galleryRegexp.test(currentLine) ||
-				CommentFormInputTransformer.galleryRegexp.test(nextLine) ||
-				// Removing <br>s after block elements is not a perfect solution as there would be no
-				// newlines when editing such a comment, but this way we would avoid empty lines in
-				// cases like `</div><br>`.
-				currentLineEndingRegexp.test(currentLine) ||
-				nextLineBeginningRegexp.test(nextLine)
-					? ''
-					: '<br>' + (this.isIndented() ? ' ' : '')) +
-				// Newline if needed. Current line can match galleryRegexp only if the comment will not be
-				// indented.
-				(this.isIndented() && !CommentFormInputTransformer.galleryRegexp.test(nextLine)
-					? ''
-					: '\n'),
+			/** @type {(s: string, currentLine: string, nextLine: string, offset: number) => string} */ (
+				s,
+				currentLine,
+				nextLine,
+				offset,
+			) => {
+				if (isInTransclusionTag(offset + currentLine.length)) {
+					return s
+				}
+
+				const current = removeTransclusionTags(currentLine)
+				const next = removeTransclusionTags(nextLine)
+
+				return (
+					currentLine +
+					// Line break if needed
+					(entireLineRegexp.test(current) ||
+					entireLineRegexp.test(next) ||
+					(!this.isIndented() &&
+						(entireLineFromStartRegexp.test(current) || entireLineFromStartRegexp.test(next))) ||
+					fileRegexp.test(current) ||
+					fileRegexp.test(next) ||
+					CommentFormInputTransformer.galleryRegexp.test(current) ||
+					CommentFormInputTransformer.galleryRegexp.test(next) ||
+					// Removing <br>s after block elements is not a perfect solution as there would be no
+					// newlines when editing such a comment, but this way we would avoid empty lines in
+					// cases like `</div><br>`.
+					currentLineEndingRegexp.test(current) ||
+					nextLineBeginningRegexp.test(next)
+						? ''
+						: '<br>' + (this.isIndented() ? ' ' : '')) +
+					// Newline if needed. Current line can match galleryRegexp only if the comment will not be
+					// indented.
+					(this.isIndented() && !CommentFormInputTransformer.galleryRegexp.test(next) ? '' : '\n')
+				)
+			},
 		)
 
 		return code

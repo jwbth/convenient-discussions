@@ -269,6 +269,11 @@ describe('posting, then editing without changes', () => {
 		[0, 'Text.\n----\nText.'],
 		[0, 'Text <pre>a\nb</pre> end.'],
 		[0, 'Text.<noinclude>\n{{Help}}</noinclude>'],
+		[0, '{{Notice}}<noinclude>\n{{Help}}</noinclude>\nText.'],
+		[0, 'Text.<noinclude>a<br>b</noinclude>'],
+		[0, 'Text.<noinclude>a</noinclude>\nText.'],
+		[0, 'Text.<noinclude>\n* Item.</noinclude>'],
+		[0, 'Text.<noinclude><nowiki></noinclude></nowiki>a\nb</noinclude>'],
 		[1, 'Line 1.\nLine 2.'],
 		[1, 'Para 1.\n\nPara 2.'],
 		[1, 'Text.\n* Item 1.\n* Item 2.'],
@@ -327,6 +332,12 @@ describe('posting, then editing without changes', () => {
 				.filter(Boolean)
 				.every((line) => line.startsWith(':')),
 		).toBe(true)
+	})
+
+	test('keeps a <br> after </noinclude>', () => {
+		expect(editUnchanged(locateOpening('Text.<noinclude>a</noinclude><br>Text.'))).toBe(
+			originalCode('Text.<noinclude>a</noinclude><br>\nText.', 0),
+		)
 	})
 
 	test.fails.each([
