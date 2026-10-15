@@ -5,6 +5,14 @@ import SectionSource from '../src/SectionSource'
 import cd from '../src/loader/cd'
 import userRegistry from '../src/userRegistry'
 
+import {
+	locate,
+	makeData,
+	makeOpeningCommentData,
+	makeReplyData,
+	sign,
+} from './utils-commentSource'
+
 import { initCommonsGlobals } from './utils-wikiGlobals'
 
 /** @typedef {import('../src/CommentSource').CommentData} CommentData */
@@ -22,32 +30,6 @@ const sectionCode = [
 	': Reply text. [[User:Bob|Bob]] ([[User talk:Bob|talk]]) 11:00, 1 January 2024 (UTC)',
 	'',
 ].join('\n')
-
-/**
- * Comment data of Bob's reply in {@link sectionCode}.
- *
- * @returns {CommentData}
- */
-function makeReplyData() {
-	return {
-		author: userRegistry.get('Bob'),
-		timestamp: '11:00, 1 January 2024 (UTC)',
-		index: 1,
-		previousComments: [{ authorName: 'Alice', timestamp: '10:00, 1 January 2024 (UTC)' }],
-		followsHeading: false,
-		followsHeadingOnPage: false,
-		sectionHeadline: 'Topic',
-		text: 'Reply text.',
-		level: 1,
-		own: false,
-		openingSection: false,
-		tableComment: false,
-		hasForeignTimestamps: false,
-		hasPreWithElements: false,
-		childLevels: [],
-		hasValidReplies: false,
-	}
-}
 
 describe('CommentSource.locate', () => {
 	test('locates a comment from plain comment data', () => {
@@ -109,7 +91,9 @@ describe('deleting an opening comment', () => {
 
 	test('needs the section source when the span has the heading', () => {
 		const code = ['== Topic ==', openingLine, '', '== Next ==', 'Next text.', ''].join('\n')
-		const source = /** @type {CommentSource} */ (CommentSource.locate(code, makeOpeningCommentData()))
+		const source = /** @type {CommentSource} */ (
+			CommentSource.locate(code, makeOpeningCommentData())
+		)
 
 		expect(source.deletesWholeSection()).toBe(true)
 		expect(() => source.modifyContext({ action: 'edit', doDelete: true })).toThrow(
@@ -119,7 +103,9 @@ describe('deleting an opening comment', () => {
 
 	test('deletes only its lines, with no section source, when the span has no heading', () => {
 		const code = [openingLine, '', 'Other text.', ''].join('\n')
-		const source = /** @type {CommentSource} */ (CommentSource.locate(code, makeOpeningCommentData()))
+		const source = /** @type {CommentSource} */ (
+			CommentSource.locate(code, makeOpeningCommentData())
+		)
 
 		expect(source.deletesWholeSection()).toBe(false)
 		expect(source.modifyContext({ action: 'edit', doDelete: true }).contextCode).toBe(
@@ -127,65 +113,6 @@ describe('deleting an opening comment', () => {
 		)
 	})
 })
-
-/**
- * Signature as Commons users sign, on 1 January 2024.
- *
- * @param {string} name
- * @param {string} time
- * @returns {string}
- */
-function sign(name, time) {
-	return `[[User:${name}|${name}]] ([[User talk:${name}|talk]]) ${time}, 1 January 2024 (UTC)`
-}
-
-/**
- * Comment data of a comment in a "Topic" section, with the identification taken from the arguments.
- *
- * @param {string} name
- * @param {string} time
- * @param {Partial<CommentData>} [overrides]
- * @returns {CommentData}
- */
-function makeData(name, time, overrides = {}) {
-	return {
-		...makeReplyData(),
-		author: userRegistry.get(name),
-		timestamp: `${time}, 1 January 2024 (UTC)`,
-		...overrides,
-	}
-}
-
-/**
- * Comment data of Alice's opening comment of a "Topic" section.
- *
- * @returns {CommentData}
- */
-function makeOpeningCommentData() {
-	return makeData('Alice', '10:00', {
-		index: 0,
-		previousComments: [],
-		followsHeading: true,
-		followsHeadingOnPage: true,
-		text: 'Opening text.',
-		level: 0,
-		openingSection: true,
-	})
-}
-
-/**
- * Locate a comment, failing the test if it isn't found.
- *
- * @param {string} code
- * @param {CommentData} data
- * @returns {CommentSource}
- */
-function locate(code, data) {
-	const source = CommentSource.locate(code, data, true)
-	expect(source).toBeDefined()
-
-	return /** @type {CommentSource} */ (source)
-}
 
 /**
  * Run a function and return the code of the error it threw.
@@ -357,9 +284,7 @@ describe('editing an opening comment', () => {
 				makeOpeningCommentData(),
 			)
 
-			expect(source.toInputValue()).toBe(
-				`{{Notice}}<${tag}>\n{{Help}}</${tag}> Opening text.`,
-			)
+			expect(source.toInputValue()).toBe(`{{Notice}}<${tag}>\n{{Help}}</${tag}> Opening text.`)
 		},
 	)
 
@@ -399,7 +324,6 @@ describe('deleting', () => {
 	})
 
 	describe('the opening comment of a section', () => {
-
 		/**
 		 * Section data of the "Topic" section.
 		 *
@@ -480,7 +404,10 @@ describe('broken indentation', () => {
 	test.each(
 		/** @type {[string, Partial<CommentData>][]} */ ([
 			['has children but no valid replies', { childLevels: [1], hasValidReplies: false }],
-			['has valid replies all deeper than the detected level', { childLevels: [3], hasValidReplies: true }],
+			[
+				'has valid replies all deeper than the detected level',
+				{ childLevels: [3], hasValidReplies: true },
+			],
 		]),
 	)('can be fixed when the comment %s', (_name, overrides) => {
 		expect(locate(code, { ...makeBrokenData(), ...overrides }).detectedActualLevel).toBe(2)
@@ -488,7 +415,10 @@ describe('broken indentation', () => {
 
 	test.each(
 		/** @type {[string, Partial<CommentData>][]} */ ([
-			['has valid replies not deeper than the detected level', { childLevels: [1, 3], hasValidReplies: true }],
+			[
+				'has valid replies not deeper than the detected level',
+				{ childLevels: [1, 3], hasValidReplies: true },
+			],
 			['has `<pre>` blocks with elements', { hasPreWithElements: true }],
 		]),
 	)("can't be fixed when the comment %s", (_name, overrides) => {

@@ -608,8 +608,6 @@ class CommentSource {
 		this.excludeSmallFontWrappers()
 	}
 
-	// TODO: We need tests for toInputValue()
-
 	/**
 	 * Convert the comment's source code to code to set as a value of an input (practically, to the
 	 * {@link CommentForm#commentInput comment form's input}).
