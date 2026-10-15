@@ -19,7 +19,7 @@ curl -s -A "cd-dev" "https://<wiki>/w/api.php?action=compare&fromrev=<rev>&torel
 
 ## 2. Build the loop
 
-Vitest seams run in about a second, so the browser stays out of the loop:
+The loop runs on Vitest seams:
 
 - **Round trip**: `tests/CommentSource.toInputValue.test.js` (`post`, `editUnchanged`) runs both directions on the same markup. Start here when it's unclear which direction is at fault: a red assertion on one side names it.
 - **Editing**: `toInputValue()` on a comment located with the helpers in `tests/utils-commentSource.js`.
@@ -27,9 +27,9 @@ Vitest seams run in about a second, so the browser stays out of the loop:
 
 Put the reported markup in, run `npx vitest run <file>`, and see the loop go red on the symptom. The transformer test's `cd.g` and `cd.config` are hand-written mocks: when a rule depends on `pniePattern` or a config value, check the mock against `src/loader/baseGlobals.js` and `config/default.js`.
 
-Write expectations after a run, not before. The collapsing rules are easy to misjudge: a line break after a closing tag or a masked block in mid-line still collapses to a space at level 0, and the transformer adds no `<br>` after a line that ends in a masked block. Judge the actual output by what MediaWiki renders from it, not by how close it stays to the source text.
+Write expectations after a run: the collapsing rules are easy to misjudge. A line break after a closing tag or a masked block in mid-line collapses to a space at level 0, and the transformer adds no `<br>` after a line that ends in a masked block. Judge the output by what MediaWiki renders from it.
 
-Edit tests with the Edit tool: `sed` on JS strings holding escaped `\n` fails to match without an error.
+Edit code holding escaped strings (`'a\nb'`) with the Edit tool: shell and script substitutions miss or mangle the escapes without an error.
 
 ## 3. Minimise
 
@@ -47,6 +47,6 @@ Rank 3–5 hypotheses, each with the change that would turn the loop green, befo
 
 ## 5. Fix and lock down
 
-The two directions must stay coordinated, as their code comments say: a rule changed in one usually needs its mirror in the other, or the next edit undoes the fix. A change to `maskSensitiveCode` covers both at once but also reaches its other callers: heading detection in `CommentSource#adjust`, `escapePipesOutsideLinks`, and the `brsToNewlines` pass in `src/utils-api.js`. Check each against the new masking.
+The two directions must stay coordinated, as their code comments say: a rule changed in one usually needs its mirror in the other, or the next edit undoes the fix. A change to `maskSensitiveCode` covers both at once but also reaches its other callers: check each against the new masking. Masking hides markup from every later step, so keep its scope to the rule that needs it.
 
-Write a regression test at each seam the fix touches, using the minimised markup, both at level 0 and in a reply: a fix fitted to one level easily breaks the other (masked code keeps raw newlines, which end a reply's list item). See it fail with the fix stashed (`git stash push <file>`, run, `git stash pop`), then pass. For an end-to-end check, open the comment for editing on the test page and use the form's "View changes", which shows the diff without saving.
+Write a regression test at each seam the fix touches, using the minimised markup, both at level 0 and in a reply: a fix fitted to one level easily breaks the other (a raw newline kept at level 0 ends a reply's list item). See it fail with the fix stashed (`git stash push <file>`, run, `git stash pop`), then pass. For an end-to-end check, open the comment for editing on the test page and use the form's "View changes", which shows the diff without saving.
