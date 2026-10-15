@@ -318,7 +318,7 @@ describe('posting, then editing without changes', () => {
 		expect(editUnchanged(source)).toBe(postedCode(code, level))
 	})
 
-	test.fails('keeps a newline inside <noinclude> in a reply from breaking the list item', () => {
+	test('keeps a newline inside <noinclude> in a reply from breaking the list item', () => {
 		const { code } = post('Text.<noinclude>\n{{Help}}</noinclude>', 1)
 
 		expect(

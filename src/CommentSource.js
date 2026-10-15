@@ -619,7 +619,11 @@ class CommentSource {
 		const commentLevel = level === undefined ? this.commentData.level : level
 		const originalIndentationLength = this.originalIndentation.length
 
-		let inputValue = new TextMasker(this.code)
+		const textMasker = new TextMasker(this.code)
+		if (commentLevel === 0) {
+			textMasker.maskTransclusionTags()
+		}
+		let inputValue = textMasker
 			.maskSensitiveCode()
 			.withText((code) => {
 				if (commentLevel === 0) {

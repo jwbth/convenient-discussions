@@ -204,6 +204,18 @@ class TextMasker {
 	}
 
 	/**
+	 * Replace `<noinclude>`, `<includeonly>`, and `<onlyinclude>` tags with placeholders. They lay out
+	 * their content for either the page or its transclusions, so line breaks inside them can't be
+	 * judged by the comment's own layout. Only for unindented comments: in an indented one, a raw
+	 * newline would end the list item.
+	 *
+	 * @returns {this}
+	 */
+	maskTransclusionTags() {
+		return this.maskTags(['noinclude', 'includeonly', 'onlyinclude'], 'block')
+	}
+
+	/**
 	 * Replace code, that should not be modified when processing it, with placeholders.
 	 *
 	 * @param {(code: string) => string} [templateHandler]
@@ -211,10 +223,7 @@ class TextMasker {
 	 */
 	maskSensitiveCode(templateHandler) {
 		return (
-			// Transclusion tags lay out their content for either the page or its transclusions, so
-			// line breaks inside them can't be judged by the comment's own layout.
-			this.maskTags(['noinclude', 'includeonly', 'onlyinclude'], 'block')
-				.maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
+			this.maskTags(['pre', 'source', 'syntaxhighlight'], 'block')
 				.maskTags(['gallery', 'poem'], 'gallery')
 				.maskTags(['nowiki'], 'inline')
 				.maskTemplatesRecursively(templateHandler)

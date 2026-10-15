@@ -143,6 +143,10 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @private
 	 */
 	processAndMaskSensitiveCode() {
+		if (!this.isIndented()) {
+			this.maskTransclusionTags()
+		}
+
 		return this.maskSensitiveCode((code) => this.processCode(code, true))
 	}
 
