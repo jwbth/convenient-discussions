@@ -14,4 +14,5 @@ playwright-report/
 playwright/.auth/
 test-results/
 tests/worker-test-cases-regenerated.json
+.claude/skills/
 .claude/worktrees/

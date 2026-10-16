@@ -14,7 +14,7 @@ import tseslint from 'typescript-eslint'
 const config = defineConfig(
 	includeIgnoreFile(`${import.meta.dirname}/.gitignore`),
 	{
-		ignores: ['.claude/**', 'src/tribute/**', 'i18n/**', 'e2e/**', 'tests/**'],
+		ignores: ['.agents/**', '.claude/**', 'src/tribute/**', 'i18n/**', 'e2e/**', 'tests/**'],
 	},
 	{
 		settings: {
