@@ -56,8 +56,10 @@ class MentionsAutocomplete extends BaseAutocomplete {
 			start: `@[[${pageName}|`,
 			end: ']]' + (alt ? colon : '') + (cmd ? colon : ''),
 			content:
-				// The pipe trick would mangle a name with a parenthesis or a comma.
-				!selectedText && !shift && !pageName.includes('/') && !/[(,]/.test(name)
+				// The pipe trick can shorten usernames containing parentheses or commas. It also leaves
+				// a namespace containing parentheses, such as Usuário(a), visible in the label.
+				// Use an explicit label in these cases.
+				!selectedText && !shift && !pageName.includes('/') && !/[(,]/.test(pageName)
 					? ''
 					: selectedText || name,
 		}

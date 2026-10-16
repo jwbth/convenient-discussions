@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi } from 'vitest'
 
 vi.mock('../src/utils-window', () => ({
 	interlanguagePrefixes: new Set(),
@@ -13,7 +13,10 @@ vi.mock('../src/loader/cd', () => ({
 }))
 vi.mock('../src/userRegistry', () => ({
 	default: {
-		get: () => ({ getNamespaceAlias: () => 'User', isRegistered: () => true }),
+		get: () => ({
+			getNamespaceAlias: () => mw.config.get('wgFormattedNamespaces')[2],
+			isRegistered: () => true,
+		}),
 	},
 }))
 
@@ -27,6 +30,10 @@ const wikilinks = new WikilinksAutocomplete()
 const templates = new TemplatesAutocomplete()
 const tags = new TagsAutocomplete()
 const mentions = new MentionsAutocomplete()
+
+beforeEach(() => {
+	mw.config.set('wgFormattedNamespaces', { 2: 'User' })
+})
 
 
 /** @typedef {import('../src/autocompleteInsertion').InsertionSource} InsertionSource */
@@ -540,6 +547,54 @@ describe('getReplacements', () => {
 
 			expect(result).toBe('a <references /> b')
 			expect(selected).toBe('')
+		})
+	})
+
+	describe('mentions in a namespace with parentheses (T402449)', () => {
+		beforeEach(() => {
+			mw.config.set('wgFormattedNamespaces', { 2: 'Usuário(a)' })
+		})
+
+		/** @param {import('../src/autocompleteInsertion').KeyState} [event] */
+		const completeMention = (event) =>
+			complete({
+				before: 'Hi @Ex',
+				after: ' there',
+				trigger: '@',
+				insertion: mentionInsertion('Example'),
+				event,
+			})
+
+		it('inserts an explicit label without selecting it', () => {
+			const { result, selected } = completeMention()
+
+			expect(result).toBe('Hi @[[Usuário(a):Example|Example]] there')
+			expect(selected).toBeUndefined()
+		})
+
+		it('selects the label with Shift without duplicating the name', () => {
+			const { result, selected } = completeMention({ key: 'Enter', shiftKey: true })
+
+			expect(result).toBe('Hi @[[Usuário(a):Example|Example]] there')
+			expect(selected).toBe('Example')
+		})
+
+		it('appends a colon with Alt after the explicit label', () => {
+			expect(completeMention({ key: 'Enter', altKey: true }).result).toBe(
+				'Hi @[[Usuário(a):Example|Example]]:  there',
+			)
+		})
+
+		it('wraps saved text once and keeps its spaces outside the mention', () => {
+			expect(
+				complete({
+					before: 'Hi @Ex',
+					after: 'there',
+					trigger: '@',
+					insertion: mentionInsertion('Example'),
+					savedSelections: [savedSelection('my friend', 3, ' ', ' ')],
+				}).result,
+			).toBe('Hi  @[[Usuário(a):Example|my friend]] there')
 		})
 	})
 

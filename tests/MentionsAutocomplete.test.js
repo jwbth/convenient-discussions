@@ -28,7 +28,7 @@ vi.mock('../src/utils-api', () => ({
 vi.mock('../src/userRegistry', () => ({
 	default: {
 		get: (/** @type {string} */ name) => ({
-			getNamespaceAlias: () => 'User',
+			getNamespaceAlias: () => mw.config.get('wgFormattedNamespaces')[2],
 			isRegistered: () => !/^\d+\.\d+\.\d+\.\d+$/.test(name),
 		}),
 	},
@@ -47,6 +47,7 @@ const assemble = (insertion) => insertion.start + (insertion.content || '') + (i
 let autocomplete
 
 beforeEach(() => {
+	mw.config.set('wgFormattedNamespaces', { 2: 'User', 3: 'User talk' })
 	autocomplete = new MentionsAutocomplete()
 })
 
@@ -55,6 +56,14 @@ describe('MentionsAutocomplete.getInsertionFromEntry', () => {
 		const insertion = autocomplete.getInsertionFromEntry(' Example ')
 
 		expect(assemble(insertion)).toBe('@[[User:Example|]]')
+	})
+
+	it('spells out the name when the namespace contains parentheses (T402449)', () => {
+		mw.config.set('wgFormattedNamespaces', { 2: 'Usuário(a)' })
+
+		expect(assemble(autocomplete.getInsertionFromEntry('Example'))).toBe(
+			'@[[Usuário(a):Example|Example]]',
+		)
 	})
 
 	it('spells out the name with Shift', () => {
