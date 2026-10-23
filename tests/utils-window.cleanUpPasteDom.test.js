@@ -53,9 +53,10 @@ describe('cleanUpPasteDom', () => {
 				'"></a></span>',
 		)
 
-		expect(
-			[...element.querySelectorAll('a')].map((el) => el.getAttribute('href')),
-		).toEqual(['./Файл:Moskwa Metro Line D1.svg', 'https://example.org/'])
+		expect([...element.querySelectorAll('a')].map((el) => el.getAttribute('href'))).toEqual([
+			'./Файл:Moskwa Metro Line D1.svg',
+			'https://example.org/',
+		])
 	})
 
 	test('keeps the plain text of thumbnail captions', () => {
@@ -93,12 +94,7 @@ describe('cleanUpPasteDom', () => {
 				'src="https://upload.wikimedia.org/wikipedia/uk/a/ab/X.png">',
 			false,
 		],
-		[
-			'a file of this wiki',
-			false,
-			'<img resource="./Файл:X.png" src="/images/a/ab/X.png">',
-			true,
-		],
+		['a file of this wiki', false, '<img resource="./Файл:X.png" src="/images/a/ab/X.png">', true],
 	])('%s is kept: %s', (_description, isProbablyWmfSulWiki, imgHtml, isKept) => {
 		cd.g.isProbablyWmfSulWiki = isProbablyWmfSulWiki
 		const { element } = cleanUp(`<span typeof="mw:File">${imgHtml}</span> text`)
@@ -138,6 +134,14 @@ describe('cleanUpPasteDom', () => {
 
 		expect(link?.textContent).toBe('')
 		expect(link?.getAttribute('rel')).toBe('mw:ExtLink')
+	})
+
+	test('keeps a block holding only an empty Parsoid autonumbered external link', () => {
+		const link = cleanUp(
+			'<b>a</b><ul><li><a rel="mw:ExtLink" href="https://example.org/a" class="external autonumber"></a></li></ul>',
+		).element.querySelector('a')
+
+		expect(link?.getAttribute('href')).toBe('https://example.org/a')
 	})
 
 	test('keeps runs of spaces in code', () => {

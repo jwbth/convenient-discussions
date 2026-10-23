@@ -1023,7 +1023,9 @@ export function cleanUpPasteDom(element, containerElement) {
 			(el) =>
 				(!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
 				// Need to keep non-breaking spaces.
-				!el.textContent.replace(/[ \n]+/g, ''),
+				!el.textContent.replace(/[ \n]+/g, '') &&
+				// Parsoid's autonumbered external links have no text (see below).
+				!el.querySelector('.autonumber'),
 		)
 
 		.forEach(removeElement)
