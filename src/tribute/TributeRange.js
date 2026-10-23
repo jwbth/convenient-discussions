@@ -61,7 +61,9 @@ class TributeRange {
 	 * @param {KeyboardEvent | MouseEvent} originalEvent
 	 */
 	replaceTriggerText(item, originalEvent) {
-		let info = this.getTriggerInfo(true, true, true, this.tribute.allowSpaces)
+		// jwbth: Keep the trailing spaces in the query, as the replacement must cover the text up to
+		// the caret.
+		let info = this.getTriggerInfo(true, false, true, this.tribute.allowSpaces)
 		if (info === undefined) return
 
 		let context = this.tribute.current
