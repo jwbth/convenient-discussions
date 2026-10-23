@@ -191,7 +191,7 @@ export default class CommentWorker extends CommentSkeleton {
 	}
 
 	/**
-	 * Hide reference, autonumber, and metadata nodes recursively.
+	 * Hide reference, legacy-parser autonumber, and metadata nodes recursively.
 	 *
 	 * @param {import('domhandler').Element} element
 	 * @private
@@ -201,9 +201,11 @@ export default class CommentWorker extends CommentSkeleton {
 			element.filterRecursively(
 				(node) =>
 					isTag(node) &&
-					(['autonumber', 'reference', 'references'].some((name) =>
-						node.classList.contains(name),
-					) ||
+					(['reference', 'references'].some((name) => node.classList.contains(name)) ||
+						// The legacy parser puts the page-wide number of an autonumbered external link into its
+						// text, so a link added above would change this comment. Parsoid leaves the link empty
+						// and numbers it with CSS.
+						(node.classList.contains('autonumber') && Boolean(node.textContent)) ||
 						isMetadataNode(node)),
 			)
 		)

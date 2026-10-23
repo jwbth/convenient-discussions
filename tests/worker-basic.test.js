@@ -114,6 +114,28 @@ describe('worker', () => {
 		})
 	})
 
+	test.each([
+		[
+			'the legacy parser',
+			'<a class="external autonumber" href="https://example.org/a">[1]</a>',
+			['autonumber'],
+		],
+		[
+			'Parsoid',
+			'<a rel="mw:ExtLink" href="https://example.org/a" class="external autonumber" id="mwAdc"></a>',
+			[],
+		],
+	])('an autonumbered external link is hidden only when numbered in text (%s)', (_, link, types) => {
+		const { comments } = parse(
+			heading +
+				`<p>See ${link}. <a href="/wiki/User:Alice" title="User:Alice">Alice</a> 00:00, 1 January 2026 (UTC)
+</p>`,
+		)
+
+		expect(comments[0].hiddenElementsData.map((data) => data.type)).toEqual(types)
+		expect(comments[0].htmlToCompare.includes('https://example.org/a')).toBe(!types.length)
+	})
+
 	describe('quotes', () => {
 		// The output of {{tqb}}
 		const quote = '<style>.x{}</style><blockquote class="talkquote"><p>Quote.</p></blockquote>'

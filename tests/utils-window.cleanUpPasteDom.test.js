@@ -124,6 +124,22 @@ describe('cleanUpPasteDom', () => {
 		).toBe('<code>{{x}}</code> <code>[[y]]</code>')
 	})
 
+	test.each([
+		[
+			'legacy parser',
+			'<a class="external autonumber" href="https://example.org/a" rel="nofollow">[1]</a>',
+		],
+		[
+			'Parsoid',
+			'<a rel="mw:ExtLink" href="https://example.org/a" class="external autonumber" id="mwAdc"></a>',
+		],
+	])('empties autonumbered external links from the %s', (_parser, linkHtml) => {
+		const link = cleanUp(`<b>a</b> ${linkHtml} b`).element.querySelector('a')
+
+		expect(link?.textContent).toBe('')
+		expect(link?.getAttribute('rel')).toBe('mw:ExtLink')
+	})
+
 	test('keeps runs of spaces in code', () => {
 		expect(cleanUp('<b>a</b> <code>x  y</code>').element.innerHTML).toBe(
 			'<b>a</b> <code>x  y</code>',

@@ -2179,7 +2179,8 @@ class Comment extends mixIntoClass(
 		) {
 			// TODO: support non-Arabic digits (e.g. fa.wikipedia.org). Also not sure square brackets are
 			// the same everywhere.
-			const match = this.$elements.find('.autonumber').text().match(/\d+/)
+			// Parsoid leaves autonumbered external links empty and numbers them with CSS.
+			const match = this.$elements.find('.autonumber:not(:empty)').text().match(/\d+/)
 			let currentAutonumber = match ? Number(match[0]) : 1
 			newComment.elementHtmls.forEach((html, i) => {
 				html = html.replace(
@@ -2207,7 +2208,7 @@ class Comment extends mixIntoClass(
 					}
 				}
 			})
-			this.$elements.find('.autonumber').each((_, el) => {
+			this.$elements.find('.autonumber:not(:empty)').each((_, el) => {
 				$(el).text(`[${currentAutonumber}]`)
 				currentAutonumber++
 			})

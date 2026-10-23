@@ -1073,6 +1073,14 @@ export function cleanUpPasteDom(element, containerElement) {
 			el.setAttribute('href', href)
 		}
 
+		// The legacy parser puts the number of an autonumbered external link into its text, while
+		// Parsoid leaves the link empty and numbers it with CSS. The transform API turns only an empty
+		// link into `[https://example.org]`.
+		if (el.classList.contains('autonumber')) {
+			el.textContent = ''
+			el.setAttribute('rel', 'mw:ExtLink')
+		}
+
 		if (el.classList.contains('new')) {
 			const urlData = parseWikiUrl(href)
 			if (urlData?.hostname === location.hostname) {
@@ -1102,7 +1110,9 @@ export function cleanUpPasteDom(element, containerElement) {
 
 	// Links that wrapped only images with an unknown file name, which are not kept as they are not
 	// in allowedTags.
-	;[...element.querySelectorAll('a')].filter((el) => !el.textContent.trim()).forEach(removeElement)
+	;[...element.querySelectorAll('a:not([rel="mw:ExtLink"])')]
+		.filter((el) => !el.textContent.trim())
+		.forEach(removeElement)
 	;[...element.children]
 		// <dd>s out of <dl>s are likely comment parts that should not create `:` markup. (Bare <li>s
 		// don't create `*` markup in the API.)
