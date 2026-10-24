@@ -596,9 +596,35 @@ async function deployToServer(serverEdits) {
 		if (response.nochange) {
 			success(`No changes in ${edit.url}`)
 		} else {
+			const sizeDelta = await getSizeDelta(edit.server, response.oldrevid, response.newrevid)
 			success(
-				`Successfully edited ${edit.url} (edit timestamp: ${new Date(response.newtimestamp).toUTCString()})`,
+				`Successfully edited ${getUrl(edit.server, edit.title, { diff: response.newrevid })} (${sizeDelta.toLocaleString('en-US', { signDisplay: 'exceptZero' })} bytes, edit timestamp: ${new Date(response.newtimestamp).toUTCString()})`,
 			)
 		}
 	}
+}
+
+/**
+ * Get the size difference between two revisions. The edit API response lacks sizes.
+ *
+ * @param {string} server Server hostname
+ * @param {number} oldRevid ID of the previous revision, `0` if the edit created the page
+ * @param {number} newRevid ID of the new revision
+ * @returns {Promise<number>}
+ */
+async function getSizeDelta(server, oldRevid, newRevid) {
+	const response = await clients[server].request({
+		action: 'query',
+		prop: 'revisions',
+		revids: [oldRevid, newRevid].filter(Boolean),
+		rvprop: ['ids', 'size'],
+	})
+	/** @type {{ revid: number; size: number }[]} */
+	const revisions = response.query.pages.flatMap(
+		(/** @type {{ revisions: { revid: number; size: number }[] }} */ page) => page.revisions,
+	)
+	const getSize = (/** @type {number} */ revid) =>
+		revisions.find((revision) => revision.revid === revid)?.size ?? 0
+
+	return getSize(newRevid) - getSize(oldRevid)
 }
