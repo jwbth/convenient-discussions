@@ -598,7 +598,7 @@ async function deployToServer(serverEdits) {
 		} else {
 			const sizeDelta = await getSizeDelta(edit.server, response.oldrevid, response.newrevid)
 			success(
-				`Successfully edited ${getUrl(edit.server, edit.title, { diff: response.newrevid })} (${sizeDelta.toLocaleString('en-US', { signDisplay: 'exceptZero' })} bytes, edit timestamp: ${new Date(response.newtimestamp).toUTCString()})`,
+				`Successfully edited ${edit.title} on ${edit.server} (${sizeDelta.toLocaleString('en-US', { signDisplay: 'exceptZero' })} bytes, edit timestamp: ${new Date(response.newtimestamp).toUTCString()}): ${getUrl(edit.server, edit.title, { diff: response.newrevid })}`,
 			)
 		}
 	}
