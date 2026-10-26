@@ -115,7 +115,7 @@
 		"typescript-eslint": "^8.58.2",
 		"vite": "^8.3.4",
 		"vite-plugin-banner": "^0.8.1",
-		"vitest": "^4.1.11",
+		"vitest": "^4.1.12",
 		"yargs": "^18.0.0"
 	},
 	"engines": {
