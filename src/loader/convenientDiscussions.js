@@ -348,12 +348,16 @@ const globalProperties = {
 		mw.loader.getState('ext.CodeMirror.WikiEditor') && mw.loader.getState('ext.CodeMirror.modes'),
 	),
 
-	isParsoidUsed: $('#mw-content-text > .mw-parser-output')
-		.contents()
-		.get()
-		// NB: not _our_ Comment, the global one
-		.filter((node) => node instanceof window.Comment)
-		.some((c) => c.textContent.trim().startsWith('Parsoid')),
+	// Diff pages strip the HTML comments from the parser output, including the "Parsoid" one, so we
+	// check the attribute first.
+	isParsoidUsed:
+		$('#mw-content-text > .mw-parser-output[data-mw-parsoid-version]').length > 0 ||
+		$('#mw-content-text > .mw-parser-output')
+			.contents()
+			.get()
+			// NB: not _our_ Comment, the global one
+			.filter((node) => node instanceof window.Comment)
+			.some((c) => c.textContent.trim().startsWith('Parsoid')),
 }
 
 // This is defensive in case the module is loaded multiple times.
