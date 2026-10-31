@@ -177,15 +177,22 @@ class CommentActions {
 	}
 
 	/**
-	 * Reusable action for quote button. Quotes selected text and opens/focuses reply form.
+	 * Reusable action for quote button. Quotes selected text into the comment's reply form or the edit
+	 * form of the user's own reply to the comment, opening a reply form if neither exists.
 	 */
 	onQuoteAction = () => {
 		this.comment.fixSelection()
 
-		if (!this.comment.replyForm) {
-			this.comment.reply()
+		const existingForm =
+			this.comment.replyForm ||
+			this.comment.getChildren().find((child) => child.isOwn() && child.editForm)?.editForm
+		if (existingForm) {
+			existingForm.quote(true, this.comment)
+
+			return
 		}
 
+		this.comment.reply()
 		this.comment.replyForm?.quote(true, this.comment)
 	}
 
