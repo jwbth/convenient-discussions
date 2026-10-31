@@ -493,6 +493,12 @@ describe('Tags and templates', () => {
 		form: firstCommentReplyForm,
 	})
 	testWithData({
+		label: 'Blank lines at the end of template parameters',
+		code: '{{example|text\n\n|param=Source\n\n\n}}',
+		expected: ': {{example|text|param=Source}} ~~~~\n',
+		form: firstCommentReplyForm,
+	})
+	testWithData({
 		label: 'Newlines in a template, add section',
 		code: '{{tq|1=\n\nLine 1.\n\nLine 2.\nLine 3.\n}}<br> Text.',
 		expected: '{{tq|1=\n\nLine 1.\n\nLine 2.<br>\nLine 3.\n}}<br> Text. ~~~~\n',

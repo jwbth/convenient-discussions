@@ -308,6 +308,12 @@ class CommentFormInputTransformer extends TextMasker {
 				),
 		)
 
+		if (isInTemplate) {
+			// Blank lines ending a parameter are no paragraph break. Leave a single newline, which
+			// `processNewlines()` drops before `|` and `}}`.
+			code = code.replace(/\n{2,}(?=\||\}\})/g, '\n')
+		}
+
 		// We we only check for `:` here, not other markup, because we only add `:` in those places.
 		code = code.replace(
 			/^(.*)\n\n+(?!:)/gm,
