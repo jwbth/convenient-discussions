@@ -1,6 +1,6 @@
 ---
 name: comment-markup-bug
-description: Reproduce and fix a bug where CD mangles markup inside a comment: editing loads it into the input wrong, or posting turns the input into wrong wikitext. Use when such a bug is reported, usually with a diff link.
+description: "Reproduce and fix a bug where CD mangles markup inside a comment: editing loads it into the input wrong, or posting turns the input into wrong wikitext. Use when such a bug is reported, usually with a diff link."
 ---
 
 A comment's markup makes a **round trip**: editing turns its code into the input value (`CommentSource#toInputValue`), and posting turns the input back into code (`CommentFormInputTransformer.inputToCode`, called from `buildEdit`). Both directions mask code they mustn't touch with `TextMasker#maskSensitiveCode` and then rework line breaks, indentation, and paragraphs in what's left. A comment placed in the wrong spot or with the wrong boundaries is a locator or parser bug: use the `parser-bug` skill. Wrong wikitext from quoting, pasting, or dropping rich text is the `html-to-wikitext-bug` skill's.
