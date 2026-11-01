@@ -71,6 +71,17 @@ describe('cleanUpPasteDom', () => {
 		)
 	})
 
+	test('keeps an image that is alone in its line', () => {
+		// Shape of a legacy parser comment with `:[[File:X.jpg|220px]]` as a line of its own
+		const { element } = cleanUp(
+			'<p>Текст:</p><dl><dd><span typeof="mw:File"><a href="/wiki/Файл:X.svg" ' +
+				`class="mw-file-description"><img src="${iconSrc}" width="220" height="293"></a></span></dd>` +
+				'<dd>Текст.</dd></dl>',
+		)
+
+		expect(element.querySelector('dl > dd > span[typeof="mw:File"] img')).not.toBeNull()
+	})
+
 	test('drops images whose file name is unknown, along with their links and the space after them', () => {
 		const { element } = cleanUp(
 			'<span>между </span><span typeof="mw:File"><a href="https://ru.wikipedia.org/wiki/A">' +

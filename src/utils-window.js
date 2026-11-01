@@ -1024,6 +1024,8 @@ export function cleanUpPasteDom(element, containerElement) {
 				(!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
 				// Need to keep non-breaking spaces.
 				!el.textContent.replace(/[ \n]+/g, '') &&
+				// An image alone in its line, e.g. `<dd><span typeof="mw:File">`
+				!filePlaceholders.some(({ placeholder }) => el.contains(placeholder)) &&
 				// Parsoid's autonumbered external links have no text (see below).
 				!el.querySelector('.autonumber'),
 		)
