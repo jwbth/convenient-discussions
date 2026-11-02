@@ -76,9 +76,7 @@ class CommentFormInputTransformer extends TextMasker {
 	 * @returns {this is CommentFormInputTransformer<M>}
 	 */
 	isMode(mode) {
-		return (
-			/** @type {import('./CommentForm').CommentFormMode} */ (this.values.mode) === mode
-		)
+		return /** @type {import('./CommentForm').CommentFormMode} */ (this.values.mode) === mode
 	}
 
 	/**
@@ -311,8 +309,12 @@ class CommentFormInputTransformer extends TextMasker {
 		if (isInTemplate) {
 			// Blank lines ending a named parameter are no paragraph break, as MediaWiki trims named
 			// parameter values. Leave a single newline, which `processNewlines()` drops before `|` and
-			// `}}`. Positional parameter values aren't trimmed, so their blank lines stay.
-			code = code.replace(/(\|[^|=}]*=[^|]*?)\n{2,}(?=\||\}\})/g, '$1\n')
+			// `}}`. Positional parameter values aren't trimmed, so their blank lines stay. A wikilink is
+			// matched whole, so its `|` is taken for no parameter separator.
+			code = code.replace(
+				/\[\[[^\]]*\]\]|(\|[^|=}]*=(?:\[\[[^\]]*\]\]|[^|])*?)\n{2,}(?=\||\}\})/g,
+				(s, param) => (param === undefined ? s : `${param}\n`),
+			)
 		}
 
 		// We we only check for `:` here, not other markup, because we only add `:` in those places.
