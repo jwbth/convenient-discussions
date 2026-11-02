@@ -11,7 +11,7 @@
   document.head.appendChild(script)
   ```
 
-- Outside the browser, send Wikimedia sites the User-Agent `ConvenientDiscussions-dev-bot (https://github.com/jwbth/convenient-discussions)`, and on 429, retry after its `retry-after`.
+- Outside the browser, send Wikimedia sites the User-Agent `ConvenientDiscussions-dev-bot (https://github.com/jwbth/convenient-discussions)`, and on 429, retry a few times, then fetch through WebFetch.
 - Before commiting changes that touch code, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
 - Reserve `feat`, `fix`, and `ui` commits for what CD users meet; type the rest by where they live (`deploy`, `tests`, `harness`…).
 
