@@ -1,5 +1,5 @@
 {
-	"enablePlugins": {
+	"enabledPlugins": {
 		"playwright@claude-plugins-official": true
 	},
 	"enabledMcpjsonServers": [
