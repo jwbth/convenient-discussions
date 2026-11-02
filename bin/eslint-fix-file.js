@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import os from 'node:os'
+import { fileURLToPath } from 'node:url'
 
 import { ESLint } from 'eslint'
 import ts from 'typescript'
@@ -35,7 +36,9 @@ const typeAwareRules = new Set(
 		.map(([name]) => `@typescript-eslint/${name}`),
 )
 
+// The hook may run from outside the project.
 const eslint = new ESLint({
+	cwd: fileURLToPath(new URL('..', import.meta.url)),
 	cache: true,
 	fix: true,
 	overrideConfig: { languageOptions: { parserOptions: { project: null } } },

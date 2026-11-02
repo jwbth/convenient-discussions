@@ -12,7 +12,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node bin/eslint-fix-edit.js"
+						"command": "node \"$(dirname \"$(readlink -f \"$CLAUDE_PROJECT_DIR/.claude/settings.json\")\")/../bin/eslint-fix-edit.js\""
 					}
 				]
 			}
