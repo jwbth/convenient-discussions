@@ -110,9 +110,15 @@ function createDataTransfer(strings, files = []) {
 function createForm(buildPromise = Promise.resolve()) {
 	const form = /** @type {any} */ (Object.create(CommentForm.prototype))
 	form.buildPromise = buildPromise
-	form.commentInput = { insertContent: vi.fn(), $element: [{}] }
+	form.commentInput = {
+		insertContent: vi.fn(),
+		isPending: () => false,
+		convertPasteToWikitext: vi.fn(async () => "'''bold'''"),
+		$element: [{}],
+	}
 	form.uploadImage = vi.fn()
 	form.suggestConvertToWikitext = vi.fn()
+	form.insertQuote = vi.fn()
 
 	return form
 }
@@ -163,5 +169,51 @@ describe('CommentForm#insertTransferredData', () => {
 		expect(form.commentInput.insertContent).toHaveBeenCalledWith('bold')
 		expect(form.suggestConvertToWikitext).toHaveBeenCalledWith({ isConvertible: true }, 'bold')
 		expect(form.uploadImage).toHaveBeenCalledWith(file)
+	})
+})
+
+describe('CommentForm#quoteTransferredData', () => {
+	const comment = /** @type {any} */ ({})
+
+	it('quotes dropped text', async () => {
+		const form = createForm()
+		await form.quoteTransferredData(
+			createDataTransfer({ 'text/plain': ' Hello\r\nworld ' }).dataTransfer,
+			comment,
+		)
+
+		expect(form.insertQuote).toHaveBeenCalledWith('Hello\nworld', false, comment)
+		expect(form.commentInput.convertPasteToWikitext).not.toHaveBeenCalled()
+	})
+
+	it('quotes dropped HTML converted to wikitext', async () => {
+		const form = createForm()
+		await form.quoteTransferredData(
+			createDataTransfer({ 'text/plain': 'bold', 'text/html': '<b>bold</b>' }).dataTransfer,
+			comment,
+		)
+
+		expect(form.commentInput.convertPasteToWikitext).toHaveBeenCalledWith({ isConvertible: true })
+		expect(form.insertQuote).toHaveBeenCalledWith("'''bold'''", false, comment)
+	})
+
+	it('ignores blank text', async () => {
+		const form = createForm()
+		await form.quoteTransferredData(createDataTransfer({ 'text/plain': ' ' }).dataTransfer, comment)
+
+		expect(form.insertQuote).not.toHaveBeenCalled()
+	})
+
+	it('reads the data before the form is built', async () => {
+		/** @type {() => void} */
+		let finishBuild = () => {}
+		const form = createForm(new Promise((resolve) => (finishBuild = resolve)))
+		const drop = createDataTransfer({ 'text/plain': 'Hello' })
+		const quoting = form.quoteTransferredData(drop.dataTransfer, comment)
+		drop.empty()
+		finishBuild()
+		await quoting
+
+		expect(form.insertQuote).toHaveBeenCalledWith('Hello', false, comment)
 	})
 })

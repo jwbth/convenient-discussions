@@ -3662,45 +3662,86 @@ class CommentForm extends EventEmitter {
 
 		// With just "Q" pressed, empty selection doesn't count.
 		if (selection || allowEmptySelection) {
-			// Reset the selection if the input is not focused to prevent losing text.
-			if (!isCommentInputSelection) {
-				const range = this.commentInput.getRange()
-				if (range.from !== range.to) {
-					this.commentInput.selectRange(range.to)
-				}
-			}
-
-			const [pre, post] =
-				typeof cd.config.quoteFormatting === 'function'
-					? cd.config.quoteFormatting(
-							comment && (mentionSource ?? comment !== this.parentComment)
-								? {
-										mentionSource: true,
-										author: comment.author.getName(),
-										timestamp: comment.timestamp,
-										dtId: comment.dtId,
-									}
-								: {
-										mentionSource: Boolean(
-											selection.match(new RegExp(`<${cd.g.pniePattern}\\b|(^|\n)[:*#;]`, 'i')),
-										),
-									},
-						)
-					: cd.config.quoteFormatting
-
-			const selectionTransform = pre.includes('{{')
-				? (/** @type {string} */ selectedText) => escapePipesOutsideLinks(selectedText.trim())
-				: (/** @type {string} */ selectedText) => selectedText.trim()
-
-			this.encapsulateSelection({
-				pre,
-				peri: cd.s('cf-quote-placeholder'),
-				post,
-				selection: isCommentInputSelection ? undefined : selectionTransform(selection),
-				selectionTransform: isCommentInputSelection ? selectionTransform : undefined,
-				ownline: true,
-			})
+			this.insertQuote(selection, isCommentInputSelection, comment, mentionSource)
 		}
+	}
+
+	/**
+	 * Quote data dropped on a Quote button, converting its rich formatting to wikitext as
+	 * {@link CommentForm#quote quoting} a selection on the page does.
+	 *
+	 * @param {DataTransfer} data Read synchronously, as the browser empties it once the `drop` event
+	 *   is over.
+	 * @param {Comment} comment Quoted comment.
+	 */
+	async quoteTransferredData(data, comment) {
+		const html = data.getData('text/html')
+		const text = CommentForm.getTransferredText(data)
+
+		await this.buildPromise
+		if (this.commentInput.isPending()) return
+
+		const selection = (
+			html
+				? await this.commentInput.convertPasteToWikitext(
+						cleanUpPasteDom(getElementFromPasteHtml(html), this.commentInput.$element[0]),
+					)
+				: text
+		).trim()
+		if (!selection) return
+
+		this.insertQuote(selection, false, comment)
+	}
+
+	/**
+	 * Insert quote markup around the text.
+	 *
+	 * @param {string} selection Quoted text.
+	 * @param {boolean} isCommentInputSelection Whether the text is selected in the comment input
+	 *   and stays there, getting wrapped in the markup.
+	 * @param {Comment} [comment] Quoted comment.
+	 * @param {boolean} [mentionSource] See {@link CommentForm#quote}.
+	 * @private
+	 */
+	insertQuote(selection, isCommentInputSelection, comment, mentionSource) {
+		// Reset the selection if the input is not focused to prevent losing text.
+		if (!isCommentInputSelection) {
+			const range = this.commentInput.getRange()
+			if (range.from !== range.to) {
+				this.commentInput.selectRange(range.to)
+			}
+		}
+
+		const [pre, post] =
+			typeof cd.config.quoteFormatting === 'function'
+				? cd.config.quoteFormatting(
+						comment && (mentionSource ?? comment !== this.parentComment)
+							? {
+									mentionSource: true,
+									author: comment.author.getName(),
+									timestamp: comment.timestamp,
+									dtId: comment.dtId,
+								}
+							: {
+									mentionSource: Boolean(
+										selection.match(new RegExp(`<${cd.g.pniePattern}\\b|(^|\n)[:*#;]`, 'i')),
+									),
+								},
+					)
+				: cd.config.quoteFormatting
+
+		const selectionTransform = pre.includes('{{')
+			? (/** @type {string} */ selectedText) => escapePipesOutsideLinks(selectedText.trim())
+			: (/** @type {string} */ selectedText) => selectedText.trim()
+
+		this.encapsulateSelection({
+			pre,
+			peri: cd.s('cf-quote-placeholder'),
+			post,
+			selection: isCommentInputSelection ? undefined : selectionTransform(selection),
+			selectionTransform: isCommentInputSelection ? selectionTransform : undefined,
+			ownline: true,
+		})
 	}
 
 	/**
@@ -4346,6 +4387,14 @@ class CommentForm extends EventEmitter {
 	 */
 	static canInsertTransferredData = (data) =>
 		Boolean(CommentForm.findImage(data)) || data.types.includes('text/plain')
+
+	/**
+	 * Check whether dragged data can be {@link CommentForm#quoteTransferredData quoted}.
+	 *
+	 * @param {DataTransfer} data
+	 * @returns {boolean}
+	 */
+	static canQuoteTransferredData = (data) => data.types.includes('text/plain')
 
 	/**
 	 * Get the options for encapsulating the selection for a specific tool.

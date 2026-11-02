@@ -196,23 +196,45 @@ class CommentActions {
 	}
 
 	/**
-	 * Reusable action for quote button. Quotes selected text into the comment's reply form or the edit
-	 * form of the user's own reply to the comment, opening a reply form if neither exists.
+	 * Reusable action for quote button. Quotes selected text into the
+	 * {@link CommentActions#getQuoteForm quote form}.
 	 */
 	onQuoteAction = () => {
 		this.comment.fixSelection()
+		this.getQuoteForm()?.quote(true, this.comment)
+	}
 
+	/**
+	 * Reusable drop action for quote button. Quotes the dropped text into the
+	 * {@link CommentActions#getQuoteForm quote form}.
+	 *
+	 * @type {import('./Button').DropAction}
+	 */
+	quoteDropAction = {
+		accepts: CommentForm.canQuoteTransferredData,
+		drop: (dataTransfer) => {
+			this.getQuoteForm()?.quoteTransferredData(dataTransfer, this.comment)
+		},
+	}
+
+	/**
+	 * Get the comment's reply form or the edit form of the user's own reply to the comment, opening a
+	 * reply form if neither exists.
+	 *
+	 * @returns {CommentForm | undefined}
+	 * @private
+	 */
+	getQuoteForm() {
 		const existingForm =
 			this.comment.replyForm ||
 			this.comment.getChildren().find((child) => child.isOwn() && child.editForm)?.editForm
 		if (existingForm) {
-			existingForm.quote(true, this.comment)
-
-			return
+			return existingForm
 		}
 
 		this.comment.reply()
-		this.comment.replyForm?.quote(true, this.comment)
+
+		return this.comment.replyForm
 	}
 
 	/**
@@ -387,7 +409,9 @@ class CommentActions {
 		)
 			return
 
-		this.quoteButton = this.createQuoteButton(this.onQuoteAction)
+		this.quoteButton = this.createQuoteButton(this.onQuoteAction).setDropAction(
+			this.quoteDropAction,
+		)
 		this.insertQuoteButton()
 	}
 
