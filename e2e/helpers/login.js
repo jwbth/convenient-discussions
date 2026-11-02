@@ -26,12 +26,12 @@ export async function ensureAuthenticated(page) {
 	console.log('🔑 Not authenticated. Redirecting to login page...')
 
 	// Get credentials from environment variables
-	const username = process.env.WIKIPEDIA_USERNAME
-	const password = process.env.WIKIPEDIA_PASSWORD
+	const username = process.env.W_USER
+	const password = process.env.W_PASSWORD
 
 	if (!username || !password) {
 		throw new Error(
-			'WIKIPEDIA_USERNAME and WIKIPEDIA_PASSWORD environment variables are required for authentication.',
+			'W_USER and W_PASSWORD environment variables are required for authentication.',
 		)
 	}
 

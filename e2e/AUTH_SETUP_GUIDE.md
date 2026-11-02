@@ -8,12 +8,12 @@ Set credentials via environment variables — never hardcode them:
 
 ```bash
 # Linux/Mac
-export WIKIPEDIA_USERNAME=YourTestUsername
-export WIKIPEDIA_PASSWORD=YourTestPassword
+export W_USER=YourTestUsername
+export W_PASSWORD=YourTestPassword
 
 # Windows (PowerShell)
-$env:WIKIPEDIA_USERNAME="YourTestUsername"
-$env:WIKIPEDIA_PASSWORD="YourTestPassword"
+$env:W_USER="YourTestUsername"
+$env:W_PASSWORD="YourTestPassword"
 ```
 
 You can also put them in a `.env` file (already gitignored).

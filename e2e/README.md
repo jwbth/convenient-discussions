@@ -67,8 +67,8 @@ Most tests work without login. For features that require authentication (editing
 Set credentials via environment variables — never hardcode them:
 
 ```bash
-export WIKIPEDIA_USERNAME=YourTestUsername
-export WIKIPEDIA_PASSWORD=YourTestPassword
+export W_USER=YourTestUsername
+export W_PASSWORD=YourTestPassword
 ```
 
 ## Helpers

@@ -35,6 +35,7 @@
 		"deploy": "node --unhandled-rejections=strict deploy.js",
 		"format": "prettier --write .",
 		"i18n": "node build-i18n.js",
+		"i18n:en": "node build-i18n.js en",
 		"prelint": "node bin/setup-worktree.js",
 		"lint": "node bin/with-lint-lock.js \"node typecheck.js && eslint --cache\"",
 		"lint:fix": "node bin/with-lint-lock.js \"node typecheck.js && eslint --fix --cache\"",
