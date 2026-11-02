@@ -10,10 +10,12 @@ Set credentials via environment variables — never hardcode them:
 # Linux/Mac
 export W_USER=YourTestUsername
 export W_PASSWORD=YourTestPassword
+export W_TOTP_SECRET=YourTotpSecretKey  # only if the account has 2FA enabled
 
 # Windows (PowerShell)
 $env:W_USER="YourTestUsername"
 $env:W_PASSWORD="YourTestPassword"
+$env:W_TOTP_SECRET="YourTotpSecretKey"
 ```
 
 You can also put them in a `.env` file (already gitignored).
