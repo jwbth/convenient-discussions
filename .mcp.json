@@ -1,0 +1,13 @@
+{
+	"mcpServers": {
+		"mediawiki": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "@professional-wiki/mediawiki-mcp-server@latest"],
+			"env": {
+				"MCP_USER_AGENT": "ConvenientDiscussionsDev/1.0 (https://github.com/jwbth/convenient-discussions)",
+				"MCP_LOG_LEVEL": "warning"
+			}
+		}
+	}
+}

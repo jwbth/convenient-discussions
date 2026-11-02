@@ -2,6 +2,9 @@
 	"enablePlugins": {
 		"playwright@claude-plugins-official": true
 	},
+	"enabledMcpjsonServers": [
+		"mediawiki"
+	],
 	"hooks": {
 		"PostToolUse": [
 			{
