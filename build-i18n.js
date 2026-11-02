@@ -287,10 +287,29 @@ DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => 
 	}
 })
 
+// Use language fallbacks data to fill missing messages. When the fallbacks need to be updated, they
+// can be collected using
+// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
+/** @type {Record<string, string[]>} */
+const fallbackData = JSON.parse(fs.readFileSync('./data/language-fallbacks.json', 'utf8'))
+
+// Language codes passed as arguments (e.g. `node build-i18n.js en`) limit the build to those
+// languages. Their fallback languages are read too, but only the requested ones are output.
+const requestedLangs = process.argv.slice(2)
+const langsToRead =
+	requestedLangs.length &&
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	new Set(requestedLangs.flatMap((lang) => [lang, ...(fallbackData[lang] || [])]))
+
 /** @type {AnyByKey<StringsByKey>} */
 const i18n = {}
 fs.readdirSync('./i18n/')
-	.filter((filename) => path.extname(filename) === '.json' && filename !== 'qqq.json')
+	.filter(
+		(filename) =>
+			path.extname(filename) === '.json' &&
+			filename !== 'qqq.json' &&
+			(!langsToRead || langsToRead.has(path.basename(filename, '.json'))),
+	)
 	.forEach((filename) => {
 		const [, lang] = path.basename(filename).match(/^(.+)\.json$/) || []
 		const strings = JSON.parse(fs.readFileSync(`./i18n/${filename}`, 'utf8'))
@@ -357,19 +376,21 @@ fs.readdirSync('./i18n/')
 /** @type {AnyByKey<StringsByKey>} */
 const i18nWithFallbacks = {}
 
+const unknownLangs = requestedLangs.filter((lang) => !(lang in i18n))
+if (unknownLangs.length) {
+	throw new Error(`No i18n files found for: ${unknownLangs.join(', ')}.`)
+}
+
 if (Object.keys(i18n).length) {
-	// Use language fallbacks data to fill missing messages. When the fallbacks need to be updated,
-	// they can be collected using
-	// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
-	/** @type {Record<string, string[]>} */
-	const fallbackData = JSON.parse(fs.readFileSync('./data/language-fallbacks.json', 'utf8'))
-	Object.keys(i18n).forEach((lang) => {
-		const fallbacks = fallbackData[lang]
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		i18nWithFallbacks[lang] = fallbacks
-			? Object.assign({}, ...fallbacks.map((fbLang) => i18n[fbLang]).reverse(), i18n[lang])
-			: i18n[lang]
-	})
+	Object.keys(i18n)
+		.filter((lang) => !requestedLangs.length || requestedLangs.includes(lang))
+		.forEach((lang) => {
+			const fallbacks = fallbackData[lang]
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			i18nWithFallbacks[lang] = fallbacks
+				? Object.assign({}, ...fallbacks.map((fbLang) => i18n[fbLang]).reverse(), i18n[lang])
+				: i18n[lang]
+		})
 
 	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
 	const langsHavingDayjsLocale = buildDayjsLocales(i18nWithFallbacks)
@@ -420,7 +441,10 @@ ${dateFnsLocaleText}
 	rimraf.sync(DATE_FNS_LOCALES_TEMP_DIR_NAME)
 }
 
-fs.mkdirSync('data', { recursive: true })
-fs.writeFileSync('data/i18n-list.json', JSON.stringify(Object.keys(i18n), null, '\t') + '\n')
+// A partial build doesn't know the full language list, so leave it as is.
+if (!requestedLangs.length) {
+	fs.mkdirSync('data', { recursive: true })
+	fs.writeFileSync('data/i18n-list.json', JSON.stringify(Object.keys(i18n), null, '\t') + '\n')
+}
 
 console.log('Internationalization files have been built successfully.')
