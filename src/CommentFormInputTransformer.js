@@ -313,7 +313,7 @@ class CommentFormInputTransformer extends TextMasker {
 			// matched whole, so its `|` is taken for no parameter separator.
 			code = code.replace(
 				/\[\[[^\]]*\]\]|(\|[^|=}]*=(?:\[\[[^\]]*\]\]|[^|])*?)\n{2,}(?=\||\}\})/g,
-				(s, param) => (param === undefined ? s : `${param}\n`),
+				(s, /** @type {string | undefined} */ param) => (param === undefined ? s : `${param}\n`),
 			)
 		}
 
