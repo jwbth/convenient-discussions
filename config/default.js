@@ -44,7 +44,8 @@
  *   of replacements where keys are RegExps and values are functions that take a data object and
  *   return a replacement string.
  * @property {boolean} [areArchivesSorted=false] Set to `true` if the archived topic should be
- *   placed so that topics are sorted by date (e.g. in between other topics).
+ *   placed so that topics are sorted by date (e.g. in between other topics). If `false`, topics
+ *   moved to an archive page go to its bottom unless {@link areNewTopicsOnTop} says otherwise.
  */
 
 const defaultConfig = {

@@ -133,30 +133,55 @@ export default class PageSource {
 	guessNewTopicPlacement() {
 		this.assertCode("Can't analyze the placement of new topics: page code is not set.")
 
-		let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.page.name, this.code)
+		let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.page.name, this.code) ?? undefined
+
+		// Archiving bots append topics in the order they go stale, so the dates in an unsorted archive
+		// say nothing about where new topics go.
+		if (
+			areNewTopicsOnTop === undefined &&
+			!cd.config.archivingConfig.areArchivesSorted &&
+			this.page.isArchive()
+		) {
+			areNewTopicsOnTop = false
+		}
 
 		const adjustedCode = maskDistractingCode(this.code)
 		const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp()
 
-		if (areNewTopicsOnTop === undefined || areNewTopicsOnTop === null) {
+		if (areNewTopicsOnTop === undefined) {
 			// Detect the topic order: newest first or newest last.
 			let previousDate
-			let difference = 0
+			let olderAfterNewerCount = 0
+			let newerAfterOlderCount = 0
 			let sectionHeadingMatch
 			while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
 				const timestamp = findFirstTimestamp(this.code.slice(sectionHeadingMatch.index))
 				const { date } = (timestamp && parseTimestamp(timestamp)) || {}
 				if (date) {
 					if (previousDate) {
-						difference += date > previousDate ? -1 : 1
+						if (date > previousDate) {
+							newerAfterOlderCount++
+						} else {
+							olderAfterNewerCount++
+						}
 					}
 					previousDate = date
 				}
 			}
-			areNewTopicsOnTop =
-				difference === 0 && mw.config.get('wgServerName') === 'ru.wikipedia.org'
-					? this.page.namespaceId % 2 === 0
-					: difference > 0
+
+			// Topics get out of order on pages of either kind (e.g. when topics are moved in), so only a
+			// clear majority of descending pairs points to new topics on top. MediaWiki itself adds new
+			// topics to the bottom, hence the default.
+			if (olderAfterNewerCount >= 3 * newerAfterOlderCount && olderAfterNewerCount > 0) {
+				areNewTopicsOnTop = true
+			} else if (newerAfterOlderCount >= 3 * olderAfterNewerCount && newerAfterOlderCount > 0) {
+				areNewTopicsOnTop = false
+			} else {
+				areNewTopicsOnTop =
+					mw.config.get('wgServerName') === 'ru.wikipedia.org'
+						? this.page.namespaceId % 2 === 0
+						: false
+			}
 		}
 
 		return {
