@@ -1,3 +1,4 @@
+import cd from './loader/cd'
 import CdError from './shared/CdError'
 import {
 	charAt,
@@ -550,7 +551,7 @@ class BaseAutocomplete {
 				new URLSearchParams({ q: query, limit: String(limit) }).toString()
 			const response = await fetch(url, {
 				headers: {
-					'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
+					'Api-User-Agent': cd.g.apiUserAgent,
 				},
 			})
 			if (!response.ok) {

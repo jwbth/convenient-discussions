@@ -466,7 +466,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
 					new URLSearchParams({ q: pageName, limit: '10' }).toString()
 				const resp = await fetch(url, {
 					headers: {
-						'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
+						'Api-User-Agent': cd.g.apiUserAgent,
 					},
 				})
 				if (!resp.ok) {
