@@ -2,6 +2,8 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { TOTP } from 'otpauth'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const authFile = path.join(__dirname, '..', '..', 'playwright', '.auth', 'user.json')
@@ -73,6 +75,19 @@ export async function ensureAuthenticated(page) {
 
 		// Wait for redirection back or successful login indication
 		await page.waitForLoadState('networkidle', { timeout: 30_000 })
+
+		// With 2FA enabled, Wikimedia asks for a TOTP code instead of emailing a verification code
+		// to logins from unfamiliar IPs, which a headless run can't read.
+		const totpField = page.locator('input[name="OATHToken"]')
+		if ((await totpField.count()) > 0) {
+			const totpSecret = process.env.W_TOTP_SECRET
+			if (!totpSecret) {
+				throw new Error('The account has 2FA enabled; set W_TOTP_SECRET to its secret key.')
+			}
+			await totpField.fill(new TOTP({ secret: totpSecret.replaceAll(' ', '') }).generate())
+			await page.click('#wpLoginAttempt')
+			await page.waitForLoadState('networkidle', { timeout: 30_000 })
+		}
 
 		// Check for captcha
 		const captcha = page.locator('.fancycaptcha-image, .captcha, #wpCaptchaWord')

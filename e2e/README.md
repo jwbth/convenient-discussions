@@ -69,6 +69,7 @@ Set credentials via environment variables — never hardcode them:
 ```bash
 export W_USER=YourTestUsername
 export W_PASSWORD=YourTestPassword
+export W_TOTP_SECRET=YourTotpSecretKey  # only if the account has 2FA enabled
 ```
 
 ## Helpers
