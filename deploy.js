@@ -619,6 +619,10 @@ async function getSizeDelta(server, oldRevid, newRevid) {
 		revids: [oldRevid, newRevid].filter(Boolean),
 		rvprop: ['ids', 'size'],
 	})
+	if (!response.query) {
+		throw new Error(`No query result for revisions ${oldRevid} and ${newRevid} on ${server}`)
+	}
+
 	/** @type {{ revid: number; size: number }[]} */
 	const revisions = response.query.pages.flatMap(
 		(/** @type {{ revisions: { revid: number; size: number }[] }} */ page) => page.revisions,
