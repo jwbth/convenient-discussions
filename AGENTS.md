@@ -11,7 +11,7 @@
   document.head.appendChild(script)
   ```
 
-- Outside the browser (`curl`, scripts), send Wikimedia sites a User-Agent with contact info, such as `ConvenientDiscussions-dev/1.0 (https://github.com/jwbth/convenient-discussions)`: as of 2026-11, they answer one without it with 429 Too Many Requests.
+- Outside the browser, send Wikimedia sites a User-Agent with contact info.
 - Before commiting changes that touch code, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
 - Reserve `feat`, `fix`, and `ui` commits for what CD users meet; type the rest by where they live (`deploy`, `tests`, `harness`…).
 
