@@ -28,6 +28,6 @@ if (commonDir) {
 		!fs.existsSync(inRoot('dist/convenientDiscussions-i18n/en.js')) ||
 		!fs.existsSync(inRoot('data/i18n-list.json'))
 	) {
-		execSync('npm run i18n', { cwd: rootDir, stdio: 'inherit' })
+		execSync('npm run i18n:dev', { cwd: rootDir, stdio: 'inherit' })
 	}
 }
