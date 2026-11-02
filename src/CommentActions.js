@@ -219,7 +219,7 @@ class CommentActions {
 
 	/**
 	 * Get the comment's reply form or the edit form of the user's own reply to the comment, opening a
-	 * reply form if neither exists.
+	 * reply form if neither exists. With outdented replies, the opened form is the section's.
 	 *
 	 * @returns {CommentForm | undefined}
 	 * @private
@@ -234,7 +234,7 @@ class CommentActions {
 
 		this.comment.reply()
 
-		return this.comment.replyForm
+		return this.comment.replyForm || this.comment.section?.replyForm
 	}
 
 	/**
