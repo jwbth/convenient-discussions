@@ -301,17 +301,17 @@ const langsToRead =
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	new Set(requestedLangs.flatMap((lang) => [lang, ...(fallbackData[lang] || [])]))
 
+const allLangs = fs
+	.readdirSync('./i18n/')
+	.filter((filename) => path.extname(filename) === '.json' && filename !== 'qqq.json')
+	.map((filename) => path.basename(filename, '.json'))
+
 /** @type {AnyByKey<StringsByKey>} */
 const i18n = {}
-fs.readdirSync('./i18n/')
-	.filter(
-		(filename) =>
-			path.extname(filename) === '.json' &&
-			filename !== 'qqq.json' &&
-			(!langsToRead || langsToRead.has(path.basename(filename, '.json'))),
-	)
-	.forEach((filename) => {
-		const [, lang] = path.basename(filename).match(/^(.+)\.json$/) || []
+allLangs
+	.filter((lang) => !langsToRead || langsToRead.has(lang))
+	.forEach((lang) => {
+		const filename = `${lang}.json`
 		const strings = JSON.parse(fs.readFileSync(`./i18n/${filename}`, 'utf8'))
 		Object.keys(strings)
 			.filter((name) => typeof strings[name] === 'string')
@@ -441,10 +441,7 @@ ${dateFnsLocaleText}
 	rimraf.sync(DATE_FNS_LOCALES_TEMP_DIR_NAME)
 }
 
-// A partial build doesn't know the full language list, so leave it as is.
-if (!requestedLangs.length) {
-	fs.mkdirSync('data', { recursive: true })
-	fs.writeFileSync('data/i18n-list.json', JSON.stringify(Object.keys(i18n), null, '\t') + '\n')
-}
+fs.mkdirSync('data', { recursive: true })
+fs.writeFileSync('data/i18n-list.json', JSON.stringify(allLangs, null, '\t') + '\n')
 
 console.log('Internationalization files have been built successfully.')
