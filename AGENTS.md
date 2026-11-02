@@ -12,7 +12,7 @@
   ```
 
 - Before commiting changes that touch code, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
-- Type commits for the readers of release notes and wiki edit summaries: `feat`, `fix`, and `ui` are for what CD users meet. A change to tooling, even a fix, takes the type naming where it lives (`deploy`, `tests`, `build`, `harness`, …) from those that `deploy.js` filters out of edit summaries.
+- Reserve `feat`, `fix`, and `ui` commits for what CD users meet; type the rest by where they live (`deploy`, `tests`, `harness`…).
 
 ## Coding conventions
 
