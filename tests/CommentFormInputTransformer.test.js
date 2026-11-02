@@ -494,8 +494,8 @@ describe('Tags and templates', () => {
 	})
 	testWithData({
 		label: 'Blank lines at the end of template parameters',
-		code: '{{example|text\n\n|param=Source\n\n\n}}',
-		expected: ': {{example|text|param=Source}} ~~~~\n',
+		code: '{{example|text\n\n|param=Source\n\n\n|text2\n\n}}',
+		expected: ': {{example|text{{pb}}|param=Source|text2{{pb}}}} ~~~~\n',
 		form: firstCommentReplyForm,
 	})
 	testWithData({

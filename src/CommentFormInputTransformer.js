@@ -309,9 +309,10 @@ class CommentFormInputTransformer extends TextMasker {
 		)
 
 		if (isInTemplate) {
-			// Blank lines ending a parameter are no paragraph break. Leave a single newline, which
-			// `processNewlines()` drops before `|` and `}}`.
-			code = code.replace(/\n{2,}(?=\||\}\})/g, '\n')
+			// Blank lines ending a named parameter are no paragraph break, as MediaWiki trims named
+			// parameter values. Leave a single newline, which `processNewlines()` drops before `|` and
+			// `}}`. Positional parameter values aren't trimmed, so their blank lines stay.
+			code = code.replace(/(\|[^|=}]*=[^|]*?)\n{2,}(?=\||\}\})/g, '$1\n')
 		}
 
 		// We we only check for `:` here, not other markup, because we only add `:` in those places.
