@@ -11,7 +11,7 @@
   document.head.appendChild(script)
   ```
 
-- Outside the browser, send Wikimedia sites a User-Agent with contact info.
+- Outside the browser, send Wikimedia sites the User-Agent `ConvenientDiscussions-dev-bot (https://github.com/jwbth/convenient-discussions)`.
 - Before commiting changes that touch code, run `npm test` and `npm run lint` (which also type-checks); leave no new errors in either.
 - Reserve `feat`, `fix`, and `ui` commits for what CD users meet; type the rest by where they live (`deploy`, `tests`, `harness`…).
 
