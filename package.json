@@ -46,7 +46,7 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:regenerate": "cross-env REGENERATE=1 vitest run tests/worker-regenerate-test-cases.test.js",
-		"pretest:browser": "node bin/setup-worktree.js",
+		"pretest:browser": "node bin/setup-worktree.js && node build-i18n.js ru && npm run build:single -- --lang=ru",
 		"test:browser": "playwright test",
 		"test:browser:auth": "playwright test test-wikipedia-auth.spec.js",
 		"test:browser:edit": "cross-env TEST_EDIT=1 playwright test",

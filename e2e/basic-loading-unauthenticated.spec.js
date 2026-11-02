@@ -13,6 +13,11 @@ import { TEST_PAGES } from './helpers/test-utils.js'
 test.use({ storageState: { cookies: [], origins: [] } })
 
 test.describe('Basic Script Loading and Page Parsing (Anonymous)', () => {
+	test.skip(
+		Boolean(process.env.CLAUDE_CODE_REMOTE),
+		'Wikimedia answers anonymous API requests from Claude Code cloud containers with HTTP 429.',
+	)
+
 	test('should successfully load script, parse page, and fire pageReady hook (JWBTH_TEST)', async ({
 		page,
 	}) => {
