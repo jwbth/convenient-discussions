@@ -82,6 +82,9 @@ class CommentButton extends Button {
 		if (this.action) {
 			this.setAction(this.action)
 		}
+		if (this.dropAction) {
+			this.setDropAction(this.dropAction)
+		}
 		if (originalHref) {
 			this.buttonWidget.setHref(originalHref)
 

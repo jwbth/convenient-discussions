@@ -1025,7 +1025,9 @@ class Controller extends EventEmitter {
 		// The benefit may be low compared to the performance cost, but it's unexpected when the user
 		// scrolls a comment and it suddenly stops being highlighted because the cursor is between
 		// neighboring <p>s.
-		$(document).on('mousemove.cd mouseover.cd', (event) => {
+		// `dragover` stands in for `mousemove` during a drag, so that the menu with the Reply button,
+		// a drop target, appears.
+		$(document).on('mousemove.cd mouseover.cd dragover.cd', (event) => {
 			this.handleMouseMove(/** @type {JQuery.MouseMoveEvent | JQuery.MouseOverEvent} */ (event))
 		})
 

@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from 'vitest'
 
 vi.mock('../src/commentManager', () => ({ default: {} }))
 vi.mock('../src/loader/cd', () => ({ default: {} }))
+vi.mock('../src/CommentForm', () => ({ default: {} }))
 
 const { default: CommentActions } = await import('../src/CommentActions')
 

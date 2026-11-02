@@ -1,5 +1,6 @@
 import Button from './Button'
 import Comment from './Comment'
+import CommentForm from './CommentForm'
 import LiveTimestamp from './LiveTimestamp'
 import getMoveSectionDialogClass from './MoveSectionDialog'
 import PrototypeRegistry from './PrototypeRegistry'
@@ -343,6 +344,11 @@ class Section extends SectionSkeleton {
 			buttonElement: /** @type {HTMLElement} */ (element.firstChild),
 			action: () => {
 				this.reply()
+			},
+		}).setDropAction({
+			accepts: CommentForm.canInsertTransferredData,
+			drop: (dataTransfer) => {
+				this.reply().insertTransferredData(dataTransfer)
 			},
 		})
 

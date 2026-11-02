@@ -8,6 +8,14 @@ import { isCmdModifierPressed } from './utils-keyboard'
  */
 
 /**
+ * @typedef {object} DropAction
+ * @property {(dataTransfer: DataTransfer) => boolean} accepts Whether the dragged data can be dropped
+ *   on the button. Only the data's types are readable at this stage.
+ * @property {(dataTransfer: DataTransfer) => void} drop Function to execute on drop. It must read
+ *   the data synchronously: the browser empties it once the `drop` event is over.
+ */
+
+/**
  * @typedef {object} ButtonConfig
  * @property {HTMLElement} [element] Pre-created {@link Button#element element}.
  * @property {HTMLElement} [buttonElement] Pre-created {@link Button#buttonElement button element}
@@ -34,6 +42,12 @@ class Button {
 	 * @private
 	 */
 	callback
+
+	/**
+	 * @type {((event: DragEvent) => void) | undefined}
+	 * @private
+	 */
+	dragCallback
 
 	/**
 	 * Create a button.
@@ -259,6 +273,62 @@ class Button {
 	}
 
 	/**
+	 * Make the button a drop target or stop it being one.
+	 *
+	 * @param {DropAction | undefined} dropAction
+	 * @returns {this} This button.
+	 */
+	setDropAction(dropAction) {
+		if (this.dragCallback) {
+			for (const type of Button.dragEventTypes) {
+				this.buttonElement.removeEventListener(type, this.dragCallback)
+			}
+			this.dragCallback = undefined
+		}
+
+		/**
+		 * Action executed by dropping data on the button.
+		 *
+		 * @type {DropAction | undefined}
+		 * @protected
+		 */
+		this.dropAction = dropAction
+		if (!dropAction) return this
+
+		this.dragCallback = (event) => {
+			const dataTransfer = event.dataTransfer
+			if (
+				event.type === 'dragleave' &&
+				!this.buttonElement.contains(/** @type {Node | null} */ (event.relatedTarget))
+			) {
+				this.element.classList.remove('cd-button-dropTarget')
+			}
+			if (
+				event.type === 'dragleave' ||
+				!dataTransfer ||
+				this.isDisabled() ||
+				!dropAction.accepts(dataTransfer)
+			)
+				return
+
+			event.preventDefault()
+			if (event.type === 'drop') {
+				this.element.classList.remove('cd-button-dropTarget')
+				event.stopPropagation()
+				dropAction.drop(dataTransfer)
+			} else {
+				dataTransfer.dropEffect = 'copy'
+				this.element.classList.add('cd-button-dropTarget')
+			}
+		}
+		for (const type of Button.dragEventTypes) {
+			this.buttonElement.addEventListener(type, this.dragCallback)
+		}
+
+		return this
+	}
+
+	/**
 	 * Check whether the button is disabled.
 	 *
 	 * @returns {boolean}
@@ -338,6 +408,14 @@ class Button {
 			})
 		iconElement.classList.add(`oo-ui-icon-${icon}`)
 	}
+
+	/**
+	 * Events that {@link Button#setDropAction a drop target} handles.
+	 *
+	 * @type {('dragenter' | 'dragover' | 'dragleave' | 'drop')[]}
+	 * @private
+	 */
+	static dragEventTypes = ['dragenter', 'dragover', 'dragleave', 'drop']
 
 	/**
 	 * @type {{ [name: string]: HTMLElement | undefined }}

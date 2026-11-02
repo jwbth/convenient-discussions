@@ -1,3 +1,4 @@
+import CommentForm from './CommentForm'
 import commentManager from './commentManager'
 import cd from './loader/cd'
 
@@ -116,6 +117,24 @@ class CommentActions {
 	}
 
 	/**
+	 * Reusable drop action for reply button. Inserts the dropped data into the comment's reply form,
+	 * opening it if needed.
+	 *
+	 * @type {import('./Button').DropAction}
+	 */
+	replyDropAction = {
+		accepts: CommentForm.canInsertTransferredData,
+		drop: (dataTransfer) => {
+			this.comment.reply()
+
+			// With outdented replies, the section's reply form is used.
+			;(this.comment.replyForm || this.comment.section?.replyForm)?.insertTransferredData(
+				dataTransfer,
+			)
+		},
+	}
+
+	/**
 	 * Reusable action for edit button.
 	 */
 	onEditAction = () => {
@@ -204,7 +223,9 @@ class CommentActions {
 	addReplyButton() {
 		if (!this.comment.isActionable()) return
 
-		this.replyButton = this.createReplyButton(this.onReplyAction)
+		this.replyButton = this.createReplyButton(this.onReplyAction).setDropAction(
+			this.replyDropAction,
+		)
 		this.insertReplyButton()
 
 		// Check if reply should be disabled due to outdented comments

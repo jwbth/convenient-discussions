@@ -1401,7 +1401,7 @@ class CommentForm extends EventEmitter {
 			'clipboardData' in originalEvent ? originalEvent.clipboardData : originalEvent.dataTransfer
 		if (!data) return
 
-		const image = [...data.items].find((item) => CommentForm.allowedFileTypes.includes(item.type))
+		const image = CommentForm.findImage(data)
 		if (image) {
 			event.preventDefault()
 			this.uploadImage(image.getAsFile() || undefined)
@@ -1416,15 +1416,57 @@ class CommentForm extends EventEmitter {
 		)
 
 		// Handle rich text conversion only if URL conversion won't happen
-		if (!willConvertUrl && data.types.includes('text/html')) {
-			const paste = cleanUpPasteDom(
-				getElementFromPasteHtml(data.getData('text/html')),
-				this.commentInput.$element[0],
+		if (!willConvertUrl) {
+			this.maybeSuggestConvertToWikitext(
+				data.getData('text/html'),
+				CommentForm.getTransferredText(data),
 			)
-			if (!paste.isConvertible) return
-
-			this.suggestConvertToWikitext(paste, data.getData('text/plain').replace(/\r/g, ''))
 		}
+	}
+
+	/**
+	 * Insert data dropped outside the comment input, such as on a reply button, the way a drop on the
+	 * input would.
+	 *
+	 * @param {DataTransfer} data Read synchronously, as the browser empties it once the `drop` event
+	 *   is over.
+	 */
+	async insertTransferredData(data) {
+		const file = CommentForm.findImage(data)?.getAsFile() || undefined
+		const html = data.getData('text/html')
+		const text = CommentForm.getTransferredText(data)
+
+		// The toolbar, which the rich formatting popup attaches to, is built asynchronously.
+		await this.buildPromise
+
+		if (file) {
+			this.uploadImage(file)
+
+			return
+		}
+
+		this.commentInput.insertContent(text)
+		this.maybeSuggestConvertToWikitext(html, text)
+	}
+
+	/**
+	 * If the transferred data has rich formatting that can be converted to wikitext, suggest to do
+	 * so.
+	 *
+	 * @param {string} html Empty if there is no rich formatting.
+	 * @param {string} insertedText
+	 * @private
+	 */
+	maybeSuggestConvertToWikitext(html, insertedText) {
+		if (!html) return
+
+		const paste = cleanUpPasteDom(
+			getElementFromPasteHtml(html),
+			this.commentInput.$element[0],
+		)
+		if (!paste.isConvertible) return
+
+		this.suggestConvertToWikitext(paste, insertedText)
 	}
 
 	/**
@@ -1705,10 +1747,7 @@ class CommentForm extends EventEmitter {
 			.getEditableElement()
 			.on('dragover.cd', (event) => {
 				const data = /** @type {DragEvent} */ (event.originalEvent).dataTransfer
-				if (
-					!data ||
-					![...data.items].some((item) => CommentForm.allowedFileTypes.includes(item.type))
-				) {
+				if (!data || !CommentForm.findImage(data)) {
 					return
 				}
 
@@ -4275,6 +4314,38 @@ class CommentForm extends EventEmitter {
 	static counter = 0
 
 	static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml']
+
+	/**
+	 * Find an image of an {@link CommentForm.allowedFileTypes allowed type} among transferred data.
+	 *
+	 * @param {DataTransfer} data
+	 * @returns {DataTransferItem | undefined}
+	 * @private
+	 */
+	static findImage(data) {
+		return [...data.items].find((item) => this.allowedFileTypes.includes(item.type))
+	}
+
+	/**
+	 * Get the plain text of transferred data.
+	 *
+	 * @param {DataTransfer} data
+	 * @returns {string}
+	 * @private
+	 */
+	static getTransferredText(data) {
+		return data.getData('text/plain').replace(/\r/g, '')
+	}
+
+	/**
+	 * Check whether dragged data can be {@link CommentForm#insertTransferredData inserted} into a
+	 * comment form.
+	 *
+	 * @param {DataTransfer} data
+	 * @returns {boolean}
+	 */
+	static canInsertTransferredData = (data) =>
+		Boolean(CommentForm.findImage(data)) || data.types.includes('text/plain')
 
 	/**
 	 * Get the options for encapsulating the selection for a specific tool.
