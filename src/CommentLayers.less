@@ -297,6 +297,20 @@ body:not(.skin-monobook)
 	background-size: 2.5em;
 }
 
+// Codex draws each triangle 1/20 of the icon off the vertical center (up above, down below), which
+// looks unbalanced when only one of the buttons is shown. 0.125em = background-size / 20.
+.cd-comment-button-goToParent.cd-comment-button-goToParent
+	> .oo-ui-buttonElement-button
+	> .oo-ui-iconElement-icon {
+	background-position: center calc(50% + 0.125em);
+}
+
+.cd-comment-button-goToChild.cd-comment-button-goToChild
+	> .oo-ui-buttonElement-button
+	> .oo-ui-iconElement-icon {
+	background-position: center calc(50% - 0.125em);
+}
+
 body:not(.skin-monobook)
 	.cd-comment-button-edit.cd-comment-button-edit
 	> .oo-ui-buttonElement-button
