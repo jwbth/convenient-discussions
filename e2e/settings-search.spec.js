@@ -119,3 +119,119 @@ test('settings search reports when no settings match', async ({ page }) => {
 	await expect(results.getByText('No settings match', { exact: true })).toHaveCount(0)
 	await expect(results.getByRole('checkbox', { name: 'Show the editing toolbar' })).toBeVisible()
 })
+
+test('selecting a settings page ends the search and shows that page', async ({ page }) => {
+	await setupConvenientDiscussions(page, `${TEST_PAGES.JWBTH_TEST}?uselang=en`)
+	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog())
+
+	const dialog = page.getByRole('dialog', { name: 'Convenient Discussions settings' })
+	const search = dialog.getByRole('searchbox', { name: 'Search settings' })
+	await search.fill('comments')
+	await dialog.getByRole('option', { name: 'Comment form', exact: true }).click()
+
+	await expect(search).toHaveValue('')
+	await expect(dialog.locator('.cd-settings-searchResults')).toBeHidden()
+	await expect(dialog.getByRole('textbox', { name: /^Signature prefix/ })).toBeVisible()
+	await expect(dialog.getByRole('option', { name: 'Comment form', exact: true })).toHaveAttribute(
+		'aria-selected', 'true',
+	)
+})
+
+test('Escape clears a search before confirming close with unsaved changes', async ({ page }) => {
+	await setupConvenientDiscussions(page, `${TEST_PAGES.JWBTH_TEST}?uselang=en`)
+	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog('commentForm'))
+
+	const dialog = page.getByRole('dialog', { name: 'Convenient Discussions settings' })
+	const search = dialog.getByRole('searchbox', { name: 'Search settings' })
+	await search.fill('toolbar')
+	await dialog.getByRole('checkbox', { name: 'Show the editing toolbar' }).click()
+	await expect(dialog.getByRole('button', { name: 'Save', exact: true })).toBeEnabled()
+	const confirmations = []
+	page.on('dialog', async (confirmation) => {
+		confirmations.push(confirmation.message())
+		await confirmation.dismiss()
+	})
+
+	await search.press('Escape')
+	await expect(search).toHaveValue('')
+	await expect(dialog).toBeVisible()
+	await expect(dialog.getByRole('textbox', { name: /^Signature prefix/ })).toBeVisible()
+	expect(confirmations).toEqual([])
+
+	await Promise.all([page.waitForEvent('dialog'), search.press('Escape')])
+	expect(confirmations).toEqual([
+		'The settings were not saved. Are you sure you want to close the window?',
+	])
+	await expect(dialog).toBeVisible()
+})
+
+test('Reset keeps the search and shows reset values in rebuilt controls', async ({ page }) => {
+	await setupConvenientDiscussions(page, {
+		url: `${TEST_PAGES.JWBTH_TEST}?uselang=en`,
+		settings: { showToolbar: true },
+	})
+	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog('timestamps'))
+
+	const dialog = page.getByRole('dialog', { name: 'Convenient Discussions settings' })
+	const search = dialog.getByRole('searchbox', { name: 'Search settings' })
+	const results = dialog.locator('.cd-settings-searchResults')
+	await search.fill('toolbar')
+	await results.getByRole('checkbox', { name: 'Show the editing toolbar' }).uncheck()
+	page.once('dialog', (confirmation) => confirmation.accept())
+	await dialog.getByRole('button', { name: 'Reset settings (in all sections)', exact: true }).click()
+
+	await expect(search).toHaveValue('toolbar')
+	await expect(results).toBeVisible()
+	await expect(results.getByRole('heading')).toHaveText(['Comment form'])
+	await expect(results.getByRole('checkbox', { name: 'Show the editing toolbar' })).toBeChecked()
+	await expect(results.locator('.cd-searchHighlight')).toHaveText(['toolbar'])
+	await expect(dialog.locator('.oo-ui-outlineOptionWidget.oo-ui-optionWidget-selected')).toHaveCount(0)
+
+	await search.fill('')
+	await expect(dialog.getByRole('option', { name: 'Timestamps', exact: true })).toHaveAttribute(
+		'aria-selected', 'true',
+	)
+	await expect(dialog.locator('.cd-searchHighlight')).toHaveCount(0)
+})
+
+for (const clearMethod of ['typing', 'clear indicator']) {
+	test(`clearing settings search by ${clearMethod} restores settings pages and keeps edits`, async ({ page }) => {
+		await setupConvenientDiscussions(page, {
+			url: `${TEST_PAGES.JWBTH_TEST}?uselang=en`,
+			settings: { showToolbar: true },
+		})
+		await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog())
+
+		const dialog = page.getByRole('dialog', { name: 'Convenient Discussions settings' })
+		const pageNames = ['Talk page', 'Comment form', 'Timestamps', 'Notifications', 'Data deletion']
+		const fieldCounts = new Map()
+		for (const name of pageNames) {
+			await dialog.getByRole('option', { name, exact: true }).click()
+			fieldCounts.set(name, await dialog.locator('.oo-ui-pageLayout:visible > .oo-ui-fieldLayout').count())
+		}
+		await dialog.getByRole('option', { name: 'Timestamps', exact: true }).click()
+		const search = dialog.getByRole('searchbox', { name: 'Search settings' })
+		await search.fill('a')
+		await dialog.locator('.cd-settings-searchResults')
+			.getByRole('checkbox', { name: 'Show the editing toolbar', exact: true }).uncheck()
+		if (clearMethod === 'typing') {
+			await search.fill('')
+		} else {
+			await dialog.locator('.cd-settings-search .oo-ui-indicator-clear').click()
+		}
+
+		await expect(search).toHaveValue('')
+		await expect(dialog.getByRole('option', { name: 'Timestamps', exact: true })).toHaveAttribute(
+			'aria-selected', 'true',
+		)
+		await expect(dialog.locator('.cd-settings-searchResults')).toBeHidden()
+		await expect(dialog.locator('.cd-searchHighlight')).toHaveCount(0)
+		for (const name of pageNames) {
+			await dialog.getByRole('option', { name, exact: true }).click()
+			await expect(dialog.locator('.oo-ui-pageLayout:visible > .oo-ui-fieldLayout')).toHaveCount(fieldCounts.get(name))
+			if (name === 'Comment form') {
+				await expect(dialog.getByRole('checkbox', { name: 'Show the editing toolbar' })).not.toBeChecked()
+			}
+		}
+	})
+}

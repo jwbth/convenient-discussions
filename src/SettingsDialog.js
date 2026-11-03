@@ -152,6 +152,23 @@ export default function getSettingsDialogClass() {
 				padded: false,
 				expanded: true,
 			})
+			this.searchInput = new OO.ui.SearchInputWidget({
+				placeholder: cd.s('sd-search-placeholder'),
+				classes: ['cd-settings-search'],
+			})
+			this.searchInput.$input.attr('aria-label', cd.s('sd-search-placeholder'))
+			this.searchInput.$input.on('keydown', (event) => {
+				if (event.key === 'Escape') {
+					if (this.searchInput.getValue()) {
+						this.searchInput.setValue('')
+					} else {
+						this.executeAction('close')
+					}
+					event.preventDefault()
+					event.stopPropagation()
+				}
+			})
+			this.searchInput.on('change', this.updateSearchResults)
 
 			this.rebootPanel = new OO.ui.PanelLayout({
 				padded: true,
@@ -283,10 +300,10 @@ export default function getSettingsDialogClass() {
 				case 'reset': {
 					return new OO.ui.Process(() => {
 						if (confirm(cd.s('sd-reset-confirm'))) {
+							const pageName = this.bookletLayout.getCurrentPageName()
 							this.renderControls(cd.settings.scheme.default)
-							this.bookletLayout.setPage(
-								/** @type {string} */ (this.bookletLayout.getCurrentPageName()),
-							)
+							this.bookletLayout.setPage(/** @type {string} */ (pageName))
+							this.updateSearchResults()
 						}
 					})
 				}
@@ -442,13 +459,13 @@ export default function getSettingsDialogClass() {
 			})
 			this.bookletLayout.addPages(this.createPages(settingValues), 0)
 
-			this.searchInput = new OO.ui.SearchInputWidget({
-				placeholder: cd.s('sd-search-placeholder'),
-				classes: ['cd-settings-search'],
-			})
-			this.searchInput.$input.attr('aria-label', cd.s('sd-search-placeholder'))
-			this.searchInput.on('change', this.updateSearchResults)
 			this.bookletLayout.getOutline()?.$element.before(this.searchInput.$element)
+			this.bookletLayout.getOutline()?.on('choose', (item) => {
+				if (this.searchInput.getValue().trim()) {
+					this.pageBeforeSearch = /** @type {string} */ (item.getData())
+					this.searchInput.setValue('')
+				}
+			})
 
 			this.searchResultsPanel = new OO.ui.PanelLayout({
 				expanded: true,
