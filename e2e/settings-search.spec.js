@@ -3,6 +3,18 @@ import { test, expect } from '@playwright/test'
 
 import { setupConvenientDiscussions, TEST_PAGES } from './helpers/test-utils.js'
 
+test('settings search matches visible Turkish text', async ({ page }) => {
+	await setupConvenientDiscussions(page, `${TEST_PAGES.JWBTH_TEST}?uselang=tr`)
+	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog())
+
+	const dialog = page.getByRole('dialog', { name: 'Kullanışlı Tartışmalar ayarları' })
+	await expect(dialog.getByRole('checkbox', { name: 'İçindekiler tablosunda yeni yorumları ve bölümleri göster', exact: true })).toBeVisible()
+	await dialog.getByRole('searchbox').fill('İçindekiler')
+	const results = dialog.locator('.cd-settings-searchResults')
+	await expect(results.getByRole('checkbox', { name: 'İçindekiler tablosunda yeni yorumları ve bölümleri göster', exact: true })).toBeVisible()
+	await expect(results.locator('.cd-searchHighlight')).toHaveText(['İçindekiler'])
+})
+
 test('settings search groups live controls and edits enable Save', async ({ page }) => {
 	await setupConvenientDiscussions(page, `${TEST_PAGES.JWBTH_TEST}?uselang=en`)
 	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog())

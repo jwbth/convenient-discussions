@@ -486,7 +486,7 @@ export default function getSettingsDialogClass() {
 		 * @protected
 		 */
 		updateSearchResults = () => {
-			const query = this.searchInput.getValue().trim().toLowerCase()
+			const query = this.searchInput.getValue().trim()
 			this.searchHighlightElements.forEach(removeHighlights)
 			this.searchHighlightElements = []
 			if (query && !this.pageBeforeSearch) {
