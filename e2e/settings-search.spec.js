@@ -68,3 +68,54 @@ test('settings search keeps dependent settings disabled without adding their con
 	await expect(results.getByRole('checkbox').nth(0)).toBeDisabled()
 	await expect(results.getByRole('checkbox').nth(1)).toBeDisabled()
 })
+
+test('settings search highlights matching substrings and preserves links as the query changes', async ({ page }) => {
+	await setupConvenientDiscussions(page, `${TEST_PAGES.JWBTH_TEST}?uselang=en`)
+	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog())
+
+	const dialog = page.getByRole('dialog', { name: 'Convenient Discussions settings' })
+	const search = dialog.getByRole('searchbox', { name: 'Search settings' })
+	const results = dialog.locator('.cd-settings-searchResults')
+	await search.fill('  MY WIKI PREF  ')
+	const preferencesLink = results.getByRole('link', { name: 'my wiki preferences' })
+	await expect(preferencesLink.locator('.cd-searchHighlight')).toHaveText('my wiki pref')
+	await expect(preferencesLink).toHaveAttribute('href', /Special:Preferences/)
+
+	await search.fill('overlay menu')
+	await expect(results.locator('.cd-searchHighlight')).toHaveText(['overlay menu'])
+	await expect(dialog.locator('.cd-searchHighlight .cd-searchHighlight')).toHaveCount(0)
+
+	await search.fill('')
+	await expect(dialog.locator('.cd-searchHighlight')).toHaveCount(0)
+})
+
+test('settings search shows every setting when the settings page name matches', async ({ page }) => {
+	await setupConvenientDiscussions(page, `${TEST_PAGES.JWBTH_TEST}?uselang=en`)
+	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog())
+
+	const dialog = page.getByRole('dialog', { name: 'Convenient Discussions settings' })
+	await dialog.getByRole('searchbox', { name: 'Search settings' }).fill('notifications')
+	const results = dialog.locator('.cd-settings-searchResults')
+	await expect(results.getByRole('heading').locator('.cd-searchHighlight')).toHaveText([
+		'Notifications',
+	])
+	await expect(results.getByRole('checkbox', { name: 'Notify about comments in collapsed threads' })).toBeVisible()
+	await expect(results.locator('input[type="radio"]')).toHaveCount(6)
+})
+
+test('settings search reports when no settings match', async ({ page }) => {
+	await setupConvenientDiscussions(page, `${TEST_PAGES.JWBTH_TEST}?uselang=en`)
+	await page.evaluate(() => window.convenientDiscussions.tests.showSettingsDialog())
+
+	const dialog = page.getByRole('dialog', { name: 'Convenient Discussions settings' })
+	const search = dialog.getByRole('searchbox', { name: 'Search settings' })
+	const results = dialog.locator('.cd-settings-searchResults')
+	await search.fill('quartzpenguin')
+	await expect(results.getByText('No settings match', { exact: true })).toBeVisible()
+	await expect(results.getByRole('heading')).toHaveCount(0)
+	await expect(results.locator('.oo-ui-fieldLayout')).toHaveCount(0)
+
+	await search.fill('toolbar')
+	await expect(results.getByText('No settings match', { exact: true })).toHaveCount(0)
+	await expect(results.getByRole('checkbox', { name: 'Show the editing toolbar' })).toBeVisible()
+})

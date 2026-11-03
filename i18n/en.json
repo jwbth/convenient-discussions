@@ -354,6 +354,7 @@
 	"sd-save": "Save",
 	"sd-reload": "Reload",
 	"sd-search-placeholder": "Search settings",
+	"sd-search-noresults": "No settings match",
 	"sd-page-talkpage": "Talk page",
 	"sd-page-commentform": "Comment form",
 	"sd-page-timestamps": "Timestamps",

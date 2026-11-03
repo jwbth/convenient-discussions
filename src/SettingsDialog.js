@@ -4,6 +4,7 @@ import commentFormManager from './commentFormManager'
 import controller from './controller'
 import cd from './loader/cd'
 import { areObjectsEqual } from './shared/utils-general'
+import { highlightText, removeHighlights } from './textHighlighting'
 import { saveGlobalOption, saveLocalOption } from './utils-api'
 import {
 	createButtonControl,
@@ -91,6 +92,9 @@ export default function getSettingsDialogClass() {
 
 		/** @type {string|undefined} */
 		pageBeforeSearch
+
+		/** @type {Element[]} */
+		searchHighlightElements = []
 
 		controls =
 			/** @type {Expand<ControlTypesByName<(typeof import('./settings').default)['scheme']['controlTypes']>>} */ ({})
@@ -466,6 +470,8 @@ export default function getSettingsDialogClass() {
 		 */
 		updateSearchResults = () => {
 			const query = this.searchInput.getValue().trim().toLowerCase()
+			this.searchHighlightElements.forEach(removeHighlights)
+			this.searchHighlightElements = []
 			if (query && !this.pageBeforeSearch) {
 				this.pageBeforeSearch = this.bookletLayout.getCurrentPageName() || cd.settings.scheme.ui[0].name
 			}
@@ -490,6 +496,11 @@ export default function getSettingsDialogClass() {
 
 			this.bookletLayout.getOutline()?.selectItem()
 			cd.settings.scheme.ui.forEach((pageData) => {
+				const $heading = $('<h3>').text(pageData.label)
+				const pageMatches = highlightText($heading[0], query)
+				if (pageMatches) {
+					this.searchHighlightElements.push($heading[0])
+				}
 				const $fields = pageData.controls
 					.filter(({ name }) => {
 						const control = this.controls[name]
@@ -502,13 +513,19 @@ export default function getSettingsDialogClass() {
 							$text = $text.add(control.input.$label)
 						}
 
-						return $text.toArray().some((element) => element.textContent.toLowerCase().includes(query))
+						const matches = $text.toArray().filter((element) => highlightText(element, query))
+						this.searchHighlightElements.push(...matches)
+
+						return pageMatches || Boolean(matches.length)
 					})
 					.map(({ name }) => this.controls[name].field.$element)
 				if ($fields.length) {
-					this.searchResultsPanel.$element.append($('<h3>').text(pageData.label), $fields)
+					this.searchResultsPanel.$element.append($heading, $fields)
 				}
 			})
+			if (!this.searchResultsPanel.$element.children().length) {
+				this.searchResultsPanel.$element.append($('<p>').text(cd.s('sd-search-noresults')))
+			}
 		}
 
 		/**

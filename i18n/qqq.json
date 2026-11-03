@@ -333,6 +333,7 @@
 	"sd-save": "Label of the button in the script settings dialog.\n\n{{identical|Save}}",
 	"sd-reload": "Label of the button in the settings dialog.\n\n{{identical|Reload}}",
 	"sd-search-placeholder": "Placeholder and accessible label of the search box in the settings dialog. Searches settings by the text displayed in their labels, options, and help.",
+	"sd-search-noresults": "Message displayed in the settings dialog when no settings match the search query.",
 	"sd-page-talkpage": "Settings group name in the script settings dialog.",
 	"sd-page-commentform": "Settings group name in the script settings dialog.",
 	"sd-page-timestamps": "Settings group name in the script settings dialog.",
