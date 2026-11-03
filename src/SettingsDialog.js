@@ -83,6 +83,15 @@ export default function getSettingsDialogClass() {
 		/** @type {OO.ui.BookletLayout} */
 		bookletLayout
 
+		/** @type {OO.ui.SearchInputWidget} */
+		searchInput
+
+		/** @type {OO.ui.PanelLayout} */
+		searchResultsPanel
+
+		/** @type {string|undefined} */
+		pageBeforeSearch
+
 		controls =
 			/** @type {Expand<ControlTypesByName<(typeof import('./settings').default)['scheme']['controlTypes']>>} */ ({})
 
@@ -428,9 +437,78 @@ export default function getSettingsDialogClass() {
 				outlined: true,
 			})
 			this.bookletLayout.addPages(this.createPages(settingValues), 0)
+
+			this.searchInput = new OO.ui.SearchInputWidget({
+				placeholder: cd.s('sd-search-placeholder'),
+				classes: ['cd-settings-search'],
+			})
+			this.searchInput.$input.attr('aria-label', cd.s('sd-search-placeholder'))
+			this.searchInput.on('change', this.updateSearchResults)
+			this.bookletLayout.getOutline()?.$element.before(this.searchInput.$element)
+
+			this.searchResultsPanel = new OO.ui.PanelLayout({
+				expanded: true,
+				padded: true,
+				scrollable: true,
+				classes: ['cd-settings-searchResults'],
+			})
+			this.searchResultsPanel.toggle(false)
+			this.bookletLayout.$content.append(this.searchResultsPanel.$element)
 			this.settingsPanel.$element.empty().append(this.bookletLayout.$element)
 
 			this.updateAbilities()
+		}
+
+		/**
+		 * Show matching settings using their live controls.
+		 *
+		 * @protected
+		 */
+		updateSearchResults = () => {
+			const query = this.searchInput.getValue().trim().toLowerCase()
+			if (query && !this.pageBeforeSearch) {
+				this.pageBeforeSearch = this.bookletLayout.getCurrentPageName() || cd.settings.scheme.ui[0].name
+			}
+
+			cd.settings.scheme.ui.forEach((pageData) => {
+				this.bookletLayout
+					.getPage(pageData.name)
+					?.$element.append(pageData.controls.map(({ name }) => this.controls[name].field.$element))
+			})
+			this.searchResultsPanel.$element.empty()
+			this.bookletLayout.$content.children().not(this.searchResultsPanel.$element).toggle(!query)
+			this.searchResultsPanel.toggle(Boolean(query))
+
+			if (!query) {
+				if (this.pageBeforeSearch) {
+					this.bookletLayout.getOutline()?.selectItemByData(this.pageBeforeSearch)
+					this.pageBeforeSearch = undefined
+				}
+
+				return
+			}
+
+			this.bookletLayout.getOutline()?.selectItem()
+			cd.settings.scheme.ui.forEach((pageData) => {
+				const $fields = pageData.controls
+					.filter(({ name }) => {
+						const control = this.controls[name]
+						let $text = control.field.$label.add(control.field.$help)
+						if (control.type === 'radio' || control.type === 'multicheckbox') {
+							control.input.getItems().forEach((item) => {
+								$text = $text.add(/** @type {OO.ui.OptionWidget} */ (item).$label)
+							})
+						} else if (control.type === 'button') {
+							$text = $text.add(control.input.$label)
+						}
+
+						return $text.toArray().some((element) => element.textContent.toLowerCase().includes(query))
+					})
+					.map(({ name }) => this.controls[name].field.$element)
+				if ($fields.length) {
+					this.searchResultsPanel.$element.append($('<h3>').text(pageData.label), $fields)
+				}
+			})
 		}
 
 		/**

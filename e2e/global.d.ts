@@ -18,6 +18,7 @@ interface Comment {
 }
 
 interface ConvenientDiscussions {
+	tests?: any
 	isRunning?: boolean
 	comments: Comment[]
 	commentForms?: any[]
