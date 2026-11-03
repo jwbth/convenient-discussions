@@ -2,7 +2,7 @@
 
 - The dev server on port 9000 serves the main checkout; assume it's running but it oftentimes doesn't. In a worktree, run `npm run dev` in the background, use the port it prints in place of 9000, and stop it with `npm run dev:stop`.
 - Cover non-trivial behaviors and fixes with unit tests, or e2e tests where unit tests can't reach.
-- Test CD in the browser through the Chrome DevTools MCP: its Chrome is logged in to a test account and keeps tabs visible, which CD needs to boot. Unless the task calls for another page, use https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page. Load the dev build with:
+- Test in the browser through the Chrome DevTools MCP: its Chrome is logged in to a test account and keeps tabs visible, which CD needs to boot. Unless the task calls for another page, use https://test.wikipedia.org/wiki/User_talk:JWBTH/CD_test_page. Load the dev build with:
 
   ```js
   const script = document.createElement('script')
