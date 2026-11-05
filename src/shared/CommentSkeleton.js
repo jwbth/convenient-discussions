@@ -5,6 +5,7 @@ import cd from './cd'
 import {
 	generateFixedPosTimestamp,
 	genericGetOldestOrNewestByDateProp,
+	isDomHandlerElement,
 	isElement,
 	isHeadingNode,
 	isInline,
@@ -22,6 +23,9 @@ import {
  * @template {AnyNode} [N=AnyNode]
  */
 class CommentSkeleton {
+	/** @type {string} */
+	static revealIpButtonClass = 'ext-checkuser-tempaccount-reveal-ip-button'
+
 	/**
 	 * Comment parts. They are not guaranteed to match the elements after some point (due to
 	 * `CommentSkeleton#wrapHighlightables`, `CommentSkeleton#fixEndLevel`) calls.
@@ -232,7 +236,7 @@ class CommentSkeleton {
 
 		this.followsHeading = targets[signatureIndex - 1]?.type === 'heading'
 		this.signatureElement = signature.element
-		this.signatureText = signature.element.textContent
+		this.signatureText = this.getSignatureText()
 		this.date = signature.date
 		this.authorName = signature.authorName
 		this.id = CommentSkeleton.generateId(this.date, this.authorName, parser.existingCommentIds)
@@ -308,6 +312,26 @@ class CommentSkeleton {
 		this.outdented = false
 
 		signature.comment = this
+	}
+
+	/**
+	 * Get signature text without injected controls or additional excluded elements.
+	 *
+	 * @param {string[]} [excludeClasses]
+	 * @returns {string}
+	 * @protected
+	 */
+	getSignatureText(excludeClasses = []) {
+		const signatureElement = this.signatureElement
+		const clone = isDomHandlerElement(signatureElement)
+			? signatureElement.cloneNode(true)
+			: /** @type {Element} */ (signatureElement.cloneNode(true))
+		const selector = [CommentSkeleton.revealIpButtonClass, ...excludeClasses]
+			.map((className) => `.${className}`)
+			.join(', ')
+		clone.querySelectorAll(selector).forEach((element) => element.remove())
+
+		return clone.textContent
 	}
 
 	/**

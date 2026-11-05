@@ -209,8 +209,15 @@ class SpaciousComment extends Comment {
 		if (this.authorLink) {
 			// Move the existing author link to the header.
 
+			let revealIpButton = this.authorLink.nextElementSibling || undefined
+			if (!revealIpButton?.classList.contains(SpaciousComment.revealIpButtonClass)) {
+				revealIpButton = undefined
+			}
+
 			if (this.extraSignatures.length) {
 				this.authorLink = /** @type {HTMLAnchorElement} */ (this.authorLink.cloneNode(true))
+				// CheckUser binds the button's handlers through jQuery.
+				revealIpButton = revealIpButton && $(revealIpButton).clone(true)[0]
 			}
 
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -224,6 +231,9 @@ class SpaciousComment extends Comment {
 			this.authorLink.append(bdiElement)
 
 			cd.config.afterAuthorLinkParse?.(this.authorLink, beforeAuthorLinkParseReturn)
+			if (revealIpButton) {
+				this.authorLink.after(revealIpButton)
+			}
 		} else {
 			// Use the bootstrap author link.
 			this.authorLink = authorLink
@@ -351,18 +361,9 @@ class SpaciousComment extends Comment {
 	 * @protected
 	 */
 	getCleanSignatureText() {
-		const dummy = document.createElement('div')
-		dummy.append(this.signatureElement.cloneNode(true))
-
 		// TODO: cd.config.excludeFromHeadlineClasses wasn't intended for this purpose, so either
 		// repurpose it or use other means.
-		cd.config.excludeFromHeadlineClasses.forEach((className) => {
-			dummy.querySelectorAll(`.${className}`).forEach((element) => {
-				element.remove()
-			})
-		})
-
-		let cleanedSignatureText = dummy.textContent
+		let cleanedSignatureText = this.getSignatureText(cd.config.excludeFromHeadlineClasses)
 			.replace(cd.g.timestampTools.content.regexp, '')
 			.trim()
 

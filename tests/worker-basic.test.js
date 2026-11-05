@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach, vi, afterEach } from 'vitest'
 
 import defaultPayload from './worker-default-payload'
+import { revealIpButtonHtml } from './utils-checkuser'
 
 describe('worker', () => {
 	let postMessageSpy
@@ -79,6 +80,16 @@ describe('worker', () => {
 	const heading = '<div class="mw-heading mw-heading2"><h2 id="Section">Section</h2></div>\n'
 	const firstComment =
 		'<p>Comment. <a href="/wiki/User:Alice" title="User:Alice">Alice</a> 00:00, 1 January 2026 (UTC)\n</p>\n'
+
+	test('CheckUser between the user and talk links does not enter signature text or change the author', () => {
+		const authorName = '~2026-58191-23'
+		const { comments } = parse(`<p>Comment. <a href="/wiki/User:${authorName}" class="mw-tempuserlink">${authorName}</a>${revealIpButtonHtml} (<a href="/wiki/User_talk:${authorName}">talk</a>) 00:00, 1 January 2026 (UTC)</p>`)
+
+		expect(comments).toHaveLength(1)
+		expect(comments[0].authorName).toBe(authorName)
+		expect(comments[0].signatureText).toBe(`${authorName} (talk) 00:00, 1 January 2026 (UTC)`)
+		expect(comments[0].text).toBe('Comment.')
+	})
 
 	describe('move marks', () => {
 		const moveMark =

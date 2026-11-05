@@ -332,7 +332,7 @@ class SectionSkeleton {
 			'mw-headline-number',
 
 			'mw-editsection-like',
-			'ext-checkuser-tempaccount-reveal-ip-button',
+			CommentSkeleton.revealIpButtonClass,
 			'ext-checkuser-tempaccount-reveal-ip',
 			...cd.config.excludeFromHeadlineClasses,
 		]
