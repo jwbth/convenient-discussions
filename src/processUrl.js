@@ -167,6 +167,8 @@ export default async function processUrlOnLoad() {
 		// Try to find the target
 		!(
 			comment ||
+			// Browsers treat #top as the top of the document even without a matching element.
+			fragment.toLowerCase() === 'top' ||
 			cd.config.idleFragments.some((regexp) => fragment.match(regexp)) ||
 			// `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
 			/^\/media\/|^noticeApplied-|^h-/.test(fragment) ||
