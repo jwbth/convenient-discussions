@@ -308,6 +308,8 @@
 	"sd-title": "Ustawienia Convenient Discussions",
 	"sd-save": "Zapisz",
 	"sd-reload": "Odśwież",
+	"sd-search-placeholder": "Wyszukaj ustawienia",
+	"sd-search-noresults": "Brak pasujących ustawień",
 	"sd-page-talkpage": "Strona dyskusji",
 	"sd-page-commentform": "Formularz komentarza",
 	"sd-page-timestamps": "Sygnatura czasowa",

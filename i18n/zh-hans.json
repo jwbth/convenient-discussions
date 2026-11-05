@@ -350,6 +350,8 @@
 	"sd-title": "快捷讨论设置",
 	"sd-save": "保存",
 	"sd-reload": "重新加载",
+	"sd-search-placeholder": "搜索设置",
+	"sd-search-noresults": "没有匹配的设置",
 	"sd-page-talkpage": "讨论页",
 	"sd-page-commentform": "留言表单",
 	"sd-page-timestamps": "时间戳",

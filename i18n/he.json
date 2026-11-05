@@ -335,6 +335,8 @@
 	"sd-title": "העדפות של דיונים נוחים",
 	"sd-save": "שמירה",
 	"sd-reload": "רענון",
+	"sd-search-placeholder": "חיפוש בהגדרות",
+	"sd-search-noresults": "אין הגדרות תואמות",
 	"sd-page-talkpage": "דף שיחה",
 	"sd-page-commentform": "טופס תגובה",
 	"sd-page-timestamps": "חותמות זמן",
