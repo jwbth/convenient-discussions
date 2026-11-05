@@ -811,12 +811,25 @@ class Loader {
 				await import('../app.js')
 			} else if (this.appCode) {
 				const scriptTag = document.createElement('script')
-				scriptTag.innerHTML = this.appCode
+				scriptTag.innerHTML = this.maybeRemoveSourceMap(this.appCode)
 				document.head.append(scriptTag)
 			}
 		})()
 
 		return this.importAppRequest
+	}
+
+	/**
+	 * External wikis may block Toolforge in their CSP. Remove the external map annotation before the code
+	 * reaches developer tools, preserving line numbers and annotations inside string literals.
+	 *
+	 * @param {string} code
+	 * @returns {string}
+	 */
+	maybeRemoveSourceMap(code) {
+		return IS_DEV || IS_SINGLE || cd.g.isProbablyWmfSulWiki
+			? code
+			: code.replace(/\/\/# sourceMappingURL=\S+\.map(?=\s*(?:\/\* <\/nowiki> \*\/)?\s*$)/, '')
 	}
 
 	/**

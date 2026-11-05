@@ -603,7 +603,12 @@ export default defineConfig(({ mode, command }) => {
 			minify: 'oxc',
 
 			// Source map configuration based on build mode
-			sourcemap: buildMode.isSingle ? 'inline' : true,
+			// The loader cannot suppress its own annotation before developer tools see it.
+			sourcemap: buildMode.isSingle
+				? 'inline'
+				: process.env.VITE_BUILD_PART === 'loader'
+					? 'hidden'
+					: true,
 
 			// Entry point and output configuration
 			rollupOptions: {

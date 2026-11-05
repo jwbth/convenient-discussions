@@ -503,26 +503,6 @@ class BootProcess {
 				'wgActionPaths',
 			]),
 		)
-
-		cd.g.isProbablyWmfSulWiki =
-			// Isn't true on diff, editing, history, and special pages, see
-			// https://github.com/wikimedia/mediawiki-extensions-CentralNotice/blob/6100a9e9ef290fffe1edd0ccdb6f044440d41511/includes/CentralNoticeHooks.php#L398
-			$('link[rel="dns-prefetch"]').attr('href') === '//meta.wikimedia.org' ||
-			// Sites like wikitech.wikimedia.org, which is not a SUL wiki, will be included as well
-			[
-				'mediawiki.org',
-				'wikibooks.org',
-				'wikidata.org',
-				'wikifunctions.org',
-				'wikimedia.org',
-				'wikinews.org',
-				'wikipedia.org',
-				'wikiquote.org',
-				'wikisource.org',
-				'wikiversity.org',
-				'wikivoyage.org',
-				'wiktionary.org',
-			].includes(mw.config.get('wgServerName').split('.').slice(-2).join('.'))
 	}
 
 	/**
