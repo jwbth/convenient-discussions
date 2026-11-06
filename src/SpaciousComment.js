@@ -206,6 +206,11 @@ class SpaciousComment extends Comment {
 		this.updateUserInfoCardButton(userInfoCardButton)
 
 		const pagesToCheckExistence = []
+		// Temporary account signatures link to contributions. Keep that link and any widget CheckUser
+		// inserted next to it before the header rebuild.
+		if (!this.authorLink && this.author.isTemporary()) {
+			this.authorLink = this.contribsNotForeignLink
+		}
 		if (this.authorLink) {
 			// Move the existing author link to the header.
 
@@ -216,8 +221,6 @@ class SpaciousComment extends Comment {
 
 			if (this.extraSignatures.length) {
 				this.authorLink = /** @type {HTMLAnchorElement} */ (this.authorLink.cloneNode(true))
-				// CheckUser binds the button's handlers through jQuery.
-				revealIpButton = revealIpButton && $(revealIpButton).clone(true)[0]
 			}
 
 			// eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -232,6 +235,8 @@ class SpaciousComment extends Comment {
 
 			cd.config.afterAuthorLinkParse?.(this.authorLink, beforeAuthorLinkParseReturn)
 			if (revealIpButton) {
+				// CheckUser's handlers close over the original widget, so move it even when keeping the
+				// signature. Cloning handlers would still update the original widget after a lookup.
 				this.authorLink.after(revealIpButton)
 			}
 		} else {
