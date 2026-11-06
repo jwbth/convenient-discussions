@@ -323,6 +323,14 @@ class CommentSkeleton {
 	 */
 	getSignatureText(excludeClasses = []) {
 		const signatureElement = this.signatureElement
+		// Avoid cloning ordinary signatures on every page and worker parse.
+		if (
+			!excludeClasses.length &&
+			!signatureElement.getElementsByClassName(CommentSkeleton.revealIpButtonClass, 1).length
+		) {
+			return signatureElement.textContent
+		}
+
 		const clone = isDomHandlerElement(signatureElement)
 			? signatureElement.cloneNode(true)
 			: /** @type {Element} */ (signatureElement.cloneNode(true))
