@@ -334,6 +334,8 @@
 	"sd-title": "Tùy chọn Convenient Discussions",
 	"sd-save": "Lưu",
 	"sd-reload": "Tải lại",
+	"sd-search-placeholder": "Cài đặt tìm kiếm",
+	"sd-search-noresults": "Không có cài đặt phù hợp",
 	"sd-page-talkpage": "Trang thảo luận",
 	"sd-page-commentform": "Biểu mẫu bình luận",
 	"sd-page-timestamps": "Mốc thời gian",

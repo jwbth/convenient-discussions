@@ -335,6 +335,8 @@
 	"sd-title": "إعدادات أداة مُناقشات مُلائمة",
 	"sd-save": "حفظ",
 	"sd-reload": "إعادة تحميل",
+	"sd-search-placeholder": "إعدادات البحث",
+	"sd-search-noresults": "لا توجد إعدادات مطابقة",
 	"sd-page-talkpage": "صفحة النقاش",
 	"sd-page-commentform": "سجل التعليقات",
 	"sd-page-timestamps": "الطابع الزمني",
