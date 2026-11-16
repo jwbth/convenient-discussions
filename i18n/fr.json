@@ -20,6 +20,7 @@
 			"Pols12",
 			"SleaY",
 			"Thibaut120094",
+			"Uriel",
 			"Verdy p",
 			"Wladek92",
 			"Zetud"
@@ -40,6 +41,10 @@
 	"cm-thanked": "Remercié·e",
 	"cm-thanked-tooltip": "Vous avez déjà remercié cet(te) utilisat·eur·rice pour ce commentaire.",
 	"cm-edit": "Modifier",
+	"cm-edit-tooltip": "Modifier le commentaire",
+	"cm-delete": "Supprimer",
+	"cm-delete-tooltip": "Supprimer le commentaire",
+	"cm-fix": "Corriger",
 	"cm-reply": "Répondre",
 	"cm-reply-outdented-tooltip": "Impossible de répondre à un commentaire dont les réponses sont en retrait",
 	"cm-quote": "Citation",
